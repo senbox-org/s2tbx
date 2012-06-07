@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.Locale;
 
 /**
+ * Dummy class so that Sentinel3ProductReader can be instantiated.
  * @author Norman Fomferra
  */
 public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {

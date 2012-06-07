@@ -1,15 +1,15 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
-    <symbolicName>beam-sentinel2-reader</symbolicName>
+    <symbolicName>suhet</symbolicName>
     <version>0.1-SNAPSHOT</version>
-    <name>Sentinel 2 Product Readers</name>
+    <name>Sentinel Exploitation Tools</name>
 
-    <description>Enables BEAM to read Sentinel 2 MSI L1B, L1C and L2A data products.</description>
+    <description>Enables BEAM to read Sentinel 1, 2 and 3 Products and to perform an atmospheric correction for Sentinel 2 TOA radiances</description>
 
-    <vendor>Brockmann Consult GmbH</vendor>
+    <vendor>Brockmann Consult GmbH and Array Inc</vendor>
     <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
-    <copyright>(C) 2007 by Brockmann Consult GmbH</copyright>
-    <url>http://envisat.esa.int/beam</url>
+    <copyright>(C) 2007 by Brockmann Consult GmbH and Array Inc</copyright>
+    <url>https://github.com/bcdev/suhet</url>
     <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
     <changelog>
@@ -22,6 +22,9 @@
     </dependency>
     <dependency>
         <module>beam-netcdf</module>
+    </dependency>
+    <dependency>
+        <module>beam-geotiff</module>
     </dependency>
     <dependency>
         <module>beam-visat-rcp</module>
@@ -37,17 +40,18 @@
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
             <formatName>SENTINEL-2-MSI</formatName>
             <useAllFileFilter>true</useAllFileFilter>
-            <description>Sentinel 2</description>
+        </action>
+        <action>
+            <id>importSentinel3Product</id>
+            <helpId>importSentinel3Product</helpId>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>SENTINEL-3-SLSTR</formatName>
+            <useAllFileFilter>true</useAllFileFilter>
         </action>
     </extension>
 
     <extension point="beam-core:rgbProfiles">
-        <rgbProfile>
-            <name>Sentinel 2</name>
-            <red>radiance_1</red>
-            <green>radiance_2</green>
-            <blue>radiance_4</blue>
-        </rgbProfile>
+        <!-- todo -->
     </extension>
 
 </module>
