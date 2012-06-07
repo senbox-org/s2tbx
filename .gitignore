@@ -1,3 +1,8 @@
+.idea
+modules
+*.iml
+*.ipr
+*.iws
 *.class
 
 # Package Files #

@@ -1,0 +1,53 @@
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+    <symbolicName>beam-sentinel2-reader</symbolicName>
+    <version>0.1-SNAPSHOT</version>
+    <name>Sentinel 2 Product Readers</name>
+
+    <description>Enables BEAM to read Sentinel 2 MSI L1B, L1C and L2A data products.</description>
+
+    <vendor>Brockmann Consult GmbH</vendor>
+    <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
+    <copyright>(C) 2007 by Brockmann Consult GmbH</copyright>
+    <url>http://envisat.esa.int/beam</url>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
+
+    <changelog>
+        <![CDATA[
+        ]]>
+    </changelog>
+
+    <dependency>
+        <module>beam-core</module>
+    </dependency>
+    <dependency>
+        <module>beam-netcdf</module>
+    </dependency>
+    <dependency>
+        <module>beam-visat-rcp</module>
+        <optional>true</optional>
+    </dependency>
+
+    <categories>Reader,Sentinel</categories>
+
+    <extension point="beam-ui:actions">
+        <action>
+            <id>importSentinel2Product</id>
+            <helpId>importSentinel2Product</helpId>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>SENTINEL-2-MSI</formatName>
+            <useAllFileFilter>true</useAllFileFilter>
+            <description>Sentinel 2</description>
+        </action>
+    </extension>
+
+    <extension point="beam-core:rgbProfiles">
+        <rgbProfile>
+            <name>Sentinel 2</name>
+            <red>radiance_1</red>
+            <green>radiance_2</green>
+            <blue>radiance_4</blue>
+        </rgbProfile>
+    </extension>
+
+</module>
