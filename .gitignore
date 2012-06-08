@@ -1,5 +1,6 @@
 .idea
 modules
+target
 *.iml
 *.ipr
 *.iws
