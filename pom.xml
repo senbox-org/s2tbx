@@ -26,7 +26,7 @@
 	<url>https://github.com/bcdev/suhet</url>	
 	
 	<properties>
-	    <beamVersion>4.10.3-SNAPSHOT</beamVersion>
+	    <beamVersion>4.10.4-SNAPSHOT</beamVersion>
 	</properties>
 	
     <dependencies>

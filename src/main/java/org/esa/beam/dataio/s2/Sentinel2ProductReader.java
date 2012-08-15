@@ -1,20 +1,29 @@
 package org.esa.beam.dataio.s2;
 
+import com.bc.ceres.core.PrintWriterProgressMonitor;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.beam.framework.dataio.AbstractProductReader;
-import org.esa.beam.framework.dataio.ProductSubsetDef;
+import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.ui.ModalDialog;
+import org.esa.beam.process.ProcessObserver;
+import org.esa.beam.util.io.FileUtils;
 
-import javax.swing.*;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.io.File;
 import java.io.IOException;
 
 /**
  * Only used to pop-up a reader configuration dialog mock-up.
+ *
  * @author Norman Fomferra
  */
 public class Sentinel2ProductReader extends AbstractProductReader {
@@ -23,8 +32,68 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         super(readerPlugIn);
     }
 
+
+    @Override
+    protected Product readProductNodesImpl() throws IOException {
+        final File inputFile = new File(getInput().toString());
+
+        final String baseName = FileUtils.getFilenameWithoutExtension(inputFile);
+        final File outputFile = new File(baseName + "_0.pgx");
+
+
+        if (!outputFile.exists()) {
+
+            final String exePath = "C:\\Program Files (x86)\\OpenJPEG 1.5\\bin\\j2k_to_image.exe";
+
+            final String[] command = {
+                    exePath,
+                    "-i",
+                    inputFile.getPath(),
+                    "-o",
+                    new File(baseName + ".pgx").getPath()
+            };
+
+            final String[] envp = new String[0];
+            final File workingDir = new File(".");
+            final Process process = Runtime.getRuntime().exec(command, envp, workingDir);
+
+            ProcessObserver.start(process, "j2k_to_image", 100, ProcessObserver.Mode.BLOCKING, new PrintWriterProgressMonitor(System.out), new ProcessObserver.Handler() {
+                @Override
+                public void handleLineOnStdoutReceived(String line, Process process, ProgressMonitor pm) {
+                    System.out.println(line);
+                }
+
+                @Override
+                public void handleLineOnStderrReceived(String line, Process process, ProgressMonitor pm) {
+                    System.err.println(line);
+                }
+
+                @Override
+                public void handleProcessExited(int exitCode) {
+                    if (exitCode != 0) {
+                        outputFile.delete();
+                    }
+                    System.out.println("Exit code " + exitCode);
+                }
+            });
+        }
+
+        return ProductIO.readProduct(outputFile, "IMAGE");
+    }
+
+/*
     @Override
     public Product readProductNodes(Object input, ProductSubsetDef subsetDef) throws IOException {
+        final int i = showReaderParametersDialog();
+        if (i == ModalDialog.ID_OK) {
+            return super.readProductNodes(input, subsetDef);
+        } else {
+            return null;
+        }
+    }
+*/
+
+    public int showReaderParametersDialog() throws IOException {
         ModalDialog modalDialog = new ModalDialog(null, "Sentinel-2 MSI Reader Options", ModalDialog.ID_OK_CANCEL_HELP, "");
         JPanel content = new JPanel(new GridBagLayout());
         content.setBorder(new EmptyBorder(6, 6, 6, 6));
@@ -89,19 +158,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         content.add(new JLabel("<html><small>Note that you can always change settings later in the preferences dialog.</small></html>"), constraints);
 
         modalDialog.setContent(content);
-        final int show = modalDialog.show();
+        return modalDialog.show();
 
-        if (show == ModalDialog.ID_OK) {
-            return super.readProductNodes(input, subsetDef);
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    protected Product readProductNodesImpl() throws IOException {
-        // todo
-        return new Product("S2", "S2", 16, 16);
     }
 
     @Override

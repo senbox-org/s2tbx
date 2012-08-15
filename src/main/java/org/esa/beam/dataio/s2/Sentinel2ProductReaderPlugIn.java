@@ -15,7 +15,7 @@ import java.util.Locale;
 public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        if (new File(input.toString()).getName().equals("pom.xml")) {
+        if (new File(input.toString()).getName().endsWith(".jp2")) {
             return DecodeQualification.SUITABLE;
         }
         return DecodeQualification.UNABLE;
@@ -38,7 +38,7 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[]{".xml"};
+        return new String[]{".jp2"};
     }
 
     @Override
