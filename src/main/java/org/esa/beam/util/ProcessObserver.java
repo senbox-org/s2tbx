@@ -1,4 +1,4 @@
-package org.esa.beam.process;
+package org.esa.beam.util;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.NullProgressMonitor;
@@ -17,8 +17,6 @@ import java.io.InputStreamReader;
  * TODO
  * External Process Invocation API (EPIA)
  * - address that executables might have different extensions (and paths) on different OS (.exe, .bat, .sh)
- * ProcessObserver
- *  - apply builder pattern
  * </pre>
  *
  * @author Norman Fomferra
@@ -36,8 +34,11 @@ public class ProcessObserver {
     private ProgressMonitor progressMonitor;
     private Handler handler;
     private Mode mode;
-    private ObservedProcessImpl observedProcessImpl;
+    private ObservedProcessImpl observedProcess;
 
+    /**
+     * The observation mode.
+     */
     public enum Mode {
         /**
          * {@link ProcessObserver#start()} blocks until the process ends.
@@ -131,13 +132,17 @@ public class ProcessObserver {
      * Starts observing the given process.
      */
     public ObservedProcess start() {
-        if (observedProcessImpl != null) {
+        if (observedProcess != null) {
             throw new IllegalStateException("process already observed.");
         }
-        observedProcessImpl = new ObservedProcessImpl();
-        return observedProcessImpl;
+        observedProcess = new ObservedProcessImpl();
+        observedProcess.startObservation();
+        return observedProcess;
     }
 
+    /**
+     * The observed process.
+     */
     public static interface ObservedProcess {
         /**
          * @return The process' name.
@@ -151,9 +156,17 @@ public class ProcessObserver {
     }
 
     /**
-     * A handler that will be informed if a new line has been read from either {@code stdout} or {@code stderr}.
+     * A handler that will be notified during the observation of the process.
      */
     public static interface Handler {
+        /**
+         * Called if the process is started being observed.
+         *
+         * @param process The observed process.
+         * @param pm      The progress monitor, that is used to monitor the progress of the running process.
+         */
+        void onObservationStarted(ObservedProcess process, ProgressMonitor pm);
+
         /**
          * Called if a new text line that has been received from {@code stdout}.
          *
@@ -161,7 +174,7 @@ public class ProcessObserver {
          * @param line    The line.
          * @param pm      The progress monitor, that is used to monitor the progress of the running process.
          */
-        void handleStdoutLineReceived(ObservedProcess process, String line, ProgressMonitor pm);
+        void onStdoutLineReceived(ObservedProcess process, String line, ProgressMonitor pm);
 
         /**
          * Called if a new text line that has been received from {@code stderr}.
@@ -170,32 +183,40 @@ public class ProcessObserver {
          * @param line    The line.
          * @param pm      The progress monitor, that is used to monitor the progress of the running process.
          */
-        void handleStderrLineReceived(ObservedProcess process, String line, ProgressMonitor pm);
+        void onStderrLineReceived(ObservedProcess process, String line, ProgressMonitor pm);
 
         /**
-         * Called if the process exited.
+         * Called if the process is no longer being observed.
          *
          * @param process  The observed process.
-         * @param exitCode The exit code.
+         * @param exitCode The exit code, may be {@code null} if unknown.
          * @param pm       The progress monitor, that is used to monitor the progress of the running process.
          */
-        void handleExitCodeReceived(ObservedProcess process, int exitCode, ProgressMonitor pm);
+        void onObservationEnded(ObservedProcess process, Integer exitCode, ProgressMonitor pm);
     }
 
-    private static class DefaultHandler implements Handler {
+    /**
+     * Default implementation of {@link Handler}, which simply prints observations to the console.
+     */
+    public static class DefaultHandler implements Handler {
         @Override
-        public void handleStdoutLineReceived(ObservedProcess process, String line, ProgressMonitor pm) {
+        public void onObservationStarted(ObservedProcess process, ProgressMonitor pm) {
+            System.out.println(process.getName() + " started");
+        }
+
+        @Override
+        public void onStdoutLineReceived(ObservedProcess process, String line, ProgressMonitor pm) {
             System.out.println(process.getName() + ": " + line);
         }
 
         @Override
-        public void handleStderrLineReceived(ObservedProcess process, String line, ProgressMonitor pm) {
+        public void onStderrLineReceived(ObservedProcess process, String line, ProgressMonitor pm) {
             System.err.println(process.getName() + ": " + line);
         }
 
         @Override
-        public void handleExitCodeReceived(ObservedProcess process, int exitCode, ProgressMonitor pm) {
-            System.out.println(process.getName() + ": exit code " + exitCode);
+        public void onObservationEnded(ObservedProcess process, Integer exitCode, ProgressMonitor pm) {
+            System.out.println(process.getName() + " ended, exit code " + exitCode);
         }
     }
 
@@ -214,7 +235,6 @@ public class ProcessObserver {
             } catch (IOException e) {
                 // cannot be handled
             }
-            observedProcessImpl.countThreadEnds();
         }
 
         private void read() throws IOException {
@@ -223,18 +243,18 @@ public class ProcessObserver {
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    fireLineRead(line);
+                    fireLineReceived(line);
                 }
             } finally {
                 reader.close();
             }
         }
 
-        private void fireLineRead(String line) {
+        private void fireLineReceived(String line) {
             if (type.equals(STDOUT)) {
-                handler.handleStdoutLineReceived(observedProcessImpl, line, progressMonitor);
+                handler.onStdoutLineReceived(observedProcess, line, progressMonitor);
             } else {
-                handler.handleStderrLineReceived(observedProcessImpl, line, progressMonitor);
+                handler.onStderrLineReceived(observedProcess, line, progressMonitor);
             }
         }
     }
@@ -243,7 +263,6 @@ public class ProcessObserver {
         private ThreadGroup threadGroup;
         private Thread stdoutThread;
         private Thread stderrThread;
-        private int numExits;
         private boolean cancellationRequested;
         private boolean cancelled;
 
@@ -264,7 +283,8 @@ public class ProcessObserver {
         }
 
 
-        private void start() {
+        private void startObservation() {
+            handler.onObservationStarted(observedProcess, progressMonitor);
             stdoutThread.start();
             stderrThread.start();
             if (mode == Mode.BLOCKING) {
@@ -284,7 +304,7 @@ public class ProcessObserver {
         }
 
         private void awaitTermination() {
-            while (stdoutThread.isAlive() || stderrThread.isAlive()) {
+            while (true) {
                 try {
                     Thread.sleep(pollPeriod);
                 } catch (InterruptedException e) {
@@ -292,7 +312,8 @@ public class ProcessObserver {
                     //      * 1. just leave, and let the process be unattended (current impl.)
                     //        2. destroy the process
                     //        3. throw a checked ProgressObserverException
-                    return;
+                    handler.onObservationEnded(this, null, progressMonitor);
+                    break;
                 }
                 if ((progressMonitor.isCanceled() || cancellationRequested) && !cancelled) {
                     cancelled = true;
@@ -302,17 +323,14 @@ public class ProcessObserver {
                     //        3. throw a checked ProgressObserverException
                     process.destroy();
                 }
+                try {
+                    final int exitCode = process.exitValue();
+                    handler.onObservationEnded(this, exitCode, progressMonitor);
+                    break;
+                } catch (IllegalThreadStateException e) {
+                    // ok, continue
+                }
             }
         }
-
-        private void countThreadEnds() {
-            synchronized (this) {
-                numExits++;
-            }
-            if (numExits >= 2) {
-                handler.handleExitCodeReceived(observedProcessImpl, process.exitValue(), progressMonitor);
-            }
-        }
-
     }
 }

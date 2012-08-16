@@ -1,6 +1,5 @@
 package org.esa.beam.dataio.s2;
 
-import com.bc.ceres.core.PrintWriterProgressMonitor;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductIO;
@@ -8,7 +7,7 @@ import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.ui.ModalDialog;
-import org.esa.beam.process.ProcessObserver;
+import org.esa.beam.util.ProcessObserver;
 import org.esa.beam.util.io.FileUtils;
 
 import javax.swing.JCheckBox;
@@ -57,25 +56,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             final File workingDir = new File(".");
             final Process process = Runtime.getRuntime().exec(command, envp, workingDir);
 
-            ProcessObserver.start(process, "j2k_to_image", 100, ProcessObserver.Mode.BLOCKING, new PrintWriterProgressMonitor(System.out), new ProcessObserver.Handler() {
-                @Override
-                public void handleLineOnStdoutReceived(String line, Process process, ProgressMonitor pm) {
-                    System.out.println(line);
-                }
-
-                @Override
-                public void handleLineOnStderrReceived(String line, Process process, ProgressMonitor pm) {
-                    System.err.println(line);
-                }
-
-                @Override
-                public void handleProcessExited(int exitCode) {
-                    if (exitCode != 0) {
-                        outputFile.delete();
-                    }
-                    System.out.println("Exit code " + exitCode);
-                }
-            });
+            final ProcessObserver po = new ProcessObserver(process);
+            final MyDefaultHandler handler = new MyDefaultHandler(outputFile);
+            final ProcessObserver.ObservedProcess op = po
+                    .withName("j2k_to_image")
+                    .withHandler(handler)
+                    .withMode(ProcessObserver.Mode.BLOCKING)
+                    .start();
         }
 
         return ProductIO.readProduct(outputFile, "IMAGE");
@@ -165,5 +152,21 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
         // todo
+    }
+
+    private static class MyDefaultHandler extends ProcessObserver.DefaultHandler {
+        private final File outputFile;
+
+        public MyDefaultHandler(File outputFile) {
+            this.outputFile = outputFile;
+        }
+
+        @Override
+        public void onObservationEnded(ProcessObserver.ObservedProcess process, Integer exitCode, ProgressMonitor pm) {
+            super.onObservationEnded(process, exitCode, pm);
+            if (exitCode == null || exitCode != 0) {
+                outputFile.delete();
+            }
+        }
     }
 }
