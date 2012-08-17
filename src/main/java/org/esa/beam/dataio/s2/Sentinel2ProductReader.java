@@ -39,7 +39,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         final String baseName = FileUtils.getFilenameWithoutExtension(inputFile);
         final File outputFile = new File(baseName + "_0.pgx");
 
-
         if (!outputFile.exists()) {
 
             final String exePath = "C:\\Program Files (x86)\\OpenJPEG 1.5\\bin\\j2k_to_image.exe";
@@ -56,12 +55,12 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             final File workingDir = new File(".");
             final Process process = Runtime.getRuntime().exec(command, envp, workingDir);
 
-            final ProcessObserver po = new ProcessObserver(process);
             final MyDefaultHandler handler = new MyDefaultHandler(outputFile);
-            final ProcessObserver.ObservedProcess op = po
-                    .withName("j2k_to_image")
-                    .withHandler(handler)
-                    .withMode(ProcessObserver.Mode.BLOCKING)
+            new ProcessObserver(process)
+                    .setName("j2k_to_image")
+                    .setHandler(handler)
+                    .setPollPeriod(100)
+                    .setMode(ProcessObserver.Mode.BLOCKING)
                     .start();
         }
 

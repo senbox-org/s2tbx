@@ -6,7 +6,6 @@ import com.bc.ceres.core.ProgressMonitor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
@@ -23,19 +22,6 @@ import java.io.InputStreamReader;
  */
 public class ProcessObserver {
 
-    private static final String MAIN = "main";
-    private static final String STDOUT = "stdout";
-    private static final String STDERR = "stderr";
-
-    private final Process process;
-
-    private String processName;
-    private int pollPeriod;
-    private ProgressMonitor progressMonitor;
-    private Handler handler;
-    private Mode mode;
-    private ObservedProcessImpl observedProcess;
-
     /**
      * The observation mode.
      */
@@ -48,11 +34,21 @@ public class ProcessObserver {
          * {@link ProcessObserver#start()} returns immediately.
          */
         NON_BLOCKING,
-        /**
-         * {@link ProcessObserver#start()} returns immediately, but the process cannot be cancelled.
-         */
-        NON_CANCELLABLE,
     }
+
+
+    private static final String MAIN = "main";
+    private static final int STDOUT = 0;
+    private static final int STDERR = 1;
+
+    private final Process process;
+
+    private String name;
+    private int pollPeriod;
+    private ProgressMonitor progressMonitor;
+    private Handler handler;
+    private Mode mode;
+    private ObservedProcessImpl observedProcess;
 
     /**
      * Constructor.
@@ -61,24 +57,39 @@ public class ProcessObserver {
      */
     public ProcessObserver(final Process process) {
         this.process = process;
-        this.processName = "process";
-        this.pollPeriod = 100;
+        this.name = "process";
+        this.pollPeriod = 500;
         this.progressMonitor = new NullProgressMonitor();
         this.handler = new DefaultHandler();
         this.mode = Mode.BLOCKING;
     }
 
     /**
+     * @return A name that represents the process.
+     */
+    public String getName() {
+        return name;
+    }
+
+     /**
      * Default is "process".
      *
-     * @param processName A name that represents the process.
+     * @param name A name that represents the process.
      * @return this
      */
-    public ProcessObserver withName(String processName) {
-        Assert.notNull(processName, "processName");
-        this.processName = processName;
+    public ProcessObserver setName(String name) {
+        Assert.notNull(name, "name");
+        this.name = name;
         return this;
     }
+
+    /**
+      * @return A handler.
+      */
+     public Handler getHandler() {
+         return handler;
+     }
+
 
     /**
      * Default-handler prints to stdout / stderr.
@@ -86,10 +97,17 @@ public class ProcessObserver {
      * @param handler A handler.
      * @return this
      */
-    public ProcessObserver withHandler(Handler handler) {
+    public ProcessObserver setHandler(Handler handler) {
         Assert.notNull(handler, "handler");
         this.handler = handler;
         return this;
+    }
+
+    /**
+     * @return A progress monitor.
+     */
+    public ProgressMonitor getProgressMonitor() {
+        return progressMonitor;
     }
 
     /**
@@ -98,31 +116,44 @@ public class ProcessObserver {
      * @param progressMonitor A progress monitor.
      * @return this
      */
-    public ProcessObserver withProgressMonitor(ProgressMonitor progressMonitor) {
+    public ProcessObserver setProgressMonitor(ProgressMonitor progressMonitor) {
         Assert.notNull(progressMonitor, "progressMonitor");
         this.progressMonitor = progressMonitor;
         return this;
     }
 
     /**
+     * @return The observation mode.
+     */
+    public Mode getMode() {
+        return mode;
+    }
+
+    /**
      * Default is {@link Mode#BLOCKING}.
      *
      * @param mode The observation mode.
-     * @return
+     * @return this
      */
-    public ProcessObserver withMode(Mode mode) {
+    public ProcessObserver setMode(Mode mode) {
         Assert.notNull(mode, "mode");
         this.mode = mode;
         return this;
     }
 
     /**
-     * Default is 100 milliseconds.
+      * @return  Time in milliseconds between successive process status queries.
+      */
+     public int getPollPeriod() {
+         return pollPeriod;
+     }
+    /**
+     * Default is 500 milliseconds.
      *
-     * @param pollPeriod time in milliseconds between successive process status queries.
+     * @param pollPeriod Time in milliseconds between successive process status queries.
      * @return this
      */
-    public ProcessObserver withPollPeriod(int pollPeriod) {
+    public ProcessObserver setPollPeriod(int pollPeriod) {
         Assert.notNull(pollPeriod, "pollPeriod");
         this.pollPeriod = pollPeriod;
         return this;
@@ -220,11 +251,91 @@ public class ProcessObserver {
         }
     }
 
-    private class LineReaderThread extends Thread {
-        private final String type;
+    private class ObservedProcessImpl implements ObservedProcess {
+        private ThreadGroup threadGroup;
+        private Thread stdoutThread;
+        private Thread stderrThread;
+        private boolean cancellationRequested;
+        private boolean cancelled;
 
-        public LineReaderThread(ThreadGroup threadGroup, String type) {
-            super(threadGroup, processName + "-" + type);
+        ObservedProcessImpl() {
+            this.threadGroup = new ThreadGroup(name);
+            this.stdoutThread = new LineReaderThread(threadGroup, STDOUT);
+            this.stderrThread = new LineReaderThread(threadGroup, STDERR);
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public void cancel() {
+            cancellationRequested = true;
+        }
+
+        private void startObservation() {
+            handler.onObservationStarted(observedProcess, progressMonitor);
+            stdoutThread.start();
+            stderrThread.start();
+            if (mode == Mode.BLOCKING) {
+                awaitTermination();
+            } else /*if (mode == Mode.NON_BLOCKING)*/ {
+                Thread mainThread = new Thread(threadGroup,
+                                               new Runnable() {
+                                                   @Override
+                                                   public void run() {
+                                                       awaitTermination();
+                                                   }
+                                               },
+                                               name + "-" + MAIN);
+                mainThread.start();
+            }
+        }
+
+        private void awaitTermination() {
+            while (true) {
+
+                if ((progressMonitor.isCanceled() || cancellationRequested) && !cancelled) {
+                    cancelled = true;
+                    // todo - parametrise what is best done now:
+                    //        1. just leave, and let the process be unattended
+                    //      * 2. destroy the process (current impl.)
+                    //        3. throw a checked ProgressObserverException
+                    process.destroy();
+                    handler.onObservationEnded(this, null, progressMonitor);
+                    break;
+                }
+
+                if (!stdoutThread.isAlive() && !stderrThread.isAlive()) {
+                    try {
+                        final int exitCode = process.exitValue();
+                        handler.onObservationEnded(this, exitCode, progressMonitor);
+                        break;
+                    } catch (IllegalThreadStateException e) {
+                        // process has not yet terminated, so continue observing
+                    }
+                }
+
+                try {
+                    Thread.sleep(pollPeriod);
+                } catch (InterruptedException e) {
+                    // todo - parametrise what is best done now:
+                    //      * 1. just leave, and let the process be unattended (current impl.)
+                    //        2. destroy the process
+                    //        3. throw a checked ProgressObserverException
+                    handler.onObservationEnded(this, null, progressMonitor);
+                    break;
+                }
+            }
+        }
+    }
+
+    private class LineReaderThread extends Thread {
+        private final int type;
+
+        public LineReaderThread(ThreadGroup threadGroup, int type) {
+            super(threadGroup, name + "-" + type);
             this.type = type;
         }
 
@@ -233,13 +344,13 @@ public class ProcessObserver {
             try {
                 read();
             } catch (IOException e) {
-                // cannot be handled
+                // cannot be handled in a meaningful way, but thread will end anyway
             }
         }
 
         private void read() throws IOException {
-            final InputStream inputStream = type.equals(STDOUT) ? process.getInputStream() : process.getErrorStream();
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            final BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(type == STDOUT ? process.getInputStream() : process.getErrorStream()));
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -251,7 +362,7 @@ public class ProcessObserver {
         }
 
         private void fireLineReceived(String line) {
-            if (type.equals(STDOUT)) {
+            if (type == STDOUT) {
                 handler.onStdoutLineReceived(observedProcess, line, progressMonitor);
             } else {
                 handler.onStderrLineReceived(observedProcess, line, progressMonitor);
@@ -259,78 +370,4 @@ public class ProcessObserver {
         }
     }
 
-    private class ObservedProcessImpl implements ObservedProcess {
-        private ThreadGroup threadGroup;
-        private Thread stdoutThread;
-        private Thread stderrThread;
-        private boolean cancellationRequested;
-        private boolean cancelled;
-
-        ObservedProcessImpl() {
-            this.threadGroup = new ThreadGroup(processName);
-            this.stdoutThread = new LineReaderThread(threadGroup, STDOUT);
-            this.stderrThread = new LineReaderThread(threadGroup, STDERR);
-        }
-
-        @Override
-        public String getName() {
-            return processName;
-        }
-
-        @Override
-        public void cancel() {
-            cancellationRequested = true;
-        }
-
-
-        private void startObservation() {
-            handler.onObservationStarted(observedProcess, progressMonitor);
-            stdoutThread.start();
-            stderrThread.start();
-            if (mode == Mode.BLOCKING) {
-                awaitTermination();
-            } else if (mode == Mode.NON_BLOCKING) {
-                Thread mainThread = new Thread(threadGroup,
-                                               new Runnable() {
-                                                   @Override
-                                                   public void run() {
-                                                       awaitTermination();
-                                                   }
-                                               },
-                                               processName + "-" + MAIN);
-                mainThread.start();
-            }
-
-        }
-
-        private void awaitTermination() {
-            while (true) {
-                try {
-                    Thread.sleep(pollPeriod);
-                } catch (InterruptedException e) {
-                    // todo - parametrise what is best done now:
-                    //      * 1. just leave, and let the process be unattended (current impl.)
-                    //        2. destroy the process
-                    //        3. throw a checked ProgressObserverException
-                    handler.onObservationEnded(this, null, progressMonitor);
-                    break;
-                }
-                if ((progressMonitor.isCanceled() || cancellationRequested) && !cancelled) {
-                    cancelled = true;
-                    // todo - parametrise what is best done now:
-                    //        1. just leave, and let the process be unattended
-                    //      * 2. destroy the process (current impl.)
-                    //        3. throw a checked ProgressObserverException
-                    process.destroy();
-                }
-                try {
-                    final int exitCode = process.exitValue();
-                    handler.onObservationEnded(this, exitCode, progressMonitor);
-                    break;
-                } catch (IllegalThreadStateException e) {
-                    // ok, continue
-                }
-            }
-        }
-    }
 }
