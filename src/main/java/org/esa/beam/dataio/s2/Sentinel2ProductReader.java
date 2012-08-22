@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.s2;
 
+import com.bc.ceres.core.ProcessObserver;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductIO;
@@ -7,7 +8,6 @@ import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.ui.ModalDialog;
-import org.esa.beam.util.ProcessObserver;
 import org.esa.beam.util.io.FileUtils;
 
 import javax.swing.JCheckBox;
