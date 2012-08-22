@@ -27,6 +27,8 @@ import java.io.IOException;
  */
 public class Sentinel2ProductReader extends AbstractProductReader {
 
+    public static final String SYS_KEY_J2K_TO_IMAGE_PATH = "beam.j2k_to_image.path";
+
     public Sentinel2ProductReader(Sentinel2ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
     }
@@ -41,19 +43,27 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         if (!outputFile.exists()) {
 
-            final String exePath = "C:\\Program Files (x86)\\OpenJPEG 1.5\\bin\\j2k_to_image.exe";
+            // TODO - The following code block shall be rewritten so that it uses a common External Process Invocation API.
+            final Process process;
+            {
+                final String j2kToImageExePath = System.getProperty(SYS_KEY_J2K_TO_IMAGE_PATH);
+                if (j2kToImageExePath == null) {
+                    throw new IOException("Please set system property '" + SYS_KEY_J2K_TO_IMAGE_PATH + "' so that it " +
+                                                  "points the 'j2k_to_image' executable of the OpenJPEG package");
+                }
 
-            final String[] command = {
-                    exePath,
-                    "-i",
-                    inputFile.getPath(),
-                    "-o",
-                    new File(baseName + ".pgx").getPath()
-            };
+                final String[] command = {
+                        j2kToImageExePath,
+                        "-i",
+                        inputFile.getPath(),
+                        "-o",
+                        new File(baseName + ".pgx").getPath()
+                };
 
-            final String[] envp = new String[0];
-            final File workingDir = new File(".");
-            final Process process = Runtime.getRuntime().exec(command, envp, workingDir);
+                final String[] envp = new String[0];
+                final File workingDir = new File(".");
+                process = Runtime.getRuntime().exec(command, envp, workingDir);
+            }
 
             final MyDefaultHandler handler = new MyDefaultHandler(outputFile);
             new ProcessObserver(process)
