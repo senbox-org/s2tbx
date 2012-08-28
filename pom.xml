@@ -24,11 +24,11 @@
 	<version>0.1-SNAPSHOT</version>
     <name>Sentinel Exploitation Tools</name>	
 	<url>https://github.com/bcdev/suhet</url>	
-	
+
 	<properties>
 	    <beamVersion>4.10.4-SNAPSHOT</beamVersion>
 	</properties>
-	
+
     <dependencies>
         <dependency>
             <groupId>org.esa.beam</groupId>
@@ -45,13 +45,13 @@
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-netcdf</artifactId>
-			<version>1.1</version>
+			<version>1.1.2-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-geotiff</artifactId>
-			<version>1.2</version>
+			<version>1.2.1</version>
         </dependency>
 
 	</dependencies>

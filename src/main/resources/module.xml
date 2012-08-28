@@ -4,7 +4,7 @@
     <version>0.1-SNAPSHOT</version>
     <name>Sentinel Exploitation Tools</name>
 
-    <description>Enables BEAM to read Sentinel 1, 2 and 3 Products and to perform an atmospheric correction for Sentinel 2 TOA radiances</description>
+    <description>Enables BEAM to read Sentinel 1, 2 and 3 Products and to perform an atmospheric correction for Sentinel 2 TOA radiance</description>
 
     <vendor>Brockmann Consult GmbH and Array Inc</vendor>
     <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
@@ -47,6 +47,60 @@
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
             <formatName>SENTINEL-3-SLSTR</formatName>
             <useAllFileFilter>true</useAllFileFilter>
+        </action>
+        <action>
+            <id>importS3OlciL1bProduct</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>OLCI-L1B</formatName>
+            <mnemonic>O</mnemonic>
+            <shortDescr>Import an OLCI L1b data product or product subset.</shortDescr>
+            <description>Import a Sentinel-3 OLCI Level-1b data product or product subset.</description>
+            <helpId>importS3OlciL1bProduct</helpId>
+        </action>
+        <action>
+            <id>importS3OlciL2Product</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>OLCI-L2</formatName>
+            <mnemonic>O</mnemonic>
+            <shortDescr>Import an OLCI L2 data product or product subset.</shortDescr>
+            <description>Import a Sentinel-3 OLCI Level-2 data product or product subset.</description>
+            <helpId>importS3OlciL2Product</helpId>
+        </action>
+        <action>
+            <id>importS3SlstrL2LSTProduct</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>SLSTR-L2-LST</formatName>
+            <mnemonic>S</mnemonic>
+            <shortDescr>Import an SLSTR L2 LST data product or product subset.</shortDescr>
+            <description>Import a Sentinel-3 SLSTR Level-2 LST data product or product subset.</description>
+            <helpId>importS3SlstrL2LSTProduct</helpId>
+        </action>
+        <action>
+            <id>importS3SlstrL2SSTProduct</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>SLSTR-L2-SST</formatName>
+            <mnemonic>S</mnemonic>
+            <shortDescr>Import an SLSTR L2 SST data product or product subset.</shortDescr>
+            <description>Import a Sentinel-3 SLSTR Level-2 SST data product or product subset.</description>
+            <helpId>importS3SlstrL2SSTProduct</helpId>
+        </action>
+        <action>
+            <id>importS3SynProduct</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>S3-SY2</formatName>
+            <mnemonic>Y</mnemonic>
+            <shortDescr>Import a Sentinel-3 Synergy L2 data product or product subset.</shortDescr>
+            <description>Import a Sentinel-3 Synergy Level-2 data product or product subset.</description>
+            <helpId>importS3SynProduct</helpId>
+        </action>
+        <action>
+            <id>importS3VgtProduct</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>S3-VGT</formatName>
+            <mnemonic>Y</mnemonic>
+            <shortDescr>Import a Sentinel-3 VGT data product or product subset.</shortDescr>
+            <description>Import a Sentinel-3 VGT data product or product subset.</description>
+            <helpId>importS3VgtProduct</helpId>
         </action>
     </extension>
 
