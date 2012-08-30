@@ -19,6 +19,8 @@ import org.esa.beam.dataio.s3.manifest.Manifest;
 import org.esa.beam.dataio.s3.manifest.ManifestProductReader;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.GeoCoding;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
+import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.PixelGeoCoding;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.RasterDataNode;
@@ -55,7 +57,26 @@ class SynLevel2ProductReader extends ManifestProductReader {
 
     @Override
     protected void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
-        // TODO - set spectral band properties
+        if (targetNode instanceof Band) {
+            final MetadataElement variableAttributes = sourceBand.getProduct().getMetadataRoot().getElement("Variable_Attributes");
+            if (variableAttributes != null) {
+                final MetadataElement element =
+                        variableAttributes.getElement(targetNode.getName().replaceAll("_CAM[1-5]", ""));
+                if (element != null) {
+                    final MetadataAttribute wavelengthAttribute = element.getAttribute("central_wavelength");
+                    final Band targetBand = (Band) targetNode;
+                    if (wavelengthAttribute != null) {
+                        targetBand.setSpectralWavelength(wavelengthAttribute.getData().getElemFloat());
+                    }
+                    final MetadataAttribute minWavelengthAttribute = element.getAttribute("min_wavelength");
+                    final MetadataAttribute maxWavelengthAttribute = element.getAttribute("max_wavelength");
+                    if (minWavelengthAttribute != null && maxWavelengthAttribute != null) {
+                        float bandwidth = maxWavelengthAttribute.getData().getElemFloat() - minWavelengthAttribute.getData().getElemFloat();
+                        targetBand.setSpectralBandwidth(bandwidth);
+                    }
+                }
+            }
+        }
     }
 
     @Override

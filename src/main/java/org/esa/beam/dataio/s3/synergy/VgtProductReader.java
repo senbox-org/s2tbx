@@ -18,7 +18,10 @@ package org.esa.beam.dataio.s3.synergy;
 import org.esa.beam.dataio.s3.manifest.Manifest;
 import org.esa.beam.dataio.s3.manifest.ManifestProductReader;
 import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
+import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.RasterDataNode;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.Interpolation;
@@ -51,6 +54,27 @@ class VgtProductReader extends ManifestProductReader {
         fileNames.addAll(manifest.getFileNames("geometryDataSchema"));
 
         return fileNames;
+    }
+
+    @Override
+    protected void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
+        if (targetNode instanceof Band) {
+            final MetadataElement variableAttributes =
+                    sourceBand.getProduct().getMetadataRoot().getElement("Variable_Attributes");
+            if(variableAttributes != null) {
+                final MetadataElement metadataElement = variableAttributes.getElement(sourceBand.getName());
+                if (metadataElement != null) {
+                    final MetadataAttribute bandwidthAttribute = metadataElement.getAttribute("bandwidth");
+                    if (bandwidthAttribute != null) {
+                        ((Band) targetNode).setSpectralBandwidth(bandwidthAttribute.getData().getElemFloat());
+                    }
+                    final MetadataAttribute wavelengthAttribute = metadataElement.getAttribute("wavelength");
+                    if (wavelengthAttribute != null) {
+                        ((Band) targetNode).setSpectralWavelength(wavelengthAttribute.getData().getElemFloat());
+                    }
+                }
+            }
+        }
     }
 
     @Override
