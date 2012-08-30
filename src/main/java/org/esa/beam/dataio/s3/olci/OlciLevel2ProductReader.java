@@ -41,8 +41,6 @@ class OlciLevel2ProductReader extends ManifestProductReader {
     private static final float[] spectralWavelengths = new float[21];
     private static final float[] spectralBandwidths = new float[21];
 
-    private int spectralBandIndex;
-
     static {
         getSpectralBandsProperties(spectralWavelengths, spectralBandwidths);
     }
@@ -91,15 +89,33 @@ class OlciLevel2ProductReader extends ManifestProductReader {
 
     @Override
     protected void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
-        if (targetNode.getName().matches("R[0-9]{3}[0-9]?")) {
+        if (targetNode.getName().matches("RC?[0-9]{3}[0-9]?")) {
             if (targetNode instanceof Band) {
                 final Band targetBand = (Band) targetNode;
-                targetBand.setSpectralBandIndex(spectralBandIndex);
+                final int bandWavelength = Integer.parseInt(targetNode.getName().substring(1));
+                int spectralBandIndex = getSpectralBandIndex(bandWavelength);
                 targetBand.setSpectralWavelength(spectralWavelengths[spectralBandIndex]);
                 targetBand.setSpectralBandwidth(spectralBandwidths[spectralBandIndex]);
-                spectralBandIndex++;
             }
         }
+    }
+
+    private int getSpectralBandIndex(int bandWavelength) {
+        float lastWavelengthDist = Float.POSITIVE_INFINITY;
+        for (int i = 0; i < spectralWavelengths.length; i++) {
+            final float wavelengthDist = Math.abs(spectralWavelengths[i] - bandWavelength);
+            if (wavelengthDist < lastWavelengthDist) {
+                lastWavelengthDist = wavelengthDist;
+            } else {
+                if(i>0) {
+                    return i-1;
+                }
+                else {
+                    return 0;
+                }
+            }
+        }
+        return spectralWavelengths.length - 1;
     }
 
     @Override
