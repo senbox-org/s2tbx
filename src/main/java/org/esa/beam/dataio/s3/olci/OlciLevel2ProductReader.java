@@ -92,7 +92,11 @@ class OlciLevel2ProductReader extends ManifestProductReader {
         if (targetNode.getName().matches("RC?[0-9]{3}[0-9]?")) {
             if (targetNode instanceof Band) {
                 final Band targetBand = (Band) targetNode;
-                final int bandWavelength = Integer.parseInt(targetNode.getName().substring(1));
+                int numberIndex = 1;
+                if (targetNode.getName().matches("RC[0-9]{3}[0-9]?")) {
+                    numberIndex = 2;
+                }
+                final int bandWavelength = Integer.parseInt(targetNode.getName().substring(numberIndex));
                 int spectralBandIndex = getSpectralBandIndex(bandWavelength);
                 targetBand.setSpectralWavelength(spectralWavelengths[spectralBandIndex]);
                 targetBand.setSpectralBandwidth(spectralBandwidths[spectralBandIndex]);
