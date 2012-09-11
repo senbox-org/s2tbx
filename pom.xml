@@ -18,42 +18,115 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-	
+
     <groupId>org.esa.suhet</groupId>
     <artifactId>suhet</artifactId>
-	<version>0.1-SNAPSHOT</version>
-    <name>Sentinel Exploitation Tools</name>	
-	<url>https://github.com/bcdev/suhet</url>	
+    <version>0.1-SNAPSHOT</version>
+    <name>Sentinel Exploitation Tools</name>
+    <url>https://github.com/bcdev/suhet</url>
 
-	<properties>
-	    <beamVersion>4.10.4-SNAPSHOT</beamVersion>
-	</properties>
+    <properties>
+        <beamVersion>4.10.4-SNAPSHOT</beamVersion>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-core</artifactId>
-			<version>${beamVersion}</version>
+            <version>${beamVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-visat-rcp</artifactId>
-			<version>${beamVersion}</version>
+            <version>${beamVersion}</version>
         </dependency>
-		
+
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-netcdf</artifactId>
-			<version>1.1.2-SNAPSHOT</version>
+            <version>1.1.2-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-geotiff</artifactId>
-			<version>1.2.1</version>
+            <version>1.2.1</version>
         </dependency>
+    </dependencies>
 
-	</dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <debug>true</debug>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-5</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/project.xml</descriptor>
+                    </descriptors>
+                    <finalName>suhet</finalName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <developers>
+        <developer>
+            <id>marcop</id>
+            <name>Marco Peters</name>
+            <email>marco.peters@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>norman</id>
+            <name>Norman Fomferra</name>
+            <email>norman.fomferra@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Project Manager</role>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>olaf</id>
+            <name>Olaf Danne</name>
+            <email>olaf.dannet@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>ralf</id>
+            <name>Ralf Quast</name>
+            <email>ralf.quast@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>tonio</id>
+            <name>Tonio Fincke</name>
+            <email>tonio.fincke@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+    </developers>
 
 </project>
