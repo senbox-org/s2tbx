@@ -15,8 +15,16 @@ import java.util.Locale;
 public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        if (new File(input.toString()).getName().endsWith(".jp2")) {
-            return DecodeQualification.SUITABLE;
+        String name = new File(input.toString()).getName();
+        // All tiles --> mosaic on-the-fly
+        if (name.endsWith(".xml")
+                && (name.startsWith("MTD_GPPL1B_") || name.startsWith("MTD_GPPL1C_"))) {
+            return DecodeQualification.INTENDED;
+        }
+        // Single tile
+        if (name.endsWith(".jp2")
+                && (name.startsWith("IMG_GPPL1B_") || name.startsWith("IMG_GPPL1C_"))) {
+            return DecodeQualification.INTENDED;
         }
         return DecodeQualification.UNABLE;
     }
@@ -38,7 +46,7 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[]{".jp2"};
+        return new String[]{".xml", ".jp2"};
     }
 
     @Override

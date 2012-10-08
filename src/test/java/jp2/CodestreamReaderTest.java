@@ -18,7 +18,7 @@ import static org.junit.Assert.fail;
 public class CodestreamReaderTest {
     @Test
     public void testMarkerStructure() throws URISyntaxException, IOException {
-        final BoxReader boxReader = openBoxReader("images/IMG_GPPL1C_054_20091210235100_20091210235130_02_000000_15SUC.jp2");
+        final BoxReader boxReader = openBoxReader("/org/esa/beam/dataio/s2/l1c/IMG_GPPL1C_054_20091210235100_20091210235130_02_000000_15SUC.jp2");
 
         Box box;
         do {

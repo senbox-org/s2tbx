@@ -2,6 +2,8 @@ package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.ProcessObserver;
 import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.glevel.MultiLevelImage;
+import com.bc.ceres.glevel.MultiLevelModel;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Band;
@@ -9,14 +11,15 @@ import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.ui.ModalDialog;
 import org.esa.beam.util.io.FileUtils;
+import org.jdom.JDOMException;
 
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.MosaicDescriptor;
+import javax.media.jai.operator.MosaicType;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -33,12 +36,39 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         super(readerPlugIn);
     }
 
-
     @Override
     protected Product readProductNodesImpl() throws IOException {
         final File inputFile = new File(getInput().toString());
 
         final String baseName = FileUtils.getFilenameWithoutExtension(inputFile);
+
+        Header header;
+        try {
+            header = Header.parseHeader(inputFile);
+        } catch (JDOMException e) {
+            throw new IOException("Failed to parse " + inputFile.getName(), e);
+        }
+
+        Header.ProductCharacteristics productCharacteristics = header.getProductCharacteristics();
+        Header.ResampleData resampleData = header.getResampleData();
+
+        SceneDescription sceneDescription = SceneDescription.create(header);
+
+
+        Rectangle sceneRectangle = sceneDescription.getSceneRectangle();
+        Product product = new Product(baseName, "S2_MSI_L1C", sceneRectangle.width, sceneRectangle.height);
+        Header.SpectralInformation[] bandInformations = productCharacteristics.bandInformations;
+        for (int i = 0; i < bandInformations.length; i++) {
+            Header.SpectralInformation bandInformation = bandInformations[i];
+            Band band = product.addBand(bandInformation.physicalBand, ProductData.TYPE_UINT16);
+            band.setSpectralWavelength((float) bandInformation.wavelenghtCentral);
+            band.setSpectralBandwidth((float) (bandInformation.wavelenghtMax - bandInformation.wavelenghtMin));
+            band.setSpectralBandIndex(bandInformation.bandId);
+            band.setSolarFlux((float) resampleData.reflectanceConversion.solarIrradiances[i]);
+        }
+
+        RenderedOp renderedOp = MosaicDescriptor.create(new RenderedImage[13], MosaicDescriptor.MOSAIC_TYPE_OVERLAY, null, null, null, null, null);
+
         final File outputFile = new File(baseName + "_0.pgx");
 
         if (!outputFile.exists()) {
