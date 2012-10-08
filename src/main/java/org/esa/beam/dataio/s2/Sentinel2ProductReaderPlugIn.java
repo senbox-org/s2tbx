@@ -36,7 +36,7 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new Sentinel2ProductReader(this);
+        return new Sentinel2ProductReader2(this);
     }
 
     @Override
