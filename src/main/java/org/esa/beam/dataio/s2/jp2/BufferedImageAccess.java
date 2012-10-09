@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 
 /**
+ * Demo implementation for the standard Java Image I/O.
+ *
  * @author Norman Fomferra
  */
 public class BufferedImageAccess implements ImageAccess {
@@ -55,6 +57,7 @@ public class BufferedImageAccess implements ImageAccess {
                                int width, int height,
                                Object buffer) throws IOException {
         final Raster data = getImage(imageRef).getData(new Rectangle(x, y, width, height));
+        // Care: this is a very slow and trivial implementation!!!
         for (int j = 0; j < height; j++) {
             for (int i = 0; i < width; i++) {
                 Array.set(buffer, j * width + i,
