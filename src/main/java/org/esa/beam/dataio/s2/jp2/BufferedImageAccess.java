@@ -53,11 +53,11 @@ public class BufferedImageAccess implements ImageAccess {
                                int resolutionLevel,
                                int x, int y,
                                int width, int height,
-                               Object sampleArray) throws IOException {
+                               Object buffer) throws IOException {
         final Raster data = getImage(imageRef).getData(new Rectangle(x, y, width, height));
         for (int j = 0; j < height; j++) {
             for (int i = 0; i < width; i++) {
-                Array.set(sampleArray, j * width + i,
+                Array.set(buffer, j * width + i,
                           data.getSample(x + i, y + j, componentIndex));
             }
         }

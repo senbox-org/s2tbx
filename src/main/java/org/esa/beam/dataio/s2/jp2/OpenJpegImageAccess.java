@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Binding for the JasPer JPEG2000 library.
+ * Binding for the OpenJPEG JPEG2000 library (http://www.openjpeg.org/).
  *
  * @author Norman Fomferra
  */
@@ -33,5 +33,5 @@ public class OpenJpegImageAccess implements ImageAccess {
 
     @Override
     public native void readRasterData(ImageRef imageRef, int componentIndex, int resolutionLevel,
-                                      int x, int y, int width, int height, Object sampleArray) throws IOException;
+                                      int x, int y, int width, int height, Object buffer) throws IOException;
 }

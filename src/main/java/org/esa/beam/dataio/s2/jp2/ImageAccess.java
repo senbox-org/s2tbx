@@ -72,6 +72,7 @@ public interface ImageAccess {
 
     /**
      * Reads rectangular region of raster data from the given image.
+     * Note: Emphasis is on runtime performance!
      *
      * @param imageRef        The image.
      * @param componentIndex  The component index.
@@ -80,9 +81,12 @@ public interface ImageAccess {
      * @param y               The Y-coordinate of the region rectangle in pixel units.
      * @param width           The width of the region rectangle in pixel units.
      * @param height          The height of the region rectangle in pixel units.
-     * @param sampleArray     Client supplied one-dimensional array of primitive numbers
+     * @param buffer          Client supplied one-dimensional array of primitive numbers
      *                        according to {@link #getSampleDataType(ImageAccess.ImageRef, int)}.
-     *                        The size of this array must be equal to {@code width * height} of the region rectangle.
+     *                        The size of this array must be equal to {@code width * height} of
+     *                        the region rectangle.
+     *                        Example: if the sample data type is DataBuffer.TYPE_INT, then a buffer of
+     *                        type {@code int[width * height]} is expected here.
      */
     void readRasterData(ImageRef imageRef,
                         int componentIndex,
@@ -91,5 +95,6 @@ public interface ImageAccess {
                         int y,
                         int width,
                         int height,
-                        Object sampleArray) throws IOException;
+                        Object buffer) throws IOException;
+
 }
