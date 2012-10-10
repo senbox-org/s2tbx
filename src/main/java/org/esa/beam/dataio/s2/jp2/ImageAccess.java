@@ -1,8 +1,5 @@
 package org.esa.beam.dataio.s2.jp2;
 
-import java.io.File;
-import java.io.IOException;
-
 /**
  * Access an image's raster data.
  *
@@ -10,71 +7,66 @@ import java.io.IOException;
  */
 public interface ImageAccess {
 
-    public static class ImageRef {
-        private final Object handle;
-
-        public ImageRef(Object handle) {
-            this.handle = handle;
-        }
-
-        public Object getHandle() {
-            return handle;
-        }
-    }
-
     /**
      * Opens an image.
      *
-     * @param file The image file.
+     * @param filePath The image file.
      * @return The image reference.
      */
-    ImageRef openImage(File file) throws IOException;
+    long openImage(String filePath);
 
     /**
      * Disposes the image an all associated resources.
      *
      * @param imageRef The image.
      */
-    void disposeImage(ImageRef imageRef) throws IOException;
+    void disposeImage(long imageRef);
 
     /**
      * @param imageRef The image.
      * @return The number of resolution levels in the image.
      */
-    int getNumResolutionLevels(ImageRef imageRef);
+    int getNumResolutionLevels(long imageRef);
 
     /**
      * @param imageRef The image.
      * @return The number of components (bands, channels) in the image.
      */
-    int getNumComponents(ImageRef imageRef);
+    int getNumComponents(long imageRef);
 
     /**
      * @param imageRef       The image.
      * @param componentIndex The component index.
      * @return The sample data type according to {@link java.awt.image.DataBuffer}
      */
-    int getSampleDataType(ImageRef imageRef, int componentIndex);
+    int getSampleDataType(long imageRef, int componentIndex);
 
     /**
      * @param imageRef        The image.
-     * @param resolutionLevel The resolution level.
+     * @param resolutionIndex The resolution level.
      * @return The image width for the given resolution level.
      */
-    int getImageWidth(ImageRef imageRef, int resolutionLevel);
+    int getImageWidth(long imageRef, int resolutionIndex);
 
     /**
      * @param imageRef        The image.
-     * @param resolutionLevel The resolution level.
+     * @param resolutionIndex The resolution level.
      * @return The image height for the given resolution level.
      */
-    int getImageHeight(ImageRef imageRef, int resolutionLevel);
+    int getImageHeight(long imageRef, int resolutionIndex);
+
+    /**
+     * @param imageRef
+     * @param resolutionIndex
+     * @return the level for the given index. A level is a sub-image at a given resolution.
+     */
+    long getResolutionLevel(long imageRef, int resolutionIndex);
 
     /**
      * Reads rectangular region of raster data from the given image.
      * Note: Emphasis is on runtime performance!
      *
-     * @param imageRef        The image.
+     * @param levelRef        The image level reference.
      * @param componentIndex  The component index.
      * @param resolutionLevel The resolution level.
      * @param x               The X-coordinate of the region rectangle in pixel units.
@@ -82,19 +74,56 @@ public interface ImageAccess {
      * @param width           The width of the region rectangle in pixel units.
      * @param height          The height of the region rectangle in pixel units.
      * @param buffer          Client supplied one-dimensional array of primitive numbers
-     *                        according to {@link #getSampleDataType(ImageAccess.ImageRef, int)}.
+     *                        according to {@link #getSampleDataType(long, int)}.
      *                        The size of this array must be equal to {@code width * height} of
      *                        the region rectangle.
      *                        Example: if the sample data type is DataBuffer.TYPE_INT, then a buffer of
      *                        type {@code int[width * height]} is expected here.
+     * @return an error code (TBD).
      */
-    void readRasterData(ImageRef imageRef,
+    int readRasterDataB(long levelRef,
                         int componentIndex,
                         int resolutionLevel,
                         int x,
                         int y,
                         int width,
                         int height,
-                        Object buffer) throws IOException;
+                        byte[] buffer);
+
+    int readRasterDataS(long levelRef,
+                        int componentIndex,
+                        int resolutionLevel,
+                        int x,
+                        int y,
+                        int width,
+                        int height,
+                        short[] buffer);
+
+    int readRasterDataI(long levelRef,
+                        int componentIndex,
+                        int resolutionLevel,
+                        int x,
+                        int y,
+                        int width,
+                        int height,
+                        int[] buffer);
+
+    int readRasterDataF(long levelRef,
+                        int componentIndex,
+                        int resolutionLevel,
+                        int x,
+                        int y,
+                        int width,
+                        int height,
+                        float[] buffer);
+
+    int readRasterDataD(long levelRef,
+                        int componentIndex,
+                        int resolutionLevel,
+                        int x,
+                        int y,
+                        int width,
+                        int height,
+                        double[] buffer);
 
 }
