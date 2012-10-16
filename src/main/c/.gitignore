@@ -1,0 +1,4 @@
+jna_openjpeg.o
+libjna_openjpeg.so
+jna_jasper.o
+libjna_jasper.so

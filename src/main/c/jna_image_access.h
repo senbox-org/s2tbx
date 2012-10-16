@@ -9,14 +9,14 @@ typedef unsigned long long Level;
  * @param file The image file.
  * @return The image reference.
  */
-Image openImage(const char* file_path) throws IOException;
+Image openImage(const char* file_path);
 
 /**
  * Disposes the image an all associated resources.
  *
  * @param imageRef The image.
  */
-void disposeImage(Image imageRef) throws IOException;
+void disposeImage(Image imageRef);
 
 /**
  * @param imageRef The image.
@@ -83,32 +83,32 @@ int readRasterDataB(Level levelRef,
                     int y,
                     int width,
                     int height,
-                    byte[] buffer);
+                    char buffer[]);
 int readRasterDataS(Level levelRef,
                     int componentIndex,
                     int x,
                     int y,
                     int width,
                     int height,
-                    short[] buffer);
+                    short buffer[]);
 int readRasterDataI(Level levelRef,
                     int componentIndex,
                     int x,
                     int y,
                     int width,
                     int height,
-                    int[] buffer);
+                    int buffer[]);
 int readRasterDataF(Level levelRef,
                     int componentIndex,
                     int x,
                     int y,
                     int width,
                     int height,
-                    float[] buffer);
+                    float buffer[]);
 int readRasterDataD(Level levelRef,
                     int componentIndex,
                     int x,
                     int y,
                     int width,
                     int height,
-                    double[] buffer);
+                    double buffer[]);
