@@ -7,6 +7,9 @@ target
 *.class
 hs_err_pid*.log
 
+# I don't know what this is... created by unit tests I guess
+tile-grid.png
+
 # Package Files #
 *.jar
 *.war
