@@ -2,6 +2,7 @@
 #
 # TODO: get a C guy to make this with cmake / make
 # This build script might be removed later... but it doesn't really need to be replaced because this build is so simple.
+# also, the -I library paths are hardcoded... the openjpeg one has a version number in the path
 
 mode="$1"
 
