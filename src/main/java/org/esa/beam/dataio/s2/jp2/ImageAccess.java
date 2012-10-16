@@ -7,6 +7,10 @@ package org.esa.beam.dataio.s2.jp2;
  */
 public interface ImageAccess {
 
+    int testFunction(String message);
+    String testFunction2();
+    void testFunction3();
+
     /**
      * Opens an image.
      *
