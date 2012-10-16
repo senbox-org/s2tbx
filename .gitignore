@@ -5,6 +5,7 @@ target
 *.ipr
 *.iws
 *.class
+hs_err_pid*.log
 
 # Package Files #
 *.jar
