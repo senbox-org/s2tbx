@@ -3,6 +3,11 @@ typedef unsigned long long Image;
 typedef unsigned long long Level;
 
 
+
+int testFunction(char *message);
+char* testFunction2();
+extern void testFunction3();
+
 /**
  * Opens an image.
  *

@@ -19,7 +19,6 @@ char* testFunction2() {
 
 void testFunction3() {
     char* nullpointer = 0;
-
     nullpointer[5]='a';
 }
 /** end of Test functions... they will be removed later */
@@ -28,12 +27,22 @@ void testFunction3() {
 /**
  * Opens an image.
  *
+ * this maps to openjpeg's:
+ *    ???
+ *
  * @param file The image file.
  * @return The image reference.
  */
 Image openImage(const char* file_path) {
+    printf("todo: not implemented");
 
-    printf("todo");
+    FILE * p_file = fopen(file_path, "r");
+    opj_bool p_is_read_stream = 1; // typedef int opj_bool
+
+    opj_stream_t* stream_t = opj_stream_create_default_file_stream( p_file, p_is_read_stream );
+
+//Test return! value is junk
+    return (Image)10;
 }
 
 /**

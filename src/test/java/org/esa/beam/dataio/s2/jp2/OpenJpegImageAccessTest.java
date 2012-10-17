@@ -2,31 +2,51 @@ package org.esa.beam.dataio.s2.jp2;
 
 import org.jdom.JDOMException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Set;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * @author Norman Fomferra
  * @author Peter Maloney
  */
 public class OpenJpegImageAccessTest {
+    final String libPath = "/usr/local/lib/libopenjp2.so";
+    final String openJpegPath = "/usr/local/lib/openjpeg-1.99";
+    final String jasPerPath = "/usr/local/lib/jasper";
+    final String pathSeparator = System.getProperty("path.separator");
+
+    @Test
+    public void testOpenImage() {
+        // @todo: hardcoded test image
+        System.out.println( OpenJpegImageAccess.INSTANCE.openImage("/opt/imageaccess/Cevennes1.j2k") );
+    }
+
     @Test
     public void testTestFunction() {
         OpenJpegImageAccess.INSTANCE.testFunction("/test/path/todo /f // /? /| x");
         OpenJpegImageAccess.INSTANCE.testFunction("test1/test2");
-        try{
-            OpenJpegImageAccess.INSTANCE.testFunction3();
-        }catch(Throwable t) {
-            System.out.println("exception caught");
-        }
     }
 
     @Test
     public void testTestFunction2() {
         System.out.println( OpenJpegImageAccess.INSTANCE.testFunction2() );
+    }
+
+    //@Test
+    public void testTestFunction3() {
+        try{
+            //this crashes the JVM... there is nothing to catch in Java or in C
+            OpenJpegImageAccess.INSTANCE.testFunction3();
+        }catch(Throwable t) {
+            System.out.println("exception caught");
+        }
     }
 
     /** Just scans the class to prove that the JNA is basically connected (without testing any methods) */
@@ -42,6 +62,17 @@ public class OpenJpegImageAccessTest {
         }
     }
 
+    public static void printProperties() {
+        // temp debug
+        System.out.println("Properties:");
+        for (Object nameObj : System.getProperties().keySet()) {
+            String name = (String)nameObj;
+            String value = System.getProperties().getProperty(name);
+
+            System.out.println("    " + name + " = " + value);
+        }
+    }
+
     @Before
     public void before() throws JDOMException, IOException {
         // findPathHack - finds the src/main/c directory whree the .so files are expected to be
@@ -52,9 +83,10 @@ public class OpenJpegImageAccessTest {
             somedir = somedir.getParentFile();
         }
         File projSrcMainC = new File(somedir, "src/main/c");
+        // end findPathHack
 
         final String jnaPath = projSrcMainC.getAbsolutePath();
         System.out.println("JNA path is " + jnaPath);
-        System.setProperty("jna.library.path", jnaPath);
+        System.setProperty("jna.library.path", libPath + pathSeparator + openJpegPath + pathSeparator + jnaPath + pathSeparator + jasPerPath);
     }
 }

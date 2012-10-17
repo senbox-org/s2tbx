@@ -19,6 +19,8 @@ if [ "$mode" = "clean" ]; then
     rmq libjna_openjpeg.so
     rmq jna_jasper.o
     rmq libjna_jasper.so
+elif [ "$mode" = "buildtest" ]; then
+    gcc -I/usr/local/include/openjpeg-1.99 -L. -lopenjpeg -ljna_openjpeg -o pathtest pathtest.c
 else
     #compile as a shared lib
 
