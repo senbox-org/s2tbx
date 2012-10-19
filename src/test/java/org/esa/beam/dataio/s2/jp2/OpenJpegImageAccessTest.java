@@ -11,13 +11,13 @@ import java.lang.reflect.Method;
 import java.util.Set;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * @author Norman Fomferra
  * @author Peter Maloney
  */
 public class OpenJpegImageAccessTest {
-    final String libPath = "/usr/local/lib/libopenjp2.so";
     final String openJpegPath = "/usr/local/lib/openjpeg-1.99";
     final String jasPerPath = "/usr/local/lib/jasper";
     final String pathSeparator = System.getProperty("path.separator");
@@ -25,7 +25,31 @@ public class OpenJpegImageAccessTest {
     @Test
     public void testOpenImage() {
         // @todo: hardcoded test image
-        System.out.println( OpenJpegImageAccess.INSTANCE.openImage("/opt/imageaccess/Cevennes1.j2k") );
+        final long pointer = OpenJpegImageAccess.INSTANCE.openImage("/opt/imageaccess/Cevennes1.j2k");
+        System.out.println( "pointer is " + pointer );
+
+        assertTrue( "pointer must not be 0", pointer != 0 );
+    }
+
+    @Test
+    public void testGetNumComponents() {
+        // @todo: hardcoded test image
+        final long pointer = OpenJpegImageAccess.INSTANCE.openImage("/opt/imageaccess/Cevennes1.j2k");
+        long numComponents = OpenJpegImageAccess.INSTANCE.getNumComponents(pointer);
+        // @todo assert
+        System.out.println( "numComponents = " + numComponents );
+    }
+
+    @Test
+    public void testGetImageWidth() {
+        // @todo: hardcoded test image
+        final long pointer = OpenJpegImageAccess.INSTANCE.openImage("/opt/imageaccess/Cevennes1.j2k");
+        long imageWidth0 = OpenJpegImageAccess.INSTANCE.getImageWidth(pointer, 0);
+        // @todo assert
+        System.out.println( "imageWidth0 = " + imageWidth0 );
+        long imageWidth1 = OpenJpegImageAccess.INSTANCE.getImageWidth(pointer, 1);
+        // @todo assert
+        System.out.println( "imageWidth1 = " + imageWidth1 );
     }
 
     @Test
@@ -50,7 +74,7 @@ public class OpenJpegImageAccessTest {
     }
 
     /** Just scans the class to prove that the JNA is basically connected (without testing any methods) */
-    @Test
+    //@Test
     public void testReflect() {
         final Class<? extends JasPerImageAccess> clazz = JasPerImageAccess.INSTANCE.getClass();
         System.out.println(clazz.getName() + " extends " + clazz.getSuperclass().getName() );
@@ -86,7 +110,7 @@ public class OpenJpegImageAccessTest {
         // end findPathHack
 
         final String jnaPath = projSrcMainC.getAbsolutePath();
-        System.out.println("JNA path is " + jnaPath);
-        System.setProperty("jna.library.path", libPath + pathSeparator + openJpegPath + pathSeparator + jnaPath + pathSeparator + jasPerPath);
+//        System.out.println("JNA path is " + jnaPath);
+        System.setProperty("jna.library.path", jnaPath + pathSeparator + openJpegPath + pathSeparator + jasPerPath);
     }
 }

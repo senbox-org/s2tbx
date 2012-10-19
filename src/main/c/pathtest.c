@@ -12,7 +12,10 @@ int main(int argc, char**argv) {
 //    const char* file_path = 0;
 //    openImage(file_path);
 
-    testFunction3();
+    char* message = testFunction2();
+    printf("%s\n", message);
+
+//    testFunction3();
 
     return 0;
 }

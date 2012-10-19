@@ -36,7 +36,7 @@ public interface ImageAccess {
      * @param imageRef The image.
      * @return The number of components (bands, channels) in the image.
      */
-    int getNumComponents(long imageRef);
+    long getNumComponents(long imageRef);
 
     /**
      * @param imageRef       The image.
@@ -50,14 +50,14 @@ public interface ImageAccess {
      * @param resolutionIndex The resolution level.
      * @return The image width for the given resolution level.
      */
-    int getImageWidth(long imageRef, int resolutionIndex);
+    long getImageWidth(long imageRef, int resolutionIndex);
 
     /**
      * @param imageRef        The image.
      * @param resolutionIndex The resolution level.
      * @return The image height for the given resolution level.
      */
-    int getImageHeight(long imageRef, int resolutionIndex);
+    long getImageHeight(long imageRef, int resolutionIndex);
 
     /**
      * @param imageRef

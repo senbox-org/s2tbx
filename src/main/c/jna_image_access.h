@@ -34,7 +34,7 @@ int getNumResolutionLevels(Image imageRef);
  * @param imageRef The image.
  * @return The number of components (bands, channels) in the image.
  */
-int getNumComponents(Image imageRef);
+long getNumComponents(Image imageRef);
 
 /**
  * @param imageRef       The image.
@@ -48,14 +48,14 @@ int getSampleDataType(Image imageRef, int componentIndex);
  * @param resolutionIndex The resolution level.
  * @return The image width for the given resolution level.
  */
-int getImageWidth(Image imageRef, int resolutionIndex);
+long getImageWidth(Image imageRef, int resolutionIndex);
 
 /**
  * @param imageRef        The image.
  * @param resolutionIndex The resolution level.
  * @return The image height for the given resolution level.
  */
-int getImageHeight(Image imageRef, int resolutionIndex);
+long getImageHeight(Image imageRef, int resolutionIndex);
 
 /**
  * @param imageRef The image.
