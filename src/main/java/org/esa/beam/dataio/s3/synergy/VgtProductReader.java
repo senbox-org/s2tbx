@@ -83,7 +83,7 @@ class VgtProductReader extends ManifestProductReader {
         final RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
                                                                  BorderExtender.createInstance(
                                                                          BorderExtender.BORDER_COPY));
-
+        // TODO: here we border effects because no-data value is used for interpolation
         targetBand.setSourceImage(ScaleDescriptor.create(sourceBand.getSourceImage(), 8.0f, 8.0f, 0.0f, 0.0f,
                                                          Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                                                          renderingHints));
