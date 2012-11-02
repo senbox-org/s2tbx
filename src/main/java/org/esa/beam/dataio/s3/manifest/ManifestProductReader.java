@@ -153,13 +153,13 @@ public abstract class ManifestProductReader extends AbstractProductReader {
 
         for (final Product p : openProductList) {
             final MetadataElement productAttributes = new MetadataElement(p.getName());
-            final MetadataElement globalAttributes = new MetadataElement("Global_Attributes");
+            final MetadataElement datasetAttributes = new MetadataElement("Dataset_Attributes");
             final MetadataElement variableAttributes = new MetadataElement("Variable_Attributes");
-            ProductUtils.copyMetadata(p.getMetadataRoot().getElement("Global_Attributes"), globalAttributes);
+            ProductUtils.copyMetadata(p.getMetadataRoot().getElement("Global_Attributes"), datasetAttributes);
             for (final MetadataElement element : p.getMetadataRoot().getElement("Variable_Attributes").getElements()) {
                 variableAttributes.addElement(element.createDeepClone());
             }
-            productAttributes.addElement(globalAttributes);
+            productAttributes.addElement(datasetAttributes);
             productAttributes.addElement(variableAttributes);
             targetProduct.getMetadataRoot().addElement(productAttributes);
         }
