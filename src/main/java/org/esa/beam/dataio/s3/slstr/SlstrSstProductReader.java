@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Product reader responsible for reading SLSTR SST data products in SAFE format.
+ * Product reader responsible for reading SLSTR SST WCT data products in SAFE format.
  *
  * @author Olaf Danne
  * @author Ralf Quast
@@ -37,6 +37,12 @@ class SlstrSstProductReader extends SlstrLevel2ProductReader {
     @Override
     protected List<String> getFileNames(Manifest manifest) {
         final List<String> fileNames = new ArrayList<String>();
+
+        fileNames.addAll(manifest.getFileNames("LSTdataSchema"));
+        if (!fileNames.isEmpty()) {
+            return fileNames;
+        }
+
         fileNames.addAll(manifest.getFileNames("N2_SST_schema"));
         fileNames.addAll(manifest.getFileNames("N3R_SST_schema"));
         fileNames.addAll(manifest.getFileNames("N3_SST_schema"));
@@ -56,7 +62,8 @@ class SlstrSstProductReader extends SlstrLevel2ProductReader {
         fileNames.addAll(manifest.getFileNames("obliqueFlagsSchema"));
         fileNames.addAll(manifest.getFileNames("obliqueIndicesSchema"));
 
-        // TODO - time data are provided in a 64-bit variable, so we currently don't use them
+        // TODO - not clear how to represent cartesian data
+        // TODO - not clear how to represent time data
 
         return fileNames;
     }

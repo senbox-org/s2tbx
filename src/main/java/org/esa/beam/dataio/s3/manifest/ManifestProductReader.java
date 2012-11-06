@@ -128,6 +128,12 @@ public abstract class ManifestProductReader extends AbstractProductReader {
     private Product createProduct(Manifest manifest) throws IOException {
         readProducts(getFileNames(manifest));
 
+        if (openProductList.size() == 1) {
+            final Product targetProduct = openProductList.get(0);
+            openProductList.clear();
+            return targetProduct;
+        }
+
         final String productName = getProductName();
         final String productType = getReaderPlugIn().getFormatNames()[0];
 
