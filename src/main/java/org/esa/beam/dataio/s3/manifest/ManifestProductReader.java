@@ -126,7 +126,9 @@ public abstract class ManifestProductReader extends AbstractProductReader {
     }
 
     private Product createProduct(Manifest manifest) throws IOException {
-        readProducts(getFileNames(manifest));
+        final List<String> fileNames = getFileNames(manifest);
+
+        readProducts(fileNames);
 
         if (openProductList.size() == 1) {
             final Product targetProduct = openProductList.get(0);
