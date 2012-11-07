@@ -22,13 +22,13 @@ import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 
-abstract class SlstrLevel2ProductReader extends ManifestProductReader {
+abstract class SlstrProductReader extends ManifestProductReader {
 
     private double nadStartOffset;
     private double nadTrackOffset;
     private short[] nadResolutions;
 
-    protected SlstrLevel2ProductReader(ProductReaderPlugIn readerPlugIn) {
+    protected SlstrProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
     }
 

@@ -67,6 +67,15 @@
             <helpId>importS3OlciL2Product</helpId>
         </action>
         <action>
+            <id>importS3SlstrL1bProduct</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>SLSTR-L1B</formatName>
+            <mnemonic>S</mnemonic>
+            <shortDescr>Import an SLSTR L1b data product or product subset.</shortDescr>
+            <description>Import a Sentinel-3 SLSTR Level-1b data product or product subset.</description>
+            <!--<helpId>importS3SlstrL1bProduct</helpId>-->
+        </action>
+        <action>
             <id>importS3SlstrL2LSTProduct</id>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
             <formatName>SLSTR-L2-LST</formatName>
