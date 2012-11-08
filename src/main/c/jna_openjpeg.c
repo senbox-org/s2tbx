@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 #include <openjpeg.h>
+#include <stdbool.h>
 #include "jna_image_access.h"
 
 
 /** Test functions... they will be removed later */
 int testFunction(char *message) {
-    printf("in C - testing slashes:   /path/to/file/ \n", message);
+    printf("in C - testing slashes: /path/to/file/ message was: %s \n", message);
     if( strcmp(message,"test1/test2") == 0 ) {
         printf("string matched test\n");
     }
@@ -24,7 +26,6 @@ void testFunction3() {
 }
 /** end of Test functions... they will be removed later */
 
-
 /**
  * Opens an image.
  *
@@ -40,16 +41,25 @@ Image openImage(const char* file_path) {
     printf("todo: not fully implemented (always returns 0)\n");
 
     FILE * p_file = fopen(file_path, "r");
-    opj_bool p_is_read_stream = 1; // typedef int opj_bool
+
+    // 1.99
+    //opj_bool p_is_read_stream = 1; // typedef int opj_bool
+    // 2.0
+    bool p_is_read_stream = 1;
 
     opj_stream_t* p_stream = opj_stream_create_default_file_stream( p_file, p_is_read_stream );
 
     opj_codec_t *p_decompressor = opj_create_decompress(CODEC_J2K);
 
-    opj_image_t *p_image = malloc( sizeof(opj_image_t) );
-    opj_bool status = opj_decode( p_decompressor, p_stream, p_image );
+    // 1.99
+//    opj_image_t *p_image = malloc( sizeof(opj_image_t) );
+    //opj_bool status = opj_decode( p_decompressor, p_stream, p_image );
 
-    if( status ) {
+    // 2.0   -  opj_image_t* opj_decode(opj_codec_t *p_decompressor, opj_stream_t * cio);
+    opj_image_t *p_image =  opj_decode( p_decompressor, p_stream );
+
+
+    if( p_image ) {
         return (Image)p_image;
     }else{
         return (Image)0;
@@ -78,6 +88,7 @@ void disposeImage(Image imageRef) {
  */
 int getNumResolutionLevels(Image imageRef) {
     printf("not implemented\n");
+    return -1;
 }
 
 
@@ -87,7 +98,7 @@ int getNumResolutionLevels(Image imageRef) {
  */
 long getNumComponents(Image imageRef) {
     if( imageRef == 0 ) {
-        return;
+        return -1;
     }
     opj_image_t *p_image = (opj_image_t*)imageRef;
 
@@ -102,6 +113,7 @@ long getNumComponents(Image imageRef) {
  */
 int getSampleDataType(Image imageRef, int componentIndex) {
     printf("not implemented\n");
+    return -1;
 }
 
 /**
@@ -116,7 +128,7 @@ long getImageWidth(Image imageRef, int resolutionIndex) {
     opj_image_t *p_image = (opj_image_t*)imageRef;
     // TODO: truncating UINT_32
 
-    printf("C - image width = %ld\n", p_image->x1);
+    printf("C - image width = %ld\n", (long)p_image->x1);
     return (long)p_image->x1;
 }
 
@@ -140,6 +152,7 @@ long getImageHeight(Image imageRef, int resolutionIndex) {
  */
 Level getResolutionLevel(Image imageRef, int resolutionIndex) {
     printf("not implemented\n");
+    return -1;
 }
 
 /**
@@ -169,6 +182,7 @@ int readRasterDataB(Level levelRef,
                     int height,
                     char buffer[]) {
     printf("not implemented\n");
+    return -1;
 }
 
 int readRasterDataS(Level levelRef,
@@ -179,6 +193,7 @@ int readRasterDataS(Level levelRef,
                     int height,
                     short buffer[]) {
     printf("not implemented\n");
+    return -1;
 }
 
 int readRasterDataI(Level levelRef,
@@ -189,6 +204,7 @@ int readRasterDataI(Level levelRef,
                     int height,
                     int buffer[]) {
     printf("not implemented\n");
+    return -1;
 }
 
 int readRasterDataF(Level levelRef,
@@ -199,6 +215,7 @@ int readRasterDataF(Level levelRef,
                     int height,
                     float buffer[]) {
     printf("not implemented\n");
+    return -1;
 }
 
 int readRasterDataD(Level levelRef,
@@ -209,4 +226,5 @@ int readRasterDataD(Level levelRef,
                     int height,
                     double buffer[]) {
     printf("not implemented\n");
+    return -1;
 }

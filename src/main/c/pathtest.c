@@ -17,6 +17,10 @@ int main(int argc, char**argv) {
 
 //    testFunction3();
 
+    Image image = openImage("/opt/imageaccess/Cevennes1.j2k");
+
+    printf("image pointer is %ld\n", (long)image);
+
     return 0;
 }
 

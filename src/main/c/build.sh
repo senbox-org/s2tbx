@@ -6,12 +6,17 @@
 
 mode=
 verbose=
+debug=
 
 # parse command line options
 while [ "$#" != 0 ]; do
     arg="$1"
     if [ "$arg" = "-v" ]; then
         verbose="$arg"
+    elif [ "$arg" = "-g" ]; then
+        debug="$arg"
+    elif [ "$arg" = "-ggdb" ]; then
+        debug="$arg"
     elif [ -n "$mode" ]; then
         echo "ERROR: too many arguments: $arg"
         exit 1
@@ -21,6 +26,12 @@ while [ "$#" != 0 ]; do
     shift
 done
 
+#gcc () {
+#echo gcc "$@"
+#}
+
+#OPENJPEG_INCLUDE=-I/usr/local/include/openjpeg-1.99
+OPENJPEG_INCLUDE=-I/usr/include/openjpeg-2.0
 
 #quiet remove
 rmq() {
@@ -39,25 +50,26 @@ clean() {
 }
 
 buildTest() {
-#    gcc $verbose -I/usr/local/include/openjpeg-1.99 -L. -o pathtest pathtest.c -ljna_openjpeg -lopenjpeg
-    gcc $verbose -I/usr/local/include/openjpeg-1.99 -L. -o pathtest pathtest.c -ljna_openjpeg
+# works
+    gcc $verbose $debug "$OPENJPEG_INCLUDE" -L. -o pathtest pathtest.c -ljna_openjpeg -lopenjpeg
 }
 
 build() {
     #compile as a shared lib
-    gcc $verbose -c -fpic -I/usr/local/include/openjpeg-1.99 jna_openjpeg.c -lopenjpeg
-    gcc $verbose -shared -o libjna_openjpeg.so jna_openjpeg.o -lopenjpeg
+    gcc $verbose $debug -c -fpic "$OPENJPEG_INCLUDE" jna_openjpeg.c -lopenjpeg
+    gcc $verbose $debug -shared -o libjna_openjpeg.so jna_openjpeg.o -lopenjpeg
 
-    gcc $verbose -c -fpic -I/usr/local/include/jasper jna_jasper.c -ljasper
-    gcc $verbose -shared -o libjna_jasper.so jna_jasper.o -ljasper
+    gcc $verbose $debug -c -fpic -I/usr/local/include/jasper jna_jasper.c -ljasper
+    gcc $verbose $debug -shared -o libjna_jasper.so jna_jasper.o -ljasper
 
-    echo "Checking to see that the libraries have no unresolved dependencies:"
-    echo "OpenJPEG:"
-    ldd -r libjna_openjpeg.so
-    echo $?
-    echo "JasPer:"
-    ldd -r libjna_jasper.so
-    echo $?
+    if ! ldd -r libjna_openjpeg.so >/dev/null 2>&1; then
+        echo "OpenJPEG failed:"
+        ldd -r libjna_openjpeg.so
+    fi
+    if ! ldd -r libjna_jasper.so >/dev/null 2>&1; then
+        echo "JasPer failed:"
+        ldd -r libjna_jasper.so
+    fi
 }
 
 if [ "$mode" = "all" ]; then
@@ -66,9 +78,13 @@ if [ "$mode" = "all" ]; then
     buildTest
 elif [ "$mode" = "clean" ]; then
     clean
+elif [ "$mode" = "build" ]; then
+    build
 elif [ "$mode" = "buildtest" ]; then
     buildTest
 else
+    clean
     build
+    buildTest
 fi
 
