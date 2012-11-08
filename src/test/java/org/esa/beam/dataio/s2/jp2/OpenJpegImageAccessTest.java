@@ -4,9 +4,9 @@ import org.jdom.JDOMException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openJpeg.OpenJPEGJavaDecoder;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -21,6 +21,32 @@ public class OpenJpegImageAccessTest {
     final String openJpegPath = "/usr/local/lib/openjpeg-1.99";
     final String jasPerPath = "/usr/local/lib/jasper";
     final String pathSeparator = System.getProperty("path.separator");
+
+    @Test
+    public void testOpenJpegJava() throws IOException {
+        final String openJPEGLibPath = "//home/peter/projects/suhet/src/main/c/libopenjpegjni.so";
+
+        final File libFile = new File(openJPEGLibPath);
+        assertTrue("library should exist: " + libFile, libFile.exists());
+
+        System.load(openJPEGLibPath);
+        System.load("/usr/lib64/libopenjpeg.so");
+        System.load("/home/peter/projects/openjpeg-read-only/bin/libopenjp2.so");
+
+        OpenJPEGJavaDecoder d = new OpenJPEGJavaDecoder(openJPEGLibPath);
+
+        File imageFile = new File("/opt/imageaccess/Cevennes1.j2k");
+        InputStream in = new FileInputStream(imageFile);
+        byte[] buf = new byte[(int) imageFile.length()];
+        final int status = in.read(buf);
+
+        assertTrue(status == imageFile.length() );
+
+        d.setCompressedStream(buf);
+        final int decodeStatus = d.decodeJ2KtoImage();
+
+        assertTrue(decodeStatus == 0 );
+    }
 
     @Test
     public void testOpenImage() {
