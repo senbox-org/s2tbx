@@ -3,3 +3,9 @@ libjna_openjpeg.so
 jna_jasper.o
 libjna_jasper.so
 pathtest
+
+#Eclipse stuff
+.cproject
+.project
+Debug/
+
