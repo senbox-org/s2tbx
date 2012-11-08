@@ -22,13 +22,13 @@ import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 
-abstract class SlstrLevel2ProductReader extends ManifestProductReader {
+abstract class SlstrProductReader extends ManifestProductReader {
 
     private double nadStartOffset;
     private double nadTrackOffset;
     private short[] nadResolutions;
 
-    protected SlstrLevel2ProductReader(ProductReaderPlugIn readerPlugIn) {
+    protected SlstrProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
     }
 
@@ -102,12 +102,18 @@ abstract class SlstrLevel2ProductReader extends ManifestProductReader {
 
     @Override
     protected void setGeoCoding(Product targetProduct) throws IOException {
-        final TiePointGrid latGrid = targetProduct.getTiePointGrid("latitude");
-        if (latGrid != null) {
-            final TiePointGrid lonGrid = targetProduct.getTiePointGrid("longitude");
-            if (lonGrid != null) {
-                targetProduct.setGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
+        TiePointGrid latGrid = null;
+        TiePointGrid lonGrid = null;
+        for (final TiePointGrid grid : targetProduct.getTiePointGrids()) {
+            if (latGrid == null && grid.getName().endsWith("latitude")) {
+                latGrid = grid;
             }
+            if (lonGrid == null && grid.getName().endsWith("longitude")) {
+                lonGrid = grid;
+            }
+        }
+        if (latGrid != null && lonGrid != null) {
+            targetProduct.setGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
         }
     }
 
