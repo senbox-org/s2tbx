@@ -19,6 +19,8 @@ import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductIO;
+import org.esa.beam.framework.dataio.ProductReader;
+import org.esa.beam.framework.dataio.ProductSubsetDef;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
@@ -110,6 +112,7 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         List<DataSetPointer> annotationPointers = manifest.getDataSetPointers(DataSetPointer.Type.A);
         annotationPointers = removeOrphanedDataSetPointers(annotationPointers);
         annotationProducts = createDataSetProducts(annotationPointers);
+        attachDetectorIndexToProduct(annotationProducts, product);
         attachGeoCodingToProduct(annotationProducts, product);
         attachFlagCodingToProduct(annotationProducts, product);
         attachTiePointsToProduct(annotationProducts, product);
@@ -149,6 +152,15 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         }
     }
 
+    private void attachDetectorIndexToProduct(List<Product> annotationProducts, Product product) {
+        for (Product annotationProduct : annotationProducts) {
+            if (annotationProduct.containsBand("/detector_index")) {
+                ProductUtils.copyBand("/detector_index", annotationProduct, product, true);
+                break;
+            }
+        }
+    }
+
     private void attachGeoCodingToProduct(List<Product> annotationProducts, Product product) {
         for (Product annotationProduct : annotationProducts) {
             if (annotationProduct.getGeoCoding() != null) {
@@ -169,7 +181,16 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         for (DataSetPointer dataSetPointer : dataSetPointers) {
             try {
                 File dataSetFile = new File(getParentInputDirectory(), dataSetPointer.getFileName());
-                Product product = ProductIO.readProduct(dataSetFile);
+                Product product;
+                if(dataSetPointer.getFileName().equals("generalInfo.nc")) {
+                    final ProductReader productReader = ProductIO.getProductReaderForInput(dataSetFile);
+                    final ProductSubsetDef subsetDef = new ProductSubsetDef();
+                    subsetDef.addNodeName("detector_index");
+                    product = productReader.readProductNodes(dataSetFile, subsetDef);
+                } else {
+                    ProductIO.getProductReaderForInput(dataSetFile);
+                    product = ProductIO.readProduct(dataSetFile);
+                }
                 if (product != null) {
                     dataSetProducts.add(product);
                 } else {
