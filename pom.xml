@@ -26,7 +26,7 @@
     <url>https://github.com/bcdev/suhet</url>
 
     <properties>
-        <beamVersion>4.10.4-SNAPSHOT</beamVersion>
+        <beamVersion>5.0-SNAPSHOT</beamVersion>
     </properties>
 
     <dependencies>
@@ -45,13 +45,13 @@
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-netcdf</artifactId>
-            <version>1.1.2-SNAPSHOT</version>
+            <version>1.1.2.${beamVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-geotiff</artifactId>
-            <version>1.2.1</version>
+            <version>1.2.2.${beamVersion}</version>
         </dependency>
 
         <dependency>
