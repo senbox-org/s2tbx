@@ -112,7 +112,7 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         List<DataSetPointer> annotationPointers = manifest.getDataSetPointers(DataSetPointer.Type.A);
         annotationPointers = removeOrphanedDataSetPointers(annotationPointers);
         annotationProducts = createDataSetProducts(annotationPointers);
-        attachDetectorIndexToProduct(annotationProducts, product);
+        attachBandsFromAnnotationDataToProduct(annotationProducts, product);
         attachGeoCodingToProduct(annotationProducts, product);
         attachFlagCodingToProduct(annotationProducts, product);
         attachTiePointsToProduct(annotationProducts, product);
@@ -152,7 +152,7 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         }
     }
 
-    private void attachDetectorIndexToProduct(List<Product> annotationProducts, Product product) {
+    private void attachBandsFromAnnotationDataToProduct(List<Product> annotationProducts, Product product) {
         for (Product annotationProduct : annotationProducts) {
             if (annotationProduct.containsBand("/detector_index")) {
                 ProductUtils.copyBand("/detector_index", annotationProduct, product, true);
@@ -181,18 +181,17 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         for (DataSetPointer dataSetPointer : dataSetPointers) {
             try {
                 File dataSetFile = new File(getParentInputDirectory(), dataSetPointer.getFileName());
-                Product product;
-                if(dataSetPointer.getFileName().equals("generalInfo.nc")) {
-                    final ProductReader productReader = ProductIO.getProductReaderForInput(dataSetFile);
-                    final ProductSubsetDef subsetDef = new ProductSubsetDef();
-                    subsetDef.addNodeName("detector_index");
-                    product = productReader.readProductNodes(dataSetFile, subsetDef);
-                } else {
-                    ProductIO.getProductReaderForInput(dataSetFile);
-                    product = ProductIO.readProduct(dataSetFile);
-                }
-                if (product != null) {
-                    dataSetProducts.add(product);
+                final ProductReader productReader = ProductIO.getProductReaderForInput(dataSetFile);
+                if (productReader != null) {
+                    final ProductSubsetDef subsetDef = defineSubset(dataSetPointer.getFileName());
+                    final Product product = productReader.readProductNodes(dataSetFile, subsetDef);
+                    if (product != null) {
+                        dataSetProducts.add(product);
+                    } else {
+                        String msg = String.format("Could not read file '%s.",
+                                                   dataSetPointer.getFileName());
+                        logger.log(Level.WARNING, msg);
+                    }
                 } else {
                     String msg = String.format("Could not read file '%s. No appropriate reader found.",
                                                dataSetPointer.getFileName());
@@ -204,6 +203,15 @@ class OlciLevel1ProductReader extends AbstractProductReader {
             }
         }
         return dataSetProducts;
+    }
+
+    private ProductSubsetDef defineSubset(String fileName) {
+        ProductSubsetDef subsetDef = null;
+        if (fileName.equals("generalInfo.nc")) {
+            subsetDef = new ProductSubsetDef();
+            subsetDef.addNodeName("detector_index");
+        }
+        return subsetDef;
     }
 
     private void addRadianceBands(List<Product> bandProducts, Product product) {
