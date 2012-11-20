@@ -20,6 +20,8 @@ import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.CrsGeoCoding;
+import org.esa.beam.framework.datamodel.FlagCoding;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
@@ -28,6 +30,7 @@ import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.util.ProductUtils;
 import org.esa.beam.util.io.FileUtils;
 
+import java.awt.Color;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -85,6 +88,7 @@ public abstract class XProductReader extends AbstractProductReader {
 
         if (openProductList.size() == 1) {
             final Product targetProduct = openProductList.get(0);
+            setMasks(openProductList.get(0), targetProduct);
             openProductList.clear();
             return targetProduct;
         }
@@ -122,8 +126,32 @@ public abstract class XProductReader extends AbstractProductReader {
         addDataNodes(targetProduct);
         setGeoCoding(targetProduct);
         setAutoGrouping(sourceProducts, targetProduct);
+        setMasks(sourceProducts, targetProduct);
 
         return targetProduct;
+    }
+
+    private void setMasks(Product[] sourceProducts, Product targetProduct) {
+        for (Product sourceProduct : sourceProducts) {
+            setMasks(sourceProduct, targetProduct);
+        }
+    }
+
+    protected void setMasks(Product sourceProduct, Product targetProduct) {
+        if (sourceProduct.getFlagCodingGroup() != null) {
+            for (int i = 0; i < sourceProduct.getFlagCodingGroup().getNodeCount(); i++) {
+                final FlagCoding flagCoding = sourceProduct.getFlagCodingGroup().get(i);
+                String flagCodingName = flagCoding.getName();
+                if(!targetProduct.containsBand(flagCodingName)) {
+                    flagCodingName = sourceProduct.getName() + "_" + flagCoding.getName();
+                }
+                for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
+                    final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
+                    final String expression = flagCodingName + "." + attribute.getName();
+                    targetProduct.addMask(attribute.getName(), expression, expression, Color.RED, 0.5);
+                }
+            }
+        }
     }
 
     protected void setTimes(Product targetProduct) {

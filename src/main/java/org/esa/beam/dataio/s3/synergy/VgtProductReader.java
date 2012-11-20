@@ -18,6 +18,7 @@ package org.esa.beam.dataio.s3.synergy;
 import org.esa.beam.dataio.s3.manifest.Manifest;
 import org.esa.beam.dataio.s3.manifest.ManifestProductReader;
 import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.FlagCoding;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
@@ -27,6 +28,7 @@ import javax.media.jai.BorderExtender;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.operator.ScaleDescriptor;
+import java.awt.Color;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +63,7 @@ class VgtProductReader extends ManifestProductReader {
         if (targetNode instanceof Band) {
             final MetadataElement variableAttributes =
                     sourceBand.getProduct().getMetadataRoot().getElement("Variable_Attributes");
-            if(variableAttributes != null) {
+            if (variableAttributes != null) {
                 final MetadataElement metadataElement = variableAttributes.getElement(sourceBand.getName());
                 if (metadataElement != null) {
                     final MetadataAttribute bandwidthAttribute = metadataElement.getAttribute("bandwidth");
@@ -89,4 +91,23 @@ class VgtProductReader extends ManifestProductReader {
                                                          renderingHints));
         return targetBand;
     }
+
+    @Override
+    protected void setMasks(Product sourceProduct, Product targetProduct) {
+        if (sourceProduct.getFlagCodingGroup() != null) {
+            for (int i = 0; i < sourceProduct.getFlagCodingGroup().getNodeCount(); i++) {
+                final FlagCoding flagCoding = sourceProduct.getFlagCodingGroup().get(i);
+                String flagCodingName = flagCoding.getName();
+                for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
+                    final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
+                    final int elemInt = attribute.getData().getElemInt();
+                    final int lowerExpressionBorder = Math.max(3, elemInt);
+                    String expression = flagCodingName + " & " + lowerExpressionBorder + " == " + elemInt;
+                    expression = expression.concat(" && (SM.B0_good || SM.B2_good || SM.B3_good || SM.MIR_good)");
+                    targetProduct.addMask(attribute.getName(), expression, expression, Color.RED, 0.5);
+                }
+            }
+        }
+    }
+
 }

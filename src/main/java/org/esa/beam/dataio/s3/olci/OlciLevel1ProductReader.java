@@ -22,9 +22,12 @@ import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductSubsetDef;
 import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.FlagCoding;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.TiePointGeoCoding;
 import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.util.ProductUtils;
@@ -33,6 +36,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -148,6 +152,18 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         for (Product annotationProduct : annotationProducts) {
             if (annotationProduct.getFlagCodingGroup().getNodeCount() > 0) {
                 ProductUtils.copyFlagBands(annotationProduct, product, true);
+                setMasks(annotationProduct.getFlagCodingGroup(), product);
+            }
+        }
+    }
+
+    protected void setMasks(ProductNodeGroup<FlagCoding> flagCodingGroup, Product targetProduct) {
+        for (int i = 0; i < flagCodingGroup.getNodeCount(); i++) {
+            final FlagCoding flagCoding = flagCodingGroup.get(i);
+            for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
+                final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
+                final String expression = flagCoding.getName() + "." + attribute.getName();
+                targetProduct.addMask(attribute.getName(), expression, attribute.getDescription(), Color.RED, 0.5);
             }
         }
     }

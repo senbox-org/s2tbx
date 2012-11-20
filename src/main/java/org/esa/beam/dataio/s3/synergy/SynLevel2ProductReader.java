@@ -18,6 +18,7 @@ package org.esa.beam.dataio.s3.synergy;
 import org.esa.beam.dataio.s3.manifest.Manifest;
 import org.esa.beam.dataio.s3.manifest.ManifestProductReader;
 import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.FlagCoding;
 import org.esa.beam.framework.datamodel.GeoCoding;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -25,6 +26,7 @@ import org.esa.beam.framework.datamodel.PixelGeoCoding;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,4 +102,22 @@ class SynLevel2ProductReader extends ManifestProductReader {
             }
         }
     }
+
+    @Override
+    protected void setMasks(Product sourceProduct, Product targetProduct) {
+        if (sourceProduct.getFlagCodingGroup() != null) {
+            for (int i = 0; i < sourceProduct.getFlagCodingGroup().getNodeCount(); i++) {
+                final FlagCoding flagCoding = sourceProduct.getFlagCodingGroup().get(i);
+                for (int k = 1; k <= 5; k++) {
+                    String flagCodingName = flagCoding.getName() + "_CAM" + k;
+                    for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
+                        final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
+                        final String expression = flagCodingName + "." + attribute.getName();
+                        targetProduct.addMask(attribute.getName(), expression, expression, Color.RED, 0.5);
+                    }
+                }
+            }
+        }
+    }
+
 }
