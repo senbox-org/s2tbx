@@ -147,7 +147,7 @@ class OlciLevel1ProductReader extends AbstractProductReader {
     private void attachFlagCodingToProduct(List<Product> annotationProducts, Product product) {
         for (Product annotationProduct : annotationProducts) {
             if (annotationProduct.getFlagCodingGroup().getNodeCount() > 0) {
-                ProductUtils.copyFlagBands(annotationProduct, product, false);
+                ProductUtils.copyFlagBands(annotationProduct, product, true);
             }
         }
     }
