@@ -21,7 +21,7 @@ public class SlstrL1bProductReaderPlugIn extends ManifestProductReaderPlugIn {
     static final String FORMAT_NAME = "SLSTR-L1B";
 
     public SlstrL1bProductReaderPlugIn() {
-        super(FORMAT_NAME, "Sentinel-3 SLSTR L1b product", "S3.?_SL_1_SLT_.*", "L1b_EO_manifest", ".xml");
+        super(FORMAT_NAME, "Sentinel-3 SLSTR L1b product", "S3.?_SL_1_.?.?T_.*", "L1b_EO_manifest", ".xml");
     }
 
     @Override

@@ -88,7 +88,7 @@ public abstract class XProductReader extends AbstractProductReader {
 
         if (openProductList.size() == 1) {
             final Product targetProduct = openProductList.get(0);
-            setMasks(openProductList.get(0), targetProduct);
+            setMasks(targetProduct);
             openProductList.clear();
             return targetProduct;
         }
@@ -96,16 +96,16 @@ public abstract class XProductReader extends AbstractProductReader {
         final String productName = getProductName();
         final String productType = getReaderPlugIn().getFormatNames()[0];
 
-        final Product sourceProduct = openProductList.get(0);
-        final int w = sourceProduct.getSceneRasterWidth();
-        final int h = sourceProduct.getSceneRasterHeight();
+        final Product masterProduct = findMasterProduct();
+        final int w = masterProduct.getSceneRasterWidth();
+        final int h = masterProduct.getSceneRasterHeight();
         final Product targetProduct = new Product(productName, productType, w, h, this);
 
         setTimes(targetProduct);
         targetProduct.setFileLocation(getInputFile());
 
-        if (sourceProduct.getGeoCoding() instanceof CrsGeoCoding) {
-            ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
+        if (masterProduct.getGeoCoding() instanceof CrsGeoCoding) {
+            ProductUtils.copyGeoCoding(masterProduct, targetProduct);
         }
 
         for (final Product p : openProductList) {
@@ -131,31 +131,47 @@ public abstract class XProductReader extends AbstractProductReader {
         return targetProduct;
     }
 
+    protected Product findMasterProduct() {
+        return openProductList.get(0);
+    }
+
     private void setMasks(Product[] sourceProducts, Product targetProduct) {
         for (Product sourceProduct : sourceProducts) {
-            setMasks(sourceProduct, targetProduct);
+            setMasks(targetProduct);
         }
     }
 
-    protected void setMasks(Product sourceProduct, Product targetProduct) {
-        if (sourceProduct.getFlagCodingGroup() != null) {
-            for (int i = 0; i < sourceProduct.getFlagCodingGroup().getNodeCount(); i++) {
-                final FlagCoding flagCoding = sourceProduct.getFlagCodingGroup().get(i);
-                String flagCodingName = flagCoding.getName();
-                if(!targetProduct.containsBand(flagCodingName)) {
-                    flagCodingName = sourceProduct.getName() + "_" + flagCoding.getName();
-                }
+    protected void setMasks(Product targetProduct) {
+        final Band[] bands = targetProduct.getBands();
+        for (Band band : bands) {
+            if(band.isFlagBand()) {
+                final FlagCoding flagCoding = band.getFlagCoding();
                 for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
                     final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
-                    final String expression = flagCodingName + "." + attribute.getName();
-                    targetProduct.addMask(attribute.getName(), expression, expression, Color.RED, 0.5);
+                    final String expression = band.getName() + "." + attribute.getName();
+                    final String maskName = band.getName() + "_" + attribute.getName();
+                    targetProduct.addMask(maskName, expression, expression, Color.RED, 0.5);
                 }
             }
         }
+//        if (targetProduct.getFlagCodingGroup() != null) {
+//            for (int i = 0; i < targetProduct.getFlagCodingGroup().getNodeCount(); i++) {
+//                final FlagCoding flagCoding = targetProduct.getFlagCodingGroup().get(i);
+//                String flagCodingName = flagCoding.getName();
+//                if(!targetProduct.containsBand(flagCodingName)) {
+//                    flagCodingName = targetProduct.getName() + "_" + flagCoding.getName();
+//                }
+//                for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
+//                    final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
+//                    final String expression = flagCodingName + "." + attribute.getName();
+//                    targetProduct.addMask(attribute.getName(), expression, expression, Color.RED, 0.5);
+//                }
+//            }
+//        }
     }
 
     protected void setTimes(Product targetProduct) {
-        final Product sourceProduct = openProductList.get(0);
+        final Product sourceProduct = findMasterProduct();
         final ProductData.UTC startTime = sourceProduct.getStartTime();
         final ProductData.UTC endTime = sourceProduct.getEndTime();
         targetProduct.setStartTime(startTime);
@@ -218,7 +234,7 @@ public abstract class XProductReader extends AbstractProductReader {
         for (final Product sourceProduct : openProductList) {
             for (final Band sourceBand : sourceProduct.getBands()) {
                 final RasterDataNode targetNode;
-                if (sourceBand.getSceneRasterWidth() == w && sourceBand.getSceneRasterHeight() == h) {
+                if ((sourceBand.getSceneRasterWidth() == w && sourceBand.getSceneRasterHeight() == h)) {
                     targetNode = addBand(sourceBand, targetProduct);
                 } else {
                     targetNode = addSpecialNode(sourceBand, targetProduct);
