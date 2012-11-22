@@ -93,7 +93,7 @@ abstract class SlstrProductReader extends ManifestProductReader {
     }
 
     @Override
-    protected final void initialize(Product[] sourceProducts, Product targetProduct) {
+    protected void initialize(Product[] sourceProducts, Product targetProduct) {
         final MetadataElement globalAttributes = sourceProducts[0].getMetadataRoot().getElement("Global_Attributes");
         nadStartOffset = globalAttributes.getAttributeDouble("start_offset");
         nadTrackOffset = globalAttributes.getAttributeDouble("track_offset");
