@@ -19,9 +19,11 @@ import org.esa.beam.dataio.s3.manifest.Manifest;
 import org.esa.beam.dataio.s3.manifest.ManifestProductReader;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.FlagCoding;
+import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 
 import javax.media.jai.BorderExtender;
@@ -93,19 +95,15 @@ class VgtProductReader extends ManifestProductReader {
     }
 
     @Override
-    protected void setMasks(Product sourceProduct, Product targetProduct) {
-        if (sourceProduct.getFlagCodingGroup() != null) {
-            for (int i = 0; i < sourceProduct.getFlagCodingGroup().getNodeCount(); i++) {
-                final FlagCoding flagCoding = sourceProduct.getFlagCodingGroup().get(i);
-                String flagCodingName = flagCoding.getName();
-                for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
-                    final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
-                    final int elemInt = attribute.getData().getElemInt();
-                    final int lowerExpressionBorder = Math.max(3, elemInt);
-                    String expression = flagCodingName + " & " + lowerExpressionBorder + " == " + elemInt;
-                    expression = expression.concat(" && (SM.B0_good || SM.B2_good || SM.B3_good || SM.MIR_good)");
-                    targetProduct.addMask(attribute.getName(), expression, expression, Color.RED, 0.5);
-                }
+    protected void setMasks(Product targetProduct) {
+        super.setMasks(targetProduct);
+        final ProductNodeGroup<Mask> maskGroup = targetProduct.getMaskGroup();
+        for (int i = 0; i < maskGroup.getNodeCount(); i++) {
+            final Mask mask = maskGroup.get(i);
+            if(mask.getImageType() instanceof Mask.BandMathsType) {
+                String expression = Mask.BandMathsType.getExpression(mask);
+                expression = expression.concat(" && (SM.B0_good || SM.B2_good || SM.B3_good || SM.MIR_good)");
+                Mask.BandMathsType.setExpression(mask, expression);
             }
         }
     }

@@ -103,21 +103,4 @@ class SynLevel2ProductReader extends ManifestProductReader {
         }
     }
 
-    @Override
-    protected void setMasks(Product sourceProduct, Product targetProduct) {
-        if (sourceProduct.getFlagCodingGroup() != null) {
-            for (int i = 0; i < sourceProduct.getFlagCodingGroup().getNodeCount(); i++) {
-                final FlagCoding flagCoding = sourceProduct.getFlagCodingGroup().get(i);
-                for (int k = 1; k <= 5; k++) {
-                    String flagCodingName = flagCoding.getName() + "_CAM" + k;
-                    for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
-                        final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
-                        final String expression = flagCodingName + "." + attribute.getName();
-                        targetProduct.addMask(attribute.getName(), expression, expression, Color.RED, 0.5);
-                    }
-                }
-            }
-        }
-    }
-
 }
