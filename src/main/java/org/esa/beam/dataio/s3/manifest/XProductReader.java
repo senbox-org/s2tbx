@@ -27,6 +27,7 @@ import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 import org.esa.beam.framework.datamodel.TiePointGrid;
+import org.esa.beam.framework.dataop.barithm.BandArithmetic;
 import org.esa.beam.util.ProductUtils;
 import org.esa.beam.util.io.FileUtils;
 
@@ -142,8 +143,10 @@ public abstract class XProductReader extends AbstractProductReader {
                 final FlagCoding flagCoding = band.getFlagCoding();
                 for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
                     final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
-                    final String expression = band.getName() + "." + attribute.getName();
-                    final String maskName = band.getName() + "_" + attribute.getName();
+                    final String attributeName = attribute.getName();
+                    final String expression = BandArithmetic.createExternalName(band.getName() + "." + attributeName);
+                    final String maskName = band.getName() + "_" + attributeName;
+
                     targetProduct.addMask(maskName, expression, expression, Color.RED, 0.5);
                 }
             }
