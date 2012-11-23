@@ -126,19 +126,13 @@ public abstract class XProductReader extends AbstractProductReader {
         addDataNodes(targetProduct);
         setGeoCoding(targetProduct);
         setAutoGrouping(sourceProducts, targetProduct);
-        setMasks(sourceProducts, targetProduct);
+        setMasks(targetProduct);
 
         return targetProduct;
     }
 
     protected Product findMasterProduct() {
         return openProductList.get(0);
-    }
-
-    private void setMasks(Product[] sourceProducts, Product targetProduct) {
-        for (Product sourceProduct : sourceProducts) {
-            setMasks(targetProduct);
-        }
     }
 
     protected void setMasks(Product targetProduct) {
