@@ -89,7 +89,13 @@ abstract class SlstrProductReader extends ManifestProductReader {
 
     @Override
     protected final void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
-        targetNode.setName(sourceBand.getProduct().getName() + "_" + sourceBand.getName());
+        final String sourceBandName = sourceBand.getName();
+        final String sourceProductName = sourceBand.getProduct().getName();
+        if (sourceProductName.contains(sourceBandName)) {
+            targetNode.setName(sourceProductName);
+        } else {
+            targetNode.setName(sourceProductName + "_" + sourceBandName);
+        }
     }
 
     @Override
