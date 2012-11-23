@@ -28,7 +28,6 @@ import javax.media.jai.BorderExtenderConstant;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
-import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
@@ -129,6 +128,9 @@ public class SlstrL1bProductReader extends SlstrProductReader {
         final double sourceStartOffset = globalAttributes.getAttributeDouble("start_offset");
         final double sourceTrackOffset = globalAttributes.getAttributeDouble("track_offset");
         short[] sourceResolutions = (short[]) globalAttributes.getAttribute("resolution").getDataElems();
+        if (sourceResolutions.length == 1) {
+            sourceResolutions = new short[]{sourceResolutions[0], sourceResolutions[0]};
+        }
         final char penUltimateChar = sourceProduct.getName().charAt(sourceProduct.getName().length() - 2);
         if (sourceResolutions[0] == 0 && sourceResolutions[1] == 0) {
             if (((Character) penUltimateChar).compareTo('i') == 0) {
@@ -164,26 +166,31 @@ public class SlstrL1bProductReader extends SlstrProductReader {
             final int padX = Math.round(Math.abs(offsetX));
             final int padY = Math.round(Math.abs(offsetY));
 
-            final RenderedImage scaledImage = ScaleDescriptor.create(sourceImage, scaleX, scaleY, 0.0f, 0.0f,
-                                                                     Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
-                                                                     renderingHints);
+            RenderedImage image = sourceImage;
+            if (scaleX != 1.0 || scaleY != 1.0) {
+                image = ScaleDescriptor.create(image, scaleX, scaleY, 0.0f, 0.0f,
+                                               Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                               renderingHints);
+            }
             final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{targetBand.getNoDataValue()});
-            final RenderedImage extendedImage = BorderDescriptor.create(scaledImage,
-                                                                        padX,
-                                                                        targetW - padX - sourceImage.getWidth(),
-                                                                        padY,
-                                                                        padY,
-                                                                        borderExtender, renderingHints);
-            final RenderedImage translatedImage = TranslateDescriptor.create(extendedImage,
-                                                                             offsetX,
-                                                                             offsetY,
-                                                                             null,
-                                                                             renderingHints);
-            final RenderedImage croppedImage = CropDescriptor.create(translatedImage, 0.0f, 0.0f,
-                                                                     (float) targetW,
-                                                                     (float) targetH,
-                                                                     renderingHints);
-            targetBand.setSourceImage(croppedImage);
+            image = BorderDescriptor.create(image,
+                                            padX,
+                                            targetW - padX - image.getWidth(),
+                                            padY,
+                                            padY,
+                                            borderExtender, renderingHints);
+            if (offsetX != 0.0f || offsetY != 0.0f) {
+                image = TranslateDescriptor.create(image,
+                                                   offsetX,
+                                                   offsetY,
+                                                   null,
+                                                   renderingHints);
+            }
+            image = CropDescriptor.create(image, 0.0f, 0.0f,
+                                          (float) targetW,
+                                          (float) targetH,
+                                          renderingHints);
+            targetBand.setSourceImage(image);
             return targetBand;
         } else { // tie-point data
             final int subSamplingX = sourceResolutions[0] / masterResolutions[0];
@@ -212,15 +219,18 @@ public class SlstrL1bProductReader extends SlstrProductReader {
         masterStartOffset = globalAttributes.getAttributeDouble("start_offset");
         masterTrackOffset = globalAttributes.getAttributeDouble("track_offset");
         masterResolutions = (short[]) globalAttributes.getAttribute("resolution").getDataElems();
+        if (masterResolutions.length == 1) {
+            masterResolutions = new short[]{masterResolutions[0], masterResolutions[0]};
+        }
         if (masterResolutions[0] == 0 && masterResolutions[1] == 0) {
-            masterResolutions = new short[]{16000, 16000};
+            masterResolutions = new short[]{500, 500};
         }
     }
 
-    @Override
-    protected void setGeoCoding(Product targetProduct) throws IOException {
-        // TODO - delete when tie point data in LST are valid
-    }
+//    @Override
+//    protected void setGeoCoding(Product targetProduct) throws IOException {
+//        TODO - delete when tie point data in LST are valid
+//    }
 
     @Override
     protected Product findMasterProduct() {
