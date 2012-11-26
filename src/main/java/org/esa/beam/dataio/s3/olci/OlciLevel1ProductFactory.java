@@ -16,7 +16,7 @@ package org.esa.beam.dataio.s3.olci;/*
 
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.beam.dataio.s3.ProductFactory;
-import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
+import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductSubsetDef;
@@ -71,12 +71,12 @@ public class OlciLevel1ProductFactory implements ProductFactory {
         }
     }
 
-    private final Sentinel3ProductReaderR productReader;
+    private final Sentinel3ProductReader productReader;
     private final Logger logger;
     private List<Product> bandProducts;
     private List<Product> annotationProducts;
 
-    public OlciLevel1ProductFactory(Sentinel3ProductReaderR productReader) {
+    public OlciLevel1ProductFactory(Sentinel3ProductReader productReader) {
         this.productReader = productReader;
         this.logger = Logger.getLogger(getClass().getSimpleName());
     }

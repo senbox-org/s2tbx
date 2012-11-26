@@ -42,10 +42,10 @@ import java.util.logging.Logger;
 public abstract class AbstractProductFactory implements ProductFactory {
 
     private final List<Product> openProductList = new ArrayList<Product>();
-    private final Sentinel3ProductReaderR productReader;
+    private final Sentinel3ProductReader productReader;
     private final Logger logger;
 
-    public AbstractProductFactory(Sentinel3ProductReaderR productReader) {
+    public AbstractProductFactory(Sentinel3ProductReader productReader) {
         this.productReader = productReader;
         this.logger = Logger.getLogger(getClass().getSimpleName());
     }

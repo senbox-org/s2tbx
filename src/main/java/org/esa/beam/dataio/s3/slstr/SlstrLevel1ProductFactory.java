@@ -16,7 +16,7 @@ package org.esa.beam.dataio.s3.slstr;/*
 
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.beam.dataio.s3.Manifest;
-import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
+import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
@@ -45,7 +45,7 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     private double masterTrackOffset;
     private short[] masterResolutions;
 
-    public SlstrLevel1ProductFactory(Sentinel3ProductReaderR productReader) {
+    public SlstrLevel1ProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
     }
 

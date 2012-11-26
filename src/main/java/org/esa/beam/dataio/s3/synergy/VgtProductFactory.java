@@ -15,7 +15,7 @@ package org.esa.beam.dataio.s3.synergy;/*
  */
 
 import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
-import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
+import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Mask;
@@ -35,7 +35,7 @@ import java.util.List;
 
 public class VgtProductFactory extends AbstractManifestProductFactory {
 
-    public VgtProductFactory(Sentinel3ProductReaderR productReader) {
+    public VgtProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
     }
 

@@ -15,7 +15,7 @@ package org.esa.beam.dataio.s3.olci;/*
  */
 
 import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
-import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
+import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -34,7 +34,7 @@ public class OlciLevel2ProductFactory extends AbstractManifestProductFactory {
     private static final float[] spectralWavelengths = new float[21];
     private static final float[] spectralBandwidths = new float[21];
 
-    public OlciLevel2ProductFactory(Sentinel3ProductReaderR productReader) {
+    public OlciLevel2ProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
     }
 

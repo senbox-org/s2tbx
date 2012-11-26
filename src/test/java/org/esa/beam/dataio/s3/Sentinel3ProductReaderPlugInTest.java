@@ -31,11 +31,11 @@ import static org.junit.Assert.assertTrue;
 
 public class Sentinel3ProductReaderPlugInTest {
 
-    private Sentinel3ProductReaderPlugInR plugIn;
+    private Sentinel3ProductReaderPlugIn plugIn;
 
     @Before
     public void setup() {
-        plugIn = new Sentinel3ProductReaderPlugInR();
+        plugIn = new Sentinel3ProductReaderPlugIn();
     }
 
     @Test
@@ -43,7 +43,7 @@ public class Sentinel3ProductReaderPlugInTest {
         final ProductIOPlugInManager ioPlugInManager = ProductIOPlugInManager.getInstance();
         final Iterator<ProductReaderPlugIn> readerPlugIns = ioPlugInManager.getReaderPlugIns("SENTINEL-3");
         assertTrue(readerPlugIns.hasNext());
-        assertTrue(readerPlugIns.next() instanceof Sentinel3ProductReaderPlugInR);
+        assertTrue(readerPlugIns.next() instanceof Sentinel3ProductReaderPlugIn);
     }
 
     @Test

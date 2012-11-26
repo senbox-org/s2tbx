@@ -16,7 +16,7 @@ package org.esa.beam.dataio.s3.slstr;/*
 
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
-import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
+import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
@@ -42,7 +42,7 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
     private double nadTrackOffset;
     private short[] nadResolutions;
 
-    protected SlstrProductFactory(Sentinel3ProductReaderR productReader) {
+    protected SlstrProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
     }
 

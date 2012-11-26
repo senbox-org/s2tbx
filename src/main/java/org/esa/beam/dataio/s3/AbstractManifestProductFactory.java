@@ -31,7 +31,7 @@ public abstract class AbstractManifestProductFactory extends AbstractProductFact
 
     private Manifest manifest;
 
-    public AbstractManifestProductFactory(Sentinel3ProductReaderR productReader) {
+    public AbstractManifestProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
     }
 

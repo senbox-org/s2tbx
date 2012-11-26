@@ -29,11 +29,11 @@ import org.esa.beam.framework.datamodel.ProductData;
 import java.io.File;
 import java.io.IOException;
 
-public class Sentinel3ProductReaderR extends AbstractProductReader {
+public class Sentinel3ProductReader extends AbstractProductReader {
 
     private ProductFactory factory;
 
-    public Sentinel3ProductReaderR(ProductReaderPlugIn readerPlugIn) {
+    public Sentinel3ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
     }
 

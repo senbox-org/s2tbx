@@ -14,7 +14,7 @@ package org.esa.beam.dataio.s3.slstr;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
+import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.dataio.s3.Manifest;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.List;
 
 public class SlstrSstProductFactory extends SlstrProductFactory {
 
-    protected SlstrSstProductFactory(Sentinel3ProductReaderR productReader) {
+    protected SlstrSstProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
     }
 
