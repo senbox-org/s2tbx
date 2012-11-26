@@ -15,6 +15,7 @@
 
 package org.esa.beam.dataio.s3.olci;
 
+import org.esa.beam.dataio.s3.DataSetPointer;
 import org.esa.beam.dataio.util.XPathHelper;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;

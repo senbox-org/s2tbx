@@ -23,7 +23,7 @@ package org.esa.beam.dataio.s3;
  */
 public class DataSetPointer {
 
-    enum Type {
+    public enum Type {
         M, A
     }
 
