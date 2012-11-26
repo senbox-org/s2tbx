@@ -35,6 +35,7 @@ import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.util.List;
 
 public abstract class SlstrProductFactory extends AbstractManifestProductFactory {
 
@@ -114,10 +115,23 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
 
     @Override
     protected void initialize(Product[] sourceProducts, Product targetProduct) {
-        final MetadataElement globalAttributes = sourceProducts[0].getMetadataRoot().getElement("Global_Attributes");
+        final MetadataElement globalAttributes = findMasterProduct().getMetadataRoot().getElement("Global_Attributes");
         nadStartOffset = globalAttributes.getAttributeDouble("start_offset");
         nadTrackOffset = globalAttributes.getAttributeDouble("track_offset");
         nadResolutions = (short[]) globalAttributes.getAttribute("resolution").getDataElems();
+    }
+
+    @Override
+    protected Product findMasterProduct() {
+        final List<Product> productList = getOpenProductList();
+        Product masterProduct = productList.get(0);
+        for (int i = 1; i < productList.size(); i++) {
+            Product product = productList.get(i);
+            if (product.getSceneRasterWidth() > masterProduct.getSceneRasterWidth() && product.getSceneRasterHeight() > masterProduct.getSceneRasterHeight()) {
+                masterProduct = product;
+            }
+        }
+        return masterProduct;
     }
 
     @Override
@@ -141,12 +155,13 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
     protected final void setAutoGrouping(Product[] sourceProducts, Product targetProduct) {
         final StringBuilder patternBuilder = new StringBuilder();
         for (final Product sourceProduct : sourceProducts) {
+            final String sourceProductName = sourceProduct.getName();
             if (sourceProduct.getAutoGrouping() != null) {
                 for (final String[] groups : sourceProduct.getAutoGrouping()) {
                     if (patternBuilder.length() > 0) {
                         patternBuilder.append(":");
                     }
-                    patternBuilder.append(sourceProduct.getName());
+                    patternBuilder.append(sourceProductName);
                     for (final String group : groups) {
                         patternBuilder.append("/");
                         patternBuilder.append(group);
@@ -156,7 +171,16 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
             if (patternBuilder.length() > 0) {
                 patternBuilder.append(":");
             }
-            patternBuilder.append(sourceProduct.getName());
+            String patternName = sourceProductName;
+            String[] unwantedPatternContents = new String[]{"_an", "_ao", "_bn", "_bo", "_cn", "_co", "_in", "_io",
+                    "_tn", "_to", "_tx"};
+            for (String unwantedPatternContent : unwantedPatternContents) {
+                if (sourceProductName.contains(unwantedPatternContent)) {
+                    patternName = sourceProductName.substring(0, sourceProductName.lastIndexOf(unwantedPatternContent));
+                    break;
+                }
+            }
+            patternBuilder.append(patternName);
         }
         targetProduct.setAutoGrouping(patternBuilder.toString());
     }
