@@ -18,6 +18,7 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.esa.beam.dataio.s3.olci.OlciLevel2ProductFactory;
 import org.esa.beam.dataio.s3.slstr.SlstrLevel1ProductFactory;
 import org.esa.beam.dataio.s3.slstr.SlstrLstProductFactory;
+import org.esa.beam.dataio.s3.slstr.SlstrSstProductFactory;
 import org.esa.beam.dataio.s3.synergy.SynLevel2ProductFactory;
 import org.esa.beam.dataio.s3.synergy.VgtProductFactory;
 import org.esa.beam.framework.dataio.AbstractProductReader;
@@ -43,14 +44,14 @@ public class Sentinel3ProductReader extends AbstractProductReader {
 
         if (dirName.matches("S3.?_OL_1_E[RF]R_.*")) { // OLCI L1b
             factory = new OlciLevel2ProductFactory(this);
-        } else if (dirName.matches("S3.?_OL_2_..._.*.SAFE")) { // OLCI L2 - TODO - define '...' in regex
+        } else if (dirName.matches("S3.?_OL_2_(L[FR]R|W[FR]R)_.*.SAFE")) { // OLCI L2 -
             factory = new OlciLevel2ProductFactory(this);
         } else if (dirName.matches("S3.?_SL_1_SLT.*")) { // SLSTR L1b
             factory = new SlstrLevel1ProductFactory(this);
-        } else if (dirName.matches("S3.?_SL_2_LST_.*.SAFE")) { // SLSTR L2 SST
+        } else if (dirName.matches("S3.?_SL_2_LST_.*.SAFE")) { // SLSTR L2 LST
             factory = new SlstrLstProductFactory(this);
-        } else if (dirName.matches("S3.?_SL_2_W[CS]T_.*.SAFE")) { // SLSTR L2 LST
-            factory = new SlstrLstProductFactory(this);
+        } else if (dirName.matches("S3.?_SL_2_W[CS]T_.*.SAFE")) { // SLSTR L2 SST
+            factory = new SlstrSstProductFactory(this);
         } else if (dirName.matches("S3.?_SY_2_SYN_.*.SAFE")) { // SYN L2
             factory = new SynLevel2ProductFactory(this);
         } else if (dirName.matches("S3.?_SY_(2_VGP|3_VGS)_.*.SAFE")) { // SYN VGT

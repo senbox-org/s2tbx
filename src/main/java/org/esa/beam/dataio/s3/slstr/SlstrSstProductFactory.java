@@ -22,7 +22,7 @@ import java.util.List;
 
 public class SlstrSstProductFactory extends SlstrProductFactory {
 
-    protected SlstrSstProductFactory(Sentinel3ProductReader productReader) {
+    public SlstrSstProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
     }
 
