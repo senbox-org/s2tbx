@@ -56,9 +56,9 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
         final String[] fileNames = directory.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                //todo add other filenames
                 return name.endsWith(".nc") && (name.contains("radiance") || name.contains("flags")
-                        || name.contains("geodetic_tx") || name.contains("BT"));
+                        || name.contains("geodetic_tx") || name.contains("BT") || name.contains("cartesian_tx")
+                        || name.contains("geometry") || name.contains("indices"));
             }
         });
 
@@ -159,7 +159,8 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
             } else {
                 scaleY = scaleX;
             }
-            final float offsetX = (float) (sourceTrackOffset - masterTrackOffset);
+            final float offsetX = (float) (masterTrackOffset - sourceTrackOffset);
+//            final float offsetX = (float) (sourceTrackOffset * scaleX - masterTrackOffset);
             final float offsetY = (float) (sourceStartOffset - masterStartOffset);
 
             final int padX = Math.round(Math.abs(offsetX));
