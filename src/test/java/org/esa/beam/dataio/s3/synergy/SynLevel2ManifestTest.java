@@ -15,7 +15,7 @@
 
 package org.esa.beam.dataio.s3.synergy;
 
-import org.esa.beam.dataio.s3.ManifestI;
+import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.SafeManifest;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.junit.Before;
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 public class SynLevel2ManifestTest {
 
-    private ManifestI manifestTest;
+    private Manifest manifestTest;
 
     @Before
     public void before() throws ParserConfigurationException, IOException, SAXException {

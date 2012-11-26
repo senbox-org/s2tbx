@@ -14,7 +14,7 @@ package org.esa.beam.dataio.s3.slstr;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-import org.esa.beam.dataio.s3.ManifestI;
+import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class SlstrSstProductFactory extends SlstrProductFactory {
     }
 
     @Override
-    protected List<String> getFileNames(ManifestI manifest) {
+    protected List<String> getFileNames(Manifest manifest) {
         final List<String> fileNames = new ArrayList<String>();
 
         fileNames.addAll(manifest.getFileNames("LSTdataSchema"));

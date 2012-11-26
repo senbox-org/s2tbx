@@ -29,7 +29,7 @@ import java.util.logging.Level;
 
 public abstract class AbstractManifestProductFactory extends AbstractProductFactory {
 
-    private ManifestI manifest;
+    private Manifest manifest;
 
     public AbstractManifestProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
@@ -41,7 +41,7 @@ public abstract class AbstractManifestProductFactory extends AbstractProductFact
         return getFileNames(manifest);
     }
 
-    protected abstract List<String> getFileNames(ManifestI manifest);
+    protected abstract List<String> getFileNames(Manifest manifest);
 
     @Override
     protected void setTimes(Product targetProduct) {
@@ -54,7 +54,7 @@ public abstract class AbstractManifestProductFactory extends AbstractProductFact
         }
     }
 
-    private ManifestI createManifest(File file) throws IOException {
+    private Manifest createManifest(File file) throws IOException {
         final InputStream inputStream = new FileInputStream(file);
         try {
             return SafeManifest.createManifest(createXmlDocument(inputStream));

@@ -18,7 +18,7 @@ import org.esa.beam.framework.datamodel.ProductData;
 
 import java.util.List;
 
-public interface ManifestI {
+public interface Manifest {
 
     String getDescription();
 
