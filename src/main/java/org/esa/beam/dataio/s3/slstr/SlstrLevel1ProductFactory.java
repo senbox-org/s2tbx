@@ -70,56 +70,6 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     protected void setTimes(Product targetProduct) {
     }
 
-//    @Override
-//    protected Band addBand(Band sourceBand, Product targetProduct) {
-//        final Product sourceProduct = sourceBand.getProduct();
-//        final MetadataElement globalAttributes = sourceProduct.getMetadataRoot().getElement("Global_Attributes");
-//        final double sourceStartOffset = globalAttributes.getAttributeDouble("start_offset");
-//        final double sourceTrackOffset = globalAttributes.getAttributeDouble("track_offset");
-//        short[] sourceResolutions = (short[]) globalAttributes.getAttribute("resolution").getDataElems();
-//        final char penUltimateChar = sourceProduct.getName().charAt(sourceProduct.getName().length() - 2);
-//        if (((Character) penUltimateChar).compareTo('i') == 0) {
-//            sourceResolutions = new short[]{1000, 1000};
-//        } else {
-//            sourceResolutions = new short[]{500, 500};
-//        }
-//
-//        final Band targetBand = copyBand(sourceBand, targetProduct, false);
-//        final ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(targetBand);
-//        final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-//
-//        final MultiLevelImage sourceImage = sourceBand.getSourceImage();
-//        final int targetW = targetBand.getRasterWidth();
-//        final int targetH = targetBand.getRasterHeight();
-////        final float offsetX = (float) (sourceTrackOffset - masterTrackOffset);
-////        final float offsetY = (float) (sourceStartOffset - masterStartOffset);
-//
-//        final float offsetX = (float) (sourceTrackOffset * sourceResolutions[0] / masterResolutions[0] - masterTrackOffset);
-//        final float offsetY = (float) (sourceStartOffset * sourceResolutions[1] / masterResolutions[1] - masterStartOffset);
-//
-//        final int padX = Math.round(Math.abs(offsetX));
-//        final int padY = Math.round(Math.abs(offsetY));
-//        final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{targetBand.getNoDataValue()});
-//        final RenderedImage extendedImage = BorderDescriptor.create(sourceImage,
-//                                                                    padX,
-//                                                                    targetW - padX - sourceImage.getWidth(),
-//                                                                    padY,
-//                                                                    padY,
-//                                                                    borderExtender, renderingHints);
-//
-//        final RenderedImage translatedImage = TranslateDescriptor.create(extendedImage,
-//                                                                         offsetX,
-//                                                                         offsetY,
-//                                                                         null,
-//                                                                         renderingHints);
-//        final RenderedImage croppedImage = CropDescriptor.create(translatedImage, 0.0f, 0.0f,
-//                                                                 (float) targetW,
-//                                                                 (float) targetH,
-//                                                                 renderingHints);
-//        targetBand.setSourceImage(croppedImage);
-//        return targetBand;
-//    }
-
     @Override
     protected RasterDataNode addSpecialNode(Band sourceBand, Product targetProduct) {
         final Product sourceProduct = sourceBand.getProduct();
@@ -231,18 +181,5 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
 //    protected void setGeoCoding(Product targetProduct) throws IOException {
 //        TODO - delete when tie point data in LST are valid
 //    }
-
-    @Override
-    protected Product findMasterProduct() {
-        final List<Product> productList = getOpenProductList();
-        Product masterProduct = productList.get(0);
-        for (int i = 1; i < productList.size(); i++) {
-            Product product = productList.get(i);
-            if (product.getSceneRasterWidth() > masterProduct.getSceneRasterWidth() && product.getSceneRasterHeight() > masterProduct.getSceneRasterHeight()) {
-                masterProduct = product;
-            }
-        }
-        return masterProduct;
-    }
 
 }
