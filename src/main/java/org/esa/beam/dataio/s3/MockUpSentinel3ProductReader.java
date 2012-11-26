@@ -21,10 +21,10 @@ import java.io.IOException;
  * Only used to pop-up a reader configuration dialog mock-up.
  * @author Norman Fomferra
  */
-public class Sentinel3ProductReader extends AbstractProductReader {
+public class MockUpSentinel3ProductReader extends AbstractProductReader {
 
-    public Sentinel3ProductReader(Sentinel3ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
+    public MockUpSentinel3ProductReader(MockUpSentinel3ProductReaderPlugIn readerPlugInMockUp) {
+        super(readerPlugInMockUp);
     }
 
     @Override

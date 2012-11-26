@@ -1,22 +1,22 @@
-/*
- * Copyright (c) 2012. Brockmann Consult (info@brockmann-consult.de)
+package org.esa.beam.dataio.s3.olci;/*
+ * Copyright (C) 2012 Brockmann Consult GmbH (info@brockmann-consult.de)
  *
  * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation. This program is distributed in the hope it will
- * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.beam.dataio.s3.olci;
-
-import org.esa.beam.dataio.s3.manifest.Manifest;
-import org.esa.beam.dataio.s3.manifest.ManifestProductReader;
+import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
+import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
+import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
@@ -29,17 +29,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-/**
- * Product reader responsible for reading OLCI Level-2 data products in SAFE format.
- *
- * @author Marco Peters
- * @author Ralf Quast
- * @since 1.0
- */
-class OlciLevel2ProductReader extends ManifestProductReader {
+public class OlciLevel2ProductFactory extends AbstractManifestProductFactory {
 
     private static final float[] spectralWavelengths = new float[21];
     private static final float[] spectralBandwidths = new float[21];
+
+    public OlciLevel2ProductFactory(Sentinel3ProductReaderR productReader) {
+        super(productReader);
+    }
 
     static {
         getSpectralBandsProperties(spectralWavelengths, spectralBandwidths);
@@ -49,7 +46,7 @@ class OlciLevel2ProductReader extends ManifestProductReader {
         final Properties properties = new Properties();
 
         try {
-            properties.load(OlciLevel1ProductReader.class.getResourceAsStream("spectralBands.properties"));
+            properties.load(OlciLevel2ProductFactory.class.getResourceAsStream("spectralBands.properties"));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -60,10 +57,6 @@ class OlciLevel2ProductReader extends ManifestProductReader {
         for (int i = 0; i < bandwidths.length; i++) {
             bandwidths[i] = Float.parseFloat(properties.getProperty("bandwidths." + i));
         }
-    }
-
-    OlciLevel2ProductReader(OlciLevel2ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
     }
 
     @Override
@@ -132,4 +125,5 @@ class OlciLevel2ProductReader extends ManifestProductReader {
             }
         }
     }
+
 }

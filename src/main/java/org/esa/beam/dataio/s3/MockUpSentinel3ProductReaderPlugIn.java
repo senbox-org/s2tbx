@@ -12,7 +12,7 @@ import java.util.Locale;
  * Dummy class so that Sentinel3ProductReader can be instantiated.
  * @author Norman Fomferra
  */
-public class Sentinel3ProductReaderPlugIn implements ProductReaderPlugIn {
+public class MockUpSentinel3ProductReaderPlugIn implements ProductReaderPlugIn {
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         if (new File(input.toString()).getName().equals("pom.xml")) {
@@ -28,7 +28,7 @@ public class Sentinel3ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new Sentinel3ProductReader(this);
+        return new MockUpSentinel3ProductReader(this);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.esa.beam.dataio.s3.slstr;/*
+package org.esa.beam.dataio.s3;/*
  * Copyright (C) 2012 Brockmann Consult GmbH (info@brockmann-consult.de)
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -14,18 +14,13 @@ package org.esa.beam.dataio.s3.slstr;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-import org.esa.beam.dataio.s3.manifest.ManifestProductReaderPlugIn;
-import org.esa.beam.framework.dataio.ProductReader;
+import org.esa.beam.framework.datamodel.Product;
 
-public class SlstrL1bProductReaderPlugIn extends ManifestProductReaderPlugIn {
-    static final String FORMAT_NAME = "SLSTR-L1B";
+import java.io.IOException;
 
-    public SlstrL1bProductReaderPlugIn() {
-        super(FORMAT_NAME, "Sentinel-3 SLSTR L1b product", "S3.?_SL_1_.?.?T_.*", "L1b_EO_manifest", ".xml");
-    }
+public interface ProductFactory {
 
-    @Override
-    public ProductReader createReaderInstance() {
-        return new SlstrL1bProductReader(this);
-    }
+    Product createProduct() throws IOException;
+
+    void dispose() throws IOException;
 }

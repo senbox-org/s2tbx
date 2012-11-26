@@ -4,7 +4,9 @@
     <version>0.1-SNAPSHOT</version>
     <name>Sentinel Exploitation Tools</name>
 
-    <description>Enables BEAM to read Sentinel 1, 2 and 3 Products and to perform an atmospheric correction for Sentinel 2 TOA radiance</description>
+    <description>Enables BEAM to read Sentinel 1, 2 and 3 Products and to perform an atmospheric correction for Sentinel
+        2 TOA radiance
+    </description>
 
     <vendor>Brockmann Consult GmbH and Array Inc</vendor>
     <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
@@ -14,7 +16,7 @@
 
     <changelog>
         <![CDATA[
-        ]]>
+                ]]>
     </changelog>
 
     <dependency>
@@ -45,9 +47,18 @@
             <id>importSentinel3Product</id>
             <helpId>importSentinel3Product</helpId>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
-            <formatName>SENTINEL-3-SLSTR</formatName>
+            <formatName>SENTINEL-3</formatName>
             <useAllFileFilter>true</useAllFileFilter>
         </action>
+        <!-- Mock-up reader
+                <action>
+                    <id>importSentinel3Product</id>
+                    <helpId>importSentinel3Product</helpId>
+                    <class>org.esa.beam.visat.actions.ProductImportAction</class>
+                    <formatName>SENTINEL-3-SLSTR</formatName>
+                    <useAllFileFilter>true</useAllFileFilter>
+                </action>
+        -->
         <action>
             <id>importS3OlciL1bProduct</id>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
@@ -57,6 +68,7 @@
             <description>Import a Sentinel-3 OLCI Level-1b data product or product subset.</description>
             <helpId>importS3OlciL1bProduct</helpId>
         </action>
+        <!--
         <action>
             <id>importS3OlciL2Product</id>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
@@ -66,6 +78,7 @@
             <description>Import a Sentinel-3 OLCI Level-2 data product or product subset.</description>
             <helpId>importS3OlciL2Product</helpId>
         </action>
+        -->
         <action>
             <id>importS3SlstrL1bProduct</id>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
@@ -75,6 +88,7 @@
             <description>Import a Sentinel-3 SLSTR Level-1b data product or product subset.</description>
             <!--<helpId>importS3SlstrL1bProduct</helpId>-->
         </action>
+        <!--
         <action>
             <id>importS3SlstrL2LSTProduct</id>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
@@ -111,6 +125,7 @@
             <description>Import a Sentinel-3 VGT data product or product subset.</description>
             <helpId>importS3VgtProduct</helpId>
         </action>
+        -->
     </extension>
 
     <extension point="beam-core:rgbProfiles">

@@ -1,23 +1,22 @@
-/*
- * Copyright (c) 2012. Brockmann Consult (info@brockmann-consult.de)
+package org.esa.beam.dataio.s3.olci;/*
+ * Copyright (C) 2012 Brockmann Consult GmbH (info@brockmann-consult.de)
  *
  * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation. This program is distributed in the hope it will
- * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.beam.dataio.s3.olci;
-
-import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
-import org.esa.beam.framework.dataio.AbstractProductReader;
+import org.esa.beam.dataio.s3.ProductFactory;
+import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductSubsetDef;
@@ -26,7 +25,6 @@ import org.esa.beam.framework.datamodel.FlagCoding;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.TiePointGeoCoding;
 import org.esa.beam.framework.datamodel.TiePointGrid;
@@ -47,13 +45,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Product reader responsible for reading OLCI L1b data products in SAFE format.
- *
- * @author Marco Peters
- * @since 1.0
- */
-class OlciLevel1ProductReader extends AbstractProductReader {
+public class OlciLevel1ProductFactory implements ProductFactory {
 
     private static final float[] spectralWavelengths = new float[21];
     private static final float[] spectralBandwidths = new float[21];
@@ -66,7 +58,7 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         final Properties properties = new Properties();
 
         try {
-            properties.load(OlciLevel1ProductReader.class.getResourceAsStream("spectralBands.properties"));
+            properties.load(OlciLevel1ProductFactory.class.getResourceAsStream("spectralBands.properties"));
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -79,29 +71,26 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         }
     }
 
+    private final Sentinel3ProductReaderR productReader;
     private final Logger logger;
     private List<Product> bandProducts;
     private List<Product> annotationProducts;
 
-    OlciLevel1ProductReader(OlciLevel1ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
-        logger = Logger.getLogger(getClass().getSimpleName());
+    public OlciLevel1ProductFactory(Sentinel3ProductReaderR productReader) {
+        this.productReader = productReader;
+        this.logger = Logger.getLogger(getClass().getSimpleName());
     }
 
     @Override
-    protected Product readProductNodesImpl() throws IOException {
-        File inputFile = getInputFile();
+    public Product createProduct() throws IOException {
+        File inputFile = productReader.getInputFile();
         OlciL1bManifest manifest = createManifestFile(inputFile);
-        return createProduct(manifest);
-    }
-
-    private Product createProduct(OlciL1bManifest manifest) {
         Product product = new Product(manifest.getProductName(), manifest.getProductType(),
-                                      manifest.getColumnCount(), manifest.getLineCount(), this);
+                                      manifest.getColumnCount(), manifest.getLineCount(), productReader);
         product.setDescription(manifest.getDescription());
         product.setStartTime(manifest.getStartTime());
         product.setEndTime(manifest.getStopTime());
-        product.setFileLocation(getInputFile());
+        product.setFileLocation(inputFile);
         MetadataElement root = product.getMetadataRoot();
         root.addElement(manifest.getFixedHeader());
         root.addElement(manifest.getMainProductHeader());
@@ -196,7 +185,7 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         List<Product> dataSetProducts = new ArrayList<Product>();
         for (DataSetPointer dataSetPointer : dataSetPointers) {
             try {
-                File dataSetFile = new File(getParentInputDirectory(), dataSetPointer.getFileName());
+                File dataSetFile = new File(productReader.getInputFileParentDirectory(), dataSetPointer.getFileName());
                 final ProductReader productReader = ProductIO.getProductReaderForInput(dataSetFile);
                 if (productReader != null) {
                     final ProductSubsetDef subsetDef = defineSubset(dataSetPointer.getFileName());
@@ -256,7 +245,7 @@ class OlciLevel1ProductReader extends AbstractProductReader {
     }
 
     private List<DataSetPointer> removeOrphanedDataSetPointers(List<DataSetPointer> dataSetPointers) {
-        File parentFile = getParentInputDirectory();
+        File parentFile = productReader.getInputFileParentDirectory();
         List<DataSetPointer> filteredPointers = new ArrayList<DataSetPointer>();
         for (DataSetPointer dataSetPointer : dataSetPointers) {
             String fileName = dataSetPointer.getFileName();
@@ -304,30 +293,14 @@ class OlciLevel1ProductReader extends AbstractProductReader {
         return doc;
     }
 
-    private File getParentInputDirectory() {
-        return getInputFile().getParentFile();
-    }
-
-    private File getInputFile() {
-        return new File(getInput().toString());
-    }
-
     @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight,
-                                          int sourceStepX, int sourceStepY, Band destBand, int destOffsetX,
-                                          int destOffsetY, int destWidth, int destHeight, ProductData destBuffer,
-                                          ProgressMonitor pm) throws IOException {
-        throw new IllegalStateException(String.format("No source to read from for band '%s'.", destBand.getName()));
-    }
-
-    @Override
-    public void close() throws IOException {
+    public void dispose() throws IOException {
         for (Product bandProduct : bandProducts) {
             bandProduct.dispose();
         }
         for (Product annotationProduct : annotationProducts) {
             annotationProduct.dispose();
         }
-        super.close();
     }
+
 }

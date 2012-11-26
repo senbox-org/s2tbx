@@ -15,7 +15,7 @@
 
 package org.esa.beam.dataio.s3.synergy;
 
-import org.esa.beam.dataio.s3.manifest.Manifest;
+import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.junit.Before;
 import org.junit.Test;

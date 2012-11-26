@@ -1,4 +1,4 @@
-package org.esa.beam.dataio.s3.manifest;/*
+package org.esa.beam.dataio.s3;/*
  * Copyright (C) 2012 Brockmann Consult GmbH (info@brockmann-consult.de)
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -14,10 +14,7 @@ package org.esa.beam.dataio.s3.manifest;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-import com.bc.ceres.core.ProgressMonitor;
-import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductIO;
-import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.CrsGeoCoding;
 import org.esa.beam.framework.datamodel.FlagCoding;
@@ -37,19 +34,27 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public abstract class XProductReader extends AbstractProductReader {
+public abstract class AbstractProductFactory implements ProductFactory {
 
-    protected final List<Product> openProductList = new ArrayList<Product>();
-    protected final Logger logger;
+    private final List<Product> openProductList = new ArrayList<Product>();
+    private final Sentinel3ProductReaderR productReader;
+    private final Logger logger;
 
-    public XProductReader(ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
-        logger = Logger.getLogger(getClass().getSimpleName());
+    public AbstractProductFactory(Sentinel3ProductReaderR productReader) {
+        this.productReader = productReader;
+        this.logger = Logger.getLogger(getClass().getSimpleName());
     }
+
+    protected final Logger getLogger() {
+        return logger;
+    }
+
+    protected abstract List<String> getFileNames() throws IOException;
 
     protected static Band copyBand(Band sourceBand, Product targetProduct, boolean copySourceImage) {
         return ProductUtils.copyBand(sourceBand.getName(), sourceBand.getProduct(), targetProduct, copySourceImage);
@@ -80,11 +85,7 @@ public abstract class XProductReader extends AbstractProductReader {
     }
 
     @Override
-    protected final Product readProductNodesImpl() throws IOException {
-        return createProduct();
-    }
-
-    private Product createProduct() throws IOException {
+    public final Product createProduct() throws IOException {
         readProducts(getFileNames());
 
         if (openProductList.size() == 1) {
@@ -95,12 +96,11 @@ public abstract class XProductReader extends AbstractProductReader {
         }
 
         final String productName = getProductName();
-        final String productType = getReaderPlugIn().getFormatNames()[0];
-
+        final String productType = productReader.getReaderPlugIn().getFormatNames()[0];
         final Product masterProduct = findMasterProduct();
         final int w = masterProduct.getSceneRasterWidth();
         final int h = masterProduct.getSceneRasterHeight();
-        final Product targetProduct = new Product(productName, productType, w, h, this);
+        final Product targetProduct = new Product(productName, productType, w, h, productReader);
 
         setTimes(targetProduct);
         targetProduct.setFileLocation(getInputFile());
@@ -136,10 +136,14 @@ public abstract class XProductReader extends AbstractProductReader {
         return openProductList.get(0);
     }
 
+    protected final List<Product> getOpenProductList() {
+        return Collections.unmodifiableList(openProductList);
+    }
+
     protected void setMasks(Product targetProduct) {
         final Band[] bands = targetProduct.getBands();
         for (Band band : bands) {
-            if(band.isFlagBand()) {
+            if (band.isFlagBand()) {
                 final FlagCoding flagCoding = band.getFlagCoding();
                 for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
                     final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
@@ -151,20 +155,6 @@ public abstract class XProductReader extends AbstractProductReader {
                 }
             }
         }
-//        if (targetProduct.getFlagCodingGroup() != null) {
-//            for (int i = 0; i < targetProduct.getFlagCodingGroup().getNodeCount(); i++) {
-//                final FlagCoding flagCoding = targetProduct.getFlagCodingGroup().get(i);
-//                String flagCodingName = flagCoding.getName();
-//                if(!targetProduct.containsBand(flagCodingName)) {
-//                    flagCodingName = targetProduct.getName() + "_" + flagCoding.getName();
-//                }
-//                for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
-//                    final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
-//                    final String expression = flagCodingName + "." + attribute.getName();
-//                    targetProduct.addMask(attribute.getName(), expression, expression, Color.RED, 0.5);
-//                }
-//            }
-//        }
     }
 
     protected void setTimes(Product targetProduct) {
@@ -175,23 +165,12 @@ public abstract class XProductReader extends AbstractProductReader {
         targetProduct.setEndTime(endTime);
     }
 
-    protected abstract List<String> getFileNames() throws IOException;
-
     @Override
-    protected final void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight,
-                                                int sourceStepX, int sourceStepY, Band destBand, int destOffsetX,
-                                                int destOffsetY, int destWidth, int destHeight, ProductData destBuffer,
-                                                ProgressMonitor pm) throws IOException {
-        throw new IllegalStateException("Data are provided by images.");
-    }
-
-    @Override
-    public final void close() throws IOException {
+    public final void dispose() throws IOException {
         for (final Product product : openProductList) {
             product.dispose();
         }
         openProductList.clear();
-        super.close();
     }
 
     protected Band addBand(Band sourceBand, Product targetProduct) {
@@ -261,15 +240,15 @@ public abstract class XProductReader extends AbstractProductReader {
         return product;
     }
 
-    protected File getInputFile() {
-        return new File(getInput().toString());
+    protected final File getInputFile() {
+        return productReader.getInputFile();
     }
 
-    protected File getInputFileParentDirectory() {
-        return getInputFile().getParentFile();
+    protected final File getInputFileParentDirectory() {
+        return productReader.getInputFileParentDirectory();
     }
 
-    protected String getProductName() {
+    protected final String getProductName() {
         return FileUtils.getFilenameWithoutExtension(getInputFileParentDirectory());
     }
 }

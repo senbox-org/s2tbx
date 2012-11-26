@@ -1,8 +1,22 @@
-package org.esa.beam.dataio.s3.slstr;
+package org.esa.beam.dataio.s3.slstr;/*
+ * Copyright (C) 2012 Brockmann Consult GmbH (info@brockmann-consult.de)
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see http://www.gnu.org/licenses/
+ */
 
 import com.bc.ceres.glevel.MultiLevelImage;
-import org.esa.beam.dataio.s3.manifest.ManifestProductReader;
-import org.esa.beam.framework.dataio.ProductReaderPlugIn;
+import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
+import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
@@ -22,14 +36,14 @@ import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 
-abstract class SlstrProductReader extends ManifestProductReader {
+public abstract class SlstrProductFactory extends AbstractManifestProductFactory {
 
     private double nadStartOffset;
     private double nadTrackOffset;
     private short[] nadResolutions;
 
-    protected SlstrProductReader(ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
+    protected SlstrProductFactory(Sentinel3ProductReaderR productReader) {
+        super(productReader);
     }
 
     @Override
@@ -146,4 +160,5 @@ abstract class SlstrProductReader extends ManifestProductReader {
         }
         targetProduct.setAutoGrouping(patternBuilder.toString());
     }
+
 }

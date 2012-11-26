@@ -1,24 +1,23 @@
-/*
- * Copyright (c) 2012. Brockmann Consult (info@brockmann-consult.de)
+package org.esa.beam.dataio.s3.synergy;/*
+ * Copyright (C) 2012 Brockmann Consult GmbH (info@brockmann-consult.de)
  *
  * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation. This program is distributed in the hope it will
- * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.beam.dataio.s3.synergy;
-
-import org.esa.beam.dataio.s3.manifest.Manifest;
-import org.esa.beam.dataio.s3.manifest.ManifestProductReader;
+import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
+import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
+import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.framework.datamodel.Band;
-import org.esa.beam.framework.datamodel.FlagCoding;
 import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -30,22 +29,14 @@ import javax.media.jai.BorderExtender;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.operator.ScaleDescriptor;
-import java.awt.Color;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Product reader responsible for reading VGT P data products in SAFE format.
- *
- * @author Olaf Danne
- * @author Ralf Quast
- * @since 1.0
- */
-class VgtProductReader extends ManifestProductReader {
+public class VgtProductFactory extends AbstractManifestProductFactory {
 
-    VgtProductReader(VgtProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
+    public VgtProductFactory(Sentinel3ProductReaderR productReader) {
+        super(productReader);
     }
 
     @Override
@@ -88,7 +79,7 @@ class VgtProductReader extends ManifestProductReader {
                                                                  BorderExtender.createInstance(
                                                                          BorderExtender.BORDER_COPY));
         // TODO: here we border effects because no-data value is used for interpolation
-        targetBand.setSourceImage(ScaleDescriptor.create(sourceBand.getSourceImage(), 8.0f, 8.0f, 0.0f, 0.0f,
+        targetBand.setSourceImage(ScaleDescriptor.create(sourceBand.getSourceImage(), 8.0f, 8.0f, -3.0f, -3.0f,
                                                          Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                                                          renderingHints));
         return targetBand;
@@ -100,12 +91,11 @@ class VgtProductReader extends ManifestProductReader {
         final ProductNodeGroup<Mask> maskGroup = targetProduct.getMaskGroup();
         for (int i = 0; i < maskGroup.getNodeCount(); i++) {
             final Mask mask = maskGroup.get(i);
-            if(mask.getImageType() instanceof Mask.BandMathsType) {
+            if (mask.getImageType() instanceof Mask.BandMathsType) {
                 String expression = Mask.BandMathsType.getExpression(mask);
                 expression = expression.concat(" && (SM.B0_good || SM.B2_good || SM.B3_good || SM.MIR_good)");
                 Mask.BandMathsType.setExpression(mask, expression);
             }
         }
     }
-
 }

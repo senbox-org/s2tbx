@@ -15,8 +15,8 @@ package org.esa.beam.dataio.s3.slstr;/*
  */
 
 import com.bc.ceres.glevel.MultiLevelImage;
-import org.esa.beam.dataio.s3.manifest.Manifest;
-import org.esa.beam.framework.dataio.ProductReaderPlugIn;
+import org.esa.beam.dataio.s3.Manifest;
+import org.esa.beam.dataio.s3.Sentinel3ProductReaderR;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
@@ -36,18 +36,17 @@ import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class SlstrL1bProductReader extends SlstrProductReader {
+public class SlstrLevel1ProductFactory extends SlstrProductFactory {
 
     private double masterStartOffset;
     private double masterTrackOffset;
     private short[] masterResolutions;
 
-    protected SlstrL1bProductReader(ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
+    public SlstrLevel1ProductFactory(Sentinel3ProductReaderR productReader) {
+        super(productReader);
     }
 
     @Override
@@ -234,13 +233,15 @@ public class SlstrL1bProductReader extends SlstrProductReader {
 
     @Override
     protected Product findMasterProduct() {
-        Product masterProduct = openProductList.get(0);
-        for (int i = 1; i < openProductList.size(); i++) {
-            Product product = openProductList.get(i);
+        final List<Product> productList = getOpenProductList();
+        Product masterProduct = productList.get(0);
+        for (int i = 1; i < productList.size(); i++) {
+            Product product = productList.get(i);
             if (product.getSceneRasterWidth() > masterProduct.getSceneRasterWidth() && product.getSceneRasterHeight() > masterProduct.getSceneRasterHeight()) {
                 masterProduct = product;
             }
         }
         return masterProduct;
     }
+
 }
