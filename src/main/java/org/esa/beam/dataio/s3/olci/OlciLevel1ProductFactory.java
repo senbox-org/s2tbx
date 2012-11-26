@@ -15,6 +15,8 @@ package org.esa.beam.dataio.s3.olci;/*
  */
 
 import com.bc.ceres.glevel.MultiLevelImage;
+import org.esa.beam.dataio.s3.DataSetPointer;
+import org.esa.beam.dataio.s3.EarthExplorerManifest;
 import org.esa.beam.dataio.s3.ProductFactory;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.dataio.ProductIO;
@@ -84,7 +86,7 @@ public class OlciLevel1ProductFactory implements ProductFactory {
     @Override
     public Product createProduct() throws IOException {
         File inputFile = productReader.getInputFile();
-        OlciL1bManifest manifest = createManifestFile(inputFile);
+        EarthExplorerManifest manifest = createManifestFile(inputFile);
         Product product = new Product(manifest.getProductName(), manifest.getProductType(),
                                       manifest.getColumnCount(), manifest.getLineCount(), productReader);
         product.setDescription(manifest.getDescription());
@@ -101,7 +103,7 @@ public class OlciLevel1ProductFactory implements ProductFactory {
         return product;
     }
 
-    private void attachAnnotationDataToProduct(OlciL1bManifest manifest, Product product) {
+    private void attachAnnotationDataToProduct(EarthExplorerManifest manifest, Product product) {
         List<DataSetPointer> annotationPointers = manifest.getDataSetPointers(DataSetPointer.Type.A);
         annotationPointers = removeOrphanedDataSetPointers(annotationPointers);
         annotationProducts = createDataSetProducts(annotationPointers);
@@ -174,7 +176,7 @@ public class OlciLevel1ProductFactory implements ProductFactory {
         }
     }
 
-    private void attachBandsToProduct(OlciL1bManifest manifest, Product product) {
+    private void attachBandsToProduct(EarthExplorerManifest manifest, Product product) {
         List<DataSetPointer> measurementPointers = manifest.getDataSetPointers(DataSetPointer.Type.M);
         measurementPointers = removeOrphanedDataSetPointers(measurementPointers);
         bandProducts = createDataSetProducts(measurementPointers);
@@ -272,10 +274,10 @@ public class OlciLevel1ProductFactory implements ProductFactory {
         return fileName;
     }
 
-    private OlciL1bManifest createManifestFile(File inputFile) throws IOException {
+    private EarthExplorerManifest createManifestFile(File inputFile) throws IOException {
         InputStream manifestInputStream = new FileInputStream(inputFile);
         try {
-            return new OlciL1bManifest(createXmlDocument(manifestInputStream));
+            return new EarthExplorerManifest(createXmlDocument(manifestInputStream));
         } finally {
             manifestInputStream.close();
         }

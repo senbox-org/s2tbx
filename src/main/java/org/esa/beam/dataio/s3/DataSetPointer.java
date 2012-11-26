@@ -13,14 +13,43 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-package org.esa.beam.dataio.s3.olci;
+package org.esa.beam.dataio.s3;
 
 /**
- * Enumeration of the modes defined for OLCI Level 1b
+ * Serves as a pointer to a measurement data set file.
  *
  * @author Marco Peters
  * @since 1.0
  */
-enum OlciL1bModes {
-    EFR, ERR
+public class DataSetPointer {
+
+    enum Type {
+        M, A
+    }
+
+    private String fileName;
+    private String fileFormat;
+    private Type type;
+
+
+    public DataSetPointer(String fileName, String fileFormat, Type type) {
+        this.fileName = fileName;
+        this.fileFormat = fileFormat;
+        this.type = type;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+    public String getFileFormat() {
+        return fileFormat;
+    }
+
+    public Type getType() {
+        return type;
+    }
 }

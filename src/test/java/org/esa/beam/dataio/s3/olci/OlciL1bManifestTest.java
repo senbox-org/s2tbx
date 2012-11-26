@@ -15,6 +15,8 @@
 
 package org.esa.beam.dataio.s3.olci;
 
+import org.esa.beam.dataio.s3.DataSetPointer;
+import org.esa.beam.dataio.s3.EarthExplorerManifest;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.junit.Before;
@@ -33,14 +35,14 @@ import static org.junit.Assert.*;
 
 public class OlciL1bManifestTest {
 
-    private OlciL1bManifest manifestTest;
+    private EarthExplorerManifest manifestTest;
 
     @Before
     public void before() throws ParserConfigurationException, IOException, SAXException {
         InputStream stream = getClass().getResourceAsStream("L1b_TEST_manifest.xml");
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
-            manifestTest = new OlciL1bManifest(doc);
+            manifestTest = new EarthExplorerManifest(doc);
         } finally {
             stream.close();
         }
