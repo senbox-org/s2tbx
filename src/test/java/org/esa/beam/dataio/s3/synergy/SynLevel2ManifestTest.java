@@ -15,7 +15,8 @@
 
 package org.esa.beam.dataio.s3.synergy;
 
-import org.esa.beam.dataio.s3.Manifest;
+import org.esa.beam.dataio.s3.ManifestI;
+import org.esa.beam.dataio.s3.SafeManifest;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,14 +34,14 @@ import static org.junit.Assert.assertTrue;
 
 public class SynLevel2ManifestTest {
 
-    private Manifest manifestTest;
+    private ManifestI manifestTest;
 
     @Before
     public void before() throws ParserConfigurationException, IOException, SAXException {
         InputStream stream = getClass().getResourceAsStream("SY2_TEST_manifest.safe");
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
-            manifestTest = Manifest.createManifest(doc);
+            manifestTest = SafeManifest.createManifest(doc);
         } finally {
             stream.close();
         }
@@ -77,12 +78,6 @@ public class SynLevel2ManifestTest {
     }
 
     @Test
-    public void testGetGeoCoordinatesFileName() {
-        assertEquals("geolocation.nc",
-                     manifestTest.getFileName("metadataSection/metadataObject", "geocoordinatesSchema"));
-    }
-
-    @Test
     public void testGetTiepointFileNames() {
         List<String> tiepointsFiles = manifestTest.getFileNames("tiepointsSchema");
         assertEquals(4, tiepointsFiles.size());
@@ -90,10 +85,5 @@ public class SynLevel2ManifestTest {
         assertEquals("tiepoints_olci.nc", tiepointsFiles.get(1));
         assertEquals("tiepoints_slstr_n.nc", tiepointsFiles.get(2));
         assertEquals("tiepoints_slstr_o.nc", tiepointsFiles.get(3));
-    }
-
-    @Test
-    public void testGetTimeFileName() {
-        assertEquals("time.nc", manifestTest.getFileName("metadataSection/metadataObject", "timeCoordinatesSchema"));
     }
 }

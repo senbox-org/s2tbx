@@ -15,8 +15,8 @@ package org.esa.beam.dataio.s3.synergy;/*
  */
 
 import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
+import org.esa.beam.dataio.s3.ManifestI;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
-import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
@@ -40,7 +40,7 @@ public class VgtProductFactory extends AbstractManifestProductFactory {
     }
 
     @Override
-    protected List<String> getFileNames(Manifest manifest) {
+    protected List<String> getFileNames(ManifestI manifest) {
         final List<String> fileNames = new ArrayList<String>();
         fileNames.addAll(manifest.getFileNames("measurementDataSchema"));
         fileNames.addAll(manifest.getFileNames("statusFlagsSchema"));

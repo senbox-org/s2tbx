@@ -15,8 +15,8 @@ package org.esa.beam.dataio.s3.olci;/*
  */
 
 import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
+import org.esa.beam.dataio.s3.ManifestI;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
-import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
@@ -60,7 +60,7 @@ public class OlciLevel2ProductFactory extends AbstractManifestProductFactory {
     }
 
     @Override
-    protected List<String> getFileNames(Manifest manifest) {
+    protected List<String> getFileNames(ManifestI manifest) {
         final List<String> fileList = new ArrayList<String>();
 
         fileList.addAll(manifest.getFileNames("measurementDataSchema"));

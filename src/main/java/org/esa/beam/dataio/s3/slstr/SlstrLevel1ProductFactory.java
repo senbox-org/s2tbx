@@ -15,7 +15,7 @@ package org.esa.beam.dataio.s3.slstr;/*
  */
 
 import com.bc.ceres.glevel.MultiLevelImage;
-import org.esa.beam.dataio.s3.Manifest;
+import org.esa.beam.dataio.s3.ManifestI;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -50,7 +50,7 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     }
 
     @Override
-    protected List<String> getFileNames(Manifest manifest) {
+    protected List<String> getFileNames(ManifestI manifest) {
         final File directory = getInputFileParentDirectory();
 
         final String[] fileNames = directory.list(new FilenameFilter() {

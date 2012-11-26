@@ -33,32 +33,36 @@ import java.util.List;
  * @author Ralf Quast
  * @since 1.0
  */
-public class Manifest {
+public class SafeManifest implements ManifestI {
 
     private final Document doc;
     private final XPathHelper xPathHelper;
 
-    public static Manifest createManifest(Document manifestDocument) {
-        return new Manifest(manifestDocument);
+    public static ManifestI createManifest(Document manifestDocument) {
+        return new SafeManifest(manifestDocument);
     }
 
-    private Manifest(Document manifestDocument) {
+    private SafeManifest(Document manifestDocument) {
         doc = manifestDocument;
         xPathHelper = new XPathHelper(XPathFactory.newInstance().newXPath());
     }
 
+    @Override
     public String getDescription() {
         return xPathHelper.getString("/XFDU/informationPackageMap/contentUnit/@textInfo", doc);
     }
 
+    @Override
     public ProductData.UTC getStartTime() {
         return getTime("startTime");
     }
 
+    @Override
     public ProductData.UTC getStopTime() {
         return getTime("stopTime");
     }
 
+    @Override
     public List<String> getFileNames(final String schema) {
         final List<String> fileNameList = new ArrayList<String>();
 
@@ -68,7 +72,7 @@ public class Manifest {
         return fileNameList;
     }
 
-    public List<String> getFileNames(String objectPath, final String schema, List<String> fileNameList) {
+    private List<String> getFileNames(String objectPath, final String schema, List<String> fileNameList) {
         final NodeList nodeList = xPathHelper.getNodeList(
                 "/XFDU/" + objectPath + "[@repID='" + schema + "']", doc);
         for (int i = 0; i < nodeList.getLength(); i++) {
@@ -80,11 +84,6 @@ public class Manifest {
         }
 
         return fileNameList;
-    }
-
-    public String getFileName(final String objectPath, final String schema) {
-        final Node node = xPathHelper.getNode("/XFDU/" + objectPath + "[@repID='" + schema + "']", doc);
-        return xPathHelper.getString("./byteStream/fileLocation/@href", node);
     }
 
     private ProductData.UTC getTime(final String name) {
