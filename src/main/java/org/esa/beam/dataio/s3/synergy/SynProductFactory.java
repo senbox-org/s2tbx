@@ -29,9 +29,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SynLevel2ProductFactory extends AbstractProductFactory {
+public class SynProductFactory extends AbstractProductFactory {
 
-    public SynLevel2ProductFactory(Sentinel3ProductReader productReader) {
+    public SynProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
     }
 
