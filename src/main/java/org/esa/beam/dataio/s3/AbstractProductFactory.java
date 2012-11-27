@@ -52,6 +52,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     private final List<Product> openProductList = new ArrayList<Product>();
     private final Sentinel3ProductReader productReader;
     private final Logger logger;
+
     private Manifest manifest;
 
     public AbstractProductFactory(Sentinel3ProductReader productReader) {
@@ -281,7 +282,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         try {
             final Document xmlDocument = createXmlDocument(inputStream);
             if(xmlDocument.getDocumentElement().getTagName().contains("Earth_Explorer")) {
-                return new EarthExplorerManifest(xmlDocument);
+                return EarthExplorerManifest.createManifest(xmlDocument);
             } else {
                 return SafeManifest.createManifest(xmlDocument);
             }

@@ -13,7 +13,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-package org.esa.beam.dataio.s3.olci;
+package org.esa.beam.dataio.s3;
 
 import org.esa.beam.dataio.s3.EarthExplorerManifest;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -31,16 +31,16 @@ import java.text.ParseException;
 
 import static org.junit.Assert.*;
 
-public class OlciL1bManifestTest {
+public class EarthExplorerManifestTest {
 
-    private EarthExplorerManifest manifest;
+    private Manifest manifest;
 
     @Before
     public void before() throws ParserConfigurationException, IOException, SAXException {
         InputStream stream = getClass().getResourceAsStream("L1b_TEST_manifest.xml");
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
-            manifest = new EarthExplorerManifest(doc);
+            manifest = EarthExplorerManifest.createManifest(doc);
         } finally {
             stream.close();
         }

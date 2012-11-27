@@ -35,12 +35,12 @@ import java.util.List;
  * @author Ralf Quast
  * @since 1.0
  */
-public class SafeManifest implements Manifest {
+class SafeManifest implements Manifest {
 
     private final Document doc;
     private final XPathHelper xPathHelper;
 
-    public static Manifest createManifest(Document manifestDocument) {
+    static Manifest createManifest(Document manifestDocument) {
         return new SafeManifest(manifestDocument);
     }
 

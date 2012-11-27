@@ -35,17 +35,21 @@ import java.util.List;
  * @author Marco Peters
  * @since 1.0
  */
-public class EarthExplorerManifest implements Manifest {
+class EarthExplorerManifest implements Manifest {
 
     private final Document doc;
     private final XPathHelper xPathHelper;
+
+    static Manifest createManifest(Document manifestDocument) {
+        return new EarthExplorerManifest(manifestDocument);
+    }
 
     /**
      * Creates an instance of this class by using the given W3C document.
      *
      * @param manifestDocument the W3C manifest document.
      */
-    public EarthExplorerManifest(Document manifestDocument) {
+    private EarthExplorerManifest(Document manifestDocument) {
         doc = manifestDocument;
         XPath xPath = XPathFactory.newInstance().newXPath();
         xPathHelper = new XPathHelper(xPath);
