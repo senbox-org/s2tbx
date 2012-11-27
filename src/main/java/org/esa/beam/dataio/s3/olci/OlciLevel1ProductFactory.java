@@ -31,32 +31,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 public class OlciLevel1ProductFactory extends AbstractProductFactory {
 
-    private static final float[] spectralWavelengths = new float[21];
-    private static final float[] spectralBandwidths = new float[21];
+    private static final SpectralBandProperties SPECTRAL_BAND_PROPERTIES;
 
     static {
-        getSpectralBandsProperties(spectralWavelengths, spectralBandwidths);
-    }
-
-    static void getSpectralBandsProperties(float[] wavelengths, float[] bandwidths) {
-        final Properties properties = new Properties();
-
-        try {
-            properties.load(OlciLevel1ProductFactory.class.getResourceAsStream("spectralBands.properties"));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-
-        for (int i = 0; i < wavelengths.length; i++) {
-            wavelengths[i] = Float.parseFloat(properties.getProperty("wavelengths." + i));
-        }
-        for (int i = 0; i < bandwidths.length; i++) {
-            bandwidths[i] = Float.parseFloat(properties.getProperty("bandwidths." + i));
-        }
+        SPECTRAL_BAND_PROPERTIES = new SpectralBandProperties();
     }
 
     public OlciLevel1ProductFactory(Sentinel3ProductReader productReader) {
@@ -78,7 +59,8 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
         final String[] radianceFileNames = directory.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return name.endsWith(".nc") && (acceptRadiances == name.contains("radiances") && !name.contains("timeCoordinates"));
+                return name.endsWith(".nc") && (acceptRadiances == name.contains("radiances") && !name.contains(
+                        "timeCoordinates"));
             }
         });
         fileNameList.addAll(Arrays.asList(radianceFileNames));
@@ -116,7 +98,8 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
 
     @Override
     protected void setGeoCoding(Product targetProduct) throws IOException {
-        if (targetProduct.getTiePointGrid("TP_latitude") != null && targetProduct.getTiePointGrid("TP_longitude") != null) {
+        if (targetProduct.getTiePointGrid("TP_latitude") != null && targetProduct.getTiePointGrid(
+                "TP_longitude") != null) {
             targetProduct.setGeoCoding(new TiePointGeoCoding(targetProduct.getTiePointGrid("TP_latitude"),
                                                              targetProduct.getTiePointGrid("TP_longitude")));
         }
@@ -129,11 +112,11 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
             final String sourceBandName = sourceBand.getName();
             if (sourceBandName.matches("TOA_radiances_Oa[0-2][0-9]")) {
                 final int channel = Integer.parseInt(sourceBandName.substring(16, 18));
-                targetBand.setSpectralBandIndex(channel - 1);
-                targetBand.setSpectralWavelength(spectralWavelengths[channel - 1]);
-                targetBand.setSpectralBandwidth(spectralBandwidths[channel - 1]);
+                final int index = channel - 1;
+                targetBand.setSpectralBandIndex(index);
+                targetBand.setSpectralWavelength(SPECTRAL_BAND_PROPERTIES.getWavelength(index));
+                targetBand.setSpectralBandwidth(SPECTRAL_BAND_PROPERTIES.getBandwidth(index));
             }
         }
     }
-
 }

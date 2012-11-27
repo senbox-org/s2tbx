@@ -98,27 +98,28 @@ class EarthExplorerManifest implements Manifest {
         final Node node = xPathHelper.getNode("//Earth_Explorer_Header", doc);
 
         manifestElement.addElement(convertNodeToMetadataElement(node, new MetadataElement(node.getNodeName())));
+
         return manifestElement;
     }
 
-    private static MetadataElement convertNodeToMetadataElement(Node rootNode, MetadataElement rootMetadata) {
-        NodeList childNodes = rootNode.getChildNodes();
+    private static MetadataElement convertNodeToMetadataElement(Node sourceNode, MetadataElement targetElement) {
+        final NodeList childNodes = sourceNode.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
-            Node node = childNodes.item(i);
+            final Node node = childNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 if (hasElementChildNodes(node)) {
                     MetadataElement element = new MetadataElement(node.getNodeName());
                     convertNodeToMetadataElement(node, element);
-                    rootMetadata.addElement(element);
+                    targetElement.addElement(element);
                 } else {
-                    String nodevalue = node.getTextContent();
-                    ProductData textContent = ProductData.createInstance(nodevalue);
-                    rootMetadata.addAttribute(new MetadataAttribute(node.getNodeName(), textContent, true));
+                    final String nodeValue = node.getTextContent();
+                    final ProductData textContent = ProductData.createInstance(nodeValue);
+                    final MetadataAttribute attribute = new MetadataAttribute(node.getNodeName(), textContent, true);
+                    targetElement.addAttribute(attribute);
                 }
             }
         }
-
-        return rootMetadata;
+        return targetElement;
     }
 
     private static boolean hasElementChildNodes(Node rootNode) {

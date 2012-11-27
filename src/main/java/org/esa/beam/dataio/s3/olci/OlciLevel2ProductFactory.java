@@ -27,36 +27,17 @@ import org.esa.beam.framework.datamodel.TiePointGrid;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 public class OlciLevel2ProductFactory extends AbstractProductFactory {
 
-    private static final float[] spectralWavelengths = new float[21];
-    private static final float[] spectralBandwidths = new float[21];
+    private static final SpectralBandProperties SPECTRAL_BAND_PROPERTIES;
+
+    static {
+        SPECTRAL_BAND_PROPERTIES = new SpectralBandProperties();
+    }
 
     public OlciLevel2ProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
-    }
-
-    static {
-        getSpectralBandsProperties(spectralWavelengths, spectralBandwidths);
-    }
-
-    static void getSpectralBandsProperties(float[] wavelengths, float[] bandwidths) {
-        final Properties properties = new Properties();
-
-        try {
-            properties.load(OlciLevel2ProductFactory.class.getResourceAsStream("spectralBands.properties"));
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-
-        for (int i = 0; i < wavelengths.length; i++) {
-            wavelengths[i] = Float.parseFloat(properties.getProperty("wavelengths." + i));
-        }
-        for (int i = 0; i < bandwidths.length; i++) {
-            bandwidths[i] = Float.parseFloat(properties.getProperty("bandwidths." + i));
-        }
     }
 
     @Override
@@ -85,34 +66,32 @@ public class OlciLevel2ProductFactory extends AbstractProductFactory {
         if (targetNode.getName().matches("RC?[0-9]{3}[0-9]?")) {
             if (targetNode instanceof Band) {
                 final Band targetBand = (Band) targetNode;
-                int numberIndex = 1;
-                if (targetNode.getName().matches("RC[0-9]{3}[0-9]?")) {
-                    numberIndex = 2;
-                }
-                final int bandWavelength = Integer.parseInt(targetNode.getName().substring(numberIndex));
-                int spectralBandIndex = getSpectralBandIndex(bandWavelength);
-                targetBand.setSpectralWavelength(spectralWavelengths[spectralBandIndex]);
-                targetBand.setSpectralBandwidth(spectralBandwidths[spectralBandIndex]);
+                final int beginIndex = targetNode.getName().matches("RC[0-9]{3}[0-9]?") ? 2 : 1;
+                final int bandWavelength = Integer.parseInt(targetBand.getName().substring(beginIndex));
+                final int bandIndex = findNearestSpectralBandIndex(bandWavelength);
+                targetBand.setSpectralWavelength(SPECTRAL_BAND_PROPERTIES.getWavelength(bandIndex));
+                targetBand.setSpectralBandwidth(SPECTRAL_BAND_PROPERTIES.getBandwidth(bandIndex));
             }
         }
     }
 
-    private int getSpectralBandIndex(int bandWavelength) {
-        float lastWavelengthDist = Float.POSITIVE_INFINITY;
-        for (int i = 0; i < spectralWavelengths.length; i++) {
-            final float wavelengthDist = Math.abs(spectralWavelengths[i] - bandWavelength);
-            if (wavelengthDist < lastWavelengthDist) {
-                lastWavelengthDist = wavelengthDist;
+    private int findNearestSpectralBandIndex(int bandWavelength) {
+        float minWavelengthDifference = Float.POSITIVE_INFINITY;
+
+        for (int i = 0; i < SPECTRAL_BAND_PROPERTIES.getSpectralBandCount(); i++) {
+            final float wavelengthDist = Math.abs(SPECTRAL_BAND_PROPERTIES.getWavelength(i) - bandWavelength);
+            if (wavelengthDist < minWavelengthDifference) {
+                minWavelengthDifference = wavelengthDist;
             } else {
-                if(i>0) {
-                    return i-1;
-                }
-                else {
+                if (i > 0) {
+                    return i - 1;
+                } else {
                     return 0;
                 }
             }
         }
-        return spectralWavelengths.length - 1;
+
+        return SPECTRAL_BAND_PROPERTIES.getSpectralBandCount() - 1;
     }
 
     @Override
