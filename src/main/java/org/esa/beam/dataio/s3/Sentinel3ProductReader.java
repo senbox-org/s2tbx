@@ -15,6 +15,7 @@ package org.esa.beam.dataio.s3;/*
  */
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.beam.dataio.s3.olci.OlciLevel1ProductFactory;
 import org.esa.beam.dataio.s3.olci.OlciLevel2ProductFactory;
 import org.esa.beam.dataio.s3.slstr.SlstrLevel1ProductFactory;
 import org.esa.beam.dataio.s3.slstr.SlstrLstProductFactory;
@@ -43,7 +44,7 @@ public class Sentinel3ProductReader extends AbstractProductReader {
         final String dirName = getInputFileParentDirectory().getName();
 
         if (dirName.matches("S3.?_OL_1_E[RF]R_.*")) { // OLCI L1b
-            factory = new OlciLevel2ProductFactory(this);
+            factory = new OlciLevel1ProductFactory(this);
         } else if (dirName.matches("S3.?_OL_2_(L[FR]R|W[FR]R)_.*.SAFE")) { // OLCI L2 -
             factory = new OlciLevel2ProductFactory(this);
         } else if (dirName.matches("S3.?_SL_1_SLT.*")) { // SLSTR L1b
