@@ -74,7 +74,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     private RenderedImage createSourceImage(Band sourceBand, float[] offsets,
-                                              Band targetBand, short[] sourceResolutions) {
+                                            Band targetBand, short[] sourceResolutions) {
         final ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(targetBand);
         final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
@@ -102,7 +102,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     private RasterDataNode copyTiePointGrid(Band sourceBand, Product targetProduct, double sourceStartOffset,
-                                                    double sourceTrackOffset, short[] sourceResolutions) {
+                                            double sourceTrackOffset, short[] sourceResolutions) {
         final int subSamplingX = sourceResolutions[0] / referenceResolutions[0];
         final int subSamplingY;
         if (sourceResolutions.length == 2) {
@@ -173,8 +173,10 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
                 patternBuilder.append(":");
             }
             String patternName = sourceProductName;
-            String[] unwantedPatternContents = new String[]{"_an", "_ao", "_bn", "_bo", "_cn", "_co", "_in", "_io",
-                    "_tn", "_to", "_tx"};
+            String[] unwantedPatternContents = new String[]{
+                    "_an", "_ao", "_bn", "_bo", "_cn", "_co", "_in", "_io",
+                    "_tn", "_to", "_tx"
+            };
             for (String unwantedPatternContent : unwantedPatternContents) {
                 if (sourceProductName.contains(unwantedPatternContent)) {
                     patternName = sourceProductName.substring(0, sourceProductName.lastIndexOf(unwantedPatternContent));
@@ -186,7 +188,8 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         targetProduct.setAutoGrouping(patternBuilder.toString());
     }
 
-    protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints, MultiLevelImage sourceImage) {
+    protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints,
+                                              MultiLevelImage sourceImage) {
         return sourceImage;
     }
 }

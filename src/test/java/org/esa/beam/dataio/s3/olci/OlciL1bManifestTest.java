@@ -65,20 +65,23 @@ public class OlciL1bManifestTest {
 
     @Test
     public void testGetMetadata() {
-        MetadataElement metadataElement = manifest.getMetadata();
+        final MetadataElement manifestElement = manifest.getMetadata();
 
-        assertNotNull(metadataElement);
-        assertEquals("Manifest", metadataElement.getName());
-        assertEquals(0, metadataElement.getNumAttributes());
-        assertEquals(3, metadataElement.getNumElements());
+        assertNotNull(manifestElement);
+        assertEquals("Manifest", manifestElement.getName());
+        assertEquals(0, manifestElement.getNumAttributes());
+        assertEquals(1, manifestElement.getNumElements());
 
-        final MetadataElement fixedHeaderElement = metadataElement.getElement("Fixed_Header");
+        final MetadataElement headerElement = manifestElement.getElement("Earth_Explorer_Header");
+        assertNotNull(headerElement);
+        assertEquals(2, headerElement.getNumElements());
+
+        final MetadataElement fixedHeaderElement = headerElement.getElement("Fixed_Header");
         assertNotNull(fixedHeaderElement);
         assertEquals(7, fixedHeaderElement.getNumAttributes());
         assertEquals("TEST", fixedHeaderElement.getAttributeString("File_Class"));
         MetadataElement validityPeriodElement = fixedHeaderElement.getElement("Validity_Period");
         assertNotNull(validityPeriodElement);
         assertEquals(2, validityPeriodElement.getNumAttributes());
-
     }
 }
