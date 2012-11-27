@@ -36,7 +36,7 @@ public class SafeManifestTest {
 
     @Before
     public void before() throws ParserConfigurationException, IOException, SAXException {
-        InputStream stream = getClass().getResourceAsStream("SY2_TEST_manifest.safe");
+        InputStream stream = getClass().getResourceAsStream("SYN_TEST_manifest.safe");
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
             manifestTest = SafeManifest.createManifest(doc);

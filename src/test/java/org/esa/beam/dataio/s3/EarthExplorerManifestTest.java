@@ -37,7 +37,7 @@ public class EarthExplorerManifestTest {
 
     @Before
     public void before() throws ParserConfigurationException, IOException, SAXException {
-        InputStream stream = getClass().getResourceAsStream("L1b_TEST_manifest.xml");
+        InputStream stream = getClass().getResourceAsStream("Earth_Explorer_manifest.xml");
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
             manifest = EarthExplorerManifest.createManifest(doc);
