@@ -71,6 +71,10 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     }
 
     @Override
+    protected void setTimes(Product targetProduct) {
+    }
+
+    @Override
     protected short[] getResolutions(MetadataElement globalAttributes) {
         short[] resolutions = super.getResolutions(globalAttributes);
         if (resolutions.length == 1) {
