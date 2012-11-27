@@ -59,7 +59,7 @@ public class Sentinel3ProductReaderPlugInTest {
 
     @Test
     public void testDecodeQualification_OlciLevel2() {
-        final String path = createManifestFilePath("OL", "2", "XXX", ".SAFE");
+        final String path = createManifestFilePath("OL", "2", "WFR", ".SAFE");
         assertEquals(DecodeQualification.INTENDED, plugIn.getDecodeQualification(path));
     }
 
