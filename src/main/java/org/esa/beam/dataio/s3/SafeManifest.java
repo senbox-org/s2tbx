@@ -16,6 +16,8 @@
 package org.esa.beam.dataio.s3;
 
 import org.esa.beam.dataio.util.XPathHelper;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
+import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -70,6 +72,46 @@ public class SafeManifest implements Manifest {
         getFileNames("metadataSection/metadataObject", schema, fileNameList);
 
         return fileNameList;
+    }
+
+    @Override
+    public MetadataElement getMetadata() {
+        final MetadataElement manifestElement = new MetadataElement("Manifest");
+        final Node node = xPathHelper.getNode("//metadataSection", doc);
+
+        manifestElement.addElement(convertNodeToMetadataElement(node, new MetadataElement(node.getNodeName())));
+        return manifestElement;
+    }
+
+    private static MetadataElement convertNodeToMetadataElement(Node rootNode, MetadataElement rootMetadata) {
+        NodeList childNodes = rootNode.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node node = childNodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                if (hasElementChildNodes(node)) {
+                    MetadataElement element = new MetadataElement(node.getNodeName());
+                    convertNodeToMetadataElement(node, element);
+                    rootMetadata.addElement(element);
+                } else {
+                    String nodevalue = node.getTextContent();
+                    ProductData textContent = ProductData.createInstance(nodevalue);
+                    rootMetadata.addAttribute(new MetadataAttribute(node.getNodeName(), textContent, true));
+                }
+            }
+        }
+
+        return rootMetadata;
+    }
+
+    private static boolean hasElementChildNodes(Node rootNode) {
+        NodeList childNodes = rootNode.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node node = childNodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private List<String> getFileNames(String objectPath, final String schema, List<String> fileNameList) {

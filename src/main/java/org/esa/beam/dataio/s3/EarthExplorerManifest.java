@@ -37,10 +37,6 @@ import java.util.List;
  */
 public class EarthExplorerManifest implements Manifest {
 
-    public static final String FIXED_HEADER_BASE_PATH = "/Earth_Explorer_Header/Fixed_Header/";
-    public static final String MPH_BASE_PATH = "/Earth_Explorer_Header/Variable_Header/Main_Product_Header/";
-    public static final String SPH_BASE_PATH = "/Earth_Explorer_Header/Variable_Header/Specific_Product_Header/";
-
     private final Document doc;
     private final XPathHelper xPathHelper;
 
@@ -55,30 +51,14 @@ public class EarthExplorerManifest implements Manifest {
         xPathHelper = new XPathHelper(xPath);
     }
 
-    public String getProductName() {
-        return xPathHelper.getString(FIXED_HEADER_BASE_PATH + "File_Name", doc);
-    }
-
     @Override
     public final String getDescription() {
-        return xPathHelper.getString(FIXED_HEADER_BASE_PATH + "File_Description", doc);
-    }
-
-    public String getProductType() {
-        return xPathHelper.getString(FIXED_HEADER_BASE_PATH + "File_Type", doc);
-    }
-
-    public int getLineCount() {
-        return Integer.parseInt(xPathHelper.getString(SPH_BASE_PATH + "Image_Size/Lines_Number", doc));
-    }
-
-    public int getColumnCount() {
-        return Integer.parseInt(xPathHelper.getString(SPH_BASE_PATH + "Columns_Number", doc));
+        return xPathHelper.getString("//File_Description", doc);
     }
 
     @Override
     public final ProductData.UTC getStartTime() {
-        final String utcString = xPathHelper.getString(MPH_BASE_PATH + "Start_Time", doc);
+        final String utcString = xPathHelper.getString("//Start_Time", doc);
         try {
             return ProductData.UTC.parse(utcString, "'UTC='yyyy-MM-dd'T'HH:mm:ss");
         } catch (ParseException ignored) {
@@ -88,7 +68,7 @@ public class EarthExplorerManifest implements Manifest {
 
     @Override
     public final ProductData.UTC getStopTime() {
-        final String utcString = xPathHelper.getString(MPH_BASE_PATH + "Stop_Time", doc);
+        final String utcString = xPathHelper.getString("//Stop_Time", doc);
         try {
             return ProductData.UTC.parse(utcString, "'UTC='yyyy-MM-dd'T'HH:mm:ss");
         } catch (ParseException ignored) {
@@ -98,39 +78,26 @@ public class EarthExplorerManifest implements Manifest {
 
     @Override
     public final List<String> getFileNames(String schema) {
-        return null;  // TODO - implement
-    }
-
-    public List<DataSetPointer> getDataSetPointers(DataSetPointer.Type type) {
-        String xPath = String.format("%sList_of_Data_Objects/Data_Object_Descriptor[Type='%s']", SPH_BASE_PATH, type);
-        NodeList nodeList = xPathHelper.getNodeList(xPath, doc);
-        List<DataSetPointer> dataSetPointers = new ArrayList<DataSetPointer>();
+        final String xPath = String.format("//Data_Object_Descriptor[Type='%s']", schema);
+        final NodeList nodeList = xPathHelper.getNodeList(xPath, doc);
+        final List<String> fileNames = new ArrayList<String>();
         for (int i = 0; i < nodeList.getLength(); i++) {
-            Node dataObjectDescriptorNode = nodeList.item(i);
-            String fileName = xPathHelper.getString("Filename", dataObjectDescriptorNode);
-            String fileFormat = xPathHelper.getString("File_Format", dataObjectDescriptorNode);
-            dataSetPointers.add(new DataSetPointer(fileName, fileFormat, type));
+            final Node dataObjectDescriptorNode = nodeList.item(i);
+            fileNames.add(xPathHelper.getString("Filename", dataObjectDescriptorNode));
         }
-
-        return dataSetPointers;
+        return fileNames;
     }
 
-    public MetadataElement getFixedHeader() {
-        Node node = xPathHelper.getNode("/Earth_Explorer_Header/Fixed_Header", doc);
-        return convertNodeToMetadataElement(node, new MetadataElement(node.getNodeName()));
+    @Override
+    public MetadataElement getMetadata() {
+        final MetadataElement manifestElement = new MetadataElement("Manifest");
+        final Node node = xPathHelper.getNode("//Earth_Explorer_Header", doc);
+
+        manifestElement.addElement(convertNodeToMetadataElement(node, new MetadataElement(node.getNodeName())));
+        return manifestElement;
     }
 
-    public MetadataElement getMainProductHeader() {
-        Node node = xPathHelper.getNode("/Earth_Explorer_Header/Variable_Header/Main_Product_Header", doc);
-        return convertNodeToMetadataElement(node, new MetadataElement(node.getNodeName()));
-    }
-
-    public MetadataElement getSpecificProductHeader() {
-        Node node = xPathHelper.getNode("/Earth_Explorer_Header/Variable_Header/Specific_Product_Header", doc);
-        return convertNodeToMetadataElement(node, new MetadataElement(node.getNodeName()));
-    }
-
-    private MetadataElement convertNodeToMetadataElement(Node rootNode, MetadataElement rootMetadata) {
+    private static MetadataElement convertNodeToMetadataElement(Node rootNode, MetadataElement rootMetadata) {
         NodeList childNodes = rootNode.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
@@ -150,7 +117,7 @@ public class EarthExplorerManifest implements Manifest {
         return rootMetadata;
     }
 
-    private boolean hasElementChildNodes(Node rootNode) {
+    private static boolean hasElementChildNodes(Node rootNode) {
         NodeList childNodes = rootNode.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);

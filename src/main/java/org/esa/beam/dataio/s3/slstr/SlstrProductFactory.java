@@ -15,7 +15,7 @@ package org.esa.beam.dataio.s3.slstr;/*
  */
 
 import com.bc.ceres.glevel.MultiLevelImage;
-import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
+import org.esa.beam.dataio.s3.AbstractProductFactory;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -36,7 +36,7 @@ import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 
-public abstract class SlstrProductFactory extends AbstractManifestProductFactory {
+public abstract class SlstrProductFactory extends AbstractProductFactory {
 
     protected double referenceStartOffset;
     protected double referenceTrackOffset;
@@ -55,7 +55,6 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
         final short[] sourceResolutions = getResolutions(globalAttributes);
         if (isTiePointGrid(sourceResolutions)) {
             return copyTiePointGrid(sourceBand, targetProduct, sourceStartOffset, sourceTrackOffset, sourceResolutions);
-//              return copyBand(sourceBand, targetProduct, false);
         } else {
             final Band targetBand = copyBand(sourceBand, targetProduct, false);
             final float[] offsets = getOffsets(sourceStartOffset, sourceTrackOffset);
@@ -74,7 +73,7 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
         return (short[]) globalAttributes.getAttribute("resolution").getDataElems();
     }
 
-    protected RenderedImage createSourceImage(Band sourceBand, float[] offsets,
+    private RenderedImage createSourceImage(Band sourceBand, float[] offsets,
                                               Band targetBand, short[] sourceResolutions) {
         final ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(targetBand);
         final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
@@ -114,8 +113,7 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
         }
         final float offsetX = (float) (referenceTrackOffset - sourceTrackOffset * subSamplingX);
         final float offsetY = (float) (sourceStartOffset * subSamplingY - referenceStartOffset);
-        System.out.println(sourceBand.getProduct().getName() + " " +sourceBand.getName() + " " + subSamplingX + " " + subSamplingY);
-        return copyBand(sourceBand, targetProduct, subSamplingX, subSamplingY, offsetX, offsetY);
+        return copyBandAsTiePointGrid(sourceBand, targetProduct, subSamplingX, subSamplingY, offsetX, offsetY);
     }
 
     @Override

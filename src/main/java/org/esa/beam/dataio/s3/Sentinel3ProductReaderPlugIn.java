@@ -36,7 +36,7 @@ public class Sentinel3ProductReaderPlugIn implements ProductReaderPlugIn {
     private final String[] formatNames;
 
     public Sentinel3ProductReaderPlugIn() {
-        this(FORMAT_NAME, "Sentinel-3 products", "S3.?_(OL_1_E[FR]R|OL_2_...|SL_1_SLT|SL_2_(LST|WCT|WST)|SY_2_(VGP|SYN)|SY_3_VGS)_.*(.SAFE)?", "manifest", ".safe", ".xml");
+        this(FORMAT_NAME, "Sentinel-3 products", "S3.?_(OL_1_E[FR]R|OL_2_...|SL_1_SLT|SL_2_(LST|WCT|WST)|SY_2_(VGP|SYN)|SY_[23]_VGS)_.*(.SAFE)?", "manifest", ".safe", ".xml");
     }
 
     private Sentinel3ProductReaderPlugIn(String formatName,

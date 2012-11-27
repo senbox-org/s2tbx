@@ -14,7 +14,7 @@ package org.esa.beam.dataio.s3.olci;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-import org.esa.beam.dataio.s3.AbstractManifestProductFactory;
+import org.esa.beam.dataio.s3.AbstractProductFactory;
 import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class OlciLevel2ProductFactory extends AbstractManifestProductFactory {
+public class OlciLevel2ProductFactory extends AbstractProductFactory {
 
     private static final float[] spectralWavelengths = new float[21];
     private static final float[] spectralBandwidths = new float[21];
@@ -77,7 +77,7 @@ public class OlciLevel2ProductFactory extends AbstractManifestProductFactory {
         final MetadataElement globalAttributes = metadataRoot.getElement("Global_Attributes");
         final int subsampling = globalAttributes.getAttributeInt("subsampling_factor");
 
-        return copyBand(sourceBand, targetProduct, subsampling, subsampling, 0.0f, 0.0f);
+        return copyBandAsTiePointGrid(sourceBand, targetProduct, subsampling, subsampling, 0.0f, 0.0f);
     }
 
     @Override

@@ -14,6 +14,7 @@ package org.esa.beam.dataio.s3;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
+import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
 
 import java.util.List;
@@ -27,4 +28,6 @@ public interface Manifest {
     ProductData.UTC getStopTime();
 
     List<String> getFileNames(String schema);
+
+    MetadataElement getMetadata();
 }

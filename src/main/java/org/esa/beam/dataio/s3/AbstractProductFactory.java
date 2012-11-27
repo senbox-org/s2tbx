@@ -15,6 +15,8 @@ package org.esa.beam.dataio.s3;/*
  */
 
 import org.esa.beam.framework.dataio.ProductIO;
+import org.esa.beam.framework.dataio.ProductReader;
+import org.esa.beam.framework.dataio.ProductSubsetDef;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.CrsGeoCoding;
 import org.esa.beam.framework.datamodel.FlagCoding;
@@ -27,11 +29,17 @@ import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.framework.dataop.barithm.BandArithmetic;
 import org.esa.beam.util.ProductUtils;
 import org.esa.beam.util.io.FileUtils;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.Color;
 import java.awt.image.RenderedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +52,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     private final List<Product> openProductList = new ArrayList<Product>();
     private final Sentinel3ProductReader productReader;
     private final Logger logger;
+    private Manifest manifest;
 
     public AbstractProductFactory(Sentinel3ProductReader productReader) {
         this.productReader = productReader;
@@ -54,14 +63,12 @@ public abstract class AbstractProductFactory implements ProductFactory {
         return logger;
     }
 
-    protected abstract List<String> getFileNames() throws IOException;
-
     protected static Band copyBand(Band sourceBand, Product targetProduct, boolean copySourceImage) {
         return ProductUtils.copyBand(sourceBand.getName(), sourceBand.getProduct(), targetProduct, copySourceImage);
     }
 
-    protected static TiePointGrid copyBand(Band sourceBand, Product targetProduct, int subSamplingX, int subSamplingY,
-                                           float offsetX, float offsetY) {
+    protected static TiePointGrid copyBandAsTiePointGrid(Band sourceBand, Product targetProduct, int subSamplingX, int subSamplingY,
+                                                         float offsetX, float offsetY) {
         final RenderedImage sourceImage = sourceBand.getGeophysicalImage();
         final int w = sourceImage.getWidth();
         final int h = sourceImage.getHeight();
@@ -86,7 +93,10 @@ public abstract class AbstractProductFactory implements ProductFactory {
 
     @Override
     public final Product createProduct() throws IOException {
-        readProducts(getFileNames());
+        manifest = createManifest(getInputFile());
+
+        final List<String> fileNames = getFileNames(manifest);
+        readProducts(fileNames);
 
         if (openProductList.size() == 1) {
             final Product targetProduct = openProductList.get(0);
@@ -109,6 +119,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
             ProductUtils.copyGeoCoding(masterProduct, targetProduct);
         }
 
+        targetProduct.getMetadataRoot().addElement(manifest.getMetadata());
         for (final Product p : openProductList) {
             final MetadataElement productAttributes = new MetadataElement(p.getName());
             final MetadataElement datasetAttributes = new MetadataElement("Dataset_Attributes");
@@ -157,12 +168,18 @@ public abstract class AbstractProductFactory implements ProductFactory {
         }
     }
 
-    protected void setTimes(Product targetProduct) {
+    private void setTimes(Product targetProduct) {
         final Product sourceProduct = findMasterProduct();
         final ProductData.UTC startTime = sourceProduct.getStartTime();
         final ProductData.UTC endTime = sourceProduct.getEndTime();
         targetProduct.setStartTime(startTime);
         targetProduct.setEndTime(endTime);
+        if (targetProduct.getStartTime() == null) {
+            targetProduct.setStartTime(manifest.getStartTime());
+        }
+        if (targetProduct.getEndTime() == null) {
+            targetProduct.setEndTime(manifest.getStopTime());
+        }
     }
 
     @Override
@@ -173,7 +190,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         openProductList.clear();
     }
 
-    protected Band addBand(Band sourceBand, Product targetProduct) {
+    private Band addBand(Band sourceBand, Product targetProduct) {
         return copyBand(sourceBand, targetProduct, true);
     }
 
@@ -222,7 +239,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         }
     }
 
-    protected void readProducts(List<String> fileNames) throws IOException {
+    private void readProducts(List<String> fileNames) throws IOException {
         for (final String fileName : fileNames) {
             readProduct(fileName);
         }
@@ -230,7 +247,8 @@ public abstract class AbstractProductFactory implements ProductFactory {
 
     private Product readProduct(String fileName) throws IOException {
         final File file = new File(getInputFileParentDirectory(), fileName);
-        final Product product = ProductIO.readProduct(file);
+        final ProductReader reader = ProductIO.getProductReaderForInput(file);
+        final Product product = reader != null ? reader.readProductNodes(file, getSubsetDef(fileName)) : null;
         if (product == null) {
             final String msg = MessageFormat.format("Cannot read file ''{0}''. No appropriate reader found.", fileName);
             logger.log(Level.SEVERE, msg);
@@ -238,6 +256,10 @@ public abstract class AbstractProductFactory implements ProductFactory {
         }
         openProductList.add(product);
         return product;
+    }
+
+    protected ProductSubsetDef getSubsetDef(String fileName) {
+        return null;
     }
 
     protected final File getInputFile() {
@@ -251,4 +273,35 @@ public abstract class AbstractProductFactory implements ProductFactory {
     protected final String getProductName() {
         return FileUtils.getFilenameWithoutExtension(getInputFileParentDirectory());
     }
+
+    protected abstract List<String> getFileNames(Manifest manifest);
+
+    private Manifest createManifest(File file) throws IOException {
+        final InputStream inputStream = new FileInputStream(file);
+        try {
+            final Document xmlDocument = createXmlDocument(inputStream);
+            if(xmlDocument.getDocumentElement().getTagName().contains("Earth_Explorer")) {
+                return new EarthExplorerManifest(xmlDocument);
+            } else {
+                return SafeManifest.createManifest(xmlDocument);
+            }
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    private Document createXmlDocument(InputStream inputStream) throws IOException {
+        final String msg = "Cannot create document from manifest XML file.";
+
+        try {
+            return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+        } catch (SAXException e) {
+            getLogger().log(Level.SEVERE, msg, e);
+            throw new IOException(msg, e);
+        } catch (ParserConfigurationException e) {
+            getLogger().log(Level.SEVERE, msg, e);
+            throw new IOException(msg, e);
+        }
+    }
+
 }

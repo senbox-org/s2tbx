@@ -15,7 +15,6 @@
 
 package org.esa.beam.dataio.s3.olci;
 
-import org.esa.beam.dataio.s3.DataSetPointer;
 import org.esa.beam.dataio.s3.EarthExplorerManifest;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
@@ -29,85 +28,57 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class OlciL1bManifestTest {
 
-    private EarthExplorerManifest manifestTest;
+    private EarthExplorerManifest manifest;
 
     @Before
     public void before() throws ParserConfigurationException, IOException, SAXException {
         InputStream stream = getClass().getResourceAsStream("L1b_TEST_manifest.xml");
         try {
             Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(stream);
-            manifestTest = new EarthExplorerManifest(doc);
+            manifest = new EarthExplorerManifest(doc);
         } finally {
             stream.close();
         }
     }
 
     @Test
-    public void testGetProductName() {
-        assertEquals("S3_OL_1_ERR_20130621T100921_20130621T101413_00291_000001_001_EST_TEST_00",
-                     manifestTest.getProductName());
-    }
-
-    @Test
-    public void testGetProductType() {
-        assertEquals("  OL_1_ERR", manifestTest.getProductType());
-    }
-
-    @Test
     public void testGetDescription() {
-        assertEquals("Sentinel 3 Level 1B Product", manifestTest.getDescription());
-    }
-
-    @Test
-    public void testGetLineCount() {
-        assertEquals(1664, manifestTest.getLineCount());
-    }
-
-    @Test
-    public void testGetColumnCount() {
-        assertEquals(1217, manifestTest.getColumnCount());
+        assertEquals("Sentinel 3 Level 1B Product", manifest.getDescription());
     }
 
     @Test
     public void testGetStartTime() throws ParseException {
         ProductData.UTC expected = ProductData.UTC.parse("2013-06-21T10:09:20.659100", "yyyy-MM-dd'T'HH:mm:ss");
-        assertTrue(expected.equalElems(manifestTest.getStartTime()));
+        assertTrue(expected.equalElems(manifest.getStartTime()));
     }
 
     @Test
     public void testGetStopTime() throws ParseException {
         ProductData.UTC expected = ProductData.UTC.parse("2013-06-21T10:14:12.597100", "yyyy-MM-dd'T'HH:mm:ss");
-        assertTrue(expected.equalElems(manifestTest.getStopTime()));
+        assertTrue(expected.equalElems(manifest.getStopTime()));
     }
 
     @Test
-    public void testGetMeasurementDataSetPointers() {
-        List<DataSetPointer> dataSetPointers = manifestTest.getDataSetPointers(DataSetPointer.Type.M);
-        assertEquals(22, dataSetPointers.size());
-    }
+    public void testGetMetadata() {
+        MetadataElement metadataElement = manifest.getMetadata();
 
-    @Test
-    public void testGetAnnotationDataSetPointers() {
-        List<DataSetPointer> dataSetPointers = manifestTest.getDataSetPointers(DataSetPointer.Type.A);
-        assertEquals(5, dataSetPointers.size());
-    }
+        assertNotNull(metadataElement);
+        assertEquals("Manifest", metadataElement.getName());
+        assertEquals(0, metadataElement.getNumAttributes());
+        assertEquals(3, metadataElement.getNumElements());
 
-    @Test
-    public void testGetFixedHeader() {
-        MetadataElement fixedHeader = manifestTest.getFixedHeader();
-        assertNotNull(fixedHeader);
-        assertEquals("Fixed_Header", fixedHeader.getName());
-        assertEquals(7, fixedHeader.getNumAttributes());
-        assertEquals("TEST", fixedHeader.getAttributeString("File_Class"));
-        assertEquals(2, fixedHeader.getNumElements());
-        MetadataElement validityPeriodElement = fixedHeader.getElement("Validity_Period");
+        final MetadataElement fixedHeaderElement = metadataElement.getElement("Fixed_Header");
+        assertNotNull(fixedHeaderElement);
+        assertEquals(7, fixedHeaderElement.getNumAttributes());
+        assertEquals("TEST", fixedHeaderElement.getAttributeString("File_Class"));
+        MetadataElement validityPeriodElement = fixedHeaderElement.getElement("Validity_Period");
         assertNotNull(validityPeriodElement);
         assertEquals(2, validityPeriodElement.getNumAttributes());
+
     }
 }
