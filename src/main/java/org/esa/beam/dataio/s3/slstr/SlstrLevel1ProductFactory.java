@@ -20,6 +20,7 @@ import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 import org.esa.beam.jai.ImageManager;
 
@@ -41,9 +42,7 @@ import java.util.List;
 
 public class SlstrLevel1ProductFactory extends SlstrProductFactory {
 
-    private double masterStartOffset;
-    private double masterTrackOffset;
-    private short[] masterResolutions;
+    private Character penUltimateChar;
 
     public SlstrLevel1ProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
@@ -67,119 +66,67 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     }
 
     @Override
-    protected void setTimes(Product targetProduct) {
+    protected boolean isTiePointGrid(short[] sourceResolutions) {
+        return penUltimateChar.compareTo('t') == 0;
     }
 
     @Override
-    protected RasterDataNode addSpecialNode(Band sourceBand, Product targetProduct) {
-        final Product sourceProduct = sourceBand.getProduct();
-        final MetadataElement globalAttributes = sourceProduct.getMetadataRoot().getElement("Global_Attributes");
-        final double sourceStartOffset = globalAttributes.getAttributeDouble("start_offset");
-        final double sourceTrackOffset = globalAttributes.getAttributeDouble("track_offset");
-        short[] sourceResolutions = (short[]) globalAttributes.getAttribute("resolution").getDataElems();
-        if (sourceResolutions.length == 1) {
-            sourceResolutions = new short[]{sourceResolutions[0], sourceResolutions[0]};
+    protected short[] getResolutions(MetadataElement globalAttributes) {
+        short[] resolutions = super.getResolutions(globalAttributes);
+        if (resolutions.length == 1) {
+            resolutions = new short[]{resolutions[0], resolutions[0]};
         }
-        final char penUltimateChar = sourceProduct.getName().charAt(sourceProduct.getName().length() - 2);
-        if (sourceResolutions[0] == 0 && sourceResolutions[1] == 0) {
-            if (((Character) penUltimateChar).compareTo('i') == 0) {
-                sourceResolutions = new short[]{1000, 1000};
-            } else if (((Character) penUltimateChar).compareTo('t') == 0) {
-                sourceResolutions = new short[]{16000, 16000};
+        final String productName = globalAttributes.getOwner().getProduct().getName();
+        penUltimateChar = productName.charAt(productName.length() - 2);
+        if (resolutions[0] == 0 && resolutions[1] == 0) {
+            if (penUltimateChar.compareTo('i') == 0) {
+                resolutions = new short[]{1000, 1000};
+            } else if (penUltimateChar.compareTo('t') == 0) {
+                resolutions = new short[]{16000, 16000};
             } else {
-                sourceResolutions = new short[]{500, 500};
+                resolutions = new short[]{500, 500};
             }
         }
-        if (((Character) penUltimateChar).compareTo('t') != 0) {
-            final Band targetBand = copyBand(sourceBand, targetProduct, false);
-            final ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(targetBand);
-            final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-
-            final MultiLevelImage sourceImage = sourceBand.getSourceImage();
-            final int targetW = targetBand.getRasterWidth();
-            final int targetH = targetBand.getRasterHeight();
-
-//            final float offsetX = (float) (sourceTrackOffset * sourceResolutions[0] / masterResolutions[0] - masterTrackOffset);
-//            final float offsetY = (float) (sourceStartOffset * sourceResolutions[1] / masterResolutions[1] - masterStartOffset);
-
-            final float scaleX = sourceResolutions[0] / masterResolutions[0];
-            final float scaleY;
-            if (sourceResolutions.length == 2) {
-                scaleY = sourceResolutions[1] / masterResolutions[1];
-            } else {
-                scaleY = scaleX;
-            }
-            final float offsetX = (float) (masterTrackOffset - sourceTrackOffset);
-//            final float offsetX = (float) (sourceTrackOffset * scaleX - masterTrackOffset);
-            final float offsetY = (float) (sourceStartOffset - masterStartOffset);
-
-            final int padX = Math.round(Math.abs(offsetX));
-            final int padY = Math.round(Math.abs(offsetY));
-
-            RenderedImage image = sourceImage;
-            if (scaleX != 1.0 || scaleY != 1.0) {
-                image = ScaleDescriptor.create(image, scaleX, scaleY, 0.0f, 0.0f,
-                                               Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                                               renderingHints);
-            }
-            final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{targetBand.getNoDataValue()});
-            image = BorderDescriptor.create(image,
-                                            padX,
-                                            targetW - padX - image.getWidth(),
-                                            padY,
-                                            padY,
-                                            borderExtender, renderingHints);
-            if (offsetX != 0.0f || offsetY != 0.0f) {
-                image = TranslateDescriptor.create(image,
-                                                   offsetX,
-                                                   offsetY,
-                                                   null,
-                                                   renderingHints);
-            }
-            image = CropDescriptor.create(image, 0.0f, 0.0f,
-                                          (float) targetW,
-                                          (float) targetH,
-                                          renderingHints);
-            targetBand.setSourceImage(image);
-            return targetBand;
-        } else { // tie-point data
-            final int subSamplingX = sourceResolutions[0] / masterResolutions[0];
-//            final int subSamplingY = sourceResolutions[1] / masterResolutions[1];
-            final int subSamplingY;
-            if (sourceResolutions.length == 2) {
-                subSamplingY = sourceResolutions[1] / masterResolutions[1];
-            } else {
-                //noinspection SuspiciousNameCombination
-                subSamplingY = subSamplingX;
-            }
-            final float offsetX = (float) (masterTrackOffset - sourceTrackOffset * subSamplingX);
-            final float offsetY = (float) (sourceStartOffset * subSamplingY - masterStartOffset);
-//            final float offsetX = (float) (sourceTrackOffset * sourceResolutions[0] / masterResolutions[0] - masterTrackOffset);
-//            final float offsetX = (float)(sourceTrackOffset * sourceResolutions[0]);
-//            final float offsetY = (float) (sourceStartOffset * sourceResolutions[1] / masterResolutions[1] - masterStartOffset);
-//            final float offsetY = (float)(sourceStartOffset * sourceResolutions[1]);
-
-            return copyBand(sourceBand, targetProduct, subSamplingX, subSamplingY, offsetX, offsetY);
-        }
+        return resolutions;
     }
 
     @Override
-    protected void initialize(Product[] sourceProducts, Product targetProduct) {
-        final MetadataElement globalAttributes = findMasterProduct().getMetadataRoot().getElement("Global_Attributes");
-        masterStartOffset = globalAttributes.getAttributeDouble("start_offset");
-        masterTrackOffset = globalAttributes.getAttributeDouble("track_offset");
-        masterResolutions = (short[]) globalAttributes.getAttribute("resolution").getDataElems();
-        if (masterResolutions.length == 1) {
-            masterResolutions = new short[]{masterResolutions[0], masterResolutions[0]};
+    protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints, MultiLevelImage sourceImage) {
+        final float scaleX = sourceResolutions[0] / referenceResolutions[0];
+        final float scaleY;
+        if (sourceResolutions.length == 2) {
+            scaleY = sourceResolutions[1] / referenceResolutions[1];
+        } else {
+            scaleY = scaleX;
         }
-        if (masterResolutions[0] == 0 && masterResolutions[1] == 0) {
-            masterResolutions = new short[]{500, 500};
+        RenderedImage image = sourceImage;
+        if (scaleX != 1.0 || scaleY != 1.0) {
+            image = ScaleDescriptor.create(image, scaleX, scaleY, 0.0f, 0.0f,
+                                           Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                           renderingHints);
         }
+        return image;
     }
 
-//    @Override
-//    protected void setGeoCoding(Product targetProduct) throws IOException {
-//        TODO - delete when tie point data in LST are valid
-//    }
+    @Override
+    protected float[] getOffsets(double sourceStartOffset, double sourceTrackOffset) {
+        final float offsetX = (float) (referenceTrackOffset - sourceTrackOffset);
+        final float offsetY = (float) (sourceStartOffset - referenceStartOffset);
+        return new float[]{offsetX, offsetY};
+    }
+
+    @Override
+    protected Product findMasterProduct() {
+        final List<Product> productList = getOpenProductList();
+        Product masterProduct = productList.get(0);
+        for (int i = 1; i < productList.size(); i++) {
+            Product product = productList.get(i);
+            if (product.getSceneRasterWidth() > masterProduct.getSceneRasterWidth() &&
+                    product.getSceneRasterHeight() > masterProduct.getSceneRasterHeight()) {
+                masterProduct = product;
+            }
+        }
+        return masterProduct;
+    }
 
 }

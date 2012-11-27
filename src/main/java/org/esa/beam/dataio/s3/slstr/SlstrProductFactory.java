@@ -35,13 +35,12 @@ import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
-import java.util.List;
 
 public abstract class SlstrProductFactory extends AbstractManifestProductFactory {
 
-    private double nadStartOffset;
-    private double nadTrackOffset;
-    private short[] nadResolutions;
+    protected double referenceStartOffset;
+    protected double referenceTrackOffset;
+    protected short[] referenceResolutions;
 
     protected SlstrProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
@@ -53,53 +52,70 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
         final MetadataElement globalAttributes = sourceProduct.getMetadataRoot().getElement("Global_Attributes");
         final double sourceStartOffset = globalAttributes.getAttributeDouble("start_offset");
         final double sourceTrackOffset = globalAttributes.getAttributeDouble("track_offset");
-        final short[] sourceResolutions = (short[]) globalAttributes.getAttribute("resolution").getDataElems();
-
-        if (sourceResolutions[0] == nadResolutions[0]) { // oblique-view band
+        final short[] sourceResolutions = getResolutions(globalAttributes);
+        if (isTiePointGrid(sourceResolutions)) {
+            return copyTiePointGrid(sourceBand, targetProduct, sourceStartOffset, sourceTrackOffset, sourceResolutions);
+//              return copyBand(sourceBand, targetProduct, false);
+        } else {
             final Band targetBand = copyBand(sourceBand, targetProduct, false);
-            final ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(targetBand);
-            final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-
-            final MultiLevelImage sourceImage = sourceBand.getSourceImage();
-            final int targetW = targetBand.getRasterWidth();
-            final int targetH = targetBand.getRasterHeight();
-            final float offsetX = (float) (sourceTrackOffset - nadTrackOffset);
-            final float offsetY = (float) (sourceStartOffset - nadStartOffset);
-            final int padX = Math.round(Math.abs(offsetX));
-            final int padY = Math.round(Math.abs(offsetY));
-            final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{targetBand.getNoDataValue()});
-            final RenderedImage extendedImage = BorderDescriptor.create(sourceImage,
-                                                                        padX,
-                                                                        targetW - padX - sourceImage.getWidth(),
-                                                                        padY,
-                                                                        padY,
-                                                                        borderExtender, renderingHints);
-
-            final RenderedImage translatedImage = TranslateDescriptor.create(extendedImage,
-                                                                             offsetX,
-                                                                             offsetY,
-                                                                             null,
-                                                                             renderingHints);
-            final RenderedImage croppedImage = CropDescriptor.create(translatedImage, 0.0f, 0.0f,
-                                                                     (float) targetW,
-                                                                     (float) targetH,
-                                                                     renderingHints);
-            targetBand.setSourceImage(croppedImage);
+            final float[] offsets = getOffsets(sourceStartOffset, sourceTrackOffset);
+            final RenderedImage sourceImage = createSourceImage(sourceBand, offsets,
+                                                                targetBand, sourceResolutions);
+            targetBand.setSourceImage(sourceImage);
             return targetBand;
-        } else { // tie-point data
-            final int subSamplingX = sourceResolutions[0] / nadResolutions[0];
-            final int subSamplingY;
-            if (sourceResolutions.length == 2) {
-                subSamplingY = sourceResolutions[1] / nadResolutions[1];
-            } else {
-                //noinspection SuspiciousNameCombination
-                subSamplingY = subSamplingX;
-            }
-            final float offsetX = (float) (nadTrackOffset - sourceTrackOffset * subSamplingX);
-            final float offsetY = (float) (sourceStartOffset * subSamplingY - nadStartOffset);
-
-            return copyBand(sourceBand, targetProduct, subSamplingX, subSamplingY, offsetX, offsetY);
         }
+    }
+
+    protected boolean isTiePointGrid(short[] sourceResolutions) {
+        return sourceResolutions[0] != referenceResolutions[0];
+    }
+
+    protected short[] getResolutions(MetadataElement globalAttributes) {
+        return (short[]) globalAttributes.getAttribute("resolution").getDataElems();
+    }
+
+    protected RenderedImage createSourceImage(Band sourceBand, float[] offsets,
+                                              Band targetBand, short[] sourceResolutions) {
+        final ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(targetBand);
+        final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+
+        final MultiLevelImage sourceImage = sourceBand.getSourceImage();
+        final int targetW = targetBand.getRasterWidth();
+        final int targetH = targetBand.getRasterHeight();
+        final int padX = Math.round(Math.abs(offsets[0]));
+        final int padY = Math.round(Math.abs(offsets[1]));
+
+        RenderedImage image = modifySourceImage(sourceResolutions, renderingHints, sourceImage);
+
+        final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{targetBand.getNoDataValue()});
+        image = BorderDescriptor.create(image, padX, targetW - padX - image.getWidth(),
+                                        padY, padY, borderExtender, renderingHints);
+        if (offsets[0] != 0.0f || offsets[1] != 0.0f) {
+            image = TranslateDescriptor.create(image, offsets[0], offsets[1], null, renderingHints);
+        }
+        return CropDescriptor.create(image, 0.0f, 0.0f, (float) targetW, (float) targetH, renderingHints);
+    }
+
+    protected float[] getOffsets(double sourceStartOffset, double sourceTrackOffset) {
+        float offsetX = (float) (sourceTrackOffset - referenceTrackOffset);
+        float offsetY = (float) (sourceStartOffset - referenceStartOffset);
+        return new float[]{offsetX, offsetY};
+    }
+
+    private RasterDataNode copyTiePointGrid(Band sourceBand, Product targetProduct, double sourceStartOffset,
+                                                    double sourceTrackOffset, short[] sourceResolutions) {
+        final int subSamplingX = sourceResolutions[0] / referenceResolutions[0];
+        final int subSamplingY;
+        if (sourceResolutions.length == 2) {
+            subSamplingY = sourceResolutions[1] / referenceResolutions[1];
+        } else {
+            //noinspection SuspiciousNameCombination
+            subSamplingY = subSamplingX;
+        }
+        final float offsetX = (float) (referenceTrackOffset - sourceTrackOffset * subSamplingX);
+        final float offsetY = (float) (sourceStartOffset * subSamplingY - referenceStartOffset);
+        System.out.println(sourceBand.getProduct().getName() + " " +sourceBand.getName() + " " + subSamplingX + " " + subSamplingY);
+        return copyBand(sourceBand, targetProduct, subSamplingX, subSamplingY, offsetX, offsetY);
     }
 
     @Override
@@ -116,22 +132,9 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
     @Override
     protected void initialize(Product[] sourceProducts, Product targetProduct) {
         final MetadataElement globalAttributes = findMasterProduct().getMetadataRoot().getElement("Global_Attributes");
-        nadStartOffset = globalAttributes.getAttributeDouble("start_offset");
-        nadTrackOffset = globalAttributes.getAttributeDouble("track_offset");
-        nadResolutions = (short[]) globalAttributes.getAttribute("resolution").getDataElems();
-    }
-
-    @Override
-    protected Product findMasterProduct() {
-        final List<Product> productList = getOpenProductList();
-        Product masterProduct = productList.get(0);
-        for (int i = 1; i < productList.size(); i++) {
-            Product product = productList.get(i);
-            if (product.getSceneRasterWidth() > masterProduct.getSceneRasterWidth() && product.getSceneRasterHeight() > masterProduct.getSceneRasterHeight()) {
-                masterProduct = product;
-            }
-        }
-        return masterProduct;
+        referenceStartOffset = globalAttributes.getAttributeDouble("start_offset");
+        referenceTrackOffset = globalAttributes.getAttributeDouble("track_offset");
+        referenceResolutions = getResolutions(globalAttributes);
     }
 
     @Override
@@ -185,4 +188,7 @@ public abstract class SlstrProductFactory extends AbstractManifestProductFactory
         targetProduct.setAutoGrouping(patternBuilder.toString());
     }
 
+    protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints, MultiLevelImage sourceImage) {
+        return sourceImage;
+    }
 }
