@@ -17,26 +17,19 @@ package org.esa.beam.dataio.s3.slstr;/*
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
+import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.RasterDataNode;
-import org.esa.beam.jai.ImageManager;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.BorderExtenderConstant;
-import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.operator.BorderDescriptor;
-import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
-import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,12 +50,37 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
             public boolean accept(File dir, String name) {
                 return name.endsWith(".nc") && (name.contains("radiance") || name.contains("flags")
                         || name.contains("geodetic_tx") || name.contains("BT") || name.contains("cartesian_tx")
-                        || name.contains("geometry") || name.contains("indices") || name.contains("met"));
+                        || name.contains("geometry") || name.contains("indices") || name.contains("met")
+                );
             }
         });
 
 
         return Arrays.asList(fileNames);
+    }
+
+    @Override
+    protected void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
+        super.configureTargetNode(sourceBand, targetNode);
+        final String productName = sourceBand.getProduct().getName();
+        if (productName.contains("BT") || productName.contains("radiance")) {
+            final String path = sourceBand.getProduct().getFileLocation().getAbsolutePath();
+            String qualityProductName = productName.replace("BT", "quality").replace("radiance", "quality");
+            final String qualityProductPath = path.replace(productName, qualityProductName);
+            try {
+                final Product product = ProductIO.readProduct(qualityProductPath);
+                if (product != null) {
+                    final float wavelength = product.getMetadataRoot().getElement("Variable_Attributes").getElement("band_centre").
+                            getElement("values").getAttribute("data").getData().getElemFloat() * 1000;
+                    ((Band) targetNode).setSpectralWavelength(wavelength);
+                    final float bandwidth = product.getMetadataRoot().getElement("Variable_Attributes").getElement("bandwidth").
+                            getElement("values").getAttribute("data").getData().getElemFloat() * 1000;
+                    ((Band) targetNode).setSpectralBandwidth(bandwidth);
+                }
+            } catch (IOException e) {
+                //no spectral properties can be assigned
+            }
+        }
     }
 
     @Override

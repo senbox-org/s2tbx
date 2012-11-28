@@ -117,7 +117,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     @Override
-    protected final void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
+    protected void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
         final String sourceBandName = sourceBand.getName();
         final String sourceProductName = sourceBand.getProduct().getName();
         if (sourceProductName.contains(sourceBandName)) {
