@@ -43,7 +43,6 @@ import java.util.List;
 public class SlstrLevel1ProductFactory extends SlstrProductFactory {
 
     private Character penUltimateChar;
-    private Manifest manifest;
 
     public SlstrLevel1ProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
@@ -52,8 +51,6 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     @Override
     protected List<String> getFileNames(Manifest manifest) {
         final File directory = getInputFileParentDirectory();
-
-        this.manifest = manifest;
 
         final String[] fileNames = directory.list(new FilenameFilter() {
             @Override
