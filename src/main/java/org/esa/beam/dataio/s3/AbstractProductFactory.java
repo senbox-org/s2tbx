@@ -172,14 +172,12 @@ public abstract class AbstractProductFactory implements ProductFactory {
 
     private void setTimes(Product targetProduct) {
         final Product sourceProduct = findMasterProduct();
-        final ProductData.UTC startTime = sourceProduct.getStartTime();
-        final ProductData.UTC endTime = sourceProduct.getEndTime();
-        targetProduct.setStartTime(startTime);
-        targetProduct.setEndTime(endTime);
-        if (targetProduct.getStartTime() == null) {
+        targetProduct.setStartTime(sourceProduct.getStartTime());
+        targetProduct.setEndTime(sourceProduct.getEndTime());
+        if(sourceProduct.getStartTime() != null) {
             targetProduct.setStartTime(manifest.getStartTime());
         }
-        if (targetProduct.getEndTime() == null) {
+        if(sourceProduct.getEndTime() != null) {
             targetProduct.setEndTime(manifest.getStopTime());
         }
     }
