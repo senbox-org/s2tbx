@@ -20,6 +20,7 @@ import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -78,29 +79,61 @@ class SafeManifest implements Manifest {
     public MetadataElement getMetadata() {
         final MetadataElement manifestElement = new MetadataElement("Manifest");
         final Node node = xPathHelper.getNode("//metadataSection", doc);
-
         manifestElement.addElement(convertNodeToMetadataElement(node, new MetadataElement(node.getNodeName())));
         return manifestElement;
     }
 
-    private static MetadataElement convertNodeToMetadataElement(Node rootNode, MetadataElement rootMetadata) {
+    private static String removeNamespace(String withNamespace) {
+        if (!withNamespace.contains(":")) {
+            return withNamespace;
+        }
+        return withNamespace.split(":")[1];
+    }
+
+    private MetadataElement convertNodeToMetadataElement(Node rootNode, MetadataElement rootMetadata) {
         NodeList childNodes = rootNode.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
-                if (hasElementChildNodes(node)) {
-                    MetadataElement element = new MetadataElement(node.getNodeName());
-                    convertNodeToMetadataElement(node, element);
-                    rootMetadata.addElement(element);
+                if (node.getNodeName().contains(":")) {
+                    String nodeName = removeNamespace(node.getNodeName());
+                    if (hasElementChildNodes(node)) {
+                        MetadataElement element = new MetadataElement(nodeName);
+                        rootMetadata.addElement(element);
+                        addAttributesToElement(node, element);
+                        convertNodeToMetadataElement(node, element);
+                    } else if (hasAttributeChildNodes(node)) {
+                        MetadataElement element = new MetadataElement(nodeName);
+                        rootMetadata.addElement(element);
+                        final String textContent = node.getTextContent().trim();
+                        if (!textContent.equals("")) {
+                            element.setAttributeString(nodeName, textContent);
+                        }
+                        addAttributesToElement(node, element);
+                    } else {
+                        String nodevalue = node.getTextContent().trim();
+                        ProductData textContent = ProductData.createInstance(nodevalue);
+                        rootMetadata.addAttribute(new MetadataAttribute(nodeName, textContent, true));
+                    }
                 } else {
-                    String nodevalue = node.getTextContent();
-                    ProductData textContent = ProductData.createInstance(nodevalue);
-                    rootMetadata.addAttribute(new MetadataAttribute(node.getNodeName(), textContent, true));
+                    convertNodeToMetadataElement(node, rootMetadata);
                 }
             }
         }
-
         return rootMetadata;
+    }
+
+    private void addAttributesToElement(Node node, MetadataElement element) {
+        final NamedNodeMap attributes = node.getAttributes();
+        for (int j = 0; j < attributes.getLength(); j++) {
+            final Node nodeAttribute = attributes.item(j);
+            String nodeAttributeValue = nodeAttribute.getTextContent();
+            ProductData attributeTextContent = ProductData.createInstance(nodeAttributeValue);
+            String attributeNodeName = removeNamespace(nodeAttribute.getNodeName());
+            final MetadataAttribute attribute = new MetadataAttribute(attributeNodeName,
+                                                                      attributeTextContent, true);
+            element.addAttribute(attribute);
+        }
     }
 
     private static boolean hasElementChildNodes(Node rootNode) {
@@ -108,6 +141,17 @@ class SafeManifest implements Manifest {
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasAttributeChildNodes(Node rootNode) {
+        final NamedNodeMap attributeNodes = rootNode.getAttributes();
+        for (int i = 0; i < attributeNodes.getLength(); i++) {
+            Node node = attributeNodes.item(i);
+            if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
                 return true;
             }
         }

@@ -101,6 +101,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
 
         if (openProductList.size() == 1) {
             final Product targetProduct = openProductList.get(0);
+            targetProduct.getMetadataRoot().addElement(manifest.getMetadata());
             setMasks(targetProduct);
             openProductList.clear();
             return targetProduct;
