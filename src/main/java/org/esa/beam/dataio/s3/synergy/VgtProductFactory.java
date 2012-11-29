@@ -87,13 +87,11 @@ public class VgtProductFactory extends AbstractProductFactory {
 
     @Override
     protected void setMasks(Product targetProduct) {
-        super.setMasks(targetProduct);
         final ProductNodeGroup<Mask> maskGroup = targetProduct.getMaskGroup();
         for (int i = 0; i < maskGroup.getNodeCount(); i++) {
             final Mask mask = maskGroup.get(i);
-            if (mask.getImageType() instanceof Mask.BandMathsType) {
-                String expression = Mask.BandMathsType.getExpression(mask);
-                expression = expression.concat(" && (SM.B0_good || SM.B2_good || SM.B3_good || SM.MIR_good)");
+            if (mask.getImageType() == Mask.BandMathsType.INSTANCE) {
+                final String expression = "SM != 0 && " + Mask.BandMathsType.getExpression(mask);
                 Mask.BandMathsType.setExpression(mask, expression);
             }
         }
