@@ -20,10 +20,12 @@ import org.esa.beam.framework.dataio.ProductSubsetDef;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.CrsGeoCoding;
 import org.esa.beam.framework.datamodel.FlagCoding;
+import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.framework.dataop.barithm.BandArithmetic;
@@ -43,7 +45,9 @@ import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -138,9 +142,9 @@ public abstract class AbstractProductFactory implements ProductFactory {
         final Product[] sourceProducts = openProductList.toArray(new Product[openProductList.size()]);
         initialize(sourceProducts, targetProduct);
         addDataNodes(targetProduct);
+        setMasks(targetProduct);
         setGeoCoding(targetProduct);
         setAutoGrouping(sourceProducts, targetProduct);
-        setMasks(targetProduct);
 
         return targetProduct;
     }
@@ -167,6 +171,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
                     targetProduct.addMask(maskName, expression, expression, Color.RED, 0.5);
                 }
             }
+            // TODO - what about index bands?
         }
     }
 
@@ -223,6 +228,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     protected void addDataNodes(Product targetProduct) {
         final int w = targetProduct.getSceneRasterWidth();
         final int h = targetProduct.getSceneRasterHeight();
+        final Map<String, String> mapping = new HashMap<String, String>();
 
         for (final Product sourceProduct : openProductList) {
             for (final Band sourceBand : sourceProduct.getBands()) {
@@ -234,6 +240,25 @@ public abstract class AbstractProductFactory implements ProductFactory {
                 }
                 if (targetNode != null) {
                     configureTargetNode(sourceBand, targetNode);
+                    mapping.put(sourceBand.getName(), targetNode.getName());
+                }
+            }
+            final ProductNodeGroup<Mask> maskGroup = sourceProduct.getMaskGroup();
+            for (int i = 0; i < maskGroup.getNodeCount(); i++) {
+                final Mask mask = maskGroup.get(i);
+                final Mask.ImageType imageType = mask.getImageType();
+                if (imageType == Mask.BandMathsType.INSTANCE) {
+                    String name = mask.getName();
+                    String expression = Mask.BandMathsType.getExpression(mask);
+                    for (final String sourceBandName : sourceProduct.getBandNames()) {
+                        if (name.contains(sourceBandName)) {
+                            name = name.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                        }
+                        if (expression.contains(sourceBandName)) {
+                            expression = expression.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                        }
+                    }
+                    targetProduct.addMask(name, expression, mask.getDescription(), mask.getImageColor(), mask.getImageTransparency());
                 }
             }
         }
