@@ -14,6 +14,7 @@ package org.esa.beam.dataio.s3.synergy;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
+import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.beam.dataio.s3.AbstractProductFactory;
 import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
@@ -28,8 +29,11 @@ import org.esa.beam.framework.datamodel.RasterDataNode;
 import javax.media.jai.BorderExtender;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
 import java.awt.RenderingHints;
+import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,10 +82,17 @@ public class VgtProductFactory extends AbstractProductFactory {
         final RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
                                                                  BorderExtender.createInstance(
                                                                          BorderExtender.BORDER_COPY));
+        final RenderedImage sourceImage = sourceBand.getSourceImage();
+        final float transX = (targetBand.getRasterWidth() - sourceImage.getWidth() * 8.0f) / 2.0f;
+        final float transY = (targetBand.getRasterHeight() - sourceImage.getHeight() * 8.0f) / 2.0f;
         // TODO: here we border effects because no-data value is used for interpolation
-        targetBand.setSourceImage(ScaleDescriptor.create(sourceBand.getSourceImage(), 8.0f, 8.0f, -3.0f, -3.0f,
-                                                         Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
-                                                         renderingHints));
+        final RenderedImage scaledImage = ScaleDescriptor.create(sourceImage, 8.0f, 8.0f, transX, transY,
+                                                              Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                                              renderingHints);
+        final RenderedImage croppedImage = CropDescriptor.create(scaledImage, 0.0f, 0.0f,
+                                                              (float) targetBand.getRasterWidth(),
+                                                              (float) targetBand.getRasterHeight(), null);
+        targetBand.setSourceImage(croppedImage);
         return targetBand;
     }
 
