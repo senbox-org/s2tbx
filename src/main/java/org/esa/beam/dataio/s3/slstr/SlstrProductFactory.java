@@ -50,19 +50,27 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     protected RasterDataNode addSpecialNode(Band sourceBand, Product targetProduct) {
         final Product sourceProduct = sourceBand.getProduct();
         final MetadataElement globalAttributes = sourceProduct.getMetadataRoot().getElement("Global_Attributes");
-        final double sourceStartOffset = globalAttributes.getAttributeDouble("start_offset");
-        final double sourceTrackOffset = globalAttributes.getAttributeDouble("track_offset");
+        final double sourceStartOffset = getStartOffset(globalAttributes, sourceProduct.getName());
+        final double sourceTrackOffset = getTrackOffset(globalAttributes, sourceProduct.getName());
         final short[] sourceResolutions = getResolutions(globalAttributes);
         if (isTiePointGrid(sourceResolutions)) {
             return copyTiePointGrid(sourceBand, targetProduct, sourceStartOffset, sourceTrackOffset, sourceResolutions);
         } else {
             final Band targetBand = copyBand(sourceBand, targetProduct, false);
-            final float[] offsets = getOffsets(sourceStartOffset, sourceTrackOffset);
+            final float[] offsets = getOffsets(sourceStartOffset, sourceTrackOffset, sourceResolutions);
             final RenderedImage sourceImage = createSourceImage(sourceBand, offsets,
                                                                 targetBand, sourceResolutions);
             targetBand.setSourceImage(sourceImage);
             return targetBand;
         }
+    }
+
+    protected double getTrackOffset(MetadataElement globalAttributes, String sourceProductName) {
+        return globalAttributes.getAttributeDouble("track_offset");
+    }
+
+    protected double getStartOffset(MetadataElement globalAttributes, String sourceProductName) {
+        return globalAttributes.getAttributeDouble("start_offset");
     }
 
     protected boolean isTiePointGrid(short[] sourceResolutions) {
@@ -95,7 +103,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         return CropDescriptor.create(image, 0.0f, 0.0f, (float) targetW, (float) targetH, renderingHints);
     }
 
-    protected float[] getOffsets(double sourceStartOffset, double sourceTrackOffset) {
+    protected float[] getOffsets(double sourceStartOffset, double sourceTrackOffset, short[] sourceResolutions) {
         float offsetX = (float) (sourceTrackOffset - referenceTrackOffset);
         float offsetY = (float) (sourceStartOffset - referenceStartOffset);
         return new float[]{offsetX, offsetY};
@@ -111,9 +119,18 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
             //noinspection SuspiciousNameCombination
             subSamplingY = subSamplingX;
         }
-        final float offsetX = (float) (referenceTrackOffset - sourceTrackOffset * subSamplingX);
-        final float offsetY = (float) (sourceStartOffset * subSamplingY - referenceStartOffset);
-        return copyBandAsTiePointGrid(sourceBand, targetProduct, subSamplingX, subSamplingY, offsetX, offsetY);
+        float[] tiePointGridOffsets = getTiePointGridOffsets(sourceStartOffset, sourceTrackOffset,
+                                                             subSamplingX, subSamplingY, sourceResolutions);
+        return copyBandAsTiePointGrid(sourceBand, targetProduct, subSamplingX, subSamplingY,
+                                      tiePointGridOffsets[0], tiePointGridOffsets[1]);
+    }
+
+    protected float[] getTiePointGridOffsets(double sourceStartOffset, double sourceTrackOffset,
+                                             int subSamplingX, int subSamplingY, short[] sourceResolutions) {
+        float[] tiePointGridOffsets = new float[2];
+        tiePointGridOffsets[0] = (float) (referenceTrackOffset - sourceTrackOffset * subSamplingX);
+        tiePointGridOffsets[1] = (float) (sourceStartOffset * subSamplingY - referenceStartOffset);
+        return tiePointGridOffsets;
     }
 
     @Override
@@ -129,9 +146,10 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
 
     @Override
     protected void initialize(Product[] sourceProducts, Product targetProduct) {
-        final MetadataElement globalAttributes = findMasterProduct().getMetadataRoot().getElement("Global_Attributes");
-        referenceStartOffset = globalAttributes.getAttributeDouble("start_offset");
-        referenceTrackOffset = globalAttributes.getAttributeDouble("track_offset");
+        final Product masterProduct = findMasterProduct();
+        final MetadataElement globalAttributes = masterProduct.getMetadataRoot().getElement("Global_Attributes");
+        referenceStartOffset = getStartOffset(globalAttributes, masterProduct.getName());
+        referenceTrackOffset = getTrackOffset(globalAttributes, masterProduct.getName());
         referenceResolutions = getResolutions(globalAttributes);
     }
 
