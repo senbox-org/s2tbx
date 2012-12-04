@@ -86,7 +86,7 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
         final Product sourceProduct = sourceBand.getProduct();
         final MetadataElement metadataRoot = sourceProduct.getMetadataRoot();
         final MetadataElement globalAttributes = metadataRoot.getElement("Global_Attributes");
-        if (!globalAttributes.containsAttribute("subsampling_factor")) {
+        if (globalAttributes.containsAttribute("subsampling_factor")) {
             final int subSampling = globalAttributes.getAttributeInt("subsampling_factor");
 
             return copyBandAsTiePointGrid(sourceBand, targetProduct, subSampling, subSampling, 0.0f, 0.0f);
