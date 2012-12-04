@@ -24,7 +24,6 @@ import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 import org.esa.beam.framework.datamodel.TiePointGrid;
@@ -57,7 +56,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     private final Sentinel3ProductReader productReader;
     private final Logger logger;
 
-    private Manifest manifest;
+    private volatile Manifest manifest;
 
     public AbstractProductFactory(Sentinel3ProductReader productReader) {
         this.productReader = productReader;
@@ -66,6 +65,17 @@ public abstract class AbstractProductFactory implements ProductFactory {
 
     protected final Logger getLogger() {
         return logger;
+    }
+
+    protected final Manifest getManifest() throws IOException {
+        if (manifest == null) {
+            synchronized (this) {
+                if (manifest == null) {
+                    return createManifest(getInputFile());
+                }
+            }
+        }
+        return manifest;
     }
 
     protected static Band copyBand(Band sourceBand, Product targetProduct, boolean copySourceImage) {
@@ -179,10 +189,10 @@ public abstract class AbstractProductFactory implements ProductFactory {
         final Product sourceProduct = findMasterProduct();
         targetProduct.setStartTime(sourceProduct.getStartTime());
         targetProduct.setEndTime(sourceProduct.getEndTime());
-        if(sourceProduct.getStartTime() != null) {
+        if (sourceProduct.getStartTime() != null) {
             targetProduct.setStartTime(manifest.getStartTime());
         }
-        if(sourceProduct.getEndTime() != null) {
+        if (sourceProduct.getEndTime() != null) {
             targetProduct.setEndTime(manifest.getStopTime());
         }
     }
@@ -225,7 +235,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     protected void initialize(Product[] sourceProducts, Product targetProduct) {
     }
 
-    protected void addDataNodes(Product targetProduct) {
+    protected void addDataNodes(Product targetProduct) throws IOException {
         final int w = targetProduct.getSceneRasterWidth();
         final int h = targetProduct.getSceneRasterHeight();
         final Map<String, String> mapping = new HashMap<String, String>();
@@ -305,7 +315,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         final InputStream inputStream = new FileInputStream(file);
         try {
             final Document xmlDocument = createXmlDocument(inputStream);
-            if(xmlDocument.getDocumentElement().getTagName().contains("Earth_Explorer")) {
+            if (xmlDocument.getDocumentElement().getTagName().contains("Earth_Explorer")) {
                 return EarthExplorerManifest.createManifest(xmlDocument);
             } else {
                 return SafeManifest.createManifest(xmlDocument);
