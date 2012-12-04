@@ -1,7 +1,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
-    <symbolicName>suhet</symbolicName>
-    <version>0.1</version>
+    <symbolicName>beam-sentinel3-reader</symbolicName>
+    <version>0.5</version>
     <name>BEAM Sentinel-3 Reader</name>
 
     <description>

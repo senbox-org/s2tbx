@@ -29,11 +29,9 @@
 
     <moduleSets>
         <moduleSet>
-            <!--
             <excludes>
-                <exclude>org.esa.beam.smos:smos-bootstrap</exclude>
+                <exclude>org.esa.suhet:suhet-bootstrap</exclude>
             </excludes>
-            -->
 
             <binaries>
                 <includeDependencies>false</includeDependencies>

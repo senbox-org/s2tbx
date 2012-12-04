@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.esa.suhet</groupId>
+        <artifactId>suhet</artifactId>
+        <version>0.5.0.${beamVersion}</version>
+    </parent>
+
+    <packaging>jar</packaging>
+
+    <groupId>org.esa.suhet</groupId>
+    <artifactId>suhet-bootstrap</artifactId>
+    <name>SUHET Bootstrap</name>
+    <description>Provides the bootstrap classpath for all SUHET modules</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.esa.beam</groupId>
+            <artifactId>beam-bootstrap</artifactId>
+            <version>${beamVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.suhet</groupId>
+            <artifactId>beam-sentinel2-reader</artifactId>
+            <version>0.5.0.${beamVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.suhet</groupId>
+            <artifactId>beam-sentinel3-reader</artifactId>
+            <version>0.5.0.${beamVersion}</version>
+        </dependency>
+    </dependencies>
+
+</project>

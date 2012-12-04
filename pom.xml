@@ -23,13 +23,18 @@
         <beamVersion>5.0-SNAPSHOT</beamVersion>
     </properties>
 
-
     <groupId>org.esa.suhet</groupId>
     <artifactId>suhet</artifactId>
     <version>0.5.0.${beamVersion}</version>
     <name>SUHET</name>
     <description>Sentinel Exploitation Tools</description>
     <url>https://github.com/bcdev/suhet</url>
+
+    <modules>
+        <module>suhet-bootstrap</module>
+        <module>beam-sentinel2-reader</module>
+        <module>beam-sentinel3-reader</module>
+    </modules>
 
     <packaging>pom</packaging>
 
@@ -90,11 +95,6 @@
              <uniqueVersion>false</uniqueVersion>
          </snapshotRepository>
      </distributionManagement>
-
-    <modules>
-        <module>beam-sentinel2-reader</module>
-        <module>beam-sentinel3-reader</module>
-    </modules>
 
     <dependencyManagement>
         <dependencies>
