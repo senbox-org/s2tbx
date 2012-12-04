@@ -19,45 +19,124 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.esa.suhet</groupId>
-    <artifactId>suhet</artifactId>
-    <version>0.1-SNAPSHOT</version>
-    <name>Sentinel Exploitation Tools</name>
-    <url>https://github.com/bcdev/suhet</url>
-
     <properties>
         <beamVersion>5.0-SNAPSHOT</beamVersion>
     </properties>
 
+
+    <groupId>org.esa.suhet</groupId>
+    <artifactId>suhet</artifactId>
+    <version>0.5.0.${beamVersion}</version>
+    <name>SUHET</name>
+    <description>Sentinel Exploitation Tools</description>
+    <url>https://github.com/bcdev/suhet</url>
+
+    <packaging>pom</packaging>
+
+    <repositories>
+         <repository>
+             <id>bc-mvn-repo-public</id>
+             <name>Public Maven Repository at Brockmann-Consult</name>
+             <url>http://www.brockmann-consult.de/mvn/os</url>
+             <releases>
+                 <enabled>true</enabled>
+                 <checksumPolicy>warn</checksumPolicy>
+             </releases>
+             <snapshots>
+                 <enabled>true</enabled>
+                 <checksumPolicy>warn</checksumPolicy>
+             </snapshots>
+         </repository>
+     </repositories>
+
+     <pluginRepositories>
+         <pluginRepository>
+             <id>bc-mvn-repo-public</id>
+             <name>Public Maven Repository at Brockmann-Consult</name>
+             <url>http://www.brockmann-consult.de/mvn/os</url>
+             <releases>
+                 <enabled>true</enabled>
+                 <checksumPolicy>warn</checksumPolicy>
+             </releases>
+             <snapshots>
+                 <enabled>true</enabled>
+                 <checksumPolicy>warn</checksumPolicy>
+             </snapshots>
+         </pluginRepository>
+         <pluginRepository>
+             <id>apache.org</id>
+             <name>Maven Plugin Snapshots</name>
+             <url>http://people.apache.org/repo/m2-snapshot-repository</url>
+             <releases>
+                 <enabled>false</enabled>
+             </releases>
+             <snapshots>
+                 <enabled>true</enabled>
+             </snapshots>
+         </pluginRepository>
+     </pluginRepositories>
+
+     <distributionManagement>
+         <repository>
+             <id>bc-mvn-repo-public</id>
+             <name>Public Maven Repository at Brockmann Consult</name>
+             <url>scp://www.brockmann-consult.de/var/www/www.brockmann-consult.de/mvn/os</url>
+             <uniqueVersion>false</uniqueVersion>
+         </repository>
+         <snapshotRepository>
+             <id>bc-mvn-repo-public</id>
+             <name>Public Maven Snapshot Repository at Brockmann Consult</name>
+             <url>scp://www.brockmann-consult.de/var/www/www.brockmann-consult.de/mvn/os</url>
+             <uniqueVersion>false</uniqueVersion>
+         </snapshotRepository>
+     </distributionManagement>
+
+    <modules>
+        <module>beam-sentinel2-reader</module>
+        <module>beam-sentinel3-reader</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
+                <artifactId>beam-core</artifactId>
+                <version>${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
+                <artifactId>beam-visat-rcp</artifactId>
+                <version>${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
+                <artifactId>beam-netcdf</artifactId>
+                <version>1.1.2.${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna</artifactId>
+                <version>3.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.8.2</version>
+                <scope>test</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
-            <groupId>org.esa.beam</groupId>
-            <artifactId>beam-core</artifactId>
-            <version>${beamVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.beam</groupId>
-            <artifactId>beam-visat-rcp</artifactId>
-            <version>${beamVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.beam</groupId>
-            <artifactId>beam-netcdf</artifactId>
-            <version>1.1.2.${beamVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.beam</groupId>
-            <artifactId>beam-geotiff</artifactId>
-            <version>1.2.2.${beamVersion}</version>
-        </dependency>
-
-        <dependency>
-        	<groupId>net.java.dev.jna</groupId>
-        	<artifactId>jna</artifactId>
-        	<version>3.4.0</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 
@@ -78,7 +157,10 @@
                 <version>2.2-beta-5</version>
                 <configuration>
                     <descriptors>
+                        <descriptor>src/main/assembly/bin.xml</descriptor>
+                        <!--
                         <descriptor>src/main/assembly/project.xml</descriptor>
+                        -->
                     </descriptors>
                     <finalName>suhet</finalName>
                 </configuration>
@@ -87,15 +169,6 @@
     </build>
 
     <developers>
-        <developer>
-            <id>marcop</id>
-            <name>Marco Peters</name>
-            <email>marco.peters@brockmann-consult.de</email>
-            <organization>Brockmann Consult</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
         <developer>
             <id>norman</id>
             <name>Norman Fomferra</name>
@@ -116,18 +189,27 @@
             </roles>
         </developer>
         <developer>
-            <id>ralf</id>
-            <name>Ralf Quast</name>
-            <email>ralf.quast@brockmann-consult.de</email>
+            <id>tonio</id>
+            <name>Tonio Fincke</name>
+            <email>tonio.fincke@brockmann-consult.de</email>
             <organization>Brockmann Consult</organization>
             <roles>
                 <role>Java Developer</role>
             </roles>
         </developer>
         <developer>
-            <id>tonio</id>
-            <name>Tonio Fincke</name>
-            <email>tonio.fincke@brockmann-consult.de</email>
+            <id>marcop</id>
+            <name>Marco Peters</name>
+            <email>marco.peters@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>ralf</id>
+            <name>Ralf Quast</name>
+            <email>ralf.quast@brockmann-consult.de</email>
             <organization>Brockmann Consult</organization>
             <roles>
                 <role>Java Developer</role>
