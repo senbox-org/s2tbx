@@ -133,7 +133,7 @@ if (applicationInfo == null) {
     return true;
 }
 
-String requiredBeamVersion = "4.10";
+String requiredBeamVersion = "5.0";
 String existingBeamVersion = applicationInfo.getVersion();
 if (!existingBeamVersion.startsWith(requiredBeamVersion)) {
     Util.showErrorMessage("This version of " + context.getCompilerVariable("sys.fullName") + " " 
