@@ -82,7 +82,8 @@ public abstract class AbstractProductFactory implements ProductFactory {
         return ProductUtils.copyBand(sourceBand.getName(), sourceBand.getProduct(), targetProduct, copySourceImage);
     }
 
-    protected static TiePointGrid copyBandAsTiePointGrid(Band sourceBand, Product targetProduct, int subSamplingX, int subSamplingY,
+    protected static TiePointGrid copyBandAsTiePointGrid(Band sourceBand, Product targetProduct, int subSamplingX,
+                                                         int subSamplingY,
                                                          float offsetX, float offsetY) {
         final RenderedImage sourceImage = sourceBand.getGeophysicalImage();
         final int w = sourceImage.getWidth();
@@ -238,9 +239,9 @@ public abstract class AbstractProductFactory implements ProductFactory {
     protected void addDataNodes(Product targetProduct) throws IOException {
         final int w = targetProduct.getSceneRasterWidth();
         final int h = targetProduct.getSceneRasterHeight();
-        final Map<String, String> mapping = new HashMap<String, String>();
 
         for (final Product sourceProduct : openProductList) {
+            final Map<String, String> mapping = new HashMap<String, String>();
             for (final Band sourceBand : sourceProduct.getBands()) {
                 final RasterDataNode targetNode;
                 if ((sourceBand.getSceneRasterWidth() == w && sourceBand.getSceneRasterHeight() == h)) {
@@ -260,7 +261,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
                 if (imageType == Mask.BandMathsType.INSTANCE) {
                     String name = mask.getName();
                     String expression = Mask.BandMathsType.getExpression(mask);
-                    for (final String sourceBandName : sourceProduct.getBandNames()) {
+                    for (final String sourceBandName : mapping.keySet()) {
                         if (name.contains(sourceBandName)) {
                             name = name.replaceAll(sourceBandName, mapping.get(sourceBandName));
                         }
@@ -268,7 +269,8 @@ public abstract class AbstractProductFactory implements ProductFactory {
                             expression = expression.replaceAll(sourceBandName, mapping.get(sourceBandName));
                         }
                     }
-                    targetProduct.addMask(name, expression, mask.getDescription(), mask.getImageColor(), mask.getImageTransparency());
+                    targetProduct.addMask(name, expression, mask.getDescription(), mask.getImageColor(),
+                                          mask.getImageTransparency());
                 }
             }
         }

@@ -68,6 +68,7 @@ public class SynProductFactory extends AbstractProductFactory {
     @Override
     protected void addDataNodes(Product targetProduct) throws IOException {
         super.addDataNodes(targetProduct);
+        /*
         final List<String> fileNames = getManifest().getFileNames("tiepointsSchema");
         final Product masterProduct = findMasterProduct();
         final File directory = getInputFileParentDirectory();
@@ -114,6 +115,7 @@ public class SynProductFactory extends AbstractProductFactory {
                 }
             }
         }
+        */
     }
 
     private float[] getVariableDataAsFloatArray(Variable fileVariable) throws IOException {
