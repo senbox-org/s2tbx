@@ -206,6 +206,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         targetProduct.setAutoGrouping(patternBuilder.toString());
     }
 
+    // TODO - is it really necessary to override this method? The only implementation also returns the source image when no scaling is needed
     protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints,
                                               MultiLevelImage sourceImage) {
         return sourceImage;

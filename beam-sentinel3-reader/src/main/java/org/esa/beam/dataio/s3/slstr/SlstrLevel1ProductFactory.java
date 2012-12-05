@@ -49,8 +49,10 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
             @Override
             public boolean accept(File dir, String name) {
                 return name.endsWith(".nc") && (name.contains("radiance") || name.contains("flags")
-                        || name.contains("geodetic_tx") || name.contains("BT") || name.contains("cartesian_tx")
-                        || name.contains("geometry") || name.contains("indices") || name.contains("met")
+                                                || name.contains("geodetic_tx") || name.contains("BT") || name.contains(
+                        "cartesian_tx")
+                                                || name.contains("geometry") || name.contains(
+                        "indices") || name.contains("met")
                 );
             }
         });
@@ -62,22 +64,19 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     @Override
     protected double getStartOffset(MetadataElement globalAttributes, String sourceBandName) {
         double startOffset = globalAttributes.getAttributeDouble("start_offset");
-        if(startOffset != 0) {
+        if (startOffset != 0) {
             return startOffset;
         }
         if (sourceBandName.endsWith("_an") ||
-                sourceBandName.endsWith("_bn") ||
-                sourceBandName.endsWith("_cn")) {
+            sourceBandName.endsWith("_bn") ||
+            sourceBandName.endsWith("_cn")) {
             return 1.0;
-        }
-        else if(sourceBandName.endsWith("_ao") || sourceBandName.endsWith("_bo") ||
-                sourceBandName.endsWith("_co")) {
+        } else if (sourceBandName.endsWith("_ao") || sourceBandName.endsWith("_bo") ||
+                   sourceBandName.endsWith("_co")) {
             return 779.0;
-        }
-        else if (sourceBandName.endsWith("_in")) {
+        } else if (sourceBandName.endsWith("_in")) {
             return 0.5;
-        }
-        else if (sourceBandName.endsWith("_io")) {
+        } else if (sourceBandName.endsWith("_io")) {
             return 389.5;
         }
         return startOffset;
@@ -86,24 +85,19 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     @Override
     protected double getTrackOffset(MetadataElement globalAttributes, String sourceBandName) {
         double trackOffset = globalAttributes.getAttributeDouble("track_offset");
-        if(trackOffset != 0) {
+        if (trackOffset != 0) {
             return trackOffset;
-        }
-        else if (sourceBandName.endsWith("_an") || sourceBandName.endsWith("_cn") ||
-                sourceBandName.endsWith("_bn")) {
+        } else if (sourceBandName.endsWith("_an") || sourceBandName.endsWith("_cn") ||
+                   sourceBandName.endsWith("_bn")) {
             return -960.0;
-        }
-        else if (sourceBandName.endsWith("_in")) {
+        } else if (sourceBandName.endsWith("_in")) {
             return -480.0;
-        }
-        else if (sourceBandName.endsWith("_ao") || sourceBandName.endsWith("_bo") ||
-                sourceBandName.endsWith("_co")) {
+        } else if (sourceBandName.endsWith("_ao") || sourceBandName.endsWith("_bo") ||
+                   sourceBandName.endsWith("_co")) {
             return 398.0;
-        }
-        else if(sourceBandName.endsWith("_io")) {
+        } else if (sourceBandName.endsWith("_io")) {
             return 199.0;
-        }
-        else if (sourceBandName.endsWith("_tx")) {
+        } else if (sourceBandName.endsWith("_tx")) {
             return -30.0;
         }
         return trackOffset;
@@ -120,10 +114,12 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
             try {
                 final Product product = ProductIO.readProduct(qualityProductPath);
                 if (product != null) {
-                    final float wavelength = product.getMetadataRoot().getElement("Variable_Attributes").getElement("band_centre").
+                    final float wavelength = product.getMetadataRoot().getElement("Variable_Attributes").getElement(
+                            "band_centre").
                             getElement("values").getAttribute("data").getData().getElemFloat() * 1000;
                     ((Band) targetNode).setSpectralWavelength(wavelength);
-                    final float bandwidth = product.getMetadataRoot().getElement("Variable_Attributes").getElement("bandwidth").
+                    final float bandwidth = product.getMetadataRoot().getElement("Variable_Attributes").getElement(
+                            "bandwidth").
                             getElement("values").getAttribute("data").getData().getElemFloat() * 1000;
                     ((Band) targetNode).setSpectralBandwidth(bandwidth);
                 }
@@ -159,11 +155,12 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     }
 
     @Override
-    protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints, MultiLevelImage sourceImage) {
-        final float scaleX = (float)sourceResolutions[0] / (float)referenceResolutions[0];
+    protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints,
+                                              MultiLevelImage sourceImage) {
+        final float scaleX = (float) sourceResolutions[0] / (float) referenceResolutions[0];
         final float scaleY;
         if (sourceResolutions.length == 2) {
-            scaleY = (float)sourceResolutions[1] / (float)referenceResolutions[1];
+            scaleY = (float) sourceResolutions[1] / (float) referenceResolutions[1];
         } else {
             scaleY = scaleX;
         }
@@ -179,20 +176,23 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     @Override
     protected float[] getTiePointGridOffsets(double sourceStartOffset, double sourceTrackOffset,
                                              int subSamplingX, int subSamplingY, short[] sourceResolutions) {
+        // TODO - why is the calculation different from that in the super method?
         float[] tiePointGridOffsets = new float[2];
         tiePointGridOffsets[0] = (float) ((referenceTrackOffset -
-                sourceTrackOffset * sourceResolutions[0]) / referenceResolutions[0]) * subSamplingX;
-        tiePointGridOffsets[1] = (float) ((sourceStartOffset * sourceResolutions[1]  -
-                referenceStartOffset) / referenceResolutions[1]) * subSamplingY;
+        // TODO - this cannot be correct: track offset does not have units, source resolution is given in meter; subtraction of numbers with different units makes no sense
+                                           sourceTrackOffset * sourceResolutions[0]) / referenceResolutions[0]) * subSamplingX;
+        tiePointGridOffsets[1] = (float) ((sourceStartOffset * sourceResolutions[1] -
+        // TODO - see above
+                                           referenceStartOffset) / referenceResolutions[1]) * subSamplingY;
         return tiePointGridOffsets;
     }
 
     @Override
     protected float[] getOffsets(double sourceStartOffset, double sourceTrackOffset, short[] sourceResolutions) {
         final float offsetX = (float) (sourceTrackOffset * sourceResolutions[0] -
-                referenceTrackOffset) / referenceResolutions[0];
+                                       referenceTrackOffset) / referenceResolutions[0];
         final float offsetY = (float) (sourceStartOffset * sourceResolutions[1] -
-                referenceStartOffset) / referenceResolutions[1];
+                                       referenceStartOffset) / referenceResolutions[1];
         return new float[]{offsetX, offsetY};
     }
 
@@ -210,7 +210,7 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
         for (int i = 1; i < productList.size(); i++) {
             Product product = productList.get(i);
             if (product.getSceneRasterWidth() > masterProduct.getSceneRasterWidth() &&
-                    product.getSceneRasterHeight() > masterProduct.getSceneRasterHeight()) {
+                product.getSceneRasterHeight() > masterProduct.getSceneRasterHeight()) {
                 masterProduct = product;
             }
         }
