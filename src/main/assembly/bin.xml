@@ -31,6 +31,7 @@
         <moduleSet>
             <excludes>
                 <exclude>org.esa.suhet:suhet-bootstrap</exclude>
+                <exclude>org.esa.suhet:beam-sentinel2-reader</exclude>
             </excludes>
 
             <binaries>
