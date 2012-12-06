@@ -1,4 +1,4 @@
-package org.esa.beam.dataio.s3.synergy;/*
+package org.esa.beam.dataio.s3;/*
  * Copyright (C) 2012 Brockmann Consult GmbH (info@brockmann-consult.de)
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -14,12 +14,7 @@ package org.esa.beam.dataio.s3.synergy;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-import org.junit.Test;
+public interface LonLatFunction {
 
-public class TiePointImageTest {
-
-    @Test
-    public void testPixelvalues() throws Exception {
-
-    }
+    public double getValue(double lon, double lat);
 }

@@ -15,11 +15,11 @@ package org.esa.beam.dataio.s3.synergy;/*
  */
 
 import com.bc.ceres.glevel.MultiLevelImage;
-import com.bc.ceres.glevel.MultiLevelModel;
-import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
+import com.bc.ceres.glevel.MultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import org.esa.beam.dataio.netcdf.util.DataTypeUtils;
 import org.esa.beam.dataio.s3.AbstractProductFactory;
+import org.esa.beam.dataio.s3.LonLatFunction;
+import org.esa.beam.dataio.s3.LonLatMultiLevelSource;
 import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
@@ -29,20 +29,11 @@ import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.PixelGeoCoding;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.RasterDataNode;
-import org.esa.beam.jai.ImageManager;
-import org.esa.beam.jai.ResolutionLevel;
-import ucar.ma2.DataType;
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.Variable;
 
 import java.awt.image.DataBuffer;
-import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SynLevel2ProductFactory extends AbstractProductFactory {
 
@@ -118,57 +109,12 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         */
     }
 
-    private float[] getVariableDataAsFloatArray(Variable fileVariable) throws IOException {
-        final Object storage = fileVariable.read().getStorage();
-        if (storage instanceof int[]) {
-            float[] positions = new float[((int[]) storage).length];
-            for (int i = 0; i < positions.length; i++) {
-                String positionString;
-                positionString = Integer.toString(((int[]) storage)[i]);
-                positions[i] = Float.parseFloat(positionString);
-            }
-            return positions;
-        }
-        if (storage instanceof double[]) {
-            float[] positions = new float[((double[]) storage).length];
-            for (int i = 0; i < positions.length; i++) {
-                String positionString;
-                positionString = Double.toString(((double[]) storage)[i]);
-                positions[i] = Float.parseFloat(positionString);
-            }
-            return positions;
-        }
-        return (float[]) storage;
-    }
-
-    protected RenderedImage createTiepointSourceImage(final Product masterProduct, final Variable variable,
-                                                      final GeoCoding geoCoding, final float[] latValues,
-                                                      final float[] lonValues) {
-        final MultiLevelModel model = ImageManager.getInstance().getMultiLevelModel(masterProduct.getBandAt(0));
-        MultiLevelImage multiLevelImage =
-                new DefaultMultiLevelImage(new AbstractMultiLevelSource(model) {
-
-                    @Override
-                    public RenderedImage createImage(int level) {
-                        return new SynTiePointImage(variable, getDataBufferType(variable.getDataType()), masterProduct,
-                                                    ResolutionLevel.create(getModel(), level), geoCoding, latValues, lonValues);
-                    }
-                });
-        return multiLevelImage;
-    }
-
-    private int getDataBufferType(DataType dataType) {
-        if (dataType == DataType.SHORT) {
-            return DataBuffer.TYPE_SHORT;
-        } else if (dataType == DataType.INT) {
-            return DataBuffer.TYPE_INT;
-        } else if (dataType == DataType.FLOAT) {
-            return DataBuffer.TYPE_FLOAT;
-        } else if (dataType == DataType.DOUBLE) {
-            return DataBuffer.TYPE_DOUBLE;
-        } else {
-            return DataBuffer.TYPE_UNDEFINED;
-        }
+    private MultiLevelImage createTiePointImage(MultiLevelImage lonImage, MultiLevelImage latImage, double[] tpLonData,
+                                                double[] tpLatData, double[] tpFunctionData) {
+        final LonLatFunction function = new SynTiePointFunction(tpLonData, tpLatData, tpFunctionData);
+        final MultiLevelSource source = LonLatMultiLevelSource.create(lonImage, latImage, function,
+                                                                      DataBuffer.TYPE_FLOAT);
+        return new DefaultMultiLevelImage(source);
     }
 
     @Override

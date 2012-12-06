@@ -16,6 +16,7 @@ import java.awt.Rectangle;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 
+@Deprecated
 public class SynTiePointImage extends SingleBandedOpImage {
 
     private final Variable variable;
