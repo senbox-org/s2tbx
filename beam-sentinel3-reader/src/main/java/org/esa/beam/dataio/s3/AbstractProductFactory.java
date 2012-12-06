@@ -114,28 +114,19 @@ public abstract class AbstractProductFactory implements ProductFactory {
         final List<String> fileNames = getFileNames(manifest);
         readProducts(fileNames);
 
-        if (openProductList.size() == 1) {
-            final Product targetProduct = openProductList.get(0);
-            targetProduct.getMetadataRoot().addElement(manifest.getMetadata());
-            setMasks(targetProduct);
-            openProductList.clear();
-            return targetProduct;
-        }
-
         final String productName = getProductName();
         final String productType = productReader.getReaderPlugIn().getFormatNames()[0];
         final Product masterProduct = findMasterProduct();
         final int w = masterProduct.getSceneRasterWidth();
         final int h = masterProduct.getSceneRasterHeight();
         final Product targetProduct = new Product(productName, productType, w, h, productReader);
-
-        setTimes(targetProduct);
         targetProduct.setFileLocation(getInputFile());
+
+        initialize(masterProduct);
 
         if (masterProduct.getGeoCoding() instanceof CrsGeoCoding) {
             ProductUtils.copyGeoCoding(masterProduct, targetProduct);
         }
-
         targetProduct.getMetadataRoot().addElement(manifest.getMetadata());
         for (final Product p : openProductList) {
             final MetadataElement productAttributes = new MetadataElement(p.getName());
@@ -150,11 +141,13 @@ public abstract class AbstractProductFactory implements ProductFactory {
             targetProduct.getMetadataRoot().addElement(productAttributes);
         }
 
-        final Product[] sourceProducts = openProductList.toArray(new Product[openProductList.size()]);
-        initialize(sourceProducts, targetProduct);
         addDataNodes(targetProduct);
         setMasks(targetProduct);
-        setGeoCoding(targetProduct);
+        setTimes(targetProduct);
+        if (targetProduct.getGeoCoding() == null) {
+            setGeoCoding(targetProduct);
+        }
+        final Product[] sourceProducts = openProductList.toArray(new Product[openProductList.size()]);
         setAutoGrouping(sourceProducts, targetProduct);
 
         return targetProduct;
@@ -233,7 +226,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         targetProduct.setAutoGrouping(patternBuilder.toString());
     }
 
-    protected void initialize(Product[] sourceProducts, Product targetProduct) {
+    protected void initialize(Product masterProduct) {
     }
 
     protected void addDataNodes(Product targetProduct) throws IOException {
@@ -244,7 +237,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
             final Map<String, String> mapping = new HashMap<String, String>();
             for (final Band sourceBand : sourceProduct.getBands()) {
                 final RasterDataNode targetNode;
-                if ((sourceBand.getSceneRasterWidth() == w && sourceBand.getSceneRasterHeight() == h)) {
+                if (sourceBand.getSceneRasterWidth() == w && sourceBand.getSceneRasterHeight() == h) {
                     targetNode = addBand(sourceBand, targetProduct);
                 } else {
                     targetNode = addSpecialNode(sourceBand, targetProduct);

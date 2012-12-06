@@ -18,6 +18,7 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.beam.dataio.s3.AbstractProductFactory;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.RasterDataNode;
@@ -50,8 +51,8 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     protected RasterDataNode addSpecialNode(Band sourceBand, Product targetProduct) {
         final Product sourceProduct = sourceBand.getProduct();
         final MetadataElement globalAttributes = sourceProduct.getMetadataRoot().getElement("Global_Attributes");
-        final double sourceStartOffset = getStartOffset(globalAttributes, sourceProduct.getName());
-        final double sourceTrackOffset = getTrackOffset(globalAttributes, sourceProduct.getName());
+        final double sourceStartOffset = getStartOffset(globalAttributes);
+        final double sourceTrackOffset = getTrackOffset(globalAttributes);
         final short[] sourceResolutions = getResolutions(globalAttributes);
         if (isTiePointGrid(sourceResolutions)) {
             return copyTiePointGrid(sourceBand, targetProduct, sourceStartOffset, sourceTrackOffset, sourceResolutions);
@@ -65,12 +66,12 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         }
     }
 
-    protected double getTrackOffset(MetadataElement globalAttributes, String sourceProductName) {
-        return globalAttributes.getAttributeDouble("track_offset");
+    protected double getTrackOffset(MetadataElement globalAttributes) {
+        return globalAttributes.getAttributeDouble("track_offset", 0.0);
     }
 
-    protected double getStartOffset(MetadataElement globalAttributes, String sourceProductName) {
-        return globalAttributes.getAttributeDouble("start_offset");
+    protected double getStartOffset(MetadataElement globalAttributes) {
+        return globalAttributes.getAttributeDouble("start_offset", 0.0);
     }
 
     protected boolean isTiePointGrid(short[] sourceResolutions) {
@@ -78,7 +79,15 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     protected short[] getResolutions(MetadataElement globalAttributes) {
-        return (short[]) globalAttributes.getAttribute("resolution").getDataElems();
+        final MetadataAttribute attribute = globalAttributes.getAttribute("resolution");
+        if (attribute == null) {
+            return new short[]{1000, 1000};
+        }
+        final short[] resolutions = (short[]) attribute.getDataElems();
+        if (resolutions.length == 1) {
+            return new short[]{resolutions[0], resolutions[0]};
+        }
+        return resolutions;
     }
 
     private RenderedImage createSourceImage(Band sourceBand, float[] offsets,
@@ -145,11 +154,10 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     @Override
-    protected void initialize(Product[] sourceProducts, Product targetProduct) {
-        final Product masterProduct = findMasterProduct();
+    protected void initialize(Product masterProduct) {
         final MetadataElement globalAttributes = masterProduct.getMetadataRoot().getElement("Global_Attributes");
-        referenceStartOffset = getStartOffset(globalAttributes, masterProduct.getName());
-        referenceTrackOffset = getTrackOffset(globalAttributes, masterProduct.getName());
+        referenceStartOffset = getStartOffset(globalAttributes);
+        referenceTrackOffset = getTrackOffset(globalAttributes);
         referenceResolutions = getResolutions(globalAttributes);
     }
 

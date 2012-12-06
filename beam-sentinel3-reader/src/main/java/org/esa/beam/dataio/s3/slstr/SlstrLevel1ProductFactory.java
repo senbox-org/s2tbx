@@ -62,42 +62,44 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     }
 
     @Override
-    protected double getStartOffset(MetadataElement globalAttributes, String sourceBandName) {
-        double startOffset = globalAttributes.getAttributeDouble("start_offset");
-        if (startOffset != 0) {
+    protected double getStartOffset(MetadataElement globalAttributes) {
+        final String sourceProductName = globalAttributes.getProduct().getName();
+        final double startOffset = globalAttributes.getAttributeDouble("start_offset");
+        if (startOffset != 0.0) {
             return startOffset;
         }
-        if (sourceBandName.endsWith("_an") ||
-            sourceBandName.endsWith("_bn") ||
-            sourceBandName.endsWith("_cn")) {
+        if (sourceProductName.endsWith("_an") ||
+            sourceProductName.endsWith("_bn") ||
+            sourceProductName.endsWith("_cn")) {
             return 1.0;
-        } else if (sourceBandName.endsWith("_ao") || sourceBandName.endsWith("_bo") ||
-                   sourceBandName.endsWith("_co")) {
+        } else if (sourceProductName.endsWith("_ao") || sourceProductName.endsWith("_bo") ||
+                   sourceProductName.endsWith("_co")) {
             return 779.0;
-        } else if (sourceBandName.endsWith("_in")) {
+        } else if (sourceProductName.endsWith("_in")) {
             return 0.5;
-        } else if (sourceBandName.endsWith("_io")) {
+        } else if (sourceProductName.endsWith("_io")) {
             return 389.5;
         }
         return startOffset;
     }
 
     @Override
-    protected double getTrackOffset(MetadataElement globalAttributes, String sourceBandName) {
-        double trackOffset = globalAttributes.getAttributeDouble("track_offset");
+    protected double getTrackOffset(MetadataElement globalAttributes) {
+        final String sourceProductName = globalAttributes.getProduct().getName();
+        final double trackOffset = globalAttributes.getAttributeDouble("track_offset");
         if (trackOffset != 0) {
             return trackOffset;
-        } else if (sourceBandName.endsWith("_an") || sourceBandName.endsWith("_cn") ||
-                   sourceBandName.endsWith("_bn")) {
+        } else if (sourceProductName.endsWith("_an") || sourceProductName.endsWith("_cn") ||
+                   sourceProductName.endsWith("_bn")) {
             return -960.0;
-        } else if (sourceBandName.endsWith("_in")) {
+        } else if (sourceProductName.endsWith("_in")) {
             return -480.0;
-        } else if (sourceBandName.endsWith("_ao") || sourceBandName.endsWith("_bo") ||
-                   sourceBandName.endsWith("_co")) {
+        } else if (sourceProductName.endsWith("_ao") || sourceProductName.endsWith("_bo") ||
+                   sourceProductName.endsWith("_co")) {
             return 398.0;
-        } else if (sourceBandName.endsWith("_io")) {
+        } else if (sourceProductName.endsWith("_io")) {
             return 199.0;
-        } else if (sourceBandName.endsWith("_tx")) {
+        } else if (sourceProductName.endsWith("_tx")) {
             return -30.0;
         }
         return trackOffset;
@@ -140,7 +142,7 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
         if (resolutions.length == 1) {
             resolutions = new short[]{resolutions[0], resolutions[0]};
         }
-        final String productName = globalAttributes.getOwner().getProduct().getName();
+        final String productName = globalAttributes.getProduct().getName();
         penUltimateChar = productName.charAt(productName.length() - 2);
         if (resolutions[0] == 0 && resolutions[1] == 0) {
             if (penUltimateChar.compareTo('i') == 0) {
@@ -197,8 +199,8 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     }
 
     @Override
-    protected void initialize(Product[] sourceProducts, Product targetProduct) {
-        super.initialize(sourceProducts, targetProduct);
+    protected void initialize(Product masterProduct) {
+        super.initialize(masterProduct);
         referenceStartOffset *= referenceResolutions[0];
         referenceTrackOffset *= referenceResolutions[1];
     }
