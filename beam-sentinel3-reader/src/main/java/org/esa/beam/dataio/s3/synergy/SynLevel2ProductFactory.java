@@ -44,11 +44,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SynProductFactory extends AbstractProductFactory {
+public class SynLevel2ProductFactory extends AbstractProductFactory {
 
     private List<GeoCoding> geoCodingList;
 
-    public SynProductFactory(Sentinel3ProductReader productReader) {
+    public SynLevel2ProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
     }
 
