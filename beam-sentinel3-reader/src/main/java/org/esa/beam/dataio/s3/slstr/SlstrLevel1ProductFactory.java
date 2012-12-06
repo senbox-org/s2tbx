@@ -142,9 +142,6 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     @Override
     protected short[] getResolutions(MetadataElement globalAttributes) {
         short[] resolutions = super.getResolutions(globalAttributes);
-        if (resolutions.length == 1) {
-            resolutions = new short[]{resolutions[0], resolutions[0]};
-        }
         final String productName = globalAttributes.getProduct().getName();
         penUltimateChar = productName.charAt(productName.length() - 2);
         if (resolutions[0] == 0 && resolutions[1] == 0) {

@@ -74,6 +74,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         return globalAttributes.getAttributeDouble("start_offset", 0.0);
     }
 
+    @Deprecated // simply ask if reference (i.e target) resolution is different from source resolution
     protected boolean isTiePointGrid(short[] sourceResolutions) {
         return sourceResolutions[0] != referenceResolutions[0];
     }
@@ -81,7 +82,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     protected short[] getResolutions(MetadataElement globalAttributes) {
         final MetadataAttribute attribute = globalAttributes.getAttribute("resolution");
         if (attribute == null) {
-            return new short[]{1000, 1000};
+            return null;
         }
         final short[] resolutions = (short[]) attribute.getDataElems();
         if (resolutions.length == 1) {
@@ -118,18 +119,13 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         return new float[]{offsetX, offsetY};
     }
 
+    @Deprecated // scale images instead
     private RasterDataNode copyTiePointGrid(Band sourceBand, Product targetProduct, double sourceStartOffset,
                                             double sourceTrackOffset, short[] sourceResolutions) {
         final int subSamplingX = sourceResolutions[0] / referenceResolutions[0];
-        final int subSamplingY;
-        if (sourceResolutions.length == 2) {
-            subSamplingY = sourceResolutions[1] / referenceResolutions[1];
-        } else {
-            //noinspection SuspiciousNameCombination
-            subSamplingY = subSamplingX;
-        }
-        float[] tiePointGridOffsets = getTiePointGridOffsets(sourceStartOffset, sourceTrackOffset,
-                                                             subSamplingX, subSamplingY, sourceResolutions);
+        final int subSamplingY = sourceResolutions[1] / referenceResolutions[1];
+        final float[] tiePointGridOffsets = getTiePointGridOffsets(sourceStartOffset, sourceTrackOffset,
+                                                                   subSamplingX, subSamplingY, sourceResolutions);
         return copyBandAsTiePointGrid(sourceBand, targetProduct, subSamplingX, subSamplingY,
                                       tiePointGridOffsets[0], tiePointGridOffsets[1]);
     }
