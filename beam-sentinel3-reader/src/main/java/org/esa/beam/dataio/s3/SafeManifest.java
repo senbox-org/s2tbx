@@ -179,7 +179,7 @@ class SafeManifest implements Manifest {
             if (Character.isDigit(time.charAt(time.length() - 1))) {
                 return ProductData.UTC.parse(time, "yyyy-MM-dd'T'HH:mm:ss");
             }
-            return ProductData.UTC.parse(time, "yyyy-MM-dd'T'HH:mm:ssZ");
+            return ProductData.UTC.parse(time, "yyyy-MM-dd'T'HH:mm:ss'Z'");
         } catch (ParseException ignored) {
             return null;
         }
