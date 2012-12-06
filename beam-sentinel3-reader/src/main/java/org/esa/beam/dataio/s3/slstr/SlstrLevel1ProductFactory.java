@@ -78,7 +78,7 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
         } else if (sourceProductName.endsWith("_io")) {
             return 389.5;
         } else if (sourceProductName.endsWith("_to")) {
-            return 1.;
+            return 20.;
         }
         return startOffset;
     }
@@ -90,19 +90,19 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
         if (trackOffset != 0) {
             return trackOffset;
         } else if (sourceProductName.endsWith("_an") || sourceProductName.endsWith("_cn") ||
-                   sourceProductName.endsWith("_bn")) {
-            return -960.0;
+                sourceProductName.endsWith("_bn")) {
+            return -943.0;
         } else if (sourceProductName.endsWith("_in")) {
-            return -480.0;
+            return -471.5;
         } else if (sourceProductName.endsWith("_ao") || sourceProductName.endsWith("_bo") ||
-                   sourceProductName.endsWith("_co")) {
-            return 398.0;
+                sourceProductName.endsWith("_co")) {
+            return 412.0;
         } else if (sourceProductName.endsWith("_io")) {
-            return 199.0;
-        } else if (sourceProductName.endsWith("_tx")) {
+            return 207.0;
+        } else if (sourceProductName.endsWith("_tx") || sourceProductName.endsWith("_tn")) {
             return -30.0;
         } else if(sourceProductName.endsWith("_to")) {
-            return -31.2;
+            return -70.;
         }
         return trackOffset;
     }
@@ -159,6 +159,7 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     @Override
     protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints,
                                               MultiLevelImage sourceImage) {
+        final short[] referenceResolutions = getReferenceResolutions();
         final float scaleX = (float) sourceResolutions[0] / (float) referenceResolutions[0];
         final float scaleY;
         if (sourceResolutions.length == 2) {
@@ -173,37 +174,6 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
                                            renderingHints);
         }
         return image;
-    }
-
-    @Override
-    protected float[] getTiePointGridOffsets(double sourceStartOffset, double sourceTrackOffset,
-                                             int subSamplingX, int subSamplingY, short[] sourceResolutions) {
-        // TODO - why is the calculation different from that in the super method?
-        float[] tiePointGridOffsets = new float[2];
-        tiePointGridOffsets[0] = (float) ((referenceTrackOffset -
-                // TODO - this cannot be correct: track offset does not have units, source resolution is given in meter;
-                // subtraction of numbers with different units makes no sense
-                sourceTrackOffset * sourceResolutions[0]) / referenceResolutions[0]) * subSamplingX;
-        tiePointGridOffsets[1] = (float) ((sourceStartOffset * sourceResolutions[1] -
-                // TODO - see above
-                referenceStartOffset) / referenceResolutions[1]) * subSamplingY;
-        return tiePointGridOffsets;
-    }
-
-    @Override
-    protected float[] getOffsets(double sourceStartOffset, double sourceTrackOffset, short[] sourceResolutions) {
-        final float offsetX = (float) (sourceTrackOffset * sourceResolutions[0] -
-                referenceTrackOffset) / referenceResolutions[0];
-        final float offsetY = (float) (sourceStartOffset * sourceResolutions[1] -
-                referenceStartOffset) / referenceResolutions[1];
-        return new float[]{offsetX, offsetY};
-    }
-
-    @Override
-    protected void initialize(Product masterProduct) {
-        super.initialize(masterProduct);
-        referenceStartOffset *= referenceResolutions[0];
-        referenceTrackOffset *= referenceResolutions[1];
     }
 
     @Override

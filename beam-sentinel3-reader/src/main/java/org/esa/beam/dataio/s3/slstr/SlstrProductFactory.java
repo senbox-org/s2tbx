@@ -39,9 +39,9 @@ import java.io.IOException;
 
 public abstract class SlstrProductFactory extends AbstractProductFactory {
 
-    protected double referenceStartOffset;
-    protected double referenceTrackOffset;
-    protected short[] referenceResolutions;
+    private double referenceStartOffset;
+    private double referenceTrackOffset;
+    private short[] referenceResolutions;
 
     protected SlstrProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
@@ -114,9 +114,13 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     protected float[] getOffsets(double sourceStartOffset, double sourceTrackOffset, short[] sourceResolutions) {
-        float offsetX = (float) (sourceTrackOffset - referenceTrackOffset);
-        float offsetY = (float) (sourceStartOffset - referenceStartOffset);
+        float offsetX = (float) (sourceTrackOffset * (sourceResolutions[0] / referenceResolutions[0]) - referenceTrackOffset);
+        float offsetY = (float) (sourceStartOffset * (sourceResolutions[1] / referenceResolutions[1]) - referenceStartOffset);
         return new float[]{offsetX, offsetY};
+    }
+
+    public short[] getReferenceResolutions() {
+        return referenceResolutions;
     }
 
     @Deprecated // scale images instead
