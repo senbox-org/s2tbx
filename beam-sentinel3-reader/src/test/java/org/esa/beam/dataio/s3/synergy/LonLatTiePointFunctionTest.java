@@ -39,26 +39,36 @@ public class LonLatTiePointFunctionTest {
         final File file = new File(url.toURI());
         assertNotNull(file);
 
-        final NetcdfFile ncFile = NetcdfFile.open(file.getPath());
+        NetcdfFile ncFile = null;
+        try {
+            ncFile = NetcdfFile.open(file.getPath());
 
-        final List<Variable> variables = ncFile.getVariables();
-        for (final Variable variable : variables) {
-            System.out.println("variable.getName() = " + variable.getName());
-        }
+            final List<Variable> variables = ncFile.getVariables();
+            for (final Variable variable : variables) {
+                System.out.println("variable.getName() = " + variable.getName());
+            }
 
-        final double[] lonData = getDoubles(ncFile, "OLC_TP_lon");
-        final double[] latData = getDoubles(ncFile, "OLC_TP_lat");
-        final double[] saaData = getDoubles(ncFile, "SAA");
+            final double[] lonData = getDoubles(ncFile, "OLC_TP_lon");
+            final double[] latData = getDoubles(ncFile, "OLC_TP_lat");
+            final double[] saaData = getDoubles(ncFile, "SAA");
 
-        final LonLatFunction function = new LonLatTiePointFunction(lonData, latData, saaData, 77, 0.1);
+            final LonLatFunction function = new LonLatTiePointFunction(lonData, latData, saaData, 77, 0.1);
 
-        for (int i = 0; i < saaData.length; i++) {
-            final double lon = lonData[i];
-            final double lat = latData[i];
-            final double saa = saaData[i];
-            final double actual = function.getValue(new Point2D.Double(lon, lat));
+            for (int i = 0; i < saaData.length; i++) {
+                final double lon = lonData[i];
+                final double lat = latData[i];
+                final double saa = saaData[i];
+                final double actual = function.getValue(new Point2D.Double(lon, lat));
 
-            assertEquals(saa, actual, 0.1);
+                assertEquals(saa, actual, 0.1);
+            }
+        } finally {
+            if (ncFile != null) {
+                try {
+                    ncFile.close();
+                } catch (IOException ignored) {
+                }
+            }
         }
     }
 
