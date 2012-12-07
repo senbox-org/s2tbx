@@ -23,6 +23,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 
@@ -115,7 +116,7 @@ public class LonLatMultiLevelSourceTest {
     private static class TestLonLatFunction implements LonLatFunction {
 
         @Override
-        public double getValue(double lon, double lat) {
+        public double getValue(Point2D p) {
             return 0.0;
         }
     }

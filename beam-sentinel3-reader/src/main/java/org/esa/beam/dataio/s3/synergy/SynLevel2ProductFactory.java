@@ -111,7 +111,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
 
     private MultiLevelImage createTiePointImage(MultiLevelImage lonImage, MultiLevelImage latImage, double[] tpLonData,
                                                 double[] tpLatData, double[] tpFunctionData) {
-        final LonLatFunction function = new SynTiePointFunction(tpLonData, tpLatData, tpFunctionData);
+        final LonLatFunction function = new LonLatTiePointFunction(tpLonData, tpLatData, tpFunctionData, 77, 0.1);
         final MultiLevelSource source = LonLatMultiLevelSource.create(lonImage, latImage, function,
                                                                       DataBuffer.TYPE_FLOAT);
         return new DefaultMultiLevelImage(source);

@@ -14,7 +14,9 @@ package org.esa.beam.dataio.s3;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
+import java.awt.geom.Point2D;
+
 public interface LonLatFunction {
 
-    public double getValue(double lon, double lat);
+    public double getValue(Point2D p);
 }
