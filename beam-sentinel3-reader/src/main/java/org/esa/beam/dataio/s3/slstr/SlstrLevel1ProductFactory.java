@@ -157,26 +157,6 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     }
 
     @Override
-    protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints,
-                                              MultiLevelImage sourceImage) {
-        final short[] referenceResolutions = getReferenceResolutions();
-        final float scaleX = (float) sourceResolutions[0] / (float) referenceResolutions[0];
-        final float scaleY;
-        if (sourceResolutions.length == 2) {
-            scaleY = (float) sourceResolutions[1] / (float) referenceResolutions[1];
-        } else {
-            scaleY = scaleX;
-        }
-        RenderedImage image = sourceImage;
-        if (scaleX != 1.0 || scaleY != 1.0) {
-            image = ScaleDescriptor.create(image, scaleX, scaleY, 0.0f, 0.0f,
-                                           Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                                           renderingHints);
-        }
-        return image;
-    }
-
-    @Override
     protected Product findMasterProduct() {
         final List<Product> productList = getOpenProductList();
         Product masterProduct = productList.get(0);
