@@ -22,10 +22,17 @@ import org.opengis.referencing.operation.TransformException;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferUShort;
@@ -36,7 +43,11 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Sentinel2ProductReader extends AbstractProductReader {
     private static final int DEFAULT_TILE_SIZE = 512;
@@ -118,6 +129,89 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             throw new FileNotFoundException(file0.getPath());
         }
 
+        if (isMetadataFilename(file0.getName())) {
+            return readProductNodesImpl(file0);
+        } else if (isJp2ImageFilename(file0.getName())) {
+            return readTileProductNodesImpl(file0);
+        } else {
+            throw new IOException("Unhandled file type.");
+        }
+    }
+
+    private Product readProductNodesImpl(File metadataFile) throws IOException {
+        Header metadataHeader;
+
+        try {
+            metadataHeader = Header.parseHeader(metadataFile);
+        } catch (JDOMException e) {
+            throw new IOException("Failed to parse metadata in " + metadataFile.getName());
+        }
+
+
+        final Map<Integer, BandInfo> fileMap = new HashMap<Integer, BandInfo>();
+
+        final Header.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
+        final Header.ResampleData resampleData = metadataHeader.getResampleData();
+
+        final ArrayList<Integer> bandIndexes = new ArrayList<Integer>(fileMap.keySet());
+        Collections.sort(bandIndexes);
+
+        if (bandIndexes.isEmpty()) {
+            throw new IOException("No valid bands found.");
+        }
+
+        final SceneDescription sceneDescription = SceneDescription.create(metadataHeader);
+
+        String prodType = "S2_MSI_" + productCharacteristics.processingLevel;
+        final Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile).substring("MTD_".length()),
+                                            prodType,
+                                            sceneDescription.getSceneRectangle().width,
+                                            sceneDescription.getSceneRectangle().height);
+
+        product.setPreferredTileSize(DEFAULT_TILE_SIZE, DEFAULT_TILE_SIZE);
+        product.setNumResolutionsMax(IMAGE_LAYOUTS[0].numResolutions);
+
+        for (Header.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+            final Band band = product.addBand(bandInformation.physicalBand, ProductData.TYPE_UINT16);
+            band.setSpectralBandIndex(bandInformation.bandId);
+            band.setSpectralWavelength((float) bandInformation.wavelenghtCentral);
+            band.setSpectralBandwidth((float) (bandInformation.wavelenghtMax - bandInformation.wavelenghtMin));
+        }
+
+       /*
+        try {
+            product.setStartTime(ProductData.UTC.parse(fni0.start, "yyyyMMddHHmmss"));
+        } catch (ParseException e) {
+            // warn
+        }
+
+        try {
+            product.setEndTime(ProductData.UTC.parse(fni0.stop, "yyyyMMddHHmmss"));
+        } catch (ParseException e) {
+            // warn
+        }
+        */
+
+        final Envelope2D sceneEnvelope = sceneDescription.getSceneEnvelope();
+        try {
+            product.setGeoCoding(new CrsGeoCoding(sceneEnvelope.getCoordinateReferenceSystem(),
+                                                  product.getSceneRasterWidth(),
+                                                  product.getSceneRasterHeight(),
+                                                  sceneEnvelope.getMinX(),
+                                                  sceneEnvelope.getMaxY(),
+                                                  S2Resolution.R10M.res,
+                                                  S2Resolution.R10M.res,
+                                                  0.0, 0.0));
+        } catch (FactoryException e) {
+            // todo - handle e
+        } catch (TransformException e) {
+            // todo - handle e
+        }
+
+        return product;
+    }
+
+    private Product readTileProductNodesImpl(File file0) throws IOException {
         final File dir = file0.getParentFile();
 
         final S2FilenameInfo fni0 = S2FilenameInfo.create(file0.getName());
@@ -130,7 +224,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             File[] files = dir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.endsWith(Sentinel2ProductReaderPlugIn.JP2_EXT);
+                    return isJp2ImageFilename(name);
                 }
             });
             if (files != null) {
@@ -149,7 +243,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             File[] metadataFiles = dir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return name.startsWith("MTD_") && name.endsWith(".xml");
+                    return isMetadataFilename(name);
                 }
             });
             if (metadataFiles != null && metadataFiles.length > 0) {
@@ -193,6 +287,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         if (metadataHeader != null) {
+
+            //Header.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
+
             SceneDescription sceneDescription = SceneDescription.create(metadataHeader);
             int tileIndex = sceneDescription.getTileIndex(fni0.tileId);
             Envelope2D tileEnvelope = sceneDescription.getTileEnvelope(tileIndex);
@@ -224,6 +321,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         return product;
+    }
+
+    private static boolean isMetadataFilename(String name) {
+        return name.startsWith("MTD_") && name.endsWith(Sentinel2ProductReaderPlugIn.MTD_EXT);
+    }
+
+    private static boolean isJp2ImageFilename(String name) {
+        return name.startsWith("IMG_") && name.endsWith(Sentinel2ProductReaderPlugIn.JP2_EXT);
     }
 
     private MultiLevelModel createImageModel(BandInfo bandInfo) {

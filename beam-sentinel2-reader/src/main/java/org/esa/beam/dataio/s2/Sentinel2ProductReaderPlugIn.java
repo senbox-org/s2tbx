@@ -13,7 +13,8 @@ import java.util.Locale;
  */
 public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
-    public static final String FORMAT_NAME = "SENTINEL-2-MSI";
+    public static final String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
+    public static final String MTD_EXT = ".xml";
     public static final String JP2_EXT = ".jp2";
 
     @Override
@@ -38,16 +39,18 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[]{JP2_EXT};
+        return new String[]{JP2_EXT, MTD_EXT};
     }
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 L1B / L1C";
+        return "Sentinel-2 MSI L1C";
     }
 
     @Override
     public BeamFileFilter getProductFileFilter() {
-        return new BeamFileFilter(FORMAT_NAME, JP2_EXT, "Sentinel-2 L1B / L1C image file");
+        return new BeamFileFilter(FORMAT_NAME,
+                                  getDefaultFileExtensions(),
+                                  "Sentinel-2 MSI L1C product or tile");
     }
 }
