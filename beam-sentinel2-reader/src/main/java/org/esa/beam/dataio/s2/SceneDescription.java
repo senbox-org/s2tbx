@@ -7,7 +7,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Norman Fomferra
@@ -18,16 +20,20 @@ public class SceneDescription {
     private static final int TILE_SIZE_10M = 10960;
     private static final double TILE_RESOLUTION_10M = PIXEL_RESOLUTION_10M * TILE_SIZE_10M;
 
-    private final TileInfo[] tileInfo;
+    private final TileInfo[] tileInfos;
     private final Envelope2D sceneEnvelope;
     private final Rectangle sceneRectangle;
+    private final Map<String, TileInfo> tileInfoMap;
+
 
     private static class TileInfo {
+        private final int index;
         private final String id;
         private final Envelope2D envelope;
         private final Rectangle rectangle;
 
-        public TileInfo(String id, Envelope2D envelope, Rectangle rectangle) {
+        public TileInfo(int index, String id, Envelope2D envelope, Rectangle rectangle) {
+            this.index = index;
             this.id = id;
             this.envelope = envelope;
             this.rectangle = rectangle;
@@ -64,13 +70,12 @@ public class SceneDescription {
             } else {
                 sceneEnvelope.add(envelope);
             }
-            tileInfos[i] = new TileInfo(tile.id, envelope, new Rectangle());
+            tileInfos[i] = new TileInfo(i, tile.id, envelope, new Rectangle());
         }
 
         if (sceneEnvelope == null) {
             throw new IllegalStateException();
         }
-
         double imageX = sceneEnvelope.getX();
         double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
         Rectangle sceneBounds = null;
@@ -89,16 +94,20 @@ public class SceneDescription {
             } else {
                 sceneBounds.add(rectangle);
             }
-            tileInfos[i] = new TileInfo(tile.id, tileEnvelope, rectangle);
+            tileInfos[i] = new TileInfo(i, tile.id, tileEnvelope, rectangle);
         }
 
         return new SceneDescription(tileInfos, sceneEnvelope, sceneBounds);
     }
 
-    private SceneDescription(TileInfo[] tileInfo, Envelope2D sceneEnvelope, Rectangle sceneRectangle) {
-        this.tileInfo = tileInfo;
+    private SceneDescription(TileInfo[] tileInfos, Envelope2D sceneEnvelope, Rectangle sceneRectangle) {
+        this.tileInfos = tileInfos;
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;
+        this.tileInfoMap = new HashMap<String, TileInfo>();
+        for (TileInfo tileInfo : tileInfos) {
+            tileInfoMap.put(tileInfo.id, tileInfo);
+        }
     }
 
     public Rectangle getSceneRectangle() {
@@ -110,19 +119,24 @@ public class SceneDescription {
     }
 
     public int getTileCount() {
-        return tileInfo.length;
+        return tileInfos.length;
+    }
+
+    public int getTileIndex(String tileId) {
+        TileInfo tileInfo = tileInfoMap.get(tileId);
+        return tileInfo != null ? tileInfo.index : -1;
     }
 
     public String getTileId(int tileIndex) {
-        return tileInfo[tileIndex].id;
+        return tileInfos[tileIndex].id;
     }
 
     public Envelope2D getTileEnvelope(int tileIndex) {
-        return tileInfo[tileIndex].envelope;
+        return tileInfos[tileIndex].envelope;
     }
 
     public Rectangle getTileRectangle(int tileIndex) {
-        return tileInfo[tileIndex].rectangle;
+        return tileInfos[tileIndex].rectangle;
     }
 
     public int getTileGridWidth() {
@@ -155,17 +169,17 @@ public class SceneDescription {
         graphics.setStroke(new BasicStroke(100F));
         graphics.setFont(new Font("Arial", Font.PLAIN, 800));
 
-        for (int i = 0; i < tileInfo.length; i++) {
-            Rectangle rect = tileInfo[i].rectangle;
+        for (int i = 0; i < tileInfos.length; i++) {
+            Rectangle rect = tileInfos[i].rectangle;
             graphics.setPaint(addAlpha(colors[i % colors.length].brighter(), 100));
             graphics.fill(rect);
         }
-        for (int i = 0; i < tileInfo.length; i++) {
-            Rectangle rect = tileInfo[i].rectangle;
+        for (int i = 0; i < tileInfos.length; i++) {
+            Rectangle rect = tileInfos[i].rectangle;
             graphics.setPaint(addAlpha(colors[i % colors.length].darker(), 100));
             graphics.draw(rect);
             graphics.setPaint(colors[i % colors.length].darker().darker());
-            graphics.drawString("Tile " + (i + 1) + ": " + tileInfo[i].id,
+            graphics.drawString("Tile " + (i + 1) + ": " + tileInfos[i].id,
                                 rect.x + 1200F,
                                 rect.y + 2200F);
         }

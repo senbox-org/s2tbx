@@ -1,26 +1,46 @@
 package org.esa.beam.dataio.s2;
 
-import org.jdom.JDOMException;
-import org.junit.Ignore;
+import org.esa.beam.framework.dataio.ProductReader;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.Product;
 import org.junit.Test;
 
-import javax.swing.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Norman Fomferra
  */
-@Ignore
 public class Sentinel2ProductReaderTest {
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        new Sentinel2ProductReader(new Sentinel2ProductReaderPlugIn()).readProductNodes("test.j2k", null);
-    }
+    @Test
+    public void testReader() throws Exception {
+        final URL resource = getClass().getResource("l1c/IMG_GPPL1C_054_20091210235100_20091210235130_02_000000_15SUC.jp2");
+        assertNotNull(resource);
+        final File file = new File(resource.toURI());
 
+        final Sentinel2ProductReaderPlugIn sentinel2ProductReaderPlugIn = new Sentinel2ProductReaderPlugIn();
+        final ProductReader readerInstance = sentinel2ProductReaderPlugIn.createReaderInstance();
+        final Product product = readerInstance.readProductNodes(file, null);
+        assertNotNull(product);
+        assertEquals(10690, product.getSceneRasterWidth());
+        assertEquals(10690, product.getSceneRasterHeight());
+        assertEquals(1, product.getNumBands());
+        final Band band = product.getBand("B3");
+        assertNotNull(band);
+
+        final int[] pixels = new int[16 * 16];
+        band.readPixels(0, 0, 16, 16, pixels);
+
+        final RenderedImage image = band.getSourceImage().getImage(5);
+        final Raster data = image.getData();
+        assertNotNull(data);
+
+        product.dispose();
+    }
 }

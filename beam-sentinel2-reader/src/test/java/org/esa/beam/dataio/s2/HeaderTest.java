@@ -6,14 +6,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
@@ -24,11 +22,6 @@ import static org.junit.Assert.assertEquals;
 public class HeaderTest {
 
     private Header header;
-
-    public static void main(String[] args) throws IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        new Sentinel2ProductReader(new Sentinel2ProductReaderPlugIn()).readProductNodes("test.j2k", null);
-    }
 
     @Before
     public void before() throws JDOMException, IOException {
@@ -89,6 +82,18 @@ public class HeaderTest {
         Header.Tile tile10 = tileList.get(10);
 
         assertEquals("15SUC", tile0.id);
+        assertEquals("15SUD", tile1.id);
+        assertEquals("15SVC", tile2.id);
+        assertEquals("15SVD", tile3.id);
+        assertEquals("15SWC", tile4.id);
+        assertEquals("15SWD", tile5.id);
+        assertEquals("15SXC", tile6.id);
+        assertEquals("15SXD", tile7.id);
+        assertEquals("15TUE", tile8.id);
+        assertEquals("15TVE", tile9.id);
+        assertEquals("15TWE", tile10.id);
+
+
         assertEquals("WGS84 / UTM zone 15N", tile0.horizontalCsName);
         assertEquals("EPSG:32615", tile0.horizontalCsCode);
 
