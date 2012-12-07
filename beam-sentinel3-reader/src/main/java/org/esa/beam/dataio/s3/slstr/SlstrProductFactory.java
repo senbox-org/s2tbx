@@ -17,6 +17,7 @@ package org.esa.beam.dataio.s3.slstr;/*
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.beam.dataio.s3.AbstractProductFactory;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
+import org.esa.beam.dataio.s3.SourceImageScaler;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -59,8 +60,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         } else {
             final Band targetBand = copyBand(sourceBand, targetProduct, false);
             final float[] offsets = getOffsets(sourceStartOffset, sourceTrackOffset, sourceResolutions);
-            final RenderedImage sourceImage = createSourceImage(sourceBand, offsets,
-                                                                targetBand, sourceResolutions);
+            final RenderedImage sourceImage = createSourceImage(sourceBand, offsets, targetBand);
             targetBand.setSourceImage(sourceImage);
             return targetBand;
         }
@@ -92,18 +92,18 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     private RenderedImage createSourceImage(Band sourceBand, float[] offsets,
-                                            Band targetBand, short[] sourceResolutions) {
+                                            Band targetBand) {
         final ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(targetBand);
         final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-
         final MultiLevelImage sourceImage = sourceBand.getSourceImage();
         final int targetW = targetBand.getRasterWidth();
         final int targetH = targetBand.getRasterHeight();
         final int padX = Math.round(Math.abs(offsets[0]));
         final int padY = Math.round(Math.abs(offsets[1]));
-
-        RenderedImage image = modifySourceImage(sourceResolutions, renderingHints, sourceImage);
-
+        float[] transformations = new float[]{0f, 0f};
+        RenderedImage image
+                = SourceImageScaler.scaleMultiLevelImage(targetBand.getSourceImage().getBounds(), sourceImage,
+                                                         transformations, renderingHints);
         final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{targetBand.getNoDataValue()});
         image = BorderDescriptor.create(image, padX, targetW - padX - image.getWidth(),
                                         padY, padY, borderExtender, renderingHints);
@@ -214,9 +214,4 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         targetProduct.setAutoGrouping(patternBuilder.toString());
     }
 
-    // TODO - is it really necessary to override this method? The only implementation also returns the source image when no scaling is needed
-    protected RenderedImage modifySourceImage(short[] sourceResolutions, RenderingHints renderingHints,
-                                              MultiLevelImage sourceImage) {
-        return sourceImage;
-    }
 }
