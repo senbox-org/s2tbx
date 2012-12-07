@@ -15,7 +15,7 @@ import java.awt.image.BufferedImage;
 
 import static org.junit.Assert.assertEquals;
 
-public class SourceImageScalerTest {
+public class SourceImageScalerTestX {
 
     private static final int MAX_USHORT = (2 << 15) - 1;
 
