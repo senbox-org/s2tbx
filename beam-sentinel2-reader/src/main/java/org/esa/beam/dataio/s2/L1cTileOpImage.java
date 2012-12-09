@@ -23,7 +23,9 @@ import java.util.Map;
 /**
 * @author Norman Fomferra
 */
-class Jp2TileOpImage extends SingleBandedOpImage {
+class L1cTileOpImage extends SingleBandedOpImage {
+
+    static final int NUM_SHORT_BYTES = 2;
 
     private static class Jp2File {
         File file;
@@ -36,17 +38,18 @@ class Jp2TileOpImage extends SingleBandedOpImage {
 
     private final File imageFile;
     private final File cacheDir;
-    private final Jp2ImageLayout imageLayout;
+    private final L1cTileLayout imageLayout;
     private Map<File, Jp2File> openFiles;
     private Map<File, Object> locks;
 
     static PlanarImage create(File imageFile,
                               File cacheDir,
-                              Jp2ImageLayout imageLayout,
+                              Point imagePos,
+                              L1cTileLayout imageLayout,
                               MultiLevelModel imageModel,
                               SpatialResolution spatialResolution,
                               int level) throws IOException {
-        PlanarImage opImage = new Jp2TileOpImage(imageFile, cacheDir, imageLayout, imageModel, level);
+        PlanarImage opImage = new L1cTileOpImage(imageFile, cacheDir, imagePos, imageLayout, imageModel, level);
         if (spatialResolution != SpatialResolution.R10M) {
             return createScaledImage(opImage, spatialResolution, level);
         }
@@ -56,12 +59,10 @@ class Jp2TileOpImage extends SingleBandedOpImage {
     static PlanarImage createScaledImage(PlanarImage sourceImage, SpatialResolution resolution, int level) {
         int sourceWidth = sourceImage.getWidth();
         int sourceHeight = sourceImage.getHeight();
-        int targetWidth = Sentinel2ProductReader.IMAGE_LAYOUTS[0].width >> level;
-        int targetHeight = Sentinel2ProductReader.IMAGE_LAYOUTS[0].height >> level;
-        float scaleX = (float) targetWidth / (float) sourceWidth;
-        float scaleY = (float) targetHeight / (float) sourceHeight;
-        float corrFactorX = resolution == SpatialResolution.R20M ? Sentinel2ProductReader.R20M_X_FACTOR : Sentinel2ProductReader.R60M_X_FACTOR;
-        float corrFactorY = resolution == SpatialResolution.R20M ? Sentinel2ProductReader.R20M_Y_FACTOR : Sentinel2ProductReader.R60M_Y_FACTOR;
+        int targetWidth = Sentinel2ProductReader.L1C_TILE_LAYOUTS[0].width >> level;
+        int targetHeight = Sentinel2ProductReader.L1C_TILE_LAYOUTS[0].height >> level;
+        float scaleX = resolution.resolution / (float) SpatialResolution.R10M.resolution;
+        float scaleY = resolution.resolution / (float) SpatialResolution.R10M.resolution;
         final Dimension tileDim = getTileDim(targetWidth, targetHeight);
         ImageLayout imageLayout = new ImageLayout();
         imageLayout.setTileWidth(tileDim.width);
@@ -70,24 +71,32 @@ class Jp2TileOpImage extends SingleBandedOpImage {
                                                            BorderExtender.createInstance(BorderExtender.BORDER_ZERO));
         renderingHints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
         RenderedOp scaledImage = ScaleDescriptor.create(sourceImage,
-                                                        scaleX * corrFactorX,
-                                                        scaleY * corrFactorY,
-                                                        0F, 0F,
+                                                        scaleX,
+                                                        scaleY,
+                                                        sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
+                                                        sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                                         renderingHints);
         if (scaledImage.getWidth() != targetWidth || scaledImage.getHeight() != targetHeight) {
-            return CropDescriptor.create(scaledImage, 0.0F, 0.0F, (float) targetWidth, (float) targetHeight, null);
+            return CropDescriptor.create(scaledImage,
+                                         (float) sourceImage.getMinX(),
+                                         (float) sourceImage.getMinY(),
+                                         (float) targetWidth,
+                                         (float) targetHeight,
+                                         null);
         } else {
             return scaledImage;
         }
     }
 
-    Jp2TileOpImage(File imageFile,
+    L1cTileOpImage(File imageFile,
                    File cacheDir,
-                   Jp2ImageLayout imageLayout,
+                   Point imagePos,
+                   L1cTileLayout imageLayout,
                    MultiLevelModel imageModel,
                    int level) throws IOException {
         super(DataBuffer.TYPE_USHORT,
+              imagePos,
               imageLayout.width,
               imageLayout.height,
               getTileDimAtResolutionLevel(imageLayout.tileWidth, imageLayout.tileHeight, level),
@@ -100,7 +109,6 @@ class Jp2TileOpImage extends SingleBandedOpImage {
         this.openFiles = new HashMap<File, Jp2File>();
         this.locks = new HashMap<File, Object>();
     }
-
 
     @Override
     protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
@@ -138,7 +146,7 @@ class Jp2TileOpImage extends SingleBandedOpImage {
                                                                                    getLevel(), jp2TileX, jp2TileY)));
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
         if (!outputFile0.exists()) {
-            System.out.printf("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
+            //System.out.printf("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
             } catch (IOException e) {
@@ -146,13 +154,13 @@ class Jp2TileOpImage extends SingleBandedOpImage {
                 outputFile0.delete();
             }
             if (!outputFile0.exists()) {
-                Arrays.fill(tileData, (short) 0);
+                Arrays.fill(tileData, (short) 1000);
                 return;
             }
         }
 
         try {
-            System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
+            //System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
             readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
         } catch (IOException e) {
             // warn
@@ -263,14 +271,14 @@ class Jp2TileOpImage extends SingleBandedOpImage {
                                                          jp2Y,
                                                          tileWidth, tileHeight);
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
-                System.out.printf("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection);
+                //System.out.printf("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection);
                 if (!intersection.isEmpty()) {
-                    long seekPos = jp2File.dataPos + Sentinel2ProductReader.NUM_SHORT_BYTES * (intersection.y * jp2Width + intersection.x);
+                    long seekPos = jp2File.dataPos + NUM_SHORT_BYTES * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;
                     for (int y = 0; y < intersection.height; y++) {
                         stream.seek(seekPos);
                         stream.readFully(tileData, tilePos, intersection.width);
-                        seekPos += Sentinel2ProductReader.NUM_SHORT_BYTES * jp2Width;
+                        seekPos += NUM_SHORT_BYTES * jp2Width;
                         tilePos += tileWidth;
                         for (int x = intersection.width; x < tileWidth; x++) {
                             tileData[y * tileWidth + x] = (short) 0;
@@ -321,20 +329,22 @@ class Jp2TileOpImage extends SingleBandedOpImage {
         return jp2File;
     }
 
-    private static Dimension getTileDimAtResolutionLevel(int fullTileWidth, int fullTileHeight, int level) {
+    static Dimension getTileDimAtResolutionLevel(int fullTileWidth, int fullTileHeight, int level) {
         int width = getSizeAtResolutionLevel(fullTileWidth, level);
         int height = getSizeAtResolutionLevel(fullTileHeight, level);
         return getTileDim(width, height);
     }
 
-    private static Dimension getDimAtResolutionLevel(int fullWidth, int fullHeight, int level) {
+    static Dimension getDimAtResolutionLevel(int fullWidth, int fullHeight, int level) {
         int width = getSizeAtResolutionLevel(fullWidth, level);
         int height = getSizeAtResolutionLevel(fullHeight, level);
         return new Dimension(width, height);
     }
 
-    private static int getSizeAtResolutionLevel(int fullSize, int level) {
-        // todo - find out how JPEG2000 computes integer, lower resolution sizes and use algo in DefaultMultiLevelModel
+    static int getSizeAtResolutionLevel(int fullSize, int level) {
+        // todo - find out how JPEG2000 computes its integer lower resolution sizes
+        //        and use this algo also in DefaultMultiLevelModel
+        //        and ImageManager.createSingleBandedImageLayout(..., level)
         int size = fullSize >> level;
         int sizeTest = size << level;
         if (sizeTest < fullSize) {
@@ -343,8 +353,8 @@ class Jp2TileOpImage extends SingleBandedOpImage {
         return size;
     }
 
-    private static Dimension getTileDim(int imageWidth, int imageHeight) {
-        return new Dimension(imageWidth < Sentinel2ProductReader.DEFAULT_TILE_SIZE ? imageWidth : Sentinel2ProductReader.DEFAULT_TILE_SIZE,
-                             imageHeight < Sentinel2ProductReader.DEFAULT_TILE_SIZE ? imageHeight : Sentinel2ProductReader.DEFAULT_TILE_SIZE);
+    static Dimension getTileDim(int width, int height) {
+        return new Dimension(width < Sentinel2ProductReader.DEFAULT_TILE_SIZE ? width : Sentinel2ProductReader.DEFAULT_TILE_SIZE,
+                             height < Sentinel2ProductReader.DEFAULT_TILE_SIZE ? height : Sentinel2ProductReader.DEFAULT_TILE_SIZE);
     }
 }

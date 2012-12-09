@@ -3,16 +3,22 @@ package org.esa.beam.dataio.s2;
 /**
 * @author Norman Fomferra
 */
-class Jp2ImageLayout {
+class L1cTileLayout {
+    /** Width of L1C tile  */
     int width;
+    /** Height of L1C tile  */
     int height;
+    /** Width of internal JP2 tiles  */
     int tileWidth;
+    /** Height of internal JP2 tiles  */
     int tileHeight;
+    /** Width of internal JP2 X-tiles  */
     int numXTiles;
+    /** Number of internal JP2 Y-tiles  */
     int numYTiles;
     int numResolutions;
 
-    Jp2ImageLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions) {
+    L1cTileLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions) {
         this.width = width;
         this.height = height;
         this.tileWidth = tileWidth;
