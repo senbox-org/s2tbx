@@ -6,13 +6,13 @@ import java.util.regex.Pattern;
 /**
  * @author Norman Fomferra
  */
-public class S2FilenameInfo {
+public class S2ImgFilename {
 
-    final static String FORMAT = "IMG_GPP%s_%s_%s_%s_(\\d{2})_000000_%s.jp2";
     final static String REGEX = "IMG_GPP([A-Z0-9]{3})_(\\d{3})_(\\d{14})_(\\d{14})_(\\d{2})_000000_(\\d{2}[A-Z]{3}).jp2";
     final static Pattern PATTERN = Pattern.compile(REGEX);
+    final static String BAND_REGEX_FORMAT = "IMG_GPP%s_%s_%s_%s_(\\d{2})_000000_%s.jp2";
 
-    public final String fileName;
+    public final String name;
     public final String procLevel;
     public final String orbitNo;
     public final String start;
@@ -20,11 +20,10 @@ public class S2FilenameInfo {
     public final String band;
     public final String tileId;
 
-    private final String regex;
-    private final Pattern pattern;
+    private final Pattern bandPattern;
 
-    private S2FilenameInfo(String fileName, String procLevel, String orbitNo, String start, String stop, String band, String tileId) {
-        this.fileName = fileName;
+    private S2ImgFilename(String name, String procLevel, String orbitNo, String start, String stop, String band, String tileId) {
+        this.name = name;
         this.procLevel = procLevel;
         this.orbitNo = orbitNo;
         this.start = start;
@@ -32,8 +31,12 @@ public class S2FilenameInfo {
         this.band = band;
         this.tileId = tileId;
 
-        this.regex = String.format(FORMAT, procLevel, orbitNo, start, stop, tileId);
-        this.pattern = Pattern.compile(this.regex);
+        String regex = String.format(BAND_REGEX_FORMAT, procLevel, orbitNo, start, stop, tileId);
+        this.bandPattern = Pattern.compile(regex);
+    }
+
+    static boolean isImageFilename(String name) {
+        return PATTERN.matcher(name).matches();
     }
 
     public int getBand() {
@@ -45,8 +48,8 @@ public class S2FilenameInfo {
     }
 
 
-    public int getBand(String fileName) {
-        Matcher matcher = pattern.matcher(fileName);
+    public int getBand(String filename) {
+        Matcher matcher = bandPattern.matcher(filename);
         if (matcher.matches()) {
             try {
                 return Integer.parseInt(matcher.group(1));
@@ -58,17 +61,16 @@ public class S2FilenameInfo {
         }
     }
 
-    public static S2FilenameInfo create(String fileName) {
+    public static S2ImgFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
-        final boolean matches = matcher.matches();
-        if (matches) {
-            return new S2FilenameInfo(fileName,
-                                      matcher.group(1),
-                                      matcher.group(2),
-                                      matcher.group(3),
-                                      matcher.group(4),
-                                      matcher.group(5),
-                                      matcher.group(6));
+        if (matcher.matches()) {
+            return new S2ImgFilename(fileName,
+                                     matcher.group(1),
+                                     matcher.group(2),
+                                     matcher.group(3),
+                                     matcher.group(4),
+                                     matcher.group(5),
+                                     matcher.group(6));
         } else {
             return null;
         }

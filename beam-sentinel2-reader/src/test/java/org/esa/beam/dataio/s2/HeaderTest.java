@@ -145,20 +145,6 @@ public class HeaderTest {
     }
 
     @Test
-    public void testFilePattern() {
-        // Header file: MTD_GPPL1C_054_20091210235100_20091210235130_0001.xml
-        // Image file:  IMG_GPPL1C_054_20091210235100_20091210235130_02_000000_15SUC.jp2
-        //              0123456789012345678901234567890123456789012345678901234567890123456789
-        //              0         1         2         3         4         5         6
-        String fileName = "IMG_GPPL1C_054_20091210235100_20091210235130_02_000000_15SUC.jp2";
-        assertEquals("02", fileName.substring(45, 47));
-        assertEquals("15SUC", fileName.substring(55, 60));
-
-        String tileId = "15SUC";
-        Pattern.compile("_"+tileId + ".jp2");
-    }
-
-    @Test
     public void testTileGrid() throws IOException {
         SceneDescription sceneDescription = SceneDescription.create(header);
         ImageIO.write(sceneDescription.createTilePicture(2048), "PNG", new File("tile-grid.png"));

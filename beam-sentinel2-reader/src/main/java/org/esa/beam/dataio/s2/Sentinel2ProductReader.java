@@ -1,7 +1,6 @@
 package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.glevel.MultiLevelModel;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
@@ -10,8 +9,6 @@ import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.CrsGeoCoding;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
-import org.esa.beam.jai.ResolutionLevel;
-import org.esa.beam.jai.SingleBandedOpImage;
 import org.esa.beam.util.SystemUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
@@ -20,68 +17,47 @@ import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.BorderExtender;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.CropDescriptor;
-import javax.media.jai.operator.ScaleDescriptor;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import javax.media.jai.*;
+import javax.media.jai.operator.MosaicDescriptor;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferUShort;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 public class Sentinel2ProductReader extends AbstractProductReader {
-    private static final int DEFAULT_TILE_SIZE = 512;
-    private static final int NUM_SHORT_BYTES = 2;
-    private static final String EXE = System.getProperty("openjpeg2.decompressor.path", "opj_decompress");
+    static final String EXE = System.getProperty("openjpeg2.decompressor.path", "opj_decompress");
+    static final int DEFAULT_TILE_SIZE = 512;
+    static final int NUM_SHORT_BYTES = 2;
+    static final float R20M_X_FACTOR = 1.0252F;
+    static final float R20M_Y_FACTOR = 1.0253F;
+    static final float R60M_X_FACTOR = 1.02445F;
+    static final float R60M_Y_FACTOR = 1.0249F;
 
-    private static class ImgLayout {
-        int width;
-        int height;
-        int tileWidth;
-        int tileHeight;
-        int numXTiles;
-        int numYTiles;
-        int numResolutions;
+    private File cacheDir;
 
-        private ImgLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions) {
-            this.width = width;
-            this.height = height;
-            this.tileWidth = tileWidth;
-            this.tileHeight = tileHeight;
-            this.numXTiles = numXTiles;
-            this.numYTiles = numYTiles;
-            this.numResolutions = numResolutions;
-        }
-    }
-
-    private static class BandInfo {
-        final File imageFile;
+    static class BandInfo {
+        final Map<String, File> tileIdToFileMap;
         final int bandIndex;
         final S2WavebandInfo wavebandInfo;
-        final ImgLayout imageLayout;
+        final Jp2ImageLayout imageLayout;
 
-        private BandInfo(File imageFile, int bandIndex, S2WavebandInfo wavebandInfo, ImgLayout imageLayout) {
-            this.imageFile = imageFile;
+        BandInfo(String tileId, File imageFile, int bandIndex, S2WavebandInfo wavebandInfo, Jp2ImageLayout imageLayout) {
+            Map<String, File> tileIdToFileMap = new HashMap<String, File>();
+            tileIdToFileMap.put(tileId, imageFile);
+            this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
+            this.bandIndex = bandIndex;
+            this.wavebandInfo = wavebandInfo;
+            this.imageLayout = imageLayout;
+        }
+
+        BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo, Jp2ImageLayout imageLayout) {
+            this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
             this.bandIndex = bandIndex;
             this.wavebandInfo = wavebandInfo;
             this.imageLayout = imageLayout;
@@ -90,29 +66,29 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
 
     S2WavebandInfo[] WAVEBAND_INFOS = new S2WavebandInfo[]{
-            new S2WavebandInfo(0, "B1", 443, 20, S2Resolution.R60M),
-            new S2WavebandInfo(1, "B2", 490, 65, S2Resolution.R10M),
-            new S2WavebandInfo(2, "B3", 560, 35, S2Resolution.R10M),
-            new S2WavebandInfo(3, "B4", 665, 30, S2Resolution.R10M),
-            new S2WavebandInfo(4, "B5", 705, 15, S2Resolution.R20M),
-            new S2WavebandInfo(5, "B6", 740, 15, S2Resolution.R20M),
-            new S2WavebandInfo(6, "B7", 775, 20, S2Resolution.R20M),
-            new S2WavebandInfo(7, "B8", 842, 115, S2Resolution.R10M),
-            new S2WavebandInfo(8, "B8a", 865, 20, S2Resolution.R20M),
-            new S2WavebandInfo(9, "B9", 940, 20, S2Resolution.R60M),
-            new S2WavebandInfo(10, "B10", 1380, 30, S2Resolution.R60M),
-            new S2WavebandInfo(11, "B11", 1610, 90, S2Resolution.R20M),
-            new S2WavebandInfo(12, "B12", 2190, 180, S2Resolution.R20M),
+            new S2WavebandInfo(0, "B1", 443, 20, SpatialResolution.R60M),
+            new S2WavebandInfo(1, "B2", 490, 65, SpatialResolution.R10M),
+            new S2WavebandInfo(2, "B3", 560, 35, SpatialResolution.R10M),
+            new S2WavebandInfo(3, "B4", 665, 30, SpatialResolution.R10M),
+            new S2WavebandInfo(4, "B5", 705, 15, SpatialResolution.R20M),
+            new S2WavebandInfo(5, "B6", 740, 15, SpatialResolution.R20M),
+            new S2WavebandInfo(6, "B7", 775, 20, SpatialResolution.R20M),
+            new S2WavebandInfo(7, "B8", 842, 115, SpatialResolution.R10M),
+            new S2WavebandInfo(8, "B8a", 865, 20, SpatialResolution.R20M),
+            new S2WavebandInfo(9, "B9", 940, 20, SpatialResolution.R60M),
+            new S2WavebandInfo(10, "B10", 1380, 30, SpatialResolution.R60M),
+            new S2WavebandInfo(11, "B11", 1610, 90, SpatialResolution.R20M),
+            new S2WavebandInfo(12, "B12", 2190, 180, SpatialResolution.R20M),
     };
 
 
     // these numbers should actually been read from the JP2 files,
     // because they are likely to change if prod. spec. changes
     //
-    private final static ImgLayout[] IMAGE_LAYOUTS = new ImgLayout[]{
-            new ImgLayout(10690, 10690, 4096, 4096, 3, 3, 6),
-            new ImgLayout(5480, 5480, 4096, 4096, 2, 2, 6),
-            new ImgLayout(1826, 1826, 1826, 1826, 1, 1, 6),
+    final static Jp2ImageLayout[] IMAGE_LAYOUTS = new Jp2ImageLayout[]{
+            new Jp2ImageLayout(10690, 10690, 4096, 4096, 3, 3, 6),
+            new Jp2ImageLayout(5480, 5480, 4096, 4096, 2, 2, 6),
+            new Jp2ImageLayout(1826, 1826, 1826, 1826, 1, 1, 6),
     };
 
 
@@ -122,17 +98,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        final String s = getInput().toString();
-
-        final File file0 = new File(s);
-        if (!file0.exists()) {
-            throw new FileNotFoundException(file0.getPath());
+        final File inputFile = new File(getInput().toString());
+        if (!inputFile.exists()) {
+            throw new FileNotFoundException(inputFile.getPath());
         }
-
-        if (isMetadataFilename(file0.getName())) {
-            return readProductNodesImpl(file0);
-        } else if (isJp2ImageFilename(file0.getName())) {
-            return readTileProductNodesImpl(file0);
+        if (S2MtdFilename.isMetadataFilename(inputFile.getName())) {
+            return readProductNodesImpl(inputFile);
+        } else if (S2ImgFilename.isImageFilename(inputFile.getName())) {
+            return readTileProductNodesImpl(inputFile);
         } else {
             throw new IOException("Unhandled file type.");
         }
@@ -147,60 +120,89 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
+        S2MtdFilename mtdFilename = S2MtdFilename.create(metadataFile.getName());
+        SceneDescription sceneDescription = SceneDescription.create(metadataHeader);
 
-        final Map<Integer, BandInfo> fileMap = new HashMap<Integer, BandInfo>();
+        File productDir = getProductDir(metadataFile);
+        initCacheDir(productDir);
 
-        final Header.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
-        final Header.ResampleData resampleData = metadataHeader.getResampleData();
-
-        final ArrayList<Integer> bandIndexes = new ArrayList<Integer>(fileMap.keySet());
-        Collections.sort(bandIndexes);
-
-        if (bandIndexes.isEmpty()) {
-            throw new IOException("No valid bands found.");
-        }
-
-        final SceneDescription sceneDescription = SceneDescription.create(metadataHeader);
+        Header.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
+        Header.ResampleData resampleData = metadataHeader.getResampleData();
 
         String prodType = "S2_MSI_" + productCharacteristics.processingLevel;
-        final Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile).substring("MTD_".length()),
-                                            prodType,
-                                            sceneDescription.getSceneRectangle().width,
-                                            sceneDescription.getSceneRectangle().height);
+        Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile).substring("MTD_".length()),
+                                      prodType,
+                                      sceneDescription.getSceneRectangle().width,
+                                      sceneDescription.getSceneRectangle().height);
 
         product.setPreferredTileSize(DEFAULT_TILE_SIZE, DEFAULT_TILE_SIZE);
         product.setNumResolutionsMax(IMAGE_LAYOUTS[0].numResolutions);
 
+        List<Header.Tile> tileList = metadataHeader.getTileList();
         for (Header.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-            final Band band = product.addBand(bandInformation.physicalBand, ProductData.TYPE_UINT16);
-            band.setSpectralBandIndex(bandInformation.bandId);
-            band.setSpectralWavelength((float) bandInformation.wavelenghtCentral);
-            band.setSpectralBandwidth((float) (bandInformation.wavelenghtMax - bandInformation.wavelenghtMin));
+            int bandIndex = bandInformation.bandId;
+            if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
+
+                HashMap<String, File> tileFileMap = new HashMap<String, File>();
+                for (Header.Tile tile : tileList) {
+                    String imgFilename = mtdFilename.getImgFilename(bandIndex, tile.id);
+                    File file = new File(productDir, imgFilename);
+                    if (file.exists()) {
+                        tileFileMap.put(tile.id, file);
+                    } else {
+                        System.out.printf("Warning: missing file " + file);
+                    }
+                }
+
+                if (!tileFileMap.isEmpty()) {
+                    Band band = product.addBand(bandInformation.physicalBand, ProductData.TYPE_UINT16);
+                    band.setSpectralBandIndex(bandInformation.bandId);
+                    band.setSpectralWavelength((float) bandInformation.wavelenghtCentral);
+                    band.setSpectralBandwidth((float) (bandInformation.wavelenghtMax - bandInformation.wavelenghtMin));
+                    band.setSolarFlux((float) resampleData.reflectanceConversion.solarIrradiances[bandInformation.bandId]);
+                    //band.setScalingFactor(1.0 / rd.quantificationValue);
+
+                    SpatialResolution spatialResolution = SpatialResolution.valueOfResolution(bandInformation.resolution);
+                    BandInfo bandInfo = new BandInfo(tileFileMap,
+                                                     bandInformation.bandId,
+                                                     new S2WavebandInfo(bandInformation.bandId,
+                                                                        bandInformation.physicalBand,
+                                                                        bandInformation.wavelenghtCentral,
+                                                                        bandInformation.wavelenghtMax - bandInformation.wavelenghtMin,
+                                                                        spatialResolution),
+                                                     IMAGE_LAYOUTS[spatialResolution.id]);
+
+                    band.setSourceImage(new DefaultMultiLevelImage(new MosaicMultiLevelSource(sceneDescription, bandInfo)));
+                } else {
+                    System.out.printf("Warning: no image files found for band " + bandInformation.physicalBand);
+                }
+            } else {
+                System.out.printf("Warning: illegal band ID detected for band " + bandInformation.physicalBand);
+            }
         }
 
-       /*
         try {
-            product.setStartTime(ProductData.UTC.parse(fni0.start, "yyyyMMddHHmmss"));
+            product.setStartTime(ProductData.UTC.parse(mtdFilename.start, "yyyyMMddHHmmss"));
         } catch (ParseException e) {
             // warn
         }
 
         try {
-            product.setEndTime(ProductData.UTC.parse(fni0.stop, "yyyyMMddHHmmss"));
+            product.setEndTime(ProductData.UTC.parse(mtdFilename.stop, "yyyyMMddHHmmss"));
         } catch (ParseException e) {
             // warn
         }
-        */
 
-        final Envelope2D sceneEnvelope = sceneDescription.getSceneEnvelope();
+
+        Envelope2D sceneEnvelope = sceneDescription.getSceneEnvelope();
         try {
             product.setGeoCoding(new CrsGeoCoding(sceneEnvelope.getCoordinateReferenceSystem(),
                                                   product.getSceneRasterWidth(),
                                                   product.getSceneRasterHeight(),
                                                   sceneEnvelope.getMinX(),
                                                   sceneEnvelope.getMaxY(),
-                                                  S2Resolution.R10M.res,
-                                                  S2Resolution.R10M.res,
+                                                  SpatialResolution.R10M.resolution,
+                                                  SpatialResolution.R10M.resolution,
                                                   0.0, 0.0));
         } catch (FactoryException e) {
             // todo - handle e
@@ -211,28 +213,32 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         return product;
     }
 
-    private Product readTileProductNodesImpl(File file0) throws IOException {
-        final File dir = file0.getParentFile();
+    private Product readTileProductNodesImpl(File imageFile) throws IOException {
 
-        final S2FilenameInfo fni0 = S2FilenameInfo.create(file0.getName());
-        if (fni0 == null) {
+        S2ImgFilename imgFilename = S2ImgFilename.create(imageFile.getName());
+        if (imgFilename == null) {
             throw new IOException();
         }
+
+        File productDir = getProductDir(imageFile);
+        initCacheDir(productDir);
+
         Header metadataHeader = null;
-        final Map<Integer, BandInfo> fileMap = new HashMap<Integer, BandInfo>();
-        if (dir != null) {
-            File[] files = dir.listFiles(new FilenameFilter() {
+        Map<Integer, BandInfo> fileMap = new HashMap<Integer, BandInfo>();
+        if (productDir != null) {
+            File[] files = productDir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return isJp2ImageFilename(name);
+                    return S2ImgFilename.isImageFilename(name);
                 }
             });
             if (files != null) {
                 for (File file : files) {
-                    int bandIndex = fni0.getBand(file.getName());
+                    int bandIndex = imgFilename.getBand(file.getName());
                     if (bandIndex >= 0 && bandIndex < WAVEBAND_INFOS.length) {
                         final S2WavebandInfo wavebandInfo = WAVEBAND_INFOS[bandIndex];
-                        BandInfo bandInfo = new BandInfo(file,
+                        BandInfo bandInfo = new BandInfo(imgFilename.tileId,
+                                                         file,
                                                          bandIndex,
                                                          wavebandInfo,
                                                          IMAGE_LAYOUTS[wavebandInfo.resolution.id]);
@@ -240,10 +246,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     }
                 }
             }
-            File[] metadataFiles = dir.listFiles(new FilenameFilter() {
+            File[] metadataFiles = productDir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    return isMetadataFilename(name);
+                    return S2MtdFilename.isMetadataFilename(name);
                 }
             });
             if (metadataFiles != null && metadataFiles.length > 0) {
@@ -258,30 +264,30 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
 
-        final ArrayList<Integer> bandIndexes = new ArrayList<Integer>(fileMap.keySet());
+        ArrayList<Integer> bandIndexes = new ArrayList<Integer>(fileMap.keySet());
         Collections.sort(bandIndexes);
 
         if (bandIndexes.isEmpty()) {
             throw new IOException("No valid bands found.");
         }
 
-        String prodType = "S2_MSI_" + fni0.procLevel;
-        final Product product = new Product(String.format("%s_%s_%s", prodType, fni0.orbitNo, fni0.tileId),
-                                            prodType,
-                                            IMAGE_LAYOUTS[S2Resolution.R10M.id].width,
-                                            IMAGE_LAYOUTS[S2Resolution.R10M.id].height);
+        String prodType = "S2_MSI_" + imgFilename.procLevel;
+        Product product = new Product(String.format("%s_%s_%s", prodType, imgFilename.orbitNo, imgFilename.tileId),
+                                      prodType,
+                                      IMAGE_LAYOUTS[SpatialResolution.R10M.id].width,
+                                      IMAGE_LAYOUTS[SpatialResolution.R10M.id].height);
 
         product.setPreferredTileSize(DEFAULT_TILE_SIZE, DEFAULT_TILE_SIZE);
         product.setNumResolutionsMax(IMAGE_LAYOUTS[0].numResolutions);
 
         try {
-            product.setStartTime(ProductData.UTC.parse(fni0.start, "yyyyMMddHHmmss"));
+            product.setStartTime(ProductData.UTC.parse(imgFilename.start, "yyyyMMddHHmmss"));
         } catch (ParseException e) {
             // warn
         }
 
         try {
-            product.setEndTime(ProductData.UTC.parse(fni0.stop, "yyyyMMddHHmmss"));
+            product.setEndTime(ProductData.UTC.parse(imgFilename.stop, "yyyyMMddHHmmss"));
         } catch (ParseException e) {
             // warn
         }
@@ -291,14 +297,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             //Header.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
             SceneDescription sceneDescription = SceneDescription.create(metadataHeader);
-            int tileIndex = sceneDescription.getTileIndex(fni0.tileId);
+            int tileIndex = sceneDescription.getTileIndex(imgFilename.tileId);
             Envelope2D tileEnvelope = sceneDescription.getTileEnvelope(tileIndex);
             Header.Tile tile = metadataHeader.getTileList().get(tileIndex);
 
             try {
                 product.setGeoCoding(new CrsGeoCoding(tileEnvelope.getCoordinateReferenceSystem(),
-                                                      IMAGE_LAYOUTS[S2Resolution.R10M.id].width,
-                                                      IMAGE_LAYOUTS[S2Resolution.R10M.id].height,
+                                                      IMAGE_LAYOUTS[SpatialResolution.R10M.id].width,
+                                                      IMAGE_LAYOUTS[SpatialResolution.R10M.id].height,
                                                       tile.tileGeometry10M.upperLeftX,
                                                       tile.tileGeometry10M.upperLeftY,
                                                       tile.tileGeometry10M.xDim,
@@ -315,7 +321,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             final BandInfo bandInfo = fileMap.get(bandIndex);
             final Band band = product.addBand(bandInfo.wavebandInfo.bandName, ProductData.TYPE_UINT16);
             band.setSpectralWavelength((float) bandInfo.wavebandInfo.centralWavelength);
-            band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandWidth);
+            band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
             band.setSpectralBandIndex(bandIndex);
             band.setSourceImage(new DefaultMultiLevelImage(new Jp2MultiLevelSource(bandInfo)));
         }
@@ -323,379 +329,104 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         return product;
     }
 
-    private static boolean isMetadataFilename(String name) {
-        return name.startsWith("MTD_") && name.endsWith(Sentinel2ProductReaderPlugIn.MTD_EXT);
-    }
-
-    private static boolean isJp2ImageFilename(String name) {
-        return name.startsWith("IMG_") && name.endsWith(Sentinel2ProductReaderPlugIn.JP2_EXT);
-    }
-
-    private MultiLevelModel createImageModel(BandInfo bandInfo) {
-        return new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
-                                          new AffineTransform(),
-                                          IMAGE_LAYOUTS[0].width,
-                                          IMAGE_LAYOUTS[0].height);
-    }
-
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
         throw new IllegalStateException("Should not come here");
     }
 
-    public Dimension getJp2TileDim(BandInfo bandInfo, int level) {
-        int width = bandInfo.imageLayout.tileWidth >> level;
-        int widthTest = width << level;
-        if (widthTest < bandInfo.imageLayout.tileWidth) {
-            width++;
+    static File getProductDir(File productFile) throws IOException {
+        final File resolvedFile = productFile.getCanonicalFile();
+        if (!resolvedFile.exists()) {
+            throw new FileNotFoundException("File not found: " + productFile);
         }
-        int height = bandInfo.imageLayout.tileHeight >> level;
-        int heightTest = height << level;
-        if (heightTest < bandInfo.imageLayout.tileHeight) {
-            height++;
+
+        if (productFile.getParentFile() == null) {
+            return new File(".").getCanonicalFile();
         }
-        return new Dimension(width,
-                             height);
+
+        return productFile.getParentFile();
     }
 
-    public Dimension getTileDim(BandInfo bandInfo, int level) {
-        Dimension jp2TileDim = getJp2TileDim(bandInfo, level);
-        final int width = jp2TileDim.width;
-        final int height = jp2TileDim.height;
-        return getTileDim(width, height);
+    void initCacheDir(File productDir) throws IOException {
+
+        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), "beam-sentinel2-reader/cache"),
+                            productDir.getName());
+        cacheDir.mkdirs();
+        if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
+            throw new IOException("Can't access package cache directory");
+        }
     }
 
-    private Dimension getTileDim(int imageWidth, int imageHeight) {
-        return new Dimension(imageWidth < DEFAULT_TILE_SIZE ? imageWidth : DEFAULT_TILE_SIZE,
-                             imageHeight < DEFAULT_TILE_SIZE ? imageHeight : DEFAULT_TILE_SIZE);
+    private class MosaicMultiLevelSource extends AbstractMultiLevelSource {
+        private final SceneDescription sceneDescription;
+        private final BandInfo bandInfo;
+
+        public MosaicMultiLevelSource(SceneDescription sceneDescription, BandInfo bandInfo) {
+            super(new DefaultMultiLevelModel(IMAGE_LAYOUTS[0].numResolutions,
+                                             new AffineTransform(),
+                                             sceneDescription.getSceneRectangle().width,
+                                             sceneDescription.getSceneRectangle().height));
+            this.sceneDescription = sceneDescription;
+            this.bandInfo = bandInfo;
+        }
+
+        @Override
+        protected RenderedImage createImage(int level) {
+            ArrayList<RenderedImage> tileImages = new ArrayList<RenderedImage>();
+
+            Set<String> tileIds = bandInfo.tileIdToFileMap.keySet();
+            for (String tileId : tileIds) {
+                File imageFile = bandInfo.tileIdToFileMap.get(tileId);
+                int tileIndex = sceneDescription.getTileIndex(tileId);
+                Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
+                try {
+                    PlanarImage opImage = Jp2TileOpImage.create(imageFile, cacheDir, bandInfo.imageLayout, getModel(), bandInfo.wavebandInfo.resolution, level);
+                    opImage = new MoveOriginOpImage(opImage, tileRectangle.x, tileRectangle.y, null);
+                    tileImages.add(opImage);
+                } catch (IOException e) {
+                    // todo - handle e
+                }
+            }
+
+            ImageLayout imageLayout = new ImageLayout();
+            imageLayout.setTileWidth(DEFAULT_TILE_SIZE);
+            imageLayout.setTileHeight(DEFAULT_TILE_SIZE);
+            imageLayout.setWidth(sceneDescription.getSceneRectangle().width);
+            imageLayout.setHeight(sceneDescription.getSceneRectangle().height);
+            RenderedOp mosaicImage = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
+                                                             MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                             null, null, null, new double[]{0.0},
+                                                             new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+            return mosaicImage;
+        }
     }
 
     private class Jp2MultiLevelSource extends AbstractMultiLevelSource {
-        public static final float R20M_X_FACTOR = 1.0252F;
-        public static final float R20M_Y_FACTOR = 1.0253F;
-        public static final float R60M_X_FACTOR = 1.02445F;
-        public static final float R60M_Y_FACTOR = 1.0249F;
         final BandInfo bandInfo;
 
         public Jp2MultiLevelSource(BandInfo bandInfo) {
-            super(createImageModel(bandInfo));
+            super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
+                                             new AffineTransform(),
+                                             IMAGE_LAYOUTS[0].width,
+                                             IMAGE_LAYOUTS[0].height));
             this.bandInfo = bandInfo;
         }
 
         @Override
         protected RenderedImage createImage(int level) {
             try {
-                RenderedImage opImage = new Jp2ExeOpImage(bandInfo, getModel(), level);
-                if (bandInfo.wavebandInfo.resolution != S2Resolution.R10M) {
-                    return createScaledImage(opImage, bandInfo.wavebandInfo.resolution, level);
-                }
-                return opImage;
+                return Jp2TileOpImage.create(bandInfo.tileIdToFileMap.values().iterator().next(),
+                                             cacheDir,
+                                             bandInfo.imageLayout,
+                                             getModel(),
+                                             bandInfo.wavebandInfo.resolution,
+                                             level);
             } catch (IOException e) {
                 return null;
             }
         }
 
-        private RenderedOp createScaledImage(RenderedImage sourceImage, S2Resolution resolution, int level) {
-            int sourceWidth = sourceImage.getWidth();
-            int sourceHeight = sourceImage.getHeight();
-            int targetWidth = IMAGE_LAYOUTS[0].width >> level;
-            int targetHeight = IMAGE_LAYOUTS[0].height >> level;
-            float scaleX = (float) targetWidth / (float) sourceWidth;
-            float scaleY = (float) targetHeight / (float) sourceHeight;
-            float corrFactorX = resolution == S2Resolution.R20M ? R20M_X_FACTOR : R60M_X_FACTOR;
-            float corrFactorY = resolution == S2Resolution.R20M ? R20M_Y_FACTOR : R60M_Y_FACTOR;
-            final Dimension tileDim = getTileDim(targetWidth, targetHeight);
-            ImageLayout imageLayout = new ImageLayout();
-            imageLayout.setTileWidth(tileDim.width);
-            imageLayout.setTileHeight(tileDim.height);
-            RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                                                               BorderExtender.createInstance(BorderExtender.BORDER_ZERO));
-            renderingHints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-            RenderedOp scaledImage = ScaleDescriptor.create(sourceImage,
-                                                            scaleX * corrFactorX,
-                                                            scaleY * corrFactorY,
-                                                            0F, 0F,
-                                                            Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                                                            renderingHints);
-            if (scaledImage.getWidth() != targetWidth || scaledImage.getHeight() != targetHeight) {
-                return CropDescriptor.create(scaledImage, 0.0F, 0.0F, (float) targetWidth, (float) targetHeight, null);
-            } else {
-                return scaledImage;
-            }
-        }
-
     }
 
 
-    class Jp2File {
-        File file;
-        String header;
-        ImageInputStream stream;
-        long dataPos;
-        int width;
-        int height;
-    }
-
-
-    /**
-     * Tiled image at a given resolution level.
-     */
-    class Jp2ExeOpImage extends SingleBandedOpImage {
-
-        private final File imageFile;
-        private final File cacheDir;
-        private Map<File, Jp2File> openFiles;
-        private Map<File, Object> locks;
-        private final BandInfo bandInfo;
-
-        Jp2ExeOpImage(BandInfo bandInfo, MultiLevelModel imageModel, int level) throws IOException {
-            super(DataBuffer.TYPE_USHORT,
-                  bandInfo.imageLayout.width,
-                  bandInfo.imageLayout.height,
-                  getTileDim(bandInfo, level),
-                  null,
-                  ResolutionLevel.create(imageModel, level));
-
-            final File resolvedFile = bandInfo.imageFile.getCanonicalFile();
-            if (!resolvedFile.exists()) {
-                throw new FileNotFoundException("File not found: " + bandInfo.imageFile);
-            }
-
-            if (resolvedFile.getParentFile() == null) {
-                throw new IOException("Can't determine package directory");
-            }
-
-            final File cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), "jopenjpeg/cache"),
-                                           resolvedFile.getParentFile().getName());
-            cacheDir.mkdirs();
-            if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
-                throw new IOException("Can't access package cache directory");
-            }
-
-            this.bandInfo = bandInfo;
-            this.imageFile = resolvedFile;
-            this.cacheDir = cacheDir;
-            this.openFiles = new HashMap<File, Jp2File>();
-            this.locks = new HashMap<File, Object>();
-        }
-
-
-        @Override
-        protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
-            final DataBufferUShort dataBuffer = (DataBufferUShort) dest.getDataBuffer();
-            final short[] tileData = dataBuffer.getData();
-
-            final int tileWidth = this.getTileWidth();
-            final int tileHeight = this.getTileHeight();
-            final int tileX = destRect.x / tileWidth;
-            final int tileY = destRect.y / tileHeight;
-
-            if (tileWidth * tileHeight != tileData.length) {
-                throw new IllegalStateException(String.format("tileWidth (=%d) * tileHeight (=%d) != tileData.length (=%d)",
-                                                              tileWidth, tileHeight, tileData.length));
-            }
-
-            final int resolution = getLevel();
-            final Dimension jp2TileDim = getJp2TileDim(bandInfo, resolution);
-
-            final int jp2TileWidth = jp2TileDim.width;
-            final int jp2TileHeight = jp2TileDim.height;
-            final int jp2TileX = destRect.x / jp2TileWidth;
-            final int jp2TileY = destRect.y / jp2TileHeight;
-
-            // Res - Img Size - Tile W
-            //  0  -  10960   -  4096
-            //  1  -   5480   -  2048
-            //  2  -   2740   -  1024
-            //  3  -   1370   -   512
-            //  4  -    685   -   256
-            //  5  -    343   -   128
-
-            final File outputFile = new File(cacheDir,
-                                             FileUtils.exchangeExtension(imageFile.getName(),
-                                                                         String.format("_R%d_TX%d_TY%d.pgx",
-                                                                                       resolution, jp2TileX, jp2TileY)));
-            final File outputFile0 = getFirstComponentOutputFile(outputFile);
-            if (!outputFile0.exists()) {
-                System.out.printf("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", resolution, jp2TileX, jp2TileY);
-                try {
-                    decompressTile(outputFile, jp2TileX, jp2TileY);
-                } catch (IOException e) {
-                    // warn
-                    outputFile0.delete();
-                }
-                if (!outputFile0.exists()) {
-                    Arrays.fill(tileData, (short) 0);
-                    return;
-                }
-            }
-
-            try {
-                System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", resolution, jp2TileX, jp2TileY);
-                readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
-            } catch (IOException e) {
-                // warn
-            }
-        }
-
-        private File getFirstComponentOutputFile(File outputFile) {
-            return FileUtils.exchangeExtension(outputFile, "_0.pgx");
-        }
-
-        private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
-            final int tileIndex = bandInfo.imageLayout.numXTiles * jp2TileY + jp2TileX;
-            final Process process = new ProcessBuilder(EXE,
-                                                       "-i", imageFile.getPath(),
-                                                       "-o", outputFile.getPath(),
-                                                       "-r", getLevel() + "",
-                                                       "-t", tileIndex + "").directory(cacheDir).start();
-
-            try {
-                final int exitCode = process.waitFor();
-                if (exitCode != 0) {
-                    System.err.println("Failed to uncompress tile: exitCode = " + exitCode);
-                }
-            } catch (InterruptedException e) {
-                System.err.println("InterruptedException: " + e.getMessage());
-            }
-        }
-
-        @Override
-        public synchronized void dispose() {
-
-            for (Map.Entry<File, Jp2File> entry : openFiles.entrySet()) {
-                System.out.println("closing " + entry.getKey());
-                try {
-                    final Jp2File jp2File = entry.getValue();
-                    if (jp2File.stream != null) {
-                        jp2File.stream.close();
-                        jp2File.stream = null;
-                    }
-                } catch (IOException e) {
-                    // warn
-                }
-            }
-
-            for (File file : openFiles.keySet()) {
-                System.out.println("deleting " + file);
-                if (!file.delete()) {
-                    // warn
-                }
-            }
-
-            openFiles.clear();
-
-            if (!cacheDir.delete()) {
-                // warn
-            }
-        }
-
-        @Override
-        protected void finalize() throws Throwable {
-            super.finalize();
-            dispose();
-        }
-
-        private void readTileData(File outputFile,
-                                  int tileX, int tileY, int tileWidth, int tileHeight,
-                                  int jp2TileX, int jp2TileY, int jp2TileWidth, int jp2TileHeight,
-                                  short[] tileData,
-                                  Rectangle destRect) throws IOException {
-
-            synchronized (this) {
-                if (!locks.containsKey(outputFile)) {
-                    locks.put(outputFile, new Object());
-                }
-            }
-            final Object lock = locks.get(outputFile);
-
-            synchronized (lock) {
-
-                Jp2File jp2File = getOpenJ2pFile(outputFile);
-
-                int jp2Width = jp2File.width;
-                int jp2Height = jp2File.height;
-                if (jp2Width > jp2TileWidth || jp2Height > jp2TileHeight) {
-                    throw new IllegalStateException(String.format("width (=%d) > tileWidth (=%d) || height (=%d) > tileHeight (=%d)",
-                                                                  jp2Width, jp2TileWidth, jp2Height, jp2TileHeight));
-                }
-
-                int jp2X = destRect.x - jp2TileX * jp2TileWidth;
-                int jp2Y = destRect.y - jp2TileY * jp2TileHeight;
-                if (jp2X < 0 || jp2Y < 0) {
-                    throw new IllegalStateException(String.format("jp2X (=%d) < 0 || jp2Y (=%d) < 0",
-                                                                  jp2X, jp2Y));
-                }
-
-                final ImageInputStream stream = jp2File.stream;
-
-                if (jp2X == 0 && jp2Width == tileWidth
-                        && jp2Y == 0 && jp2Height == tileHeight
-                        && tileWidth * tileHeight == tileData.length) {
-                    stream.seek(jp2File.dataPos);
-                    stream.readFully(tileData, 0, tileData.length);
-                } else {
-                    final Rectangle jp2FileRect = new Rectangle(0, 0, jp2Width, jp2Height);
-                    final Rectangle tileRect = new Rectangle(jp2X,
-                                                             jp2Y,
-                                                             tileWidth, tileHeight);
-                    final Rectangle intersection = jp2FileRect.intersection(tileRect);
-                    System.out.printf("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection);
-                    if (!intersection.isEmpty()) {
-                        long seekPos = jp2File.dataPos + NUM_SHORT_BYTES * (intersection.y * jp2Width + intersection.x);
-                        int tilePos = 0;
-                        for (int y = 0; y < intersection.height; y++) {
-                            stream.seek(seekPos);
-                            stream.readFully(tileData, tilePos, intersection.width);
-                            seekPos += NUM_SHORT_BYTES * jp2Width;
-                            tilePos += tileWidth;
-                            for (int x = intersection.width; x < tileWidth; x++) {
-                                tileData[y * tileWidth + x] = (short) 0;
-                            }
-                        }
-                        for (int y = intersection.height; y < tileWidth; y++) {
-                            for (int x = 0; x < tileWidth; x++) {
-                                tileData[y * tileWidth + x] = (short) 0;
-                            }
-                        }
-                    } else {
-                        Arrays.fill(tileData, (short) 0);
-                    }
-                }
-            }
-        }
-
-        private Jp2File getOpenJ2pFile(File outputFile) throws IOException {
-            Jp2File jp2File = openFiles.get(outputFile);
-            if (jp2File == null) {
-                jp2File = new Jp2File();
-                jp2File.file = outputFile;
-                jp2File.stream = new FileImageInputStream(outputFile);
-                jp2File.header = jp2File.stream.readLine();
-                jp2File.dataPos = jp2File.stream.getStreamPosition();
-
-                final String[] tokens = jp2File.header.split(" ");
-                if (tokens.length != 6) {
-                    throw new IOException("Unexpected tile format");
-                }
-
-                // String pg = tokens[0];   // PG
-                // String ml = tokens[1];   // ML
-                // String plus = tokens[2]; // +
-                int jp2Width;
-                int jp2Height;
-                try {
-                    // int jp2File.nbits = Integer.parseInt(tokens[3]);
-                    jp2File.width = Integer.parseInt(tokens[4]);
-                    jp2File.height = Integer.parseInt(tokens[5]);
-                } catch (NumberFormatException e) {
-                    throw new IOException("Unexpected tile format");
-                }
-
-                openFiles.put(outputFile, jp2File);
-            }
-
-            return jp2File;
-        }
-    }
 }
