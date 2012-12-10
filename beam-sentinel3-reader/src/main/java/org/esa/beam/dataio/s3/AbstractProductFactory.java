@@ -142,6 +142,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         }
 
         addDataNodes(targetProduct);
+        addVariables(masterProduct,targetProduct);
         setMasks(targetProduct);
         setTimes(targetProduct);
         if (targetProduct.getGeoCoding() == null) {
@@ -151,6 +152,9 @@ public abstract class AbstractProductFactory implements ProductFactory {
         setAutoGrouping(sourceProducts, targetProduct);
 
         return targetProduct;
+    }
+
+    protected void addVariables(Product masterProduct, Product targetProduct) throws IOException {
     }
 
     protected Product findMasterProduct() {
@@ -229,7 +233,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     protected void initialize(Product masterProduct) {
     }
 
-    protected void addDataNodes(Product targetProduct) throws IOException {
+    protected final void addDataNodes(Product targetProduct) throws IOException {
         final int w = targetProduct.getSceneRasterWidth();
         final int h = targetProduct.getSceneRasterHeight();
 
@@ -283,6 +287,10 @@ public abstract class AbstractProductFactory implements ProductFactory {
             final String msg = MessageFormat.format("Cannot read file ''{0}''. No appropriate reader found.", fileName);
             logger.log(Level.SEVERE, msg);
             throw new IOException(msg);
+        }
+        // Todo remove when numResolutionsMax is assigned by ProductReader
+        if (product.getNumBands() > 0) {
+            product.setNumResolutionsMax(product.getBandAt(0).getSourceImage().getModel().getLevelCount());
         }
         openProductList.add(product);
         return product;

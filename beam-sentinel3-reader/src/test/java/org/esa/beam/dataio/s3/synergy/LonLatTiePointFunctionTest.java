@@ -16,73 +16,64 @@ package org.esa.beam.dataio.s3.synergy;/*
 
 import org.esa.beam.dataio.s3.LonLatFunction;
 import org.junit.Test;
-import ucar.ma2.Array;
-import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 import java.awt.geom.Point2D;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class LonLatTiePointFunctionTest {
 
     @Test
     public void testApproximation() throws Exception {
-        final URL url = getClass().getResource("tiepoints_olci.nc");
-        assertNotNull(url);
 
-        final File file = new File(url.toURI());
-        assertNotNull(file);
-
-        NetcdfFile ncFile = null;
+        NcFile ncFile1 = null;
+        NcFile ncFile2 = null;
         try {
-            ncFile = NetcdfFile.open(file.getPath());
+            ncFile1 = NcFile.openResource("tiepoints_olci.nc");
 
-            final List<Variable> variables = ncFile.getVariables();
-            for (final Variable variable : variables) {
-                System.out.println("variable.getName() = " + variable.getName());
+            final double[] lonData = ncFile1.read("OLC_TP_lon");
+            final double[] latData = ncFile1.read("OLC_TP_lat");
+            for (final Variable variable : ncFile1.getVariables("[SV][AZ]A")) {
+                final double[] variableData = ncFile1.read(variable.getName());
+
+                testApproximationForVariable(lonData, latData, variableData);
             }
 
-            final double[] lonData = getDoubles(ncFile, "OLC_TP_lon");
-            final double[] latData = getDoubles(ncFile, "OLC_TP_lat");
-            final double[] saaData = getDoubles(ncFile, "SAA");
+            ncFile2 = NcFile.openResource("tiepoints_meteo.nc");
+            for (final Variable variable : ncFile2.getVariables(".*")) {
+                System.out.println("variable.getName() = " + variable.getName());
+                final double[] variableData = ncFile2.read(variable.getName());
 
-            final LonLatFunction function = new LonLatTiePointFunction(lonData, latData, saaData, 77, 0.1);
-
-            for (int i = 0; i < saaData.length; i++) {
-                final double lon = lonData[i];
-                final double lat = latData[i];
-                final double saa = saaData[i];
-                final double actual = function.getValue(new Point2D.Double(lon, lat));
-
-                assertEquals(saa, actual, 0.1);
+                testApproximationForVariable(lonData, latData, variableData);
             }
         } finally {
-            if (ncFile != null) {
-                try {
-                    ncFile.close();
-                } catch (IOException ignored) {
-                }
+            if (ncFile1 != null) {
+                ncFile1.close();
+            }
+            if (ncFile2 != null) {
+                ncFile2.close();
             }
         }
     }
 
-    private double[] getDoubles(NetcdfFile ncFile, String name) throws IOException {
-        final Variable variable = ncFile.findVariable(name);
-        assertEquals(1, variable.getRank());
+    private void testApproximationForVariable(double[] lonData, double[] latData, double[] variableData) {
+        final TileRectangleCalculator calculator = new TiePointTileRectangleCalculator();
+        final DistanceCalculatorFactory factory = new ArcDistanceCalculatorFactory();
+        final LonLatFunction function = new LonLatTiePointFunction(lonData,
+                                                                   latData,
+                                                                   variableData, 77, 0.1,
+                                                                   calculator,
+                                                                   factory);
 
-        final double scaleFactor = variable.findAttribute("scale_factor").getNumericValue().doubleValue();
-        final Array array = variable.read();
+        for (int i = 0; i < variableData.length; i++) {
+            final double lon = lonData[i];
+            final double lat = latData[i];
+            final double var = variableData[i];
+            final double actual = function.getValue(new Point2D.Double(lon, lat));
 
-        final double[] data = new double[variable.getShape(0)];
-        for (int i = 0; i < data.length; i++) {
-            data[i] = array.getDouble(i) * scaleFactor;
+            assertEquals(var, actual, 0.01 * var);
         }
-        return data;
     }
+
 }
