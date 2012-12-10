@@ -31,9 +31,9 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 
+import static org.esa.beam.dataio.s2.Config.*;
+
 public class Sentinel2ProductReader extends AbstractProductReader {
-    static final String EXE = System.getProperty("openjpeg2.decompressor.path", "opj_decompress");
-    static final int DEFAULT_TILE_SIZE = 512;
 
     private File cacheDir;
 
@@ -59,33 +59,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             this.imageLayout = imageLayout;
         }
     }
-
-
-    S2WavebandInfo[] S2_WAVEBAND_INFOS = new S2WavebandInfo[]{
-            new S2WavebandInfo(0, "B1", 443, 20, SpatialResolution.R60M),
-            new S2WavebandInfo(1, "B2", 490, 65, SpatialResolution.R10M),
-            new S2WavebandInfo(2, "B3", 560, 35, SpatialResolution.R10M),
-            new S2WavebandInfo(3, "B4", 665, 30, SpatialResolution.R10M),
-            new S2WavebandInfo(4, "B5", 705, 15, SpatialResolution.R20M),
-            new S2WavebandInfo(5, "B6", 740, 15, SpatialResolution.R20M),
-            new S2WavebandInfo(6, "B7", 775, 20, SpatialResolution.R20M),
-            new S2WavebandInfo(7, "B8", 842, 115, SpatialResolution.R10M),
-            new S2WavebandInfo(8, "B8a", 865, 20, SpatialResolution.R20M),
-            new S2WavebandInfo(9, "B9", 940, 20, SpatialResolution.R60M),
-            new S2WavebandInfo(10, "B10", 1380, 30, SpatialResolution.R60M),
-            new S2WavebandInfo(11, "B11", 1610, 90, SpatialResolution.R20M),
-            new S2WavebandInfo(12, "B12", 2190, 180, SpatialResolution.R20M),
-    };
-
-
-    // these numbers should actually been read from the JP2 files,
-    // because they are likely to change if prod. spec. changes
-    //
-    final static L1cTileLayout[] L1C_TILE_LAYOUTS = new L1cTileLayout[]{
-            new L1cTileLayout(10690, 10690, 4096, 4096, 3, 3, 6),
-            new L1cTileLayout(5480, 5480, 4096, 4096, 2, 2, 6),
-            new L1cTileLayout(1826, 1826, 1826, 1826, 1, 1, 6),
-    };
 
 
     Sentinel2ProductReader(Sentinel2ProductReaderPlugIn readerPlugIn) {
@@ -211,7 +184,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         for (Integer bandIndex : bandIndexes) {
             final BandInfo bandInfo = fileMap.get(bandIndex);
-            final Band band = product.addBand(bandInfo.wavebandInfo.bandName, ProductData.TYPE_UINT16);
+            final Band band = product.addBand(bandInfo.wavebandInfo.bandName, SAMPLE_DATA_TYPE);
             band.setSpectralWavelength((float) bandInfo.wavebandInfo.centralWavelength);
             band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
             band.setSpectralBandIndex(bandIndex);
@@ -266,7 +239,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 }
 
                 if (!tileFileMap.isEmpty()) {
-                    Band band = product.addBand(bandInformation.physicalBand, ProductData.TYPE_UINT16);
+                    Band band = product.addBand(bandInformation.physicalBand, SAMPLE_DATA_TYPE);
                     band.setSpectralBandIndex(bandInformation.bandId);
                     band.setSpectralWavelength((float) bandInformation.wavelenghtCentral);
                     band.setSpectralBandwidth((float) (bandInformation.wavelenghtMax - bandInformation.wavelenghtMin));
@@ -435,6 +408,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
 
             ImageLayout imageLayout = new ImageLayout();
+            imageLayout.setMinX(0);
+            imageLayout.setMinY(0);
             imageLayout.setTileWidth(DEFAULT_TILE_SIZE);
             imageLayout.setTileHeight(DEFAULT_TILE_SIZE);
             return MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),

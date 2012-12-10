@@ -20,12 +20,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.esa.beam.dataio.s2.Config.L1C_TILE_LAYOUTS;
+
 /**
 * @author Norman Fomferra
 */
 class L1cTileOpImage extends SingleBandedOpImage {
-
-    static final int NUM_SHORT_BYTES = 2;
 
     private static class Jp2File {
         File file;
@@ -59,8 +59,8 @@ class L1cTileOpImage extends SingleBandedOpImage {
     static PlanarImage createScaledImage(PlanarImage sourceImage, SpatialResolution resolution, int level) {
         int sourceWidth = sourceImage.getWidth();
         int sourceHeight = sourceImage.getHeight();
-        int targetWidth = Sentinel2ProductReader.L1C_TILE_LAYOUTS[0].width >> level;
-        int targetHeight = Sentinel2ProductReader.L1C_TILE_LAYOUTS[0].height >> level;
+        int targetWidth = L1C_TILE_LAYOUTS[0].width >> level;
+        int targetHeight = L1C_TILE_LAYOUTS[0].height >> level;
         float scaleX = resolution.resolution / (float) SpatialResolution.R10M.resolution;
         float scaleY = resolution.resolution / (float) SpatialResolution.R10M.resolution;
         final Dimension tileDim = getTileDim(targetWidth, targetHeight);
@@ -145,6 +145,9 @@ class L1cTileOpImage extends SingleBandedOpImage {
                                                                      String.format("_R%d_TX%d_TY%d.pgx",
                                                                                    getLevel(), jp2TileX, jp2TileY)));
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
+
+        // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
+        //        This may be the reason for party filled tiles, that sometimes occur
         if (!outputFile0.exists()) {
             //System.out.printf("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
             try {
@@ -154,7 +157,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
                 outputFile0.delete();
             }
             if (!outputFile0.exists()) {
-                Arrays.fill(tileData, (short) 1000);
+                Arrays.fill(tileData, Config.FILL_CODE_NO_FILE);
                 return;
             }
         }
@@ -173,7 +176,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = imageLayout.numXTiles * jp2TileY + jp2TileX;
-        final Process process = new ProcessBuilder(Sentinel2ProductReader.EXE,
+        final Process process = new ProcessBuilder(Config.OPJ_DECOMPRESSOR_EXE,
                                                    "-i", imageFile.getPath(),
                                                    "-o", outputFile.getPath(),
                                                    "-r", getLevel() + "",
@@ -273,24 +276,24 @@ class L1cTileOpImage extends SingleBandedOpImage {
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
                 //System.out.printf("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection);
                 if (!intersection.isEmpty()) {
-                    long seekPos = jp2File.dataPos + NUM_SHORT_BYTES * (intersection.y * jp2Width + intersection.x);
+                    long seekPos = jp2File.dataPos + Config.SAMPLE_ELEM_SIZE * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;
                     for (int y = 0; y < intersection.height; y++) {
                         stream.seek(seekPos);
                         stream.readFully(tileData, tilePos, intersection.width);
-                        seekPos += NUM_SHORT_BYTES * jp2Width;
+                        seekPos += Config.SAMPLE_ELEM_SIZE * jp2Width;
                         tilePos += tileWidth;
                         for (int x = intersection.width; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = (short) 0;
+                            tileData[y * tileWidth + x] = Config.FILL_CODE_OUT_OF_X_BOUNDS;
                         }
                     }
                     for (int y = intersection.height; y < tileWidth; y++) {
                         for (int x = 0; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = (short) 0;
+                            tileData[y * tileWidth + x] = Config.FILL_CODE_OUT_OF_Y_BOUNDS;
                         }
                     }
                 } else {
-                    Arrays.fill(tileData, (short) 0);
+                    Arrays.fill(tileData, Config.FILL_CODE_NO_INTERSECTION);
                 }
             }
         }
@@ -354,7 +357,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     }
 
     static Dimension getTileDim(int width, int height) {
-        return new Dimension(width < Sentinel2ProductReader.DEFAULT_TILE_SIZE ? width : Sentinel2ProductReader.DEFAULT_TILE_SIZE,
-                             height < Sentinel2ProductReader.DEFAULT_TILE_SIZE ? height : Sentinel2ProductReader.DEFAULT_TILE_SIZE);
+        return new Dimension(width < Config.DEFAULT_TILE_SIZE ? width : Config.DEFAULT_TILE_SIZE,
+                             height < Config.DEFAULT_TILE_SIZE ? height : Config.DEFAULT_TILE_SIZE);
     }
 }
