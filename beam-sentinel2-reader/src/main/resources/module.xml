@@ -48,7 +48,13 @@
     </extension>
 
     <extension point="beam-core:rgbProfiles">
-        <!-- todo -->
+        <rgbProfile>
+            <name>Sentinel 2 MSI L1</name>
+            <red>B11</red>
+            <green>B9</green>
+            <blue>B3</blue>
+        </rgbProfile>
+
     </extension>
 
 </module>

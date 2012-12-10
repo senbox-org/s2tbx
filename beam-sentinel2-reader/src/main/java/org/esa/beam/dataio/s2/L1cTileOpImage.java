@@ -38,7 +38,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
     private final File imageFile;
     private final File cacheDir;
-    private final L1cTileLayout imageLayout;
+    private final L1cTileLayout l1cTileLayout;
     private Map<File, Jp2File> openFiles;
     private Map<File, Object> locks;
 
@@ -92,20 +92,20 @@ class L1cTileOpImage extends SingleBandedOpImage {
     L1cTileOpImage(File imageFile,
                    File cacheDir,
                    Point imagePos,
-                   L1cTileLayout imageLayout,
+                   L1cTileLayout l1cTileLayout,
                    MultiLevelModel imageModel,
                    int level) throws IOException {
         super(DataBuffer.TYPE_USHORT,
               imagePos,
-              imageLayout.width,
-              imageLayout.height,
-              getTileDimAtResolutionLevel(imageLayout.tileWidth, imageLayout.tileHeight, level),
+              l1cTileLayout.width,
+              l1cTileLayout.height,
+              getTileDimAtResolutionLevel(l1cTileLayout.tileWidth, l1cTileLayout.tileHeight, level),
               null,
               ResolutionLevel.create(imageModel, level));
 
         this.imageFile = imageFile;
         this.cacheDir = cacheDir;
-        this.imageLayout = imageLayout;
+        this.l1cTileLayout = l1cTileLayout;
         this.openFiles = new HashMap<File, Jp2File>();
         this.locks = new HashMap<File, Object>();
     }
@@ -125,7 +125,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
                                                           tileWidth, tileHeight, tileData.length));
         }
 
-        final Dimension jp2TileDim = getDimAtResolutionLevel(imageLayout.tileWidth, imageLayout.tileHeight, getLevel());
+        final Dimension jp2TileDim = getDimAtResolutionLevel(l1cTileLayout.tileWidth, l1cTileLayout.tileHeight, getLevel());
 
         final int jp2TileWidth = jp2TileDim.width;
         final int jp2TileHeight = jp2TileDim.height;
@@ -175,7 +175,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     }
 
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
-        final int tileIndex = imageLayout.numXTiles * jp2TileY + jp2TileX;
+        final int tileIndex = l1cTileLayout.numXTiles * jp2TileY + jp2TileX;
         final Process process = new ProcessBuilder(Config.OPJ_DECOMPRESSOR_EXE,
                                                    "-i", imageFile.getPath(),
                                                    "-o", outputFile.getPath(),

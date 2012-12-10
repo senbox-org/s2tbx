@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Represents the Sentinel-2 MSI L1C XML header file.
  * @author Norman Fomferra
  */
 public class Header {

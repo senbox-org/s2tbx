@@ -8,17 +8,17 @@ public class S2WavebandInfo {
     final String bandName;
     final double wavelength;
     final double bandwidth;
-    final double solarIrradiances;
-    final double scalingFactor;
+    final double solarIrradiance;
+    final double quantificationValue;
     final SpatialResolution resolution;
 
-    S2WavebandInfo(int bandId, String bandName, SpatialResolution resolution, double wavelength, double bandwidth, double solarIrradiances, double scalingFactor) {
+    S2WavebandInfo(int bandId, String bandName, SpatialResolution resolution, double wavelength, double bandwidth, double solarIrradiance, int quantificationValue) {
         this.bandId = bandId;
         this.bandName = bandName;
         this.wavelength = wavelength;
         this.bandwidth = bandwidth;
-        this.solarIrradiances = solarIrradiances;
+        this.solarIrradiance = solarIrradiance;
         this.resolution = resolution;
-        this.scalingFactor = scalingFactor;
+        this.quantificationValue = quantificationValue;
     }
 }
