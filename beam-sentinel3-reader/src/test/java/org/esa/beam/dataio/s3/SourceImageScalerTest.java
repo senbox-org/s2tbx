@@ -31,7 +31,8 @@ public class SourceImageScalerTest {
                                                                  BorderExtender.createInstance(
                                                                          BorderExtender.BORDER_COPY));
         MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(sourceImage, scalings,
-                                                                             transformations, renderingHints);
+                                                                             transformations, renderingHints,
+                                                                             levelCount);
         final Rectangle targetBounds = targetBand.getSourceImage().getBounds();
 
         assertEquals(targetBand.getRasterWidth(), scaledImage.getWidth());

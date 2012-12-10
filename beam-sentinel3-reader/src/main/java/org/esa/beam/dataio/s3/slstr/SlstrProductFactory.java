@@ -105,7 +105,8 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         float[] transformations = new float[]{0f, 0f};
         RenderedImage image
                 = SourceImageScaler.scaleMultiLevelImage(sourceImage, scalings,
-                                                         transformations, renderingHints);
+                                                         transformations, renderingHints,
+                                                         findMasterProduct().getNumResolutionsMax());
         final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{targetBand.getNoDataValue()});
         image = BorderDescriptor.create(image, padX, targetW - padX - image.getWidth(),
                                         padY, padY, borderExtender, renderingHints);

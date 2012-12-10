@@ -288,6 +288,10 @@ public abstract class AbstractProductFactory implements ProductFactory {
             logger.log(Level.SEVERE, msg);
             throw new IOException(msg);
         }
+        // Todo remove when numResolutionsMax is assigned by ProductReader
+        if (product.getNumBands() > 0) {
+            product.setNumResolutionsMax(product.getBandAt(0).getSourceImage().getModel().getLevelCount());
+        }
         openProductList.add(product);
         return product;
     }

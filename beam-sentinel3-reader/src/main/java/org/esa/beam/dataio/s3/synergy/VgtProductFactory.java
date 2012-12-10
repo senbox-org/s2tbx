@@ -87,9 +87,9 @@ public class VgtProductFactory extends AbstractProductFactory {
         final float transX = (targetBand.getRasterWidth() - sourceImage.getWidth() * scalings[0]) / 2.0f;
         final float transY = (targetBand.getRasterHeight() - sourceImage.getHeight() * scalings[1]) / 2.0f;
         float[] transformations = new float[]{transX, transY};
-        // TODO: here we border effects because no-data value is used for interpolation
         final RenderedImage scaledImage = SourceImageScaler.scaleMultiLevelImage(sourceImage, scalings,
-                                                                                 transformations, renderingHints);
+                                                                                 transformations, renderingHints,
+                                                                                 findMasterProduct().getNumResolutionsMax());
         final RenderedImage croppedImage = CropDescriptor.create(scaledImage, 0.0f, 0.0f,
                                                                  (float) targetBand.getRasterWidth(),
                                                                  (float) targetBand.getRasterHeight(), null);

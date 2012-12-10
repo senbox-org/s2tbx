@@ -14,10 +14,12 @@ import java.awt.image.RenderedImage;
 public class SourceImageScaler {
 
     public static MultiLevelImage scaleMultiLevelImage(MultiLevelImage sourceImage, float[] scalings,
-                                                       float[] transformations, RenderingHints renderingHints) {
+                                                       float[] transformations, RenderingHints renderingHints,
+                                                       int levelCount) {
         if (scalings[0] != 1.0 || scalings[1] != 1.0) {
             final ScaledMultiLevelSource multiLevelSource = new ScaledMultiLevelSource(sourceImage, scalings,
-                                                                                       transformations, renderingHints);
+                                                                                       transformations, renderingHints,
+                                                                                       levelCount);
             return new DefaultMultiLevelImage(multiLevelSource);
         }
         return sourceImage;
@@ -31,9 +33,8 @@ public class SourceImageScaler {
         private final RenderingHints renderingHints;
 
         private ScaledMultiLevelSource(MultiLevelImage sourceImage, float scaleFactors[], float[] transformations,
-                                       RenderingHints renderingHints) {
-            // Todo replace with product.getNumResolutionsMax() from masterProduct
-            super(DefaultMultiLevelSource.createDefaultMultiLevelModel(sourceImage, sourceImage.getModel().getLevelCount()));
+                                       RenderingHints renderingHints, int levelCount) {
+            super(DefaultMultiLevelSource.createDefaultMultiLevelModel(sourceImage, levelCount));
             this.sourceImage = sourceImage;
             this.scaleFactors = scaleFactors;
             this.transformations = transformations;
