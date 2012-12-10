@@ -58,83 +58,52 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
 
     @Override
     protected void addVariables(Product masterProduct, Product targetProduct) throws IOException {
-        final NcFile tiePointsOlc = openNcFile("tiepoints_olci.nc");
+        NcFile tiePointsOlc = null;
+        NcFile tiePointsMet = null;
 
-        final double[] tpLon = tiePointsOlc.read("OLC_TP_lon");
-        final double[] tpLat = tiePointsOlc.read("OLC_TP_lat");
+        try {
+            tiePointsOlc = openNcFile("tiepoints_olci.nc");
+            tiePointsMet = openNcFile("tiepoints_meteo.nc");
 
-        final List<Variable> variables = tiePointsOlc.getVariables("[SV][AZ]A");
-        for (final Variable variable : variables) {
-            final double[] tpVar = tiePointsOlc.read(variable.getName());
+            final double[] tpLon = tiePointsOlc.read("OLC_TP_lon");
+            final double[] tpLat = tiePointsOlc.read("OLC_TP_lat");
 
-            for (int i = 1; i <= 5; i++) {
-                final String latBandName = "latitude_CAM" + i;
-                final String lonBandName = "longitude_CAM" + i;
-                final Band latBand = targetProduct.getBand(latBandName);
-                final Band lonBand = targetProduct.getBand(lonBandName);
+            final List<Variable> variables = new ArrayList<Variable>();
+            variables.addAll(tiePointsOlc.getVariables("[SV][AZ]A"));
+            variables.addAll(tiePointsMet.getVariables(".*"));
 
-                final String targetBandName = variable.getName() + "_CAM" + i;
-                final Band targetBand = new Band(targetBandName, ProductData.TYPE_FLOAT32,
-                                                 masterProduct.getSceneRasterWidth(),
-                                                 masterProduct.getSceneRasterHeight());
-                final MultiLevelImage targetImage = createTiePointImage(lonBand.getGeophysicalImage(),
-                                                                        latBand.getGeophysicalImage(),
-                                                                        tpLon,
-                                                                        tpLat, tpVar,
-                                                                        77);
+            for (final Variable variable : variables) {
+                final double[] tpVar = tiePointsOlc.read(variable.getName());
 
-                targetBand.setSourceImage(targetImage);
-                targetProduct.addBand(targetBand);
-            }
-        }
-
-        /*
-        final Product masterProduct = findMasterProduct();
-        final File directory = getInputFileParentDirectory();
-
-        Map<String, float[]> latValueMap = new HashMap<String, float[]>();
-        Map<String, float[]> lonValueMap = new HashMap<String, float[]>();
-        Map<String, List<Variable>> variableMap = new HashMap<String, List<Variable>>();
-        for (String fileName : fileNames) {
-            final File fileLocation = new File(directory, fileName);
-            final NetcdfFile netcdfFile = NetcdfFile.open(fileLocation.getPath());
-            try {
-                final List<Variable> fileVariables = netcdfFile.getVariables();
-                variableMap.put(fileName, fileVariables);
-                for (Variable fileVariable : fileVariables) {
-                    if (fileVariable.getName().endsWith("_lat")) {
-                        latValueMap.put(fileName, getVariableDataAsFloatArray(fileVariable));
-                    } else if (fileVariable.getName().endsWith("_lon")) {
-                        lonValueMap.put(fileName, getVariableDataAsFloatArray(fileVariable));
-                    }
-                }
-            } finally {
-                try {
-                    netcdfFile.close();
-                } catch (IOException ignored) {
-                }
-            }
-        }
-        if (latValueMap.containsKey("tiepoints_olci.nc")) {
-            latValueMap.put("tiepoints_meteo.nc", latValueMap.get("tiepoints_olci.nc"));
-        }
-        if (lonValueMap.containsKey("tiepoints_olci.nc")) {
-            lonValueMap.put("tiepoints_meteo.nc", lonValueMap.get("tiepoints_olci.nc"));
-        }
-        for (String fileName : fileNames) {
-            for (Variable variable : variableMap.get(fileName)) {
                 for (int i = 1; i <= 5; i++) {
-                    final int dataType = DataTypeUtils.getRasterDataType(variable);
-                    Band targetBand = new Band(variable.getName() + "_CAM" + i, dataType,
-                                               masterProduct.getSceneRasterWidth(), masterProduct.getSceneRasterHeight());
-                    final RenderedImage sourceImage = createTiepointSourceImage(masterProduct, variable, geoCodingList.get(i - 1),
-                                                                                latValueMap.get(fileName), lonValueMap.get(fileName));
-                    targetBand.setSourceImage(sourceImage);
+                    final String latBandName = "latitude_CAM" + i;
+                    final String lonBandName = "longitude_CAM" + i;
+                    final Band latBand = targetProduct.getBand(latBandName);
+                    final Band lonBand = targetProduct.getBand(lonBandName);
+
+                    final String targetBandName = variable.getName() + "_CAM" + i;
+                    final Band targetBand = new Band(targetBandName, ProductData.TYPE_FLOAT32,
+                                                     masterProduct.getSceneRasterWidth(),
+                                                     masterProduct.getSceneRasterHeight());
+                    final MultiLevelImage targetImage = createTiePointImage(lonBand.getGeophysicalImage(),
+                                                                            latBand.getGeophysicalImage(),
+                                                                            tpLon,
+                                                                            tpLat, tpVar,
+                                                                            77);
+
+                    targetBand.setSourceImage(targetImage);
                     targetProduct.addBand(targetBand);
                 }
             }
+        } finally {
+            if (tiePointsOlc != null) {
+                tiePointsOlc.close();
+            }
+            if (tiePointsMet != null) {
+                tiePointsMet.close();
+            }
         }
-        */
+
     }
 
     private NcFile openNcFile(String fileName) throws IOException {
