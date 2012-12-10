@@ -33,7 +33,7 @@
             <id>importSentinel2Product</id>
             <helpId>importSentinel2Product</helpId>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
-            <formatName>SENTINEL-2-MSI</formatName>
+            <formatName>SENTINEL-2-MSI-L1C</formatName>
             <useAllFileFilter>true</useAllFileFilter>
         </action>
         <!-- Mock-up reader
