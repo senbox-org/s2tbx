@@ -33,11 +33,10 @@ final class LonLatTiePointFunction implements LonLatFunction {
 
     private final RationalFunctionApproximation[] approximations;
 
-    public LonLatTiePointFunction(double[] lonData, double[] latData, double[] functionData, int colCount,
-                                  double accuracy, TileRectangleCalculator calculator,
-                                  DistanceCalculatorFactory factory) {
-        approximations = createApproximations(lonData, latData, functionData, colCount, accuracy, calculator,
-                                              factory);
+    LonLatTiePointFunction(double[] lonData, double[] latData, double[] functionData, int colCount, double accuracy,
+                           TileRectangleCalculator calculator, DistanceCalculatorFactory factory) {
+        approximations = createApproximations(lonData, latData, functionData, colCount, accuracy,
+                                              calculator, factory);
     }
 
     @Override

@@ -61,56 +61,8 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
     }
 
     @Override
-    protected void addDataNodes(Product targetProduct) throws IOException {
-        super.addDataNodes(targetProduct);
-        /*
-        final List<String> fileNames = getManifest().getFileNames("tiepointsSchema");
-        final Product masterProduct = findMasterProduct();
-        final File directory = getInputFileParentDirectory();
-
-        Map<String, float[]> latValueMap = new HashMap<String, float[]>();
-        Map<String, float[]> lonValueMap = new HashMap<String, float[]>();
-        Map<String, List<Variable>> variableMap = new HashMap<String, List<Variable>>();
-        for (String fileName : fileNames) {
-            final File fileLocation = new File(directory, fileName);
-            final NetcdfFile netcdfFile = NetcdfFile.open(fileLocation.getPath());
-            try {
-                final List<Variable> fileVariables = netcdfFile.getVariables();
-                variableMap.put(fileName, fileVariables);
-                for (Variable fileVariable : fileVariables) {
-                    if (fileVariable.getName().endsWith("_lat")) {
-                        latValueMap.put(fileName, getVariableDataAsFloatArray(fileVariable));
-                    } else if (fileVariable.getName().endsWith("_lon")) {
-                        lonValueMap.put(fileName, getVariableDataAsFloatArray(fileVariable));
-                    }
-                }
-            } finally {
-                try {
-                    netcdfFile.close();
-                } catch (IOException ignored) {
-                }
-            }
-        }
-        if (latValueMap.containsKey("tiepoints_olci.nc")) {
-            latValueMap.put("tiepoints_meteo.nc", latValueMap.get("tiepoints_olci.nc"));
-        }
-        if (lonValueMap.containsKey("tiepoints_olci.nc")) {
-            lonValueMap.put("tiepoints_meteo.nc", lonValueMap.get("tiepoints_olci.nc"));
-        }
-        for (String fileName : fileNames) {
-            for (Variable variable : variableMap.get(fileName)) {
-                for (int i = 1; i <= 5; i++) {
-                    final int dataType = DataTypeUtils.getRasterDataType(variable);
-                    Band targetBand = new Band(variable.getName() + "_CAM" + i, dataType,
-                                               masterProduct.getSceneRasterWidth(), masterProduct.getSceneRasterHeight());
-                    final RenderedImage sourceImage = createTiepointSourceImage(masterProduct, variable, geoCodingList.get(i - 1),
-                                                                                latValueMap.get(fileName), lonValueMap.get(fileName));
-                    targetBand.setSourceImage(sourceImage);
-                    targetProduct.addBand(targetBand);
-                }
-            }
-        }
-        */
+    protected void addVariables(Product targetProduct) {
+        super.addVariables(targetProduct);
     }
 
     private MultiLevelImage createTiePointImage(MultiLevelImage lonImage, MultiLevelImage latImage, double[] tpLonData,

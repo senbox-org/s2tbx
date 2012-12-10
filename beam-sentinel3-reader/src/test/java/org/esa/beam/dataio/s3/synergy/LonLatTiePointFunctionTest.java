@@ -15,15 +15,10 @@ package org.esa.beam.dataio.s3.synergy;/*
  */
 
 import org.esa.beam.dataio.s3.LonLatFunction;
-import org.esa.beam.util.math.ArcDistanceCalculator;
-import org.esa.beam.util.math.DistanceCalculator;
-import org.esa.beam.util.math.MathUtils;
 import org.junit.Test;
-import ucar.ma2.Array;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
-import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -43,22 +38,25 @@ public class LonLatTiePointFunctionTest {
         final File file = new File(url.toURI());
         assertNotNull(file);
 
-        NetcdfFile ncFile = null;
+        NetcdfFile netcdfFile = null;
         try {
-            ncFile = NetcdfFile.open(file.getPath());
+            netcdfFile = NetcdfFile.open(file.getPath());
 
-            final List<Variable> variables = ncFile.getVariables();
+            final List<Variable> variables = netcdfFile.getVariables();
             for (final Variable variable : variables) {
                 System.out.println("variable.getName() = " + variable.getName());
             }
-
-            final double[] lonData = getDoubles(ncFile, "OLC_TP_lon");
-            final double[] latData = getDoubles(ncFile, "OLC_TP_lat");
-            final double[] saaData = getDoubles(ncFile, "SAA");
+            final VariableReader reader = new VariableReader(netcdfFile);
+            final double[] lonData = reader.read("OLC_TP_lon");
+            final double[] latData = reader.read("OLC_TP_lat");
+            final double[] saaData = reader.read("SAA");
 
             final TileRectangleCalculator calculator = new SynTileRectangleCalculator();
             final DistanceCalculatorFactory factory = new ArcDistanceCalculatorFactory();
-            final LonLatFunction function = new LonLatTiePointFunction(lonData, latData, saaData, 77, 0.1, calculator,
+            final LonLatFunction function = new LonLatTiePointFunction(lonData,
+                                                                       latData,
+                                                                       saaData, 77, 0.1,
+                                                                       calculator,
                                                                        factory);
 
             for (int i = 0; i < saaData.length; i++) {
@@ -70,46 +68,13 @@ public class LonLatTiePointFunctionTest {
                 assertEquals(saa, actual, 0.1);
             }
         } finally {
-            if (ncFile != null) {
+            if (netcdfFile != null) {
                 try {
-                    ncFile.close();
+                    netcdfFile.close();
                 } catch (IOException ignored) {
                 }
             }
         }
     }
 
-    private double[] getDoubles(NetcdfFile ncFile, String name) throws IOException {
-        final Variable variable = ncFile.findVariable(name);
-        assertEquals(1, variable.getRank());
-
-        final double scaleFactor = variable.findAttribute("scale_factor").getNumericValue().doubleValue();
-        final Array array = variable.read();
-
-        final double[] data = new double[variable.getShape(0)];
-        for (int i = 0; i < data.length; i++) {
-            data[i] = array.getDouble(i) * scaleFactor;
-        }
-        return data;
-    }
-
-    static class ArcDistanceCalculatorFactory implements DistanceCalculatorFactory {
-
-        @Override
-        public DistanceCalculator create(double lon, double lat) {
-            return new ArcDistanceCalculator(lon, lat);
-        }
-    }
-
-    static class SynTileRectangleCalculator implements TileRectangleCalculator {
-
-        @Override
-        public Rectangle[] calculateTileRectangles(int columnCount,
-                                                   int rowCount) {
-            final int tileCountX = 2;
-            final int tileCountY = (2 * rowCount) / columnCount;
-
-            return MathUtils.subdivideRectangle(columnCount, rowCount, tileCountX, tileCountY, 1);
-        }
-    }
 }

@@ -142,6 +142,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         }
 
         addDataNodes(targetProduct);
+        addVariables(targetProduct);
         setMasks(targetProduct);
         setTimes(targetProduct);
         if (targetProduct.getGeoCoding() == null) {
@@ -151,6 +152,9 @@ public abstract class AbstractProductFactory implements ProductFactory {
         setAutoGrouping(sourceProducts, targetProduct);
 
         return targetProduct;
+    }
+
+    protected void addVariables(Product targetProduct) {
     }
 
     protected Product findMasterProduct() {
@@ -229,7 +233,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     protected void initialize(Product masterProduct) {
     }
 
-    protected void addDataNodes(Product targetProduct) throws IOException {
+    protected final void addDataNodes(Product targetProduct) throws IOException {
         final int w = targetProduct.getSceneRasterWidth();
         final int h = targetProduct.getSceneRasterHeight();
 
