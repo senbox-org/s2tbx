@@ -19,10 +19,8 @@ import org.junit.Test;
 import ucar.nc2.Variable;
 
 import java.awt.geom.Point2D;
-import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class LonLatTiePointFunctionTest {
 
