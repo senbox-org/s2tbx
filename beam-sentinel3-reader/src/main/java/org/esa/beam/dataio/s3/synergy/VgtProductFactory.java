@@ -82,16 +82,17 @@ public class VgtProductFactory extends AbstractProductFactory {
                                                                  BorderExtender.createInstance(
                                                                          BorderExtender.BORDER_COPY));
         final MultiLevelImage sourceImage = sourceBand.getSourceImage();
-        final float transX = (targetBand.getRasterWidth() - sourceImage.getWidth() * 8.0f) / 2.0f;
-        final float transY = (targetBand.getRasterHeight() - sourceImage.getHeight() * 8.0f) / 2.0f;
+        float[] scalings = new float[]{((float)targetBand.getRasterWidth())/sourceBand.getRasterWidth(),
+                ((float)targetBand.getRasterHeight())/sourceBand.getRasterHeight()};
+        final float transX = (targetBand.getRasterWidth() - sourceImage.getWidth() * scalings[0]) / 2.0f;
+        final float transY = (targetBand.getRasterHeight() - sourceImage.getHeight() * scalings[1]) / 2.0f;
         float[] transformations = new float[]{transX, transY};
         // TODO: here we border effects because no-data value is used for interpolation
-        final Rectangle targetBounds = targetBand.getSourceImage().getBounds();
-        final RenderedImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetBounds,
-                sourceImage, transformations, renderingHints);
+        final RenderedImage scaledImage = SourceImageScaler.scaleMultiLevelImage(sourceImage, scalings,
+                                                                                 transformations, renderingHints);
         final RenderedImage croppedImage = CropDescriptor.create(scaledImage, 0.0f, 0.0f,
-                                                              (float) targetBand.getRasterWidth(),
-                                                              (float) targetBand.getRasterHeight(), null);
+                                                                 (float) targetBand.getRasterWidth(),
+                                                                 (float) targetBand.getRasterHeight(), null);
         targetBand.setSourceImage(croppedImage);
         return targetBand;
     }

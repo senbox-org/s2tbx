@@ -24,14 +24,15 @@ public class SourceImageScalerTest {
         Band targetBand = new Band("targetBand", ProductData.TYPE_INT32, 200, 200);
         int levelCount = 5;
         MultiLevelImage sourceImage = createSourceImage(levelCount, 100, 100);
+        float[] scalings = new float[]{((float)targetBand.getRasterWidth())/sourceImage.getWidth(),
+            ((float)targetBand.getRasterHeight())/sourceImage.getHeight()};
         float[] transformations = new float[]{0f, 0f};
         final RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
                                                                  BorderExtender.createInstance(
                                                                          BorderExtender.BORDER_COPY));
-        final Rectangle targetBounds = targetBand.getSourceImage().getBounds();
-        MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetBounds,
-                                                                             sourceImage,
+        MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(sourceImage, scalings,
                                                                              transformations, renderingHints);
+        final Rectangle targetBounds = targetBand.getSourceImage().getBounds();
 
         assertEquals(targetBand.getRasterWidth(), scaledImage.getWidth());
         assertEquals(targetBand.getRasterHeight(), scaledImage.getHeight());
