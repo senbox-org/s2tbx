@@ -29,6 +29,7 @@ import org.esa.beam.framework.datamodel.PixelGeoCoding;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.RasterDataNode;
+import ucar.nc2.Variable;
 
 import java.awt.image.DataBuffer;
 import java.io.File;
@@ -61,26 +62,30 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
 
         final double[] tpLon = tiePointsOlc.read("OLC_TP_lon");
         final double[] tpLat = tiePointsOlc.read("OLC_TP_lat");
-        final double[] saa = tiePointsOlc.read("SAA");
-        final double[] sza = tiePointsOlc.read("SZA");
-        final double[] vaa = tiePointsOlc.read("VAA");
-        final double[] vza = tiePointsOlc.read("VZA");
 
-        for (int i = 1; i <= 5; i++) {
-            final String latBandName = "latitude_CAM" + i;
-            final String lonBandName = "longitude_CAM" + i;
-            final Band latBand = targetProduct.getBand(latBandName);
-            final Band lonBand = targetProduct.getBand(lonBandName);
+        final List<Variable> variables = tiePointsOlc.getVariables("[SV][AZ]A");
+        for (final Variable variable : variables) {
+            final double[] tpVar = tiePointsOlc.read(variable.getName());
 
-            final Band targetBand = new Band("SAA" + "_CAM" + i, ProductData.TYPE_FLOAT32,
-                                             masterProduct.getSceneRasterWidth(), masterProduct.getSceneRasterHeight());
-            final MultiLevelImage targetImage = createTiePointImage(lonBand.getGeophysicalImage(),
-                                                                    latBand.getGeophysicalImage(),
-                                                                    tpLon,
-                                                                    tpLat, null, 77);
+            for (int i = 1; i <= 5; i++) {
+                final String latBandName = "latitude_CAM" + i;
+                final String lonBandName = "longitude_CAM" + i;
+                final Band latBand = targetProduct.getBand(latBandName);
+                final Band lonBand = targetProduct.getBand(lonBandName);
 
-            targetBand.setSourceImage(targetImage);
-            targetProduct.addBand(targetBand);
+                final String targetBandName = variable.getName() + "_CAM" + i;
+                final Band targetBand = new Band(targetBandName, ProductData.TYPE_FLOAT32,
+                                                 masterProduct.getSceneRasterWidth(),
+                                                 masterProduct.getSceneRasterHeight());
+                final MultiLevelImage targetImage = createTiePointImage(lonBand.getGeophysicalImage(),
+                                                                        latBand.getGeophysicalImage(),
+                                                                        tpLon,
+                                                                        tpLat, tpVar,
+                                                                        77);
+
+                targetBand.setSourceImage(targetImage);
+                targetProduct.addBand(targetBand);
+            }
         }
 
         /*

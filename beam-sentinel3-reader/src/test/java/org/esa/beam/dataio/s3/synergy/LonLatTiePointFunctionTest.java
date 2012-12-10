@@ -16,10 +16,10 @@ package org.esa.beam.dataio.s3.synergy;/*
 
 import org.esa.beam.dataio.s3.LonLatFunction;
 import org.junit.Test;
+import ucar.nc2.Variable;
 
 import java.awt.geom.Point2D;
-import java.io.File;
-import java.net.URL;
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -28,40 +28,53 @@ public class LonLatTiePointFunctionTest {
 
     @Test
     public void testApproximation() throws Exception {
-        final URL url = getClass().getResource("tiepoints_olci.nc");
-        assertNotNull(url);
 
-        final File file = new File(url.toURI());
-        assertNotNull(file);
-
-        NcFile ncFile = null;
+        NcFile ncFile1 = null;
+        NcFile ncFile2 = null;
         try {
-            ncFile = NcFile.open(file);
+            ncFile1 = NcFile.openResource("tiepoints_olci.nc");
 
-            final double[] lonData = ncFile.read("OLC_TP_lon");
-            final double[] latData = ncFile.read("OLC_TP_lat");
-            final double[] saaData = ncFile.read("SAA");
+            final double[] lonData = ncFile1.read("OLC_TP_lon");
+            final double[] latData = ncFile1.read("OLC_TP_lat");
+            for (final Variable variable : ncFile1.getVariables("[SV][AZ]A")) {
+                final double[] variableData = ncFile1.read(variable.getName());
 
-            final TileRectangleCalculator calculator = new TiePointTileRectangleCalculator();
-            final DistanceCalculatorFactory factory = new ArcDistanceCalculatorFactory();
-            final LonLatFunction function = new LonLatTiePointFunction(lonData,
-                                                                       latData,
-                                                                       saaData, 77, 0.1,
-                                                                       calculator,
-                                                                       factory);
+                testApproximationForVariable(lonData, latData, variableData);
+            }
 
-            for (int i = 0; i < saaData.length; i++) {
-                final double lon = lonData[i];
-                final double lat = latData[i];
-                final double saa = saaData[i];
-                final double actual = function.getValue(new Point2D.Double(lon, lat));
+            ncFile2 = NcFile.openResource("tiepoints_meteo.nc");
+            for (final Variable variable : ncFile2.getVariables(".*")) {
+                System.out.println("variable.getName() = " + variable.getName());
+                final double[] variableData = ncFile2.read(variable.getName());
 
-                assertEquals(saa, actual, 0.1);
+                testApproximationForVariable(lonData, latData, variableData);
             }
         } finally {
-            if (ncFile != null) {
-                ncFile.close();
+            if (ncFile1 != null) {
+                ncFile1.close();
             }
+            if (ncFile2 != null) {
+                ncFile2.close();
+            }
+        }
+    }
+
+    private void testApproximationForVariable(double[] lonData, double[] latData, double[] variableData) {
+        final TileRectangleCalculator calculator = new TiePointTileRectangleCalculator();
+        final DistanceCalculatorFactory factory = new ArcDistanceCalculatorFactory();
+        final LonLatFunction function = new LonLatTiePointFunction(lonData,
+                                                                   latData,
+                                                                   variableData, 77, 0.1,
+                                                                   calculator,
+                                                                   factory);
+
+        for (int i = 0; i < variableData.length; i++) {
+            final double lon = lonData[i];
+            final double lat = latData[i];
+            final double var = variableData[i];
+            final double actual = function.getValue(new Point2D.Double(lon, lat));
+
+            assertEquals(var, actual, 0.01 * var);
         }
     }
 
