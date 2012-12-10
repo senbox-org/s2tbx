@@ -16,14 +16,10 @@ package org.esa.beam.dataio.s3.synergy;/*
 
 import org.esa.beam.dataio.s3.LonLatFunction;
 import org.junit.Test;
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.Variable;
 
 import java.awt.geom.Point2D;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -38,20 +34,15 @@ public class LonLatTiePointFunctionTest {
         final File file = new File(url.toURI());
         assertNotNull(file);
 
-        NetcdfFile netcdfFile = null;
+        NcFile ncFile = null;
         try {
-            netcdfFile = NetcdfFile.open(file.getPath());
+            ncFile = NcFile.open(file);
 
-            final List<Variable> variables = netcdfFile.getVariables();
-            for (final Variable variable : variables) {
-                System.out.println("variable.getName() = " + variable.getName());
-            }
-            final VariableReader reader = new VariableReader(netcdfFile);
-            final double[] lonData = reader.read("OLC_TP_lon");
-            final double[] latData = reader.read("OLC_TP_lat");
-            final double[] saaData = reader.read("SAA");
+            final double[] lonData = ncFile.read("OLC_TP_lon");
+            final double[] latData = ncFile.read("OLC_TP_lat");
+            final double[] saaData = ncFile.read("SAA");
 
-            final TileRectangleCalculator calculator = new SynTileRectangleCalculator();
+            final TileRectangleCalculator calculator = new TiePointTileRectangleCalculator();
             final DistanceCalculatorFactory factory = new ArcDistanceCalculatorFactory();
             final LonLatFunction function = new LonLatTiePointFunction(lonData,
                                                                        latData,
@@ -68,11 +59,8 @@ public class LonLatTiePointFunctionTest {
                 assertEquals(saa, actual, 0.1);
             }
         } finally {
-            if (netcdfFile != null) {
-                try {
-                    netcdfFile.close();
-                } catch (IOException ignored) {
-                }
+            if (ncFile != null) {
+                ncFile.close();
             }
         }
     }

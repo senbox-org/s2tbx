@@ -4,7 +4,7 @@ import org.esa.beam.util.math.MathUtils;
 
 import java.awt.Rectangle;
 
-class SynTileRectangleCalculator implements TileRectangleCalculator {
+class TiePointTileRectangleCalculator implements TileRectangleCalculator {
 
     @Override
     public Rectangle[] calculateTileRectangles(int columnCount, int rowCount) {

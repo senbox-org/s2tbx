@@ -142,7 +142,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         }
 
         addDataNodes(targetProduct);
-        addVariables(targetProduct);
+        addVariables(masterProduct,targetProduct);
         setMasks(targetProduct);
         setTimes(targetProduct);
         if (targetProduct.getGeoCoding() == null) {
@@ -154,7 +154,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         return targetProduct;
     }
 
-    protected void addVariables(Product targetProduct) {
+    protected void addVariables(Product masterProduct, Product targetProduct) throws IOException {
     }
 
     protected Product findMasterProduct() {

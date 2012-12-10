@@ -5,18 +5,30 @@ import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
+import java.io.File;
 import java.io.IOException;
 
-class VariableReader {
+class NcFile {
 
-    final NetcdfFile netcdfFile;
+    private final NetcdfFile netcdfFile;
 
-    VariableReader(NetcdfFile netcdfFile) {
+    static NcFile open(File file) throws IOException {
+        return new NcFile(NetcdfFile.open(file.getPath()));
+    }
+
+    private NcFile(NetcdfFile netcdfFile) {
         this.netcdfFile = netcdfFile;
     }
 
     double[] read(String name) throws IOException {
         return getDoubles(netcdfFile, name);
+    }
+
+    void close() {
+        try {
+            netcdfFile.close();
+        } catch (IOException ignored) {
+        }
     }
 
     private double[] getDoubles(NetcdfFile ncFile, String name) throws IOException {
@@ -44,4 +56,6 @@ class VariableReader {
         }
         return attribute.getNumericValue().doubleValue();
     }
+
+
 }
