@@ -60,7 +60,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         } else {
             final Band targetBand = copyBand(sourceBand, targetProduct, false);
             final float[] offsets = getOffsets(sourceStartOffset, sourceTrackOffset, sourceResolutions);
-            final RenderedImage sourceImage = createSourceImage(sourceBand, offsets, targetBand);
+            final RenderedImage sourceImage = createSourceImage(sourceBand, offsets, targetBand, sourceResolutions);
             targetBand.setSourceImage(sourceImage);
             return targetBand;
         }
@@ -92,7 +92,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     private RenderedImage createSourceImage(Band sourceBand, float[] offsets,
-                                            Band targetBand) {
+                                            Band targetBand, short[] sourceResolutions) {
         final ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(targetBand);
         final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
         final MultiLevelImage sourceImage = sourceBand.getSourceImage();
@@ -100,9 +100,11 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         final int targetH = targetBand.getRasterHeight();
         final int padX = Math.round(Math.abs(offsets[0]));
         final int padY = Math.round(Math.abs(offsets[1]));
+        float[] scalings = new float[]{((float)sourceResolutions[0])/referenceResolutions[0],
+                ((float)sourceResolutions[1])/referenceResolutions[1]};
         float[] transformations = new float[]{0f, 0f};
         RenderedImage image
-                = SourceImageScaler.scaleMultiLevelImage(targetBand.getSourceImage().getBounds(), sourceImage,
+                = SourceImageScaler.scaleMultiLevelImage(sourceImage, scalings,
                                                          transformations, renderingHints);
         final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{targetBand.getNoDataValue()});
         image = BorderDescriptor.create(image, padX, targetW - padX - image.getWidth(),
