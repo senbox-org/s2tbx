@@ -17,10 +17,7 @@ import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
+import javax.media.jai.*;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
@@ -246,7 +243,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     if (file.exists()) {
                         tileFileMap.put(tile.id, file);
                     } else {
-                        System.out.printf("Warning: missing file " + file);
+                        System.out.printf("Warning: missing file %s\n", file);
                     }
                 }
 
@@ -413,6 +410,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                          (float) (tileRectangle.y >> level),
                                                          Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
+
+                    //System.out.printf("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY());
                     tileImages.add(opImage);
                 } catch (IOException e) {
                     // todo - handle e
@@ -424,10 +423,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             imageLayout.setMinY(0);
             imageLayout.setTileWidth(DEFAULT_TILE_SIZE);
             imageLayout.setTileHeight(DEFAULT_TILE_SIZE);
-            return MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                           null, null, new double[][] {{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
-                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+            imageLayout.setTileGridXOffset(0);
+            imageLayout.setTileGridYOffset(0);
+            RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
+                                                            MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                            null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
+                                                            new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+
+            //System.out.printf("mosaicOp created for level %d at (%d,%d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY());
+            return mosaicOp;
         }
     }
 
