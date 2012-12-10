@@ -52,15 +52,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         final S2WavebandInfo wavebandInfo;
         final L1cTileLayout imageLayout;
 
-        BandInfo(String tileId, File imageFile, int bandIndex, S2WavebandInfo wavebandInfo, L1cTileLayout imageLayout) {
-            Map<String, File> tileIdToFileMap = new HashMap<String, File>();
-            tileIdToFileMap.put(tileId, imageFile);
-            this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
-            this.bandIndex = bandIndex;
-            this.wavebandInfo = wavebandInfo;
-            this.imageLayout = imageLayout;
-        }
-
         BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo, L1cTileLayout imageLayout) {
             this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
             this.bandIndex = bandIndex;
@@ -72,6 +63,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     Sentinel2ProductReader(Sentinel2ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
+    }
+
+    @Override
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
+        // Should never not come here, since we have an OpImage that reads data
     }
 
     @Override
@@ -99,48 +95,63 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         File productDir = getProductDir(imageFile);
         initCacheDir(productDir);
 
+        // Try to find metadata header
+
         Header metadataHeader = null;
-        Map<Integer, BandInfo> fileMap = new HashMap<Integer, BandInfo>();
-        if (productDir != null) {
-            File[] files = productDir.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return S2ImgFilename.isImageFilename(name);
-                }
-            });
-            if (files != null) {
-                for (File file : files) {
-                    int bandIndex = imgFilename.getBand(file.getName());
+        Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
+        File[] metadataFiles = productDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return S2MtdFilename.isMetadataFilename(name);
+            }
+        });
+        if (metadataFiles != null && metadataFiles.length > 0) {
+            File metadataFile = metadataFiles[0];
+            try {
+                metadataHeader = Header.parseHeader(metadataFile);
+            } catch (JDOMException e) {
+                BeamLogManager.getSystemLogger().warning("Failed to parse metadata file: " + metadataFile);
+            }
+        } else {
+            BeamLogManager.getSystemLogger().warning("No metadata file found");
+        }
+
+        // Try to find other band images
+
+        File[] files = productDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return S2ImgFilename.isImageFilename(name);
+            }
+        });
+        if (files != null) {
+            for (File file : files) {
+                int bandIndex = imgFilename.getBand(file.getName());
+                if (metadataHeader != null) {
+                    Header.SpectralInformation[] bandInformations = metadataHeader.getProductCharacteristics().bandInformations;
+                    if (bandIndex >= 0 && bandIndex < bandInformations.length) {
+                        BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformations[bandIndex],
+                                                                         metadataHeader.getResampleData(),
+                                                                         createFileMap(imgFilename.tileId, imageFile));
+                        bandInfoMap.put(bandIndex, bandInfo);
+                    } else {
+                        // todo - report problem
+                    }
+                } else {
                     if (bandIndex >= 0 && bandIndex < S2_WAVEBAND_INFOS.length) {
                         S2WavebandInfo wavebandInfo = S2_WAVEBAND_INFOS[bandIndex];
-                        BandInfo bandInfo = new BandInfo(imgFilename.tileId,
-                                                         file,
-                                                         bandIndex,
-                                                         wavebandInfo,
-                                                         L1C_TILE_LAYOUTS[wavebandInfo.resolution.id]);
-                        fileMap.put(bandIndex, bandInfo);
+                        BandInfo bandInfo = createBandInfoFromDefaults(bandIndex, wavebandInfo,
+                                                                       imgFilename.tileId,
+                                                                       imageFile);
+                        bandInfoMap.put(bandIndex, bandInfo);
+                    } else {
+                        // todo - report problem
                     }
                 }
             }
-            File[] metadataFiles = productDir.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return S2MtdFilename.isMetadataFilename(name);
-                }
-            });
-            if (metadataFiles != null && metadataFiles.length > 0) {
-                File metadataFile = metadataFiles[0];
-                try {
-                    metadataHeader = Header.parseHeader(metadataFile);
-                } catch (JDOMException e) {
-                    BeamLogManager.getSystemLogger().warning("Failed to parse metadata file: " + metadataFile);
-                }
-            } else {
-                BeamLogManager.getSystemLogger().warning("No metadata file found");
-            }
         }
 
-        ArrayList<Integer> bandIndexes = new ArrayList<Integer>(fileMap.keySet());
+        ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
         Collections.sort(bandIndexes);
 
         if (bandIndexes.isEmpty()) {
@@ -155,52 +166,53 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         product.setPreferredTileSize(DEFAULT_TILE_SIZE, DEFAULT_TILE_SIZE);
         product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
-
-        try {
-            product.setStartTime(ProductData.UTC.parse(imgFilename.start, "yyyyMMddHHmmss"));
-        } catch (ParseException e) {
-            // warn
-        }
-
-        try {
-            product.setEndTime(ProductData.UTC.parse(imgFilename.stop, "yyyyMMddHHmmss"));
-        } catch (ParseException e) {
-            // warn
-        }
+        setStartStopTime(product, imgFilename.start, imgFilename.stop);
 
         if (metadataHeader != null) {
-            //Header.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
             SceneDescription sceneDescription = SceneDescription.create(metadataHeader);
             int tileIndex = sceneDescription.getTileIndex(imgFilename.tileId);
             Envelope2D tileEnvelope = sceneDescription.getTileEnvelope(tileIndex);
-            Header.Tile tile = metadataHeader.getTileList().get(tileIndex);
-
-            try {
-                product.setGeoCoding(new CrsGeoCoding(tileEnvelope.getCoordinateReferenceSystem(),
-                                                      L1C_TILE_LAYOUTS[SpatialResolution.R10M.id].width,
-                                                      L1C_TILE_LAYOUTS[SpatialResolution.R10M.id].height,
-                                                      tile.tileGeometry10M.upperLeftX,
-                                                      tile.tileGeometry10M.upperLeftY,
-                                                      tile.tileGeometry10M.xDim,
-                                                      -tile.tileGeometry10M.yDim,
-                                                      0.0, 0.0));
-            } catch (FactoryException e) {
-                // todo - handle e
-            } catch (TransformException e) {
-                // todo - handle e
-            }
+            setGeoCoding(product, tileEnvelope);
         }
 
         for (Integer bandIndex : bandIndexes) {
-            final BandInfo bandInfo = fileMap.get(bandIndex);
-            final Band band = product.addBand(bandInfo.wavebandInfo.bandName, SAMPLE_DATA_TYPE);
-            band.setSpectralWavelength((float) bandInfo.wavebandInfo.centralWavelength);
-            band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
-            band.setSpectralBandIndex(bandIndex);
+            final BandInfo bandInfo = bandInfoMap.get(bandIndex);
+            final Band band = addBand(product, bandInfo);
             band.setSourceImage(new DefaultMultiLevelImage(new L1cTileMultiLevelSource(bandInfo)));
         }
 
         return product;
+    }
+
+    private void setStartStopTime(Product product, String start, String stop) {
+        try {
+            product.setStartTime(ProductData.UTC.parse(start, "yyyyMMddHHmmss"));
+        } catch (ParseException e) {
+            // todo - report problem
+        }
+
+        try {
+            product.setEndTime(ProductData.UTC.parse(stop, "yyyyMMddHHmmss"));
+        } catch (ParseException e) {
+            // todo - report problem
+        }
+    }
+
+    private BandInfo createBandInfoFromDefaults(int bandIndex, S2WavebandInfo wavebandInfo, String tileId, File imageFile) {
+        return new BandInfo(createFileMap(tileId, imageFile),
+                            bandIndex,
+                            wavebandInfo,
+                            L1C_TILE_LAYOUTS[wavebandInfo.resolution.id]);
+    }
+
+    private Band addBand(Product product, BandInfo bandInfo) {
+        final Band band = product.addBand(bandInfo.wavebandInfo.bandName, SAMPLE_DATA_TYPE);
+        band.setSpectralBandIndex(bandInfo.bandIndex);
+        band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
+        band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
+        band.setSolarFlux((float) bandInfo.wavebandInfo.solarIrradiances);
+        //band.setScalingFactor(bandInfo.wavebandInfo.scalingFactor);
+        return band;
     }
 
 
@@ -230,6 +242,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         product.setPreferredTileSize(DEFAULT_TILE_SIZE, DEFAULT_TILE_SIZE);
         product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
+        setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
+        setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
         List<Header.Tile> tileList = metadataHeader.getTileList();
         for (Header.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
@@ -248,23 +262,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 }
 
                 if (!tileFileMap.isEmpty()) {
-                    Band band = product.addBand(bandInformation.physicalBand, SAMPLE_DATA_TYPE);
-                    band.setSpectralBandIndex(bandInformation.bandId);
-                    band.setSpectralWavelength((float) bandInformation.wavelenghtCentral);
-                    band.setSpectralBandwidth((float) (bandInformation.wavelenghtMax - bandInformation.wavelenghtMin));
-                    band.setSolarFlux((float) resampleData.reflectanceConversion.solarIrradiances[bandInformation.bandId]);
-                    //band.setScalingFactor(1.0 / rd.quantificationValue);
-
-                    SpatialResolution spatialResolution = SpatialResolution.valueOfResolution(bandInformation.resolution);
-                    BandInfo bandInfo = new BandInfo(tileFileMap,
-                                                     bandInformation.bandId,
-                                                     new S2WavebandInfo(bandInformation.bandId,
-                                                                        bandInformation.physicalBand,
-                                                                        bandInformation.wavelenghtCentral,
-                                                                        bandInformation.wavelenghtMax - bandInformation.wavelenghtMin,
-                                                                        spatialResolution),
-                                                     L1C_TILE_LAYOUTS[spatialResolution.id]);
-
+                    BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, resampleData, tileFileMap);
+                    Band band = addBand(product, bandInfo);
                     band.setSourceImage(new DefaultMultiLevelImage(new L1cMosaicMultiLevelSource(sceneDescription, bandInfo)));
                 } else {
                     System.out.printf("Warning: no image files found for band " + bandInformation.physicalBand);
@@ -274,42 +273,43 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
 
-        try {
-            product.setStartTime(ProductData.UTC.parse(mtdFilename.start, "yyyyMMddHHmmss"));
-        } catch (ParseException e) {
-            // warn
-        }
+        return product;
+    }
 
-        try {
-            product.setEndTime(ProductData.UTC.parse(mtdFilename.stop, "yyyyMMddHHmmss"));
-        } catch (ParseException e) {
-            // warn
-        }
+    private static Map<String, File> createFileMap(String tileId, File imageFile) {
+        Map<String, File> tileIdToFileMap = new HashMap<String, File>();
+        tileIdToFileMap.put(tileId, imageFile);
+        return tileIdToFileMap;
+    }
 
+    private BandInfo createBandInfoFromHeaderInfo(Header.SpectralInformation bandInformation, Header.ResampleData resampleData, Map<String, File> tileFileMap) {
+        SpatialResolution spatialResolution = SpatialResolution.valueOfResolution(bandInformation.resolution);
+        return new BandInfo(tileFileMap,
+                            bandInformation.bandId,
+                            new S2WavebandInfo(bandInformation.bandId,
+                                               bandInformation.physicalBand,
+                                               spatialResolution, bandInformation.wavelenghtCentral,
+                                               bandInformation.wavelenghtMax - bandInformation.wavelenghtMin,
+                                               resampleData.reflectanceConversion.solarIrradiances[bandInformation.bandId],
+                                               1.0 / resampleData.quantificationValue),
+                            L1C_TILE_LAYOUTS[spatialResolution.id]);
+    }
 
-        Envelope2D sceneEnvelope = sceneDescription.getSceneEnvelope();
+    private void setGeoCoding(Product product, Envelope2D envelope) {
         try {
-            product.setGeoCoding(new CrsGeoCoding(sceneEnvelope.getCoordinateReferenceSystem(),
+            product.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
                                                   product.getSceneRasterWidth(),
                                                   product.getSceneRasterHeight(),
-                                                  sceneEnvelope.getMinX(),
-                                                  sceneEnvelope.getMaxY(),
+                                                  envelope.getMinX(),
+                                                  envelope.getMaxY(),
                                                   SpatialResolution.R10M.resolution,
                                                   SpatialResolution.R10M.resolution,
                                                   0.0, 0.0));
         } catch (FactoryException e) {
-            // todo - handle e
+            // todo - report problem
         } catch (TransformException e) {
-            // todo - handle e
+            // todo - report problem
         }
-
-        return product;
-    }
-
-
-    @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        throw new IllegalStateException("Should not come here");
     }
 
     static File getProductDir(File productFile) throws IOException {
@@ -414,8 +414,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     //System.out.printf("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY());
                     tileImages.add(opImage);
                 } catch (IOException e) {
-                    // todo - handle e
+                    // todo - report problem
                 }
+            }
+
+            if (tileImages.isEmpty()) {
+                // todo - report problem
+                return null;
             }
 
             ImageLayout imageLayout = new ImageLayout();
@@ -426,9 +431,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                                                            MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                            null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
-                                                            new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                                          MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                          null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
+                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             //System.out.printf("mosaicOp created for level %d at (%d,%d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY());
             return mosaicOp;
