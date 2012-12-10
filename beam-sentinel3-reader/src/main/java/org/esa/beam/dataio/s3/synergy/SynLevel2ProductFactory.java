@@ -29,7 +29,11 @@ import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.PixelGeoCoding;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.RasterDataNode;
+import org.esa.beam.util.math.ArcDistanceCalculator;
+import org.esa.beam.util.math.DistanceCalculator;
+import org.esa.beam.util.math.MathUtils;
 
+import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -111,7 +115,27 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
 
     private MultiLevelImage createTiePointImage(MultiLevelImage lonImage, MultiLevelImage latImage, double[] tpLonData,
                                                 double[] tpLatData, double[] tpFunctionData) {
-        final LonLatFunction function = new LonLatTiePointFunction(tpLonData, tpLatData, tpFunctionData, 77, 0.1);
+        final LonLatFunction function = new LonLatTiePointFunction(tpLonData, tpLatData, tpFunctionData, 77, 0.1, new TileRectangleCalculator() {
+
+            @Override
+            public Rectangle[] calculateTileRectangles(int columnCount,
+                                                       int rowCount) {
+                final int tileCountX = 2;
+                final int tileCountY = (2 * rowCount) / columnCount;
+
+                return MathUtils.subdivideRectangle(columnCount, rowCount,
+                                                    tileCountX, tileCountY, 1);
+            }
+        }, new DistanceCalculatorFactory() {
+            @Override
+            public DistanceCalculator create(
+                    double lon,
+                    double lat) {
+                return new ArcDistanceCalculator(
+                        lon, lat);
+            }
+        }
+        );
         final MultiLevelSource source = LonLatMultiLevelSource.create(lonImage, latImage, function,
                                                                       DataBuffer.TYPE_FLOAT);
         return new DefaultMultiLevelImage(source);

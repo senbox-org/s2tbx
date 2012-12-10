@@ -17,9 +17,7 @@ package org.esa.beam.dataio.s3.synergy;
 
 import org.esa.beam.dataio.s3.LonLatFunction;
 import org.esa.beam.framework.datamodel.RationalFunctionModel;
-import org.esa.beam.util.math.ArcDistanceCalculator;
 import org.esa.beam.util.math.DistanceCalculator;
-import org.esa.beam.util.math.MathUtils;
 import org.esa.beam.util.math.Rotator;
 
 import java.awt.Rectangle;
@@ -36,8 +34,10 @@ final class LonLatTiePointFunction implements LonLatFunction {
     private final RationalFunctionApproximation[] approximations;
 
     public LonLatTiePointFunction(double[] lonData, double[] latData, double[] functionData, int colCount,
-                                  double accuracy) {
-        approximations = createApproximations(lonData, latData, functionData, colCount, accuracy);
+                                  double accuracy, TileRectangleCalculator calculator,
+                                  DistanceCalculatorFactory factory) {
+        approximations = createApproximations(lonData, latData, functionData, colCount, accuracy, calculator,
+                                              factory);
     }
 
     @Override
@@ -73,19 +73,20 @@ final class LonLatTiePointFunction implements LonLatFunction {
         return bestApproximation;
     }
 
-    static RationalFunctionApproximation[] createApproximations(double[] lonData, double[] latData,
-                                                                double[] functionData, int colCount,
-                                                                double accuracy) {
-        final int rowCount = functionData.length / colCount;
-        final int tileCountX = 2;
-        final int tileCountY = (2 * rowCount) / colCount;
-
-        final Rectangle[] rectangles = MathUtils.subdivideRectangle(colCount, rowCount, tileCountX, tileCountY, 1);
+    static RationalFunctionApproximation[] createApproximations(double[] lonData,
+                                                                double[] latData,
+                                                                double[] functionData,
+                                                                int columnCount,
+                                                                double accuracy,
+                                                                TileRectangleCalculator calculator,
+                                                                DistanceCalculatorFactory factory) {
+        final Rectangle[] rectangles = calculator.calculateTileRectangles(columnCount,
+                                                                          functionData.length / columnCount);
         final RationalFunctionApproximation[] approximations = new RationalFunctionApproximation[rectangles.length];
 
         for (int i = 0; i < rectangles.length; i++) {
             final double[][] data = extractWarpPoints(lonData, latData, functionData, rectangles[i]);
-            final RationalFunctionApproximation approximation = createApproximation(data, accuracy);
+            final RationalFunctionApproximation approximation = createApproximation(data, accuracy, factory);
             if (approximation == null) {
                 return null;
             }
@@ -95,7 +96,8 @@ final class LonLatTiePointFunction implements LonLatFunction {
         return approximations;
     }
 
-    static RationalFunctionApproximation createApproximation(double[][] data, double accuracy) {
+    static RationalFunctionApproximation createApproximation(double[][] data, double accuracy,
+                                                             DistanceCalculatorFactory factory) {
         final Point2D centerPoint = Rotator.calculateCenter(data, LON, LAT);
         final double centerLon = centerPoint.getX();
         final double centerLat = centerPoint.getY();
@@ -110,8 +112,7 @@ final class LonLatTiePointFunction implements LonLatFunction {
             return null;
         }
 
-        return new RationalFunctionApproximation(model, rotator,
-                                                 new ArcDistanceCalculator(centerLon, centerLat));
+        return new RationalFunctionApproximation(model, rotator, factory.create(centerLon, centerLat));
     }
 
     static double[][] extractWarpPoints(double[] lonData, double[] latData, double[] functionData, Rectangle r) {
