@@ -17,7 +17,10 @@ import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.*;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
@@ -32,6 +35,15 @@ import java.util.*;
 import java.util.List;
 
 import static org.esa.beam.dataio.s2.Config.*;
+
+// todo - register RGB profile(s)
+// todo - add to product the virtual radiance bands from conversion factor found in header
+// todo - add to product the virtual reflectance bands from solar flux found in header
+// todo - add to product a virtual NDVI band (for demo)
+// todo - set a band's validMaskExpr or no-data value
+// todo - read product's viewing geometry tie-point grids from header
+// todo - set product metadata
+// todo - set band's ImageInfo from min,max,histogram found in header
 
 public class Sentinel2ProductReader extends AbstractProductReader {
 
@@ -413,9 +425,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             imageLayout.setTileWidth(DEFAULT_TILE_SIZE);
             imageLayout.setTileHeight(DEFAULT_TILE_SIZE);
             return MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                                                             MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                             null, null, null, new double[]{0.0},
-                                                             new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                           null, null, new double[][] {{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
+                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
         }
     }
 

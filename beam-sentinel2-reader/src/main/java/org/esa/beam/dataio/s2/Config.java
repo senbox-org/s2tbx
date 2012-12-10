@@ -17,6 +17,7 @@ public interface Config {
     short FILL_CODE_NO_INTERSECTION = (short) 1;
     short FILL_CODE_OUT_OF_X_BOUNDS = (short) 2;
     short FILL_CODE_OUT_OF_Y_BOUNDS = (short) 3;
+    short FILL_CODE_MOSAIC_BG = (short) 4;
 
     // these numbers should actually been read from the JP2 files,
     // because they are likely to change if prod. spec. changes
