@@ -20,6 +20,7 @@ import org.esa.beam.dataio.s3.olci.OlciLevel2ProductFactory;
 import org.esa.beam.dataio.s3.slstr.SlstrLevel1ProductFactory;
 import org.esa.beam.dataio.s3.slstr.SlstrLstProductFactory;
 import org.esa.beam.dataio.s3.slstr.SlstrSstProductFactory;
+import org.esa.beam.dataio.s3.slstr.SlstrWstProductFactory;
 import org.esa.beam.dataio.s3.synergy.SynLevel2ProductFactory;
 import org.esa.beam.dataio.s3.synergy.VgtProductFactory;
 import org.esa.beam.framework.dataio.AbstractProductReader;
@@ -51,8 +52,10 @@ public class Sentinel3ProductReader extends AbstractProductReader {
             factory = new SlstrLevel1ProductFactory(this);
         } else if (dirName.matches("S3.?_SL_2_LST_.*.SAFE")) { // SLSTR L2 LST
             factory = new SlstrLstProductFactory(this);
-        } else if (dirName.matches("S3.?_SL_2_W[CS]T_.*.SAFE")) { // SLSTR L2 SST
-            factory = new SlstrSstProductFactory(this);
+        } else if (dirName.matches("S3.?_SL_2_WST_.*.SAFE")) { // SLSTR L2 WST
+            factory = new SlstrWstProductFactory(this);
+        } else if (dirName.matches("S3.?_SL_2_WCT_.*.SAFE")) { // SLSTR L2 WCT
+                factory = new SlstrSstProductFactory(this);
         } else if (dirName.matches("S3.?_SY_2_SYN_.*.SAFE")) { // SYN L2
             factory = new SynLevel2ProductFactory(this);
         } else if (dirName.matches("S3.?_SY_(2_VGP|[23]_VGS)_.*.SAFE")) { // SYN VGT
