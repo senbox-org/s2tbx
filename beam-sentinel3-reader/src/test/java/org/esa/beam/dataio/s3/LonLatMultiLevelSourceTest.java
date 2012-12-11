@@ -116,7 +116,7 @@ public class LonLatMultiLevelSourceTest {
     private static class TestLonLatFunction implements LonLatFunction {
 
         @Override
-        public double getValue(Point2D p) {
+        public double getValue(double lon, double lat) {
             return 0.0;
         }
     }

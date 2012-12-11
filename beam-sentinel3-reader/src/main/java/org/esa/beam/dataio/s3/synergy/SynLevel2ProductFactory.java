@@ -69,8 +69,8 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
             final double[] tpLat = tiePointsOlc.read("OLC_TP_lat");
 
             final List<Variable> variables = new ArrayList<Variable>();
-            variables.addAll(tiePointsOlc.getVariables("[SV][AZ]A"));
-            variables.addAll(tiePointsMet.getVariables(".*"));
+            variables.addAll(tiePointsOlc.getVariables(".*"));
+            //variables.addAll(tiePointsMet.getVariables(".*"));
 
             for (final Variable variable : variables) {
                 final double[] tpVar = tiePointsOlc.read(variable.getName());
@@ -117,23 +117,18 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                                                 double[] tpFunctionData, int colCount) {
         final LonLatFunction function = new LonLatTiePointFunction(tpLonData,
                                                                    tpLatData,
-                                                                   tpFunctionData, colCount, 0.1,
-                                                                   new TiePointTileRectangleCalculator(),
-                                                                   new ArcDistanceCalculatorFactory()
+                                                                   tpFunctionData, colCount
         );
         return new DefaultMultiLevelImage(
                 LonLatMultiLevelSource.create(lonImage, latImage, function, DataBuffer.TYPE_FLOAT));
     }
 
-
     @Override
     protected void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
         if (targetNode instanceof Band) {
-            final MetadataElement variableAttributes = sourceBand.getProduct().getMetadataRoot().getElement(
-                    "Variable_Attributes");
+            final MetadataElement variableAttributes = sourceBand.getProduct().getMetadataRoot().getElement("Variable_Attributes");
             if (variableAttributes != null) {
-                final MetadataElement element =
-                        variableAttributes.getElement(targetNode.getName().replaceAll("_CAM[1-5]", ""));
+                final MetadataElement element = variableAttributes.getElement(targetNode.getName().replaceAll("_CAM[1-5]", ""));
                 if (element != null) {
                     final MetadataAttribute wavelengthAttribute = element.getAttribute("central_wavelength");
                     final Band targetBand = (Band) targetNode;

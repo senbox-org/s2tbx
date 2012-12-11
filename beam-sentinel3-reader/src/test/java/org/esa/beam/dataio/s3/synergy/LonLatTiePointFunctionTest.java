@@ -18,9 +18,7 @@ import org.esa.beam.dataio.s3.LonLatFunction;
 import org.junit.Test;
 import ucar.nc2.Variable;
 
-import java.awt.geom.Point2D;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class LonLatTiePointFunctionTest {
 
@@ -34,7 +32,7 @@ public class LonLatTiePointFunctionTest {
 
             final double[] lonData = ncFile1.read("OLC_TP_lon");
             final double[] latData = ncFile1.read("OLC_TP_lat");
-            for (final Variable variable : ncFile1.getVariables("[SV][AZ]A")) {
+            for (final Variable variable : ncFile1.getVariables(".*")) {
                 final double[] variableData = ncFile1.read(variable.getName());
 
                 testApproximationForVariable(lonData, latData, variableData);
@@ -42,7 +40,6 @@ public class LonLatTiePointFunctionTest {
 
             ncFile2 = NcFile.openResource("tiepoints_meteo.nc");
             for (final Variable variable : ncFile2.getVariables(".*")) {
-                System.out.println("variable.getName() = " + variable.getName());
                 final double[] variableData = ncFile2.read(variable.getName());
 
                 testApproximationForVariable(lonData, latData, variableData);
@@ -58,21 +55,19 @@ public class LonLatTiePointFunctionTest {
     }
 
     private void testApproximationForVariable(double[] lonData, double[] latData, double[] variableData) {
-        final TileRectangleCalculator calculator = new TiePointTileRectangleCalculator();
         final DistanceCalculatorFactory factory = new ArcDistanceCalculatorFactory();
         final LonLatFunction function = new LonLatTiePointFunction(lonData,
                                                                    latData,
-                                                                   variableData, 77, 0.1,
-                                                                   calculator,
-                                                                   factory);
+                                                                   variableData, 77
+        );
 
         for (int i = 0; i < variableData.length; i++) {
             final double lon = lonData[i];
             final double lat = latData[i];
             final double var = variableData[i];
-            final double actual = function.getValue(new Point2D.Double(lon, lat));
+            final double actual = function.getValue(lon, lat);
 
-            assertEquals(var, actual, 0.1 * var);
+            assertEquals(var, actual, 0.0);
         }
     }
 

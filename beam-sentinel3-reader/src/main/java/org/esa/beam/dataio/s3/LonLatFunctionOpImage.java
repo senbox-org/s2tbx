@@ -19,7 +19,6 @@ import javax.media.jai.PixelAccessor;
 import javax.media.jai.PointOpImage;
 import javax.media.jai.UnpackedImageData;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -30,7 +29,7 @@ final class LonLatFunctionOpImage extends PointOpImage {
     private LonLatFunction function;
 
     LonLatFunctionOpImage(RenderedImage lonImage, RenderedImage latImage, ImageLayout imageLayout,
-                                 LonLatFunction function) {
+                          LonLatFunction function) {
         super(lonImage, latImage, imageLayout, null, true);
         this.function = function;
     }
@@ -89,7 +88,6 @@ final class LonLatFunctionOpImage extends PointOpImage {
         int latLineOffset = latPixels.bandOffsets[0];
         int targetLineOffset = targetPixels.bandOffsets[0];
 
-        final Point2D.Double p = new Point2D.Double();
         for (int y = 0; y < h; y++) {
             int lonPixelOffset = lonLineOffset;
             int latPixelOffset = latLineOffset;
@@ -104,8 +102,7 @@ final class LonLatFunctionOpImage extends PointOpImage {
                 if (lon >= -180.0 && lon <= 180.0) {
                     final double lat = latData[latPixelOffset];
                     if (lat >= -90.0 && lat <= 90.0) {
-                        p.setLocation(lon, lat);
-                        targetData[targetPixelOffset] = function.getValue(p);
+                        targetData[targetPixelOffset] = function.getValue(lon, lat);
                     }
                 }
 
@@ -137,7 +134,6 @@ final class LonLatFunctionOpImage extends PointOpImage {
         int latLineOffset = latPixels.bandOffsets[0];
         int targetLineOffset = targetPixels.bandOffsets[0];
 
-        final Point2D.Double p = new Point2D.Double();
         for (int y = 0; y < h; y++) {
             int lonPixelOffset = lonLineOffset;
             int latPixelOffset = latLineOffset;
@@ -152,8 +148,7 @@ final class LonLatFunctionOpImage extends PointOpImage {
                 if (lon >= -180.0 && lon <= 180.0) {
                     final double lat = latData[latPixelOffset];
                     if (lat >= -90.0 && lat <= 90.0) {
-                        p.setLocation(lon, lat);
-                        targetData[targetPixelOffset] = (float) function.getValue(p);
+                        targetData[targetPixelOffset] = (float) function.getValue(lon, lat);
                     }
                 }
 
@@ -185,7 +180,6 @@ final class LonLatFunctionOpImage extends PointOpImage {
         int latLineOffset = latPixels.bandOffsets[0];
         int targetLineOffset = targetPixels.bandOffsets[0];
 
-        final Point2D.Float p = new Point2D.Float();
         for (int y = 0; y < h; y++) {
             int lonPixelOffset = lonLineOffset;
             int latPixelOffset = latLineOffset;
@@ -200,8 +194,7 @@ final class LonLatFunctionOpImage extends PointOpImage {
                 if (lon >= -180.0f && lon <= 180.0f) {
                     final float lat = latData[latPixelOffset];
                     if (lat >= -90.0f && lat <= 90.0f) {
-                        p.setLocation(lon, lat);
-                        targetData[targetPixelOffset] = function.getValue(p);
+                        targetData[targetPixelOffset] = function.getValue(lon, lat);
                     }
                 }
 
@@ -233,7 +226,6 @@ final class LonLatFunctionOpImage extends PointOpImage {
         int latLineOffset = latPixels.bandOffsets[0];
         int targetLineOffset = targetPixels.bandOffsets[0];
 
-        final Point2D.Float p = new Point2D.Float();
         for (int y = 0; y < h; y++) {
             int lonPixelOffset = lonLineOffset;
             int latPixelOffset = latLineOffset;
@@ -248,8 +240,7 @@ final class LonLatFunctionOpImage extends PointOpImage {
                 if (lon >= -180.0f && lon <= 180.0f) {
                     final float lat = latData[latPixelOffset];
                     if (lat >= -90.0f && lat <= 90.0f) {
-                        p.setLocation(lon, lat);
-                        targetData[targetPixelOffset] = (float) function.getValue(p);
+                        targetData[targetPixelOffset] = (float) function.getValue(lon, lat);
                     }
                 }
 

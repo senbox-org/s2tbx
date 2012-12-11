@@ -18,5 +18,5 @@ import java.awt.geom.Point2D;
 
 public interface LonLatFunction {
 
-    public double getValue(Point2D p);
+    public double getValue(double lon, double lat);
 }
