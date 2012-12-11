@@ -20,6 +20,7 @@ import org.esa.beam.framework.dataio.ProductSubsetDef;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.CrsGeoCoding;
 import org.esa.beam.framework.datamodel.FlagCoding;
+import org.esa.beam.framework.datamodel.IndexCoding;
 import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -178,8 +179,18 @@ public abstract class AbstractProductFactory implements ProductFactory {
 
                     targetProduct.addMask(maskName, expression, expression, Color.RED, 0.5);
                 }
+            } else if (band.isIndexBand()) {
+                final IndexCoding indexCoding = band.getIndexCoding();
+                for (int j = 0; j < indexCoding.getNumAttributes(); j++) {
+                    final MetadataAttribute attribute = indexCoding.getAttributeAt(j);
+                    final String attributeName = attribute.getName();
+                    final int attributeIndex = attribute.getData().getElemInt();
+                    final String maskName = band.getName() + "_" + attributeName;
+                    final String expression = band.getName() + " == " + attributeIndex;
+                    final String description = band.getName() + "." + attributeName;
+                    targetProduct.addMask(maskName, expression, description, Color.RED, 0.5);
+                }
             }
-            // TODO - what about index bands?
         }
     }
 
