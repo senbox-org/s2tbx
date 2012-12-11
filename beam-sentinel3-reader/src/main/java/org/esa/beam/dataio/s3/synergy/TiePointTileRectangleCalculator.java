@@ -8,8 +8,8 @@ class TiePointTileRectangleCalculator implements TileRectangleCalculator {
 
     @Override
     public Rectangle[] calculateTileRectangles(int columnCount, int rowCount) {
-        final int tileCountX = 1;
-        final int tileCountY = rowCount / columnCount;
+        final int tileCountX = 2;
+        final int tileCountY = 1 + rowCount / columnCount;
 
         return MathUtils.subdivideRectangle(columnCount, rowCount, tileCountX, tileCountY, 1);
     }

@@ -72,7 +72,7 @@ public class LonLatTiePointFunctionTest {
             final double var = variableData[i];
             final double actual = function.getValue(new Point2D.Double(lon, lat));
 
-            assertEquals(var, actual, 0.01 * var);
+            assertEquals(var, actual, 0.1 * var);
         }
     }
 

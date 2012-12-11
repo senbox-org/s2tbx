@@ -48,7 +48,7 @@ final class LonLatTiePointFunction implements LonLatFunction {
                 final RationalFunctionApproximation a = findBestApproximation(lat, lon);
                 if (a != null) {
                     a.getRotator().transform(p);
-                    return a.getModel().getValue(p.getY(), p.getX());
+                    return a.getModel().getValue(p.getX(), p.getY());
                 }
             }
         }
@@ -104,7 +104,7 @@ final class LonLatTiePointFunction implements LonLatFunction {
         final Rotator rotator = new Rotator(centerLon, centerLat);
         rotator.transform(data, LON, LAT);
 
-        final int[] indices = new int[]{LAT, LON, F};
+        final int[] indices = new int[]{LON, LAT, F};
 
         final RationalFunctionModel model = findBestModel(data, indices, accuracy);
         if (model == null) {
@@ -144,6 +144,7 @@ final class LonLatTiePointFunction implements LonLatFunction {
 
     static RationalFunctionModel findBestModel(double[][] data, int[] indexes, double accuracy) {
         RationalFunctionModel bestModel = null;
+        search:
         for (int degreeP = 0; degreeP <= 4; degreeP++) {
             for (int degreeQ = 0; degreeQ <= degreeP; degreeQ++) {
                 final int termCountP = RationalFunctionModel.getTermCountP(degreeP);
@@ -154,7 +155,7 @@ final class LonLatTiePointFunction implements LonLatFunction {
                         bestModel = model;
                     }
                     if (bestModel.getRmse() < accuracy) {
-                        break;
+                        break search;
                     }
                 }
             }
