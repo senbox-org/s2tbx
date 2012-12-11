@@ -58,22 +58,48 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
 
     @Override
     protected void addVariables(Product masterProduct, Product targetProduct) throws IOException {
-        NcFile tiePointsOlc = null;
-        NcFile tiePointsMet = null;
-
+        final double[] olcTpLon;
+        final double[] olcTpLat;
+        final NcFile olcTiePoints = openNcFile("tiepoints_olci.nc");
         try {
-            tiePointsOlc = openNcFile("tiepoints_olci.nc");
-            tiePointsMet = openNcFile("tiepoints_meteo.nc");
+            olcTpLon = olcTiePoints.read("OLC_TP_lon");
+            olcTpLat = olcTiePoints.read("OLC_TP_lat");
+        } finally {
+            olcTiePoints.close();
+        }
+        addVariables(masterProduct, targetProduct, olcTpLon, olcTpLat, "tiepoints_olci.nc");
+        addVariables(masterProduct, targetProduct, olcTpLon, olcTpLat, "tiepoints_meteo.nc");
 
-            final double[] tpLon = tiePointsOlc.read("OLC_TP_lon");
-            final double[] tpLat = tiePointsOlc.read("OLC_TP_lat");
+        final double[] slnTpLon;
+        final double[] slnTpLat;
+        final NcFile slnTiePoints = openNcFile("tiepoints_slstr_n.nc");
+        try {
+            slnTpLon = slnTiePoints.read("SLN_TP_lon");
+            slnTpLat = slnTiePoints.read("SLN_TP_lat");
+        } finally {
+            slnTiePoints.close();
+        }
+        addVariables(masterProduct, targetProduct, slnTpLon, slnTpLat, "tiepoints_slstr_n.nc");
 
-            final List<Variable> variables = new ArrayList<Variable>();
-            variables.addAll(tiePointsOlc.getVariables(".*"));
-            //variables.addAll(tiePointsMet.getVariables(".*"));
+        final double[] sloTpLon;
+        final double[] sloTpLat;
+        final NcFile sloTiePoints = openNcFile("tiepoints_slstr_o.nc");
+        try {
+            sloTpLon = sloTiePoints.read("SLO_TP_lon");
+            sloTpLat = sloTiePoints.read("SLO_TP_lat");
+        } finally {
+            sloTiePoints.close();
+        }
+        addVariables(masterProduct, targetProduct, sloTpLon, sloTpLat, "tiepoints_slstr_o.nc");
+    }
 
+    private void addVariables(Product masterProduct, Product targetProduct,
+                              double[] tpLon, double[] tpLat, String fileName) throws IOException {
+        final NcFile ncFile = openNcFile(fileName);
+        try {
+            final List<Variable> variables = ncFile.getVariables(".*");
             for (final Variable variable : variables) {
-                final double[] tpVar = tiePointsOlc.read(variable.getName());
+                final double[] tpVar = ncFile.read(variable.getName());
 
                 for (int i = 1; i <= 5; i++) {
                     final String latBandName = "latitude_CAM" + i;
@@ -89,21 +115,15 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                                                                             latBand.getGeophysicalImage(),
                                                                             tpLon,
                                                                             tpLat, tpVar,
-                                                                            77);
+                                                                            100);
 
                     targetBand.setSourceImage(targetImage);
                     targetProduct.addBand(targetBand);
                 }
             }
         } finally {
-            if (tiePointsOlc != null) {
-                tiePointsOlc.close();
-            }
-            if (tiePointsMet != null) {
-                tiePointsMet.close();
-            }
+            ncFile.close();
         }
-
     }
 
     private NcFile openNcFile(String fileName) throws IOException {
@@ -126,9 +146,11 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
     @Override
     protected void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
         if (targetNode instanceof Band) {
-            final MetadataElement variableAttributes = sourceBand.getProduct().getMetadataRoot().getElement("Variable_Attributes");
+            final MetadataElement variableAttributes = sourceBand.getProduct().getMetadataRoot().getElement(
+                    "Variable_Attributes");
             if (variableAttributes != null) {
-                final MetadataElement element = variableAttributes.getElement(targetNode.getName().replaceAll("_CAM[1-5]", ""));
+                final MetadataElement element = variableAttributes.getElement(
+                        targetNode.getName().replaceAll("_CAM[1-5]", ""));
                 if (element != null) {
                     final MetadataAttribute wavelengthAttribute = element.getAttribute("central_wavelength");
                     final Band targetBand = (Band) targetNode;

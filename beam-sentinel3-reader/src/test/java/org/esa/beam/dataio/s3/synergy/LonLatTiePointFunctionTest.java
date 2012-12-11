@@ -55,7 +55,6 @@ public class LonLatTiePointFunctionTest {
     }
 
     private void testApproximationForVariable(double[] lonData, double[] latData, double[] variableData) {
-        final DistanceCalculatorFactory factory = new ArcDistanceCalculatorFactory();
         final LonLatFunction function = new LonLatTiePointFunction(lonData,
                                                                    latData,
                                                                    variableData, 77
