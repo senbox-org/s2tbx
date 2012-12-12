@@ -20,8 +20,8 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         File file = new File(input.toString());
-        return S2MtdFilename.isMetadataFilename(file.getName()) ? DecodeQualification.INTENDED :
-                S2ImgFilename.isImageFilename(file.getName()) ? DecodeQualification.SUITABLE :
+        return S2MetadataFilename.isMetadataFilename(file.getName()) ? DecodeQualification.INTENDED :
+                S2ImageFilename.isImageFilename(file.getName()) ? DecodeQualification.SUITABLE :
                         DecodeQualification.UNABLE;
     }
 

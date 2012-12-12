@@ -18,19 +18,19 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Norman Fomferra
  */
-public class L1cHeaderTest {
+public class L1cMetadataTest {
 
-    private L1cHeader header;
+    private L1cMetadata header;
 
     @Before
     public void before() throws JDOMException, IOException {
         InputStream stream = getClass().getResourceAsStream("l1c/MTD_GPPL1C_054_20091210235100_20091210235130_0001.xml");
-        header = L1cHeader.parseHeader(new InputStreamReader(stream));
+        header = L1cMetadata.parseHeader(new InputStreamReader(stream));
     }
 
     @Test
     public void testProductCharacteristics() {
-        L1cHeader.ProductCharacteristics pc = header.getProductCharacteristics();
+        L1cMetadata.ProductCharacteristics pc = header.getProductCharacteristics();
         assertEquals("SENTINEL-2A", pc.spacecraft);
         assertEquals("11-09-21-17:47:18", pc.datasetProductionDate);
         assertEquals("L1C", pc.processingLevel);
@@ -52,7 +52,7 @@ public class L1cHeaderTest {
 
     @Test
     public void testResampleData() {
-        L1cHeader.ResampleData rd = header.getResampleData();
+        L1cMetadata.ResampleData rd = header.getResampleData();
         assertEquals(3413, rd.quantificationValue);
         assertEquals(1.030577302, rd.reflectanceConversion.u, 1e-10);
         assertEquals(13, rd.reflectanceConversion.solarIrradiances.length);
@@ -64,21 +64,21 @@ public class L1cHeaderTest {
     @Test
     public void testTileList() {
 
-        List<L1cHeader.Tile> tileList = header.getTileList();
+        List<L1cMetadata.Tile> tileList = header.getTileList();
 
         assertEquals(11, tileList.size());
 
-        L1cHeader.Tile tile0 = tileList.get(0);
-        L1cHeader.Tile tile1 = tileList.get(1);
-        L1cHeader.Tile tile2 = tileList.get(2);
-        L1cHeader.Tile tile3 = tileList.get(3);
-        L1cHeader.Tile tile4 = tileList.get(4);
-        L1cHeader.Tile tile5 = tileList.get(5);
-        L1cHeader.Tile tile6 = tileList.get(6);
-        L1cHeader.Tile tile7 = tileList.get(7);
-        L1cHeader.Tile tile8 = tileList.get(8);
-        L1cHeader.Tile tile9 = tileList.get(9);
-        L1cHeader.Tile tile10 = tileList.get(10);
+        L1cMetadata.Tile tile0 = tileList.get(0);
+        L1cMetadata.Tile tile1 = tileList.get(1);
+        L1cMetadata.Tile tile2 = tileList.get(2);
+        L1cMetadata.Tile tile3 = tileList.get(3);
+        L1cMetadata.Tile tile4 = tileList.get(4);
+        L1cMetadata.Tile tile5 = tileList.get(5);
+        L1cMetadata.Tile tile6 = tileList.get(6);
+        L1cMetadata.Tile tile7 = tileList.get(7);
+        L1cMetadata.Tile tile8 = tileList.get(8);
+        L1cMetadata.Tile tile9 = tileList.get(9);
+        L1cMetadata.Tile tile10 = tileList.get(10);
 
         assertEquals("15SUC", tile0.id);
         assertEquals("15SUD", tile1.id);
@@ -180,24 +180,24 @@ public class L1cHeaderTest {
         assertEquals(3, sceneDescription.getTileGridHeight());
     }
 
-    private void testSpectralInformation(L1cHeader.SpectralInformation bi, int bandId, String bandName, int res, double wl) {
+    private void testSpectralInformation(L1cMetadata.SpectralInformation bi, int bandId, String bandName, int res, double wl) {
         assertEquals(bandId, bi.bandId);
         assertEquals(bandName, bi.physicalBand);
         assertEquals(res, bi.resolution);
         assertEquals(wl, bi.wavelenghtCentral, 1e-10);
     }
 
-    private void dumpNans(List<L1cHeader.Tile> tileList) {
-        for (L1cHeader.Tile tile : tileList) {
+    private void dumpNans(List<L1cMetadata.Tile> tileList) {
+        for (L1cMetadata.Tile tile : tileList) {
             String horizontalCsCode = tile.horizontalCsCode;
             System.out.println("horizontalCsCode = " + horizontalCsCode);
 
             for (int y = 0; y < 23; y++) {
                 for (int x = 0; x < 23; x++) {
-                    L1cHeader.AnglesGrid[] grids = tile.viewingIncidenceAnglesGrids;
+                    L1cMetadata.AnglesGrid[] grids = tile.viewingIncidenceAnglesGrids;
                     int numAziNans = 0;
                     int numZenNans = 0;
-                    for (L1cHeader.AnglesGrid grid : grids) {
+                    for (L1cMetadata.AnglesGrid grid : grids) {
                         if (Float.isNaN(grid.azimuth[y][x])) {
                             numAziNans++;
                         }

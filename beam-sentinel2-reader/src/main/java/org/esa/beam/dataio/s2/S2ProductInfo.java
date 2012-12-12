@@ -36,14 +36,14 @@ public class S2ProductInfo {
 
     public class BandInfo {
         public final int index;
-        public final SpatialResolution resolution;
+        public final S2SpatialResolution resolution;
         public final double wavelength;
         public final double solarFlux;
         public final double wavelengthMin;
         public final double wavelengthMax;
         public final Jp2ImageInfo jp2ImageLayout;
 
-        public BandInfo(int index, SpatialResolution resolution, double wavelength, double wavelengthMin, double wavelengthMax, double solarFlux, Jp2ImageInfo jp2ImageLayout) {
+        public BandInfo(int index, S2SpatialResolution resolution, double wavelength, double wavelengthMin, double wavelengthMax, double solarFlux, Jp2ImageInfo jp2ImageLayout) {
             this.index = index;
             this.resolution = resolution;
             this.wavelength = wavelength;

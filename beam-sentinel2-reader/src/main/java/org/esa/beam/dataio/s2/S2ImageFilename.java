@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 /**
  * @author Norman Fomferra
  */
-public class S2ImgFilename {
+public class S2ImageFilename {
 
     final static String REGEX = "IMG_GPP([A-Z0-9]{3})_(\\d{3})_(\\d{14})_(\\d{14})_(\\d{2})_000000_(\\d{2}[A-Z]{3}).jp2";
     final static Pattern PATTERN = Pattern.compile(REGEX);
@@ -22,7 +22,7 @@ public class S2ImgFilename {
 
     private final Pattern bandPattern;
 
-    private S2ImgFilename(String name, String procLevel, String orbitNo, String start, String stop, String band, String tileId) {
+    private S2ImageFilename(String name, String procLevel, String orbitNo, String start, String stop, String band, String tileId) {
         this.name = name;
         this.procLevel = procLevel;
         this.orbitNo = orbitNo;
@@ -61,10 +61,10 @@ public class S2ImgFilename {
         }
     }
 
-    public static S2ImgFilename create(String fileName) {
+    public static S2ImageFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
-            return new S2ImgFilename(fileName,
+            return new S2ImageFilename(fileName,
                                      matcher.group(1),
                                      matcher.group(2),
                                      matcher.group(3),

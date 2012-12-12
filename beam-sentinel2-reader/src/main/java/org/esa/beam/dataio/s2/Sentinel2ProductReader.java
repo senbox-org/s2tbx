@@ -18,15 +18,10 @@ import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -34,32 +29,19 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import static org.esa.beam.dataio.s2.Config.DEFAULT_TILE_SIZE;
-import static org.esa.beam.dataio.s2.Config.FILL_CODE_MOSAIC_BG;
-import static org.esa.beam.dataio.s2.Config.L1C_TILE_LAYOUTS;
-import static org.esa.beam.dataio.s2.Config.S2_WAVEBAND_INFOS;
-import static org.esa.beam.dataio.s2.Config.SAMPLE_DATA_TYPE;
-import static org.esa.beam.dataio.s2.L1cHeader.ProductCharacteristics;
-import static org.esa.beam.dataio.s2.L1cHeader.ResampleData;
-import static org.esa.beam.dataio.s2.L1cHeader.SpectralInformation;
-import static org.esa.beam.dataio.s2.L1cHeader.Tile;
-import static org.esa.beam.dataio.s2.L1cHeader.parseHeader;
+import static org.esa.beam.dataio.s2.S2Config.*;
+import static org.esa.beam.dataio.s2.L1cMetadata.*;
 
 // todo - register reasonable RGB profile(s)
-// todo - add to product the virtual radiance bands from conversion factor found in header
-// todo - add to product the virtual reflectance bands from solar flux found in header
-// todo - add to product a virtual NDVI band (for demo)
 // todo - set a band's validMaskExpr or no-data value
 // todo - read product's viewing geometry tie-point grids from header
 // todo - set product metadata
 // todo - set band's ImageInfo from min,max,histogram found in header
+// todo - better collect problems during product opening and generate problem report (requires reader API change), see {@report "Problem detected..."} code marks
+// todo - Replace print() calls by using a logger
 
 public class Sentinel2ProductReader extends AbstractProductReader {
 
@@ -95,9 +77,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         if (!inputFile.exists()) {
             throw new FileNotFoundException(inputFile.getPath());
         }
-        if (S2MtdFilename.isMetadataFilename(inputFile.getName())) {
+        if (S2MetadataFilename.isMetadataFilename(inputFile.getName())) {
             return getL1cMosaicProduct(inputFile);
-        } else if (S2ImgFilename.isImageFilename(inputFile.getName())) {
+        } else if (S2ImageFilename.isImageFilename(inputFile.getName())) {
             return getL1cTileProduct(inputFile);
         } else {
             throw new IOException("Unhandled file type.");
@@ -106,7 +88,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     private Product getL1cTileProduct(File imageFile) throws IOException {
 
-        S2ImgFilename imgFilename = S2ImgFilename.create(imageFile.getName());
+        S2ImageFilename imgFilename = S2ImageFilename.create(imageFile.getName());
         if (imgFilename == null) {
             throw new IOException();
         }
@@ -116,11 +98,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         // Try to find metadata header
 
-        L1cHeader metadataHeader = null;
+        L1cMetadata metadataHeader = null;
         File[] metadataFiles = productDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return S2MtdFilename.isMetadataFilename(name);
+                return S2MetadataFilename.isMetadataFilename(name);
             }
         });
         if (metadataFiles != null && metadataFiles.length > 0) {
@@ -128,9 +110,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             try {
                 metadataHeader = parseHeader(metadataFile);
             } catch (JDOMException e) {
+                // {@report "Failed to parse metadata file"}
                 BeamLogManager.getSystemLogger().warning("Failed to parse metadata file: " + metadataFile);
             }
         } else {
+            // {@report "No metadata file found"}
             BeamLogManager.getSystemLogger().warning("No metadata file found");
         }
 
@@ -140,7 +124,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         File[] files = productDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return S2ImgFilename.isImageFilename(name);
+                return S2ImageFilename.isImageFilename(name);
             }
         });
         if (files != null) {
@@ -154,7 +138,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                                          createFileMap(imgFilename.tileId, file));
                         bandInfoMap.put(bandIndex, bandInfo);
                     } else {
-                        // todo - report problem
+                        // {@report "Illegal band index"}
                     }
                 } else {
                     if (bandIndex >= 0 && bandIndex < S2_WAVEBAND_INFOS.length) {
@@ -164,17 +148,16 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                                        file);
                         bandInfoMap.put(bandIndex, bandInfo);
                     } else {
-                        // todo - report problem
+                        // {@report "Illegal band index"}
                     }
                 }
             }
         }
 
-        String prodType = "S2_MSI_" + imgFilename.procLevel;
-        Product product = new Product(String.format("%s_%s_%s", prodType, imgFilename.orbitNo, imgFilename.tileId),
-                                      prodType,
-                                      L1C_TILE_LAYOUTS[SpatialResolution.R10M.id].width,
-                                      L1C_TILE_LAYOUTS[SpatialResolution.R10M.id].height);
+        Product product = new Product(FileUtils.getFilenameWithoutExtension(imageFile).substring("IMG_".length()),
+                                      "S2_MSI_" + imgFilename.procLevel,
+                                      L1C_TILE_LAYOUTS[S2SpatialResolution.R10M.id].width,
+                                      L1C_TILE_LAYOUTS[S2SpatialResolution.R10M.id].height);
 
         setStartStopTime(product, imgFilename.start, imgFilename.stop);
         if (metadataHeader != null) {
@@ -190,7 +173,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private Product getL1cMosaicProduct(File metadataFile) throws IOException {
-        L1cHeader metadataHeader;
+        L1cMetadata metadataHeader;
 
         try {
             metadataHeader = parseHeader(metadataFile);
@@ -198,7 +181,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
-        S2MtdFilename mtdFilename = S2MtdFilename.create(metadataFile.getName());
+        S2MetadataFilename mtdFilename = S2MetadataFilename.create(metadataFile.getName());
         L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader);
 
         File productDir = getProductDir(metadataFile);
@@ -208,7 +191,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         ResampleData resampleData = metadataHeader.getResampleData();
 
         Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
-        List<L1cHeader.Tile> tileList = metadataHeader.getTileList();
+        List<L1cMetadata.Tile> tileList = metadataHeader.getTileList();
         for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
             int bandIndex = bandInformation.bandId;
             if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
@@ -220,6 +203,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     if (file.exists()) {
                         tileFileMap.put(tile.id, file);
                     } else {
+                        // {@report "missing file"}
                         System.out.printf("Warning: missing file %s\n", file);
                     }
                 }
@@ -228,16 +212,17 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, resampleData, tileFileMap);
                     bandInfoMap.put(bandIndex, bandInfo);
                 } else {
+                    // {@report "no image files found"}
                     System.out.printf("Warning: no image files found for band " + bandInformation.physicalBand);
                 }
             } else {
-                System.out.printf("Warning: illegal band ID detected for band " + bandInformation.physicalBand);
+                // {@report "illegal band index"}
+                System.out.printf("Warning: illegal band index detected for band " + bandInformation.physicalBand);
             }
         }
 
-        String prodType = "S2_MSI_" + productCharacteristics.processingLevel;
         Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile).substring("MTD_".length()),
-                                      prodType,
+                                      "S2_MSI_" + productCharacteristics.processingLevel,
                                       sceneDescription.getSceneRectangle().width,
                                       sceneDescription.getSceneRectangle().height);
 
@@ -268,6 +253,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             band.setSourceImage(mlif.createSourceImage(bandInfo));
         }
 
+        // todo - S2 spec is unclear about the use of this variable "Resample_Data/Reflectance_Conversion/U"
+        // todo - Uncomment setting the spectral properties as soon as we have groups in VISAT's spectrum view
+
         // For testing - add TOA reflectance bands
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
@@ -283,7 +271,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         // For testing - add TOA radiance bands
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
-// todo - S2 spec is unclear about the use of this variable "Resample_Data/Reflectance_Conversion/U"
             Band radiance = product.addBand(bandInfo.wavebandInfo.bandName.replace("B", "radiance_"),
                                             bandInfo.wavebandInfo.bandName
                                                     + " * (" + bandInfo.wavebandInfo.solarIrradiance
@@ -304,7 +291,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
         band.setSolarFlux((float) bandInfo.wavebandInfo.solarIrradiance);
+
+        // todo - We don't use the scaling factor because we want to stay with 16bit unsigned short samples due to the large
+        // amounts of data when saving the images. We provide virtual reflectance bands for this reason. We can use the
+        // scaling factor again, once we have product writer parameters, so that users can decide to write data as
+        // 16bit samples.
+        //
         //band.setScalingFactor(bandInfo.wavebandInfo.scalingFactor);
+
         return band;
     }
 
@@ -318,13 +312,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         try {
             product.setStartTime(ProductData.UTC.parse(start, "yyyyMMddHHmmss"));
         } catch (ParseException e) {
-            // todo - report problem
+            // {@report "illegal start date"}
         }
 
         try {
             product.setEndTime(ProductData.UTC.parse(stop, "yyyyMMddHHmmss"));
         } catch (ParseException e) {
-            // todo - report problem
+            // {@report "illegal stop date"}
         }
     }
 
@@ -336,7 +330,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private BandInfo createBandInfoFromHeaderInfo(SpectralInformation bandInformation, ResampleData resampleData, Map<String, File> tileFileMap) {
-        SpatialResolution spatialResolution = SpatialResolution.valueOfResolution(bandInformation.resolution);
+        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.resolution);
         return new BandInfo(tileFileMap,
                             bandInformation.bandId,
                             new S2WavebandInfo(bandInformation.bandId,
@@ -356,13 +350,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                   product.getSceneRasterHeight(),
                                                   envelope.getMinX(),
                                                   envelope.getMaxY(),
-                                                  SpatialResolution.R10M.resolution,
-                                                  SpatialResolution.R10M.resolution,
+                                                  S2SpatialResolution.R10M.resolution,
+                                                  S2SpatialResolution.R10M.resolution,
                                                   0.0, 0.0));
         } catch (FactoryException e) {
-            // todo - report problem
+            // {@report "illegal CRS"}
         } catch (TransformException e) {
-            // todo - report problem
+            // {@report "illegal projection"}
         }
     }
 
@@ -427,17 +421,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         @Override
         protected RenderedImage createImage(int level) {
-            try {
-                return L1cTileOpImage.create(bandInfo.tileIdToFileMap.values().iterator().next(),
-                                             cacheDir,
-                                             null,
-                                             bandInfo.imageLayout,
-                                             getModel(),
-                                             bandInfo.wavebandInfo.resolution,
-                                             level);
-            } catch (IOException e) {
-                return null;
-            }
+            return L1cTileOpImage.create(bandInfo.tileIdToFileMap.values().iterator().next(),
+                                         cacheDir,
+                                         null,
+                                         bandInfo.imageLayout,
+                                         getModel(),
+                                         bandInfo.wavebandInfo.resolution,
+                                         level);
         }
 
     }
@@ -464,19 +454,19 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 File imageFile = bandInfo.tileIdToFileMap.get(tileId);
                 int tileIndex = sceneDescription.getTileIndex(tileId);
                 Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
-                try {
-                    PlanarImage opImage = L1cTileOpImage.create(imageFile,
-                                                                cacheDir,
-                                                                null, // tileRectangle.getLocation(),
-                                                                bandInfo.imageLayout,
-                                                                getModel(),
-                                                                bandInfo.wavebandInfo.resolution,
-                                                                level);
 
-                    System.out.printf("%s %s: minX=%d, minY=%d, width=%d, height%d\n",
-                                      bandInfo.wavebandInfo.bandName, tileId,
-                                      opImage.getMinX(), opImage.getMinY(),
-                                      opImage.getWidth(), opImage.getHeight());
+                PlanarImage opImage = L1cTileOpImage.create(imageFile,
+                                                            cacheDir,
+                                                            null, // tileRectangle.getLocation(),
+                                                            bandInfo.imageLayout,
+                                                            getModel(),
+                                                            bandInfo.wavebandInfo.resolution,
+                                                            level);
+
+                System.out.printf("%s %s: minX=%d, minY=%d, width=%d, height%d\n",
+                                  bandInfo.wavebandInfo.bandName, tileId,
+                                  opImage.getMinX(), opImage.getMinY(),
+                                  opImage.getWidth(), opImage.getHeight());
 
                     /*
                     opImage = new MoveOriginOpImage(opImage,
@@ -485,21 +475,21 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                     null);
                                                     */
 
-                    opImage = TranslateDescriptor.create(opImage,
-                                                         (float) (tileRectangle.x >> level),
-                                                         (float) (tileRectangle.y >> level),
-                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                // todo - This translation step is actually not required because we can create L1cTileOpImages
+                // with minX, minY set as it is required by the MosaicDescriptor and indicated by its API doc.
+                // But if we do it like that, we get lots of weird visual artifacts in the resulting mosaic.
+                opImage = TranslateDescriptor.create(opImage,
+                                                     (float) (tileRectangle.x >> level),
+                                                     (float) (tileRectangle.y >> level),
+                                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
 
-                    //System.out.printf("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY());
-                    tileImages.add(opImage);
-                } catch (IOException e) {
-                    // todo - report problem
-                }
+                //System.out.printf("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY());
+                tileImages.add(opImage);
             }
 
             if (tileImages.isEmpty()) {
-                // todo - report problem
+                // {@report "no tile images for mosaic"}
                 return null;
             }
 
@@ -515,7 +505,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                           null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
-            //System.out.printf("mosaicOp created for level %d at (%d,%d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY());
+            System.out.printf("mosaicOp created for level %d at (%d,%d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY());
+
             return mosaicOp;
         }
     }

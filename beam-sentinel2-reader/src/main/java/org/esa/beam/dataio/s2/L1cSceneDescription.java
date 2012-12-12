@@ -40,15 +40,15 @@ public class L1cSceneDescription {
         }
     }
 
-    public static L1cSceneDescription create(L1cHeader header) {
+    public static L1cSceneDescription create(L1cMetadata header) {
 
-        List<L1cHeader.Tile> tileList = header.getTileList();
+        List<L1cMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
         TileInfo[] tileInfos = new TileInfo[tileList.size()];
         Envelope2D sceneEnvelope = null;
         for (int i = 0; i < tileList.size(); i++) {
-            L1cHeader.Tile tile = tileList.get(i);
+            L1cMetadata.Tile tile = tileList.get(i);
             if (crs == null) {
                 try {
                     crs = CRS.decode(tile.horizontalCsCode);
@@ -57,7 +57,7 @@ public class L1cSceneDescription {
                     System.err.println("Unknown CRS: " + tile.horizontalCsCode);
                 }
             }
-            L1cHeader.TileGeometry tileGeometry10M = tile.tileGeometry10M;
+            L1cMetadata.TileGeometry tileGeometry10M = tile.tileGeometry10M;
             Envelope2D envelope = new Envelope2D(crs,
                                                  tileGeometry10M.upperLeftX,
                                                  tileGeometry10M.upperLeftY + tileGeometry10M.numRows * tileGeometry10M.yDim,
@@ -80,8 +80,8 @@ public class L1cSceneDescription {
         double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
         Rectangle sceneBounds = null;
         for (int i = 0; i < tileEnvelopes.length; i++) {
-            L1cHeader.Tile tile = tileList.get(i);
-            L1cHeader.TileGeometry tileGeometry10M = tile.tileGeometry10M;
+            L1cMetadata.Tile tile = tileList.get(i);
+            L1cMetadata.TileGeometry tileGeometry10M = tile.tileGeometry10M;
             Envelope2D tileEnvelope = tileEnvelopes[i];
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();

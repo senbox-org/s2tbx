@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.esa.beam.dataio.s2.Config.L1C_TILE_LAYOUTS;
+import static org.esa.beam.dataio.s2.S2Config.L1C_TILE_LAYOUTS;
 
 /**
 * @author Norman Fomferra
@@ -47,22 +47,22 @@ class L1cTileOpImage extends SingleBandedOpImage {
                               Point imagePos,
                               L1cTileLayout imageLayout,
                               MultiLevelModel imageModel,
-                              SpatialResolution spatialResolution,
-                              int level) throws IOException {
+                              S2SpatialResolution spatialResolution,
+                              int level) {
         PlanarImage opImage = new L1cTileOpImage(imageFile, cacheDir, imagePos, imageLayout, imageModel, level);
-        if (spatialResolution != SpatialResolution.R10M) {
+        if (spatialResolution != S2SpatialResolution.R10M) {
             return createScaledImage(opImage, spatialResolution, level);
         }
         return opImage;
     }
 
-    static PlanarImage createScaledImage(PlanarImage sourceImage, SpatialResolution resolution, int level) {
+    static PlanarImage createScaledImage(PlanarImage sourceImage, S2SpatialResolution resolution, int level) {
         int sourceWidth = sourceImage.getWidth();
         int sourceHeight = sourceImage.getHeight();
         int targetWidth = L1C_TILE_LAYOUTS[0].width >> level;
         int targetHeight = L1C_TILE_LAYOUTS[0].height >> level;
-        float scaleX = resolution.resolution / (float) SpatialResolution.R10M.resolution;
-        float scaleY = resolution.resolution / (float) SpatialResolution.R10M.resolution;
+        float scaleX = resolution.resolution / (float) S2SpatialResolution.R10M.resolution;
+        float scaleY = resolution.resolution / (float) S2SpatialResolution.R10M.resolution;
         final Dimension tileDim = getTileDim(targetWidth, targetHeight);
         ImageLayout imageLayout = new ImageLayout();
         imageLayout.setTileWidth(tileDim.width);
@@ -94,7 +94,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
                    Point imagePos,
                    L1cTileLayout l1cTileLayout,
                    MultiLevelModel imageModel,
-                   int level) throws IOException {
+                   int level) {
         super(DataBuffer.TYPE_USHORT,
               imagePos,
               l1cTileLayout.width,
@@ -154,10 +154,12 @@ class L1cTileOpImage extends SingleBandedOpImage {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
             } catch (IOException e) {
                 // warn
-                outputFile0.delete();
+                if (outputFile0.exists() && !outputFile0.delete()) {
+
+                }
             }
             if (!outputFile0.exists()) {
-                Arrays.fill(tileData, Config.FILL_CODE_NO_FILE);
+                Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
                 return;
             }
         }
@@ -176,7 +178,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = l1cTileLayout.numXTiles * jp2TileY + jp2TileX;
-        final Process process = new ProcessBuilder(Config.OPJ_DECOMPRESSOR_EXE,
+        final Process process = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
                                                    "-i", imageFile.getPath(),
                                                    "-o", outputFile.getPath(),
                                                    "-r", getLevel() + "",
@@ -242,6 +244,8 @@ class L1cTileOpImage extends SingleBandedOpImage {
             }
         }
 
+        // todo - we still have a synchronisation problem here: often zero areas are generated in a tile.
+        // This does not happen, if we synchronise entire computeRect() on the instance, but it is less efficient.
         final Object lock = locks.get(outputFile);
         synchronized (lock) {
 
@@ -276,24 +280,24 @@ class L1cTileOpImage extends SingleBandedOpImage {
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
                 //System.out.printf("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection);
                 if (!intersection.isEmpty()) {
-                    long seekPos = jp2File.dataPos + Config.SAMPLE_ELEM_SIZE * (intersection.y * jp2Width + intersection.x);
+                    long seekPos = jp2File.dataPos + S2Config.SAMPLE_ELEM_SIZE * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;
                     for (int y = 0; y < intersection.height; y++) {
                         stream.seek(seekPos);
                         stream.readFully(tileData, tilePos, intersection.width);
-                        seekPos += Config.SAMPLE_ELEM_SIZE * jp2Width;
+                        seekPos += S2Config.SAMPLE_ELEM_SIZE * jp2Width;
                         tilePos += tileWidth;
                         for (int x = intersection.width; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = Config.FILL_CODE_OUT_OF_X_BOUNDS;
+                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_X_BOUNDS;
                         }
                     }
                     for (int y = intersection.height; y < tileWidth; y++) {
                         for (int x = 0; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = Config.FILL_CODE_OUT_OF_Y_BOUNDS;
+                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_Y_BOUNDS;
                         }
                     }
                 } else {
-                    Arrays.fill(tileData, Config.FILL_CODE_NO_INTERSECTION);
+                    Arrays.fill(tileData, S2Config.FILL_CODE_NO_INTERSECTION);
                 }
             }
         }
@@ -310,20 +314,18 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
             final String[] tokens = jp2File.header.split(" ");
             if (tokens.length != 6) {
-                throw new IOException("Unexpected tile format");
+                throw new IOException("Unexpected PGX tile image format");
             }
 
             // String pg = tokens[0];   // PG
             // String ml = tokens[1];   // ML
             // String plus = tokens[2]; // +
-            int jp2Width;
-            int jp2Height;
             try {
                 // int jp2File.nbits = Integer.parseInt(tokens[3]);
                 jp2File.width = Integer.parseInt(tokens[4]);
                 jp2File.height = Integer.parseInt(tokens[5]);
             } catch (NumberFormatException e) {
-                throw new IOException("Unexpected tile format");
+                throw new IOException("Unexpected PGX tile image format");
             }
 
             openFiles.put(outputFile, jp2File);
@@ -357,7 +359,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     }
 
     static Dimension getTileDim(int width, int height) {
-        return new Dimension(width < Config.DEFAULT_TILE_SIZE ? width : Config.DEFAULT_TILE_SIZE,
-                             height < Config.DEFAULT_TILE_SIZE ? height : Config.DEFAULT_TILE_SIZE);
+        return new Dimension(width < S2Config.DEFAULT_TILE_SIZE ? width : S2Config.DEFAULT_TILE_SIZE,
+                             height < S2Config.DEFAULT_TILE_SIZE ? height : S2Config.DEFAULT_TILE_SIZE);
     }
 }

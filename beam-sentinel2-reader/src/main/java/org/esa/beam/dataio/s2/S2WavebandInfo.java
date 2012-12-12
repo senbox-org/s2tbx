@@ -6,14 +6,14 @@ package org.esa.beam.dataio.s2;
 public class S2WavebandInfo {
     final int bandId;
     final String bandName;
-    final SpatialResolution resolution;
+    final S2SpatialResolution resolution;
     final double wavelength;
     final double bandwidth;
     final double solarIrradiance;
     final double quantificationValue;
     final double reflecUnit;
 
-    S2WavebandInfo(int bandId, String bandName, SpatialResolution resolution, double wavelength,
+    S2WavebandInfo(int bandId, String bandName, S2SpatialResolution resolution, double wavelength,
                    double bandwidth, double solarIrradiance, int quantificationValue, double reflecUnit) {
         this.bandId = bandId;
         this.bandName = bandName;

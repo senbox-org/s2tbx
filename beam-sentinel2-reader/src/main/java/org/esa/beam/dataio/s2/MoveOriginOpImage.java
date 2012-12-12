@@ -7,6 +7,9 @@ import java.awt.image.RenderedImage;
 import java.util.Map;
 
 /**
+ * Decorates a source image by adding minX,minY. Serves a replacement for the
+ * TranslateDescriptor, which generated data copies.
+ * (experimental)
  * @author Norman Fomferra
  */
 public class MoveOriginOpImage extends PointOpImage {
