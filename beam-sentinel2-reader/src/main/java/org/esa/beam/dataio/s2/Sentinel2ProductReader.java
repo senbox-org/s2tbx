@@ -207,15 +207,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
         ResampleData resampleData = metadataHeader.getResampleData();
 
-        String prodType = "S2_MSI_" + productCharacteristics.processingLevel;
-        Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile).substring("MTD_".length()),
-                                      prodType,
-                                      sceneDescription.getSceneRectangle().width,
-                                      sceneDescription.getSceneRectangle().height);
-
-        setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
-        setGeoCoding(product, sceneDescription.getSceneEnvelope());
-
         Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
         List<L1cHeader.Tile> tileList = metadataHeader.getTileList();
         for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
@@ -243,6 +234,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 System.out.printf("Warning: illegal band ID detected for band " + bandInformation.physicalBand);
             }
         }
+
+        String prodType = "S2_MSI_" + productCharacteristics.processingLevel;
+        Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile).substring("MTD_".length()),
+                                      prodType,
+                                      sceneDescription.getSceneRectangle().width,
+                                      sceneDescription.getSceneRectangle().height);
+
+        setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
+        setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
         addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription));
 
