@@ -188,13 +188,13 @@ public class L1cHeaderTest {
     }
 
     private void dumpNans(List<L1cHeader.Tile> tileList) {
-        for (L1cHeader.Tile tile1 : tileList) {
-            String horizontalCsCode = tile1.horizontalCsCode;
+        for (L1cHeader.Tile tile : tileList) {
+            String horizontalCsCode = tile.horizontalCsCode;
             System.out.println("horizontalCsCode = " + horizontalCsCode);
 
             for (int y = 0; y < 23; y++) {
                 for (int x = 0; x < 23; x++) {
-                    L1cHeader.AnglesGrid[] grids = tile1.viewingIncidenceAnglesGrids;
+                    L1cHeader.AnglesGrid[] grids = tile.viewingIncidenceAnglesGrids;
                     int numAziNans = 0;
                     int numZenNans = 0;
                     for (L1cHeader.AnglesGrid grid : grids) {

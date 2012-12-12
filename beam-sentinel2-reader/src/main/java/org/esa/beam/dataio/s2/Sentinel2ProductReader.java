@@ -1,6 +1,7 @@
 package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
@@ -17,10 +18,15 @@ import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.*;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.*;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -28,10 +34,18 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static org.esa.beam.dataio.s2.Config.*;
+import static org.esa.beam.dataio.s2.Config.DEFAULT_TILE_SIZE;
+import static org.esa.beam.dataio.s2.Config.FILL_CODE_MOSAIC_BG;
+import static org.esa.beam.dataio.s2.Config.L1C_TILE_LAYOUTS;
+import static org.esa.beam.dataio.s2.Config.S2_WAVEBAND_INFOS;
+import static org.esa.beam.dataio.s2.Config.SAMPLE_DATA_TYPE;
 
 // todo - register reasonable RGB profile(s)
 // todo - add to product the virtual radiance bands from conversion factor found in header
@@ -98,7 +112,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         // Try to find metadata header
 
         L1cHeader metadataHeader = null;
-        Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
         File[] metadataFiles = productDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -118,6 +131,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         // Try to find other band images
 
+        Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
         File[] files = productDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -151,13 +165,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
 
-        ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
-        Collections.sort(bandIndexes);
-
-        if (bandIndexes.isEmpty()) {
-            throw new IOException("No valid bands found.");
-        }
-
         String prodType = "S2_MSI_" + imgFilename.procLevel;
         Product product = new Product(String.format("%s_%s_%s", prodType, imgFilename.orbitNo, imgFilename.tileId),
                                       prodType,
@@ -175,10 +182,24 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             setGeoCoding(product, tileEnvelope);
         }
 
+        addBands(product, bandInfoMap, new L1cTileMultiLevelImageFactory());
+
+        return product;
+    }
+
+    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
+        ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
+        Collections.sort(bandIndexes);
+
+        if (bandIndexes.isEmpty()) {
+            throw new IOException("No valid bands found.");
+        }
+
+
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
             Band band = addBand(product, bandInfo);
-            band.setSourceImage(new DefaultMultiLevelImage(new L1cTileMultiLevelSource(bandInfo)));
+            band.setSourceImage(mlif.createSourceImage(bandInfo));
         }
 
         // Test - add TOA reflectance bands
@@ -193,9 +214,23 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
         product.addBand("ndvi", "(reflec_4 - reflec_9) / (reflec_4 + reflec_9)");
         product.setAutoGrouping("reflec");
-
-        return product;
     }
+
+    private  interface MultiLevelImageFactory {
+        MultiLevelImage createSourceImage(BandInfo bandInfo);
+
+    }
+
+    private  class L1cTileMultiLevelImageFactory implements MultiLevelImageFactory {
+        public MultiLevelImage createSourceImage(BandInfo bandInfo) {
+               return new DefaultMultiLevelImage(new L1cTileMultiLevelSource(bandInfo));
+           }
+    }
+
+    private abstract class L1cSceneMultiLevelImageFactory {
+
+    }
+
 
     private Product getL1cMosaicProduct(File metadataFile) throws IOException {
         L1cHeader metadataHeader;
@@ -226,6 +261,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
+        Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
         List<L1cHeader.Tile> tileList = metadataHeader.getTileList();
         for (L1cHeader.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
             int bandIndex = bandInformation.bandId;
@@ -244,6 +280,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
                 if (!tileFileMap.isEmpty()) {
                     BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, resampleData, tileFileMap);
+                    bandInfoMap.put(bandIndex, bandInfo);
+
                     Band band = addBand(product, bandInfo);
                     band.setSourceImage(new DefaultMultiLevelImage(new L1cMosaicMultiLevelSource(sceneDescription, bandInfo)));
                 } else {
