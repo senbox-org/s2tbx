@@ -14,16 +14,16 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Norman Fomferra
  */
-public class SceneDescriptionTest {
+public class L1cSceneDescriptionTest {
 
-    private Header header;
-    private SceneDescription sceneDescription;
+    private L1cHeader header;
+    private L1cSceneDescription sceneDescription;
 
     @Before
     public void before() throws JDOMException, IOException {
         InputStream stream = getClass().getResourceAsStream("l1c/MTD_GPPL1C_054_20091210235100_20091210235130_0001.xml");
-        header = Header.parseHeader(new InputStreamReader(stream));
-        sceneDescription = SceneDescription.create(header);
+        header = L1cHeader.parseHeader(new InputStreamReader(stream));
+        sceneDescription = L1cSceneDescription.create(header);
     }
 
     @Test

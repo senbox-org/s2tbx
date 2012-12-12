@@ -97,7 +97,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         // Try to find metadata header
 
-        Header metadataHeader = null;
+        L1cHeader metadataHeader = null;
         Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
         File[] metadataFiles = productDir.listFiles(new FilenameFilter() {
             @Override
@@ -108,7 +108,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         if (metadataFiles != null && metadataFiles.length > 0) {
             File metadataFile = metadataFiles[0];
             try {
-                metadataHeader = Header.parseHeader(metadataFile);
+                metadataHeader = L1cHeader.parseHeader(metadataFile);
             } catch (JDOMException e) {
                 BeamLogManager.getSystemLogger().warning("Failed to parse metadata file: " + metadataFile);
             }
@@ -128,7 +128,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             for (File file : files) {
                 int bandIndex = imgFilename.getBand(file.getName());
                 if (metadataHeader != null) {
-                    Header.SpectralInformation[] bandInformations = metadataHeader.getProductCharacteristics().bandInformations;
+                    L1cHeader.SpectralInformation[] bandInformations = metadataHeader.getProductCharacteristics().bandInformations;
                     if (bandIndex >= 0 && bandIndex < bandInformations.length) {
                         BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformations[bandIndex],
                                                                          metadataHeader.getResampleData(),
@@ -169,7 +169,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         setStartStopTime(product, imgFilename.start, imgFilename.stop);
 
         if (metadataHeader != null) {
-            SceneDescription sceneDescription = SceneDescription.create(metadataHeader);
+            L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader);
             int tileIndex = sceneDescription.getTileIndex(imgFilename.tileId);
             Envelope2D tileEnvelope = sceneDescription.getTileEnvelope(tileIndex);
             setGeoCoding(product, tileEnvelope);
@@ -198,22 +198,22 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private Product getL1cMosaicProduct(File metadataFile) throws IOException {
-        Header metadataHeader;
+        L1cHeader metadataHeader;
 
         try {
-            metadataHeader = Header.parseHeader(metadataFile);
+            metadataHeader = L1cHeader.parseHeader(metadataFile);
         } catch (JDOMException e) {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
         S2MtdFilename mtdFilename = S2MtdFilename.create(metadataFile.getName());
-        SceneDescription sceneDescription = SceneDescription.create(metadataHeader);
+        L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader);
 
         File productDir = getProductDir(metadataFile);
         initCacheDir(productDir);
 
-        Header.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
-        Header.ResampleData resampleData = metadataHeader.getResampleData();
+        L1cHeader.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
+        L1cHeader.ResampleData resampleData = metadataHeader.getResampleData();
 
         String prodType = "S2_MSI_" + productCharacteristics.processingLevel;
         Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile).substring("MTD_".length()),
@@ -226,13 +226,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
-        List<Header.Tile> tileList = metadataHeader.getTileList();
-        for (Header.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+        List<L1cHeader.Tile> tileList = metadataHeader.getTileList();
+        for (L1cHeader.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
             int bandIndex = bandInformation.bandId;
             if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
 
                 HashMap<String, File> tileFileMap = new HashMap<String, File>();
-                for (Header.Tile tile : tileList) {
+                for (L1cHeader.Tile tile : tileList) {
                     String imgFilename = mtdFilename.getImgFilename(bandIndex, tile.id);
                     File file = new File(productDir, imgFilename);
                     if (file.exists()) {
@@ -294,7 +294,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         return band;
     }
 
-    private BandInfo createBandInfoFromHeaderInfo(Header.SpectralInformation bandInformation, Header.ResampleData resampleData, Map<String, File> tileFileMap) {
+    private BandInfo createBandInfoFromHeaderInfo(L1cHeader.SpectralInformation bandInformation, L1cHeader.ResampleData resampleData, Map<String, File> tileFileMap) {
         SpatialResolution spatialResolution = SpatialResolution.valueOfResolution(bandInformation.resolution);
         double solarIrradiance = resampleData.reflectanceConversion.solarIrradiances[bandInformation.bandId];
         return new BandInfo(tileFileMap,
@@ -376,10 +376,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private class L1cMosaicMultiLevelSource extends AbstractMultiLevelSource {
-        private final SceneDescription sceneDescription;
+        private final L1cSceneDescription sceneDescription;
         private final BandInfo bandInfo;
 
-        public L1cMosaicMultiLevelSource(SceneDescription sceneDescription, BandInfo bandInfo) {
+        public L1cMosaicMultiLevelSource(L1cSceneDescription sceneDescription, BandInfo bandInfo) {
             super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
                                              new AffineTransform(),
                                              sceneDescription.getSceneRectangle().width,

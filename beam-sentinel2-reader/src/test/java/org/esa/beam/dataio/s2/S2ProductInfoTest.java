@@ -12,12 +12,12 @@ import java.io.InputStreamReader;
  * @author Norman Fomferra
  */
 public class S2ProductInfoTest {
-    private Header header;
+    private L1cHeader header;
 
     @Before
     public void before() throws JDOMException, IOException {
         InputStream stream = getClass().getResourceAsStream("l1c/MTD_GPPL1C_054_20091210235100_20091210235130_0001.xml");
-        header = Header.parseHeader(new InputStreamReader(stream));
+        header = L1cHeader.parseHeader(new InputStreamReader(stream));
     }
 
     @Test

@@ -12,26 +12,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Norman Fomferra
  */
-public class HeaderTest {
+public class L1cHeaderTest {
 
-    private Header header;
+    private L1cHeader header;
 
     @Before
     public void before() throws JDOMException, IOException {
         InputStream stream = getClass().getResourceAsStream("l1c/MTD_GPPL1C_054_20091210235100_20091210235130_0001.xml");
-        header = Header.parseHeader(new InputStreamReader(stream));
+        header = L1cHeader.parseHeader(new InputStreamReader(stream));
     }
 
     @Test
     public void testProductCharacteristics() {
-        Header.ProductCharacteristics pc = header.getProductCharacteristics();
+        L1cHeader.ProductCharacteristics pc = header.getProductCharacteristics();
         assertEquals("SENTINEL-2A", pc.spacecraft);
         assertEquals("11-09-21-17:47:18", pc.datasetProductionDate);
         assertEquals("L1C", pc.processingLevel);
@@ -53,7 +52,7 @@ public class HeaderTest {
 
     @Test
     public void testResampleData() {
-        Header.ResampleData rd = header.getResampleData();
+        L1cHeader.ResampleData rd = header.getResampleData();
         assertEquals(3413, rd.quantificationValue);
         assertEquals(1.030577302, rd.reflectanceConversion.u, 1e-10);
         assertEquals(13, rd.reflectanceConversion.solarIrradiances.length);
@@ -65,21 +64,21 @@ public class HeaderTest {
     @Test
     public void testTileList() {
 
-        List<Header.Tile> tileList = header.getTileList();
+        List<L1cHeader.Tile> tileList = header.getTileList();
 
         assertEquals(11, tileList.size());
 
-        Header.Tile tile0 = tileList.get(0);
-        Header.Tile tile1 = tileList.get(1);
-        Header.Tile tile2 = tileList.get(2);
-        Header.Tile tile3 = tileList.get(3);
-        Header.Tile tile4 = tileList.get(4);
-        Header.Tile tile5 = tileList.get(5);
-        Header.Tile tile6 = tileList.get(6);
-        Header.Tile tile7 = tileList.get(7);
-        Header.Tile tile8 = tileList.get(8);
-        Header.Tile tile9 = tileList.get(9);
-        Header.Tile tile10 = tileList.get(10);
+        L1cHeader.Tile tile0 = tileList.get(0);
+        L1cHeader.Tile tile1 = tileList.get(1);
+        L1cHeader.Tile tile2 = tileList.get(2);
+        L1cHeader.Tile tile3 = tileList.get(3);
+        L1cHeader.Tile tile4 = tileList.get(4);
+        L1cHeader.Tile tile5 = tileList.get(5);
+        L1cHeader.Tile tile6 = tileList.get(6);
+        L1cHeader.Tile tile7 = tileList.get(7);
+        L1cHeader.Tile tile8 = tileList.get(8);
+        L1cHeader.Tile tile9 = tileList.get(9);
+        L1cHeader.Tile tile10 = tileList.get(10);
 
         assertEquals("15SUC", tile0.id);
         assertEquals("15SUD", tile1.id);
@@ -146,7 +145,7 @@ public class HeaderTest {
 
     @Test
     public void testTileGrid() throws IOException {
-        SceneDescription sceneDescription = SceneDescription.create(header);
+        L1cSceneDescription sceneDescription = L1cSceneDescription.create(header);
         ImageIO.write(sceneDescription.createTilePicture(2048), "PNG", new File("tile-grid.png"));
 
         Envelope2D sceneEnvelope = sceneDescription.getSceneEnvelope();
@@ -181,24 +180,24 @@ public class HeaderTest {
         assertEquals(3, sceneDescription.getTileGridHeight());
     }
 
-    private void testSpectralInformation(Header.SpectralInformation bi, int bandId, String bandName, int res, double wl) {
+    private void testSpectralInformation(L1cHeader.SpectralInformation bi, int bandId, String bandName, int res, double wl) {
         assertEquals(bandId, bi.bandId);
         assertEquals(bandName, bi.physicalBand);
         assertEquals(res, bi.resolution);
         assertEquals(wl, bi.wavelenghtCentral, 1e-10);
     }
 
-    private void dumpNans(List<Header.Tile> tileList) {
-        for (Header.Tile tile1 : tileList) {
+    private void dumpNans(List<L1cHeader.Tile> tileList) {
+        for (L1cHeader.Tile tile1 : tileList) {
             String horizontalCsCode = tile1.horizontalCsCode;
             System.out.println("horizontalCsCode = " + horizontalCsCode);
 
             for (int y = 0; y < 23; y++) {
                 for (int x = 0; x < 23; x++) {
-                    Header.AnglesGrid[] grids = tile1.viewingIncidenceAnglesGrids;
+                    L1cHeader.AnglesGrid[] grids = tile1.viewingIncidenceAnglesGrids;
                     int numAziNans = 0;
                     int numZenNans = 0;
-                    for (Header.AnglesGrid grid : grids) {
+                    for (L1cHeader.AnglesGrid grid : grids) {
                         if (Float.isNaN(grid.azimuth[y][x])) {
                             numAziNans++;
                         }

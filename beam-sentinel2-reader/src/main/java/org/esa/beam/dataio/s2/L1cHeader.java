@@ -16,7 +16,7 @@ import java.util.List;
  * Represents the Sentinel-2 MSI L1C XML header file.
  * @author Norman Fomferra
  */
-public class Header {
+public class L1cHeader {
 
     static class Tile {
         String id;
@@ -120,7 +120,7 @@ public class Header {
     private final ResampleData resampleData;
     private final ProductCharacteristics productCharacteristics;
 
-    private Header(Element rootElement) throws DataConversionException {
+    private L1cHeader(Element rootElement) throws DataConversionException {
         tileList = parseTileList(rootElement);
         resampleData = parseResampleData(rootElement);
         productCharacteristics = parseProductCharacteristics(rootElement);
@@ -148,12 +148,12 @@ public class Header {
         return reflectanceConversion;
     }
 
-    public static Header parseHeader(File file) throws JDOMException, IOException {
-        return new Header(new SAXBuilder().build(file).getRootElement());
+    public static L1cHeader parseHeader(File file) throws JDOMException, IOException {
+        return new L1cHeader(new SAXBuilder().build(file).getRootElement());
     }
 
-    public static Header parseHeader(Reader reader) throws JDOMException, IOException {
-        return new Header(new SAXBuilder().build(reader).getRootElement());
+    public static L1cHeader parseHeader(Reader reader) throws JDOMException, IOException {
+        return new L1cHeader(new SAXBuilder().build(reader).getRootElement());
     }
 
     public List<Tile> getTileList() {

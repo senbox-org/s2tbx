@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * @author Norman Fomferra
  */
-public class SceneDescription {
+public class L1cSceneDescription {
 
     private static final double PIXEL_RESOLUTION_10M = 10.0;
     private static final int TILE_SIZE_10M = 10960;
@@ -40,15 +40,15 @@ public class SceneDescription {
         }
     }
 
-    public static SceneDescription create(Header header) {
+    public static L1cSceneDescription create(L1cHeader header) {
 
-        List<Header.Tile> tileList = header.getTileList();
+        List<L1cHeader.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
         TileInfo[] tileInfos = new TileInfo[tileList.size()];
         Envelope2D sceneEnvelope = null;
         for (int i = 0; i < tileList.size(); i++) {
-            Header.Tile tile = tileList.get(i);
+            L1cHeader.Tile tile = tileList.get(i);
             if (crs == null) {
                 try {
                     crs = CRS.decode(tile.horizontalCsCode);
@@ -57,7 +57,7 @@ public class SceneDescription {
                     System.err.println("Unknown CRS: " + tile.horizontalCsCode);
                 }
             }
-            Header.TileGeometry tileGeometry10M = tile.tileGeometry10M;
+            L1cHeader.TileGeometry tileGeometry10M = tile.tileGeometry10M;
             Envelope2D envelope = new Envelope2D(crs,
                                                  tileGeometry10M.upperLeftX,
                                                  tileGeometry10M.upperLeftY + tileGeometry10M.numRows * tileGeometry10M.yDim,
@@ -80,8 +80,8 @@ public class SceneDescription {
         double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
         Rectangle sceneBounds = null;
         for (int i = 0; i < tileEnvelopes.length; i++) {
-            Header.Tile tile = tileList.get(i);
-            Header.TileGeometry tileGeometry10M = tile.tileGeometry10M;
+            L1cHeader.Tile tile = tileList.get(i);
+            L1cHeader.TileGeometry tileGeometry10M = tile.tileGeometry10M;
             Envelope2D tileEnvelope = tileEnvelopes[i];
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
@@ -97,10 +97,10 @@ public class SceneDescription {
             tileInfos[i] = new TileInfo(i, tile.id, tileEnvelope, rectangle);
         }
 
-        return new SceneDescription(tileInfos, sceneEnvelope, sceneBounds);
+        return new L1cSceneDescription(tileInfos, sceneEnvelope, sceneBounds);
     }
 
-    private SceneDescription(TileInfo[] tileInfos, Envelope2D sceneEnvelope, Rectangle sceneRectangle) {
+    private L1cSceneDescription(TileInfo[] tileInfos, Envelope2D sceneEnvelope, Rectangle sceneRectangle) {
         this.tileInfos = tileInfos;
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;
