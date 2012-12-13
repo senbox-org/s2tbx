@@ -10,6 +10,7 @@ import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.CrsGeoCoding;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.util.SystemUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
@@ -18,10 +19,15 @@ import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.*;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.*;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -29,11 +35,24 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static org.esa.beam.dataio.s2.S2Config.*;
-import static org.esa.beam.dataio.s2.L1cMetadata.*;
+import static org.esa.beam.dataio.s2.L1cMetadata.ProductCharacteristics;
+import static org.esa.beam.dataio.s2.L1cMetadata.ResampleData;
+import static org.esa.beam.dataio.s2.L1cMetadata.SpectralInformation;
+import static org.esa.beam.dataio.s2.L1cMetadata.Tile;
+import static org.esa.beam.dataio.s2.L1cMetadata.parseHeader;
+import static org.esa.beam.dataio.s2.S2Config.DEFAULT_TILE_SIZE;
+import static org.esa.beam.dataio.s2.S2Config.FILL_CODE_MOSAIC_BG;
+import static org.esa.beam.dataio.s2.S2Config.L1C_TILE_LAYOUTS;
+import static org.esa.beam.dataio.s2.S2Config.S2_WAVEBAND_INFOS;
+import static org.esa.beam.dataio.s2.S2Config.SAMPLE_DATA_TYPE;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value
@@ -42,6 +61,8 @@ import static org.esa.beam.dataio.s2.L1cMetadata.*;
 // todo - set band's ImageInfo from min,max,histogram found in header
 // todo - better collect problems during product opening and generate problem report (requires reader API change), see {@report "Problem detected..."} code marks
 // todo - Replace print() calls by using a logger
+// todo - tie point grids have been added to L1C tiles, but not to entire scenes
+// todo - viewing incidence tie-point grids contain NaN values - find out how to correctly treat them
 
 public class Sentinel2ProductReader extends AbstractProductReader {
 
@@ -165,6 +186,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             int tileIndex = sceneDescription.getTileIndex(imgFilename.tileId);
             Envelope2D tileEnvelope = sceneDescription.getTileEnvelope(tileIndex);
             setGeoCoding(product, tileEnvelope);
+            addL1cTileTiePointGrids(metadataHeader, product, tileIndex);
         }
 
         addBands(product, bandInfoMap, new L1cTileMultiLevelImageFactory());
@@ -300,6 +322,46 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         //band.setScalingFactor(bandInfo.wavebandInfo.scalingFactor);
 
         return band;
+    }
+
+    private void addL1cTileTiePointGrids(L1cMetadata metadataHeader, Product product, int tileIndex) {
+        Tile tile = metadataHeader.getTileList().get(tileIndex);
+        int gridHeight = tile.sunAnglesGrid.zenith.length;
+        int gridWidth = tile.sunAnglesGrid.zenith[0].length;
+        float[] sunZeniths = new float[gridWidth * gridHeight];
+        float[] sunAzimuths = new float[gridWidth * gridHeight];
+        float[] viewingZeniths = new float[gridWidth * gridHeight];
+        float[] viewingAzimuths = new float[gridWidth * gridHeight];
+        Arrays.fill(viewingZeniths, Float.NaN);
+        Arrays.fill(viewingAzimuths, Float.NaN);
+        L1cMetadata.AnglesGrid sunAnglesGrid = tile.sunAnglesGrid;
+        L1cMetadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.viewingIncidenceAnglesGrids;
+        for (int y = 0; y < gridHeight; y++) {
+            for (int x = 0; x < gridWidth; x++) {
+                final int index = y * gridWidth + x;
+                sunZeniths[index] = sunAnglesGrid.zenith[y][x];
+                sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
+                for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
+                    if (!Float.isNaN(grid.zenith[y][x])) {
+                        viewingZeniths[index] = grid.zenith[y][x];
+                    }
+                    if (!Float.isNaN(grid.azimuth[y][x])) {
+                        viewingAzimuths[index] = grid.azimuth[y][x];
+                    }
+                }
+            }
+        }
+        addTiePointGrid(product, "sun_zenith", gridWidth, gridHeight, sunZeniths);
+        addTiePointGrid(product, "sun_azimuth", gridWidth, gridHeight, sunAzimuths);
+        addTiePointGrid(product, "view_zenith", gridWidth, gridHeight, viewingZeniths);
+        addTiePointGrid(product, "view_azimuth", gridWidth, gridHeight, viewingAzimuths);
+    }
+
+    private void addTiePointGrid(Product product, String name, int gridWidth, int gridHeight, float[] values) {
+        final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, values);
+        tiePointGrid.setNoDataValue(Double.NaN);
+        tiePointGrid.setNoDataValueUsed(true);
+        product.addTiePointGrid(tiePointGrid);
     }
 
     private static Map<String, File> createFileMap(String tileId, File imageFile) {
