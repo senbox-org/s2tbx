@@ -64,6 +64,21 @@ import static org.esa.beam.dataio.s2.S2Config.SAMPLE_DATA_TYPE;
 // todo - tie point grids have been added to L1C tiles, but not to entire scenes
 // todo - viewing incidence tie-point grids contain NaN values - find out how to correctly treat them
 
+/**
+ * <p>
+ * This product reader can currently read single L1C tiles (also called L1C granules) and entire L1C scenes composed of
+ * multiple L1C tiles.
+ * </p>
+ * <p>
+ * To read single tiles, select any tile image file (IMG_*.jp2) within a product package. The reader will then
+ * collect other band images for the selected tile and wiull also try to read the metadata file (MTD_*.xml).
+ * </p>
+ * <p>To read an entire scene, select the metadata file (MTD_*.xml) within a product package. The reader will then
+ * collect other tile/band images and create a mosaic on the fly.
+ * </p>
+ *
+ * @author Norman Fomferra
+ */
 public class Sentinel2ProductReader extends AbstractProductReader {
 
     private File cacheDir;

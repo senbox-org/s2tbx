@@ -13,7 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents the Sentinel-2 MSI L1C XML header file.
+ * Represents the Sentinel-2 MSI L1C XML metadata header file.
+ *
+ * Note: No data interpretation is done in this class, it is intended to serve the pure metadata content only.
+ *
  * @author Norman Fomferra
  */
 public class L1cMetadata {
