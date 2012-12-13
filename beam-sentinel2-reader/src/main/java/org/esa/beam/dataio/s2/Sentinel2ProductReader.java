@@ -376,6 +376,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     void initCacheDir(File productDir) throws IOException {
         cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), "beam-sentinel2-reader/cache"),
                             productDir.getName());
+        //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();
         if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
             throw new IOException("Can't access package cache directory");
