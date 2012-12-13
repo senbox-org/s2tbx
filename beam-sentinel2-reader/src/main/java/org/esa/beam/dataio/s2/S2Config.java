@@ -6,6 +6,9 @@ import org.esa.beam.framework.datamodel.ProductData;
  * @author Norman Fomferra
  */
 public interface S2Config {
+    /**
+     * Path to "opj_decompress" executable from OpenJPEG 2.0.0 package
+     */
     String OPJ_DECOMPRESSOR_EXE = System.getProperty("openjpeg2.decompressor.path", "opj_decompress");
 
     int DEFAULT_TILE_SIZE = 512;
@@ -46,4 +49,8 @@ public interface S2Config {
             new S2WavebandInfo(11, "B11", S2SpatialResolution.R20M, 1610, 90, 246.28, 3413, 1.030577302),
             new S2WavebandInfo(12, "B12", S2SpatialResolution.R20M, 2190, 180, 86.98, 3413, 1.030577302),
     };
+
+    String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
+    String MTD_EXT = ".xml";
+    String JP2_EXT = ".jp2";
 }

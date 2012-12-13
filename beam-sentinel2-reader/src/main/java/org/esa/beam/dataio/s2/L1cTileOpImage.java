@@ -7,10 +7,18 @@ import org.esa.beam.util.io.FileUtils;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.WritableRaster;
@@ -23,8 +31,8 @@ import java.util.Map;
 import static org.esa.beam.dataio.s2.S2Config.L1C_TILE_LAYOUTS;
 
 /**
-* @author Norman Fomferra
-*/
+ * @author Norman Fomferra
+ */
 class L1cTileOpImage extends SingleBandedOpImage {
 
     private static class Jp2File {
@@ -59,8 +67,8 @@ class L1cTileOpImage extends SingleBandedOpImage {
     static PlanarImage createScaledImage(PlanarImage sourceImage, S2SpatialResolution resolution, int level) {
         int sourceWidth = sourceImage.getWidth();
         int sourceHeight = sourceImage.getHeight();
-        int targetWidth = L1C_TILE_LAYOUTS[0].width >> level;
-        int targetHeight = L1C_TILE_LAYOUTS[0].height >> level;
+        int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
+        int targetHeight = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].height, level);
         float scaleX = resolution.resolution / (float) S2SpatialResolution.R10M.resolution;
         float scaleY = resolution.resolution / (float) S2SpatialResolution.R10M.resolution;
         final Dimension tileDim = getTileDim(targetWidth, targetHeight);
@@ -346,6 +354,13 @@ class L1cTileOpImage extends SingleBandedOpImage {
         return new Dimension(width, height);
     }
 
+    /**
+     * Computes a new size at a given resolution level in the style of JPEG2000.
+     *
+     * @param fullSize the full size
+     * @param level    the resolution level
+     * @return the reduced size at the given level
+     */
     static int getSizeAtResolutionLevel(int fullSize, int level) {
         // todo - find out how JPEG2000 computes its integer lower resolution sizes
         //        and use this algo also in DefaultMultiLevelModel

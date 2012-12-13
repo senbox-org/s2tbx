@@ -13,10 +13,6 @@ import java.util.Locale;
  */
 public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
-    public static final String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
-    public static final String MTD_EXT = ".xml";
-    public static final String JP2_EXT = ".jp2";
-
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         File file = new File(input.toString());
@@ -37,12 +33,12 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{FORMAT_NAME};
+        return new String[]{S2Config.FORMAT_NAME};
     }
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[]{JP2_EXT, MTD_EXT};
+        return new String[]{S2Config.JP2_EXT, S2Config.MTD_EXT};
     }
 
     @Override
@@ -52,7 +48,7 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public BeamFileFilter getProductFileFilter() {
-        return new BeamFileFilter(FORMAT_NAME,
+        return new BeamFileFilter(S2Config.FORMAT_NAME,
                                   getDefaultFileExtensions(),
                                   "Sentinel-2 MSI L1C product or tile");
     }
