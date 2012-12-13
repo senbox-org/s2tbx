@@ -142,8 +142,8 @@ public abstract class AbstractProductFactory implements ProductFactory {
             targetProduct.getMetadataRoot().addElement(productAttributes);
         }
 
-        addDataNodes(targetProduct);
-        addVariables(masterProduct,targetProduct);
+        addDataNodes(masterProduct, targetProduct);
+        addVariables(masterProduct, targetProduct);
         setMasks(targetProduct);
         setTimes(targetProduct);
         if (targetProduct.getGeoCoding() == null) {
@@ -218,7 +218,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         return copyBand(sourceBand, targetProduct, true);
     }
 
-    protected RasterDataNode addSpecialNode(Band sourceBand, Product targetProduct) {
+    protected RasterDataNode addSpecialNode(Product masterProduct, Band sourceBand, Product targetProduct) {
         return null;
     }
 
@@ -244,7 +244,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     protected void initialize(Product masterProduct) {
     }
 
-    protected final void addDataNodes(Product targetProduct) throws IOException {
+    protected final void addDataNodes(Product masterProduct, Product targetProduct) throws IOException {
         final int w = targetProduct.getSceneRasterWidth();
         final int h = targetProduct.getSceneRasterHeight();
 
@@ -255,7 +255,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
                 if (sourceBand.getSceneRasterWidth() == w && sourceBand.getSceneRasterHeight() == h) {
                     targetNode = addBand(sourceBand, targetProduct);
                 } else {
-                    targetNode = addSpecialNode(sourceBand, targetProduct);
+                    targetNode = addSpecialNode(masterProduct, sourceBand, targetProduct);
                 }
                 if (targetNode != null) {
                     configureTargetNode(sourceBand, targetNode);

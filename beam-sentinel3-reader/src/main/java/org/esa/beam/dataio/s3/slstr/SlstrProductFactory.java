@@ -31,6 +31,7 @@ import javax.media.jai.BorderExtender;
 import javax.media.jai.BorderExtenderConstant;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
@@ -49,7 +50,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     @Override
-    protected RasterDataNode addSpecialNode(Band sourceBand, Product targetProduct) {
+    protected RasterDataNode addSpecialNode(Product masterProduct, Band sourceBand, Product targetProduct) {
         final Product sourceProduct = sourceBand.getProduct();
         final MetadataElement globalAttributes = sourceProduct.getMetadataRoot().getElement("Global_Attributes");
         final double sourceStartOffset = getStartOffset(globalAttributes);
@@ -60,7 +61,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         } else {
             final Band targetBand = copyBand(sourceBand, targetProduct, false);
             final float[] offsets = getOffsets(sourceStartOffset, sourceTrackOffset, sourceResolutions);
-            final RenderedImage sourceImage = createSourceImage(sourceBand, offsets, targetBand, sourceResolutions);
+            final RenderedImage sourceImage = createSourceImage(masterProduct, sourceBand, offsets, targetBand, sourceResolutions);
             targetBand.setSourceImage(sourceImage);
             return targetBand;
         }
@@ -91,39 +92,25 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         return resolutions;
     }
 
-    private RenderedImage createSourceImage(Band sourceBand, float[] offsets,
+    private RenderedImage createSourceImage(Product masterProduct, Band sourceBand, float[] offsets,
                                             Band targetBand, short[] sourceResolutions) {
         final ImageLayout imageLayout = ImageManager.createSingleBandedImageLayout(targetBand);
         final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+        renderingHints.add(new RenderingHints(JAI.KEY_BORDER_EXTENDER,
+                                              BorderExtender.createInstance(
+                                                      BorderExtender.BORDER_COPY)));
         final MultiLevelImage sourceImage = sourceBand.getSourceImage();
-        final int targetW = targetBand.getRasterWidth();
-        final int targetH = targetBand.getRasterHeight();
-        final int padX = Math.round(Math.abs(offsets[0]));
-        final int padY = Math.round(Math.abs(offsets[1]));
         float[] scalings = new float[]{((float)sourceResolutions[0])/referenceResolutions[0],
                 ((float)sourceResolutions[1])/referenceResolutions[1]};
-        float[] transformations = new float[]{0f, 0f};
-        RenderedImage image
-                = SourceImageScaler.scaleMultiLevelImage(sourceImage, scalings,
-                                                         transformations, renderingHints,
-                                                         findMasterProduct().getNumResolutionsMax());
-        final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{targetBand.getNoDataValue()});
-        image = BorderDescriptor.create(image, padX, targetW - padX - image.getWidth(),
-                                        padY, padY, borderExtender, renderingHints);
-        if (offsets[0] != 0.0f || offsets[1] != 0.0f) {
-            image = TranslateDescriptor.create(image, offsets[0], offsets[1], null, renderingHints);
-        }
-        return CropDescriptor.create(image, 0.0f, 0.0f, (float) targetW, (float) targetH, renderingHints);
+        final MultiLevelImage masterImage = masterProduct.getBandAt(0).getSourceImage();
+        return SourceImageScaler.scaleMultiLevelImage(masterImage, sourceImage, scalings, null, offsets, renderingHints,
+                                                      targetBand.getNoDataValue());
     }
 
     protected float[] getOffsets(double sourceStartOffset, double sourceTrackOffset, short[] sourceResolutions) {
         float offsetX = (float) (sourceTrackOffset * (sourceResolutions[0] / referenceResolutions[0]) - referenceTrackOffset);
         float offsetY = (float) (sourceStartOffset * (sourceResolutions[1] / referenceResolutions[1]) - referenceStartOffset);
         return new float[]{offsetX, offsetY};
-    }
-
-    public short[] getReferenceResolutions() {
-        return referenceResolutions;
     }
 
     @Deprecated // scale images instead

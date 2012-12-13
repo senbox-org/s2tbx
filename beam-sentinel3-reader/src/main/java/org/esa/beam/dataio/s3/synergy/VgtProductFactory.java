@@ -30,7 +30,6 @@ import org.esa.beam.framework.datamodel.RasterDataNode;
 import javax.media.jai.BorderExtender;
 import javax.media.jai.JAI;
 import javax.media.jai.operator.CropDescriptor;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
@@ -76,24 +75,22 @@ public class VgtProductFactory extends AbstractProductFactory {
     }
 
     @Override
-    protected Band addSpecialNode(Band sourceBand, Product targetProduct) {
+    protected Band addSpecialNode(Product masterProduct, Band sourceBand, Product targetProduct) {
         final Band targetBand = copyBand(sourceBand, targetProduct, false);
         final RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
                                                                  BorderExtender.createInstance(
                                                                          BorderExtender.BORDER_COPY));
         final MultiLevelImage sourceImage = sourceBand.getSourceImage();
-        float[] scalings = new float[]{((float)targetBand.getRasterWidth())/sourceBand.getRasterWidth(),
-                ((float)targetBand.getRasterHeight())/sourceBand.getRasterHeight()};
+        float[] scalings = new float[]{((float) targetBand.getRasterWidth()) / sourceBand.getRasterWidth(),
+                ((float) targetBand.getRasterHeight()) / sourceBand.getRasterHeight()};
         final float transX = (targetBand.getRasterWidth() - sourceImage.getWidth() * scalings[0]) / 2.0f;
         final float transY = (targetBand.getRasterHeight() - sourceImage.getHeight() * scalings[1]) / 2.0f;
-        float[] transformations = new float[]{transX, transY};
-        final RenderedImage scaledImage = SourceImageScaler.scaleMultiLevelImage(sourceImage, scalings,
-                                                                                 transformations, renderingHints,
-                                                                                 findMasterProduct().getNumResolutionsMax());
-        final RenderedImage croppedImage = CropDescriptor.create(scaledImage, 0.0f, 0.0f,
-                                                                 (float) targetBand.getRasterWidth(),
-                                                                 (float) targetBand.getRasterHeight(), null);
-        targetBand.setSourceImage(croppedImage);
+        float[] scaleTranslations = new float[]{transX, transY};
+        final MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetBand.getSourceImage(),
+                                                                                 sourceImage, scalings,
+                                                                                 scaleTranslations, null,
+                                                                                 renderingHints, Double.NaN);
+        targetBand.setSourceImage(scaledImage);
         return targetBand;
     }
 

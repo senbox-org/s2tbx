@@ -52,7 +52,7 @@ public class OlciLevel2ProductFactory extends AbstractProductFactory {
     }
 
     @Override
-    protected RasterDataNode addSpecialNode(Band sourceBand, Product targetProduct) {
+    protected RasterDataNode addSpecialNode(Product masterProduct, Band sourceBand, Product targetProduct) {
         final Product sourceProduct = sourceBand.getProduct();
         final MetadataElement metadataRoot = sourceProduct.getMetadataRoot();
         final MetadataElement globalAttributes = metadataRoot.getElement("Global_Attributes");
