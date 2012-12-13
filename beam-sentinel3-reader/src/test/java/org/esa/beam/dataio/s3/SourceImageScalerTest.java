@@ -9,6 +9,7 @@ import org.esa.beam.framework.datamodel.ProductData;
 import org.junit.Test;
 
 import javax.media.jai.BorderExtender;
+import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -37,7 +38,7 @@ public class SourceImageScalerTest {
                                                                              sourceImage, scalings,
                                                                              translationsBeforeScaling,
                                                                              new float[]{0f,0f}, renderingHints,
-                                                                             Double.NaN);
+                                                                             Double.NaN, Interpolation.getInstance(Interpolation.INTERP_NEAREST));
         final Rectangle targetBounds = targetBand.getSourceImage().getBounds();
 
         assertEquals(targetBand.getRasterWidth(), scaledImage.getWidth());
@@ -66,7 +67,7 @@ public class SourceImageScalerTest {
         MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(masterImage, sourceImage, scalings,
                                                                              translationsBeforeScaling,
                                                                              new float[]{0f, 0f}, renderingHints,
-                                                                             Double.NaN);
+                                                                             Double.NaN, Interpolation.getInstance(Interpolation.INTERP_NEAREST));
         final Rectangle targetBounds = targetBand.getSourceImage().getBounds();
 
         assertEquals(targetBand.getRasterWidth(), scaledImage.getWidth());

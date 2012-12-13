@@ -28,10 +28,9 @@ import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 
 import javax.media.jai.BorderExtender;
+import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
-import javax.media.jai.operator.CropDescriptor;
 import java.awt.RenderingHints;
-import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,7 +88,9 @@ public class VgtProductFactory extends AbstractProductFactory {
         final MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetBand.getSourceImage(),
                                                                                  sourceImage, scalings,
                                                                                  scaleTranslations, null,
-                                                                                 renderingHints, Double.NaN);
+                                                                                 renderingHints, Double.NaN,
+                                                                                 Interpolation.getInstance(
+                                                                                         Interpolation.INTERP_BILINEAR));
         targetBand.setSourceImage(scaledImage);
         return targetBand;
     }

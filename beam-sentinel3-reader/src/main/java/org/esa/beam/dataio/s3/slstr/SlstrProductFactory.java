@@ -28,13 +28,9 @@ import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.jai.ImageManager;
 
 import javax.media.jai.BorderExtender;
-import javax.media.jai.BorderExtenderConstant;
 import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.BorderDescriptor;
-import javax.media.jai.operator.CropDescriptor;
-import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -61,7 +57,8 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
         } else {
             final Band targetBand = copyBand(sourceBand, targetProduct, false);
             final float[] offsets = getOffsets(sourceStartOffset, sourceTrackOffset, sourceResolutions);
-            final RenderedImage sourceImage = createSourceImage(masterProduct, sourceBand, offsets, targetBand, sourceResolutions);
+            final RenderedImage sourceImage = createSourceImage(masterProduct, sourceBand, offsets, targetBand,
+                                                                sourceResolutions);
             targetBand.setSourceImage(sourceImage);
             return targetBand;
         }
@@ -100,11 +97,14 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
                                               BorderExtender.createInstance(
                                                       BorderExtender.BORDER_COPY)));
         final MultiLevelImage sourceImage = sourceBand.getSourceImage();
-        float[] scalings = new float[]{((float)sourceResolutions[0])/referenceResolutions[0],
-                ((float)sourceResolutions[1])/referenceResolutions[1]};
+        float[] scalings = new float[]{
+                ((float) sourceResolutions[0]) / referenceResolutions[0],
+                ((float) sourceResolutions[1]) / referenceResolutions[1]
+        };
         final MultiLevelImage masterImage = masterProduct.getBandAt(0).getSourceImage();
         return SourceImageScaler.scaleMultiLevelImage(masterImage, sourceImage, scalings, null, offsets, renderingHints,
-                                                      targetBand.getNoDataValue());
+                                                      targetBand.getNoDataValue(),
+                                                      Interpolation.getInstance(Interpolation.INTERP_NEAREST));
     }
 
     protected float[] getOffsets(double sourceStartOffset, double sourceTrackOffset, short[] sourceResolutions) {
