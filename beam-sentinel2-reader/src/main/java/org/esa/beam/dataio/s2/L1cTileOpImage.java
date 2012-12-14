@@ -30,6 +30,8 @@ import java.util.Map;
 
 import static org.esa.beam.dataio.s2.S2Config.L1C_TILE_LAYOUTS;
 
+// todo - better log problems during read process, see {@report "Problem detected..."} code marks
+
 /**
  * @author Norman Fomferra
  */
@@ -161,12 +163,13 @@ class L1cTileOpImage extends SingleBandedOpImage {
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
             } catch (IOException e) {
-                // warn
+                // {@report "opj_decompress process failed"}
                 if (outputFile0.exists() && !outputFile0.delete()) {
-
+                    // {@report "Failed to delete"}
                 }
             }
             if (!outputFile0.exists()) {
+                // {@report "No output file generated"}
                 Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
                 return;
             }
@@ -176,7 +179,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
             //System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
             readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
         } catch (IOException e) {
-            // warn
+            // {@report "Failed to read uncompressed tile data"}
         }
     }
 
@@ -195,9 +198,11 @@ class L1cTileOpImage extends SingleBandedOpImage {
         try {
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
+                // {@report "Failed to uncompress tile"}
                 System.err.println("Failed to uncompress tile: exitCode = " + exitCode);
             }
         } catch (InterruptedException e) {
+            // {@report "Process was interrupted"}
             System.err.println("InterruptedException: " + e.getMessage());
         }
     }
@@ -214,21 +219,21 @@ class L1cTileOpImage extends SingleBandedOpImage {
                     jp2File.stream = null;
                 }
             } catch (IOException e) {
-                // warn
+                // {@report "Failed to close stream"}
             }
         }
 
         for (File file : openFiles.keySet()) {
             System.out.println("deleting " + file);
             if (!file.delete()) {
-                // warn
+                // {@report "Failed to delete file"}
             }
         }
 
         openFiles.clear();
 
         if (!cacheDir.delete()) {
-            // warn
+            // {@report "Failed to delete cache dir"}
         }
     }
 
