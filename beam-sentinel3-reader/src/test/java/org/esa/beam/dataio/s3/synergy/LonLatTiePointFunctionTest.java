@@ -57,8 +57,7 @@ public class LonLatTiePointFunctionTest {
     private void testApproximationForVariable(double[] lonData, double[] latData, double[] variableData) {
         final LonLatFunction function = new LonLatTiePointFunction(lonData,
                                                                    latData,
-                                                                   variableData, 77
-        );
+                                                                   variableData, lonData.length);
 
         for (int i = 0; i < variableData.length; i++) {
             final double lon = lonData[i];

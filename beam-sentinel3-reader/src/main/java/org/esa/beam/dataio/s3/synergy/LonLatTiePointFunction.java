@@ -30,10 +30,10 @@ final class LonLatTiePointFunction implements LonLatFunction {
             return Double.compare(o1[1], o2[1]);
         }
     };
-    private final int colCount;
+    private final int pixelCount;
 
-    LonLatTiePointFunction(double[] lonData, double[] latData, double[] functionData, int colCount) {
-        this.colCount = colCount;
+    LonLatTiePointFunction(double[] lonData, double[] latData, double[] functionData, int pixelCount) {
+        this.pixelCount = pixelCount;
         data = new double[lonData.length][3];
         for (int i = 0; i < data.length; i++) {
             data[i][0] = lonData[i];
@@ -46,9 +46,9 @@ final class LonLatTiePointFunction implements LonLatFunction {
     @Override
     public double getValue(double lon, double lat) {
         final int index = Math.abs(Arrays.binarySearch(data, new double[]{0.0, lat, 0.0}, comparator));
-        final DistanceCalculator distanceCalculator = new TiePointDistanceCalculator(lon, lat);
-        final int minIndex = Math.max(0, index - colCount - 2);
-        final int maxIndex = Math.min(data.length, index + colCount + 2);
+        final DistanceCalculator distanceCalculator = new DC(lon, lat);
+        final int minIndex = Math.max(0, index - pixelCount - 2);
+        final int maxIndex = Math.min(data.length, index + pixelCount + 2);
 
         double value = Double.NaN;
         double minDistance = Double.MAX_VALUE;
@@ -66,13 +66,13 @@ final class LonLatTiePointFunction implements LonLatFunction {
         return value;
     }
 
-    private static final class TiePointDistanceCalculator implements DistanceCalculator {
+    private static final class DC implements DistanceCalculator {
 
         private final double lon;
         private final double si;
         private final double co;
 
-        private TiePointDistanceCalculator(double lon, double lat) {
+        private DC(double lon, double lat) {
             this.lon = lon;
             this.si = Math.sin(Math.toRadians(lat));
             this.co = Math.cos(Math.toRadians(lat));
