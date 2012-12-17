@@ -20,6 +20,7 @@ import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.dataio.ProductSubsetDef;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.PixelGeoCoding2;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 import org.esa.beam.framework.datamodel.TiePointGeoCoding;
@@ -98,10 +99,17 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
 
     @Override
     protected void setGeoCoding(Product targetProduct) throws IOException {
-        if (targetProduct.getTiePointGrid("TP_latitude") != null && targetProduct.getTiePointGrid(
-                "TP_longitude") != null) {
-            targetProduct.setGeoCoding(new TiePointGeoCoding(targetProduct.getTiePointGrid("TP_latitude"),
-                                                             targetProduct.getTiePointGrid("TP_longitude")));
+        final Band latBand = targetProduct.getBand("latitude");
+        final Band lonBand = targetProduct.getBand("longitude");
+        if (latBand != null && lonBand != null) {
+            targetProduct.setGeoCoding(new PixelGeoCoding2(latBand, lonBand, "!quality_flags_cosmetic"));
+        }
+        if (targetProduct.getGeoCoding() == null) {
+            if (targetProduct.getTiePointGrid("TP_latitude") != null && targetProduct.getTiePointGrid(
+                    "TP_longitude") != null) {
+                targetProduct.setGeoCoding(new TiePointGeoCoding(targetProduct.getTiePointGrid("TP_latitude"),
+                                                                 targetProduct.getTiePointGrid("TP_longitude")));
+            }
         }
     }
 
@@ -118,5 +126,6 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
                 targetBand.setSpectralBandwidth(SPECTRAL_BAND_PROPERTIES.getBandwidth(index));
             }
         }
+        targetNode.setValidPixelExpression("!quality_flags_cosmetic");
     }
 }
