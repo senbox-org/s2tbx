@@ -367,9 +367,6 @@ class L1cTileOpImage extends SingleBandedOpImage {
      * @return the reduced size at the given level
      */
     static int getSizeAtResolutionLevel(int fullSize, int level) {
-        // todo - find out how JPEG2000 computes its integer lower resolution sizes
-        //        and use this algo also in DefaultMultiLevelModel
-        //        and ImageManager.createSingleBandedImageLayout(..., level)
         int size = fullSize >> level;
         int sizeTest = size << level;
         if (sizeTest < fullSize) {
