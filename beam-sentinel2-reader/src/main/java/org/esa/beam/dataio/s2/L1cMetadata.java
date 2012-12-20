@@ -14,12 +14,16 @@ import java.util.List;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
- *
+ * <p/>
  * Note: No data interpretation is done in this class, it is intended to serve the pure metadata content only.
  *
  * @author Norman Fomferra
  */
 public class L1cMetadata {
+
+    static Element NULL_ELEM = new Element("null") {
+    };
+
 
     static class Tile {
         String id;
@@ -62,11 +66,13 @@ public class L1cMetadata {
 
     static class ReflectanceConversion {
         double u;
-        /** Unit: W/m²/µm */
+        /**
+         * Unit: W/m²/µm
+         */
         double[] solarIrradiances;
     }
 
-     static class ProductCharacteristics {
+    static class ProductCharacteristics {
         String spacecraft;
         String datasetProductionDate;
         String processingLevel;
@@ -82,6 +88,58 @@ public class L1cMetadata {
         double wavelenghtCentral;
         double spectralResponseStep;
         double[] spectralResponseValues;
+    }
+
+    static class QuicklookDescriptor {
+        int imageNCols;
+        int imageNRows;
+        Histogram[] histogramList;
+    }
+
+    static class Histogram {
+        public int bandId;
+        int[] values;
+        int step;
+        double min;
+        double max;
+        double mean;
+        double stdDev;
+    }
+
+    private final List<Tile> tileList;
+    private final ResampleData resampleData;
+    private final ProductCharacteristics productCharacteristics;
+    private final QuicklookDescriptor quicklookDescriptor;
+
+    public static L1cMetadata parseHeader(File file) throws JDOMException, IOException {
+        return new L1cMetadata(new SAXBuilder().build(file).getRootElement());
+    }
+
+    public static L1cMetadata parseHeader(Reader reader) throws JDOMException, IOException {
+        return new L1cMetadata(new SAXBuilder().build(reader).getRootElement());
+    }
+
+    public List<Tile> getTileList() {
+        return tileList;
+    }
+
+    public ResampleData getResampleData() {
+        return resampleData;
+    }
+
+    public ProductCharacteristics getProductCharacteristics() {
+        return productCharacteristics;
+    }
+
+    public QuicklookDescriptor getQuicklookDescriptor() {
+        return quicklookDescriptor;
+    }
+
+    private L1cMetadata(Element rootElement) throws DataConversionException {
+        tileList = parseTileList(rootElement);
+        resampleData = parseResampleData(rootElement);
+        productCharacteristics = parseProductCharacteristics(rootElement);
+        quicklookDescriptor = parseQuicklookDescriptor(rootElement);
     }
 
     private static ProductCharacteristics parseProductCharacteristics(Element rootElement) throws DataConversionException {
@@ -108,25 +166,37 @@ public class L1cMetadata {
             spectralInformation.wavelenghtMin = getElementValueDouble(wavelenght, "MAX");
             spectralInformation.wavelenghtCentral = getElementValueDouble(wavelenght, "CENTRAL");
             Element spectralResponse = getChild(element, "Spectral_Response");
-            spectralInformation.spectralResponseStep =  getElementValueDouble(spectralResponse, "STEP");
+            spectralInformation.spectralResponseStep = getElementValueDouble(spectralResponse, "STEP");
             spectralInformation.spectralResponseValues = StringUtils.toDoubleArray(getElementValueString(spectralResponse, "VALUES"), " ");
             spectralInformations[i] = spectralInformation;
         }
         return spectralInformations;
     }
 
-    static Element NULL_ELEM = new Element("null") {
-    };
+    private static QuicklookDescriptor parseQuicklookDescriptor(Element rootElement) throws DataConversionException {
+        QuicklookDescriptor quicklookDescriptor = new QuicklookDescriptor();
+        Element imageSize = getChild(rootElement, "Data_Strip", "Quicklook_Descriptor", "Image_Size");
+        quicklookDescriptor.imageNCols = getElementValueInt(imageSize, "NCOLS");
+        quicklookDescriptor.imageNRows = getElementValueInt(imageSize, "NROWS");
 
+        List<Element> histogramElements = getChildren(rootElement, "Histogram", "Data_Strip", "Quicklook_Descriptor", "Histogram_List");
+        quicklookDescriptor.histogramList = new Histogram[histogramElements.size()];
 
-    private final List<Tile> tileList;
-    private final ResampleData resampleData;
-    private final ProductCharacteristics productCharacteristics;
+        for (int i = 0; i < quicklookDescriptor.histogramList.length; i++) {
+            Element histogramElement = histogramElements.get(i);
+            Histogram histogram = new Histogram();
+            String valuesText = getElementValueString(histogramElement, "VALUES");
+            histogram.bandId = getAttributeValueInt(histogramElement, "band_id");
+            histogram.values = StringUtils.toIntArray(valuesText, " ");
+            histogram.step = getElementValueInt(histogramElement, "STEP");
+            histogram.min = getElementValueDouble(histogramElement, "MIN");
+            histogram.max = getElementValueDouble(histogramElement, "MAX");
+            histogram.mean = getElementValueDouble(histogramElement, "MEAN");
+            histogram.stdDev = getElementValueDouble(histogramElement, "STD_DEV");
+            quicklookDescriptor.histogramList[i] = histogram;
+        }
 
-    private L1cMetadata(Element rootElement) throws DataConversionException {
-        tileList = parseTileList(rootElement);
-        resampleData = parseResampleData(rootElement);
-        productCharacteristics = parseProductCharacteristics(rootElement);
+        return quicklookDescriptor;
     }
 
     private static ResampleData parseResampleData(Element rootElement) throws DataConversionException {
@@ -149,26 +219,6 @@ public class L1cMetadata {
         }
         reflectanceConversion.solarIrradiances = solarIrradiances;
         return reflectanceConversion;
-    }
-
-    public static L1cMetadata parseHeader(File file) throws JDOMException, IOException {
-        return new L1cMetadata(new SAXBuilder().build(file).getRootElement());
-    }
-
-    public static L1cMetadata parseHeader(Reader reader) throws JDOMException, IOException {
-        return new L1cMetadata(new SAXBuilder().build(reader).getRootElement());
-    }
-
-    public List<Tile> getTileList() {
-        return tileList;
-    }
-
-    public ResampleData getResampleData() {
-        return resampleData;
-    }
-
-    public ProductCharacteristics getProductCharacteristics() {
-        return productCharacteristics;
     }
 
     private static List<Tile> parseTileList(Element rootElement) throws DataConversionException {
@@ -322,7 +372,7 @@ public class L1cMetadata {
         try {
             return Integer.parseInt(elementValue);
         } catch (NumberFormatException e) {
-            throw new DataConversionException(name, "double");
+            throw new DataConversionException(name, "int");
         }
     }
 
@@ -331,4 +381,11 @@ public class L1cMetadata {
         return getElementValueInt(child.getValue().trim(), name);
     }
 
+    private static int getAttributeValueInt(Element element, String name) throws DataConversionException {
+        try {
+            return Integer.parseInt(element.getAttributeValue(name));
+        } catch (NumberFormatException e) {
+            throw new DataConversionException(name, "int");
+        }
+    }
 }

@@ -62,6 +62,44 @@ public class L1cMetadataTest {
     }
 
     @Test
+    public void testQuicklookDescriptor() {
+        L1cMetadata.QuicklookDescriptor qld = header.getQuicklookDescriptor();
+        assertEquals(905, qld.imageNCols);
+        assertEquals(793, qld.imageNRows);
+        assertEquals(6, qld.histogramList.length);
+
+        assertEquals(9, qld.histogramList[0].bandId);
+        assertEquals(256, qld.histogramList[0].step, 1e-5);
+        assertEquals(0, qld.histogramList[0].min, 1e-5);
+        assertEquals(267, qld.histogramList[0].max, 1e-5);
+        assertEquals(111.155, qld.histogramList[0].mean, 1e-5);
+        assertEquals(55.6774, qld.histogramList[0].stdDev, 1e-5);
+        final int[] values9 = qld.histogramList[0].values;
+        assertEquals(256, values9.length, 1e-5);
+        int sum9 = 0;
+        for (int v : values9) {
+            sum9 += v;
+        }
+        assertEquals(717660, sum9);
+        assertEquals(717665, qld.imageNCols * qld.imageNRows);
+
+        assertEquals(1, qld.histogramList[1].bandId);
+        assertEquals(256, qld.histogramList[1].step, 1e-5);
+        assertEquals(0, qld.histogramList[1].min, 1e-5);
+        assertEquals(1485, qld.histogramList[1].max, 1e-5);
+        assertEquals(565.748, qld.histogramList[1].mean, 1e-5);
+        assertEquals(276.146, qld.histogramList[1].stdDev, 1e-5);
+        final int[] values1 = qld.histogramList[1].values;
+        assertEquals(256, values1.length, 1e-5);
+        int sum1 = 0;
+        for (int v : values1) {
+            sum1 += v;
+        }
+        assertEquals(717664, sum1);
+        assertEquals(717665, qld.imageNCols * qld.imageNRows);
+    }
+
+    @Test
     public void testTileList() {
 
         List<L1cMetadata.Tile> tileList = header.getTileList();
