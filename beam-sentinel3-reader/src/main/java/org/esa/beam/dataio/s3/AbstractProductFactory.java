@@ -270,18 +270,20 @@ public abstract class AbstractProductFactory implements ProductFactory {
                     String name = mask.getName();
                     String expression = Mask.BandMathsType.getExpression(mask);
                     for (final String sourceBandName : mapping.keySet()) {
-                        if (name.contains(sourceBandName)) {
-                            name = name.replaceAll(sourceBandName, mapping.get(sourceBandName));
-                        }
-                        if (expression.contains(sourceBandName)) {
-                            expression = expression.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                        if(expression.contains(sourceBandName)) {
+                            if(!sourceBandName.equals(mapping.get(sourceBandName))) {
+                                name = name.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                                expression = expression.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                            }
+                            targetProduct.addMask(name, expression, mask.getDescription(), mask.getImageColor(),
+                                                  mask.getImageTransparency());
+                            break;
                         }
                     }
-                    targetProduct.addMask(name, expression, mask.getDescription(), mask.getImageColor(),
-                                          mask.getImageTransparency());
                 }
             }
         }
+
     }
 
     private void readProducts(List<String> fileNames) throws IOException {
