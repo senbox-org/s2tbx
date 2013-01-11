@@ -6,6 +6,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.media.jai.BorderExtender;
@@ -22,18 +23,25 @@ import static org.junit.Assert.assertEquals;
 public class SourceImageScalerTest {
 
     private static final int MAX_USHORT = (2 << 15) - 1;
+    private Band targetBand;
+    private float[] translationsBeforeScaling;
+    private RenderingHints renderingHints;
+    private float[] scalings;
+    private int levelCount;
+
+    @Before
+    public void setup() {
+        targetBand = new Band("targetBand", ProductData.TYPE_INT32, 200, 200);
+        translationsBeforeScaling = new float[]{0f, 0f};
+        renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER, BorderExtender.createInstance(
+                                                                         BorderExtender.BORDER_COPY));
+        scalings = new float[]{2f, 2f};
+        levelCount = 5;
+    }
 
     @Test
     public void testScaleSourceImage() {
-        Band targetBand = new Band("targetBand", ProductData.TYPE_INT32, 200, 200);
-        int levelCount = 5;
         MultiLevelImage sourceImage = createSourceImage(levelCount, 100, 100);
-        float[] scalings = new float[]{((float) targetBand.getRasterWidth()) / sourceImage.getWidth(),
-                ((float) targetBand.getRasterHeight()) / sourceImage.getHeight()};
-        float[] translationsBeforeScaling = new float[]{0f, 0f};
-        final RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                                                                 BorderExtender.createInstance(
-                                                                         BorderExtender.BORDER_COPY));
         MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetBand.getSourceImage(),
                                                                              sourceImage, scalings,
                                                                              translationsBeforeScaling,
@@ -52,18 +60,10 @@ public class SourceImageScalerTest {
 
     @Test
     public void testScaleMultiLevelImageWithDifferentLevelCounts() {
-        Band targetBand = new Band("targetBand", ProductData.TYPE_INT32, 200, 200);
-        int masterLevelCount = 5;
-        int sourceLevelCount = 3;
-        MultiLevelImage masterImage = createNewMultiLevelMasterImage(masterLevelCount, 200, 200);
+        MultiLevelImage masterImage = createNewMultiLevelMasterImage(levelCount, 200, 200);
         targetBand.setSourceImage(masterImage);
+        int sourceLevelCount = 3;
         MultiLevelImage sourceImage = createSourceImage(sourceLevelCount, 100, 100);
-        float[] scalings = new float[]{((float) targetBand.getRasterWidth()) / sourceImage.getWidth(),
-                ((float) targetBand.getRasterHeight()) / sourceImage.getHeight()};
-        float[] translationsBeforeScaling = new float[]{0f, 0f};
-        final RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                                                                 BorderExtender.createInstance(
-                                                                         BorderExtender.BORDER_COPY));
         MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(masterImage, sourceImage, scalings,
                                                                              translationsBeforeScaling,
                                                                              new float[]{0f, 0f}, renderingHints,
@@ -72,8 +72,8 @@ public class SourceImageScalerTest {
 
         assertEquals(targetBand.getRasterWidth(), scaledImage.getWidth());
         assertEquals(targetBand.getRasterHeight(), scaledImage.getHeight());
-        assertEquals(masterLevelCount, scaledImage.getModel().getLevelCount());
-        for (int i = 0; i < masterLevelCount; i++) {
+        assertEquals(levelCount, scaledImage.getModel().getLevelCount());
+        for (int i = 0; i < levelCount; i++) {
             final RenderedImage masterImageAtLevel = ((MultiLevelImage) targetBand.getSourceImage()).getImage(i);
             final RenderedImage scaledImageAtLevel = scaledImage.getImage(i);
             assertEquals(masterImageAtLevel.getWidth(), scaledImageAtLevel.getWidth());
@@ -83,6 +83,64 @@ public class SourceImageScalerTest {
         assertEquals(MAX_USHORT, scaledImage.getData().getSample(targetBounds.width - 1, 0, 0));
         assertEquals(MAX_USHORT, scaledImage.getData().getSample(0, targetBounds.height - 1, 0));
         assertEquals(MAX_USHORT, scaledImage.getData().getSample(targetBounds.width - 1, targetBounds.height - 1, 0));
+    }
+
+    @Test
+    public void testScaleSourceImageWithOffsets() {
+        MultiLevelImage sourceImage = createSourceImage(levelCount, 50, 50);
+        float[] offsets = new float[]{50f, 50f};
+        MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetBand.getSourceImage(),
+                                                                             sourceImage, scalings,
+                                                                             translationsBeforeScaling,
+                                                                             offsets, renderingHints,
+                                                                             Double.NaN, Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+        final Rectangle targetBounds = targetBand.getSourceImage().getBounds();
+
+        assertEquals(targetBand.getRasterWidth(), scaledImage.getWidth());
+        assertEquals(targetBand.getRasterHeight(), scaledImage.getHeight());
+        assertEquals(targetBand.getSourceImage().getModel().getLevelCount(), scaledImage.getModel().getLevelCount());
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample((int)offsets[0], (int)offsets[1], 0));
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(targetBounds.width - (int)offsets[0] - 1, (int)offsets[1], 0));
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample((int)offsets[0], targetBounds.height - (int)offsets[1]- 1, 0));
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(targetBounds.width - (int)offsets[0] - 1, targetBounds.height - (int)offsets[1] - 1, 0));
+    }
+
+    @Test
+    public void testScaleSourceImageWithNegativeOffsets() {
+        MultiLevelImage sourceImage = createSourceImage2(levelCount, 50, 50);
+        float[] offsets = new float[]{-50f, -50f};
+        MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetBand.getSourceImage(),
+                                                                             sourceImage, scalings,
+                                                                             translationsBeforeScaling,
+                                                                             offsets, renderingHints,
+                                                                             Double.NaN, Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+
+        assertEquals(targetBand.getRasterWidth(), scaledImage.getWidth());
+        assertEquals(targetBand.getRasterHeight(), scaledImage.getHeight());
+        assertEquals(targetBand.getSourceImage().getModel().getLevelCount(), scaledImage.getModel().getLevelCount());
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(0, 0, 0));
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(49, 0, 0));
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(0, 49, 0));
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(49, 49, 0));
+    }
+
+    @Test
+    public void testScaleSourceImageWithNegativeNonIntegerOffsets() {
+        MultiLevelImage sourceImage = createSourceImage2(levelCount, 50, 50);
+        float[] offsets = new float[]{-50.5f, -50.5f};
+        MultiLevelImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetBand.getSourceImage(),
+                                                                             sourceImage, scalings,
+                                                                             translationsBeforeScaling,
+                                                                             offsets, renderingHints,
+                                                                             Double.NaN, Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+
+        assertEquals(targetBand.getRasterWidth(), scaledImage.getWidth());
+        assertEquals(targetBand.getRasterHeight(), scaledImage.getHeight());
+        assertEquals(targetBand.getSourceImage().getModel().getLevelCount(), scaledImage.getModel().getLevelCount());
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(0, 0, 0));
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(48, 0, 0));
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(0, 48, 0));
+        assertEquals(MAX_USHORT, scaledImage.getData().getSample(48, 48, 0));
     }
 
     private static MultiLevelImage createSourceImage(int levelCount, int srcW, int srcH) {
@@ -95,6 +153,21 @@ public class SourceImageScalerTest {
         sourceImage.getRaster().setSample(0, 0, 0, MAX_USHORT);
         sourceImage.getRaster().setSample(srcW - 1, 0, 0, MAX_USHORT);
         sourceImage.getRaster().setSample(0, srcH - 1, 0, MAX_USHORT);
+        sourceImage.getRaster().setSample(srcW - 1, srcH - 1, 0, MAX_USHORT);
+        final DefaultMultiLevelSource multiLevelSource = new DefaultMultiLevelSource(sourceImage, levelCount);
+        return new DefaultMultiLevelImage(multiLevelSource);
+    }
+
+    private static MultiLevelImage createSourceImage2(int levelCount, int srcW, int srcH) {
+        BufferedImage sourceImage = new BufferedImage(srcW, srcH, BufferedImage.TYPE_USHORT_GRAY);
+        for (int y = 0; y < srcH; y++) {
+            for (int x = 0; x < srcW; x++) {
+                sourceImage.getRaster().setSample(x, y, 0, (int) (MAX_USHORT * Math.random()));
+            }
+        }
+        sourceImage.getRaster().setSample(srcW/2, srcH/2, 0, MAX_USHORT);
+        sourceImage.getRaster().setSample(srcW - 1, srcH/2, 0, MAX_USHORT);
+        sourceImage.getRaster().setSample(srcW/2, srcH - 1, 0, MAX_USHORT);
         sourceImage.getRaster().setSample(srcW - 1, srcH - 1, 0, MAX_USHORT);
         final DefaultMultiLevelSource multiLevelSource = new DefaultMultiLevelSource(sourceImage, levelCount);
         return new DefaultMultiLevelImage(multiLevelSource);

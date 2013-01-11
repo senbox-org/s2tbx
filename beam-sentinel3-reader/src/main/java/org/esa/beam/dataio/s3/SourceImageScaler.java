@@ -90,17 +90,26 @@ public class SourceImageScaler {
             final float yScale = scalings[1] * scaleRatio;
             if (xScale != 1.0f && yScale != 1.0f) {
                 renderedImage = ScaleDescriptor.create(image, xScale, yScale, scaleTranslations[0], scaleTranslations[1],
-                                                       interpolation,
-                                                       renderingHints);
+                                                       interpolation, renderingHints);
             }
-            final float scaledXOffset = (offsets != null) ? (float)(offsets[0] / targetScale) : 0f;
-            final float scaledYOffset = (offsets != null) ? (float)(offsets[1] / targetScale) : 0f;
-            if (!Double.isNaN(noDataValue)) {
-                final int padX = Math.round(Math.abs(scaledXOffset));
-                final int padY = Math.round(Math.abs(scaledYOffset));
+            final float scaledXOffset = (offsets != null) ? (float) (offsets[0] / targetScale) : 0f;
+            final float scaledYOffset = (offsets != null) ? (float) (offsets[1] / targetScale) : 0f;
+            if (masterWidth != renderedImage.getWidth() || masterHeight != renderedImage.getHeight() ||
+                    scaledXOffset != 0.0f || scaledYOffset != 0.0f) {
+                final int padX = Math.round(scaledXOffset);
+                final int padY = Math.round(scaledYOffset);
+                int borderCorrectorX = (scaledXOffset - padX < 0) ? 1 : 0;
+                int borderCorrectorY = (scaledYOffset - padY < 0) ? 1 : 0;
                 final BorderExtender borderExtender = new BorderExtenderConstant(new double[]{noDataValue});
-                renderedImage = BorderDescriptor.create(renderedImage, padX, padX, padY, padY, borderExtender,
-                                                        renderingHints);
+                //todo maybe remove Math.max when useful test data for SLSTR L1B products has arrived
+                final int rightPadX = Math.max(0, masterWidth - padX - renderedImage.getWidth() + borderCorrectorX);
+                final int lowerPadY = Math.max(0, masterHeight - padY - renderedImage.getHeight() + borderCorrectorY);
+                renderedImage = BorderDescriptor.create(renderedImage,
+                                                        padX,
+                                                        rightPadX,
+                                                        padY,
+                                                        lowerPadY,
+                                                        borderExtender, renderingHints);
             }
             if (scaledXOffset != 0.0f || scaledYOffset != 0.0f) {
                 renderedImage = TranslateDescriptor.create(renderedImage, scaledXOffset, scaledYOffset, null,
