@@ -184,6 +184,9 @@ public abstract class AbstractProductFactory implements ProductFactory {
 
     private void setMaskFromAttribute(Product targetProduct, Band band, MetadataAttribute attribute) {
         final String attributeName = attribute.getName();
+        if (attributeName.equals("spare")) {
+            return;
+        }
         final int attributeIndex = attribute.getData().getElemInt();
         final String maskName = band.getName() + "_" + attributeName;
         final String expression = band.getName() + " == " + attributeIndex;
@@ -270,17 +273,19 @@ public abstract class AbstractProductFactory implements ProductFactory {
             final Mask.ImageType imageType = mask.getImageType();
             if (imageType == Mask.BandMathsType.INSTANCE) {
                 String name = mask.getName();
-                String expression = Mask.BandMathsType.getExpression(mask);
-                for (final String sourceBandName : mapping.keySet()) {
-                    if(expression.contains(sourceBandName)) {
-                        if(!sourceBandName.equals(mapping.get(sourceBandName))) {
-                            name = name.replaceAll(sourceBandName, mapping.get(sourceBandName));
-                            expression = expression.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                if (!name.equals("spare")) {
+                    String expression = Mask.BandMathsType.getExpression(mask);
+                    for (final String sourceBandName : mapping.keySet()) {
+                        if (expression.contains(sourceBandName)) {
+                            if (!sourceBandName.equals(mapping.get(sourceBandName))) {
+                                name = name.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                                expression = expression.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                            }
+                            String description = sourceProduct.getDisplayName() + "." + mask.getDisplayName();
+                            targetProduct.addMask(name, expression, description, mask.getImageColor(),
+                                                  mask.getImageTransparency());
+                            break;
                         }
-                        String description = sourceProduct.getDisplayName() + "." + mask.getDisplayName();
-                        targetProduct.addMask(name, expression, description, mask.getImageColor(),
-                                              mask.getImageTransparency());
-                        break;
                     }
                 }
             }
