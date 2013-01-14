@@ -28,7 +28,6 @@ import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 import org.esa.beam.framework.datamodel.TiePointGrid;
-import org.esa.beam.framework.dataop.barithm.BandArithmetic;
 import org.esa.beam.util.ProductUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.w3c.dom.Document;
@@ -144,7 +143,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
 
         addDataNodes(masterProduct, targetProduct);
         addVariables(masterProduct, targetProduct);
-        setMasks(targetProduct);
+        setMasksFromIndexOrFlagCoding(targetProduct);
         setTimes(targetProduct);
         if (targetProduct.getGeoCoding() == null) {
             setGeoCoding(targetProduct);
@@ -166,32 +165,29 @@ public abstract class AbstractProductFactory implements ProductFactory {
         return Collections.unmodifiableList(openProductList);
     }
 
-    protected void setMasks(Product targetProduct) {
+    protected void setMasksFromIndexOrFlagCoding(Product targetProduct) {
         final Band[] bands = targetProduct.getBands();
         for (Band band : bands) {
             if (band.isFlagBand()) {
                 final FlagCoding flagCoding = band.getFlagCoding();
                 for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
-                    final MetadataAttribute attribute = flagCoding.getAttributeAt(j);
-                    final String attributeName = attribute.getName();
-                    final String expression = BandArithmetic.createExternalName(band.getName() + "." + attributeName);
-                    final String maskName = band.getName() + "_" + attributeName;
-
-                    targetProduct.addMask(maskName, expression, expression, Color.RED, 0.5);
+                    setMaskFromAttribute(targetProduct, band, flagCoding.getAttributeAt(j));
                 }
             } else if (band.isIndexBand()) {
                 final IndexCoding indexCoding = band.getIndexCoding();
                 for (int j = 0; j < indexCoding.getNumAttributes(); j++) {
-                    final MetadataAttribute attribute = indexCoding.getAttributeAt(j);
-                    final String attributeName = attribute.getName();
-                    final int attributeIndex = attribute.getData().getElemInt();
-                    final String maskName = band.getName() + "_" + attributeName;
-                    final String expression = band.getName() + " == " + attributeIndex;
-                    final String description = band.getName() + "." + attributeName;
-                    targetProduct.addMask(maskName, expression, description, Color.RED, 0.5);
+                    setMaskFromAttribute(targetProduct, band, indexCoding.getAttributeAt(j));
                 }
             }
         }
+    }
+
+    private void setMaskFromAttribute(Product targetProduct, Band band, MetadataAttribute attribute) {
+        final String attributeName = attribute.getName();
+        final int attributeIndex = attribute.getData().getElemInt();
+        final String maskName = band.getName() + "_" + attributeName;
+        final String expression = band.getName() + " == " + attributeIndex;
+        targetProduct.addMask(maskName, expression, expression, Color.RED, 0.5);
     }
 
     private void setTimes(Product targetProduct) {
@@ -262,28 +258,33 @@ public abstract class AbstractProductFactory implements ProductFactory {
                     mapping.put(sourceBand.getName(), targetNode.getName());
                 }
             }
-            final ProductNodeGroup<Mask> maskGroup = sourceProduct.getMaskGroup();
-            for (int i = 0; i < maskGroup.getNodeCount(); i++) {
-                final Mask mask = maskGroup.get(i);
-                final Mask.ImageType imageType = mask.getImageType();
-                if (imageType == Mask.BandMathsType.INSTANCE) {
-                    String name = mask.getName();
-                    String expression = Mask.BandMathsType.getExpression(mask);
-                    for (final String sourceBandName : mapping.keySet()) {
-                        if(expression.contains(sourceBandName)) {
-                            if(!sourceBandName.equals(mapping.get(sourceBandName))) {
-                                name = name.replaceAll(sourceBandName, mapping.get(sourceBandName));
-                                expression = expression.replaceAll(sourceBandName, mapping.get(sourceBandName));
-                            }
-                            targetProduct.addMask(name, expression, mask.getDescription(), mask.getImageColor(),
-                                                  mask.getImageTransparency());
-                            break;
+            setMasksFromDataNode(targetProduct, sourceProduct, mapping);
+        }
+
+    }
+
+    private void setMasksFromDataNode(Product targetProduct, Product sourceProduct, Map<String, String> mapping) {
+        final ProductNodeGroup<Mask> maskGroup = sourceProduct.getMaskGroup();
+        for (int i = 0; i < maskGroup.getNodeCount(); i++) {
+            final Mask mask = maskGroup.get(i);
+            final Mask.ImageType imageType = mask.getImageType();
+            if (imageType == Mask.BandMathsType.INSTANCE) {
+                String name = mask.getName();
+                String expression = Mask.BandMathsType.getExpression(mask);
+                for (final String sourceBandName : mapping.keySet()) {
+                    if(expression.contains(sourceBandName)) {
+                        if(!sourceBandName.equals(mapping.get(sourceBandName))) {
+                            name = name.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                            expression = expression.replaceAll(sourceBandName, mapping.get(sourceBandName));
                         }
+                        String description = sourceProduct.getDisplayName() + "." + mask.getDisplayName();
+                        targetProduct.addMask(name, expression, description, mask.getImageColor(),
+                                              mask.getImageTransparency());
+                        break;
                     }
                 }
             }
         }
-
     }
 
     private void readProducts(List<String> fileNames) throws IOException {
