@@ -115,7 +115,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         readProducts(fileNames);
 
         final String productName = getProductName();
-        final String productType = productReader.getReaderPlugIn().getFormatNames()[0];
+        final String productType = productName.substring(0, 12);
         final Product masterProduct = findMasterProduct();
         final int w = masterProduct.getSceneRasterWidth();
         final int h = masterProduct.getSceneRasterHeight();
