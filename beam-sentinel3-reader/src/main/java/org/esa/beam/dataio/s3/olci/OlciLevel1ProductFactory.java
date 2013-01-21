@@ -102,7 +102,7 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
         final Band latBand = targetProduct.getBand("latitude");
         final Band lonBand = targetProduct.getBand("longitude");
         if (latBand != null && lonBand != null) {
-            targetProduct.setGeoCoding(new PixelGeoCoding2(latBand, lonBand, "!quality_flags_cosmetic"));
+            targetProduct.setGeoCoding(new PixelGeoCoding2(latBand, lonBand, "!quality_flags_cosmetic && !quality_flags_sun_glint_risk"));
         }
         if (targetProduct.getGeoCoding() == null) {
             if (targetProduct.getTiePointGrid("TP_latitude") != null && targetProduct.getTiePointGrid(
