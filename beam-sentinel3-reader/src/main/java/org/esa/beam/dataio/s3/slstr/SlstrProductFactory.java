@@ -97,7 +97,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
                                               BorderExtender.createInstance(
                                                       BorderExtender.BORDER_COPY)));
         final MultiLevelImage sourceImage = sourceBand.getSourceImage();
-        float[] scalings = new float[]{
+        final float[] scalings = new float[]{
                 ((float) sourceResolutions[0]) / referenceResolutions[0],
                 ((float) sourceResolutions[1]) / referenceResolutions[1]
         };

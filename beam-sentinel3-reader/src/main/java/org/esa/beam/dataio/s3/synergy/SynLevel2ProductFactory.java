@@ -56,6 +56,18 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
     }
 
     @Override
+    protected Product createTargetProduct(String productName, String productType, Product masterProduct) {
+        return super.createTargetProduct(productName, productType, masterProduct);
+        // TODO - override because we need a mosaic of camera images
+    }
+
+    @Override
+    protected void addDataNodes(Product masterProduct, Product targetProduct) throws IOException {
+        super.addDataNodes(masterProduct, targetProduct);
+        // TODO - override because we need a mosaic of camera images
+    }
+
+    @Override
     protected void addVariables(Product masterProduct, Product targetProduct) throws IOException {
         final double[] olcTpLon;
         final double[] olcTpLat;
@@ -100,6 +112,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
             for (final Variable variable : variables) {
                 final double[] tpVar = ncFile.read(variable.getName());
 
+                // TODO - make a mosaic of images here
                 for (int i = 1; i <= 5; i++) {
                     final String latBandName = "latitude_CAM" + i;
                     final String lonBandName = "longitude_CAM" + i;

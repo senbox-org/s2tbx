@@ -65,17 +65,6 @@ public abstract class AbstractProductFactory implements ProductFactory {
         return logger;
     }
 
-    protected final Manifest getManifest() throws IOException {
-        if (manifest == null) {
-            synchronized (this) {
-                if (manifest == null) {
-                    return createManifest(getInputFile());
-                }
-            }
-        }
-        return manifest;
-    }
-
     protected static Band copyBand(Band sourceBand, Product targetProduct, boolean copySourceImage) {
         return ProductUtils.copyBand(sourceBand.getName(), sourceBand.getProduct(), targetProduct, copySourceImage);
     }
@@ -115,9 +104,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         final String productName = getProductName();
         final String productType = productName.substring(0, 12);
         final Product masterProduct = findMasterProduct();
-        final int w = masterProduct.getSceneRasterWidth();
-        final int h = masterProduct.getSceneRasterHeight();
-        final Product targetProduct = new Product(productName, productType, w, h, productReader);
+        final Product targetProduct = createTargetProduct(productName, productType, masterProduct);
         targetProduct.setFileLocation(getInputFile());
 
         initialize(masterProduct);
@@ -150,6 +137,12 @@ public abstract class AbstractProductFactory implements ProductFactory {
         setAutoGrouping(sourceProducts, targetProduct);
 
         return targetProduct;
+    }
+
+    protected Product createTargetProduct(String productName, String productType, Product masterProduct) {
+        final int w = masterProduct.getSceneRasterWidth();
+        final int h = masterProduct.getSceneRasterHeight();
+        return new Product(productName, productType, w, h, productReader);
     }
 
     protected void addVariables(Product masterProduct, Product targetProduct) throws IOException {
@@ -238,7 +231,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     protected void initialize(Product masterProduct) {
     }
 
-    protected final void addDataNodes(Product masterProduct, Product targetProduct) throws IOException {
+    protected void addDataNodes(Product masterProduct, Product targetProduct) throws IOException {
         final int w = targetProduct.getSceneRasterWidth();
         final int h = targetProduct.getSceneRasterHeight();
 
@@ -258,7 +251,6 @@ public abstract class AbstractProductFactory implements ProductFactory {
             }
             setMasksFromDataNode(targetProduct, sourceProduct, mapping);
         }
-
     }
 
     private void setMasksFromDataNode(Product targetProduct, Product sourceProduct, Map<String, String> mapping) {
@@ -296,9 +288,14 @@ public abstract class AbstractProductFactory implements ProductFactory {
     private Product readProduct(String fileName) throws IOException {
         final File file = new File(getInputFileParentDirectory(), fileName);
         final ProductReader reader = ProductIO.getProductReaderForInput(file);
-        final Product product = reader != null ? reader.readProductNodes(file, getSubsetDef(fileName)) : null;
-        if (product == null) {
+        if (reader == null) {
             final String msg = MessageFormat.format("Cannot read file ''{0}''. No appropriate reader found.", fileName);
+            logger.log(Level.SEVERE, msg);
+            throw new IOException(msg);
+        }
+        final Product product = reader.readProductNodes(file, getSubsetDef(fileName));
+        if (product == null) {
+            final String msg = MessageFormat.format("Cannot read file ''{0}''.", fileName);
             logger.log(Level.SEVERE, msg);
             throw new IOException(msg);
         }
