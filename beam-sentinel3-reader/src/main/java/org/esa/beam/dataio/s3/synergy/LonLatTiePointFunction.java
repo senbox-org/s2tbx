@@ -45,6 +45,8 @@ final class LonLatTiePointFunction implements LonLatFunction {
 
     @Override
     public double getValue(double lon, double lat) {
+        // TODO - this algorithm does not work in general
+
         final int index = Math.abs(Arrays.binarySearch(data, new double[]{0.0, lat, 0.0}, comparator));
         final DistanceCalculator distanceCalculator = new DC(lon, lat);
         final int minIndex = Math.max(0, index - pixelCount - 2);

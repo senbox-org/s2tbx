@@ -51,7 +51,6 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         fileNames.addAll(manifest.getFileNames("geometryDataSchema"));
 
         // TODO - time  data are provided on a different grid, so we currently don't use them
-        // TODO - meteo data are provided on a different grid, so we currently don't use them
 
         return fileNames;
     }
