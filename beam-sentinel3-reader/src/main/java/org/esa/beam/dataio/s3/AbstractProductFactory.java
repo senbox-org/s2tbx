@@ -19,14 +19,12 @@ import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductSubsetDef;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.CrsGeoCoding;
-import org.esa.beam.framework.datamodel.FlagCoding;
-import org.esa.beam.framework.datamodel.IndexCoding;
 import org.esa.beam.framework.datamodel.Mask;
-import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.RasterDataNode;
+import org.esa.beam.framework.datamodel.SampleCoding;
 import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.util.ProductUtils;
 import org.esa.beam.util.io.FileUtils;
@@ -143,7 +141,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
 
         addDataNodes(masterProduct, targetProduct);
         addVariables(masterProduct, targetProduct);
-        setMasksFromIndexOrFlagCoding(targetProduct);
+        setMasks(targetProduct);
         setTimes(targetProduct);
         if (targetProduct.getGeoCoding() == null) {
             setGeoCoding(targetProduct);
@@ -165,32 +163,29 @@ public abstract class AbstractProductFactory implements ProductFactory {
         return Collections.unmodifiableList(openProductList);
     }
 
-    protected void setMasksFromIndexOrFlagCoding(Product targetProduct) {
+    protected void setMasks(Product targetProduct) {
         final Band[] bands = targetProduct.getBands();
         for (Band band : bands) {
-            if (band.isFlagBand()) {
-                final FlagCoding flagCoding = band.getFlagCoding();
-                for (int j = 0; j < flagCoding.getNumAttributes(); j++) {
-                    setMaskFromAttribute(targetProduct, band, flagCoding.getAttributeAt(j));
-                }
-            } else if (band.isIndexBand()) {
-                final IndexCoding indexCoding = band.getIndexCoding();
-                for (int j = 0; j < indexCoding.getNumAttributes(); j++) {
-                    setMaskFromAttribute(targetProduct, band, indexCoding.getAttributeAt(j));
+            final SampleCoding sampleCoding = band.getSampleCoding();
+            if (sampleCoding != null) {
+                final String bandName = band.getName();
+                final boolean flagBand = band.isFlagBand();
+                for (int i = 0; i < sampleCoding.getNumAttributes(); i++) {
+                    final String sampleName = sampleCoding.getSampleName(i);
+                    final int sampleValue = sampleCoding.getSampleValue(i);
+                    if (!"spare".equals(sampleName)) {
+                        final String expression;
+                        if (flagBand) {
+                            expression = bandName + " & " + sampleValue + " == " + sampleValue;
+                        } else {
+                            expression = bandName + " == " + sampleValue;
+                        }
+                        final String maskName = bandName + "_" + sampleName;
+                        targetProduct.addMask(maskName, expression, expression, Color.RED, 0.5);
+                    }
                 }
             }
         }
-    }
-
-    private void setMaskFromAttribute(Product targetProduct, Band band, MetadataAttribute attribute) {
-        final String attributeName = attribute.getName();
-        if (attributeName.equals("spare")) {
-            return;
-        }
-        final int attributeIndex = attribute.getData().getElemInt();
-        final String maskName = band.getName() + "_" + attributeName;
-        final String expression = band.getName() + " == " + attributeIndex;
-        targetProduct.addMask(maskName, expression, expression, Color.RED, 0.5);
     }
 
     private void setTimes(Product targetProduct) {

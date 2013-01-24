@@ -96,7 +96,7 @@ public class VgtProductFactory extends AbstractProductFactory {
     }
 
     @Override
-    protected void setMasksFromIndexOrFlagCoding(Product targetProduct) {
+    protected void setMasks(Product targetProduct) {
         final ProductNodeGroup<Mask> maskGroup = targetProduct.getMaskGroup();
         for (int i = 0; i < maskGroup.getNodeCount(); i++) {
             final Mask mask = maskGroup.get(i);
