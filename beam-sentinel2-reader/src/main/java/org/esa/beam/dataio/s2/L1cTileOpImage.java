@@ -1,8 +1,10 @@
 package org.esa.beam.dataio.s2;
 
+import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
 import org.esa.beam.jai.ResolutionLevel;
 import org.esa.beam.jai.SingleBandedOpImage;
+import org.esa.beam.util.ImageUtils;
 import org.esa.beam.util.io.FileUtils;
 
 import javax.imageio.stream.FileImageInputStream;
@@ -13,6 +15,7 @@ import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
 import java.awt.Dimension;
@@ -21,6 +24,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferUShort;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
@@ -55,15 +59,33 @@ class L1cTileOpImage extends SingleBandedOpImage {
     static PlanarImage create(File imageFile,
                               File cacheDir,
                               Point imagePos,
-                              L1cTileLayout imageLayout,
+                              L1cTileLayout l1cTileLayout,
                               MultiLevelModel imageModel,
                               S2SpatialResolution spatialResolution,
                               int level) {
-        PlanarImage opImage = new L1cTileOpImage(imageFile, cacheDir, imagePos, imageLayout, imageModel, level);
-        if (spatialResolution != S2SpatialResolution.R10M) {
-            return createScaledImage(opImage, spatialResolution, level);
+
+        Assert.notNull(cacheDir, "cacheDir");
+        Assert.notNull(l1cTileLayout, "imageLayout");
+        Assert.notNull(imageModel, "imageModel");
+        Assert.notNull(spatialResolution, "spatialResolution");
+
+        if (imageFile != null) {
+            PlanarImage opImage = new L1cTileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
+            if (spatialResolution != S2SpatialResolution.R10M) {
+                return createScaledImage(opImage, spatialResolution, level);
+            }
+            return opImage;
+        } else {
+            int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
+            int targetHeight = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].height, level);
+            Dimension targetTileDim = getTileDimAtResolutionLevel(L1C_TILE_LAYOUTS[0].tileWidth, L1C_TILE_LAYOUTS[0].tileHeight, level);
+            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.DATA_BUFFER_TYPE, targetWidth, targetHeight);
+            ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
+            return ConstantDescriptor.create((float) imageLayout.getWidth(null),
+                                             (float) imageLayout.getHeight(null),
+                                             new Short[]{S2Config.FILL_CODE_NO_FILE},
+                                             new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
         }
-        return opImage;
     }
 
     static PlanarImage createScaledImage(PlanarImage sourceImage, S2SpatialResolution resolution, int level) {
@@ -113,6 +135,11 @@ class L1cTileOpImage extends SingleBandedOpImage {
               null,
               ResolutionLevel.create(imageModel, level));
 
+        Assert.notNull(imageFile, "imageFile");
+        Assert.notNull(cacheDir, "cacheDir");
+        Assert.notNull(l1cTileLayout, "l1cTileLayout");
+        Assert.notNull(imageModel, "imageModel");
+
         this.imageFile = imageFile;
         this.cacheDir = cacheDir;
         this.l1cTileLayout = l1cTileLayout;
@@ -150,10 +177,15 @@ class L1cTileOpImage extends SingleBandedOpImage {
         //  4  -    685   -   256
         //  5  -    343   -   128
 
-        final File outputFile = new File(cacheDir,
-                                         FileUtils.exchangeExtension(imageFile.getName(),
-                                                                     String.format("_R%d_TX%d_TY%d.pgx",
-                                                                                   getLevel(), jp2TileX, jp2TileY)));
+        File outputFile = null;
+        try {
+            outputFile = new File(cacheDir,
+                                  FileUtils.exchangeExtension(imageFile.getName(),
+                                                              String.format("_R%d_TX%d_TY%d.pgx",
+                                                                            getLevel(), jp2TileX, jp2TileY)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
 
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
