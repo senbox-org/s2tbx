@@ -148,7 +148,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     }
 
     @Override
-    protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
+    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
         final DataBufferUShort dataBuffer = (DataBufferUShort) dest.getDataBuffer();
         final short[] tileData = dataBuffer.getData();
 
