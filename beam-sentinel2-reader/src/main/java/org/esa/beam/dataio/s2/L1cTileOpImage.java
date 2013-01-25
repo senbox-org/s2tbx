@@ -127,7 +127,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
                    L1cTileLayout l1cTileLayout,
                    MultiLevelModel imageModel,
                    int level) {
-        super(DataBuffer.TYPE_USHORT,
+        super(S2Config.DATA_BUFFER_TYPE,
               imagePos,
               l1cTileLayout.width,
               l1cTileLayout.height,
