@@ -122,6 +122,14 @@ public class L1cSceneDescription {
         return tileInfos.length;
     }
 
+    public String[] getTileIds() {
+        final String[] tileIds = new String[tileInfos.length];
+        for (int i = 0; i < tileInfos.length; i++) {
+            tileIds[i] = tileInfos[i].id;
+        }
+        return tileIds;
+    }
+
     public int getTileIndex(String tileId) {
         TileInfo tileInfo = tileInfoMap.get(tileId);
         return tileInfo != null ? tileInfo.index : -1;

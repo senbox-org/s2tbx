@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.esa.beam.dataio.s2.L1cMetadata.ProductCharacteristics;
 import static org.esa.beam.dataio.s2.L1cMetadata.ResampleData;
@@ -251,11 +250,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     bandInfoMap.put(bandIndex, bandInfo);
                 } else {
                     // {@report "no image files found"}
-                    System.out.printf("Warning: no image files found for band " + bandInformation.physicalBand);
+                    System.out.printf("Warning: no image files found for band %s\n", bandInformation.physicalBand);
                 }
             } else {
                 // {@report "illegal band index"}
-                System.out.printf("Warning: illegal band index detected for band " + bandInformation.physicalBand);
+                System.out.printf("Warning: illegal band index detected for band %s\n", bandInformation.physicalBand);
             }
         }
 
@@ -267,9 +266,18 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
+        addTiePointGridBand(product, sceneDescription, "sun_zenith", 0);
+        addTiePointGridBand(product, sceneDescription, "sun_azimuth", 1);
+        addTiePointGridBand(product, sceneDescription, "view_zenith", 2);
+        addTiePointGridBand(product, sceneDescription, "view_azimuth", 3);
         addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription));
 
         return product;
+    }
+
+    private void addTiePointGridBand(Product product, L1cSceneDescription sceneDescription, String name, int tiePointGridIndex) {
+        //final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
+        //band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, 6, tiePointGridIndex)));
     }
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
@@ -283,7 +291,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         if (bandIndexes.isEmpty()) {
             throw new IOException("No valid bands found.");
         }
-
 
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
@@ -341,6 +348,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private void addL1cTileTiePointGrids(L1cMetadata metadataHeader, Product product, int tileIndex) {
+        final TiePointGrid[] tiePointGrids = createL1cTileTiePointGrids(metadataHeader, tileIndex);
+        for (TiePointGrid tiePointGrid : tiePointGrids) {
+            product.addTiePointGrid(tiePointGrid);
+        }
+    }
+
+    private TiePointGrid[] createL1cTileTiePointGrids(L1cMetadata metadataHeader, int tileIndex) {
         Tile tile = metadataHeader.getTileList().get(tileIndex);
         int gridHeight = tile.sunAnglesGrid.zenith.length;
         int gridWidth = tile.sunAnglesGrid.zenith[0].length;
@@ -367,17 +381,19 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 }
             }
         }
-        addTiePointGrid(product, "sun_zenith", gridWidth, gridHeight, sunZeniths);
-        addTiePointGrid(product, "sun_azimuth", gridWidth, gridHeight, sunAzimuths);
-        addTiePointGrid(product, "view_zenith", gridWidth, gridHeight, viewingZeniths);
-        addTiePointGrid(product, "view_azimuth", gridWidth, gridHeight, viewingAzimuths);
+        return new TiePointGrid[]{
+                createTiePointGrid("sun_zenith", gridWidth, gridHeight, sunZeniths),
+                createTiePointGrid("sun_azimuth", gridWidth, gridHeight, sunAzimuths),
+                createTiePointGrid("view_zenith", gridWidth, gridHeight, viewingZeniths),
+                createTiePointGrid("view_azimuth", gridWidth, gridHeight, viewingAzimuths)
+        };
     }
 
-    private void addTiePointGrid(Product product, String name, int gridWidth, int gridHeight, float[] values) {
+    private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, float[] values) {
         final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, values);
         tiePointGrid.setNoDataValue(Double.NaN);
         tiePointGrid.setNoDataValueUsed(true);
-        product.addTiePointGrid(tiePointGrid);
+        return tiePointGrid;
     }
 
     private static Map<String, File> createFileMap(String tileId, File imageFile) {
@@ -464,7 +480,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     private interface MultiLevelImageFactory {
         MultiLevelImage createSourceImage(BandInfo bandInfo);
-
     }
 
     private class L1cTileMultiLevelImageFactory implements MultiLevelImageFactory {
@@ -483,10 +498,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         @Override
         public MultiLevelImage createSourceImage(BandInfo bandInfo) {
-            return new DefaultMultiLevelImage(new L1cMosaicMultiLevelSource(sceneDescription, bandInfo));
+            return new DefaultMultiLevelImage(new BandL1cSceneMultiLevelSource(sceneDescription, bandInfo));
         }
     }
 
+    /**
+     * A MultiLevelSource for single L1C tiles.
+     */
     private class L1cTileMultiLevelSource extends AbstractMultiLevelSource {
         final BandInfo bandInfo;
 
@@ -500,7 +518,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         @Override
         protected RenderedImage createImage(int level) {
-            return L1cTileOpImage.create(bandInfo.tileIdToFileMap.values().iterator().next(),
+            File imageFile = bandInfo.tileIdToFileMap.values().iterator().next();
+            return L1cTileOpImage.create(imageFile,
                                          cacheDir,
                                          null,
                                          bandInfo.imageLayout,
@@ -511,41 +530,31 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     }
 
-    private class L1cMosaicMultiLevelSource extends AbstractMultiLevelSource {
-        private final L1cSceneDescription sceneDescription;
-        private final BandInfo bandInfo;
+    /**
+     * A MultiLevelSource for a scene made of multiple L1C tiles.
+     */
+    private abstract class AbstractL1cSceneMultiLevelSource extends AbstractMultiLevelSource {
+        protected final L1cSceneDescription sceneDescription;
 
-        public L1cMosaicMultiLevelSource(L1cSceneDescription sceneDescription, BandInfo bandInfo) {
-            super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
+        AbstractL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, int numResolutions) {
+            super(new DefaultMultiLevelModel(numResolutions,
                                              new AffineTransform(),
                                              sceneDescription.getSceneRectangle().width,
                                              sceneDescription.getSceneRectangle().height));
             this.sceneDescription = sceneDescription;
-            this.bandInfo = bandInfo;
         }
 
         @Override
         protected RenderedImage createImage(int level) {
             ArrayList<RenderedImage> tileImages = new ArrayList<RenderedImage>();
 
-            Set<String> tileIds = bandInfo.tileIdToFileMap.keySet();
-            for (String tileId : tileIds) {
-                File imageFile = bandInfo.tileIdToFileMap.get(tileId);
+            for (String tileId : sceneDescription.getTileIds()) {
+
                 int tileIndex = sceneDescription.getTileIndex(tileId);
                 Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
 
-                PlanarImage opImage = L1cTileOpImage.create(imageFile,
-                                                            cacheDir,
-                                                            null, // tileRectangle.getLocation(),
-                                                            bandInfo.imageLayout,
-                                                            getModel(),
-                                                            bandInfo.wavebandInfo.resolution,
-                                                            level);
+                PlanarImage opImage = createL1cTileImage(tileId, level);
 
-                System.out.printf("%s %s: minX=%d, minY=%d, width=%d, height%d\n",
-                                  bandInfo.wavebandInfo.bandName, tileId,
-                                  opImage.getMinX(), opImage.getMinY(),
-                                  opImage.getWidth(), opImage.getHeight());
 
                     /*
                     opImage = new MoveOriginOpImage(opImage,
@@ -588,6 +597,58 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
             return mosaicOp;
         }
+
+        protected abstract PlanarImage createL1cTileImage(String tileId, int level);
     }
 
+    /**
+     * A MultiLevelSource used by bands for a scene made of multiple L1C tiles.
+     */
+    private final class BandL1cSceneMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
+        private final BandInfo bandInfo;
+
+        public BandL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, BandInfo bandInfo) {
+            super(sceneDescription, bandInfo.imageLayout.numResolutions);
+            this.bandInfo = bandInfo;
+        }
+
+        @Override
+        protected PlanarImage createL1cTileImage(String tileId, int level) {
+            File imageFile = bandInfo.tileIdToFileMap.get(tileId);
+            PlanarImage planarImage = L1cTileOpImage.create(imageFile,
+                                                            cacheDir,
+                                                            null, // tileRectangle.getLocation(),
+                                                            bandInfo.imageLayout,
+                                                            getModel(),
+                                                            bandInfo.wavebandInfo.resolution,
+                                                            level);
+            System.out.printf("%s %s: minX=%d, minY=%d, width=%d, height=%d\n",
+                              bandInfo.wavebandInfo.bandName, tileId,
+                              planarImage.getMinX(), planarImage.getMinY(),
+                              planarImage.getWidth(), planarImage.getHeight());
+            return planarImage;
+        }
+    }
+
+    /**
+     * A MultiLevelSource used by bands for a scene made of multiple L1C tiles.
+     */
+    private final class TiePointGridL1cSceneMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
+
+        private final L1cMetadata metadata;
+        private final int tiePointGridIndex;
+
+        public TiePointGridL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, L1cMetadata metadata, int numResolutions, int tiePointGridIndex) {
+            super(sceneDescription, numResolutions);
+            this.metadata = metadata;
+            this.tiePointGridIndex = tiePointGridIndex;
+        }
+
+        @Override
+        protected PlanarImage createL1cTileImage(String tileId, int level) {
+            final int tileIndex = sceneDescription.getTileIndex(tileId);
+            final TiePointGrid[] tiePointGrids = createL1cTileTiePointGrids(metadata, tileIndex);
+            return null;
+        }
+    }
 }
