@@ -2,6 +2,8 @@ package org.esa.beam.dataio.s2;
 
 import org.esa.beam.framework.datamodel.ProductData;
 
+import java.awt.image.DataBuffer;
+
 /**
  * @author Norman Fomferra
  */
@@ -15,6 +17,8 @@ public interface S2Config {
 
     int SAMPLE_DATA_TYPE = ProductData.TYPE_UINT16;
     int SAMPLE_ELEM_SIZE = 2;
+
+    int DATA_BUFFER_TYPE = DataBuffer.TYPE_USHORT;
 
     short FILL_CODE_NO_FILE = (short) 1000;
     short FILL_CODE_NO_INTERSECTION = (short) 1;
