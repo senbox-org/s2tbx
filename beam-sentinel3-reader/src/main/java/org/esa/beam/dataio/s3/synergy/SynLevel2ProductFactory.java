@@ -201,4 +201,10 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
             }
         }
     }
+
+    @Override
+    protected void setAutoGrouping(Product[] sourceProducts, Product targetProduct) {
+        targetProduct.setAutoGrouping("SDR*er*:SDR");
+    }
+
 }

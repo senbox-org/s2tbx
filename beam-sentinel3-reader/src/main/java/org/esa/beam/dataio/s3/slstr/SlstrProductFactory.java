@@ -169,7 +169,11 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
     }
 
     @Override
-    protected final void setAutoGrouping(Product[] sourceProducts, Product targetProduct) {
+    protected void setAutoGrouping(Product[] sourceProducts, Product targetProduct) {
+        targetProduct.setAutoGrouping(getAutoGroupingString(sourceProducts));
+    }
+
+    protected String getAutoGroupingString(Product[] sourceProducts) {
         final StringBuilder patternBuilder = new StringBuilder();
         for (final Product sourceProduct : sourceProducts) {
             final String sourceProductName = sourceProduct.getName();
@@ -201,7 +205,7 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
             }
             patternBuilder.append(patternName);
         }
-        targetProduct.setAutoGrouping(patternBuilder.toString());
+        return patternBuilder.toString();
     }
 
 }

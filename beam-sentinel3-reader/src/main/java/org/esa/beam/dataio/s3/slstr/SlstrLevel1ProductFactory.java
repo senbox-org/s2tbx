@@ -14,7 +14,6 @@ package org.esa.beam.dataio.s3.slstr;/*
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-import com.bc.ceres.glevel.MultiLevelImage;
 import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.dataio.ProductIO;
@@ -23,10 +22,6 @@ import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 
-import javax.media.jai.Interpolation;
-import javax.media.jai.operator.ScaleDescriptor;
-import java.awt.RenderingHints;
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -67,11 +62,11 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
             return startOffset;
         }
         if (sourceProductName.endsWith("_an") ||
-            sourceProductName.endsWith("_bn") ||
-            sourceProductName.endsWith("_cn")) {
+                sourceProductName.endsWith("_bn") ||
+                sourceProductName.endsWith("_cn")) {
             return 1.0;
         } else if (sourceProductName.endsWith("_ao") || sourceProductName.endsWith("_bo") ||
-                   sourceProductName.endsWith("_co")) {
+                sourceProductName.endsWith("_co")) {
             return 779.0;
         } else if (sourceProductName.endsWith("_in")) {
             return 0.5;
@@ -101,7 +96,7 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
             return 207.0;
         } else if (sourceProductName.endsWith("_tx") || sourceProductName.endsWith("_tn")) {
             return -30.0;
-        } else if(sourceProductName.endsWith("_to")) {
+        } else if (sourceProductName.endsWith("_to")) {
             return -70.;
         }
         return trackOffset;
@@ -170,4 +165,15 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
         return masterProduct;
     }
 
+    @Override
+    protected void setAutoGrouping(Product[] sourceProducts, Product targetProduct) {
+        String bandGrouping = getAutoGroupingString(sourceProducts);
+        StringBuilder patternGrouping = new StringBuilder("F*BT_in*:F*BT_io*:radiance_an:" +
+                                                                  "radiance_ao:radiance_bn:" +
+                                                                  "radiance_bo:radiance_cn:" +
+                                                                  "radiance_co:S*BT_in*:" +
+                                                                  "S*BT_io*:");
+        patternGrouping.append(bandGrouping);
+        targetProduct.setAutoGrouping(patternGrouping.toString());
+    }
 }
