@@ -22,6 +22,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.operator.MosaicDescriptor;
+import javax.media.jai.operator.ScaleDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
@@ -41,14 +42,12 @@ class ImageMosaic {
     }
 
     public static MultiLevelImage create(final MultiLevelImage... sourceImages) {
-        int w = 0;
-        for (final MultiLevelImage sourceImage : sourceImages) {
-            w += sourceImage.getWidth();
-        }
+        final int mosaicWidth = mosaicWidth(sourceImages);
+        final int mosaicHeight = sourceImages[0].getHeight();
         final MultiLevelModel model = new DefaultMultiLevelModel(sourceImages[0].getModel().getLevelCount(),
                                                                  new AffineTransform(),
-                                                                 w,
-                                                                 sourceImages[0].getHeight());
+                                                                 mosaicWidth,
+                                                                 mosaicHeight);
 
         final AbstractMultiLevelSource mosaicMultiLevelSource = new AbstractMultiLevelSource(model) {
 
@@ -58,10 +57,25 @@ class ImageMosaic {
                 for (int i = 0; i < levelImages.length; i++) {
                     levelImages[i] = sourceImages[i].getImage(level);
                 }
-                return create(levelImages);
+                RenderedImage mosaicImage = create(levelImages);
+                final float expectedLevelImageWidth = (float) (mosaicWidth / model.getScale(level));
+                if ((int) expectedLevelImageWidth != mosaicImage.getWidth()) {
+                    final float scale = expectedLevelImageWidth / mosaicImage.getWidth();
+                    mosaicImage = ScaleDescriptor.create(mosaicImage, scale, 1.0f, 0.0f, 0.0f, INTERPOLATION, null);
+                }
+
+                return mosaicImage;
             }
         };
 
         return new DefaultMultiLevelImage(mosaicMultiLevelSource);
+    }
+
+    private static int mosaicWidth(MultiLevelImage[] sourceImages) {
+        int w = 0;
+        for (final MultiLevelImage sourceImage : sourceImages) {
+            w += sourceImage.getWidth();
+        }
+        return w;
     }
 }

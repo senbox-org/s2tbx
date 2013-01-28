@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// TODO - check flag codings, masks, auto-grouping, if everything is correct for mosaic of camera images
+
 public class SynLevel2ProductFactory extends AbstractProductFactory {
 
     public SynLevel2ProductFactory(Sentinel3ProductReader productReader) {
