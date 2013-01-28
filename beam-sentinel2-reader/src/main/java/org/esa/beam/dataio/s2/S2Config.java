@@ -13,12 +13,11 @@ public interface S2Config {
      */
     String OPJ_DECOMPRESSOR_EXE = System.getProperty("openjpeg2.decompressor.path", "opj_decompress");
 
-    int DEFAULT_TILE_SIZE = 512;
+    int DEFAULT_JAI_TILE_SIZE = 512;
 
-    int SAMPLE_DATA_TYPE = ProductData.TYPE_UINT16;
-    int SAMPLE_ELEM_SIZE = 2;
-
-    int DATA_BUFFER_TYPE = DataBuffer.TYPE_USHORT;
+    int SAMPLE_PRODUCT_DATA_TYPE = ProductData.TYPE_UINT16;
+    int SAMPLE_DATA_BUFFER_TYPE = DataBuffer.TYPE_USHORT;
+    int SAMPLE_BYTE_COUNT = 2;
 
     short FILL_CODE_NO_FILE = (short) 1000;
     short FILL_CODE_NO_INTERSECTION = (short) 1;
@@ -30,7 +29,7 @@ public interface S2Config {
     // because they are likely to change if prod. spec. changes
     //
     L1cTileLayout[] L1C_TILE_LAYOUTS = new L1cTileLayout[]{
-            new L1cTileLayout(10690, 10690, 4096, 4096, 3, 3, 6),
+            new L1cTileLayout(10960, 10960, 4096, 4096, 3, 3, 6),
             new L1cTileLayout(5480, 5480, 4096, 4096, 2, 2, 6),
             new L1cTileLayout(1826, 1826, 1826, 1826, 1, 1, 6),
     };

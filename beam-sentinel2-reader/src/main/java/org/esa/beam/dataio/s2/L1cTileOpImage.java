@@ -15,6 +15,7 @@ import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
@@ -22,7 +23,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -79,7 +79,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
             int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
             int targetHeight = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].height, level);
             Dimension targetTileDim = getTileDimAtResolutionLevel(L1C_TILE_LAYOUTS[0].tileWidth, L1C_TILE_LAYOUTS[0].tileHeight, level);
-            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.DATA_BUFFER_TYPE, targetWidth, targetHeight);
+            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
                                              (float) imageLayout.getHeight(null),
@@ -99,8 +99,9 @@ class L1cTileOpImage extends SingleBandedOpImage {
         ImageLayout imageLayout = new ImageLayout();
         imageLayout.setTileWidth(tileDim.width);
         imageLayout.setTileHeight(tileDim.height);
+        BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
         RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                                                           BorderExtender.createInstance(BorderExtender.BORDER_ZERO));
+                                                           borderExtender);
         renderingHints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
         RenderedOp scaledImage = ScaleDescriptor.create(sourceImage,
                                                         scaleX,
@@ -109,15 +110,23 @@ class L1cTileOpImage extends SingleBandedOpImage {
                                                         sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                                         renderingHints);
-        if (scaledImage.getWidth() != targetWidth || scaledImage.getHeight() != targetHeight) {
+        if (scaledImage.getWidth() == targetWidth && scaledImage.getHeight() == targetHeight) {
+            return scaledImage;
+        }
+        else if (scaledImage.getWidth() >= targetWidth && scaledImage.getHeight() >= targetHeight) {
             return CropDescriptor.create(scaledImage,
                                          (float) sourceImage.getMinX(),
                                          (float) sourceImage.getMinY(),
                                          (float) targetWidth,
                                          (float) targetHeight,
                                          null);
+        }
+        else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
+            int rightPad = targetWidth - scaledImage.getWidth();
+            int bottomPad = targetHeight - scaledImage.getHeight();
+            return BorderDescriptor.create(scaledImage, 0, rightPad, 0, bottomPad, borderExtender, null);
         } else {
-            return scaledImage;
+            throw new IllegalStateException();
         }
     }
 
@@ -127,7 +136,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
                    L1cTileLayout l1cTileLayout,
                    MultiLevelModel imageModel,
                    int level) {
-        super(S2Config.DATA_BUFFER_TYPE,
+        super(S2Config.SAMPLE_DATA_BUFFER_TYPE,
               imagePos,
               l1cTileLayout.width,
               l1cTileLayout.height,
@@ -325,12 +334,12 @@ class L1cTileOpImage extends SingleBandedOpImage {
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
                 //System.out.printf("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection);
                 if (!intersection.isEmpty()) {
-                    long seekPos = jp2File.dataPos + S2Config.SAMPLE_ELEM_SIZE * (intersection.y * jp2Width + intersection.x);
+                    long seekPos = jp2File.dataPos + S2Config.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;
                     for (int y = 0; y < intersection.height; y++) {
                         stream.seek(seekPos);
                         stream.readFully(tileData, tilePos, intersection.width);
-                        seekPos += S2Config.SAMPLE_ELEM_SIZE * jp2Width;
+                        seekPos += S2Config.SAMPLE_BYTE_COUNT * jp2Width;
                         tilePos += tileWidth;
                         for (int x = intersection.width; x < tileWidth; x++) {
                             tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_X_BOUNDS;
@@ -408,7 +417,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     }
 
     static Dimension getTileDim(int width, int height) {
-        return new Dimension(width < S2Config.DEFAULT_TILE_SIZE ? width : S2Config.DEFAULT_TILE_SIZE,
-                             height < S2Config.DEFAULT_TILE_SIZE ? height : S2Config.DEFAULT_TILE_SIZE);
+        return new Dimension(width < S2Config.DEFAULT_JAI_TILE_SIZE ? width : S2Config.DEFAULT_JAI_TILE_SIZE,
+                             height < S2Config.DEFAULT_JAI_TILE_SIZE ? height : S2Config.DEFAULT_JAI_TILE_SIZE);
     }
 }

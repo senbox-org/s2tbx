@@ -48,11 +48,11 @@ import static org.esa.beam.dataio.s2.L1cMetadata.ResampleData;
 import static org.esa.beam.dataio.s2.L1cMetadata.SpectralInformation;
 import static org.esa.beam.dataio.s2.L1cMetadata.Tile;
 import static org.esa.beam.dataio.s2.L1cMetadata.parseHeader;
-import static org.esa.beam.dataio.s2.S2Config.DEFAULT_TILE_SIZE;
+import static org.esa.beam.dataio.s2.S2Config.DEFAULT_JAI_TILE_SIZE;
 import static org.esa.beam.dataio.s2.S2Config.FILL_CODE_MOSAIC_BG;
 import static org.esa.beam.dataio.s2.S2Config.L1C_TILE_LAYOUTS;
 import static org.esa.beam.dataio.s2.S2Config.S2_WAVEBAND_INFOS;
-import static org.esa.beam.dataio.s2.S2Config.SAMPLE_DATA_TYPE;
+import static org.esa.beam.dataio.s2.S2Config.SAMPLE_PRODUCT_DATA_TYPE;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)
@@ -282,7 +282,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
-        product.setPreferredTileSize(DEFAULT_TILE_SIZE, DEFAULT_TILE_SIZE);
+        product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
         product.setAutoGrouping("reflec:radiance");
 
@@ -332,7 +332,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private Band addBand(Product product, BandInfo bandInfo) {
-        final Band band = product.addBand(bandInfo.wavebandInfo.bandName, SAMPLE_DATA_TYPE);
+        final Band band = product.addBand(bandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE);
         band.setSpectralBandIndex(bandInfo.bandIndex);
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
@@ -596,8 +596,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             ImageLayout imageLayout = new ImageLayout();
             imageLayout.setMinX(0);
             imageLayout.setMinY(0);
-            imageLayout.setTileWidth(DEFAULT_TILE_SIZE);
-            imageLayout.setTileHeight(DEFAULT_TILE_SIZE);
+            imageLayout.setTileWidth(DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileHeight(DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
