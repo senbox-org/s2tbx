@@ -11,6 +11,7 @@ import org.esa.beam.framework.datamodel.CrsGeoCoding;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.TiePointGrid;
+import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.SystemUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
@@ -204,7 +205,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             addL1cTileTiePointGrids(metadataHeader, product, tileIndex);
         }
 
-        addBands(product, bandInfoMap, new L1cTileMultiLevelImageFactory());
+        addBands(product, bandInfoMap, new L1cTileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
         return product;
     }
@@ -270,7 +271,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         addTiePointGridBand(product, sceneDescription, "sun_azimuth", 1);
         addTiePointGridBand(product, sceneDescription, "view_zenith", 2);
         addTiePointGridBand(product, sceneDescription, "view_azimuth", 3);
-        addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription));
+        addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
         return product;
     }
@@ -478,27 +479,38 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
 
-    private interface MultiLevelImageFactory {
-        MultiLevelImage createSourceImage(BandInfo bandInfo);
+    private abstract class MultiLevelImageFactory {
+        protected final AffineTransform imageToModelTransform;
+
+        protected MultiLevelImageFactory(AffineTransform imageToModelTransform) {
+            this.imageToModelTransform = imageToModelTransform;
+        }
+
+        public abstract  MultiLevelImage createSourceImage(BandInfo bandInfo);
     }
 
-    private class L1cTileMultiLevelImageFactory implements MultiLevelImageFactory {
+    private class L1cTileMultiLevelImageFactory extends MultiLevelImageFactory {
+        private L1cTileMultiLevelImageFactory(AffineTransform imageToModelTransform) {
+            super(imageToModelTransform);
+        }
+
         public MultiLevelImage createSourceImage(BandInfo bandInfo) {
-            return new DefaultMultiLevelImage(new L1cTileMultiLevelSource(bandInfo));
+            return new DefaultMultiLevelImage(new L1cTileMultiLevelSource(bandInfo, imageToModelTransform));
         }
     }
 
-    private class L1cSceneMultiLevelImageFactory implements MultiLevelImageFactory {
+    private class L1cSceneMultiLevelImageFactory extends MultiLevelImageFactory {
 
         private final L1cSceneDescription sceneDescription;
 
-        public L1cSceneMultiLevelImageFactory(L1cSceneDescription sceneDescription) {
+        public L1cSceneMultiLevelImageFactory(L1cSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
+            super(imageToModelTransform);
             this.sceneDescription = sceneDescription;
         }
 
         @Override
         public MultiLevelImage createSourceImage(BandInfo bandInfo) {
-            return new DefaultMultiLevelImage(new BandL1cSceneMultiLevelSource(sceneDescription, bandInfo));
+            return new DefaultMultiLevelImage(new BandL1cSceneMultiLevelSource(sceneDescription, bandInfo, imageToModelTransform));
         }
     }
 
@@ -508,9 +520,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     private class L1cTileMultiLevelSource extends AbstractMultiLevelSource {
         final BandInfo bandInfo;
 
-        public L1cTileMultiLevelSource(BandInfo bandInfo) {
+        public L1cTileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
-                                             new AffineTransform(),
+                                             imageToModelTransform,
                                              L1C_TILE_LAYOUTS[0].width,
                                              L1C_TILE_LAYOUTS[0].height));
             this.bandInfo = bandInfo;
@@ -536,9 +548,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     private abstract class AbstractL1cSceneMultiLevelSource extends AbstractMultiLevelSource {
         protected final L1cSceneDescription sceneDescription;
 
-        AbstractL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, int numResolutions) {
+        AbstractL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
             super(new DefaultMultiLevelModel(numResolutions,
-                                             new AffineTransform(),
+                                             imageToModelTransform,
                                              sceneDescription.getSceneRectangle().width,
                                              sceneDescription.getSceneRectangle().height));
             this.sceneDescription = sceneDescription;
@@ -607,8 +619,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     private final class BandL1cSceneMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
         private final BandInfo bandInfo;
 
-        public BandL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, BandInfo bandInfo) {
-            super(sceneDescription, bandInfo.imageLayout.numResolutions);
+        public BandL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
+            super(sceneDescription, imageToModelTransform, bandInfo.imageLayout.numResolutions);
             this.bandInfo = bandInfo;
         }
 
@@ -638,8 +650,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         private final L1cMetadata metadata;
         private final int tiePointGridIndex;
 
-        public TiePointGridL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, L1cMetadata metadata, int numResolutions, int tiePointGridIndex) {
-            super(sceneDescription, numResolutions);
+        public TiePointGridL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, L1cMetadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
+            super(sceneDescription, imageToModelTransform, numResolutions);
             this.metadata = metadata;
             this.tiePointGridIndex = tiePointGridIndex;
         }
