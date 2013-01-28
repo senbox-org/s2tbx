@@ -29,13 +29,16 @@ import org.esa.beam.framework.datamodel.PixelGeoCoding;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.RasterDataNode;
+import org.esa.beam.util.ProductUtils;
 import ucar.nc2.Variable;
 
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SynLevel2ProductFactory extends AbstractProductFactory {
 
@@ -56,19 +59,37 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
     }
 
     @Override
-    protected Product createTargetProduct(String productName, String productType, Product masterProduct) {
-        return super.createTargetProduct(productName, productType, masterProduct);
-        // TODO - override because we need a mosaic of camera images
+    protected int getSceneRasterWidth(Product masterProduct) {
+        return masterProduct.getSceneRasterWidth() * 5;
     }
 
     @Override
     protected void addDataNodes(Product masterProduct, Product targetProduct) throws IOException {
-        super.addDataNodes(masterProduct, targetProduct);
-        // TODO - override because we need a mosaic of camera images
+        for (final Product sourceProduct : getOpenProductList()) {
+            final Map<String, String> mapping = new HashMap<String, String>();
+            final Map<String, List<String>> partition = Partitioner.partition(sourceProduct.getBandNames(), "_CAM");
+
+            for (final Map.Entry<String, List<String>> entry : partition.entrySet()) {
+                final String targetBandName = entry.getKey();
+                final List<String> sourceBandNames = entry.getValue();
+                final String sourceBandName = sourceBandNames.get(0);
+                final Band targetBand = ProductUtils.copyBand(sourceBandName, sourceProduct, targetBandName,
+                                                              targetProduct, false);
+                final MultiLevelImage[] sourceImages = new MultiLevelImage[sourceBandNames.size()];
+                for (int i = 0; i < sourceImages.length; i++) {
+                    sourceImages[i] = sourceProduct.getBand(sourceBandNames.get(i)).getSourceImage();
+                }
+                targetBand.setSourceImage(ImageMosaic.create(sourceImages));
+                final Band sourceBand = sourceProduct.getBand(sourceBandName);
+                configureTargetNode(sourceBand, targetBand);
+                mapping.put(sourceBand.getName(), targetBand.getName());
+            }
+            copyMasks(targetProduct, sourceProduct, mapping);
+        }
     }
 
     @Override
-    protected void addVariables(Product masterProduct, Product targetProduct) throws IOException {
+    protected void addSpecialVariables(Product masterProduct, Product targetProduct) throws IOException {
         final double[] olcTpLon;
         final double[] olcTpLat;
         final NcFile olcTiePoints = openNcFile("tiepoints_olci.nc");
@@ -78,8 +99,8 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         } finally {
             olcTiePoints.close();
         }
-        addVariables(masterProduct, targetProduct, olcTpLon, olcTpLat, "tiepoints_olci.nc");
-        addVariables(masterProduct, targetProduct, olcTpLon, olcTpLat, "tiepoints_meteo.nc");
+        addVariables(targetProduct, olcTpLon, olcTpLat, "tiepoints_olci.nc");
+        addVariables(targetProduct, olcTpLon, olcTpLat, "tiepoints_meteo.nc");
 
         final double[] slnTpLon;
         final double[] slnTpLat;
@@ -90,7 +111,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         } finally {
             slnTiePoints.close();
         }
-        addVariables(masterProduct, targetProduct, slnTpLon, slnTpLat, "tiepoints_slstr_n.nc");
+        addVariables(targetProduct, slnTpLon, slnTpLat, "tiepoints_slstr_n.nc");
 
         final double[] sloTpLon;
         final double[] sloTpLat;
@@ -101,37 +122,30 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         } finally {
             sloTiePoints.close();
         }
-        addVariables(masterProduct, targetProduct, sloTpLon, sloTpLat, "tiepoints_slstr_o.nc");
+        addVariables(targetProduct, sloTpLon, sloTpLat, "tiepoints_slstr_o.nc");
     }
 
-    private void addVariables(Product masterProduct, Product targetProduct,
-                              double[] tpLon, double[] tpLat, String fileName) throws IOException {
+    private void addVariables(Product targetProduct, double[] tpLon, double[] tpLat, String fileName) throws
+                                                                                                      IOException {
+        final String latBandName = "latitude";
+        final String lonBandName = "longitude";
+        final Band latBand = targetProduct.getBand(latBandName);
+        final Band lonBand = targetProduct.getBand(lonBandName);
+
         final NcFile ncFile = openNcFile(fileName);
         try {
             final List<Variable> variables = ncFile.getVariables(".*");
             for (final Variable variable : variables) {
+                final String targetBandName = variable.getName();
+                final Band targetBand = targetProduct.addBand(targetBandName, ProductData.TYPE_FLOAT32);
                 final double[] tpVar = ncFile.read(variable.getName());
+                final MultiLevelImage targetImage = createTiePointImage(lonBand.getGeophysicalImage(),
+                                                                        latBand.getGeophysicalImage(),
+                                                                        tpLon,
+                                                                        tpLat, tpVar,
+                                                                        100);
 
-                // TODO - make a mosaic of images here
-                for (int i = 1; i <= 5; i++) {
-                    final String latBandName = "latitude_CAM" + i;
-                    final String lonBandName = "longitude_CAM" + i;
-                    final Band latBand = targetProduct.getBand(latBandName);
-                    final Band lonBand = targetProduct.getBand(lonBandName);
-
-                    final String targetBandName = variable.getName() + "_CAM" + i;
-                    final Band targetBand = new Band(targetBandName, ProductData.TYPE_FLOAT32,
-                                                     masterProduct.getSceneRasterWidth(),
-                                                     masterProduct.getSceneRasterHeight());
-                    final MultiLevelImage targetImage = createTiePointImage(lonBand.getGeophysicalImage(),
-                                                                            latBand.getGeophysicalImage(),
-                                                                            tpLon,
-                                                                            tpLat, tpVar,
-                                                                            100);
-
-                    targetBand.setSourceImage(targetImage);
-                    targetProduct.addBand(targetBand);
-                }
+                targetBand.setSourceImage(targetImage);
             }
         } finally {
             ncFile.close();
@@ -182,24 +196,12 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
 
     @Override
     protected void setGeoCoding(Product targetProduct) throws IOException {
-        final GeoCoding[] geoCodings = new GeoCoding[5];
-        for (int i = 1; i <= 5; i++) {
-            final String latBandName = "latitude_CAM" + i;
-            final String lonBandName = "longitude_CAM" + i;
-            final Band latBand = targetProduct.getBand(latBandName);
-            final Band lonBand = targetProduct.getBand(lonBandName);
+        final String latBandName = "latitude";
+        final String lonBandName = "longitude";
+        final Band latBand = targetProduct.getBand(latBandName);
+        final Band lonBand = targetProduct.getBand(lonBandName);
 
-            geoCodings[i - 1] = new PixelGeoCoding(latBand, lonBand, null, 5);
-        }
-        for (final Band targetBand : targetProduct.getBands()) {
-            if (targetBand.getGeoCoding() == null) {
-                for (int i = 1; i <= 5; i++) {
-                    if (targetBand.getName().contains("CAM" + i)) {
-                        targetBand.setGeoCoding(geoCodings[i - 1]);
-                    }
-                }
-            }
-        }
+        targetProduct.setGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 5));
     }
 
     @Override

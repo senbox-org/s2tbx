@@ -104,7 +104,9 @@ public abstract class AbstractProductFactory implements ProductFactory {
         final String productName = getProductName();
         final String productType = productName.substring(0, 12);
         final Product masterProduct = findMasterProduct();
-        final Product targetProduct = createTargetProduct(productName, productType, masterProduct);
+        final int w = getSceneRasterWidth(masterProduct);
+        final int h = masterProduct.getSceneRasterHeight();
+        final Product targetProduct = new Product(productName, productType, w, h, productReader);
         targetProduct.setFileLocation(getInputFile());
 
         initialize(masterProduct);
@@ -127,7 +129,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         }
 
         addDataNodes(masterProduct, targetProduct);
-        addVariables(masterProduct, targetProduct);
+        addSpecialVariables(masterProduct, targetProduct);
         setMasks(targetProduct);
         setTimes(targetProduct);
         if (targetProduct.getGeoCoding() == null) {
@@ -139,13 +141,11 @@ public abstract class AbstractProductFactory implements ProductFactory {
         return targetProduct;
     }
 
-    protected Product createTargetProduct(String productName, String productType, Product masterProduct) {
-        final int w = masterProduct.getSceneRasterWidth();
-        final int h = masterProduct.getSceneRasterHeight();
-        return new Product(productName, productType, w, h, productReader);
+    protected int getSceneRasterWidth(Product masterProduct) {
+        return masterProduct.getSceneRasterWidth();
     }
 
-    protected void addVariables(Product masterProduct, Product targetProduct) throws IOException {
+    protected void addSpecialVariables(Product masterProduct, Product targetProduct) throws IOException {
     }
 
     protected Product findMasterProduct() {
@@ -249,11 +249,11 @@ public abstract class AbstractProductFactory implements ProductFactory {
                     mapping.put(sourceBand.getName(), targetNode.getName());
                 }
             }
-            setMasksFromDataNode(targetProduct, sourceProduct, mapping);
+            copyMasks(sourceProduct, targetProduct, mapping);
         }
     }
 
-    private void setMasksFromDataNode(Product targetProduct, Product sourceProduct, Map<String, String> mapping) {
+    protected final void copyMasks(Product sourceProduct, Product targetProduct, Map<String, String> mapping) {
         final ProductNodeGroup<Mask> maskGroup = sourceProduct.getMaskGroup();
         for (int i = 0; i < maskGroup.getNodeCount(); i++) {
             final Mask mask = maskGroup.get(i);
@@ -264,13 +264,13 @@ public abstract class AbstractProductFactory implements ProductFactory {
                     String expression = Mask.BandMathsType.getExpression(mask);
                     for (final String sourceBandName : mapping.keySet()) {
                         if (expression.contains(sourceBandName)) {
-                            if (!sourceBandName.equals(mapping.get(sourceBandName))) {
-                                name = name.replaceAll(sourceBandName, mapping.get(sourceBandName));
-                                expression = expression.replaceAll(sourceBandName, mapping.get(sourceBandName));
+                            final String targetBandName = mapping.get(sourceBandName);
+                            if (!sourceBandName.equals(targetBandName)) {
+                                name = name.replaceAll(sourceBandName, targetBandName);
+                                expression = expression.replaceAll(sourceBandName, targetBandName);
                             }
-                            String description = sourceProduct.getDisplayName() + "." + mask.getDisplayName();
-                            targetProduct.addMask(name, expression, description, mask.getImageColor(),
-                                                  mask.getImageTransparency());
+                            final String description = sourceProduct.getDisplayName() + "." + mask.getDisplayName();
+                            targetProduct.addMask(name, expression, description, mask.getImageColor(), mask.getImageTransparency());
                             break;
                         }
                     }
