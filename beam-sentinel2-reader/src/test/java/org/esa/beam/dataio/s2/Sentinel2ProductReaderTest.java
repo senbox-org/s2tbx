@@ -28,9 +28,9 @@ public class Sentinel2ProductReaderTest {
         final ProductReader readerInstance = sentinel2ProductReaderPlugIn.createReaderInstance();
         final Product product = readerInstance.readProductNodes(file, null);
         assertNotNull(product);
-        assertEquals(10690, product.getSceneRasterWidth());
-        assertEquals(10690, product.getSceneRasterHeight());
-        assertEquals(1, product.getNumBands());
+        assertEquals(10960, product.getSceneRasterWidth());
+        assertEquals(10960, product.getSceneRasterHeight());
+        assertEquals(4, product.getNumBands());
         final Band band = product.getBand("B3");
         assertNotNull(band);
 
