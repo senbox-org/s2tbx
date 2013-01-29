@@ -189,9 +189,6 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
                     }
                 }
             }
-            if (patternBuilder.length() > 0) {
-                patternBuilder.append(":");
-            }
             String patternName = sourceProductName;
             String[] unwantedPatternContents = new String[]{
                     "_an", "_ao", "_bn", "_bo", "_cn", "_co", "_in", "_io",
@@ -203,7 +200,13 @@ public abstract class SlstrProductFactory extends AbstractProductFactory {
                     break;
                 }
             }
-            patternBuilder.append(patternName);
+            if (!patternBuilder.toString().contains(":" + patternName + ":") &&
+                    !patternBuilder.toString().endsWith(":" + patternName)) {
+                if (patternBuilder.length() > 0) {
+                    patternBuilder.append(":");
+                }
+                patternBuilder.append(patternName);
+            }
         }
         return patternBuilder.toString();
     }
