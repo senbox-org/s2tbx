@@ -268,18 +268,18 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
-        addTiePointGridBand(product, sceneDescription, "sun_zenith", 0);
-        addTiePointGridBand(product, sceneDescription, "sun_azimuth", 1);
-        addTiePointGridBand(product, sceneDescription, "view_zenith", 2);
-        addTiePointGridBand(product, sceneDescription, "view_azimuth", 3);
+        addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
+        addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
+        addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
+        addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
         addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
         return product;
     }
 
-    private void addTiePointGridBand(Product product, L1cSceneDescription sceneDescription, String name, int tiePointGridIndex) {
-        //final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
-        //band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, 6, tiePointGridIndex)));
+    private void addTiePointGridBand(Product product, L1cMetadata metadataHeader, L1cSceneDescription sceneDescription, String name, int tiePointGridIndex) {
+        final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
+        band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
@@ -650,23 +650,24 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         private final L1cMetadata metadata;
         private final int tiePointGridIndex;
-        private HashMap<String, TiePointGrid[]> tiePointGrids;
+        private HashMap<String, TiePointGrid[]> tiePointGridsMap;
 
         public TiePointGridL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, L1cMetadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
             super(sceneDescription, imageToModelTransform, numResolutions);
             this.metadata = metadata;
             this.tiePointGridIndex = tiePointGridIndex;
+            tiePointGridsMap = new HashMap<String, TiePointGrid[]>();
         }
 
         @Override
         protected PlanarImage createL1cTileImage(String tileId, int level) {
-            TiePointGrid[] tiePointGrids = this.tiePointGrids.get(tileId);
+            TiePointGrid[] tiePointGrids = tiePointGridsMap.get(tileId);
             if (tiePointGrids == null) {
                 final int tileIndex = sceneDescription.getTileIndex(tileId);
                 tiePointGrids = createL1cTileTiePointGrids(metadata, tileIndex);
-                this.tiePointGrids.put(tileId, tiePointGrids);
+                tiePointGridsMap.put(tileId, tiePointGrids);
             }
-            return tiePointGrids[tiePointGridIndex].getSourceImage().getSourceImage(level);
+            return (PlanarImage) tiePointGrids[tiePointGridIndex].getSourceImage().getImage(level);
         }
     }
 }
