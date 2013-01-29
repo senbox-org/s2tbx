@@ -309,8 +309,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                           bandInfo.wavebandInfo.bandName
                                                   + " * (" + bandInfo.wavebandInfo.reflecUnit
                                                   + " / " + bandInfo.wavebandInfo.quantificationValue + ")");
-            // reflec.setSpectralBandIndex(bandIndex);
-            // reflec.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
+            reflec.setSpectralBandIndex(bandIndex);
+            reflec.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
+            reflec.setNoDataValue(0);
+            reflec.setNoDataValueUsed(true);
             reflec.setDescription("TOA reflectance in " + bandInfo.wavebandInfo.bandName + " for demonstration purpose");
         }
 
@@ -322,8 +324,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                     + " * (" + bandInfo.wavebandInfo.solarIrradiance
                                                     + " * " + bandInfo.wavebandInfo.reflecUnit
                                                     + " / " + bandInfo.wavebandInfo.quantificationValue + ")");
-            // radiance.setSpectralBandIndex(bandIndex);
-            // radiance.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
+            radiance.setSpectralBandIndex(bandIndex);
+            radiance.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
+            radiance.setNoDataValue(0);
+            radiance.setNoDataValueUsed(true);
             radiance.setDescription("TOA radiance in " + bandInfo.wavebandInfo.bandName + " for demonstration purpose");
         }
 
@@ -333,10 +337,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     private Band addBand(Product product, BandInfo bandInfo) {
         final Band band = product.addBand(bandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE);
+
         band.setSpectralBandIndex(bandInfo.bandIndex);
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
         band.setSolarFlux((float) bandInfo.wavebandInfo.solarIrradiance);
+
+        band.setNoDataValue(0);
+        //band.setNoDataValueUsed(true);
 
         // todo - We don't use the scaling factor because we want to stay with 16bit unsigned short samples due to the large
         // amounts of data when saving the images. We provide virtual reflectance bands for this reason. We can use the
@@ -431,7 +439,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                             new S2WavebandInfo(bandInformation.bandId,
                                                bandInformation.physicalBand,
                                                spatialResolution, bandInformation.wavelenghtCentral,
-                                               bandInformation.wavelenghtMax - bandInformation.wavelenghtMin,
+                                               Math.abs(bandInformation.wavelenghtMax + bandInformation.wavelenghtMin),
                                                resampleData.reflectanceConversion.solarIrradiances[bandInformation.bandId],
                                                resampleData.quantificationValue,
                                                resampleData.reflectanceConversion.u),
