@@ -168,6 +168,15 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
     @Override
     protected void setAutoGrouping(Product[] sourceProducts, Product targetProduct) {
         String bandGrouping = getAutoGroupingString(sourceProducts);
+        String[] unwantedGroups = new String[]{"F1_BT", "F2_BT", "S1_radiance", "S2_radiance", "S3_radiance",
+                "S4_radiance", "S5_radiance", "S6_radiance", "S7_BT", "S8_BT", "S9_BT"};
+        for (String unwantedGroup : unwantedGroups) {
+            if (bandGrouping.startsWith(unwantedGroup)) {
+                bandGrouping = bandGrouping.replace(unwantedGroup + ":", "");
+            } else if (bandGrouping.contains(unwantedGroup)) {
+                bandGrouping = bandGrouping.replace(":" + unwantedGroup, "");
+            }
+        }
         StringBuilder patternGrouping = new StringBuilder("F*BT_in*:F*BT_io*:radiance_an:" +
                                                                   "radiance_ao:radiance_bn:" +
                                                                   "radiance_bo:radiance_cn:" +
