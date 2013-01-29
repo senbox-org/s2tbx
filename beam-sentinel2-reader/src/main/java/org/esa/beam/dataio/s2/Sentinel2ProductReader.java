@@ -268,11 +268,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
+        addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
         addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
         addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
         addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
         addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
-        addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
         return product;
     }
@@ -285,7 +285,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
-        product.setAutoGrouping("reflec:radiance");
+        product.setAutoGrouping("reflec:radiance:sun:view");
 
         ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
         Collections.sort(bandIndexes);
