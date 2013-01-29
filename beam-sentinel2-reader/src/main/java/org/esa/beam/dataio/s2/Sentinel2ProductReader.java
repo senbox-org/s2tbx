@@ -56,7 +56,6 @@ import static org.esa.beam.dataio.s2.S2Config.SAMPLE_PRODUCT_DATA_TYPE;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)
-// todo - set product metadata
 // todo - set band's ImageInfo from min,max,histogram found in header (--> L1cMetadata.quicklookDescriptor)
 // todo - tie point grids have been added to L1C tiles, but not to entire scene mosaics
 // todo - viewing incidence tie-point grids contain NaN values - find out how to correctly treat them
@@ -203,6 +202,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             Envelope2D tileEnvelope = sceneDescription.getTileEnvelope(tileIndex);
             setGeoCoding(product, tileEnvelope);
             addL1cTileTiePointGrids(metadataHeader, product, tileIndex);
+            product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
         }
 
         addBands(product, bandInfoMap, new L1cTileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
@@ -264,6 +264,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                       sceneDescription.getSceneRectangle().width,
                                       sceneDescription.getSceneRectangle().height);
 
+        product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
         setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
@@ -486,7 +487,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             this.imageToModelTransform = imageToModelTransform;
         }
 
-        public abstract  MultiLevelImage createSourceImage(BandInfo bandInfo);
+        public abstract MultiLevelImage createSourceImage(BandInfo bandInfo);
     }
 
     private class L1cTileMultiLevelImageFactory extends MultiLevelImageFactory {
@@ -649,6 +650,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         private final L1cMetadata metadata;
         private final int tiePointGridIndex;
+        private HashMap<String, TiePointGrid[]> tiePointGrids;
 
         public TiePointGridL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, L1cMetadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
             super(sceneDescription, imageToModelTransform, numResolutions);
@@ -658,9 +660,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         @Override
         protected PlanarImage createL1cTileImage(String tileId, int level) {
-            final int tileIndex = sceneDescription.getTileIndex(tileId);
-            final TiePointGrid[] tiePointGrids = createL1cTileTiePointGrids(metadata, tileIndex);
-            return null;
+            TiePointGrid[] tiePointGrids = this.tiePointGrids.get(tileId);
+            if (tiePointGrids == null) {
+                final int tileIndex = sceneDescription.getTileIndex(tileId);
+                tiePointGrids = createL1cTileTiePointGrids(metadata, tileIndex);
+                this.tiePointGrids.put(tileId, tiePointGrids);
+            }
+            return tiePointGrids[tiePointGridIndex].getSourceImage().getSourceImage(level);
         }
     }
 }

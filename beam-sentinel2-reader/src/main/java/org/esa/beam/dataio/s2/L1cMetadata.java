@@ -1,6 +1,10 @@
 package org.esa.beam.dataio.s2;
 
+import org.esa.beam.framework.datamodel.MetadataAttribute;
+import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.util.StringUtils;
+import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -10,7 +14,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
@@ -23,6 +30,7 @@ public class L1cMetadata {
 
     static Element NULL_ELEM = new Element("null") {
     };
+    private final MetadataElement metadataElement;
 
 
     static class Tile {
@@ -135,11 +143,56 @@ public class L1cMetadata {
         return quicklookDescriptor;
     }
 
+    public MetadataElement getMetadataElement() {
+        return metadataElement;
+    }
+
     private L1cMetadata(Element rootElement) throws DataConversionException {
         tileList = parseTileList(rootElement);
         resampleData = parseResampleData(rootElement);
         productCharacteristics = parseProductCharacteristics(rootElement);
         quicklookDescriptor = parseQuicklookDescriptor(rootElement);
+        metadataElement = parseAll(rootElement);
+    }
+
+    private MetadataElement parseAll(Element parent) {
+        return parseTree(parent, null, new HashSet<String>(Arrays.asList("Viewing_Incidence_Angles_Grids", "Sun_Angles_Grid")));
+    }
+
+    private MetadataElement parseTree(Element element, MetadataElement mdParent, Set<String> excludes) {
+
+        MetadataElement mdElement = new MetadataElement(element.getName());
+
+        List attributes = element.getAttributes();
+        for (Object a : attributes) {
+            Attribute attribute = (Attribute) a;
+            MetadataAttribute mdAttribute = new MetadataAttribute(attribute.getName().toUpperCase(), ProductData.createInstance(attribute.getValue()), true);
+            mdElement.addAttribute(mdAttribute);
+        }
+
+        for (Object c : element.getChildren()) {
+            Element child = (Element) c;
+            String childName = child.getName();
+            String childValue = child.getValue();
+            if (!excludes.contains(childValue)) {
+                if (childValue != null && !childValue.isEmpty() && childName.equals(childName.toUpperCase())) {
+                    MetadataAttribute mdAttribute = new MetadataAttribute(childName, ProductData.createInstance(childValue), true);
+                    String unit = child.getAttributeValue("unit");
+                    if (unit != null) {
+                        mdAttribute.setUnit(unit);
+                    }
+                    mdElement.addAttribute(mdAttribute);
+                } else {
+                    parseTree(child, mdElement, excludes);
+                }
+            }
+        }
+
+        if (mdParent != null) {
+            mdParent.addElement(mdElement);
+        }
+
+        return mdElement;
     }
 
     private static ProductCharacteristics parseProductCharacteristics(Element rootElement) throws DataConversionException {
