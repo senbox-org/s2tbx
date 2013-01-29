@@ -8,6 +8,8 @@ import java.awt.image.DataBuffer;
  * @author Norman Fomferra
  */
 public interface S2Config {
+    boolean DEBUG = Boolean.getBoolean("org.esa.beam.dataio.s2.S2Config.DEBUG");
+
     /**
      * Path to "opj_decompress" executable from OpenJPEG 2.0.0 package
      */
@@ -19,11 +21,11 @@ public interface S2Config {
     int SAMPLE_DATA_BUFFER_TYPE = DataBuffer.TYPE_USHORT;
     int SAMPLE_BYTE_COUNT = 2;
 
-    short FILL_CODE_NO_FILE = (short) 1000;
-    short FILL_CODE_NO_INTERSECTION = (short) 1;
-    short FILL_CODE_OUT_OF_X_BOUNDS = (short) 2;
-    short FILL_CODE_OUT_OF_Y_BOUNDS = (short) 3;
-    short FILL_CODE_MOSAIC_BG = (short) 4;
+    short FILL_CODE_NO_FILE = DEBUG ? (short) 1000 : 0;
+    short FILL_CODE_NO_INTERSECTION = DEBUG ? (short) 1 : 0;
+    short FILL_CODE_OUT_OF_X_BOUNDS = DEBUG ? (short) 2 : 0;
+    short FILL_CODE_OUT_OF_Y_BOUNDS = DEBUG ? (short) 3 : 0;
+    short FILL_CODE_MOSAIC_BG = DEBUG ? (short) 4 : 0;
 
     // these numbers should actually been read from the JP2 files,
     // because they are likely to change if prod. spec. changes
