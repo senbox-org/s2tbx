@@ -57,7 +57,6 @@ import static org.esa.beam.dataio.s2.S2Config.SAMPLE_PRODUCT_DATA_TYPE;
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)
 // todo - set band's ImageInfo from min,max,histogram found in header (--> L1cMetadata.quicklookDescriptor)
-// todo - tie point grids have been added to L1C tiles, but not to entire scene mosaics
 // todo - viewing incidence tie-point grids contain NaN values - find out how to correctly treat them
 // todo - configure BEAM module / SUHET installer so that OpenJPEG "opj_decompress" executable is accessible on all platforms
 
