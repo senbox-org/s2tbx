@@ -22,7 +22,7 @@ import org.esa.beam.dataio.s3.LonLatMultiLevelSource;
 import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
-import org.esa.beam.framework.datamodel.GeoCoding;
+import org.esa.beam.framework.datamodel.IndexCoding;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.PixelGeoCoding;
@@ -32,6 +32,7 @@ import org.esa.beam.framework.datamodel.RasterDataNode;
 import org.esa.beam.util.ProductUtils;
 import ucar.nc2.Variable;
 
+import java.awt.Color;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
@@ -88,6 +89,31 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
             }
             copyMasks(targetProduct, sourceProduct, mapping);
         }
+        addCameraIndexBand(targetProduct);
+    }
+
+    private void addCameraIndexBand(Product targetProduct) {
+        final int sceneRasterWidth = targetProduct.getSceneRasterWidth();
+        final int sceneRasterHeight = targetProduct.getSceneRasterHeight();
+        Band cameraIndexBand = new Band("Camera_Index", ProductData.TYPE_INT8,
+                                        sceneRasterWidth, sceneRasterHeight);
+        byte[] indexData = new byte[sceneRasterWidth * sceneRasterHeight];
+        for (int i = 0; i < sceneRasterHeight; i++) {
+            for (int j = 0; j < sceneRasterWidth; j++) {
+                byte indexValue = (byte) (j / (sceneRasterWidth / 5));
+                indexData[sceneRasterWidth * i + j] = indexValue;
+            }
+        }
+        cameraIndexBand.setDataElems(indexData);
+        targetProduct.addBand(cameraIndexBand);
+        IndexCoding indexCoding = new IndexCoding("Camera_Index");
+        for (int i = 0; i < 5; i++) {
+            final String description = "Images from camera " + i;
+            indexCoding.addIndex("Camera_Index_" + (i + 1), i, description);
+        }
+
+        cameraIndexBand.setSampleCoding(indexCoding);
+        targetProduct.getIndexCodingGroup().add(indexCoding);
     }
 
     @Override
@@ -128,7 +154,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
     }
 
     private void addVariables(Product targetProduct, double[] tpLon, double[] tpLat, String fileName) throws
-                                                                                                      IOException {
+            IOException {
         final String latBandName = "latitude";
         final String lonBandName = "longitude";
         final Band latBand = targetProduct.getBand(latBandName);
@@ -211,4 +237,9 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         targetProduct.setAutoGrouping("SDR*er:SDR");
     }
 
+//    @Override
+//    protected void setMasks(Product targetProduct) {
+//        super.setMasks(targetProduct);
+//        Mask cameraMask = new Mask()
+//    }
 }
