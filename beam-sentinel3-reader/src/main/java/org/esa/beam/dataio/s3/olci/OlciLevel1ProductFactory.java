@@ -19,9 +19,11 @@ import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.dataio.ProductSubsetDef;
 import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.PixelGeoCoding2;
 import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.RasterDataNode;
 import org.esa.beam.framework.datamodel.TiePointGeoCoding;
 
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class OlciLevel1ProductFactory extends AbstractProductFactory {
 
@@ -102,7 +105,7 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
         final Band latBand = targetProduct.getBand("latitude");
         final Band lonBand = targetProduct.getBand("longitude");
         if (latBand != null && lonBand != null) {
-            targetProduct.setGeoCoding(new PixelGeoCoding2(latBand, lonBand, "!quality_flags_cosmetic && !quality_flags_sun_glint_risk"));
+            targetProduct.setGeoCoding(new PixelGeoCoding2(latBand, lonBand, "!quality_flags_invalid && !quality_flags_duplicated"));
         }
         if (targetProduct.getGeoCoding() == null) {
             if (targetProduct.getTiePointGrid("TP_latitude") != null && targetProduct.getTiePointGrid(
@@ -126,6 +129,26 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
                 targetBand.setSpectralBandwidth(SPECTRAL_BAND_PROPERTIES.getBandwidth(index));
             }
         }
-        targetNode.setValidPixelExpression("!quality_flags_cosmetic");
+        targetNode.setValidPixelExpression("!quality_flags_invalid");
+    }
+
+    @Override
+    protected ProductNodeGroup<Mask> prepareMasksForCopying(ProductNodeGroup<Mask> maskGroup) {
+        for (int i = 0; i < maskGroup.getNodeCount(); i++) {
+            final Mask mask = maskGroup.get(i);
+            if(mask.getName().equals("quality_flags_invalid")) {
+                mask.setName("quality_flags_cosmetic");
+            }
+            else if(mask.getName().equals("quality_flags_cosmetic")) {
+                mask.setName("quality_flags_invalid");
+            }
+            else if(mask.getName().equals("quality_flags_duplicated")) {
+                mask.setName("quality_flags_sun_glint_risk");
+            }
+            else if(mask.getName().equals("quality_flags_sun_glint_risk")) {
+                mask.setName("quality_flags_duplicated");
+            }
+        }
+        return maskGroup;
     }
 }

@@ -254,7 +254,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
     }
 
     protected final void copyMasks(Product sourceProduct, Product targetProduct, Map<String, String> mapping) {
-        final ProductNodeGroup<Mask> maskGroup = sourceProduct.getMaskGroup();
+        final ProductNodeGroup<Mask> maskGroup = prepareMasksForCopying(sourceProduct.getMaskGroup());
         for (int i = 0; i < maskGroup.getNodeCount(); i++) {
             final Mask mask = maskGroup.get(i);
             final Mask.ImageType imageType = mask.getImageType();
@@ -277,6 +277,11 @@ public abstract class AbstractProductFactory implements ProductFactory {
                 }
             }
         }
+    }
+
+    //todo this method has been added as a workaround to deal with incorrect test data. Remove it when masks are correct
+    protected ProductNodeGroup<Mask> prepareMasksForCopying(ProductNodeGroup<Mask> maskGroup) {
+        return maskGroup;
     }
 
     private void readProducts(List<String> fileNames) throws IOException {
