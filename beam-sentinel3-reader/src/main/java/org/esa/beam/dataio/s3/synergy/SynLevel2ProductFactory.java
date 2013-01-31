@@ -73,7 +73,15 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
             final Map<String, List<String>> partition = Partitioner.partition(sourceProduct.getBandNames(), "_CAM");
 
             for (final Map.Entry<String, List<String>> entry : partition.entrySet()) {
-                final String targetBandName = entry.getKey();
+                String targetBandName = entry.getKey();
+                if(sourceProduct.getName().startsWith("r")) {
+                    if(sourceProduct.getName().endsWith("n")) {
+                        targetBandName = targetBandName + "_n";
+                    }
+                    if (sourceProduct.getName().endsWith("o")) {
+                        targetBandName = targetBandName + "_o";
+                    }
+                }
                 final List<String> sourceBandNames = entry.getValue();
                 final String sourceBandName = sourceBandNames.get(0);
                 final Band targetBand = ProductUtils.copyBand(sourceBandName, sourceProduct, targetBandName,
@@ -204,7 +212,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                     "Variable_Attributes");
             if (variableAttributes != null) {
                 final MetadataElement element = variableAttributes.getElement(
-                        targetNode.getName().replaceAll("_CAM[1-5]", ""));
+                        targetNode.getName().replaceAll("_CAM[1-5]", "").replace("_n", "").replace("_o", ""));
                 if (element != null) {
                     final MetadataAttribute wavelengthAttribute = element.getAttribute("central_wavelength");
                     final Band targetBand = (Band) targetNode;
@@ -234,7 +242,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
 
     @Override
     protected void setAutoGrouping(Product[] sourceProducts, Product targetProduct) {
-        targetProduct.setAutoGrouping("SDR*er:SDR");
+        targetProduct.setAutoGrouping("SDR*er:SDR*er_n:SDR*er_o:SDR*n:SDR*o:SDR");
     }
 
 //    @Override
