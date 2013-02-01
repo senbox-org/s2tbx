@@ -6,11 +6,7 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import org.esa.beam.framework.dataio.AbstractProductReader;
-import org.esa.beam.framework.datamodel.Band;
-import org.esa.beam.framework.datamodel.CrsGeoCoding;
-import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.datamodel.ProductData;
-import org.esa.beam.framework.datamodel.TiePointGrid;
+import org.esa.beam.framework.datamodel.*;
 import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.SystemUtils;
 import org.esa.beam.util.io.FileUtils;
@@ -20,15 +16,10 @@ import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -36,23 +27,11 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
-import static org.esa.beam.dataio.s2.L1cMetadata.ProductCharacteristics;
-import static org.esa.beam.dataio.s2.L1cMetadata.ResampleData;
-import static org.esa.beam.dataio.s2.L1cMetadata.SpectralInformation;
-import static org.esa.beam.dataio.s2.L1cMetadata.Tile;
-import static org.esa.beam.dataio.s2.L1cMetadata.parseHeader;
-import static org.esa.beam.dataio.s2.S2Config.DEFAULT_JAI_TILE_SIZE;
-import static org.esa.beam.dataio.s2.S2Config.FILL_CODE_MOSAIC_BG;
-import static org.esa.beam.dataio.s2.S2Config.L1C_TILE_LAYOUTS;
-import static org.esa.beam.dataio.s2.S2Config.S2_WAVEBAND_INFOS;
-import static org.esa.beam.dataio.s2.S2Config.SAMPLE_PRODUCT_DATA_TYPE;
+import static org.esa.beam.dataio.s2.L1cMetadata.*;
+import static org.esa.beam.dataio.s2.S2Config.*;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)
@@ -311,9 +290,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                   + " / " + bandInfo.wavebandInfo.quantificationValue + ")");
             reflec.setSpectralBandIndex(bandIndex);
             reflec.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
-            reflec.setNoDataValue(0);
-            reflec.setNoDataValueUsed(true);
+            reflec.setValidPixelExpression(bandInfo.wavebandInfo.bandName + ".raw > ");
             reflec.setDescription("TOA reflectance in " + bandInfo.wavebandInfo.bandName + " for demonstration purpose");
+            setValidPixelMask(reflec, bandInfo.wavebandInfo.bandName);
         }
 
         // For testing - add TOA radiance bands
@@ -326,13 +305,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                     + " / " + bandInfo.wavebandInfo.quantificationValue + ")");
             radiance.setSpectralBandIndex(bandIndex);
             radiance.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
-            radiance.setNoDataValue(0);
-            radiance.setNoDataValueUsed(true);
             radiance.setDescription("TOA radiance in " + bandInfo.wavebandInfo.bandName + " for demonstration purpose");
+            setValidPixelMask(radiance, bandInfo.wavebandInfo.bandName);
         }
 
-        Band ndvi = product.addBand("ndvi", "(reflec_4 - reflec_9) / (reflec_4 + reflec_9)");
-        ndvi.setDescription("TOA NDVI for demonstration purpose");
+        Band ndvi = product.addBand("toa_ndvi", "(reflec_4 - reflec_9) / (reflec_4 + reflec_9)");
+        ndvi.setDescription("Top-of-atmosphere NDVI for demonstration purpose");
+        ndvi.setValidPixelExpression(String.format("B4.raw > %s and B4.raw > %s",
+                                                   S2Config.RAW_NO_DATA_THRESHOLD,
+                                                   S2Config.RAW_NO_DATA_THRESHOLD));
     }
 
     private Band addBand(Product product, BandInfo bandInfo) {
@@ -343,8 +324,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
         band.setSolarFlux((float) bandInfo.wavebandInfo.solarIrradiance);
 
-        band.setNoDataValue(0);
-        //band.setNoDataValueUsed(true);
+        setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
 
         // todo - We don't use the scaling factor because we want to stay with 16bit unsigned short samples due to the large
         // amounts of data when saving the images. We provide virtual reflectance bands for this reason. We can use the
@@ -354,6 +334,12 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         //band.setScalingFactor(bandInfo.wavebandInfo.scalingFactor);
 
         return band;
+    }
+
+    private void setValidPixelMask(Band band, String bandName) {
+        band.setNoDataValue(0);
+        band.setValidPixelExpression(String.format("%s.raw > %s",
+                                                   bandName, S2Config.RAW_NO_DATA_THRESHOLD));
     }
 
     private void addL1cTileTiePointGrids(L1cMetadata metadataHeader, Product product, int tileIndex) {
