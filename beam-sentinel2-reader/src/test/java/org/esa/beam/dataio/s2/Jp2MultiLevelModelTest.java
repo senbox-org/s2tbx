@@ -1,8 +1,8 @@
 package org.esa.beam.dataio.s2;
 
+import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import org.junit.Test;
 
-import static com.bc.ceres.glevel.support.AbstractMultiLevelSource.getImageDimension;
 import static java.lang.Math.pow;
 import static org.junit.Assert.assertEquals;
 
@@ -31,21 +31,22 @@ public class Jp2MultiLevelModelTest {
         assertEquals(456, doit2(1826, 2));
         assertEquals(228, doit2(1826, 3));
         assertEquals(114, doit2(1826, 4));
-//        assertEquals(58, doit2(1826, 5));
+        assertEquals(57, doit2(1826, 5));
     }
 
     private int doit2(int width, int level) {
-        return getImageDimension(width, 10, pow(2.0, level)).width;
+        return AbstractMultiLevelSource.getImageDimension(width, 2*width, pow(2.0, level)).width;
     }
 
     private int doit(int w, int r) {
-        // return (int) Math.ceil((w) / Math.pow(2, r));
-
+        return (int) Math.ceil((w) / Math.pow(2, r));
+        /*
         final int i = w >> r;
         if (w > i << r) {
             return i + 1;
         }
         return i;
+        */
     }
 
 
