@@ -135,11 +135,16 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         Band cameraIndexBand = new Band("Camera_Index", ProductData.TYPE_INT8,
                                         sceneRasterWidth, sceneRasterHeight);
         byte[] indexData = new byte[sceneRasterWidth * sceneRasterHeight];
-        for (int i = 0; i < sceneRasterHeight; i++) {
-            for (int j = 0; j < sceneRasterWidth; j++) {
-                byte indexValue = (byte) (j / (sceneRasterWidth / 5));
-                indexData[sceneRasterWidth * i + j] = indexValue;
+        byte[] indexLine = new byte[sceneRasterWidth];
+        int lineIdx = 0;
+        for (byte camIndex = 0; camIndex < camOverlap.length; camIndex++) {
+            int overlap = camOverlap[camIndex];
+            for (int j = 0; j < (740 - overlap); j++) {
+                indexLine[lineIdx++] = camIndex;
             }
+        }
+        for (int y = 0; y < sceneRasterHeight; y++) {
+            System.arraycopy(indexLine,0,indexData,y*sceneRasterWidth,indexLine.length);
         }
         cameraIndexBand.setDataElems(indexData);
         targetProduct.addBand(cameraIndexBand);
