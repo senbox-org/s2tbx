@@ -61,17 +61,19 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
         if (startOffset != 0.0) {
             return startOffset;
         }
-        if (sourceProductName.endsWith("_an") ||
+        if (sourceProductName.contains("flags") && sourceProductName.endsWith("o")) {
+            return 0.0;
+        } else if (sourceProductName.endsWith("_in")) {
+            return 0.5;
+        } else if (sourceProductName.endsWith("_io")) {
+            return 389.5;
+        } else if (sourceProductName.endsWith("_an") ||
                 sourceProductName.endsWith("_bn") ||
                 sourceProductName.endsWith("_cn")) {
             return 1.0;
         } else if (sourceProductName.endsWith("_ao") || sourceProductName.endsWith("_bo") ||
                 sourceProductName.endsWith("_co")) {
             return 779.0;
-        } else if (sourceProductName.endsWith("_in")) {
-            return 0.5;
-        } else if (sourceProductName.endsWith("_io")) {
-            return 389.5;
         } else if (sourceProductName.endsWith("_to")) {
             return 20.;
         }
@@ -84,16 +86,18 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
         final double trackOffset = globalAttributes.getAttributeDouble("track_offset");
         if (trackOffset != 0) {
             return trackOffset;
+        } else if (sourceProductName.contains("flags") && sourceProductName.endsWith("o")) {
+            return 50.0;
+        } else if (sourceProductName.endsWith("_in")) {
+            return -471.5;
+        } else if (sourceProductName.endsWith("_io")) {
+            return 207.0;
         } else if (sourceProductName.endsWith("_an") || sourceProductName.endsWith("_cn") ||
                 sourceProductName.endsWith("_bn")) {
             return -943.0;
-        } else if (sourceProductName.endsWith("_in")) {
-            return -471.5;
         } else if (sourceProductName.endsWith("_ao") || sourceProductName.endsWith("_bo") ||
                 sourceProductName.endsWith("_co")) {
             return 412.0;
-        } else if (sourceProductName.endsWith("_io")) {
-            return 207.0;
         } else if (sourceProductName.endsWith("_tx") || sourceProductName.endsWith("_tn")) {
             return -30.0;
         } else if (sourceProductName.endsWith("_to")) {
@@ -158,7 +162,8 @@ public class SlstrLevel1ProductFactory extends SlstrProductFactory {
         for (int i = 1; i < productList.size(); i++) {
             Product product = productList.get(i);
             if (product.getSceneRasterWidth() > masterProduct.getSceneRasterWidth() &&
-                    product.getSceneRasterHeight() > masterProduct.getSceneRasterHeight()) {
+                    product.getSceneRasterHeight() > masterProduct.getSceneRasterHeight() &&
+                    !product.getName().contains("flags")) {
                 masterProduct = product;
             }
         }
