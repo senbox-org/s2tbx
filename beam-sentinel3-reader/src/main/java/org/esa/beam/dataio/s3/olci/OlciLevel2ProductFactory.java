@@ -94,6 +94,7 @@ public class OlciLevel2ProductFactory extends AbstractProductFactory {
         return SPECTRAL_BAND_PROPERTIES.getSpectralBandCount() - 1;
     }
 
+    // TODO - use pixel geocoding
     @Override
     protected void setGeoCoding(Product targetProduct) throws IOException {
         final TiePointGrid latGrid = targetProduct.getTiePointGrid("TP_latitude");
