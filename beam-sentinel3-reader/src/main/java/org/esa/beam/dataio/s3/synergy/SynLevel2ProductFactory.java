@@ -27,10 +27,10 @@ import org.esa.beam.framework.datamodel.IndexCoding;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.PixelGeoCoding;
-import org.esa.beam.framework.datamodel.PixelGeoCoding2;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.RasterDataNode;
+import org.esa.beam.framework.datamodel.VirtualBand;
 import org.esa.beam.util.ProductUtils;
 import ucar.nc2.Variable;
 
@@ -120,34 +120,31 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                 final DefaultMultiLevelSource multiLevelSource = new DefaultMultiLevelSource(renderedImage, levelCount);
                 final DefaultMultiLevelImage multiLevelImage = new DefaultMultiLevelImage(multiLevelSource);
                 targetBand.setSourceImage(multiLevelImage);
-//                targetBand.setSourceImage(CameraImageMosaic.create(sourceImages, camOverlap));
                 final Band sourceBand = sourceProduct.getBand(sourceBandName);
                 configureTargetNode(sourceBand, targetBand);
                 mapping.put(sourceBand.getName(), targetBand.getName());
             }
             copyMasks(targetProduct, sourceProduct, mapping);
         }
-        addCameraIndexBand(targetProduct);
+        addCameraIndexBand(targetProduct, masterProduct.getSceneRasterWidth());
     }
 
-    private void addCameraIndexBand(Product targetProduct) {
+    private void addCameraIndexBand(Product targetProduct, int originalWidth) {
         final int sceneRasterWidth = targetProduct.getSceneRasterWidth();
         final int sceneRasterHeight = targetProduct.getSceneRasterHeight();
-        Band cameraIndexBand = new Band("Camera_Index", ProductData.TYPE_INT8,
-                                        sceneRasterWidth, sceneRasterHeight);
-        byte[] indexData = new byte[sceneRasterWidth * sceneRasterHeight];
-        byte[] indexLine = new byte[sceneRasterWidth];
-        int lineIdx = 0;
-        for (byte camIndex = 0; camIndex < camOverlap.length; camIndex++) {
-            int overlap = camOverlap[camIndex];
-            for (int j = 0; j < (740 - overlap); j++) {
-                indexLine[lineIdx++] = camIndex;
+        StringBuilder expression = new StringBuilder();
+        int toWidth = 0;
+        for (int i = 0; i < 4; i++) {
+            toWidth += (originalWidth - camOverlap[i]);
+            expression.append("X < " + toWidth + " ? ");
+            expression.append(i);
+            expression.append(" : ");
+            if (i == 3) {
+                expression.append(i + 1);
             }
         }
-        for (int y = 0; y < sceneRasterHeight; y++) {
-            System.arraycopy(indexLine,0,indexData,y*sceneRasterWidth,indexLine.length);
-        }
-        cameraIndexBand.setDataElems(indexData);
+        Band cameraIndexBand = new VirtualBand("Camera_Index", ProductData.TYPE_INT8,
+                                               sceneRasterWidth, sceneRasterHeight, expression.toString());
         targetProduct.addBand(cameraIndexBand);
         IndexCoding indexCoding = new IndexCoding("Camera_Index");
         for (int i = 0; i < 5; i++) {
@@ -197,7 +194,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
     }
 
     private void addVariables(Product targetProduct, double[] tpLon, double[] tpLat, String fileName) throws
-                                                                                                      IOException {
+            IOException {
         final String latBandName = "latitude";
         final String lonBandName = "longitude";
         final Band latBand = targetProduct.getBand(latBandName);
@@ -237,17 +234,17 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                                                                    tpFunctionData, colCount
         );
         return new DefaultMultiLevelImage(
-                    LonLatMultiLevelSource.create(lonImage, latImage, function, DataBuffer.TYPE_FLOAT));
+                LonLatMultiLevelSource.create(lonImage, latImage, function, DataBuffer.TYPE_FLOAT));
     }
 
     @Override
     protected void configureTargetNode(Band sourceBand, RasterDataNode targetNode) {
         if (targetNode instanceof Band) {
             final MetadataElement variableAttributes = sourceBand.getProduct().getMetadataRoot().getElement(
-                        "Variable_Attributes");
+                    "Variable_Attributes");
             if (variableAttributes != null) {
                 final MetadataElement element = variableAttributes.getElement(
-                            targetNode.getName().replaceAll("_CAM[1-5]", "").replace("_n", "").replace("_o", ""));
+                        targetNode.getName().replaceAll("_CAM[1-5]", "").replace("_n", "").replace("_o", ""));
                 if (element != null) {
                     final MetadataAttribute wavelengthAttribute = element.getAttribute("central_wavelength");
                     final Band targetBand = (Band) targetNode;
