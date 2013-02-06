@@ -174,7 +174,7 @@ public class L1cMetadata {
             Element child = (Element) c;
             String childName = child.getName();
             String childValue = child.getValue();
-            if (!excludes.contains(childValue)) {
+            if (!excludes.contains(childName)) {
                 if (childValue != null && !childValue.isEmpty() && childName.equals(childName.toUpperCase())) {
                     MetadataAttribute mdAttribute = new MetadataAttribute(childName, ProductData.createInstance(childValue), true);
                     String unit = child.getAttributeValue("unit");
