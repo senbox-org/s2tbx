@@ -108,7 +108,7 @@ public class OlciLevel2ProductFactory extends AbstractProductFactory {
 
     @Override
     protected void setAutoGrouping(Product[] sourceProducts, Product targetProduct) {
-        targetProduct.setAutoGrouping("R*_er:R*");
+        targetProduct.setAutoGrouping("R*_er:R*:A865:AD443:ADG:APH:ATOT:BBP:CHL:IWV:KD490:PAR:T865:TSM:ZHL:ZSD");
     }
 
 }
