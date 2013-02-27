@@ -16,7 +16,6 @@ package org.esa.beam.dataio.s3.synergy;/*
 
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
-import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.beam.dataio.s3.AbstractProductFactory;
 import org.esa.beam.dataio.s3.LonLatFunction;
 import org.esa.beam.dataio.s3.LonLatMultiLevelSource;
@@ -34,11 +33,7 @@ import org.esa.beam.framework.datamodel.VirtualBand;
 import org.esa.beam.util.ProductUtils;
 import ucar.nc2.Variable;
 
-import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.CropDescriptor;
-import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.image.DataBuffer;
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,8 +44,6 @@ import java.util.Map;
 // TODO - check flag codings, masks, auto-grouping, if everything is correct for mosaic of camera images
 
 public class SynLevel2ProductFactory extends AbstractProductFactory {
-
-    final static int[] camOverlap = new int[]{0, 31, 27, 33, 29};
 
     public SynLevel2ProductFactory(Sentinel3ProductReader productReader) {
         super(productReader);
@@ -70,11 +63,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
 
     @Override
     protected int getSceneRasterWidth(Product masterProduct) {
-        int i = masterProduct.getSceneRasterWidth() * 5;
-        for (int overlap : camOverlap) {
-            i -= overlap;
-        }
-        return i;
+        return masterProduct.getSceneRasterWidth() * 5;
     }
 
     @Override
@@ -84,19 +73,8 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
             final Map<String, List<String>> partition = Partitioner.partition(sourceProduct.getBandNames(), "_CAM");
 
             for (final Map.Entry<String, List<String>> entry : partition.entrySet()) {
-                String targetBandName = entry.getKey();
-                if (sourceProduct.getName().startsWith("r")) {
-                    if (sourceProduct.getName().endsWith("n")) {
-                        targetBandName = targetBandName + "_n";
-                    }
-                    if (sourceProduct.getName().endsWith("o")) {
-                        targetBandName = targetBandName + "_o";
-                    }
-                }
+                final String targetBandName = entry.getKey();
                 final List<String> sourceBandNames = entry.getValue();
-                if (sourceBandNames.size() != 5) {
-                    throw new IllegalStateException("There must be exact 5 camera image names.");
-                }
                 final String sourceBandName = sourceBandNames.get(0);
                 final Band targetBand = ProductUtils.copyBand(sourceBandName, sourceProduct, targetBandName,
                                                               targetProduct, false);
@@ -104,22 +82,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                 for (int i = 0; i < sourceImages.length; i++) {
                     sourceImages[i] = sourceProduct.getBand(sourceBandNames.get(i)).getSourceImage();
                 }
-                final RenderedImage[] cropedImages = new RenderedImage[sourceImages.length];
-                for (int i = 0; i < sourceImages.length; i++) {
-                    MultiLevelImage sourceImage = sourceImages[i];
-                    final int overlap = camOverlap[i];
-                    final float x = sourceImage.getMinX() + overlap;
-                    final float width = sourceImage.getWidth() - overlap;
-                    final RenderedOp translatedImage = TranslateDescriptor.create(sourceImage, (float) -overlap, 0f, null, null);
-                    final RenderedOp cropedImage = CropDescriptor.create(translatedImage, 0f, 0f, width, (float) sourceImage.getHeight(), null);
-                    CameraImageSplicer.printOutForDebug(new RenderedImage[]{cropedImage});
-                    cropedImages[i] = cropedImage;
-                }
-                final RenderedImage renderedImage = CameraImageSplicer.create(cropedImages);
-                final int levelCount = sourceImages[0].getModel().getLevelCount();
-                final DefaultMultiLevelSource multiLevelSource = new DefaultMultiLevelSource(renderedImage, levelCount);
-                final DefaultMultiLevelImage multiLevelImage = new DefaultMultiLevelImage(multiLevelSource);
-                targetBand.setSourceImage(multiLevelImage);
+                targetBand.setSourceImage(CameraImageMosaic.create(sourceImages));
                 final Band sourceBand = sourceProduct.getBand(sourceBandName);
                 configureTargetNode(sourceBand, targetBand);
                 mapping.put(sourceBand.getName(), targetBand.getName());
@@ -129,14 +92,14 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         addCameraIndexBand(targetProduct, masterProduct.getSceneRasterWidth());
     }
 
-    private void addCameraIndexBand(Product targetProduct, int originalWidth) {
+    private void addCameraIndexBand(Product targetProduct, int cameraImageWidth) {
         final int sceneRasterWidth = targetProduct.getSceneRasterWidth();
         final int sceneRasterHeight = targetProduct.getSceneRasterHeight();
         StringBuilder expression = new StringBuilder();
-        int toWidth = 0;
+        int width = 0;
         for (int i = 0; i < 4; i++) {
-            toWidth += (originalWidth - camOverlap[i]);
-            expression.append("X < " + toWidth + " ? ");
+            width += cameraImageWidth;
+            expression.append("X < ").append(width).append(" ? ");
             expression.append(i);
             expression.append(" : ");
             if (i == 3) {
@@ -194,7 +157,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
     }
 
     private void addVariables(Product targetProduct, double[] tpLon, double[] tpLat, String fileName) throws
-            IOException {
+                                                                                                      IOException {
         final String latBandName = "latitude";
         final String lonBandName = "longitude";
         final Band latBand = targetProduct.getBand(latBandName);
@@ -244,7 +207,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                     "Variable_Attributes");
             if (variableAttributes != null) {
                 final MetadataElement element = variableAttributes.getElement(
-                        targetNode.getName().replaceAll("_CAM[1-5]", "").replace("_n", "").replace("_o", ""));
+                        targetNode.getName().replaceAll("_CAM[1-5]", ""));
                 if (element != null) {
                     final MetadataAttribute wavelengthAttribute = element.getAttribute("central_wavelength");
                     final Band targetBand = (Band) targetNode;
@@ -270,7 +233,6 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         final Band lonBand = targetProduct.getBand(lonBandName);
 
         targetProduct.setGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 5));
-//        targetProduct.setGeoCoding(new PixelGeoCoding2(latBand, lonBand, null));
     }
 
     @Override
