@@ -40,7 +40,7 @@ class CameraImageMosaic {
         }
 
         return MosaicDescriptor.create(sourceImages, MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                       null, null, null, null, null);
+                                       null, null, new double[][]{{Double.NEGATIVE_INFINITY}}, null, null);
     }
 
     public static MultiLevelImage create(final MultiLevelImage... sourceImages) {

@@ -108,6 +108,7 @@ public abstract class AbstractProductFactory implements ProductFactory {
         final int h = masterProduct.getSceneRasterHeight();
         final Product targetProduct = new Product(productName, productType, w, h, productReader);
         targetProduct.setFileLocation(getInputFile());
+        targetProduct.setNumResolutionsMax(masterProduct.getNumResolutionsMax());
 
         initialize(masterProduct);
 
