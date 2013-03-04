@@ -25,7 +25,7 @@ import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.IndexCoding;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
-import org.esa.beam.framework.datamodel.PixelGeoCoding;
+import org.esa.beam.framework.datamodel.PixelGeoCoding2;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.RasterDataNode;
@@ -174,7 +174,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                                                                         latBand.getGeophysicalImage(),
                                                                         tpLon,
                                                                         tpLat, tpVar,
-                                                                        100);
+                                                                        400);
 
                 targetBand.setSourceImage(targetImage);
             }
@@ -194,8 +194,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                                                 double[] tpFunctionData, int colCount) {
         final LonLatFunction function = new LonLatTiePointFunction(tpLonData,
                                                                    tpLatData,
-                                                                   tpFunctionData, colCount
-        );
+                                                                   tpFunctionData, colCount);
         return new DefaultMultiLevelImage(
                 LonLatMultiLevelSource.create(lonImage, latImage, function, DataBuffer.TYPE_FLOAT));
     }
@@ -232,7 +231,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         final Band latBand = targetProduct.getBand(latBandName);
         final Band lonBand = targetProduct.getBand(lonBandName);
 
-        targetProduct.setGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 5));
+        targetProduct.setGeoCoding(new PixelGeoCoding2(latBand, lonBand, null));
     }
 
     @Override
