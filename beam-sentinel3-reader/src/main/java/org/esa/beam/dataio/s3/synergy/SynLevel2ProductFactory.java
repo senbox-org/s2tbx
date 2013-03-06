@@ -73,15 +73,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
             final Map<String, List<String>> partition = Partitioner.partition(sourceProduct.getBandNames(), "_CAM");
 
             for (final Map.Entry<String, List<String>> entry : partition.entrySet()) {
-                String targetBandName = entry.getKey();
-                if (sourceProduct.getName().startsWith("r")) {
-                    if (sourceProduct.getName().endsWith("n")) {
-                        targetBandName = targetBandName + "_n";
-                    }
-                    if (sourceProduct.getName().endsWith("o")) {
-                        targetBandName = targetBandName + "_o";
-                    }
-                }
+                String targetBandName = buildTargetBandName(sourceProduct, entry.getKey());
                 final List<String> sourceBandNames = entry.getValue();
                 final String sourceBandName = sourceBandNames.get(0);
                 final Band targetBand = ProductUtils.copyBand(sourceBandName, sourceProduct, targetBandName,
@@ -98,6 +90,19 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
             copyMasks(targetProduct, sourceProduct, mapping);
         }
         addCameraIndexBand(targetProduct, masterProduct.getSceneRasterWidth());
+    }
+
+    private String buildTargetBandName(Product sourceProduct, String bandName) {
+        StringBuilder targetBandNameBuilder = new StringBuilder(bandName);
+        if (sourceProduct.getName().startsWith("r")) {
+            if (sourceProduct.getName().endsWith("n")) {
+                targetBandNameBuilder.append("_n");
+            }
+            if (sourceProduct.getName().endsWith("o")) {
+                targetBandNameBuilder.append("_o");
+            }
+        }
+        return targetBandNameBuilder.toString();
     }
 
     private void addCameraIndexBand(Product targetProduct, int cameraImageWidth) {
