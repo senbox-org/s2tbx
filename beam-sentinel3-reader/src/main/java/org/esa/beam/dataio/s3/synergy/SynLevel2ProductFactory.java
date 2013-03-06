@@ -73,7 +73,15 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
             final Map<String, List<String>> partition = Partitioner.partition(sourceProduct.getBandNames(), "_CAM");
 
             for (final Map.Entry<String, List<String>> entry : partition.entrySet()) {
-                final String targetBandName = entry.getKey();
+                String targetBandName = entry.getKey();
+                if (sourceProduct.getName().startsWith("r")) {
+                    if (sourceProduct.getName().endsWith("n")) {
+                        targetBandName = targetBandName + "_n";
+                    }
+                    if (sourceProduct.getName().endsWith("o")) {
+                        targetBandName = targetBandName + "_o";
+                    }
+                }
                 final List<String> sourceBandNames = entry.getValue();
                 final String sourceBandName = sourceBandNames.get(0);
                 final Band targetBand = ProductUtils.copyBand(sourceBandName, sourceProduct, targetBandName,
