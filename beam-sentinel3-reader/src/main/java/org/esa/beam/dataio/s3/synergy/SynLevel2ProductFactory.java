@@ -219,7 +219,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
                     "Variable_Attributes");
             if (variableAttributes != null) {
                 final MetadataElement element = variableAttributes.getElement(
-                        targetNode.getName().replaceAll("_CAM[1-5]", ""));
+                        sourceBand.getName().replaceAll("_CAM[1-5]", ""));
                 if (element != null) {
                     final MetadataAttribute wavelengthAttribute = element.getAttribute("central_wavelength");
                     final Band targetBand = (Band) targetNode;
