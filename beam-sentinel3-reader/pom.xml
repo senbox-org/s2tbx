@@ -45,6 +45,13 @@
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-visat-rcp</artifactId>
         </dependency>
+        <!-- Added so that SpeedTester can read MERIS products-->
+        <dependency>
+            <groupId>org.esa.beam</groupId>
+            <artifactId>beam-envisat-reader</artifactId>
+            <version>1.5.2-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
 </project>

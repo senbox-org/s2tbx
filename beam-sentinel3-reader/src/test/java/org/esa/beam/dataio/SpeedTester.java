@@ -1,12 +1,11 @@
-package org.esa.beam.dataio.s3;
+package org.esa.beam.dataio;
 
 import com.jidesoft.combobox.FileChooserComboBox;
 import com.jidesoft.utils.Lm;
-import org.esa.beam.framework.dataio.ProductReaderPlugIn;
+import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.ui.GridBagUtils;
-import org.esa.beam.util.SystemUtils;
 
 import javax.media.jai.JAI;
 import javax.swing.JButton;
@@ -20,20 +19,25 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingWorker;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
+import java.lang.Double;
+import java.lang.Exception;
+import java.lang.Integer;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.System;
 
-public class S3SpeedTester {
+public class SpeedTester {
 
     private JTextArea textArea;
 
-    public S3SpeedTester() {
-        SystemUtils.init3rdPartyLibs(S3SpeedTester.class.getClassLoader());
+    public SpeedTester() {
+        org.esa.beam.util.SystemUtils.init3rdPartyLibs(SpeedTester.class.getClassLoader());
         createUI();
     }
 
@@ -45,10 +49,7 @@ public class S3SpeedTester {
 
         final JSpinner speedSpinner = new JSpinner(new SpinnerNumberModel(36.0, 0.1, Double.POSITIVE_INFINITY, 0.1));
 
-        final JSpinner tileSizeSpinner = new JSpinner(new SpinnerNumberModel(512, 1, Integer.MAX_VALUE, 1));
-
-        final long memoryCapacity = JAI.getDefaultInstance().getTileCache().getMemoryCapacity();
-        final JSpinner tileCacheCapacitySpinner = new JSpinner(new SpinnerNumberModel(memoryCapacity, 1, Integer.MAX_VALUE, 1));
+        final JSpinner tileCacheCapacitySpinner = new JSpinner(new SpinnerNumberModel(512, 1, Integer.MAX_VALUE, 1));
 
         textArea = new JTextArea();
 
@@ -71,16 +72,11 @@ public class S3SpeedTester {
             public void actionPerformed(ActionEvent e) {
                 try {
                     final double tileCacheCapacityasDouble = Double.parseDouble(tileCacheCapacitySpinner.getValue().toString());
-                    JAI.getDefaultInstance().getTileCache().setMemoryCapacity((long) tileCacheCapacityasDouble);
+                    JAI.getDefaultInstance().getTileCache().setMemoryCapacity((long) tileCacheCapacityasDouble * 1000000);
                     final String fileName = fileChooserComboBox.getSelectedItem().toString();
                     final double highestPossibleSpeed = Double.parseDouble(speedSpinner.getValue().toString());
-                    final int tileSize = Integer.parseInt(tileSizeSpinner.getValue().toString());
-                    runSpeedTest(panel, fileName, highestPossibleSpeed, tileSize);
+                    runSpeedTest(fileName, highestPossibleSpeed);
                 } catch (IOException e1) {
-                    e1.printStackTrace();
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                } catch (ExecutionException e1) {
                     e1.printStackTrace();
                 }
             }
@@ -89,9 +85,7 @@ public class S3SpeedTester {
         GridBagConstraints gbc = GridBagUtils.createConstraints("insets=4, anchor=NORTHWEST, fill=HORIZONTAL, weightx=1");
         GridBagUtils.addToPanel(panel, new JLabel("Highest Possible Reading Speed in MB/s:"), gbc, "gridx=0, gridy=0");
         GridBagUtils.addToPanel(panel, speedSpinner, gbc, "gridx=1, gridy=0");
-        GridBagUtils.addToPanel(panel, new JLabel("Tile Size:"), gbc, "gridx=0, gridy=1");
-        GridBagUtils.addToPanel(panel, tileSizeSpinner, gbc, "gridx=1, gridy=1");
-        GridBagUtils.addToPanel(panel, new JLabel("Tile Cache Capacity:"), gbc, "gridx=0, gridy=2");
+        GridBagUtils.addToPanel(panel, new JLabel("Tile Cache Capacity in MB:"), gbc, "gridx=0, gridy=2");
         GridBagUtils.addToPanel(panel, tileCacheCapacitySpinner, gbc, "gridx=1, gridy=2");
         GridBagUtils.addToPanel(panel, fileChooserComboBox, gbc, "gridx=0, gridy=3, gridwidth=2");
         JScrollPane textAreaScrollPane = new JScrollPane(textArea);
@@ -102,47 +96,49 @@ public class S3SpeedTester {
         frame.setVisible(true);
     }
 
-    private void runSpeedTest(final JPanel pane, String fileName, final double highestPossibleSpeed, final int tileSize) throws IOException, ExecutionException, InterruptedException {
-        final ProductReaderPlugIn plugin = new Sentinel3ProductReaderPlugIn();
-        Sentinel3ProductReader reader = new Sentinel3ProductReader(plugin);
-        final Product product = reader.readProductNodes(fileName, null);
+    private void runSpeedTest(String fileName, final double highestPossibleSpeed) throws IOException {
+        final Product product = ProductIO.readProduct(fileName);
         textArea.setText("Info for " + product.getDisplayName() + ":\n");
         final Band[] productBands = product.getBands();
         for (final Band productBand : productBands) {
             SwingWorker worker = new SwingWorker() {
                 @Override
                 protected Object doInBackground() throws Exception {
-                    final String bandInfo = getBandInfo(highestPossibleSpeed, tileSize, productBand);
+                    final String bandInfo = getBandInfo(highestPossibleSpeed, productBand);
                     textArea.append(bandInfo);
                     return null;
                 }
             };
             worker.execute();
-            pane.repaint();
         }
     }
 
-    private String getBandInfo(double highestPossibleSpeed, int tileSize, Band productBand) {
+    private String getBandInfo(double highestPossibleSpeed, Band productBand) {
         final double rawStorageSizeInMB = (double) productBand.getRawStorageSize() / (1024 * 1024);
-        final int width = productBand.getSceneRasterWidth();
-        final int height = productBand.getSceneRasterHeight();
+        final int numXTiles = productBand.getSourceImage().getNumXTiles();
+        final int numYTiles = productBand.getSourceImage().getNumXTiles();
+        final int minTileX = productBand.getSourceImage().getMinTileX();
+        final int minTileY = productBand.getSourceImage().getMinTileY();
         final long before = System.nanoTime();
-        for (int j = 0; j < width; j += tileSize) {
-            for (int k = 0; k < height; k += tileSize) {
-                Rectangle rectangle = new Rectangle(j, k, tileSize, tileSize);
-                productBand.getSourceImage().getData(rectangle);
+        for(int i = minTileX; i < numXTiles; i++) {
+            for(int j = minTileY; j < numYTiles; j++) {
+                productBand.getSourceImage().getTile(i, j);
             }
         }
         final long after = System.nanoTime();
-        final double elapsedTimeInSeconds = ((double) after - before) / 1e9;
+        return constructInfoString(highestPossibleSpeed, productBand.getName(), rawStorageSizeInMB, before, after);
+    }
+
+    private String constructInfoString(double highestPossibleSpeed, String name, double rawStorageSizeInMB, long before, double after) {
+        final double elapsedTimeInSeconds = (after - before) / 1.0e9;
         final double speed = rawStorageSizeInMB / elapsedTimeInSeconds;
-        final double percentage = (speed / highestPossibleSpeed) * 100;
-        return "Read '" + productBand.getName() + "' with a speed of " + speed + " MB/s (" + percentage + "%) \n";
+        final double percentage = (speed / highestPossibleSpeed) * 100.0;
+        return "Read '" + name + "' with a speed of " + speed + " MB/s (" + percentage + "%). Elapsed time: " + elapsedTimeInSeconds + "s \n";
     }
 
     public static void main(String[] args) throws IOException {
         Lm.verifyLicense("Brockmann Consult", "BEAM", "lCzfhklpZ9ryjomwWxfdupxIcuIoCxg2");
-        new S3SpeedTester();
+        new SpeedTester();
     }
 
 }
