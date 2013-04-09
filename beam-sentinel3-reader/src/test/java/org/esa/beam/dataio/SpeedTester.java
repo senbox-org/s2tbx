@@ -17,6 +17,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingWorker;
+import javax.swing.text.NumberFormatter;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
@@ -31,6 +32,8 @@ import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.System;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 
 public class SpeedTester {
 
@@ -42,7 +45,7 @@ public class SpeedTester {
     }
 
     private void createUI() {
-        final JFrame frame = new JFrame("S3 speed test");
+        final JFrame frame = new JFrame("Speed test");
         frame.setSize(new Dimension(650, 450));
 
         final JPanel panel = GridBagUtils.createPanel();
@@ -113,7 +116,7 @@ public class SpeedTester {
         }
     }
 
-    private String getBandInfo(double highestPossibleSpeed, Band productBand) {
+    private synchronized String getBandInfo(double highestPossibleSpeed, Band productBand) throws ParseException {
         final double rawStorageSizeInMB = (double) productBand.getRawStorageSize() / (1024 * 1024);
         final int numXTiles = productBand.getSourceImage().getNumXTiles();
         final int numYTiles = productBand.getSourceImage().getNumXTiles();
@@ -129,11 +132,16 @@ public class SpeedTester {
         return constructInfoString(highestPossibleSpeed, productBand.getName(), rawStorageSizeInMB, before, after);
     }
 
-    private String constructInfoString(double highestPossibleSpeed, String name, double rawStorageSizeInMB, long before, double after) {
+    private String constructInfoString(double highestPossibleSpeed, String name, double rawStorageSizeInMB, long before, double after) throws ParseException {
         final double elapsedTimeInSeconds = (after - before) / 1.0e9;
         final double speed = rawStorageSizeInMB / elapsedTimeInSeconds;
         final double percentage = (speed / highestPossibleSpeed) * 100.0;
-        return "Read '" + name + "' with a speed of " + speed + " MB/s (" + percentage + "%). Elapsed time: " + elapsedTimeInSeconds + "s \n";
+        NumberFormatter formatter = new NumberFormatter(new DecimalFormat());
+        String formattedSpeed = formatter.valueToString(speed);
+        String formattedPercentage = formatter.valueToString(percentage);
+        String formattedTimeInSeconds = formatter.valueToString(elapsedTimeInSeconds);
+        return "Read '" + name + "' \t at " + formattedSpeed + " MB/s  \t (" + formattedPercentage + "%) \t Elapsed time: "
+                + formattedTimeInSeconds + "s \n";
     }
 
     public static void main(String[] args) throws IOException {
