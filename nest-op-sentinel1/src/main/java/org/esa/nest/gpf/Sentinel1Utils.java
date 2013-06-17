@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 by Array Systems Computing Inc. http://www.array.ca
+ * Copyright (C) 2013 by Array Systems Computing Inc. http://www.array.ca
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -15,27 +15,22 @@
  */
 package org.esa.nest.gpf;
 
-import Jama.Matrix;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
+import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.gpf.OperatorException;
-import org.esa.beam.util.StringUtils;
 import org.esa.nest.datamodel.AbstractMetadata;
-import org.esa.nest.datamodel.Unit;
-import org.esa.nest.util.XMLSupport;
-import org.esa.nest.dataio.sentinel1.Sentinel1Constants;
-import org.jdom.Element;
 
-import java.text.DateFormat;
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Map;
-import java.util.ArrayList;
+import java.text.DateFormat;
 
 public final class Sentinel1Utils
 {
-
+	public final static DateFormat sentinelDateFormat = ProductData.UTC.createDateFormat("yyyy-MM-dd_HH:mm:ss");
+	
     private Sentinel1Utils()
     {
     }
@@ -45,7 +40,7 @@ public final class Sentinel1Utils
         String start = elem.getAttributeString(tag, AbstractMetadata.NO_METADATA_STRING);
         start = start.replace("T", "_");
 
-        return AbstractMetadata.parseUTC(start, Sentinel1Constants.sentinelDateFormat);
+        return AbstractMetadata.parseUTC(start, sentinelDateFormat);
     }
 
     public static int[] getIntArray(final MetadataElement elem, final String tag) {
@@ -123,13 +118,13 @@ public final class Sentinel1Utils
     }
 
     public static class NoiseVector {
-        public final ProductData.UTC time;
+        public final double timeMJD;
         public final int line;
         public final int[] pixels;
         public final float[] noiseLUT;
 
         public NoiseVector(final ProductData.UTC time, final int line, final int[] pixels, final float[] noiseLUT) {
-            this.time = time;
+            this.timeMJD = time.getMJD();
             this.line = line;
             this.pixels = pixels;
             this.noiseLUT = noiseLUT;

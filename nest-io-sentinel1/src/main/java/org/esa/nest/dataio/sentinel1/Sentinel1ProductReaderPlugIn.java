@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 by Array Systems Computing Inc. http://www.array.ca
+ * Copyright (C) 2013 by Array Systems Computing Inc. http://www.array.ca
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -62,7 +62,7 @@ public class Sentinel1ProductReaderPlugIn implements ProductReaderPlugIn {
         final File[] files = folder.listFiles();
         if(files != null) {
             for(File f : files) {
-                if(f.isFile() && f.getName().startsWith("s1")) {
+                if(f.isFile() && (f.getName().startsWith("s1") || f.getName().startsWith("asa"))) {
                     return DecodeQualification.INTENDED;
                 }
             }

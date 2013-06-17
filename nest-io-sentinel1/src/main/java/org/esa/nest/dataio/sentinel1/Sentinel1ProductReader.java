@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 by Array Systems Computing Inc. http://www.array.ca
+ * Copyright (C) 2013 by Array Systems Computing Inc. http://www.array.ca
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -27,8 +27,8 @@ import org.esa.nest.datamodel.Unit;
 import org.esa.nest.gpf.ReaderUtils;
 
 import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
 import java.awt.*;
-import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -108,7 +108,7 @@ public class Sentinel1ProductReader extends AbstractProductReader {
      * {@inheritDoc}
      */
     @Override
-    protected synchronized void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight,
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight,
                                           int sourceStepX, int sourceStepY, Band destBand, int destOffsetX,
                                           int destOffsetY, int destWidth, int destHeight, ProductData destBuffer,
                                           ProgressMonitor pm) throws IOException {
@@ -138,46 +138,36 @@ public class Sentinel1ProductReader extends AbstractProductReader {
                                                    int destWidth, int destHeight,
                                                    final int imageID, final ImageIOFile img,
                                                    final boolean oneOfTwo) throws IOException {
-
-        final ImageReadParam param = img.getReader().getDefaultReadParam();
-        param.setSourceSubsampling(sourceStepX, sourceStepY,
-                sourceOffsetX % sourceStepX,
-                sourceOffsetY % sourceStepY);
+        final double[] srcArray;
+        final ImageReader reader = img.getReader();
+        final ImageReadParam param = reader.getDefaultReadParam();
+        param.setSourceSubsampling(sourceStepX, sourceStepY, sourceOffsetX % sourceStepX, sourceOffsetY % sourceStepY);
 
         final RenderedImage image = img.getReader().readAsRenderedImage(0, param);
         final Raster data = image.getData(new Rectangle(destOffsetX, destOffsetY, destWidth, destHeight));
 
-        final DataBuffer dataBuffer = data.getDataBuffer();
         final SampleModel sampleModel = data.getSampleModel();
         destWidth = Math.min(destWidth, sampleModel.getWidth());
         destHeight = Math.min(destHeight, sampleModel.getHeight());
 
-        try {
-            final int destSize = destWidth * destHeight;
-            final double[] srcArray = new double[destSize];
-            sampleModel.getSamples(0, 0, destWidth, destHeight, imageID, srcArray, dataBuffer);
+        srcArray = new double[destWidth * destHeight];
+        sampleModel.getSamples(0, 0, destWidth, destHeight, imageID, srcArray, data.getDataBuffer());
 
-            final short[] destArray = new short[destWidth * destHeight];
-            if (oneOfTwo)
-                copyLine1Of2(srcArray, destArray, sourceStepX);
-            else
-                copyLine2Of2(srcArray, destArray, sourceStepX);
-
-            System.arraycopy(destArray, 0, destBuffer.getElems(), 0, destSize);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        if (oneOfTwo)
+            copyLine1Of2(srcArray, (short[])destBuffer.getElems(), sourceStepX);
+        else
+            copyLine2Of2(srcArray, (short[])destBuffer.getElems(), sourceStepX);
     }
 
     public static void copyLine1Of2(final double[] srcArray, final short[] destArray, final int sourceStepX) {
-        final int length = destArray.length;
+        final int length = srcArray.length;
         for (int i = 0; i < length; i += sourceStepX) {
             destArray[i] = (short)srcArray[i];
         }
     }
 
     public static void copyLine2Of2(final double[] srcArray, final short[] destArray, final int sourceStepX) {
-        final int length = destArray.length;
+        final int length = srcArray.length;
         for (int i = 0; i < length; i += sourceStepX) {
             destArray[i] = (short)((int)srcArray[i] >> 16);
         }
