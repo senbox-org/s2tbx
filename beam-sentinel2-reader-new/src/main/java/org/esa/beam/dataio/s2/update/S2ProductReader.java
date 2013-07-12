@@ -56,7 +56,8 @@ public class S2ProductReader extends AbstractProductReader {
         final S2SpatialResolution resolution;
         final TileLayout imageLayout;
 
-        BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo, S2SpatialResolution resolution) {
+        BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo,
+                 S2SpatialResolution resolution) {
             this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
             this.bandIndex = bandIndex;
             this.bandName = bandindexToBandname.get(bandIndex);
@@ -66,11 +67,11 @@ public class S2ProductReader extends AbstractProductReader {
         }
     }
 
-    final static String metadataName1CRegex = "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
+    final static String metadataName1CRegex =
+            "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
     final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
     final static Pattern metadataName2APattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)(L2A)_.*.xml");
-    final static Pattern metadataName1CTilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*.xml");
-    final static Pattern metadataName2ATilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*.xml");
+    final static Pattern metadataNameTilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C|L2A)_TL_.*");
 
     File cacheDir;
     int DEFAULT_JAI_TILE_SIZE = 512;
@@ -135,29 +136,32 @@ public class S2ProductReader extends AbstractProductReader {
         }
         if (metadataName1CPattern.matcher(inputFile.getName()).matches()) {
             return readL1CProductNodes(inputFile);
-            //todo read L1C product
         } else if (metadataName2APattern.matcher(inputFile.getName()).matches()) {
-            //todo read L2A product
-        } else if (metadataName1CTilePattern.matcher(inputFile.getName()).matches()) {
-            return readSingleL1CTile(inputFile);
-        } else if (metadataName2ATilePattern.matcher(inputFile.getName()).matches()) {
-            //todo read single L2A Tile
-            return readSingleL2ATile(inputFile);
+            return readL2AProductNodes(inputFile);
         } else {
-            throw new IOException("Unhandled file type.");
+            final Matcher metadataNameTilePatternMatcher = metadataNameTilePattern.matcher(inputFile.getName());
+            if (metadataNameTilePatternMatcher.matches()) {
+                return readSingleTile(inputFile, metadataNameTilePatternMatcher.group(3));
+                //            return readSingleL1CTile(inputFile);
+                //        } else if (metadataNameTilePattern.matcher(inputFile.getName()).matches()) {
+                //            return readSingleTile(inputFile);
+                //            return readSingleL2ATile(inputFile);
+            } else {
+                throw new IOException("Unhandled file type.");
+            }
         }
-        return null;
     }
 
     @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
+    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight,
+                                          int sourceStepX, int sourceStepY, Band destBand, int destOffsetX,
+                                          int destOffsetY, int destWidth, int destHeight, ProductData destBuffer,
+                                          ProgressMonitor pm) throws IOException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    private Product readSingleL2ATile(File tileMetadataFile) throws IOException {
-        //todo read metadata -> identical to L1C metadata?
+    private Map<String, BandInfo> getBandInfoMap(String filePath, String productType) throws IOException {
 
-        final String filePath = tileMetadataFile.getParent();
         final String imageDataPath = filePath + "\\IMG_DATA";
         final File productDir = new File(imageDataPath);
 
@@ -170,8 +174,8 @@ public class S2ProductReader extends AbstractProductReader {
 
         initCacheDir(productDir);
 
-        final String filenameWithoutExtension = FileUtils.getFilenameWithoutExtension(tileMetadataFile);
-        final Pattern imageNamePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*_(\\d{2}[A-Z]{3})(|_AOT_|_WVP_|_DEM_|_B[0-9A]{2}_)([1-6]{1}0)m.jp2");
+        final Pattern imageNamePattern =
+                Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L2A|L1C)_TL_.*_(\\d{2}[A-Z]{3})(|_AOT_|_WVP_|_DEM_|_B[0-9A]{2})(_([1-6]{1}0)m)?.jp2");
 
         final FilenameFilter filter = new FilenameFilter() {
             @Override
@@ -196,108 +200,47 @@ public class S2ProductReader extends AbstractProductReader {
                 for (File file : files) {
                     final Matcher matcher = imageNamePattern.matcher(file.getName());
                     if (matcher.matches()) {
-                        final String tileIndex = matcher.group(3);
-                        String bandIndex = matcher.group(4);
+//                        productType = matcher.group(3);
+                        final String tileIndex = matcher.group(4);
+                        String bandIndex = matcher.group(5);
                         bandIndex = trimUnderscores(bandIndex);
-                        S2WavebandInfo wavebandInfo = null;
                         BandInfo bandInfo = null;
-                        final int resolution = Integer.parseInt(matcher.group(5));
-                        S2SpatialResolution spatialResolution = null;
-                        switch (resolution) {
-                            case 10:
-                                spatialResolution = S2SpatialResolution.R10M;
-                                break;
-                            case 20:
-                                spatialResolution = S2SpatialResolution.R20M;
-                                break;
-                            case 60:
-                                spatialResolution = S2SpatialResolution.R60M;
-                                break;
-                        }
-                        if (s2_waveband_infos.containsKey(bandIndex)) {
-                            wavebandInfo = s2_waveband_infos.get(bandIndex);
-                            bandInfo = createBandInfoFromDefaults(wavebandInfo.bandId, wavebandInfo,
-                                                                  tileIndex,
-                                                                  file,
-                                                                  spatialResolution
-//                                                                  resolutions[wavebandInfo.bandId]
-                            );
+                        if (productType.equals("L1C")) {
+                            bandInfo = getL1CBandInfo(file, tileIndex, bandIndex);
                         } else {
-                            bandInfo = createBandInfoFromDefaults(bandnameToBandindex.get(bandIndex), null, tileIndex, file, spatialResolution);
+                            bandInfo = getL2ABandInfo(file, matcher, tileIndex, bandIndex);
                         }
                         bandInfoMap.put(bandIndex, bandInfo);
                     }
                 }
             }
         }
-
-        final int width = TILE_LAYOUTS[S2SpatialResolution.R10M.id].width;
-        final int height = TILE_LAYOUTS[S2SpatialResolution.R10M.id].height;
-        Product product = new Product(filenameWithoutExtension,
-                                      "S2_MSI_L2A",
-                                      width,
-                                      height);
-        addBands(product, bandInfoMap, new L1cTileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
-
-        return product;
+        return bandInfoMap;
     }
 
-    private String trimUnderscores(String bandIndex) {
-        if (bandIndex.startsWith("_")) {
-            bandIndex = bandIndex.substring(1);
-        }
-        if (bandIndex.endsWith("_")) {
-            bandIndex = bandIndex.substring(0, bandIndex.length() - 1);
-        }
-        return bandIndex;
-    }
-
-    private Product readSingleL1CTile(File tileMetadataFile) throws IOException {
-
+    private Product readSingleTile(File inputFile, String productType) throws IOException {
+        //todo check whether L1C metadata is identical to L2A metadata
         L1cMetadata metadata = null;
-        try {
-            metadata = parseHeader(tileMetadataFile);
-        } catch (JDOMException e) {
-            e.printStackTrace();
-        }
-
-        final String filePath = tileMetadataFile.getParent();
-        final String imageDataPath = filePath + "\\IMG_DATA";
-        final File productDir = new File(imageDataPath);
-
-        initCacheDir(productDir);
-
-        final String filenameWithoutExtension = FileUtils.getFilenameWithoutExtension(tileMetadataFile);
-        final Pattern imageNamePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*_(\\d{2}[A-Z]{3})_(B[A0-9]{2}).jp2");
-
-        File[] files = productDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return imageNamePattern.matcher(name).matches();
+        final String filePath;
+        String filenameWithoutExtension = "";
+        if (!inputFile.isDirectory()) {
+            try {
+                metadata = parseHeader(inputFile);
+            } catch (JDOMException e) {
+                e.printStackTrace();
             }
-        });
-
-        Map<String, BandInfo> bandInfoMap = new HashMap<String, BandInfo>();
-        if (files != null) {
-            for (File file : files) {
-                final Matcher matcher = imageNamePattern.matcher(file.getName());
-                if (matcher.matches()) {
-                    final String tileIndex = matcher.group(3);
-                    final String bandIndex = matcher.group(4);
-                    S2WavebandInfo wavebandInfo = s2_waveband_infos.get(bandIndex);
-                    BandInfo bandInfo = createBandInfoFromDefaults(wavebandInfo.bandId, wavebandInfo,
-                                                                   tileIndex,
-                                                                   file,
-                                                                   resolutions[wavebandInfo.bandId]);
-                    bandInfoMap.put(bandIndex, bandInfo);
-                }
-            }
+            filePath = inputFile.getParent();
+            filenameWithoutExtension = FileUtils.getFilenameWithoutExtension(inputFile);
+        } else {
+            filePath = inputFile.getPath();
+            filenameWithoutExtension = inputFile.getName();
         }
-
+        Map<String, BandInfo> bandInfoMap = getBandInfoMap(filePath, productType);
         final int width = TILE_LAYOUTS[S2SpatialResolution.R10M.id].width;
         final int height = TILE_LAYOUTS[S2SpatialResolution.R10M.id].height;
+        //todo decide on L1C or L2A
         Product product = new Product(filenameWithoutExtension,
-                                      "S2_MSI_L1C",
+                                      "S2_MSI_" + productType,
                                       width,
                                       height);
         if (metadata != null) {
@@ -311,9 +254,57 @@ public class S2ProductReader extends AbstractProductReader {
                                                                 product.getTiePointGrid("longitude"));
             product.setGeoCoding(tiePointGeocoding);
         }
-        addBands(product, bandInfoMap, new L1cTileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
-
+        addBands(product, bandInfoMap, new TileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
         return product;
+    }
+
+    private BandInfo getL2ABandInfo(File file, Matcher matcher, String tileIndex, String bandIndex) {
+        BandInfo bandInfo;
+        S2WavebandInfo wavebandInfo = null;
+        int resolution = Integer.parseInt(matcher.group(7));
+        S2SpatialResolution spatialResolution = null;
+        switch (resolution) {
+            case 10:
+                spatialResolution = S2SpatialResolution.R10M;
+                break;
+            case 20:
+                spatialResolution = S2SpatialResolution.R20M;
+                break;
+            case 60:
+                spatialResolution = S2SpatialResolution.R60M;
+                break;
+        }
+        if (s2_waveband_infos.containsKey(bandIndex)) {
+            wavebandInfo = s2_waveband_infos.get(bandIndex);
+            bandInfo = createBandInfoFromDefaults(wavebandInfo.bandId, wavebandInfo,
+                                                  tileIndex,
+                                                  file,
+                                                  spatialResolution
+            );
+        } else {
+            bandInfo = createBandInfoFromDefaults(bandnameToBandindex.get(bandIndex), null, tileIndex, file, spatialResolution);
+        }
+        return bandInfo;
+    }
+
+    private BandInfo getL1CBandInfo(File file, String tileIndex, String bandIndex) {
+        BandInfo bandInfo;
+        S2WavebandInfo wavebandInfo = s2_waveband_infos.get(bandIndex);
+        bandInfo = createBandInfoFromDefaults(wavebandInfo.bandId, wavebandInfo,
+                                              tileIndex,
+                                              file,
+                                              resolutions[wavebandInfo.bandId]);
+        return bandInfo;
+    }
+
+    private String trimUnderscores(String bandIndex) {
+        if (bandIndex.startsWith("_")) {
+            bandIndex = bandIndex.substring(1);
+        }
+        if (bandIndex.endsWith("_")) {
+            bandIndex = bandIndex.substring(0, bandIndex.length() - 1);
+        }
+        return bandIndex;
     }
 
     private void addTiePointGrid(int width, int height, Product product, String gridName, float[] tiePoints) {
@@ -426,36 +417,65 @@ public class S2ProductReader extends AbstractProductReader {
         final String parentDirectory = metadataFile.getParent();
         final File granuleDirectory = new File(parentDirectory + "\\GRANULE");
         final File[] granules = granuleDirectory.listFiles();
-        if (granules.length > 0) {
-            final Matcher matcher = metadataName1CPattern.matcher(metadataFile.getName());
-            if (matcher.matches()) {
-                final String regex = matcher.group(1) + "_" + matcher.group(2) + "_([A-Z]{3})_" + matcher.group(4)
-                        + "_TL_([A-Z0-9]{4})" + matcher.group(6) + "T" + matcher.group(7) + "_" + matcher.group(5) +
-                        "_[0-9]{2}[A-Z]{3}";
-                final Pattern directoryPattern = Pattern.compile(regex);
-                for (File granule : granules) {
-                    if (granule.isDirectory() && directoryPattern.matcher(granule.getName()).matches()) {
-                        File tileMetadataFile = new File(granule.getPath() + "\\" + granule.getName() + ".xml");
-                        L1cMetadata tileMetadata;
-                        try {
-                            tileMetadata = L1cMetadata.parseHeader(tileMetadataFile);
-                        } catch (JDOMException e) {
-                            e.printStackTrace();
-                        }
-                        //todo how to align multiple tiles -> tile consolidation?
-                    }
-                }
+        if (granules != null) {
+            if (granules.length > 1) {
+                //todo how to align multiple tiles -> tile consolidation?
+            } else if (granules.length == 1) {
+                return readSingleTile(granules[0], "L1C");
+//            final Matcher matcher = metadataName1CPattern.matcher(metadataFile.getName());
+//            if (matcher.matches()) {
+//                final String regex = matcher.group(1) + "_" + matcher.group(2) + "_([A-Z]{3})_" + matcher.group(4)
+//                        + "_TL_([A-Z0-9]{4})" + matcher.group(6) + "T" + matcher.group(7) + "_" + matcher.group(5) +
+//                        "_[0-9]{2}[A-Z]{3}";
+//                final Pattern directoryPattern = Pattern.compile(regex);
+//                for (File granule : granules) {
+//                    if (granule.isDirectory() && directoryPattern.matcher(granule.getName()).matches()) {
+//                        File tileMetadataFile = new File(granule.getPath() + "\\" + granule.getName() + ".xml");
+//                        L1cMetadata tileMetadata;
+//                        try {
+//                            tileMetadata = L1cMetadata.parseHeader(tileMetadataFile);
+//                        } catch (JDOMException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }
+//            }
             }
         }
-
-
         return null;
+    }
+
+    private Product readL2AProductNodes(File inputFile) throws IOException {
+        //todo read metadata
+        String filenameWithoutExtension = "";
+        if (!inputFile.isDirectory()) {
+            filenameWithoutExtension = FileUtils.getFilenameWithoutExtension(inputFile);
+        } else {
+            filenameWithoutExtension = inputFile.getName();
+        }
+        final int width = TILE_LAYOUTS[S2SpatialResolution.R10M.id].width;
+        final int height = TILE_LAYOUTS[S2SpatialResolution.R10M.id].height;
+        Product product = new Product(filenameWithoutExtension,
+                                      "S2_MSI_L2A",
+                                      width,
+                                      height);
+        final String parentDirectory = inputFile.getParent();
+        final File granuleDirectory = new File(parentDirectory + "\\GRANULE");
+        final File[] granules = granuleDirectory.listFiles();
+        if (granules != null) {
+            //todo read all granules
+//            for (File granule : granules) {
+                final Map<String, BandInfo> bandInfoMap = getBandInfoMap(granules[0].getPath(), "L2A");
+                addBands(product, bandInfoMap, new TileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
+//            }
+        }
+        return product;
     }
 
     void initCacheDir(File productDir) throws IOException {
         cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), "beam-sentinel2-reader/cache"),
                             productDir.getName());
-//noinspection ResultOfMethodCallIgnored
+        //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();
         if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
             throw new IOException("Can't access package cache directory");
@@ -472,20 +492,20 @@ public class S2ProductReader extends AbstractProductReader {
         public abstract MultiLevelImage createSourceImage(BandInfo bandInfo);
     }
 
-    private class L1cTileMultiLevelImageFactory extends MultiLevelImageFactory {
-        private L1cTileMultiLevelImageFactory(AffineTransform imageToModelTransform) {
+    private class TileMultiLevelImageFactory extends MultiLevelImageFactory {
+        private TileMultiLevelImageFactory(AffineTransform imageToModelTransform) {
             super(imageToModelTransform);
         }
 
         public MultiLevelImage createSourceImage(BandInfo bandInfo) {
-            return new DefaultMultiLevelImage(new L1cTileMultiLevelSource(bandInfo, imageToModelTransform));
+            return new DefaultMultiLevelImage(new TileMultiLevelSource(bandInfo, imageToModelTransform));
         }
     }
 
-    private class L1cTileMultiLevelSource extends AbstractMultiLevelSource {
+    private class TileMultiLevelSource extends AbstractMultiLevelSource {
         final BandInfo bandInfo;
 
-        public L1cTileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
+        public TileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
                                              TILE_LAYOUTS[0].width,
