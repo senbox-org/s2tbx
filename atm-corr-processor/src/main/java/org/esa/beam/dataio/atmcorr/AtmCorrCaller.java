@@ -9,22 +9,19 @@ import java.util.*;
  */
 public class AtmCorrCaller {
 
-    public static void main(String[] args) throws IOException {
+    public void call(String l1cProductPath, int resolution) throws IOException {
         List<String> command = new ArrayList<String>();
         command.add("python");
         command.add("L2A_Process.py");
-        command.add("/home/tonio/S2L2APP/testdata/Level-1C_User_Product");
-        command.add("--resolution");
-        command.add("60");
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.directory(new File("/home/tonio/S2L2APP/src"));
-        Map<String,String> environment = processBuilder.environment();
-        Set<Map.Entry<String,String>> entries = environment.entrySet();
-        Iterator<Map.Entry<String,String>> iterator = entries.iterator();
-        while(iterator.hasNext()) {
-            Map.Entry<String, String> entry = iterator.next();
-            System.out.println(entry.getKey() + " " + entry.getValue());
+        command.add(l1cProductPath);
+        if(resolution > -1) {
+            command.add("--resolution");
+            command.add("" + resolution);
         }
+        String apphome = System.getenv("S2L2APPHOME");
+        String applicationPath = apphome + "/src";
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.directory(new File(applicationPath));
         Process start = processBuilder.start();
         InputStream inputStream = start.getInputStream();
         InputStreamReader reader = new InputStreamReader(inputStream);
