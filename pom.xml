@@ -34,6 +34,7 @@
         <module>suhet-bootstrap</module>
         <module>beam-sentinel2-reader</module>
         <module>beam-sentinel3-reader</module>
+        <module>atm-corr-processor</module>
         <module>beam-sentinel2-reader-new</module>
     </modules>
 
