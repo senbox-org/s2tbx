@@ -3,6 +3,8 @@ package org.esa.beam.dataio.s2.update;
 import org.esa.beam.framework.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Norman Fomferra
@@ -38,7 +40,7 @@ public interface S2Config {
             new TileLayout(1826, 1826, 1826, 1826, 1, 1, 6),
     };
 
-    String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
+    String FORMAT_NAME = "SENTINEL-2-MSI";
     String MTD_EXT = ".xml";
     String JP2_EXT = ".jp2";
 }

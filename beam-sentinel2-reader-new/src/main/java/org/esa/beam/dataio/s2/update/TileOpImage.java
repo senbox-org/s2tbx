@@ -40,7 +40,7 @@ import static org.esa.beam.dataio.s2.update.S2Config.TILE_LAYOUTS;
 /**
  * @author Norman Fomferra
  */
-class L1cTileOpImage extends SingleBandedOpImage {
+class TileOpImage extends SingleBandedOpImage {
 
     private static class Jp2File {
         File file;
@@ -71,7 +71,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
         Assert.notNull(spatialResolution, "spatialResolution");
 
         if (imageFile != null) {
-            PlanarImage opImage = new L1cTileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
+            PlanarImage opImage = new TileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
             if (spatialResolution != S2SpatialResolution.R10M) {
                 return createScaledImage(opImage, spatialResolution, level);
             }
@@ -131,12 +131,12 @@ class L1cTileOpImage extends SingleBandedOpImage {
         }
     }
 
-    L1cTileOpImage(File imageFile,
-                   File cacheDir,
-                   Point imagePos,
-                   TileLayout l1cTileLayout,
-                   MultiLevelModel imageModel,
-                   int level) {
+    TileOpImage(File imageFile,
+                File cacheDir,
+                Point imagePos,
+                TileLayout l1cTileLayout,
+                MultiLevelModel imageModel,
+                int level) {
         super(S2Config.SAMPLE_DATA_BUFFER_TYPE,
               imagePos,
               l1cTileLayout.width,

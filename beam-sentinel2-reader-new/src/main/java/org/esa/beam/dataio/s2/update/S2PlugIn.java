@@ -10,22 +10,30 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
- * Created with IntelliJ IDEA.
- * User: tonio
- * Date: 08.07.13
- * Time: 13:47
- * To change this template use File | Settings | File Templates.
+ *
+ * @author Tonio fincke
  */
 public class S2PlugIn implements ProductReaderPlugIn {
 
     private static final Class[] SUPPORTED_INPUT_TYPES = new Class[]{String.class, File.class};
-    final Pattern directoryNamePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C|L2A)_TL_.*_(\\d{2}[A-Z]{3})");
-    final static Pattern metadataNamePattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)L(1C|2A)_.*.xml");
+
+    final static String metadataName1CRegex =
+            "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
+    final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
+    final static Pattern metadataName2APattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)(L2A)_.*.xml");
+
+    //todo use second version
+    final Pattern directory1CPattern = Pattern.compile("(S2.?_([A-Z]{4})_([A-Z]{3})_(L1C)_TL_.*_(\\d{2}[A-Z]{3}))");
+    final Pattern directory2APattern = Pattern.compile("(S2.?_([A-Z]{4})_([A-Z]{3})_(L2A)_TL_.*_(\\d{2}[A-Z]{3})|Level-2A_User_Product)");
+//    final Pattern directoryNamePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C|L2A)_TL_.*_(\\d{2}[A-Z]{3})");
+//    final static Pattern metadataNamePattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)L(1C|2A)_.*.xml");
     final static Pattern metadataName1CTilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*.xml");
     final static Pattern metadataName2ATilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*.xml");
     private static final String FORMAT_NAME = "SENTINEL-2";
     private final String[] fileExtensions = new String[]{".xml"};
     private final String description = "Sentinel-2 products";
+
+    private ProductType type;
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -44,12 +52,19 @@ public class S2PlugIn implements ProductReaderPlugIn {
     }
 
     private boolean isValidDirectoryName(String name) {
-        return directoryNamePattern.matcher(name).matches();
+        if(directory1CPattern.matcher(name).matches()) {
+            type = ProductType.L1C;
+            return true;
+        } else if(directory2APattern.matcher(name).matches()) {
+            type = ProductType.L2A;
+            return true;
+        }
+        return false;
     }
 
     private boolean isValidInputFileName(String name) {
-        return metadataNamePattern.matcher(name).matches() || metadataName1CTilePattern.matcher(name).matches() ||
-                metadataName2ATilePattern.matcher(name).matches();
+        return metadataName1CPattern.matcher(name).matches() || metadataName2APattern.matcher(name).matches()  ||
+                metadataName1CTilePattern.matcher(name).matches() || metadataName2ATilePattern.matcher(name).matches();
     }
 
     @Override
@@ -59,7 +74,13 @@ public class S2PlugIn implements ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new S2ProductReader(this);
+        switch (type) {
+            case L1C:
+                return new S2L1CProductReader(this);
+            case L2A:
+                return new S2L2AProductReader(this);
+        }
+        return null;
     }
 
     @Override
@@ -81,4 +102,5 @@ public class S2PlugIn implements ProductReaderPlugIn {
     public BeamFileFilter getProductFileFilter() {
         return new BeamFileFilter(FORMAT_NAME, fileExtensions, description);
     }
+
 }

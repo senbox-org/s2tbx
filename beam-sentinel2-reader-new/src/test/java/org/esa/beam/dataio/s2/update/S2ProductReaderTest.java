@@ -55,7 +55,7 @@ public class S2ProductReaderTest {
     }
 
     @Test
-    @Ignore
+//    @Ignore
     public void testReadingL2ATileFromDirectory() throws Exception {
         final File file = new File(testDataDir + "Level-2A_User_Product\\GRANULE\\S2A_HOWL_MSI_L2A_TL_USER_20130430T084516_049_15SWD");
 
