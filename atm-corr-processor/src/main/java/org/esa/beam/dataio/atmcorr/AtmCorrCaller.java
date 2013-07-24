@@ -1,23 +1,34 @@
 package org.esa.beam.dataio.atmcorr;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
  * @author Tonio Fincke
  */
 public class AtmCorrCaller {
 
-    public void call(String l1cProductPath, int resolution) throws IOException {
+    public static void call(String l1cProductPath, int resolution, boolean scOnly, boolean acOnly) throws IOException {
         List<String> command = new ArrayList<String>();
         command.add("python");
         command.add("L2A_Process.py");
         command.add(l1cProductPath);
-        if(resolution > -1) {
+        if (resolution > -1) {
             command.add("--resolution");
             command.add("" + resolution);
         }
+        if (scOnly) {
+            command.add("--sc_only");
+        }
+        if (acOnly) {
+            command.add("--ac_only");
+        }
+        command.add("--profile");
         String apphome = System.getenv("S2L2APPHOME");
         String applicationPath = apphome + "/src";
         ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -27,14 +38,14 @@ public class AtmCorrCaller {
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line;
-        while((line = bufferedReader.readLine()) != null) {
+        while ((line = bufferedReader.readLine()) != null) {
             System.out.println(line);
         }
         InputStream errorStream = start.getErrorStream();
         InputStreamReader errorReader = new InputStreamReader(errorStream);
         BufferedReader errorBufferedReader = new BufferedReader(errorReader);
         String errorLine;
-        while((errorLine = errorBufferedReader.readLine()) != null) {
+        while ((errorLine = errorBufferedReader.readLine()) != null) {
             System.out.println(errorLine);
         }
         System.out.println("Program terminated");

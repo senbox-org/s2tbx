@@ -109,6 +109,12 @@
 
             <dependency>
                 <groupId>org.esa.beam</groupId>
+                <artifactId>beam-ui</artifactId>
+                <version>${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
                 <artifactId>beam-visat-rcp</artifactId>
                 <version>${beamVersion}</version>
             </dependency>
