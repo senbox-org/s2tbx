@@ -17,16 +17,18 @@ public class S2PlugIn implements ProductReaderPlugIn {
 
     private static final Class[] SUPPORTED_INPUT_TYPES = new Class[]{String.class, File.class};
 
-    final static String metadataName1CRegex =
-            "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
-    final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
-    final static Pattern metadataName2APattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)(L2A)_.*.xml");
-
-    //todo use second version
-    final Pattern directory1CPattern = Pattern.compile("(S2.?_([A-Z]{4})_([A-Z]{3})_(L1C)_TL_.*_(\\d{2}[A-Z]{3}))");
+    //todo use second versions
+    final Pattern directory1CPattern = Pattern.compile("(S2.?_([A-Z]{4})_([A-Z]{3})_(L1C)_TL_.*_(\\d{2}[A-Z]{3})|Level-1C_User_Product)");
     final Pattern directory2APattern = Pattern.compile("(S2.?_([A-Z]{4})_([A-Z]{3})_(L2A)_TL_.*_(\\d{2}[A-Z]{3})|Level-2A_User_Product)");
+    final static String metadataName1CRegex =
+            "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml|Product_Metadata_File.xml)";
+    final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
 //    final Pattern directoryNamePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C|L2A)_TL_.*_(\\d{2}[A-Z]{3})");
 //    final static Pattern metadataNamePattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)L(1C|2A)_.*.xml");
+//    final static String metadataName1CRegex =
+//        "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
+//    final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
+    final static Pattern metadataName2APattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)(L2A)_.*.xml");
     final static Pattern metadataName1CTilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*.xml");
     final static Pattern metadataName2ATilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*.xml");
     private static final String FORMAT_NAME = "SENTINEL-2";

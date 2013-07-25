@@ -35,7 +35,7 @@ import static org.esa.beam.dataio.s2.update.S2Config.TILE_LAYOUTS;
 public abstract class S2ProductReader extends AbstractProductReader {
 
     final static String metadataName1CRegex =
-            "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
+            "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml|Product_Metadata_File.xml)";
     final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
     final static Pattern metadataName2APattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)(L2A)_.*.xml");
     final static Pattern metadataNameTilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C|L2A)_TL_.*");
