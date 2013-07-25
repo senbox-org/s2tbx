@@ -13,6 +13,30 @@ import java.util.List;
  */
 public class AtmCorrCaller {
 
+    public Process createProcess(String l1cProductPath, int resolution, boolean scOnly, boolean acOnly) throws IOException {
+        List<String> command = new ArrayList<String>();
+        command.add("python");
+        command.add("L2A_Process.py");
+        command.add(l1cProductPath);
+        if (resolution > -1) {
+            command.add("--resolution");
+            command.add("" + resolution);
+        }
+        if (scOnly) {
+            command.add("--sc_only");
+        }
+        if (acOnly) {
+            command.add("--ac_only");
+        }
+        command.add("--profile");
+        String apphome = System.getenv("S2L2APPHOME");
+        String applicationPath = apphome + "/src";
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.directory(new File(applicationPath));
+        Process process = processBuilder.start();
+        return process;
+    }
+
     public static void call(String l1cProductPath, int resolution, boolean scOnly, boolean acOnly) throws IOException {
         List<String> command = new ArrayList<String>();
         command.add("python");

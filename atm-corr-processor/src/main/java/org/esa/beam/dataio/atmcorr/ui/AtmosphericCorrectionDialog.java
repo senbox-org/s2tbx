@@ -1,6 +1,9 @@
 package org.esa.beam.dataio.atmcorr.ui;
 
+import com.bc.ceres.core.ProcessObserver;
 import com.bc.ceres.swing.TableLayout;
+import com.bc.ceres.swing.progress.DialogProgressMonitor;
+import com.bc.ceres.swing.progress.ProgressDialog;
 import org.esa.beam.dataio.atmcorr.AtmCorrCaller;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.ui.TargetProductSelector;
@@ -13,6 +16,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import java.awt.Dialog;
 import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +32,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     private final JTabbedPane form;
     private static AppContext appContext;
     private final AtmCorrIOParametersPanel ioParametersPanel;
+    private final Window parentComponent;
 
     public static AtmosphericCorrectionDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
         appContext = app;
@@ -36,6 +41,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
     public AtmosphericCorrectionDialog(Window parent, String title, int buttonMask, String helpID) {
         super(parent, title, buttonMask, helpID);
+        parentComponent = parent;
         form = new JTabbedPane();
         ioParametersPanel = new AtmCorrIOParametersPanel(appContext, new TargetProductSelector(new TargetProductSelectorModel()));
         form.add("I/O Parameters", ioParametersPanel);
@@ -55,7 +61,15 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         String fileLocation = ((File) sourceProduct.getProductReader().getInput()).getParent();
         final int resolution = (Integer) resolutionBox.getSelectedItem();
         try {
-            AtmCorrCaller.call(fileLocation, resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
+            final Process atmCorrProcess =
+                    new AtmCorrCaller().createProcess(fileLocation, resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
+            final String processName = "Atmospheric Correction";
+            final DialogProgressMonitor monitor =
+                    new DialogProgressMonitor(parentComponent, processName, Dialog.ModalityType.MODELESS);
+            final ProcessObserver processObserver = new ProcessObserver(atmCorrProcess);
+            processObserver.setProgressMonitor(monitor);
+            processObserver.start();
+//            AtmCorrCaller.call(fileLocation, resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
         } catch (IOException e) {
             e.printStackTrace();
         }
