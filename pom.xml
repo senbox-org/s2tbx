@@ -115,6 +115,12 @@
 
             <dependency>
                 <groupId>org.esa.beam</groupId>
+                <artifactId>beam-gpf</artifactId>
+                <version>${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
                 <artifactId>beam-visat-rcp</artifactId>
                 <version>${beamVersion}</version>
             </dependency>

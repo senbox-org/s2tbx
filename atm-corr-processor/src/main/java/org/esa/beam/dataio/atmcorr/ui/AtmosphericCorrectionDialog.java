@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import java.awt.Window;
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -51,9 +52,10 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     protected void onApply() {
         super.onApply();
         final Product sourceProduct = ioParametersPanel.getSourceProduct();
+        String fileLocation = ((File) sourceProduct.getProductReader().getInput()).getParent();
         final int resolution = (Integer) resolutionBox.getSelectedItem();
         try {
-            AtmCorrCaller.call(sourceProduct.getFileLocation().getPath(), resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
+            AtmCorrCaller.call(fileLocation, resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
         } catch (IOException e) {
             e.printStackTrace();
         }
