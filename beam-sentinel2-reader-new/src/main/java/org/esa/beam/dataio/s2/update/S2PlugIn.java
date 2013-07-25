@@ -23,7 +23,6 @@ public class S2PlugIn implements ProductReaderPlugIn {
     final static String metadataName1CRegex =
             "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml|Product_Metadata_File.xml)";
     final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
-//    final Pattern directoryNamePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C|L2A)_TL_.*_(\\d{2}[A-Z]{3})");
 //    final static Pattern metadataNamePattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)L(1C|2A)_.*.xml");
 //    final static String metadataName1CRegex =
 //        "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
@@ -49,8 +48,7 @@ public class S2PlugIn implements ProductReaderPlugIn {
     private boolean isInputValid(Object input) {
         final File inputFile = new File(input.toString());
         final File parentFile = inputFile.getParentFile();
-        return parentFile != null && isValidInputFileName(inputFile.getName()) && isValidDirectoryName(
-                parentFile.getName());
+        return parentFile != null && isValidInputFileName(inputFile.getName()) && isValidDirectoryName(parentFile.getName());
     }
 
     private boolean isValidDirectoryName(String name) {

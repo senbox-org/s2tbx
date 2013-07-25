@@ -80,12 +80,12 @@ public abstract class S2ProductReader extends AbstractProductReader {
 
     Map<String, BandInfo> getBandInfoMap(String filePath) throws IOException {
 
-        final String imageDataPath = filePath + "\\IMG_DATA";
+        final String imageDataPath = filePath + "/IMG_DATA";
         final File productDir = new File(imageDataPath);
 
-        final String atmCorrPath60 = imageDataPath + "\\Atmospheric_Correction_Tiles\\Bands_60m";
-        final String atmCorrPath20 = imageDataPath + "\\Atmospheric_Correction_Tiles\\Bands_20m";
-        final String atmCorrPath10 = imageDataPath + "\\Atmospheric_Correction_Tiles\\Bands_10m";
+        final String atmCorrPath60 = imageDataPath + "/Atmospheric_Correction_Tiles/Bands_60m";
+        final String atmCorrPath20 = imageDataPath + "/Atmospheric_Correction_Tiles/Bands_20m";
+        final String atmCorrPath10 = imageDataPath + "/Atmospheric_Correction_Tiles/Bands_10m";
         final File atmCorrDir60 = new File(atmCorrPath60);
         final File atmCorrDir20 = new File(atmCorrPath20);
         final File atmCorrDir10 = new File(atmCorrPath10);

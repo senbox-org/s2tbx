@@ -51,7 +51,7 @@ public class S2L1CProductReader extends S2ProductReader {
     public Product readProductNodes(File metadataFile) throws IOException {
         //todo read metadata
         final String parentDirectory = metadataFile.getParent();
-        final File granuleDirectory = new File(parentDirectory + "\\GRANULE");
+        final File granuleDirectory = new File(parentDirectory + "/GRANULE");
         final File[] granules = granuleDirectory.listFiles();
         if (granules != null) {
             if (granules.length > 1) {

@@ -54,7 +54,7 @@ public class S2L2AProductReader extends S2ProductReader {
                                       width,
                                       height);
         final String parentDirectory = inputFile.getParent();
-        final File granuleDirectory = new File(parentDirectory + "\\GRANULE");
+        final File granuleDirectory = new File(parentDirectory + "/GRANULE");
         final File[] granules = granuleDirectory.listFiles();
         if (granules != null) {
             //todo read all granules
@@ -102,11 +102,11 @@ public class S2L2AProductReader extends S2ProductReader {
 
     @Override
     public void readMasks(Product product, String granulePath) throws IOException {
-        File qiDataPath = new File(granulePath + "\\QI_DATA");
+        File qiDataPath = new File(granulePath + "/QI_DATA");
         Map<String, BandInfo> maskMap = new HashMap<String, BandInfo>();
         if(qiDataPath.isDirectory()) {
             maskMap = updateMaskMap(qiDataPath, maskMap);
-            File l2aQualityMasksPath = new File(qiDataPath.getPath() + "\\L2A_Quality_Masks");
+            File l2aQualityMasksPath = new File(qiDataPath.getPath() + "/L2A_Quality_Masks");
             if(l2aQualityMasksPath.isDirectory()) {
                 maskMap = updateMaskMap(l2aQualityMasksPath, maskMap);
             }
