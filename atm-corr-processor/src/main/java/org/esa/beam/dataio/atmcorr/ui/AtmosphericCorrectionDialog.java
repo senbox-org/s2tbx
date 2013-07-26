@@ -1,9 +1,12 @@
 package org.esa.beam.dataio.atmcorr.ui;
 
 import com.bc.ceres.core.ProcessObserver;
+import com.bc.ceres.core.ProgressBarProgressMonitor;
+import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.progress.DialogProgressMonitor;
 import com.bc.ceres.swing.progress.ProgressDialog;
+import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import org.esa.beam.dataio.atmcorr.AtmCorrCaller;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.ui.TargetProductSelector;
@@ -33,6 +36,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     private static AppContext appContext;
     private final AtmCorrIOParametersPanel ioParametersPanel;
     private final Window parentComponent;
+    private ProgressDialog progressDialog;
 
     public static AtmosphericCorrectionDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
         appContext = app;
@@ -63,12 +67,10 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         try {
             final Process atmCorrProcess =
                     new AtmCorrCaller().createProcess(fileLocation, resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
-            final String processName = "Atmospheric Correction";
-            final DialogProgressMonitor monitor =
-                    new DialogProgressMonitor(parentComponent, processName, Dialog.ModalityType.MODELESS);
-            final ProcessObserver processObserver = new ProcessObserver(atmCorrProcess);
-            processObserver.setProgressMonitor(monitor);
-            processObserver.start();
+
+            executeProcess(atmCorrProcess);
+
+
 //            AtmCorrCaller.call(fileLocation, resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
         } catch (IOException e) {
             e.printStackTrace();
@@ -130,6 +132,62 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         panel.add(resolutionUnitLabel);
 
         return panel;
+    }
+
+    private void executeProcess(final Process process) {
+        final String processName = "Atmospheric Correction";
+        ProgressMonitorSwingWorker swingWorker = new ProgressMonitorSwingWorker(parentComponent, processName) {
+            @Override
+            protected Object doInBackground(ProgressMonitor pm) throws Exception {
+                if (process == null) {
+                    throw new IOException("Failed to create process" + processName);
+                }
+                progressDialog = new ProgressDialog(parentComponent);
+                progressDialog.setMaximum(10000);
+                final DialogProgressMonitor monitor = new DialogProgressMonitor(progressDialog);
+//                    new DialogProgressMonitor(parentComponent, processName, Dialog.ModalityType.MODELESS);
+
+                final ProcessObserver processObserver = new ProcessObserver(process);
+                processObserver.setProgressMonitor(monitor);
+                processObserver.setHandler(new ProcessObserverHandler());
+                processObserver.start();
+                return null;
+            }
+        };
+        swingWorker.execute();
+    }
+
+    private class ProcessObserverHandler implements ProcessObserver.Handler {
+
+        int lastWork;
+
+        @Override
+        public void onObservationStarted(ProcessObserver.ObservedProcess process, ProgressMonitor pm) {
+            progressDialog.show();
+            pm.beginTask("Atmospheric Correction", 10000);
+            lastWork = 0;
+        }
+
+        @Override
+        public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
+            if(line.contains("%")) {
+                double workDone = Double.parseDouble(line.split(":")[1]) * 100;
+                int progress = (int) workDone - lastWork;
+                lastWork = (int) workDone;
+                pm.worked(progress);
+
+            }
+        }
+
+        @Override
+        public void onStderrLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
+        }
+
+        @Override
+        public void onObservationEnded(ProcessObserver.ObservedProcess process, Integer exitCode, ProgressMonitor pm) {
+            System.out.println("ended");
+            progressDialog.close();
+        }
     }
 
 }
