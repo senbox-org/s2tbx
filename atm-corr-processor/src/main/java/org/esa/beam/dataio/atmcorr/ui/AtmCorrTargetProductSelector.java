@@ -46,15 +46,7 @@ public class AtmCorrTargetProductSelector {
     private JCheckBox openInAppCheckBox;
     private AtmCorrTargetProductSelectorModel model;
 
-    public AtmCorrTargetProductSelector() {
-        this(new AtmCorrTargetProductSelectorModel(), false);
-    }
-
     public AtmCorrTargetProductSelector(AtmCorrTargetProductSelectorModel model) {
-        this(model, false);
-    }
-
-    public AtmCorrTargetProductSelector(AtmCorrTargetProductSelectorModel model, boolean alwaysWriteOutput) {
         this.model = model;
 
         initComponents();

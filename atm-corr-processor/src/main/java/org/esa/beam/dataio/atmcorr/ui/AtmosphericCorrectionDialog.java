@@ -148,6 +148,11 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 processObserver.start();
                 return null;
             }
+
+            @Override
+            protected void done() {
+                super.done();
+            }
         };
         swingWorker.execute();
     }
