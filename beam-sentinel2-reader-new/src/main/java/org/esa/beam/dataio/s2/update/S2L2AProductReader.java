@@ -39,13 +39,13 @@ public class S2L2AProductReader extends S2ProductReader {
     }
 
     @Override
-    public Product readProductNodes(File inputFile) throws IOException {
+    public Product readProductNodes(File metadataFile) throws IOException {
         //todo read metadata
         String filenameWithoutExtension = "";
-        if (!inputFile.isDirectory()) {
-            filenameWithoutExtension = FileUtils.getFilenameWithoutExtension(inputFile);
+        if(metadataName2APattern.matcher(metadataFile.getName()).matches()) {
+            filenameWithoutExtension = createProductNameFromValidMetadataName(metadataFile.getName());
         } else {
-            filenameWithoutExtension = inputFile.getName();
+            filenameWithoutExtension = metadataFile.getName();
         }
         final int width = TILE_LAYOUTS[S2SpatialResolution.R10M.id].width;
         final int height = TILE_LAYOUTS[S2SpatialResolution.R10M.id].height;
@@ -53,12 +53,11 @@ public class S2L2AProductReader extends S2ProductReader {
                                       "S2_MSI_L2A",
                                       width,
                                       height);
-        final String parentDirectory = inputFile.getParent();
+        final String parentDirectory = metadataFile.getParent();
         final File granuleDirectory = new File(parentDirectory + "/GRANULE");
         final File[] granules = granuleDirectory.listFiles();
         if (granules != null) {
             //todo read all granules
-//            for (File granule : granules) {
             final Map<String, BandInfo> bandInfoMap = getBandInfoMap(granules[0].getPath());
             addBands(product, bandInfoMap, new TileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
             readMasks(product, granules[0].getPath());

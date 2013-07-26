@@ -10,6 +10,7 @@ import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.TiePointGeoCoding;
 import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.jai.ImageManager;
+import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.jdom.JDOMException;
 
@@ -62,7 +63,7 @@ public abstract class S2ProductReader extends AbstractProductReader {
         } else if (metadataName2APattern.matcher(inputFile.getName()).matches()) {
             return readProductNodes(inputFile);
         } else if (metadataNameTilePattern.matcher(inputFile.getName()).matches()) {
-            return readSingleTile(inputFile);
+            return readSingleTile(inputFile, "");
         } else {
             throw new IOException("Unhandled file type.");
         }
@@ -129,11 +130,10 @@ public abstract class S2ProductReader extends AbstractProductReader {
 
     protected abstract BandInfo getBandInfo(File file, Matcher matcher, String tileIndex, String bandIndex);
 
-    protected Product readSingleTile(File tileFile) throws IOException {
+    protected Product readSingleTile(File tileFile, String productName) throws IOException {
         //todo check whether L1C metadata is identical to L2A metadata
         L1cMetadata metadata = null;
         final String filePath;
-        String filenameWithoutExtension = "";
         if (!tileFile.isDirectory()) {
             try {
                 metadata = parseHeader(tileFile);
@@ -141,15 +141,19 @@ public abstract class S2ProductReader extends AbstractProductReader {
                 e.printStackTrace();
             }
             filePath = tileFile.getParent();
-            filenameWithoutExtension = FileUtils.getFilenameWithoutExtension(tileFile);
+            if(StringUtils.isNullOrEmpty(productName)) {
+                productName = FileUtils.getFilenameWithoutExtension(tileFile);
+            }
         } else {
             filePath = tileFile.getPath();
-            filenameWithoutExtension = tileFile.getName();
+            if(StringUtils.isNullOrEmpty(productName)) {
+                productName = tileFile.getName();
+            }
         }
         Map<String, BandInfo> bandInfoMap = getBandInfoMap(filePath);
         final int width = TILE_LAYOUTS[S2SpatialResolution.R10M.id].width;
         final int height = TILE_LAYOUTS[S2SpatialResolution.R10M.id].height;
-        Product product = new Product(filenameWithoutExtension,
+        Product product = new Product(productName,
                                       "S2_MSI_" + getProductType(),
                                       width,
                                       height);
@@ -226,8 +230,6 @@ public abstract class S2ProductReader extends AbstractProductReader {
         // scaling factor again, once we have product writer parameters, so that users can decide to write data as
         // 16bit samples.
         //
-        //band.setScalingFactor(bandInfo.wavebandInfo.scalingFactor);
-
         return band;
     }
 
@@ -235,6 +237,16 @@ public abstract class S2ProductReader extends AbstractProductReader {
         band.setNoDataValue(0);
         band.setValidPixelExpression(String.format("%s.raw > %s",
                                                    bandName, S2Config.RAW_NO_DATA_THRESHOLD));
+    }
+
+    protected String createProductNameFromValidMetadataName(String metadataName){
+        final String filenameWithoutExtension = FileUtils.getFilenameWithoutExtension(metadataName);
+        final String productNameWithoutExtension = filenameWithoutExtension.replace("MTD", "PRD").replace("SAF", "MSI").replace("DMP", "MSI");
+        if(metadataName.contains("SAF")) {
+            return productNameWithoutExtension + ".SAFE";
+        } else {
+            return productNameWithoutExtension + ".DIMAP";
+        }
     }
 
 }
