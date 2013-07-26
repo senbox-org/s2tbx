@@ -1,7 +1,6 @@
 package org.esa.beam.dataio.atmcorr.ui;
 
 import com.bc.ceres.core.ProcessObserver;
-import com.bc.ceres.core.ProgressBarProgressMonitor;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.progress.DialogProgressMonitor;
@@ -9,8 +8,6 @@ import com.bc.ceres.swing.progress.ProgressDialog;
 import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import org.esa.beam.dataio.atmcorr.AtmCorrCaller;
 import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.gpf.ui.TargetProductSelector;
-import org.esa.beam.framework.gpf.ui.TargetProductSelectorModel;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.ModelessDialog;
 
@@ -19,7 +16,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import java.awt.Dialog;
 import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +43,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         super(parent, title, buttonMask, helpID);
         parentComponent = parent;
         form = new JTabbedPane();
-        ioParametersPanel = new AtmCorrIOParametersPanel(appContext, new TargetProductSelector(new TargetProductSelectorModel()));
+        ioParametersPanel = new AtmCorrIOParametersPanel(appContext);
         form.add("I/O Parameters", ioParametersPanel);
         form.add("Processing Parameters", createParametersPanel());
     }
@@ -145,7 +141,6 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 progressDialog = new ProgressDialog(parentComponent);
                 progressDialog.setMaximum(10000);
                 final DialogProgressMonitor monitor = new DialogProgressMonitor(progressDialog);
-//                    new DialogProgressMonitor(parentComponent, processName, Dialog.ModalityType.MODELESS);
 
                 final ProcessObserver processObserver = new ProcessObserver(process);
                 processObserver.setProgressMonitor(monitor);

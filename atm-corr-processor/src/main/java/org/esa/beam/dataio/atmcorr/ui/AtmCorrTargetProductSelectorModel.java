@@ -71,11 +71,6 @@ public class AtmCorrTargetProductSelectorModel {
         setOpenInAppSelected(true);
         setSaveToFileSelected(true);
         this.formatNames = formatNames;
-        if (StringUtils.contains(this.formatNames, ProductIO.DEFAULT_FORMAT_NAME)) {
-            setFormatName(ProductIO.DEFAULT_FORMAT_NAME);
-        } else {
-            setFormatName(formatNames[0]);
-        }
     }
 
     public String getProductName() {
@@ -140,10 +135,6 @@ public class AtmCorrTargetProductSelectorModel {
 
     public void setProductDir(File productDir) {
         setValueContainerValue("productDir", productDir);
-    }
-
-    public void setFormatName(String formatName) {
-        setValueContainerValue("formatName", formatName);
     }
 
     public PropertyContainer getValueContainer() {

@@ -59,7 +59,6 @@ public class AtmCorrTargetProductSelector {
 
         initComponents();
         bindComponents();
-        updateUIState();
     }
 
     private void initComponents() {
@@ -89,12 +88,6 @@ public class AtmCorrTargetProductSelector {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 productDirTextField.setToolTipText(model.getProductDir().getPath());
-            }
-        });
-        model.getValueContainer().addPropertyChangeListener("formatName", new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateUIState();
             }
         });
     }
@@ -132,8 +125,6 @@ public class AtmCorrTargetProductSelector {
         subPanel1.add(getProductNameLabel(), BorderLayout.NORTH);
         subPanel1.add(getProductNameTextField(), BorderLayout.CENTER);
 
-        JPanel subPanel2 = null;
-
         final JPanel subPanel3 = new JPanel(new BorderLayout(3, 3));
         subPanel3.add(getProductDirLabel(), BorderLayout.NORTH);
         subPanel3.add(getProductDirTextField(), BorderLayout.CENTER);
@@ -158,30 +149,6 @@ public class AtmCorrTargetProductSelector {
             panel.add(getOpenInAppCheckBox());
 
         return panel;
-    }
-
-    private void updateUIState() {
-//        if (model.isSaveToFileSelected()) {
-//            if (!alwaysWriteOutput) {
-//                openInAppCheckBox.setEnabled(canReadOutputFormat(model.getFormatName()));
-//                formatNameComboBox.setEnabled(true);
-//            }
-//            productDirLabel.setEnabled(true);
-//            productDirTextField.setEnabled(true);
-//            productDirChooserButton.setEnabled(true);
-//        } else {
-//            if (!alwaysWriteOutput) {
-//                openInAppCheckBox.setEnabled(false);
-//                formatNameComboBox.setEnabled(false);
-//            }
-//            productDirTextField.setEnabled(false);
-//            productDirTextField.setEnabled(false);
-//            productDirChooserButton.setEnabled(false);
-//        }
-    }
-
-    private static boolean canReadOutputFormat(String formatName) {
-        return ProductIOPlugInManager.getInstance().getReaderPlugIns(formatName).hasNext();
     }
 
     private class ProductDirChooserAction extends AbstractAction {

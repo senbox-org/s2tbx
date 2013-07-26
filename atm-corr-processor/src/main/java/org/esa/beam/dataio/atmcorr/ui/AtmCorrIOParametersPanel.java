@@ -17,13 +17,15 @@
 package org.esa.beam.dataio.atmcorr.ui;
 
 import com.bc.ceres.swing.TableLayout;
+import com.bc.ceres.swing.selection.SelectionChangeEvent;
+import com.bc.ceres.swing.selection.SelectionChangeListener;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductFilter;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
-import org.esa.beam.framework.gpf.ui.TargetProductSelector;
 import org.esa.beam.framework.ui.AppContext;
 
 import javax.swing.JPanel;
+import java.io.File;
 import java.util.regex.Pattern;
 
 /**
@@ -32,14 +34,30 @@ import java.util.regex.Pattern;
 public class AtmCorrIOParametersPanel extends JPanel {
 
     private final SourceProductSelector sourceProductSelector;
+    private final AtmCorrTargetProductSelector targetProductSelector;
 
-    public AtmCorrIOParametersPanel(AppContext appContext, TargetProductSelector targetProductSelector) {
+    public AtmCorrIOParametersPanel(AppContext appContext) {
         final ProductFilter productFilter = new L1CSourceProductFilter();
         sourceProductSelector = new SourceProductSelector(appContext);
         sourceProductSelector.setProductFilter(productFilter);
         sourceProductSelector.initProducts();
         sourceProductSelector.getProductNameLabel().setText("Name:");
         sourceProductSelector.getProductNameComboBox().setToolTipText("A Sentinel2 L1C product");
+        sourceProductSelector.addSelectionChangeListener(new SelectionChangeListener() {
+            @Override
+            public void selectionChanged(SelectionChangeEvent event) {
+                updateTargetProductName();
+            }
+
+            @Override
+            public void selectionContextChanged(SelectionChangeEvent event) {
+            }
+        });
+
+        targetProductSelector = new AtmCorrTargetProductSelector(new AtmCorrTargetProductSelectorModel());
+
+        updateTargetProductName();
+        targetProductSelector.getModel().setProductDir(new File(System.getenv("USERPROFILE")));
 
         final TableLayout tableLayout = new TableLayout(1);
         tableLayout.setTableAnchor(TableLayout.Anchor.WEST);
@@ -53,18 +71,28 @@ public class AtmCorrIOParametersPanel extends JPanel {
         add(tableLayout.createVerticalSpacer());
     }
 
+    private void updateTargetProductName() {
+        if(sourceProductSelector.getSelectedProduct() != null) {
+            final String sourceName = sourceProductSelector.getSelectedProduct().getName();
+            targetProductSelector.getModel().setProductName(sourceName.replace("1C", "2A"));
+        } else {
+            targetProductSelector.getModel().setProductName("Level-2A_User_Product");
+        }
+    }
+
     public Product getSourceProduct() {
         return sourceProductSelector.getSelectedProduct();
     }
 
     private static class L1CSourceProductFilter implements ProductFilter {
-        final static Pattern L1CProductPattern = Pattern.compile("(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_.*.");
-        final static Pattern L1CTilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*");
+
+        final static String productName1CRegex =
+                "((S2.?)_([A-Z]{4})_PRD_MSIL1C_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.(DIMAP|SAFE)|Level-1C_User_Product)";
+        final static Pattern productName1CPattern = Pattern.compile(productName1CRegex);
 
         @Override
         public boolean accept(Product product) {
-            return L1CProductPattern.matcher(product.getName()).matches() ||
-                    L1CTilePattern.matcher(product.getName()).matches();
+            return productName1CPattern.matcher(product.getName()).matches();
         }
     }
 
