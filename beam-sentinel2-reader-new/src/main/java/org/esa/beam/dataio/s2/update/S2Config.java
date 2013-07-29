@@ -35,6 +35,12 @@ public interface S2Config {
     // because they are likely to change if prod. spec. changes
     //
     TileLayout[] TILE_LAYOUTS = new TileLayout[]{
+            new TileLayout(3093, 9483, 3093, 9483, 1, 1, 6),
+            new TileLayout(1546, 4741, 1546, 4741, 1, 1, 6),
+            new TileLayout(515, 1580, 515, 1580, 1, 1, 6),
+    };
+
+    TileLayout[] TILE_LAYOUTS_ORIG = new TileLayout[]{
             new TileLayout(10960, 10960, 4096, 4096, 3, 3, 6),
             new TileLayout(5480, 5480, 4096, 4096, 2, 2, 6),
             new TileLayout(1826, 1826, 1826, 1826, 1, 1, 6),
