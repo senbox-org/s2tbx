@@ -10,16 +10,24 @@ import org.esa.beam.dataio.atmcorr.AtmCorrCaller;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.ui.AppContext;
+import org.esa.beam.framework.ui.GridBagUtils;
 import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.visat.VisatApp;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import java.awt.GridBagConstraints;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -43,6 +51,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     private String fileLocation;
     private final static String default_l1c_name = "Level-1C_User_Product";
     private final static String default_l2a_name = "Level-2A_User_Product";
+    private JTextArea area;
 
     public static AtmosphericCorrectionDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
         appContext = app;
@@ -147,6 +156,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 progressDialog = new ProgressDialog(parentComponent);
                 progressDialog.setMaximum(10000);
                 final DialogProgressMonitor monitor = new DialogProgressMonitor(progressDialog);
+                progressDialog.setMessageComponent(createMessageComponent());
 
                 final ProcessObserver processObserver = new ProcessObserver(process);
                 processObserver.setProgressMonitor(monitor);
@@ -179,6 +189,35 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
             }
         };
         swingWorker.execute();
+    }
+
+    private JComponent createMessageComponent() {
+        final JPanel panel = GridBagUtils.createPanel();
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        area = new JTextArea();
+        area.setVisible(false);
+
+        final String moreButtonText = "More >>";
+        final String lessButtonText = "Less <<";
+        final JButton moreButton = new JButton(moreButtonText);
+        moreButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(area.isVisible()) {
+                    area.setVisible(false);
+                    moreButton.setText(moreButtonText);
+                } else {
+                    area.setVisible(true);
+                    moreButton.setText(lessButtonText);
+                }
+            }
+        });
+
+        GridBagUtils.addToPanel(panel, moreButton, gbc, "gridx=0,gridy=0,anchor=NORTHEAST");
+        GridBagUtils.addToPanel(panel, area, gbc, "gridx=1");
+
+        return panel;
     }
 
     /**
@@ -253,12 +292,14 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 int progress = (int) workDone - lastWork;
                 lastWork = (int) workDone;
                 pm.worked(progress);
-
             }
+            area.append(line);
         }
 
         @Override
         public void onStderrLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
+            area.append(line);
+            JOptionPane.showMessageDialog(parentComponent, "An error has occurred: " + line);
         }
 
         @Override
