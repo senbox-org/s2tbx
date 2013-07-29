@@ -23,9 +23,12 @@ import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductFilter;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
 import org.esa.beam.framework.ui.AppContext;
+import org.esa.beam.visat.VisatApp;
 
 import javax.swing.JPanel;
 import java.io.File;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -57,8 +60,8 @@ public class AtmCorrIOParametersPanel extends JPanel {
         targetProductSelector = new AtmCorrTargetProductSelector(new AtmCorrTargetProductSelectorModel());
 
         updateTargetProductName();
-        targetProductSelector.getModel().setProductDir(new File(System.getenv("USERPROFILE")));
 
+        targetProductSelector.getModel().setProductDir(new File(System.getenv("HOME")));
         final TableLayout tableLayout = new TableLayout(1);
         tableLayout.setTableAnchor(TableLayout.Anchor.WEST);
         tableLayout.setTableWeightX(1.0);
@@ -82,6 +85,18 @@ public class AtmCorrIOParametersPanel extends JPanel {
 
     public Product getSourceProduct() {
         return sourceProductSelector.getSelectedProduct();
+    }
+
+    public String getTargetDir() {
+        return targetProductSelector.getModel().getProductDir().getPath();
+    }
+
+    public String getTargetName() {
+        return targetProductSelector.getModel().getProductName();
+    }
+
+    public boolean shallBeOpenedInApp() {
+        return targetProductSelector.getModel().isOpenInAppSelected();
     }
 
     private static class L1CSourceProductFilter implements ProductFilter {

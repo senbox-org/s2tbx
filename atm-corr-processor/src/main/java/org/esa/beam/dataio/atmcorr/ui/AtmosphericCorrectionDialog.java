@@ -7,9 +7,12 @@ import com.bc.ceres.swing.progress.DialogProgressMonitor;
 import com.bc.ceres.swing.progress.ProgressDialog;
 import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import org.esa.beam.dataio.atmcorr.AtmCorrCaller;
+import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.ModelessDialog;
+import org.esa.beam.util.io.FileUtils;
+import org.esa.beam.visat.VisatApp;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -18,7 +21,11 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import java.awt.Window;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.regex.Pattern;
 
 /**
  * @author Tonio Fincke
@@ -33,6 +40,9 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     private final AtmCorrIOParametersPanel ioParametersPanel;
     private final Window parentComponent;
     private ProgressDialog progressDialog;
+    private String fileLocation;
+    private final static String default_l1c_name = "Level-1C_User_Product";
+    private final static String default_l2a_name = "Level-2A_User_Product";
 
     public static AtmosphericCorrectionDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
         appContext = app;
@@ -58,16 +68,12 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     protected void onApply() {
         super.onApply();
         final Product sourceProduct = ioParametersPanel.getSourceProduct();
-        String fileLocation = ((File) sourceProduct.getProductReader().getInput()).getParent();
+        fileLocation = ((File) sourceProduct.getProductReader().getInput()).getParent();
         final int resolution = (Integer) resolutionBox.getSelectedItem();
         try {
             final Process atmCorrProcess =
                     new AtmCorrCaller().createProcess(fileLocation, resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
-
             executeProcess(atmCorrProcess);
-
-
-//            AtmCorrCaller.call(fileLocation, resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -151,11 +157,83 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
             @Override
             protected void done() {
-                super.done();
+                String defaultPath = new File(fileLocation).getParent() + "/" + default_l2a_name;
+                String targetDir = ioParametersPanel.getTargetDir();
+                String targetName = ioParametersPanel.getTargetName();
+                String targetPath = targetDir + "/" + targetName;
+                try {
+                    File l2File = new File(targetPath);
+                    if(!defaultPath.equals(targetPath)) {
+                        if(l2File.exists()) {
+                            FileUtils.deleteTree(l2File);
+                        }
+                        Files.move(new File(defaultPath).toPath(), l2File.toPath());
+                   }
+                    File targetMetadataFile = addMetadataFileIfNecessary(l2File);
+                if(ioParametersPanel.shallBeOpenedInApp()) {
+                    VisatApp.getApp().openProduct(targetMetadataFile);
+                }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         };
         swingWorker.execute();
     }
+
+    /**
+     * Currently, the AtmCorrProcessor does not create metadata files at product level. This method adds an empty dummy
+     * metadata file and will hopefully become redundant in the near future
+     */
+    private File addMetadataFileIfNecessary(File l2FileDir) throws IOException {
+        final String metadataName2ARegex =
+                "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)L2A_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml|Product_Metadata_File.xml)";
+        final Pattern metadataName2APattern = Pattern.compile(metadataName2ARegex);
+        final FilenameFilter filter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return metadataName2APattern.matcher(name).matches();
+            }
+        };
+        File[] l2MetadataFiles = l2FileDir.listFiles(filter);
+        if(l2MetadataFiles.length > 0) {
+            return l2MetadataFiles[0];
+        } else {
+            String l2MetadataFilename;
+            final String metadataName1CRegex =
+                    "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml)";
+            final Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
+            final String dir1CRegex =
+                    "(S2.?)_([A-Z]{4})_PRD_MSIL2A_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*";
+            final Pattern dir1CPattern = Pattern.compile(dir1CRegex);
+
+            String l1cDirPath = new File(fileLocation).getName();
+            final FilenameFilter l1cMetadataFilter = new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String s) {
+                    return metadataName1CPattern.matcher(s).matches();
+                }
+            };
+            File[] metadataFiles = new File(l1cDirPath).listFiles(l1cMetadataFilter);
+            if(metadataFiles != null && metadataFiles.length > 0) {
+                l2MetadataFilename = metadataFiles[0].getName().replace("1C", "2A");
+            } else if(dir1CPattern.matcher(l1cDirPath).matches()) {
+                String changingName = FileUtils.getFilenameWithoutExtension(l1cDirPath).replace("PRD", "MTD").replace("1C", "2A") + ".xml";
+                if(l1cDirPath.endsWith(".SAFE")) {
+                    l2MetadataFilename = changingName.replace("MSI", "SAF");
+                } else {
+                    l2MetadataFilename = changingName.replace("MSI", "DMP");
+                }
+            } else {
+                l2MetadataFilename = "Product_Metadata_File.xml";
+            }
+            File l2MetadataFile = new File(l2FileDir + "/" + l2MetadataFilename);
+            l2MetadataFile.createNewFile();
+            return l2MetadataFile;
+        }
+    }
+
+
 
     private class ProcessObserverHandler implements ProcessObserver.Handler {
 
@@ -185,7 +263,6 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
         @Override
         public void onObservationEnded(ProcessObserver.ObservedProcess process, Integer exitCode, ProgressMonitor pm) {
-            System.out.println("ended");
             progressDialog.close();
         }
     }
