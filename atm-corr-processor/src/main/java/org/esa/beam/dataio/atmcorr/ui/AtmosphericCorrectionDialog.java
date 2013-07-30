@@ -15,22 +15,13 @@ import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.visat.VisatApp;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.regex.Pattern;
@@ -52,6 +43,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     private final static String default_l1c_name = "Level-1C_User_Product";
     private final static String default_l2a_name = "Level-2A_User_Product";
     private JTextArea area;
+    private JScrollPane areaScrollPane;
 
     public static AtmosphericCorrectionDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
         appContext = app;
@@ -167,6 +159,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
             @Override
             protected void done() {
+                if(!progressDialog.isCanceled()) {
                 String defaultPath = new File(fileLocation).getParent() + "/" + default_l2a_name;
                 String targetDir = ioParametersPanel.getTargetDir();
                 String targetName = ioParametersPanel.getTargetName();
@@ -177,7 +170,10 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                         if(l2File.exists()) {
                             FileUtils.deleteTree(l2File);
                         }
-                        Files.move(new File(defaultPath).toPath(), l2File.toPath());
+                        File defaultFile = new File(defaultPath);
+                        copyDir(defaultFile, l2File);
+                        FileUtils.deleteTree(defaultFile);
+//                        Files.move(new File(defaultPath).toPath(), l2File.toPath());
                    }
                     File targetMetadataFile = addMetadataFileIfNecessary(l2File);
                 if(ioParametersPanel.shallBeOpenedInApp()) {
@@ -186,9 +182,35 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                }
             }
         };
         swingWorker.execute();
+    }
+
+    //todo replace this method with Files.move as soon as a build agent for java 7 is available
+    public void copyDir(File source, File dest) throws FileNotFoundException, IOException {
+        File[] files = source.listFiles();
+        dest.mkdirs();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                copyDir(file, new File(dest.getAbsolutePath() + System.getProperty("file.separator") + file.getName()));
+            }
+            else {
+                copyFile(file, new File(dest.getAbsolutePath() + System.getProperty("file.separator") + file.getName()));
+            }
+        }
+    }
+
+    public void copyFile(File file, File ziel) throws FileNotFoundException, IOException {
+        BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(ziel, true));
+        int bytes = 0;
+        while ((bytes = in.read()) != -1) {
+            out.write(bytes);
+        }
+        in.close();
+        out.close();
     }
 
     private JComponent createMessageComponent() {
@@ -196,26 +218,29 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         GridBagConstraints gbc = new GridBagConstraints();
 
         area = new JTextArea();
-        area.setVisible(false);
+        areaScrollPane = new JScrollPane(area);
+        areaScrollPane.setVisible(false);
 
         final String moreButtonText = "More >>";
         final String lessButtonText = "Less <<";
-        final JButton moreButton = new JButton(moreButtonText);
-        moreButton.addActionListener(new ActionListener() {
+        final JButton extendButton = new JButton(moreButtonText);
+        extendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(area.isVisible()) {
-                    area.setVisible(false);
-                    moreButton.setText(moreButtonText);
+                if (areaScrollPane.isVisible()) {
+                    areaScrollPane.setVisible(false);
+                    extendButton.setText(moreButtonText);
                 } else {
-                    area.setVisible(true);
-                    moreButton.setText(lessButtonText);
+                    areaScrollPane.setVisible(true);
+                    extendButton.setText(lessButtonText);
+
                 }
             }
         });
 
-        GridBagUtils.addToPanel(panel, moreButton, gbc, "gridx=0,gridy=0,anchor=NORTHEAST");
-        GridBagUtils.addToPanel(panel, area, gbc, "gridx=1");
+
+        GridBagUtils.addToPanel(panel, extendButton, gbc, "gridx=2,gridy=0,anchor=NORTHEAST,weightx=1,weighty=0.1");
+        GridBagUtils.addToPanel(panel, areaScrollPane, gbc, "gridx=0,gridy=1,weighty=1,gridwidth=3,gridheight=2,fill=BOTH");
 
         return panel;
     }
@@ -293,7 +318,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 lastWork = (int) workDone;
                 pm.worked(progress);
             }
-            area.append(line);
+            area.append(line + "\n");
         }
 
         @Override
