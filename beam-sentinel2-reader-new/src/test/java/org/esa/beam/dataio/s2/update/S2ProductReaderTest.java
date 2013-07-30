@@ -26,7 +26,7 @@ public class S2ProductReaderTest {
     }
 
     @Test
-//    @Ignore
+    @Ignore
     public void testReadingL1CTileFromMetadataFile() throws Exception {
         final File file = new File(testDataDir + "Level-1C_User_Product\\GRANULE\\S2A_HOWL_MSI_L1C_TL_CGS3_20131012T012355_049_15SWD\\S2A_HOWL_MSI_L1C_TL_CGS3_20131012T012355_049_15SWD.xml");
         if(s2PPlugIn.getDecodeQualification(file).equals(DecodeQualification.INTENDED)) {
@@ -39,7 +39,7 @@ public class S2ProductReaderTest {
     }
 
     @Test
-//    @Ignore
+    @Ignore
     public void testReadingL2ATileFromMetadataFile() throws Exception {
         final File file = new File(testDataDir + "Level-2A_User_Product\\GRANULE\\S2A_HOWL_MSI_L2A_TL_USER_20130430T084516_049_15SWD\\S2A_HOWL_MSI_L2A_TL_USER_20130430T084516_049_15SWD.xml");
         if(s2PPlugIn.getDecodeQualification(file).equals(DecodeQualification.INTENDED)) {
@@ -52,7 +52,7 @@ public class S2ProductReaderTest {
     }
 
     @Test
-//    @Ignore
+    @Ignore
     public void testReadingL1CProduct() throws Exception {
         File file = new File(testDataDir + "Level-1C_User_Product\\S2A_HOWL_MTD_DMPL1C_R049_V20131012T012355_20131012T012355_C0001.xml");
         if(s2PPlugIn.getDecodeQualification(file).equals(DecodeQualification.INTENDED)) {
@@ -65,7 +65,7 @@ public class S2ProductReaderTest {
     }
 
     @Test
-//    @Ignore
+    @Ignore
     public void testReadingL2AProduct() throws Exception {
         File file = new File(testDataDir + "Level-2A_User_Product\\S2A_HOWL_MTD_DMPL2A_R049_V201310430084516_20131012T012355_C0001.xml");
         if(s2PPlugIn.getDecodeQualification(file).equals(DecodeQualification.INTENDED)) {
