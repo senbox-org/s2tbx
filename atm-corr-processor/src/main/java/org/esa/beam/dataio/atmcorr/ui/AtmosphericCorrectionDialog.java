@@ -7,7 +7,6 @@ import com.bc.ceres.swing.progress.DialogProgressMonitor;
 import com.bc.ceres.swing.progress.ProgressDialog;
 import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import org.esa.beam.dataio.atmcorr.AtmCorrCaller;
-import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.GridBagUtils;
@@ -15,15 +14,28 @@ import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.visat.VisatApp;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 /**
@@ -159,29 +171,29 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
             @Override
             protected void done() {
-                if(!progressDialog.isCanceled()) {
-                String defaultPath = new File(fileLocation).getParent() + "/" + default_l2a_name;
-                String targetDir = ioParametersPanel.getTargetDir();
-                String targetName = ioParametersPanel.getTargetName();
-                String targetPath = targetDir + "/" + targetName;
-                try {
-                    File l2File = new File(targetPath);
-                    if(!defaultPath.equals(targetPath)) {
-                        if(l2File.exists()) {
-                            FileUtils.deleteTree(l2File);
-                        }
-                        File defaultFile = new File(defaultPath);
-                        copyDir(defaultFile, l2File);
-                        FileUtils.deleteTree(defaultFile);
+                if (!progressDialog.isCanceled()) {
+                    String defaultPath = new File(fileLocation).getParent() + "/" + default_l2a_name;
+                    String targetDir = ioParametersPanel.getTargetDir();
+                    String targetName = ioParametersPanel.getTargetName();
+                    String targetPath = targetDir + "/" + targetName;
+                    try {
+                        File l2File = new File(targetPath);
+                        if (!defaultPath.equals(targetPath)) {
+                            if (l2File.exists()) {
+                                FileUtils.deleteTree(l2File);
+                            }
+                            File defaultFile = new File(defaultPath);
+                            copyDir(defaultFile, l2File);
+                            FileUtils.deleteTree(defaultFile);
 //                        Files.move(new File(defaultPath).toPath(), l2File.toPath());
-                   }
-                    File targetMetadataFile = addMetadataFileIfNecessary(l2File);
-                if(ioParametersPanel.shallBeOpenedInApp()) {
-                    VisatApp.getApp().openProduct(targetMetadataFile);
-                }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                        }
+                        File targetMetadataFile = addMetadataFileIfNecessary(l2File);
+                        if (ioParametersPanel.shallBeOpenedInApp()) {
+                            VisatApp.getApp().openProduct(targetMetadataFile);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         };
@@ -195,8 +207,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         for (File file : files) {
             if (file.isDirectory()) {
                 copyDir(file, new File(dest.getAbsolutePath() + System.getProperty("file.separator") + file.getName()));
-            }
-            else {
+            } else {
                 copyFile(file, new File(dest.getAbsolutePath() + System.getProperty("file.separator") + file.getName()));
             }
         }
@@ -260,7 +271,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
             }
         };
         File[] l2MetadataFiles = l2FileDir.listFiles(filter);
-        if(l2MetadataFiles.length > 0) {
+        if (l2MetadataFiles.length > 0) {
             return l2MetadataFiles[0];
         } else {
             String l2MetadataFilename;
@@ -279,11 +290,11 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 }
             };
             File[] metadataFiles = new File(l1cDirPath).listFiles(l1cMetadataFilter);
-            if(metadataFiles != null && metadataFiles.length > 0) {
+            if (metadataFiles != null && metadataFiles.length > 0) {
                 l2MetadataFilename = metadataFiles[0].getName().replace("1C", "2A");
-            } else if(dir1CPattern.matcher(l1cDirPath).matches()) {
+            } else if (dir1CPattern.matcher(l1cDirPath).matches()) {
                 String changingName = FileUtils.getFilenameWithoutExtension(l1cDirPath).replace("PRD", "MTD").replace("1C", "2A") + ".xml";
-                if(l1cDirPath.endsWith(".SAFE")) {
+                if (l1cDirPath.endsWith(".SAFE")) {
                     l2MetadataFilename = changingName.replace("MSI", "SAF");
                 } else {
                     l2MetadataFilename = changingName.replace("MSI", "DMP");
@@ -296,7 +307,6 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
             return l2MetadataFile;
         }
     }
-
 
 
     private class ProcessObserverHandler implements ProcessObserver.Handler {
@@ -312,7 +322,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
         @Override
         public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
-            if(line.contains("%")) {
+            if (line.contains("%")) {
                 double workDone = Double.parseDouble(line.split(":")[1]) * 100;
                 int progress = (int) workDone - lastWork;
                 lastWork = (int) workDone;
