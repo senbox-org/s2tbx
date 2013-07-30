@@ -45,7 +45,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
     private JCheckBox scOnlyBox;
     private JCheckBox acOnlyBox;
-    private JComboBox<Integer> resolutionBox;
+    private JComboBox resolutionBox;
     private final JTabbedPane form;
     private static AppContext appContext;
     private final AtmCorrIOParametersPanel ioParametersPanel;
@@ -137,7 +137,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
         tableLayout.setCellWeightX(0, 1, 1.0);
         Integer[] resolutions = {60, 20, 10};
-        resolutionBox = new JComboBox<Integer>(resolutions);
+        resolutionBox = new JComboBox(resolutions);
 
         tableLayout.setCellWeightX(0, 2, 0.0);
         final JLabel resolutionUnitLabel = new JLabel("m");
