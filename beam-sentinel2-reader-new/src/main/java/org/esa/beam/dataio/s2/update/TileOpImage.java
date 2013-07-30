@@ -6,6 +6,7 @@ import org.esa.beam.jai.ResolutionLevel;
 import org.esa.beam.jai.SingleBandedOpImage;
 import org.esa.beam.util.ImageUtils;
 import org.esa.beam.util.io.FileUtils;
+import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -32,8 +33,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-//import static org.esa.beam.dataio.s2.S2Config.TILE_LAYOUTS;
 import static org.esa.beam.dataio.s2.update.S2Config.TILE_LAYOUTS;
+
+//import static org.esa.beam.dataio.s2.S2Config.TILE_LAYOUTS;
 
 // todo - better log problems during read process, see {@report "Problem detected..."} code marks
 
@@ -73,7 +75,7 @@ class TileOpImage extends SingleBandedOpImage {
         if (imageFile != null) {
             PlanarImage opImage = new TileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
             if (spatialResolution != S2SpatialResolution.R10M) {
-                return createScaledImage(opImage, spatialResolution, level);
+                return createScaledImage(opImage, level);
             }
             return opImage;
         } else {
@@ -89,20 +91,19 @@ class TileOpImage extends SingleBandedOpImage {
         }
     }
 
-    static PlanarImage createScaledImage(PlanarImage sourceImage, S2SpatialResolution resolution, int level) {
+    static PlanarImage createScaledImage(PlanarImage sourceImage, int level) {
         int sourceWidth = sourceImage.getWidth();
         int sourceHeight = sourceImage.getHeight();
         int targetWidth = getSizeAtResolutionLevel(TILE_LAYOUTS[0].width, level);
         int targetHeight = getSizeAtResolutionLevel(TILE_LAYOUTS[0].height, level);
-        float scaleX = resolution.resolution / (float) S2SpatialResolution.R10M.resolution;
-        float scaleY = resolution.resolution / (float) S2SpatialResolution.R10M.resolution;
+        float scaleX = (float) targetWidth / sourceWidth;
+        float scaleY = (float) targetHeight / sourceHeight;
         final Dimension tileDim = getTileDim(targetWidth, targetHeight);
         ImageLayout imageLayout = new ImageLayout();
         imageLayout.setTileWidth(tileDim.width);
         imageLayout.setTileHeight(tileDim.height);
         BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
-        RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                                                           borderExtender);
+        RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER, borderExtender);
         renderingHints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
         RenderedOp scaledImage = ScaleDescriptor.create(sourceImage,
                                                         scaleX,
@@ -113,16 +114,14 @@ class TileOpImage extends SingleBandedOpImage {
                                                         renderingHints);
         if (scaledImage.getWidth() == targetWidth && scaledImage.getHeight() == targetHeight) {
             return scaledImage;
-        }
-        else if (scaledImage.getWidth() >= targetWidth && scaledImage.getHeight() >= targetHeight) {
+        } else if (scaledImage.getWidth() >= targetWidth && scaledImage.getHeight() >= targetHeight) {
             return CropDescriptor.create(scaledImage,
                                          (float) sourceImage.getMinX(),
                                          (float) sourceImage.getMinY(),
                                          (float) targetWidth,
                                          (float) targetHeight,
                                          null);
-        }
-        else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
+        } else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
             int rightPad = targetWidth - scaledImage.getWidth();
             int bottomPad = targetHeight - scaledImage.getHeight();
             return BorderDescriptor.create(scaledImage, 0, rightPad, 0, bottomPad, borderExtender, null);
@@ -201,28 +200,29 @@ class TileOpImage extends SingleBandedOpImage {
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
         if (!outputFile0.exists()) {
-            //System.out.printf("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
             } catch (IOException e) {
                 // {@report "opj_decompress process failed"}
+                BeamLogManager.getSystemLogger().severe("opj_decompress process failed: " + e.getMessage());
                 if (outputFile0.exists() && !outputFile0.delete()) {
                     // {@report "Failed to delete"}
+                    BeamLogManager.getSystemLogger().warning("Failed to delete");
                 }
             }
             if (!outputFile0.exists()) {
                 // {@report "No output file generated"}
+                BeamLogManager.getSystemLogger().warning("No output file generated");
                 Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
                 return;
             }
         }
 
         try {
-            //System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
             readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
         } catch (IOException e) {
             // {@report "Failed to read uncompressed tile data"}
-            e.printStackTrace();
+            BeamLogManager.getSystemLogger().severe("Failed to read uncompressed tile data");
         }
     }
 
@@ -242,11 +242,11 @@ class TileOpImage extends SingleBandedOpImage {
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
                 // {@report "Failed to uncompress tile"}
-                System.err.println("Failed to uncompress tile: exitCode = " + exitCode);
+                BeamLogManager.getSystemLogger().severe("Failed to uncompress tile: exitCode = " + exitCode);
             }
         } catch (InterruptedException e) {
             // {@report "Process was interrupted"}
-            System.err.println("InterruptedException: " + e.getMessage());
+            BeamLogManager.getSystemLogger().warning("InterruptedException: " + e.getMessage());
         }
     }
 
@@ -262,13 +262,15 @@ class TileOpImage extends SingleBandedOpImage {
                     jp2File.stream = null;
                 }
             } catch (IOException e) {
+                BeamLogManager.getSystemLogger().warning("Failed to close stream");
                 // {@report "Failed to close stream"}
             }
         }
 
         for (File file : openFiles.keySet()) {
-            System.out.println("deleting " + file);
+            BeamLogManager.getSystemLogger().fine("deleting " + file);
             if (!file.delete()) {
+                BeamLogManager.getSystemLogger().warning("Failed to delete file");
                 // {@report "Failed to delete file"}
             }
         }
@@ -276,6 +278,7 @@ class TileOpImage extends SingleBandedOpImage {
         openFiles.clear();
 
         if (!cacheDir.delete()) {
+            BeamLogManager.getSystemLogger().warning("Failed to delete cache dir");
             // {@report "Failed to delete cache dir"}
         }
     }
@@ -310,6 +313,8 @@ class TileOpImage extends SingleBandedOpImage {
             int jp2Width = jp2File.width;
             int jp2Height = jp2File.height;
             if (jp2Width > jp2TileWidth || jp2Height > jp2TileHeight) {
+                BeamLogManager.getSystemLogger().warning(String.format("width (=%d) > tileWidth (=%d) || height (=%d) > tileHeight (=%d)",
+                                                                       jp2Width, jp2TileWidth, jp2Height, jp2TileHeight));
 //                throw new IllegalStateException(String.format("width (=%d) > tileWidth (=%d) || height (=%d) > tileHeight (=%d)",
 //                                                              jp2Width, jp2TileWidth, jp2Height, jp2TileHeight));
             }
@@ -334,7 +339,6 @@ class TileOpImage extends SingleBandedOpImage {
                                                          jp2Y,
                                                          tileWidth, tileHeight);
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
-                //System.out.printf("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection);
                 if (!intersection.isEmpty()) {
                     long seekPos = jp2File.dataPos + S2Config.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;
@@ -372,12 +376,7 @@ class TileOpImage extends SingleBandedOpImage {
             if (tokens.length != 6) {
                 throw new IOException("Unexpected PGX tile image format");
             }
-
-            // String pg = tokens[0];   // PG
-            // String ml = tokens[1];   // ML
-            // String plus = tokens[2]; // +
             try {
-                // int jp2File.nbits = Integer.parseInt(tokens[3]);
                 jp2File.width = Integer.parseInt(tokens[4]);
                 jp2File.height = Integer.parseInt(tokens[5]);
             } catch (NumberFormatException e) {
