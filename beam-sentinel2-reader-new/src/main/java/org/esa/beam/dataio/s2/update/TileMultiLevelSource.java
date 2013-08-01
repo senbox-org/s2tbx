@@ -7,7 +7,6 @@ import org.esa.beam.util.SystemUtils;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.File;
-import java.io.IOException;
 
 import static org.esa.beam.dataio.s2.update.S2Config.TILE_LAYOUTS;
 

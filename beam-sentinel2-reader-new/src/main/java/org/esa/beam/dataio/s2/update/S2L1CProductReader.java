@@ -1,12 +1,18 @@
 package org.esa.beam.dataio.s2.update;
 
+import jp2.Box;
+import jp2.BoxReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Product;
 
+import javax.imageio.stream.FileImageInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static jp2.BoxType.encode4b;
 
 /**
  * Represents information of a Sentinel 2 band
@@ -23,10 +29,6 @@ public class S2L1CProductReader extends S2ProductReader {
 
     static final String productType = "L1C";
 
-    final static String metadataName1CRegex =
-            "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
-    final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
-
     /**
      * Constructs a new abstract product reader.
      *
@@ -38,6 +40,19 @@ public class S2L1CProductReader extends S2ProductReader {
     }
 
     public BandInfo getBandInfo(File file, Matcher matcher, String tileIndex, String bandName) {
+        //todo read width and height from jpeg file
+        try {
+            final FileImageInputStream inputStream = new FileImageInputStream(file);
+            final BoxReader boxReader = new BoxReader(inputStream, file.length(), new MyListener());
+            List<Box> boxes = new ArrayList<Box>();
+            Box box;
+            while((box = boxReader.readBox()) != null) {
+                boxes.add(box);
+            }
+            boxes = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         S2WavebandInfo wavebandInfo = S2WaveBandInfoProvider.getWaveBandInfo(bandName);
         return new BandInfo(tileIndex, file, bandName, wavebandInfo, resolutions[wavebandInfo.bandId]);
     }
@@ -59,7 +74,8 @@ public class S2L1CProductReader extends S2ProductReader {
         final File granuleDirectory = new File(parentDirectory + "/GRANULE");
         final File[] granules = granuleDirectory.listFiles();
         String productName;
-        if(metadataName1CPattern.matcher(metadataFile.getName()).matches()) {
+        if(S2Config.METADATA_NAME_1C_PATTERN.matcher(metadataFile.getName()).matches() ||
+                S2Config.METADATA_NAME_1C_PATTERN_ALT.matcher(metadataFile.getName()).matches()) {
             productName = createProductNameFromValidMetadataName(metadataFile.getName());
         } else {
             productName = metadataFile.getParentFile().getName();
@@ -90,6 +106,18 @@ public class S2L1CProductReader extends S2ProductReader {
             }
         }
         return null;
+    }
+
+    private static class MyListener implements BoxReader.Listener {
+        @Override
+        public void knownBoxSeen(Box box) {
+            System.out.println("known box: " + encode4b(box.getCode()));
+        }
+
+        @Override
+        public void unknownBoxSeen(Box box) {
+            System.out.println("unknown box: " + encode4b(box.getCode()));
+        }
     }
 
 }

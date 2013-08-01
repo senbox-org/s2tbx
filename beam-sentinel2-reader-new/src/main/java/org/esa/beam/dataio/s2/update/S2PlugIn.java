@@ -16,20 +16,6 @@ import java.util.regex.Pattern;
 public class S2PlugIn implements ProductReaderPlugIn {
 
     private static final Class[] SUPPORTED_INPUT_TYPES = new Class[]{String.class, File.class};
-
-    //todo use second versions
-    final Pattern directory1CPattern = Pattern.compile("(S2.?_([A-Z]{4})_([A-Z]{3})_(L1C)_TL_.*_(\\d{2}[A-Z]{3})|Level-1C_User_Product)");
-    final Pattern directory2APattern = Pattern.compile("(S2.?_([A-Z]{4})_([A-Z]{3})_(L2A)_TL_.*_(\\d{2}[A-Z]{3})|Level-2A_User_Product)");
-    final static String metadataName1CRegex =
-            "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml|Product_Metadata_File.xml)";
-    final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
-//    final static Pattern metadataNamePattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)L(1C|2A)_.*.xml");
-//    final static String metadataName1CRegex =
-//        "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
-//    final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
-    final static Pattern metadataName2APattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)(L2A)_.*.xml");
-    final static Pattern metadataName1CTilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*.xml");
-    final static Pattern metadataName2ATilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*.xml");
     private static final String FORMAT_NAME = "SENTINEL-2";
     private final String[] fileExtensions = new String[]{".xml"};
     private final String description = "Sentinel-2 products";
@@ -52,10 +38,10 @@ public class S2PlugIn implements ProductReaderPlugIn {
     }
 
     private boolean isValidDirectoryName(String name) {
-        if(directory1CPattern.matcher(name).matches()) {
+        if(S2Config.DIRECTORY_1C_PATTERN.matcher(name).matches() || S2Config.DIRECTORY_1C_PATTERN_ALT.matcher(name).matches()) {
             type = ProductType.L1C;
             return true;
-        } else if(directory2APattern.matcher(name).matches()) {
+        } else if(S2Config.DIRECTORY_2A_PATTERN.matcher(name).matches() || S2Config.DIRECTORY_2A_PATTERN_ALT.matcher(name).matches()) {
             type = ProductType.L2A;
             return true;
         }
@@ -63,8 +49,11 @@ public class S2PlugIn implements ProductReaderPlugIn {
     }
 
     private boolean isValidInputFileName(String name) {
-        return metadataName1CPattern.matcher(name).matches() || metadataName2APattern.matcher(name).matches()  ||
-                metadataName1CTilePattern.matcher(name).matches() || metadataName2ATilePattern.matcher(name).matches();
+        return S2Config.METADATA_NAME_1C_PATTERN.matcher(name).matches() ||
+                S2Config.METADATA_NAME_1C_PATTERN_ALT.matcher(name).matches() ||
+                S2Config.METADATA_NAME_2A_PATTERN.matcher(name).matches()  ||
+                S2Config.METADATA_NAME_1C_TILE_PATTERN.matcher(name).matches() ||
+                S2Config.METADATA_NAME_2A_TILE_PATTERN.matcher(name).matches();
     }
 
     @Override

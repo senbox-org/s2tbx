@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.esa.beam.dataio.s2.update.L1cMetadata.parseHeader;
 import static org.esa.beam.dataio.s2.update.S2Config.TILE_LAYOUTS;
@@ -35,11 +34,11 @@ import static org.esa.beam.dataio.s2.update.S2Config.TILE_LAYOUTS;
  */
 public abstract class S2ProductReader extends AbstractProductReader {
 
-    final static String metadataName1CRegex =
-            "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml|Product_Metadata_File.xml)";
-    final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
-    final static Pattern metadataName2APattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)(L2A)_.*.xml");
-    final static Pattern metadataNameTilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C|L2A)_TL_.*");
+//    final static String metadataName1CRegex =
+//            "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml|Product_Metadata_File.xml)";
+//    final static Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
+//    final static Pattern metadataName2APattern = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)(L2A)_.*.xml");
+//    final static Pattern metadataNameTilePattern = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C|L2A)_TL_.*");
 
 
     /**
@@ -58,11 +57,13 @@ public abstract class S2ProductReader extends AbstractProductReader {
         if (!inputFile.exists()) {
             throw new FileNotFoundException(inputFile.getPath());
         }
-        if (metadataName1CPattern.matcher(inputFile.getName()).matches()) {
+        if (S2Config.METADATA_NAME_1C_PATTERN.matcher(inputFile.getName()).matches() ||
+                S2Config.METADATA_NAME_1C_PATTERN_ALT.matcher(inputFile.getName()).matches()) {
             return readProductNodes(inputFile);
-        } else if (metadataName2APattern.matcher(inputFile.getName()).matches()) {
+        } else if (S2Config.METADATA_NAME_2A_PATTERN.matcher(inputFile.getName()).matches()) {
             return readProductNodes(inputFile);
-        } else if (metadataNameTilePattern.matcher(inputFile.getName()).matches()) {
+        } else if (S2Config.METADATA_NAME_1C_TILE_PATTERN.matcher(inputFile.getName()).matches() ||
+                S2Config.METADATA_NAME_2A_TILE_PATTERN.matcher(inputFile.getName()).matches()) {
             return readSingleTile(inputFile, "");
         } else {
             throw new IOException("Unhandled file type.");
@@ -91,13 +92,10 @@ public abstract class S2ProductReader extends AbstractProductReader {
         final File atmCorrDir20 = new File(atmCorrPath20);
         final File atmCorrDir10 = new File(atmCorrPath10);
 
-        final Pattern imageNamePattern =
-                Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L2A|L1C)_TL_.*_(\\d{2}[A-Z]{3})(|_AOT_|_WVP_|_DEM_|_B[0-9A]{2})(_([1-6]{1}0)m)?.jp2");
-
         final FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return imageNamePattern.matcher(name).matches();
+                return S2Config.IMAGE_NAME_PATTERN.matcher(name).matches();
             }
         };
         File[][] filesMatrix = new File[4][];
@@ -115,7 +113,7 @@ public abstract class S2ProductReader extends AbstractProductReader {
         for (File[] files : filesMatrix) {
             if (files != null) {
                 for (File file : files) {
-                    final Matcher matcher = imageNamePattern.matcher(file.getName());
+                    final Matcher matcher = S2Config.IMAGE_NAME_PATTERN.matcher(file.getName());
                     if (matcher.matches()) {
                         final String tileIndex = matcher.group(4);
                         String bandName = matcher.group(5);

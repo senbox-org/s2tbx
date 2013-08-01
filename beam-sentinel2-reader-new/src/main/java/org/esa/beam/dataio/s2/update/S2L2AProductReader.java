@@ -5,7 +5,6 @@ import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.SampleCoding;
 import org.esa.beam.jai.ImageManager;
-import org.esa.beam.util.io.FileUtils;
 
 import java.awt.Color;
 import java.io.File;
@@ -42,7 +41,7 @@ public class S2L2AProductReader extends S2ProductReader {
     public Product readProductNodes(File metadataFile) throws IOException {
         //todo read metadata
         String filenameWithoutExtension = "";
-        if(metadataName2APattern.matcher(metadataFile.getName()).matches()) {
+        if(S2Config.METADATA_NAME_2A_PATTERN.matcher(metadataFile.getName()).matches()) {
             filenameWithoutExtension = createProductNameFromValidMetadataName(metadataFile.getName());
         } else {
             filenameWithoutExtension = metadataFile.getName();
@@ -141,24 +140,18 @@ public class S2L2AProductReader extends S2ProductReader {
 
     private Map<String, BandInfo> updateMaskMap(File masksDir, Map<String, BandInfo> maskMap) throws IOException {
         //we have two patterns here: The one specified in the specification and the one actually used
-        //todo use only one pattern
-        final Pattern specificationImageNamePattern =
-                Pattern.compile("S2.?_([A-Z]{4})_(MSK)_(CLOUDS|TECQUA|LANWAT|DETFOO|DEFECT|SATURA|NODATA)_.*(\\d{2}[A-Z]{3}).jp2");
-
-        final Pattern usedImageNamePattern =
-                Pattern.compile("S2.?_([A-Z]{4})_(MSK|PVI)_(L2A|CLD|SNW)_TL_.*_(\\d{2}[A-Z]{3}).jp2");
 
         final FilenameFilter specificationFilter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return specificationImageNamePattern.matcher(name).matches();
+                return S2Config.SPECIFICATION_MASK_IMAGE_NAME_PATTERN.matcher(name).matches();
             }
         };
 
         final FilenameFilter usedFilter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return usedImageNamePattern.matcher(name).matches();
+                return S2Config.USED_MASK_IMAGE_NAME_PATTERN.matcher(name).matches();
             }
         };
 
@@ -169,8 +162,8 @@ public class S2L2AProductReader extends S2ProductReader {
         for (File[] files : filesMatrix) {
             if (files != null) {
                 for (File file : files) {
-                    putMasks(specificationImageNamePattern, maskMap, file);
-                    putMasks(usedImageNamePattern, maskMap, file);
+                    putMasks(S2Config.SPECIFICATION_MASK_IMAGE_NAME_PATTERN, maskMap, file);
+                    putMasks(S2Config.USED_MASK_IMAGE_NAME_PATTERN, maskMap, file);
                 }
             }
         }
