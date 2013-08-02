@@ -39,13 +39,21 @@ public interface S2Config {
     int DEFAULT_JAI_TILE_SIZE = 512;
 
     int SAMPLE_PRODUCT_DATA_TYPE = ProductData.TYPE_UINT16;
+    int SAMPLE_PRODUCT_MASK_DATA_TYPE = ProductData.TYPE_UINT8;
     int SAMPLE_DATA_BUFFER_TYPE = DataBuffer.TYPE_USHORT;
+    int SAMPLE_MASK_DATA_BUFFER_TYPE = DataBuffer.TYPE_BYTE;
     int SAMPLE_BYTE_COUNT = 2;
+    int SAMPLE_MASK_BYTE_COUNT = 1;
 
     short FILL_CODE_NO_FILE = DEBUG ? (short) 1000 : 0;
+    byte FILL_CODE_NO_FILE_BYTE = DEBUG ? (byte) 1000 : 0;
     short FILL_CODE_NO_INTERSECTION = DEBUG ? (short) 1 : 0;
+    byte FILL_CODE_NO_INTERSECTION_BYTE = DEBUG ? (byte) 1 : 0;
     short FILL_CODE_OUT_OF_X_BOUNDS = DEBUG ? (short) 2 : 0;
+    byte FILL_CODE_OUT_OF_X_BOUNDS_BYTE = DEBUG ? (byte) 2 : 0;
     short FILL_CODE_OUT_OF_Y_BOUNDS = DEBUG ? (short) 3 : 0;
+    byte FILL_CODE_OUT_OF_Y_BOUNDS_BYTE = DEBUG ? (byte) 3 : 0;
+
     short FILL_CODE_MOSAIC_BG = DEBUG ? (short) 4 : 0;
 
     short RAW_NO_DATA_THRESHOLD = DEBUG ? (short) 4 : (short) 1;

@@ -54,7 +54,7 @@ public class S2L1CProductReader extends S2ProductReader {
             e.printStackTrace();
         }
         S2WavebandInfo wavebandInfo = S2WaveBandInfoProvider.getWaveBandInfo(bandName);
-        return new BandInfo(tileIndex, file, bandName, wavebandInfo, resolutions[wavebandInfo.bandId]);
+        return new BandInfo(tileIndex, file, bandName, wavebandInfo, resolutions[wavebandInfo.bandId], false);
     }
 
     @Override

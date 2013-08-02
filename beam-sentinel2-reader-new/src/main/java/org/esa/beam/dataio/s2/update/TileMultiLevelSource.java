@@ -36,7 +36,8 @@ public class TileMultiLevelSource extends AbstractMultiLevelSource {
                                   bandInfo.imageLayout,
                                   getModel(),
                                   bandInfo.resolution,
-                                  level);
+                                  level,
+                                  bandInfo.isMask);
     }
 
     void checkCacheDir(File productDir) {

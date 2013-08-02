@@ -83,12 +83,12 @@ public class S2L2AProductReader extends S2ProductReader {
         }
         if (S2WaveBandInfoProvider.hasWaveBandInfo(bandIndex)) {
             wavebandInfo = S2WaveBandInfoProvider.getWaveBandInfo(bandIndex);
-            bandInfo = new BandInfo(tileIndex, file, wavebandInfo.bandId, wavebandInfo, spatialResolution);
+            bandInfo = new BandInfo(tileIndex, file, wavebandInfo.bandId, wavebandInfo, spatialResolution, false);
         } else {
             bandInfo = new BandInfo(tileIndex, file,
                                     bandIndex,
                                     wavebandInfo,
-                                    spatialResolution);
+                                    spatialResolution, false);
         }
         return bandInfo;
     }
@@ -170,12 +170,16 @@ public class S2L2AProductReader extends S2ProductReader {
         return maskMap;
     }
 
-    private void putMasks(Pattern specificationImageNamePattern, Map<String, BandInfo> maskMap, File file) {
-        Matcher matcher = specificationImageNamePattern.matcher(file.getName());
+    private void putMasks(Pattern pattern, Map<String, BandInfo> maskMap, File file) {
+        Matcher matcher = pattern.matcher(file.getName());
         if (matcher.matches()) {
             final String tileIndex = matcher.group(4);
             String bandName = matcher.group(3);
-            BandInfo bandInfo = new BandInfo(tileIndex, file, bandName, null, S2SpatialResolution.R60M);
+            boolean isMask = false;
+            if(matcher.group(2).equals("MSK")) {
+                isMask = true;
+            }
+            BandInfo bandInfo = new BandInfo(tileIndex, file, bandName, null, S2SpatialResolution.R60M, isMask);
             maskMap.put(bandName, bandInfo);
         }
     }

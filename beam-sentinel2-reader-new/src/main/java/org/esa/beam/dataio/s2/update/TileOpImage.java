@@ -24,6 +24,8 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -65,15 +67,23 @@ class TileOpImage extends SingleBandedOpImage {
                               TileLayout l1cTileLayout,
                               MultiLevelModel imageModel,
                               S2SpatialResolution spatialResolution,
-                              int level) {
+                              int level,
+                              boolean isMask) {
 
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(l1cTileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
         Assert.notNull(spatialResolution, "spatialResolution");
 
+        int dataType;
+        if(isMask) {
+            dataType = S2Config.SAMPLE_MASK_DATA_BUFFER_TYPE;
+        } else {
+            dataType = S2Config.SAMPLE_DATA_BUFFER_TYPE;
+        }
+
         if (imageFile != null) {
-            PlanarImage opImage = new TileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
+            PlanarImage opImage = new TileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level, dataType);
             if (spatialResolution != S2SpatialResolution.R10M) {
                 return createScaledImage(opImage, level);
             }
@@ -82,7 +92,7 @@ class TileOpImage extends SingleBandedOpImage {
             int targetWidth = getSizeAtResolutionLevel(TILE_LAYOUTS[0].width, level);
             int targetHeight = getSizeAtResolutionLevel(TILE_LAYOUTS[0].height, level);
             Dimension targetTileDim = getTileDimAtResolutionLevel(TILE_LAYOUTS[0].tileWidth, TILE_LAYOUTS[0].tileHeight, level);
-            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
+            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(dataType, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
                                              (float) imageLayout.getHeight(null),
@@ -135,8 +145,9 @@ class TileOpImage extends SingleBandedOpImage {
                 Point imagePos,
                 TileLayout l1cTileLayout,
                 MultiLevelModel imageModel,
-                int level) {
-        super(S2Config.SAMPLE_DATA_BUFFER_TYPE,
+                int level,
+                int dataType) {
+        super(dataType,
               imagePos,
               l1cTileLayout.width,
               l1cTileLayout.height,
@@ -158,17 +169,14 @@ class TileOpImage extends SingleBandedOpImage {
 
     @Override
     protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
-        final DataBufferUShort dataBuffer = (DataBufferUShort) dest.getDataBuffer();
-        final short[] tileData = dataBuffer.getData();
+        final DataBufferHandler dataBufferHandler = DataBufferHandlerFactory.createDataBufferProvider(dest.getDataBuffer());
 
         final int tileWidth = this.getTileWidth();
         final int tileHeight = this.getTileHeight();
-        final int tileX = destRect.x / tileWidth;
-        final int tileY = destRect.y / tileHeight;
 
-        if (tileWidth * tileHeight != tileData.length) {
+        if (tileWidth * tileHeight != dataBufferHandler.getTileLength()) {
             throw new IllegalStateException(String.format("tileWidth (=%d) * tileHeight (=%d) != tileData.length (=%d)",
-                                                          tileWidth, tileHeight, tileData.length));
+                                                          tileWidth, tileHeight, dataBufferHandler.getTileLength()));
         }
 
         final Dimension jp2TileDim = getDimAtResolutionLevel(l1cTileLayout.tileWidth, l1cTileLayout.tileHeight, getLevel());
@@ -213,13 +221,13 @@ class TileOpImage extends SingleBandedOpImage {
             if (!outputFile0.exists()) {
                 // {@report "No output file generated"}
                 BeamLogManager.getSystemLogger().warning("No output file generated");
-                Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
+                dataBufferHandler.fillWithNoFile();
                 return;
             }
         }
 
         try {
-            readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
+            readTileData(outputFile0, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, dataBufferHandler, destRect);
         } catch (IOException e) {
             // {@report "Failed to read uncompressed tile data"}
             BeamLogManager.getSystemLogger().severe("Failed to read uncompressed tile data");
@@ -290,11 +298,10 @@ class TileOpImage extends SingleBandedOpImage {
     }
 
     private void readTileData(File outputFile,
-                              int tileX, int tileY,
                               int tileWidth, int tileHeight,
                               int jp2TileX, int jp2TileY,
                               int jp2TileWidth, int jp2TileHeight,
-                              short[] tileData,
+                              DataBufferHandler dataBufferHandler,
                               Rectangle destRect) throws IOException {
 
         synchronized (this) {
@@ -315,8 +322,6 @@ class TileOpImage extends SingleBandedOpImage {
             if (jp2Width > jp2TileWidth || jp2Height > jp2TileHeight) {
                 BeamLogManager.getSystemLogger().warning(String.format("width (=%d) > tileWidth (=%d) || height (=%d) > tileHeight (=%d)",
                                                                        jp2Width, jp2TileWidth, jp2Height, jp2TileHeight));
-//                throw new IllegalStateException(String.format("width (=%d) > tileWidth (=%d) || height (=%d) > tileHeight (=%d)",
-//                                                              jp2Width, jp2TileWidth, jp2Height, jp2TileHeight));
             }
 
             int jp2X = destRect.x - jp2TileX * jp2TileWidth;
@@ -330,9 +335,9 @@ class TileOpImage extends SingleBandedOpImage {
 
             if (jp2X == 0 && jp2Width == tileWidth
                     && jp2Y == 0 && jp2Height == tileHeight
-                    && tileWidth * tileHeight == tileData.length) {
+                    && tileWidth * tileHeight == dataBufferHandler.getTileLength()) {
                 stream.seek(jp2File.dataPos);
-                stream.readFully(tileData, 0, tileData.length);
+                dataBufferHandler.readStreamFully(stream);
             } else {
                 final Rectangle jp2FileRect = new Rectangle(0, 0, jp2Width, jp2Height);
                 final Rectangle tileRect = new Rectangle(jp2X,
@@ -340,24 +345,24 @@ class TileOpImage extends SingleBandedOpImage {
                                                          tileWidth, tileHeight);
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
                 if (!intersection.isEmpty()) {
-                    long seekPos = jp2File.dataPos + S2Config.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
+                    long seekPos = jp2File.dataPos + dataBufferHandler.getSampleByteCount() * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;
                     for (int y = 0; y < intersection.height; y++) {
                         stream.seek(seekPos);
-                        stream.readFully(tileData, tilePos, intersection.width);
-                        seekPos += S2Config.SAMPLE_BYTE_COUNT * jp2Width;
+                        dataBufferHandler.readStreamFully(stream, tilePos, intersection.width);
+                        seekPos += dataBufferHandler.getSampleByteCount() * jp2Width;
                         tilePos += tileWidth;
                         for (int x = intersection.width; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_X_BOUNDS;
+                            dataBufferHandler.fillWithOutOfXBounds(y * tileWidth + x);
                         }
                     }
                     for (int y = intersection.height; y < tileWidth; y++) {
                         for (int x = 0; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_Y_BOUNDS;
+                            dataBufferHandler.fillWithOutOfYBounds(y * tileWidth + x);
                         }
                     }
                 } else {
-                    Arrays.fill(tileData, S2Config.FILL_CODE_NO_INTERSECTION);
+                    dataBufferHandler.fillWithNoIntersection();
                 }
             }
         }
@@ -421,4 +426,133 @@ class TileOpImage extends SingleBandedOpImage {
         return new Dimension(width < S2Config.DEFAULT_JAI_TILE_SIZE ? width : S2Config.DEFAULT_JAI_TILE_SIZE,
                              height < S2Config.DEFAULT_JAI_TILE_SIZE ? height : S2Config.DEFAULT_JAI_TILE_SIZE);
     }
+
+    private static class DataBufferHandlerFactory {
+
+        private static DataBufferHandler createDataBufferProvider(DataBuffer dataBuffer) {
+            if(dataBuffer instanceof DataBufferUShort) {
+                return new ShortDataBufferHandler((DataBufferUShort) dataBuffer);
+            } else {
+                return new ByteDataBufferHandler((DataBufferByte) dataBuffer);
+            }
+        }
+
+    }
+
+    private interface DataBufferHandler {
+
+        int getTileLength();
+
+        void fillWithNoFile();
+
+        void readStreamFully(ImageInputStream stream) throws IOException;
+
+        void readStreamFully(ImageInputStream stream, int start, int size) throws IOException;
+
+        void fillWithOutOfXBounds(int index);
+
+        void fillWithOutOfYBounds(int index);
+
+        void fillWithNoIntersection();
+
+        int getSampleByteCount();
+    }
+
+    private static class ShortDataBufferHandler implements DataBufferHandler {
+
+        private final short[] data;
+
+        ShortDataBufferHandler(DataBufferUShort dataBuffer) {
+            data = dataBuffer.getData();
+        }
+
+        @Override
+        public int getTileLength() {
+            return data.length;
+        }
+
+        @Override
+        public void fillWithNoFile() {
+            Arrays.fill(data, S2Config.FILL_CODE_NO_FILE);
+        }
+
+        @Override
+        public void readStreamFully(ImageInputStream stream) throws IOException{
+            readStreamFully(stream, 0, data.length);
+        }
+
+        @Override
+        public void readStreamFully(ImageInputStream stream, int start, int size) throws IOException{
+            stream.readFully(data, start, size);
+        }
+
+        @Override
+        public void fillWithOutOfXBounds(int index) {
+            data[index] = S2Config.FILL_CODE_OUT_OF_X_BOUNDS;
+        }
+
+        @Override
+        public void fillWithOutOfYBounds(int index) {
+            data[index] = S2Config.FILL_CODE_OUT_OF_Y_BOUNDS;
+        }
+
+        @Override
+        public void fillWithNoIntersection() {
+            Arrays.fill(data, S2Config.FILL_CODE_NO_INTERSECTION);
+        }
+
+        @Override
+        public int getSampleByteCount() {
+            return S2Config.SAMPLE_BYTE_COUNT;
+        }
+    }
+
+    private static class ByteDataBufferHandler implements DataBufferHandler {
+
+        private final byte[] data;
+
+        ByteDataBufferHandler(DataBufferByte dataBuffer) {
+            data = dataBuffer.getData();
+        }
+
+        @Override
+        public int getTileLength() {
+            return data.length;
+        }
+
+        @Override
+        public void fillWithNoFile() {
+            Arrays.fill(data, S2Config.FILL_CODE_NO_FILE_BYTE);
+        }
+
+        @Override
+        public void readStreamFully(ImageInputStream stream) throws IOException{
+            readStreamFully(stream, 0, data.length);
+        }
+
+        @Override
+        public void readStreamFully(ImageInputStream stream, int start, int size) throws IOException{
+            stream.readFully(data, start, size);        }
+
+        @Override
+        public void fillWithOutOfXBounds(int index) {
+            data[index] = S2Config.FILL_CODE_OUT_OF_X_BOUNDS_BYTE;
+        }
+
+        @Override
+        public void fillWithOutOfYBounds(int index) {
+            data[index] = S2Config.FILL_CODE_OUT_OF_Y_BOUNDS_BYTE;
+        }
+
+        @Override
+        public void fillWithNoIntersection() {
+            Arrays.fill(data, S2Config.FILL_CODE_NO_INTERSECTION_BYTE);
+        }
+
+        @Override
+        public int getSampleByteCount() {
+            return S2Config.SAMPLE_MASK_BYTE_COUNT;
+        }
+    }
+
 }

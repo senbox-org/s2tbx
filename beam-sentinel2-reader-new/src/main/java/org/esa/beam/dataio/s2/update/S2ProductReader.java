@@ -220,7 +220,11 @@ public abstract class S2ProductReader extends AbstractProductReader {
     }
 
     private Band addBand(Product product, BandInfo bandInfo) {
-        final Band band = product.addBand(bandInfo.bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE);
+        int dataType = S2Config.SAMPLE_PRODUCT_DATA_TYPE;
+        if(bandInfo.isMask) {
+            dataType = S2Config.SAMPLE_PRODUCT_MASK_DATA_TYPE;
+        }
+        final Band band = product.addBand(bandInfo.bandName, dataType);
 
         if (bandInfo.wavebandInfo != null) {
             band.setSpectralBandIndex(bandInfo.bandIndex);
