@@ -70,8 +70,7 @@ public class S2L1CProductReader extends S2ProductReader {
         final File granuleDirectory = new File(parentDirectory + "/GRANULE");
         final File[] granules = granuleDirectory.listFiles();
         String productName;
-        if(S2Config.METADATA_NAME_1C_PATTERN.matcher(metadataFile.getName()).matches() ||
-                S2Config.METADATA_NAME_1C_PATTERN_ALT.matcher(metadataFile.getName()).matches()) {
+        if(S2Config.METADATA_NAME_1C_PATTERN.matcher(metadataFile.getName()).matches()) {
             productName = createProductNameFromValidMetadataName(metadataFile.getName());
         } else {
             productName = metadataFile.getParentFile().getName();
