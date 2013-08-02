@@ -16,9 +16,13 @@ public interface S2Config {
      */
     String OPJ_DECOMPRESSOR_EXE = System.getProperty("openjpeg2.decompressor.path", "opj_decompress");
 
-    final Pattern DIRECTORY_1C_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C)_TL_.*_(\\d{2}[A-Z]{3})");
+    final String dir1CRegex =
+            "(S2.?)_([A-Z]{4})_PRD_MSIL1C_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).(DIMAP|SAFE)";
+    final Pattern PRODUCT_DIRECTORY_1C_PATTERN = Pattern.compile(dir1CRegex);
+
+    final Pattern TILE_DIRECTORY_1C_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L1C)_TL_.*_(\\d{2}[A-Z]{3})");
     final Pattern DIRECTORY_1C_PATTERN_ALT = Pattern.compile("Level-1C_User_Product");
-    final Pattern DIRECTORY_2A_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L2A)_TL_.*_(\\d{2}[A-Z]{3})");
+    final Pattern TILE_DIRECTORY_2A_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L2A)_TL_.*_(\\d{2}[A-Z]{3})");
     final Pattern DIRECTORY_2A_PATTERN_ALT = Pattern.compile("Level-2A_User_Product");
     final static String metadataName1CRegex =
             "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
@@ -28,7 +32,7 @@ public interface S2Config {
     final static Pattern METADATA_NAME_1C_TILE_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*.xml");
     final static Pattern METADATA_NAME_2A_TILE_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*.xml");
     final static Pattern IMAGE_NAME_PATTERN =
-            Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L2A|L1C)_TL_.*_(\\d{2}[A-Z]{3})(|_AOT_|_WVP_|_DEM_|_B[0-9A]{2})(_([1-6]{1}0)m)?.jp2");
+            Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L2A|L1C)_TL_.*_(\\d{2}[A-Z]{3})_(|AOT|WVP|DEM|B[0-9A]{2})_(([1-6]{1}0)m)?.jp2");
     //todo use only one pattern
     final static Pattern SPECIFICATION_MASK_IMAGE_NAME_PATTERN =
             Pattern.compile("S2.?_([A-Z]{4})_(MSK)_(CLOUDS|TECQUA|LANWAT|DETFOO|DEFECT|SATURA|NODATA)_.*(\\d{2}[A-Z]{3}).jp2");

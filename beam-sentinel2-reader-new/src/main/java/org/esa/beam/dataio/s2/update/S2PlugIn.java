@@ -7,7 +7,6 @@ import org.esa.beam.util.io.BeamFileFilter;
 
 import java.io.File;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -38,10 +37,10 @@ public class S2PlugIn implements ProductReaderPlugIn {
     }
 
     private boolean isValidDirectoryName(String name) {
-        if(S2Config.DIRECTORY_1C_PATTERN.matcher(name).matches() || S2Config.DIRECTORY_1C_PATTERN_ALT.matcher(name).matches()) {
+        if(S2Config.TILE_DIRECTORY_1C_PATTERN.matcher(name).matches() || S2Config.DIRECTORY_1C_PATTERN_ALT.matcher(name).matches()) {
             type = ProductType.L1C;
             return true;
-        } else if(S2Config.DIRECTORY_2A_PATTERN.matcher(name).matches() || S2Config.DIRECTORY_2A_PATTERN_ALT.matcher(name).matches()) {
+        } else if(S2Config.TILE_DIRECTORY_2A_PATTERN.matcher(name).matches() || S2Config.DIRECTORY_2A_PATTERN_ALT.matcher(name).matches()) {
             type = ProductType.L2A;
             return true;
         }
