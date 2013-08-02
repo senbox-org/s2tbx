@@ -46,13 +46,6 @@ public class S2L1CProductReader extends S2ProductReader {
         //todo read width and height from jpeg file
         try {
             final FileImageInputStream inputStream = new FileImageInputStream(file);
-            final BoxReader boxReader = new BoxReader(inputStream, file.length(), new MyListener());
-            List<Box> boxes = new ArrayList<Box>();
-            Box box;
-            while((box = boxReader.readBox()) != null) {
-                boxes.add(box);
-            }
-            boxes = null;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -124,18 +117,6 @@ public class S2L1CProductReader extends S2ProductReader {
         Map<String, BandInfo> bandInfoMap = new HashMap<String, BandInfo>();
         putFilesIntoBandInfoMap(bandInfoMap, files);
         return bandInfoMap;
-    }
-
-    private static class MyListener implements BoxReader.Listener {
-        @Override
-        public void knownBoxSeen(Box box) {
-            System.out.println("known box: " + encode4b(box.getCode()));
-        }
-
-        @Override
-        public void unknownBoxSeen(Box box) {
-            System.out.println("unknown box: " + encode4b(box.getCode()));
-        }
     }
 
 }
