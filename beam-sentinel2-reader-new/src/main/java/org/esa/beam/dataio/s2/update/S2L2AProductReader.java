@@ -40,15 +40,15 @@ public class S2L2AProductReader extends S2ProductReader {
     @Override
     public Product readProductNodes(File metadataFile) throws IOException {
         //todo read metadata
-        String filenameWithoutExtension = "";
+        String productName = "";
         if(S2Config.METADATA_NAME_2A_PATTERN.matcher(metadataFile.getName()).matches()) {
-            filenameWithoutExtension = createProductNameFromValidMetadataName(metadataFile.getName());
+            productName = createProductNameFromValidMetadataName(metadataFile.getName());
         } else {
-            filenameWithoutExtension = metadataFile.getName();
+            productName = metadataFile.getParentFile().getName();
         }
         final int width = TILE_LAYOUTS[S2SpatialResolution.R10M.id].width;
         final int height = TILE_LAYOUTS[S2SpatialResolution.R10M.id].height;
-        Product product = new Product(filenameWithoutExtension,
+        Product product = new Product(productName,
                                       "S2_MSI_L2A",
                                       width,
                                       height);
