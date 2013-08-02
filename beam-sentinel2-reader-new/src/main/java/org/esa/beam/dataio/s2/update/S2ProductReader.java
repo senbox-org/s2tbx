@@ -143,6 +143,13 @@ public abstract class S2ProductReader extends AbstractProductReader {
                 productName = FileUtils.getFilenameWithoutExtension(tileFile);
             }
         } else {
+            final String dirName = tileFile.getName();
+            File metadataFile = new File(tileFile.getAbsolutePath() + "/" + dirName + ".xml");
+            try {
+                metadata = parseHeader(metadataFile);
+            } catch (JDOMException e) {
+                e.printStackTrace();
+            }
             filePath = tileFile.getPath();
             if(StringUtils.isNullOrEmpty(productName)) {
                 productName = tileFile.getName();
