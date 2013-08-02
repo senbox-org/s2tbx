@@ -34,7 +34,8 @@ public class AtmosphericCorrectionAction extends AbstractVisatAction {
 
     public void run() {
         final Window parent = VisatApp.getApp().getApplicationWindow();
-        final ModelessDialog dialog = AtmosphericCorrectionDialog.createInstance(getAppContext(), parent, appName, ModelessDialog.ID_APPLY_CLOSE_HELP, null);
+        final ModelessDialog dialog = AtmosphericCorrectionDialog.createInstance(getAppContext(), parent,
+                appName, ModelessDialog.ID_APPLY_CLOSE, null);
         dialog.show();
     }
 
