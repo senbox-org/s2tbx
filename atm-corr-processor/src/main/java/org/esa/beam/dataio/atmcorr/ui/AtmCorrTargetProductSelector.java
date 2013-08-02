@@ -2,14 +2,12 @@ package org.esa.beam.dataio.atmcorr.ui;
 
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
-import org.esa.beam.framework.dataio.ProductIOPlugInManager;
 import org.esa.beam.util.io.FileChooserFactory;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -18,13 +16,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -64,7 +58,7 @@ public class AtmCorrTargetProductSelector {
         productDirChooserButton.setPreferredSize(size);
         productDirChooserButton.setMinimumSize(size);
 
-            openInAppCheckBox = new JCheckBox("Open in application");
+        openInAppCheckBox = new JCheckBox("Open in application");
 
     }
 
@@ -74,7 +68,7 @@ public class AtmCorrTargetProductSelector {
         bc.bind("productName", productNameTextField);
         bc.bind("productDir", productDirTextField);
 
-            bc.bind("openInAppSelected", openInAppCheckBox);
+        bc.bind("openInAppSelected", openInAppCheckBox);
 
         model.getValueContainer().addPropertyChangeListener("productDir", new PropertyChangeListener() {
             @Override
@@ -129,8 +123,7 @@ public class AtmCorrTargetProductSelector {
 
         tableLayout.setCellPadding(0, 0, new Insets(3, 3, 3, 3));
         tableLayout.setCellPadding(1, 0, new Insets(3, 3, 3, 3));
-        tableLayout.setCellPadding(2, 0, new Insets(0, 24, 3, 3));
-        tableLayout.setCellPadding(3, 0, new Insets(3, 3, 3, 3));
+        tableLayout.setCellPadding(2, 0, new Insets(3, 3, 3, 3));
 
         final JPanel panel = new JPanel(tableLayout);
         panel.setBorder(BorderFactory.createTitledBorder("Target Product"));
@@ -138,7 +131,7 @@ public class AtmCorrTargetProductSelector {
 
         panel.add(subPanel3);
 
-            panel.add(getOpenInAppCheckBox());
+        panel.add(getOpenInAppCheckBox());
 
         return panel;
     }
