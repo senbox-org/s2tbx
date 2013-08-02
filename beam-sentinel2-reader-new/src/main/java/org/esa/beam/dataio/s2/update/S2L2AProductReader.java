@@ -61,6 +61,7 @@ public class S2L2AProductReader extends S2ProductReader {
             addBands(product, bandInfoMap, new TileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
             readMasks(product, granules[0].getPath());
         }
+        product.setAutoGrouping("B");
         return product;
     }
 

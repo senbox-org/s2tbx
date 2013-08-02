@@ -175,6 +175,7 @@ public abstract class S2ProductReader extends AbstractProductReader {
         }
         addBands(product, bandInfoMap, new TileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
         readMasks(product, filePath);
+        product.setAutoGrouping("B");
         return product;
     }
 
