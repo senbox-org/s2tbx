@@ -7,9 +7,12 @@ import org.esa.beam.framework.datamodel.Product;
 
 import javax.imageio.stream.FileImageInputStream;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 import static jp2.BoxType.encode4b;
@@ -106,6 +109,21 @@ public class S2L1CProductReader extends S2ProductReader {
             }
         }
         return null;
+    }
+
+    Map<String, BandInfo> getBandInfoMap(String filePath) throws IOException {
+        final String imageDataPath = filePath + "/IMG_DATA";
+        final File productDir = new File(imageDataPath);
+        final FilenameFilter filter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return S2Config.IMAGE_NAME_PATTERN.matcher(name).matches();
+            }
+        };
+        File[] files  = productDir.listFiles(filter);
+        Map<String, BandInfo> bandInfoMap = new HashMap<String, BandInfo>();
+        putFilesIntoBandInfoMap(bandInfoMap, files);
+        return bandInfoMap;
     }
 
     private static class MyListener implements BoxReader.Listener {

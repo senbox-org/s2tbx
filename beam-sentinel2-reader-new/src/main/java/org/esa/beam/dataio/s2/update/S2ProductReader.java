@@ -80,50 +80,20 @@ public abstract class S2ProductReader extends AbstractProductReader {
         // Should never not come here, since we have an OpImage that reads data
     }
 
-    Map<String, BandInfo> getBandInfoMap(String filePath) throws IOException {
+    abstract Map<String, BandInfo> getBandInfoMap(String filePath) throws IOException;
 
-        final String imageDataPath = filePath + "/IMG_DATA";
-        final File productDir = new File(imageDataPath);
-
-        final String atmCorrPath60 = imageDataPath + "/Atmospheric_Correction_Tiles/Bands_60m";
-        final String atmCorrPath20 = imageDataPath + "/Atmospheric_Correction_Tiles/Bands_20m";
-        final String atmCorrPath10 = imageDataPath + "/Atmospheric_Correction_Tiles/Bands_10m";
-        final File atmCorrDir60 = new File(atmCorrPath60);
-        final File atmCorrDir20 = new File(atmCorrPath20);
-        final File atmCorrDir10 = new File(atmCorrPath10);
-
-        final FilenameFilter filter = new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return S2Config.IMAGE_NAME_PATTERN.matcher(name).matches();
-            }
-        };
-        File[][] filesMatrix = new File[4][];
-        filesMatrix[0] = productDir.listFiles(filter);
-        if (atmCorrDir60.isDirectory()) {
-            filesMatrix[1] = atmCorrDir60.listFiles(filter);
-        }
-        if (atmCorrDir20.isDirectory()) {
-            filesMatrix[2] = atmCorrDir20.listFiles(filter);
-        }
-        if (atmCorrDir10.isDirectory()) {
-            filesMatrix[3] = atmCorrDir10.listFiles(filter);
-        }
-        Map<String, BandInfo> bandInfoMap = new HashMap<String, BandInfo>();
-        for (File[] files : filesMatrix) {
-            if (files != null) {
-                for (File file : files) {
-                    final Matcher matcher = S2Config.IMAGE_NAME_PATTERN.matcher(file.getName());
-                    if (matcher.matches()) {
-                        final String tileIndex = matcher.group(4);
-                        String bandName = matcher.group(5);
-                        bandName = trimUnderscores(bandName);
-                        bandInfoMap.put(bandName, getBandInfo(file, matcher, tileIndex, bandName));
-                    }
+    protected void putFilesIntoBandInfoMap(Map<String, BandInfo> bandInfoMap, File[] files) {
+        if (files != null) {
+            for (File file : files) {
+                final Matcher matcher = S2Config.IMAGE_NAME_PATTERN.matcher(file.getName());
+                if (matcher.matches()) {
+                    final String tileIndex = matcher.group(4);
+                    String bandName = matcher.group(5);
+                    bandName = trimUnderscores(bandName);
+                    bandInfoMap.put(bandName, getBandInfo(file, matcher, tileIndex, bandName));
                 }
             }
         }
-        return bandInfoMap;
     }
 
     protected abstract BandInfo getBandInfo(File file, Matcher matcher, String tileIndex, String bandIndex);
