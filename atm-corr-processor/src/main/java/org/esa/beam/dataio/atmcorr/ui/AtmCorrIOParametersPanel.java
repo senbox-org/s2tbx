@@ -19,17 +19,14 @@ package org.esa.beam.dataio.atmcorr.ui;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
 import com.bc.ceres.swing.selection.SelectionChangeListener;
+import org.esa.beam.dataio.s2.update.S2Config;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductFilter;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
 import org.esa.beam.framework.ui.AppContext;
-import org.esa.beam.visat.VisatApp;
 
 import javax.swing.JPanel;
 import java.io.File;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * @author Tonio Fincke
@@ -101,13 +98,11 @@ public class AtmCorrIOParametersPanel extends JPanel {
 
     private static class L1CSourceProductFilter implements ProductFilter {
 
-        final static String productName1CRegex =
-                "((S2.?)_([A-Z]{4})_PRD_MSIL1C_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.(DIMAP|SAFE)|Level-1C_User_Product)";
-        final static Pattern productName1CPattern = Pattern.compile(productName1CRegex);
-
         @Override
         public boolean accept(Product product) {
-            return productName1CPattern.matcher(product.getName()).matches();
+            String productName = product.getName();
+            return S2Config.PRODUCT_DIRECTORY_1C_PATTERN.matcher(productName).matches() ||
+                    S2Config.DIRECTORY_1C_PATTERN_ALT.matcher(productName).matches();
         }
     }
 

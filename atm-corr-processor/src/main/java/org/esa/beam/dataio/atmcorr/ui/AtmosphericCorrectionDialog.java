@@ -7,19 +7,19 @@ import com.bc.ceres.swing.progress.DialogProgressMonitor;
 import com.bc.ceres.swing.progress.ProgressDialog;
 import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import org.esa.beam.dataio.atmcorr.AtmCorrCaller;
+import org.esa.beam.dataio.s2.update.S2Config;
+import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.GridBagUtils;
 import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.beam.util.io.FileUtils;
-import org.esa.beam.visat.VisatApp;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -36,7 +36,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 /**
  * @author Tonio Fincke
@@ -95,11 +94,6 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     @Override
     protected void onClose() {
         super.onClose();
-    }
-
-    @Override
-    protected void onHelp() {
-        super.onHelp();
     }
 
     public JPanel createParametersPanel() {
@@ -189,7 +183,8 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                         }
                         File targetMetadataFile = addMetadataFileIfNecessary(l2File);
                         if (ioParametersPanel.shallBeOpenedInApp()) {
-                            VisatApp.getApp().openProduct(targetMetadataFile);
+                            Product product = ProductIO.readProduct(targetMetadataFile);
+                            appContext.getProductManager().addProduct(product);
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -244,7 +239,6 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 } else {
                     areaScrollPane.setVisible(true);
                     extendButton.setText(lessButtonText);
-
                 }
             }
         });
@@ -261,13 +255,10 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
      * metadata file and will hopefully become redundant in the near future
      */
     private File addMetadataFileIfNecessary(File l2FileDir) throws IOException {
-        final String metadataName2ARegex =
-                "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)L2A_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml|Product_Metadata_File.xml)";
-        final Pattern metadataName2APattern = Pattern.compile(metadataName2ARegex);
         final FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return metadataName2APattern.matcher(name).matches();
+                return S2Config.METADATA_NAME_2A_PATTERN.matcher(name).matches();
             }
         };
         File[] l2MetadataFiles = l2FileDir.listFiles(filter);
@@ -275,24 +266,17 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
             return l2MetadataFiles[0];
         } else {
             String l2MetadataFilename;
-            final String metadataName1CRegex =
-                    "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml)";
-            final Pattern metadataName1CPattern = Pattern.compile(metadataName1CRegex);
-            final String dir1CRegex =
-                    "(S2.?)_([A-Z]{4})_PRD_MSIL2A_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*";
-            final Pattern dir1CPattern = Pattern.compile(dir1CRegex);
-
             String l1cDirPath = new File(fileLocation).getName();
             final FilenameFilter l1cMetadataFilter = new FilenameFilter() {
                 @Override
                 public boolean accept(File file, String s) {
-                    return metadataName1CPattern.matcher(s).matches();
+                    return S2Config.METADATA_NAME_1C_PATTERN.matcher(s).matches();
                 }
             };
             File[] metadataFiles = new File(l1cDirPath).listFiles(l1cMetadataFilter);
             if (metadataFiles != null && metadataFiles.length > 0) {
                 l2MetadataFilename = metadataFiles[0].getName().replace("1C", "2A");
-            } else if (dir1CPattern.matcher(l1cDirPath).matches()) {
+            } else if (S2Config.PRODUCT_DIRECTORY_1C_PATTERN.matcher(l1cDirPath).matches()) {
                 String changingName = FileUtils.getFilenameWithoutExtension(l1cDirPath).replace("PRD", "MTD").replace("1C", "2A") + ".xml";
                 if (l1cDirPath.endsWith(".SAFE")) {
                     l2MetadataFilename = changingName.replace("MSI", "SAF");
@@ -322,6 +306,9 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
         @Override
         public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
+            if(line.contains("error")) {
+                showErrorDialog(line);
+            }
             if (line.contains("%")) {
                 double workDone = Double.parseDouble(line.split(":")[1]) * 100;
                 int progress = (int) workDone - lastWork;
@@ -334,7 +321,6 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         @Override
         public void onStderrLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
             area.append(line);
-            JOptionPane.showMessageDialog(parentComponent, "An error has occurred: " + line);
         }
 
         @Override
