@@ -33,8 +33,12 @@ public interface S2Config {
     final static Pattern SPECIFICATION_MASK_IMAGE_NAME_PATTERN =
             Pattern.compile("S2.?_([A-Z]{4})_(MSK)_(CLOUDS|TECQUA|LANWAT|DETFOO|DEFECT|SATURA|NODATA)_.*(\\d{2}[A-Z]{3}).jp2");
 
+    //use this pattern to read preview image
+//    final static Pattern USED_MASK_IMAGE_NAME_PATTERN =
+//            Pattern.compile("S2.?_([A-Z]{4})_(MSK|PVI)_(L2A|CLD|SNW)_TL_.*_(\\d{2}[A-Z]{3}).jp2");
+
     final static Pattern USED_MASK_IMAGE_NAME_PATTERN =
-            Pattern.compile("S2.?_([A-Z]{4})_(MSK|PVI)_(L2A|CLD|SNW)_TL_.*_(\\d{2}[A-Z]{3}).jp2");
+            Pattern.compile("S2.?_([A-Z]{4})_(MSK)_(CLD|SNW)_TL_.*_(\\d{2}[A-Z]{3}).jp2");
 
     int DEFAULT_JAI_TILE_SIZE = 512;
 
