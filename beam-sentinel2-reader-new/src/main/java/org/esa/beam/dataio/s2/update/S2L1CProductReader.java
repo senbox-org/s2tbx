@@ -1,7 +1,5 @@
 package org.esa.beam.dataio.s2.update;
 
-import jp2.Box;
-import jp2.BoxReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Product;
 
@@ -9,13 +7,10 @@ import javax.imageio.stream.FileImageInputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import static jp2.BoxType.encode4b;
 
 /**
  * Represents information of a Sentinel 2 band
