@@ -28,7 +28,9 @@ public interface S2Config {
             "(S2.?)_([A-Z]{4})_MTD_(DMP|SAF)(L1C)_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml";
     final static Pattern METADATA_NAME_1C_PATTERN = Pattern.compile(metadataName1CRegex);
     final static Pattern METADATA_NAME_1C_PATTERN_ALT = Pattern.compile("Product_Metadata_File.xml");
-    final static Pattern METADATA_NAME_2A_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_MTD_(DMP|SAF)(L2A)_.*.xml");
+    final String metadataName2ARegex =
+            "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)L2A_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml)";
+    final static Pattern METADATA_NAME_2A_PATTERN = Pattern.compile(metadataName2ARegex);
     final static Pattern METADATA_NAME_1C_TILE_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*.xml");
     final static Pattern METADATA_NAME_2A_TILE_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*.xml");
     final static Pattern IMAGE_NAME_PATTERN =
