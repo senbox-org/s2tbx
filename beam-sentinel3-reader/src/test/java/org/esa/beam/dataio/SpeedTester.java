@@ -1,10 +1,13 @@
 package org.esa.beam.dataio;
 
+import com.bc.ceres.core.ProgressMonitor;
 import com.jidesoft.combobox.FileChooserComboBox;
 import com.jidesoft.utils.Lm;
 import org.esa.beam.framework.dataio.ProductIO;
+import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.ui.GridBagUtils;
 
 import javax.media.jai.JAI;
@@ -118,14 +121,16 @@ public class SpeedTester {
 
     private synchronized String getBandInfo(double highestPossibleSpeed, Band productBand) throws ParseException {
         final double rawStorageSizeInMB = (double) productBand.getRawStorageSize() / (1024 * 1024);
-        final int numXTiles = productBand.getSourceImage().getNumXTiles();
-        final int numYTiles = productBand.getSourceImage().getNumXTiles();
-        final int minTileX = productBand.getSourceImage().getMinTileX();
-        final int minTileY = productBand.getSourceImage().getMinTileY();
+        final Product product = productBand.getProduct();
+        final int width = product.getSceneRasterWidth();
+        final ProductData destBuffer = productBand.createCompatibleRasterData(width, 1);
+        final ProductReader productReader = product.getProductReader();
         final long before = System.nanoTime();
-        for(int i = minTileX; i < numXTiles; i++) {
-            for(int j = minTileY; j < numYTiles; j++) {
-                productBand.getSourceImage().getTile(i, j);
+        for(int i = 0; i < product.getSceneRasterHeight(); i++) {
+            try {
+                productReader.readBandRasterData(productBand, 0, i, width, 1, destBuffer, ProgressMonitor.NULL);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
         final long after = System.nanoTime();
