@@ -165,7 +165,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
             @Override
             protected void done() {
-                if (!progressDialog.isCanceled()) {
+                if (!progressDialog.isCanceled() && process.exitValue() == 0) {
                     String defaultPath = new File(fileLocation).getParent() + "/" + default_l2a_name;
                     String targetDir = ioParametersPanel.getTargetDir();
                     String targetName = ioParametersPanel.getTargetName();
@@ -296,6 +296,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     private class ProcessObserverHandler implements ProcessObserver.Handler {
 
         int lastWork;
+        StringBuilder errorMessageBuilder;
 
         @Override
         public void onObservationStarted(ProcessObserver.ObservedProcess process, ProgressMonitor pm) {
@@ -308,8 +309,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
             if(line.contains("error")) {
                 showErrorDialog(line);
-            }
-            if (line.contains("%")) {
+            } else if (line.contains("%")) {
                 double workDone = Double.parseDouble(line.split(":")[1]) * 100;
                 int progress = (int) workDone - lastWork;
                 lastWork = (int) workDone;
@@ -320,11 +320,17 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
         @Override
         public void onStderrLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
-            area.append(line);
+            if(errorMessageBuilder == null) {
+                errorMessageBuilder = new StringBuilder();
+            }
+            errorMessageBuilder.append(line).append("\n");
         }
 
         @Override
         public void onObservationEnded(ProcessObserver.ObservedProcess process, Integer exitCode, ProgressMonitor pm) {
+            if(errorMessageBuilder != null) {
+                showErrorDialog(errorMessageBuilder.toString());
+            }
             progressDialog.close();
         }
     }
