@@ -24,6 +24,7 @@ import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductFilter;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
 import org.esa.beam.framework.ui.AppContext;
+import org.esa.beam.util.SystemUtils;
 
 import javax.swing.JPanel;
 import java.io.File;
@@ -58,7 +59,7 @@ public class AtmCorrIOParametersPanel extends JPanel {
 
         updateTargetProductName();
 
-        targetProductSelector.getModel().setProductDir(new File(System.getenv("HOME")));
+        targetProductSelector.getModel().setProductDir(SystemUtils.getUserHomeDir());
         final TableLayout tableLayout = new TableLayout(1);
         tableLayout.setTableAnchor(TableLayout.Anchor.WEST);
         tableLayout.setTableWeightX(1.0);
