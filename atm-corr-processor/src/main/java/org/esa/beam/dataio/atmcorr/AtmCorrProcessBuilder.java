@@ -7,13 +7,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Tonio Fincke
  */
-public class AtmCorrCaller {
+public class AtmCorrProcessBuilder {
 
-    public Process createProcess(String l1cProductPath, int resolution, boolean scOnly, boolean acOnly) throws IOException {
+    public Process createProcess(String l1cProductPath, int resolution, boolean scOnly) throws IOException {
         List<String> command = new ArrayList<String>();
         command.add("python");
         command.add("L2A_Process.py");
@@ -24,9 +25,6 @@ public class AtmCorrCaller {
         }
         if (scOnly) {
             command.add("--sc_only");
-        }
-        if (acOnly) {
-            command.add("--ac_only");
         }
         command.add("--profile");
         String apphome = System.getenv("S2L2APPHOME");
@@ -37,7 +35,7 @@ public class AtmCorrCaller {
         return process;
     }
 
-    public static void call(String l1cProductPath, int resolution, boolean scOnly, boolean acOnly) throws IOException {
+    public static void call(String l1cProductPath, int resolution, boolean scOnly) throws IOException {
         List<String> command = new ArrayList<String>();
         command.add("python");
         command.add("L2A_Process.py");
@@ -48,9 +46,6 @@ public class AtmCorrCaller {
         }
         if (scOnly) {
             command.add("--sc_only");
-        }
-        if (acOnly) {
-            command.add("--ac_only");
         }
         command.add("--profile");
         String apphome = System.getenv("S2L2APPHOME");

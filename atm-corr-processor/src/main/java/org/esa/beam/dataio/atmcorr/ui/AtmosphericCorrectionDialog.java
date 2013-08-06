@@ -6,7 +6,7 @@ import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.progress.DialogProgressMonitor;
 import com.bc.ceres.swing.progress.ProgressDialog;
 import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
-import org.esa.beam.dataio.atmcorr.AtmCorrCaller;
+import org.esa.beam.dataio.atmcorr.AtmCorrProcessBuilder;
 import org.esa.beam.dataio.s2.update.S2Config;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Product;
@@ -83,7 +83,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         final int resolution = (Integer) resolutionBox.getSelectedItem();
         try {
             final Process atmCorrProcess =
-                    new AtmCorrCaller().createProcess(fileLocation, resolution, scOnlyBox.isSelected());
+                    new AtmCorrProcessBuilder().createProcess(fileLocation, resolution, scOnlyBox.isSelected());
             executeProcess(atmCorrProcess);
         } catch (IOException e) {
             e.printStackTrace();
