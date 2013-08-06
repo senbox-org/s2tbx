@@ -43,7 +43,6 @@ import java.io.IOException;
 public class AtmosphericCorrectionDialog extends ModelessDialog {
 
     private JCheckBox scOnlyBox;
-    private JCheckBox acOnlyBox;
     private JComboBox resolutionBox;
     private final JTabbedPane form;
     private static AppContext appContext;
@@ -84,7 +83,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         final int resolution = (Integer) resolutionBox.getSelectedItem();
         try {
             final Process atmCorrProcess =
-                    new AtmCorrCaller().createProcess(fileLocation, resolution, scOnlyBox.isSelected(), acOnlyBox.isSelected());
+                    new AtmCorrCaller().createProcess(fileLocation, resolution, scOnlyBox.isSelected());
             executeProcess(atmCorrProcess);
         } catch (IOException e) {
             e.printStackTrace();
@@ -109,9 +108,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         panel.add(createTargetResolutionPanel());
 
         scOnlyBox = new JCheckBox("Scene classification at 60m resolution only");
-        acOnlyBox = new JCheckBox("Use ATCOR compatiblity mode");
         panel.add(scOnlyBox);
-        panel.add(acOnlyBox);
         panel.add(tableLayout.createVerticalSpacer());
 
         return panel;
