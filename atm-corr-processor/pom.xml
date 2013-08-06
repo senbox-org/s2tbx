@@ -24,6 +24,11 @@
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-visat-rcp</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.esa.suhet</groupId>
+            <artifactId>beam-sentinel2-reader-new</artifactId>
+            <version>0.5.0.${beamVersion}</version>
+        </dependency>
     </dependencies>
 
 </project>
