@@ -37,7 +37,7 @@ public class S2L1CProductReader extends S2ProductReader {
         super(readerPlugIn);
     }
 
-    public BandInfo getBandInfo(File file, Matcher matcher, String tileIndex, String bandName) {
+    public BandInfo getBandInfo(File file, String tileIndex, String bandName, int resolution) {
         //todo read width and height from jpeg file
         try {
             final FileImageInputStream inputStream = new FileImageInputStream(file);
@@ -104,13 +104,26 @@ public class S2L1CProductReader extends S2ProductReader {
         final FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return S2Config.IMAGE_NAME_PATTERN.matcher(name).matches();
+                return S2Config.IMAGE_NAME_PATTERN_1C.matcher(name).matches();
             }
         };
         File[] files  = productDir.listFiles(filter);
         Map<String, BandInfo> bandInfoMap = new HashMap<String, BandInfo>();
         putFilesIntoBandInfoMap(bandInfoMap, files);
         return bandInfoMap;
+    }
+
+    protected void putFilesIntoBandInfoMap(Map<String, BandInfo> bandInfoMap, File[] files) {
+        if (files != null) {
+            for (File file : files) {
+                final Matcher matcher = S2Config.IMAGE_NAME_PATTERN_1C.matcher(file.getName());
+                if (matcher.matches()) {
+                    final String tileIndex = matcher.group(3);
+                    String bandName = matcher.group(4);
+                    bandInfoMap.put(bandName, getBandInfo(file, tileIndex, bandName, -1));
+                }
+            }
+        }
     }
 
 }

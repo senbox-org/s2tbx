@@ -61,15 +61,14 @@ public class S2L2AProductReader extends S2ProductReader {
             addBands(product, bandInfoMap, new TileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
             readMasks(product, granules[0].getPath());
         }
-        product.setAutoGrouping("B");
+        product.setAutoGrouping("B*10:B*20:B*60");
         return product;
     }
 
     @Override
-    public BandInfo getBandInfo(File file, Matcher matcher, String tileIndex, String bandIndex) {
+    public BandInfo getBandInfo(File file, String tileIndex, String bandIndex, int resolution) {
         BandInfo bandInfo;
         S2WavebandInfo wavebandInfo = null;
-        int resolution = Integer.parseInt(matcher.group(7));
         S2SpatialResolution spatialResolution = null;
         switch (resolution) {
             case 10:
@@ -114,6 +113,31 @@ public class S2L2AProductReader extends S2ProductReader {
         setMasks(product);
     }
 
+    protected void putFilesIntoBandInfoMap(Map<String, BandInfo> bandInfoMap, File[] files) {
+        if (files != null) {
+            for (File file : files) {
+                final Matcher matcher = S2Config.IMAGE_NAME_PATTERN_2A.matcher(file.getName());
+                if (matcher.matches()) {
+                    final String tileIndex = matcher.group(3);
+                    String bandName = matcher.group(4);
+                    String resolution = matcher.group(6);
+                    bandName = trimUnderscores(bandName) + "_" + resolution;
+                    bandInfoMap.put(bandName, getBandInfo(file, tileIndex, bandName, Integer.parseInt(resolution)));
+                }
+            }
+        }
+    }
+
+    private String trimUnderscores(String bandIndex) {
+        if (bandIndex.startsWith("_")) {
+            bandIndex = bandIndex.substring(1);
+        }
+        if (bandIndex.endsWith("_")) {
+            bandIndex = bandIndex.substring(0, bandIndex.length() - 1);
+        }
+        return bandIndex;
+    }
+
     @Override
     Map<String, BandInfo> getBandInfoMap(String filePath) throws IOException {
 
@@ -130,7 +154,7 @@ public class S2L2AProductReader extends S2ProductReader {
         final FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return S2Config.IMAGE_NAME_PATTERN.matcher(name).matches();
+                return S2Config.IMAGE_NAME_PATTERN_2A.matcher(name).matches();
             }
         };
         File[][] filesMatrix = new File[4][];
