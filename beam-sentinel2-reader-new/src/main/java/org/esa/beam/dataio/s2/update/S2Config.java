@@ -36,7 +36,9 @@ public interface S2Config {
     final static Pattern IMAGE_NAME_PATTERN_1C =
             Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*_(\\d{2}[A-Z]{3})_(B[0-9A]{2}).jp2");
     final static Pattern IMAGE_NAME_PATTERN_2A =
-            Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*_(\\d{2}[A-Z]{3})_(|AOT|WVP|DEM|B[0-9A]{2})(_([1-6]{1}0)m)?.jp2");
+            Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*_(\\d{2}[A-Z]{3})_?(|AOT|WVP|DEM|B[0-9A]{2})(_?([1-6]{1}0)m)?.jp2");
+    final static Pattern SCL_NAME_PATTERN_2A =
+            Pattern.compile("S2.?_([A-Z]{4})(_)(SCL)_(L2A)_TL_.*_(\\d{2}[A-Z]{3})(([1-6]{1}0)m).jp2");
     //todo use only one pattern
     final static Pattern SPECIFICATION_MASK_IMAGE_NAME_PATTERN =
             Pattern.compile("S2.?_([A-Z]{4})_(MSK)_(CLOUDS|TECQUA|LANWAT|DETFOO|DEFECT|SATURA|NODATA)_.*(\\d{2}[A-Z]{3}).jp2");
