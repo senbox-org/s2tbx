@@ -320,7 +320,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
             double workDone = Double.parseDouble(s) * 100;
             int progress = (int) workDone - lastWork;
             lastWork = (int) workDone;
-            pm.worked(progress);
+            pm.worked(Math.min(9999, progress));
         }
 
         @Override
@@ -336,7 +336,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
             if(errorMessageBuilder != null) {
                 showErrorDialog(errorMessageBuilder.toString());
             }
-            progressDialog.close();
+            errorMessageBuilder = null;
         }
     }
 
