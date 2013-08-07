@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 
 import static org.esa.beam.dataio.s2.update.L1cMetadata.parseHeader;
 import static org.esa.beam.dataio.s2.update.S2Config.TILE_LAYOUTS;
+import static org.esa.beam.dataio.s2.update.S2Config.metadataName1CRegex;
 
 /**
  * @author Tonio Fincke
@@ -82,21 +83,9 @@ public abstract class S2ProductReader extends AbstractProductReader {
 
     abstract Map<String, BandInfo> getBandInfoMap(String filePath) throws IOException;
 
-    protected void putFilesIntoBandInfoMap(Map<String, BandInfo> bandInfoMap, File[] files) {
-        if (files != null) {
-            for (File file : files) {
-                final Matcher matcher = S2Config.IMAGE_NAME_PATTERN.matcher(file.getName());
-                if (matcher.matches()) {
-                    final String tileIndex = matcher.group(4);
-                    String bandName = matcher.group(5);
-                    bandName = trimUnderscores(bandName);
-                    bandInfoMap.put(bandName, getBandInfo(file, matcher, tileIndex, bandName));
-                }
-            }
-        }
-    }
+    abstract void putFilesIntoBandInfoMap(Map<String, BandInfo> bandInfoMap, File[] files);
 
-    protected abstract BandInfo getBandInfo(File file, Matcher matcher, String tileIndex, String bandIndex);
+    protected abstract BandInfo getBandInfo(File file, String tileIndex, String bandIndex, int resolution);
 
     protected Product readSingleTile(File tileFile, String productName) throws IOException {
         //todo check whether L1C metadata is identical to L2A metadata
@@ -154,16 +143,6 @@ public abstract class S2ProductReader extends AbstractProductReader {
     private void addTiePointGrid(int width, int height, Product product, String gridName, float[] tiePoints) {
         final TiePointGrid latitudeGrid = createTiePointGrid(gridName, 2, 2, 0, 0, width, height, tiePoints);
         product.addTiePointGrid(latitudeGrid);
-    }
-
-    private String trimUnderscores(String bandIndex) {
-        if (bandIndex.startsWith("_")) {
-            bandIndex = bandIndex.substring(1);
-        }
-        if (bandIndex.endsWith("_")) {
-            bandIndex = bandIndex.substring(0, bandIndex.length() - 1);
-        }
-        return bandIndex;
     }
 
     public abstract void readMasks(Product product, String path) throws IOException;

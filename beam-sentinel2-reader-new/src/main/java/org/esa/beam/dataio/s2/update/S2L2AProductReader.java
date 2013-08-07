@@ -26,6 +26,15 @@ import static org.esa.beam.dataio.s2.update.S2Config.TILE_LAYOUTS;
 public class S2L2AProductReader extends S2ProductReader {
 
     static final String productType = "L2A";
+    private static final String[] scl_names = {"NoData", "Saturated", "Shadows", "CloudShadows", "Vegetation",
+            "BareSoils", "Water", "CloudLowProb", "CloudMediumProb", "CloudHighProb", "Cirrus", "Snow"};
+    private static final String[] scl_descriptions = {"No Data (Missing data on projected tiles)",
+            "Saturated or defective pixel", "Dark features / Shadows", "Cloud Shadows", "Vegetation",
+            "Bare soils / Deserts", "Water (dark and bright)", "Cloud low probability", "Cloud medium probability",
+            "Cloud high probability", "Thin cirrus", "Snow or ice"};
+    private static final Color[] scl_colors = {Color.BLACK, Color.RED, Color.DARK_GRAY.darker(), new Color(139, 69, 19),
+            Color.GREEN, Color.YELLOW.darker(), Color.BLUE, Color.DARK_GRAY, Color.GRAY, Color.WHITE,
+            Color.BLUE.brighter().brighter(), Color.PINK};
 
     /**
      * Constructs a new abstract product reader.
@@ -41,7 +50,7 @@ public class S2L2AProductReader extends S2ProductReader {
     public Product readProductNodes(File metadataFile) throws IOException {
         //todo read metadata
         String productName = "";
-        if(S2Config.METADATA_NAME_2A_PATTERN.matcher(metadataFile.getName()).matches()) {
+        if (S2Config.METADATA_NAME_2A_PATTERN.matcher(metadataFile.getName()).matches()) {
             productName = createProductNameFromValidMetadataName(metadataFile.getName());
         } else {
             productName = metadataFile.getParentFile().getName();
@@ -61,15 +70,14 @@ public class S2L2AProductReader extends S2ProductReader {
             addBands(product, bandInfoMap, new TileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
             readMasks(product, granules[0].getPath());
         }
-        product.setAutoGrouping("B");
+        product.setAutoGrouping("B*10:B*20:B*60");
         return product;
     }
 
     @Override
-    public BandInfo getBandInfo(File file, Matcher matcher, String tileIndex, String bandIndex) {
+    public BandInfo getBandInfo(File file, String tileIndex, String bandIndex, int resolution) {
         BandInfo bandInfo;
         S2WavebandInfo wavebandInfo = null;
-        int resolution = Integer.parseInt(matcher.group(7));
         S2SpatialResolution spatialResolution = null;
         switch (resolution) {
             case 10:
@@ -103,15 +111,44 @@ public class S2L2AProductReader extends S2ProductReader {
     public void readMasks(Product product, String granulePath) throws IOException {
         File qiDataPath = new File(granulePath + "/QI_DATA");
         Map<String, BandInfo> maskMap = new HashMap<String, BandInfo>();
-        if(qiDataPath.isDirectory()) {
-            maskMap = updateMaskMap(qiDataPath, maskMap);
+        if (qiDataPath.isDirectory()) {
+            maskMap = updateMaskMap(qiDataPath, maskMap, S2Config.USED_MASK_IMAGE_NAME_PATTERN);
             File l2aQualityMasksPath = new File(qiDataPath.getPath() + "/L2A_Quality_Masks");
-            if(l2aQualityMasksPath.isDirectory()) {
-                maskMap = updateMaskMap(l2aQualityMasksPath, maskMap);
+            if (l2aQualityMasksPath.isDirectory()) {
+                maskMap = updateMaskMap(l2aQualityMasksPath, maskMap, S2Config.USED_MASK_IMAGE_NAME_PATTERN);
             }
+        }
+        File sclDataPath = new File(granulePath + "/IMG_DATA");
+        if (sclDataPath.isDirectory()) {
+            maskMap = updateMaskMap(sclDataPath, maskMap, S2Config.SCL_NAME_PATTERN_2A);
         }
         addBands(product, maskMap, new TileMultiLevelImageFactory(ImageManager.getImageToModelTransform(product.getGeoCoding())));
         setMasks(product);
+    }
+
+    protected void putFilesIntoBandInfoMap(Map<String, BandInfo> bandInfoMap, File[] files) {
+        if (files != null) {
+            for (File file : files) {
+                final Matcher matcher = S2Config.IMAGE_NAME_PATTERN_2A.matcher(file.getName());
+                if (matcher.matches()) {
+                    final String tileIndex = matcher.group(3);
+                    String bandName = matcher.group(4);
+                    String resolution = matcher.group(6);
+                    bandName = trimUnderscores(bandName) + "_" + resolution;
+                    bandInfoMap.put(bandName, getBandInfo(file, tileIndex, bandName, Integer.parseInt(resolution)));
+                }
+            }
+        }
+    }
+
+    private String trimUnderscores(String bandIndex) {
+        if (bandIndex.startsWith("_")) {
+            bandIndex = bandIndex.substring(1);
+        }
+        if (bandIndex.endsWith("_")) {
+            bandIndex = bandIndex.substring(0, bandIndex.length() - 1);
+        }
+        return bandIndex;
     }
 
     @Override
@@ -130,19 +167,18 @@ public class S2L2AProductReader extends S2ProductReader {
         final FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return S2Config.IMAGE_NAME_PATTERN.matcher(name).matches();
+                return S2Config.IMAGE_NAME_PATTERN_2A.matcher(name).matches();
             }
         };
-        File[][] filesMatrix = new File[4][];
-        filesMatrix[0] = productDir.listFiles(filter);
+        File[][] filesMatrix = new File[3][];
         if (atmCorrDir60.isDirectory()) {
-            filesMatrix[1] = atmCorrDir60.listFiles(filter);
+            filesMatrix[0] = atmCorrDir60.listFiles(filter);
         }
         if (atmCorrDir20.isDirectory()) {
-            filesMatrix[2] = atmCorrDir20.listFiles(filter);
+            filesMatrix[1] = atmCorrDir20.listFiles(filter);
         }
         if (atmCorrDir10.isDirectory()) {
-            filesMatrix[3] = atmCorrDir10.listFiles(filter);
+            filesMatrix[2] = atmCorrDir10.listFiles(filter);
         }
         Map<String, BandInfo> bandInfoMap = new HashMap<String, BandInfo>();
         for (File[] files : filesMatrix) {
@@ -152,57 +188,34 @@ public class S2L2AProductReader extends S2ProductReader {
     }
 
     protected void setMasks(Product targetProduct) {
-        final Band[] bands = targetProduct.getBands();
-        for (Band band : bands) {
-            final SampleCoding sampleCoding = band.getSampleCoding();
-            if (sampleCoding != null) {
-                final String bandName = band.getName();
-                final boolean flagBand = band.isFlagBand();
-                for (int i = 0; i < sampleCoding.getNumAttributes(); i++) {
-                    final String sampleName = sampleCoding.getSampleName(i);
-                    final int sampleValue = sampleCoding.getSampleValue(i);
-                    if (!"spare".equals(sampleName)) {
-                        final String expression;
-                        if (flagBand) {
-                            expression = bandName + " & " + sampleValue + " == " + sampleValue;
-                        } else {
-                            expression = bandName + " == " + sampleValue;
-                        }
-                        final String maskName = bandName + "_" + sampleName;
-                        targetProduct.addMask(maskName, expression, expression, Color.RED, 0.5);
-                    }
-                }
+        final Band sclBand = targetProduct.getBand("SCL");
+        if (sclBand != null) {
+            String bandName = sclBand.getName();
+            final SampleCoding sclCoding = new SampleCoding("sclCoding");
+            for (int i = 0; i < scl_names.length; i++) {
+                sclCoding.addSample(scl_names[i], i, scl_descriptions[i]);
+            }
+            for (int i = 0; i < sclCoding.getNumAttributes(); i++) {
+                final int sampleValue = sclCoding.getSampleValue(i);
+                final String expression;
+                expression = bandName + " == " + sampleValue;
+                targetProduct.addMask(scl_names[i], expression, scl_descriptions[i], scl_colors[i], 0.5);
             }
         }
     }
 
-    private Map<String, BandInfo> updateMaskMap(File masksDir, Map<String, BandInfo> maskMap) throws IOException {
-        //we have two patterns here: The one specified in the specification and the one actually used
-
-        final FilenameFilter specificationFilter = new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return S2Config.SPECIFICATION_MASK_IMAGE_NAME_PATTERN.matcher(name).matches();
-            }
-        };
-
+    private Map<String, BandInfo> updateMaskMap(File masksDir, Map<String, BandInfo> maskMap, final Pattern pattern) throws IOException {
+        //todo use pattern from specification
         final FilenameFilter usedFilter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return S2Config.USED_MASK_IMAGE_NAME_PATTERN.matcher(name).matches();
+                return pattern.matcher(name).matches();
             }
         };
-
-        File[][] filesMatrix = new File[2][];
-        filesMatrix[0] = masksDir.listFiles(specificationFilter);
-        filesMatrix[1] = masksDir.listFiles(usedFilter);
-
-        for (File[] files : filesMatrix) {
-            if (files != null) {
-                for (File file : files) {
-                    putMasks(S2Config.SPECIFICATION_MASK_IMAGE_NAME_PATTERN, maskMap, file);
-                    putMasks(S2Config.USED_MASK_IMAGE_NAME_PATTERN, maskMap, file);
-                }
+        File[] files = masksDir.listFiles(usedFilter);
+        if (files != null) {
+            for (File file : files) {
+                putMasks(pattern, maskMap, file);
             }
         }
         return maskMap;
@@ -213,11 +226,7 @@ public class S2L2AProductReader extends S2ProductReader {
         if (matcher.matches()) {
             final String tileIndex = matcher.group(4);
             String bandName = matcher.group(3);
-            boolean isMask = false;
-            if(matcher.group(2).equals("MSK")) {
-                isMask = true;
-            }
-            BandInfo bandInfo = new BandInfo(tileIndex, file, bandName, null, S2SpatialResolution.R60M, isMask);
+            BandInfo bandInfo = new BandInfo(tileIndex, file, bandName, null, S2SpatialResolution.R60M, true);
             maskMap.put(bandName, bandInfo);
         }
     }

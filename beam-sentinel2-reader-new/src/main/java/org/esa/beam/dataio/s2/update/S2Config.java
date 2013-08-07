@@ -29,12 +29,16 @@ public interface S2Config {
     final static Pattern METADATA_NAME_1C_PATTERN = Pattern.compile(metadataName1CRegex);
     final static Pattern METADATA_NAME_1C_PATTERN_ALT = Pattern.compile("Product_Metadata_File.xml");
     final String metadataName2ARegex =
-            "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)L2A_R([0-9]{3})_V([0-9]{8})T([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml)";
+            "((S2.?)_([A-Z]{4})_MTD_(DMP|SAF)L2A_R([0-9]{3})_V([0-9]{8})(T|0)([0-9]{6})_([0-9]{8})T([0-9]{6})_C([0-9]{3}).*.xml)";
     final static Pattern METADATA_NAME_2A_PATTERN = Pattern.compile(metadataName2ARegex);
     final static Pattern METADATA_NAME_1C_TILE_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*.xml");
     final static Pattern METADATA_NAME_2A_TILE_PATTERN = Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*.xml");
-    final static Pattern IMAGE_NAME_PATTERN =
-            Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_(L2A|L1C)_TL_.*_(\\d{2}[A-Z]{3})_(|AOT|WVP|DEM|B[0-9A]{2})(_([1-6]{1}0)m)?.jp2");
+    final static Pattern IMAGE_NAME_PATTERN_1C =
+            Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L1C_TL_.*_(\\d{2}[A-Z]{3})_(B[0-9A]{2}).jp2");
+    final static Pattern IMAGE_NAME_PATTERN_2A =
+            Pattern.compile("S2.?_([A-Z]{4})_([A-Z]{3})_L2A_TL_.*_(\\d{2}[A-Z]{3})_?(|AOT|WVP|DEM|B[0-9A]{2})(_?([1-6]{1}0)m)?.jp2");
+    final static Pattern SCL_NAME_PATTERN_2A =
+            Pattern.compile("S2.?_([A-Z]{4})(_)(SCL)_(L2A)_TL_.*_(\\d{2}[A-Z]{3})(([1-6]{1}0)m).jp2");
     //todo use only one pattern
     final static Pattern SPECIFICATION_MASK_IMAGE_NAME_PATTERN =
             Pattern.compile("S2.?_([A-Z]{4})_(MSK)_(CLOUDS|TECQUA|LANWAT|DETFOO|DEFECT|SATURA|NODATA)_.*(\\d{2}[A-Z]{3}).jp2");
