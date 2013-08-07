@@ -306,13 +306,21 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
             if(line.contains("error")) {
                 showErrorDialog(line);
+            } else if (line.contains("%") && line.contains("Procedure")) {
+                String[] splitLine = line.split("P");
+                updateProgressMonitor(splitLine[1].split(":")[1], pm);
+
             } else if (line.contains("%")) {
-                double workDone = Double.parseDouble(line.split(":")[1]) * 100;
-                int progress = (int) workDone - lastWork;
-                lastWork = (int) workDone;
-                pm.worked(progress);
+                updateProgressMonitor(line.split(":")[1], pm);
             }
             area.append(line + "\n");
+        }
+
+        private void updateProgressMonitor(String s, ProgressMonitor pm) {
+            double workDone = Double.parseDouble(s) * 100;
+            int progress = (int) workDone - lastWork;
+            lastWork = (int) workDone;
+            pm.worked(progress);
         }
 
         @Override
