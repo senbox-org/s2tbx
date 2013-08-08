@@ -24,8 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import java.awt.GridBagConstraints;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
@@ -53,7 +52,6 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     private final static String default_l1c_name = "Level-1C_User_Product";
     private final static String default_l2a_name = "Level-2A_User_Product";
     private JTextArea area;
-    private JScrollPane areaScrollPane;
 
     public static AtmosphericCorrectionDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
         appContext = app;
@@ -151,7 +149,8 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 progressDialog = new ProgressDialog(parentComponent);
                 progressDialog.setMaximum(10000);
                 final DialogProgressMonitor monitor = new DialogProgressMonitor(progressDialog);
-                progressDialog.setMessageComponent(createMessageComponent());
+                progressDialog.setExtensibleMessageComponent(createMessageComponent(), false);
+                progressDialog.setTitle("Performing atmospheric correction");
 
                 final ProcessObserver processObserver = new ProcessObserver(process);
                 processObserver.setProgressMonitor(monitor);
@@ -176,7 +175,6 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                             File defaultFile = new File(defaultPath);
                             copyDir(defaultFile, l2File);
                             FileUtils.deleteTree(defaultFile);
-//                        Files.move(new File(defaultPath).toPath(), l2File.toPath());
                         }
                         File targetMetadataFile = addMetadataFileIfNecessary(l2File);
                         if (ioParametersPanel.shallBeOpenedInApp()) {
@@ -186,6 +184,8 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                } else if(progressDialog.isCanceled()) {
+                    progressDialog.close();
                 }
             }
         };
@@ -217,34 +217,10 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     }
 
     private JComponent createMessageComponent() {
-        final JPanel panel = GridBagUtils.createPanel();
-        GridBagConstraints gbc = new GridBagConstraints();
-
         area = new JTextArea();
-        areaScrollPane = new JScrollPane(area);
-        areaScrollPane.setVisible(false);
-
-        final String moreButtonText = "More >>";
-        final String lessButtonText = "Less <<";
-        final JButton extendButton = new JButton(moreButtonText);
-        extendButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (areaScrollPane.isVisible()) {
-                    areaScrollPane.setVisible(false);
-                    extendButton.setText(moreButtonText);
-                } else {
-                    areaScrollPane.setVisible(true);
-                    extendButton.setText(lessButtonText);
-                }
-            }
-        });
-
-
-        GridBagUtils.addToPanel(panel, extendButton, gbc, "gridx=2,gridy=0,anchor=NORTHEAST,weightx=1,weighty=0.1");
-        GridBagUtils.addToPanel(panel, areaScrollPane, gbc, "gridx=0,gridy=1,weighty=1,gridwidth=3,gridheight=2,fill=BOTH");
-
-        return panel;
+        area.setEditable(false);
+        JScrollPane areaScrollPane = new JScrollPane(area);
+        return areaScrollPane;
     }
 
     /**
@@ -306,11 +282,11 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
             if(line.contains("error")) {
                 showErrorDialog(line);
-            } else if (line.contains("%") && line.contains("Procedure")) {
+            } else if (line.contains("%") && line.contains("Procedure") && lastWork < 10000) {
                 String[] splitLine = line.split("P");
                 updateProgressMonitor(splitLine[1].split(":")[1], pm);
 
-            } else if (line.contains("%")) {
+            } else if (line.contains("%") && lastWork < 10000) {
                 updateProgressMonitor(line.split(":")[1], pm);
             }
             area.append(line + "\n");
@@ -319,8 +295,11 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         private void updateProgressMonitor(String s, ProgressMonitor pm) {
             double workDone = Double.parseDouble(s) * 100;
             int progress = (int) workDone - lastWork;
+            if(workDone > 10000) {
+                progress = 9999 - lastWork;
+            }
             lastWork = (int) workDone;
-            pm.worked(Math.min(9999, progress));
+            pm.worked(progress);
         }
 
         @Override
@@ -337,6 +316,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 showErrorDialog(errorMessageBuilder.toString());
             }
             errorMessageBuilder = null;
+            progressDialog.close();
         }
     }
 
