@@ -33,7 +33,7 @@
         <action>
             <id>performAtmosphericCorrection</id>
             <class>org.esa.beam.dataio.atmcorr.AtmosphericCorrectionAction</class>
-            <text>Perform Atmospheric Correction (Sentinel 2) ...</text>
+            <text>Atmospheric Correction (Sentinel 2) ...</text>
             <shortDescr>Performs atmospheric correction on Sentinel2 L1C products</shortDescr>
             <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products</description>
             <context>product</context>

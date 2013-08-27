@@ -57,6 +57,8 @@ public class AtmCorrIOParametersPanel extends JPanel {
 
         targetProductSelector = new AtmCorrTargetProductSelector(new AtmCorrTargetProductSelectorModel());
 
+        targetProductSelector.getOpenInAppCheckBox().setText("Open in " + appContext.getApplicationName());
+
         updateTargetProductName();
 
         targetProductSelector.getModel().setProductDir(SystemUtils.getUserHomeDir());

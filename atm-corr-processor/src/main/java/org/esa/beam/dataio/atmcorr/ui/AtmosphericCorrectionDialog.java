@@ -15,15 +15,7 @@ import org.esa.beam.framework.ui.GridBagUtils;
 import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.beam.util.io.FileUtils;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,12 +57,15 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         ioParametersPanel = new AtmCorrIOParametersPanel(appContext);
         form.add("I/O Parameters", ioParametersPanel);
         form.add("Processing Parameters", createParametersPanel());
+        AbstractButton button = getButton(ID_APPLY);
+        button.setText("Run");
+        button.setMnemonic('R');
     }
 
     @Override
     public int show() {
         setContent(form);
-        return super.show();    //To change body of overridden methods use File | Settings | File Templates.
+        return super.show();
     }
 
     @Override
