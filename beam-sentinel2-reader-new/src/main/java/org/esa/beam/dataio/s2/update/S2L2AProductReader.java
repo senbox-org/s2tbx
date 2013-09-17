@@ -90,9 +90,10 @@ public class S2L2AProductReader extends S2ProductReader {
                 spatialResolution = S2SpatialResolution.R60M;
                 break;
         }
-        if (S2WaveBandInfoProvider.hasWaveBandInfo(bandIndex)) {
-            wavebandInfo = S2WaveBandInfoProvider.getWaveBandInfo(bandIndex);
-            bandInfo = new BandInfo(tileIndex, file, wavebandInfo.bandId, wavebandInfo, spatialResolution, false);
+        final String shortenedBandIndex = bandIndex.substring(0, 3);
+        if (S2WaveBandInfoProvider.hasWaveBandInfo(shortenedBandIndex)) {
+            wavebandInfo = S2WaveBandInfoProvider.getWaveBandInfo(shortenedBandIndex);
+            bandInfo = new BandInfo(tileIndex, file, bandIndex, wavebandInfo, spatialResolution, false);
         } else {
             bandInfo = new BandInfo(tileIndex, file,
                                     bandIndex,
