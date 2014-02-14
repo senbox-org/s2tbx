@@ -19,9 +19,9 @@ import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.dataio.ProductSubsetDef;
 import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.GeoCodingFactory;
 import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.MetadataElement;
-import org.esa.beam.framework.datamodel.PixelGeoCoding2;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductNodeGroup;
 import org.esa.beam.framework.datamodel.RasterDataNode;
@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class OlciLevel1ProductFactory extends AbstractProductFactory {
 
@@ -105,7 +104,8 @@ public class OlciLevel1ProductFactory extends AbstractProductFactory {
         final Band latBand = targetProduct.getBand("latitude");
         final Band lonBand = targetProduct.getBand("longitude");
         if (latBand != null && lonBand != null) {
-            targetProduct.setGeoCoding(new PixelGeoCoding2(latBand, lonBand, "!quality_flags_invalid && !quality_flags_duplicated"));
+            targetProduct.setGeoCoding(
+                    GeoCodingFactory.createPixelGeoCoding(latBand, lonBand, "!quality_flags_invalid && !quality_flags_duplicated", 5));
         }
         if (targetProduct.getGeoCoding() == null) {
             if (targetProduct.getTiePointGrid("TP_latitude") != null && targetProduct.getTiePointGrid(

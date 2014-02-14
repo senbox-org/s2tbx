@@ -22,10 +22,10 @@ import org.esa.beam.dataio.s3.LonLatMultiLevelSource;
 import org.esa.beam.dataio.s3.Manifest;
 import org.esa.beam.dataio.s3.Sentinel3ProductReader;
 import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.GeoCodingFactory;
 import org.esa.beam.framework.datamodel.IndexCoding;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
-import org.esa.beam.framework.datamodel.PixelGeoCoding2;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.framework.datamodel.RasterDataNode;
@@ -244,7 +244,7 @@ public class SynLevel2ProductFactory extends AbstractProductFactory {
         final Band latBand = targetProduct.getBand(latBandName);
         final Band lonBand = targetProduct.getBand(lonBandName);
 
-        targetProduct.setGeoCoding(new PixelGeoCoding2(latBand, lonBand, null));
+        targetProduct.setGeoCoding(GeoCodingFactory.createPixelGeoCoding(latBand, lonBand, null, 5));
     }
 
     @Override

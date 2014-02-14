@@ -16,7 +16,7 @@ package org.esa.beam.dataio.s3.synergy;
  */
 
 import org.esa.beam.dataio.s3.LonLatFunction;
-import org.esa.beam.util.math.DistanceCalculator;
+import org.esa.beam.util.math.DistanceMeasure;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -48,7 +48,7 @@ final class LonLatTiePointFunction implements LonLatFunction {
         // TODO - this algorithm does not work in general
 
         final int index = Math.abs(Arrays.binarySearch(data, new double[]{0.0, lat, 0.0}, comparator));
-        final DistanceCalculator distanceCalculator = new DC(lon, lat);
+        final DistanceMeasure distanceCalculator = new DC(lon, lat);
         final int minIndex = Math.max(0, index - pixelCount - 2);
         final int maxIndex = Math.min(data.length, index + pixelCount + 2);
 
@@ -68,7 +68,7 @@ final class LonLatTiePointFunction implements LonLatFunction {
         return value;
     }
 
-    private static final class DC implements DistanceCalculator {
+    private static final class DC implements DistanceMeasure {
 
         private final double lon;
         private final double si;
