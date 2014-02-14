@@ -37,6 +37,8 @@ public class Sentinel3ProductReaderPlugIn implements ProductReaderPlugIn {
 
     public Sentinel3ProductReaderPlugIn() {
         this(FORMAT_NAME, "Sentinel-3 products", "S3.?_(OL_1_E[FR]R|OL_2_(L[FR]R|W[FR]R)|SL_1_SLT|SL_2_(LST|WCT|WST)|SY_2_(VGP|SYN)|SY_[23]_VGS)_.*(.SAFE)?", "manifest", ".safe", ".xml");
+        // special version for ACRI - rq-20140214
+        // this(FORMAT_NAME, "Sentinel-3 products", "S3.?_(OL_1_E[FR]R|OL_2_(L[FR]R|W[FR]R))_.*(.SAFE)?", "manifest", ".safe", ".xml");
     }
 
     private Sentinel3ProductReaderPlugIn(String formatName,
