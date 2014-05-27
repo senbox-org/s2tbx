@@ -1,7 +1,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>atm-corr-processor</symbolicName>
-    <version>0.5</version>
+    <version>0.6.0</version>
     <name>Atmospheric Correction Processor (Sentinel 2 L2)</name>
 
     <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products
@@ -32,13 +32,12 @@
 
         <action>
             <id>performAtmosphericCorrection</id>
+            <parent>processing.preProcessing</parent>
             <class>org.esa.beam.dataio.atmcorr.AtmosphericCorrectionAction</class>
             <text>Atmospheric Correction (Sentinel 2) ...</text>
             <shortDescr>Performs atmospheric correction on Sentinel2 L1C products</shortDescr>
             <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products</description>
             <context>product</context>
-            <parent>tools</parent>
-            <placeBefore>bandArithmetic</placeBefore>
         </action>
 
     </extension>

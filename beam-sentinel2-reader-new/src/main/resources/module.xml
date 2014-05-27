@@ -1,7 +1,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>beam-sentinel2-reader-new</symbolicName>
-    <version>0.5</version>
+    <version>0.6.0</version>
     <name>BEAM Sentinel-2 Reader Updated</name>
 
     <description>Enables BEAM to read Sentinel 2 products (MSI and L1c and L2A)

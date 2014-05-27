@@ -19,13 +19,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <beamVersion>5.0-SNAPSHOT</beamVersion>
-    </properties>
-
     <groupId>org.esa.suhet</groupId>
     <artifactId>suhet</artifactId>
-    <version>0.5.0.${beamVersion}</version>
+    <version>0.6.0</version>
     <name>SUHET</name>
     <description>Sentinel Exploitation Tools</description>
     <url>https://github.com/bcdev/suhet</url>
@@ -39,6 +35,10 @@
     </modules>
 
     <packaging>pom</packaging>
+
+    <properties>
+        <beamVersion>5.0</beamVersion>
+    </properties>
 
     <repositories>
          <repository>
@@ -128,7 +128,7 @@
             <dependency>
                 <groupId>org.esa.beam</groupId>
                 <artifactId>beam-netcdf</artifactId>
-                <version>1.1.2.${beamVersion}</version>
+                <version>${beamVersion}</version>
             </dependency>
 
             <dependency>
@@ -140,7 +140,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.8.2</version>
+                <version>4.11</version>
                 <scope>test</scope>
             </dependency>
 

@@ -22,11 +22,10 @@
     <parent>
         <groupId>org.esa.suhet</groupId>
         <artifactId>suhet</artifactId>
-        <version>0.5.0.${beamVersion}</version>
+        <version>0.6.0</version>
     </parent>
 
     <packaging>jar</packaging>
-    <groupId>org.esa.suhet</groupId>
     <artifactId>beam-sentinel3-reader</artifactId>
     <description>
         Reader for data products from Sentinel-3 (OLCI L1b and L2, SLSTR L1b and L2, Synergy L2 and VGT)
@@ -49,7 +48,7 @@
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-envisat-reader</artifactId>
-            <version>1.5.2-SNAPSHOT</version>
+            <version>${beamVersion}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

@@ -15,7 +15,7 @@ import java.util.Locale;
 public class S2PlugIn implements ProductReaderPlugIn {
 
     private static final Class[] SUPPORTED_INPUT_TYPES = new Class[]{String.class, File.class};
-    private static final String FORMAT_NAME = "SENTINEL-2";
+    private static final String FORMAT_NAME = "SENTINEL-2-MSI";
     private final String[] fileExtensions = new String[]{".xml"};
     private final String description = "Sentinel-2 products";
 
