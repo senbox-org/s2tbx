@@ -1,0 +1,234 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (C) 2011 Brockmann Consult GmbH (info@brockmann-consult.de)
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.esa.suhet</groupId>
+    <artifactId>suhet</artifactId>
+    <version>0.6.0</version>
+    <name>SUHET</name>
+    <description>Sentinel Exploitation Tools</description>
+    <url>https://github.com/bcdev/suhet</url>
+
+    <modules>
+        <module>suhet-bootstrap</module>
+        <module>beam-sentinel2-reader</module>
+        <module>beam-sentinel3-reader</module>
+        <module>atm-corr-processor</module>
+        <module>beam-sentinel2-reader-new</module>
+    </modules>
+
+    <packaging>pom</packaging>
+
+    <properties>
+        <beamVersion>5.0</beamVersion>
+    </properties>
+
+    <repositories>
+         <repository>
+             <id>bc-mvn-repo-public</id>
+             <name>Public Maven Repository at Brockmann-Consult</name>
+             <url>http://www.brockmann-consult.de/mvn/os</url>
+             <releases>
+                 <enabled>true</enabled>
+                 <checksumPolicy>warn</checksumPolicy>
+             </releases>
+             <snapshots>
+                 <enabled>true</enabled>
+                 <checksumPolicy>warn</checksumPolicy>
+             </snapshots>
+         </repository>
+     </repositories>
+
+     <pluginRepositories>
+         <pluginRepository>
+             <id>bc-mvn-repo-public</id>
+             <name>Public Maven Repository at Brockmann-Consult</name>
+             <url>http://www.brockmann-consult.de/mvn/os</url>
+             <releases>
+                 <enabled>true</enabled>
+                 <checksumPolicy>warn</checksumPolicy>
+             </releases>
+             <snapshots>
+                 <enabled>true</enabled>
+                 <checksumPolicy>warn</checksumPolicy>
+             </snapshots>
+         </pluginRepository>
+         <pluginRepository>
+             <id>apache.org</id>
+             <name>Maven Plugin Snapshots</name>
+             <url>http://people.apache.org/repo/m2-snapshot-repository</url>
+             <releases>
+                 <enabled>false</enabled>
+             </releases>
+             <snapshots>
+                 <enabled>true</enabled>
+             </snapshots>
+         </pluginRepository>
+     </pluginRepositories>
+
+     <distributionManagement>
+         <repository>
+             <id>bc-mvn-repo-public</id>
+             <name>Public Maven Repository at Brockmann Consult</name>
+             <url>scp://www.brockmann-consult.de/var/www/www.brockmann-consult.de/mvn/os</url>
+             <uniqueVersion>false</uniqueVersion>
+         </repository>
+         <snapshotRepository>
+             <id>bc-mvn-repo-public</id>
+             <name>Public Maven Snapshot Repository at Brockmann Consult</name>
+             <url>scp://www.brockmann-consult.de/var/www/www.brockmann-consult.de/mvn/os</url>
+             <uniqueVersion>false</uniqueVersion>
+         </snapshotRepository>
+     </distributionManagement>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
+                <artifactId>beam-core</artifactId>
+                <version>${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
+                <artifactId>beam-ui</artifactId>
+                <version>${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
+                <artifactId>beam-gpf</artifactId>
+                <version>${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
+                <artifactId>beam-visat-rcp</artifactId>
+                <version>${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.beam</groupId>
+                <artifactId>beam-netcdf</artifactId>
+                <version>${beamVersion}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.java.dev.jna</groupId>
+                <artifactId>jna</artifactId>
+                <version>3.4.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.11</version>
+                <scope>test</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <debug>true</debug>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-5</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/bin.xml</descriptor>
+                        <!--
+                        <descriptor>src/main/assembly/project.xml</descriptor>
+                        -->
+                    </descriptors>
+                    <finalName>suhet</finalName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <developers>
+        <developer>
+            <id>norman</id>
+            <name>Norman Fomferra</name>
+            <email>norman.fomferra@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Project Manager</role>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>olaf</id>
+            <name>Olaf Danne</name>
+            <email>olaf.dannet@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>tonio</id>
+            <name>Tonio Fincke</name>
+            <email>tonio.fincke@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>marcop</id>
+            <name>Marco Peters</name>
+            <email>marco.peters@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>ralf</id>
+            <name>Ralf Quast</name>
+            <email>ralf.quast@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+</project>

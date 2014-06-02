@@ -1,0 +1,45 @@
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+    <symbolicName>atm-corr-processor</symbolicName>
+    <version>0.6.0</version>
+    <name>Atmospheric Correction Processor (Sentinel 2 L2)</name>
+
+    <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products
+    </description>
+
+    <vendor>Brockmann Consult GmbH</vendor>
+    <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
+    <copyright>(C) 2007 by Brockmann Consult GmbH</copyright>
+    <url>https://github.com/bcdev/suhet</url>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
+
+    <changelog>
+        <![CDATA[
+                ]]>
+    </changelog>
+
+    <!--<dependency>-->
+        <!--<module>beam-core</module>-->
+    <!--</dependency>-->
+    <dependency>
+        <module>beam-ui</module>
+        <optional>true</optional>
+    </dependency>
+
+    <categories>Reader,Sentinel</categories>
+
+    <extension point="beam-ui:actions">
+
+        <action>
+            <id>performAtmosphericCorrection</id>
+            <parent>processing.preProcessing</parent>
+            <class>org.esa.beam.dataio.atmcorr.AtmosphericCorrectionAction</class>
+            <text>Atmospheric Correction (Sentinel 2) ...</text>
+            <shortDescr>Performs atmospheric correction on Sentinel2 L1C products</shortDescr>
+            <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products</description>
+            <context>product</context>
+        </action>
+
+    </extension>
+
+</module>
