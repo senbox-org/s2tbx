@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>atm-corr-processor</artifactId>
+    <artifactId>s2tbx-sen2cor-processor</artifactId>
 
     <dependencies>
         <dependency>
