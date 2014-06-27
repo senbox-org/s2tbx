@@ -3,8 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>suhet</artifactId>
-        <groupId>org.esa.suhet</groupId>
+        <artifactId>s2tbx</artifactId>
+        <groupId>org.esa.s2tbx</groupId>
         <version>0.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -25,7 +25,7 @@
             <artifactId>beam-visat-rcp</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.esa.suhet</groupId>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>beam-sentinel2-reader-new</artifactId>
             <version>${project.version}</version>
         </dependency>

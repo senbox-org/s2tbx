@@ -175,7 +175,7 @@
                         <descriptor>src/main/assembly/project.xml</descriptor>
                         -->
                     </descriptors>
-                    <finalName>suhet</finalName>
+                    <finalName>s2tbx</finalName>
                 </configuration>
             </plugin>
         </plugins>
