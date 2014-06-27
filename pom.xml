@@ -19,19 +19,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.esa.suhet</groupId>
-    <artifactId>suhet</artifactId>
+    <groupId>org.esa.s2tbx</groupId>
+    <artifactId>s2tbx</artifactId>
     <version>0.6.0</version>
-    <name>SUHET</name>
-    <description>Sentinel Exploitation Tools</description>
-    <url>https://github.com/bcdev/suhet</url>
+    <name>Sentinel-2 Toolbox</name>
+    <description>Tools for the Sentinel-2 Satellite Exploitation</description>
+    <url>https://github.com/CS-SI/s2tbx</url>
 
     <modules>
-        <module>suhet-bootstrap</module>
-        <module>beam-sentinel2-reader</module>
-        <module>beam-sentinel3-reader</module>
-        <module>atm-corr-processor</module>
-        <module>beam-sentinel2-reader-new</module>
+        <module>s2tbx-bootstrap</module>
+        <module>s2tbx-reader</module>
+        <module>s2tbx-reader-new</module>
+        <module>s2tbx-sen2core-processor</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -225,6 +224,33 @@
             <name>Ralf Quast</name>
             <email>ralf.quast@brockmann-consult.de</email>
             <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>nicolas</id>
+            <name>Nicolas Ducoin</name>
+            <email>nicolas.ducoin@c-s.fr</email>
+            <organization>CS</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>oscar</id>
+            <name>Oscar Picas-Puig</name>
+            <email>oscar.picas-puig@c-s.fr</email>
+            <organization>CS</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>julien</id>
+            <name>Julien Malik</name>
+            <email>julien.malik@c-s.fr</email>
+            <organization>CS</organization>
             <roles>
                 <role>Java Developer</role>
             </roles>

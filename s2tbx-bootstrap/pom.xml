@@ -5,22 +5,22 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.esa.suhet</groupId>
-        <artifactId>suhet</artifactId>
+        <groupId>org.esa.s2tbx</groupId>
+        <artifactId>s2tbx</artifactId>
         <version>0.6.0</version>
     </parent>
 
     <packaging>jar</packaging>
 
-    <artifactId>suhet-bootstrap</artifactId>
-    <name>SUHET Bootstrap</name>
-    <description>Provides the bootstrap classpath for all SUHET modules</description>
+    <artifactId>s2tbx-bootstrap</artifactId>
+    <name>Sentinel-2 Bootstrap</name>
+    <description>Provides the bootstrap classpath for all Sentinel-2 modules</description>
 
     <dependencies>
 
         <dependency>
-            <groupId>org.esa.suhet</groupId>
-            <artifactId>atm-corr-processor</artifactId>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId></artifactId>
             <version>${project.version}</version>
         </dependency>
 
