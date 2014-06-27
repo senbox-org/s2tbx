@@ -38,7 +38,7 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>beam-sentinel3-reader</artifactId>
+            <artifactId>s2tbx-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

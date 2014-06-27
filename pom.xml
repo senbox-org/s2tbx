@@ -30,7 +30,7 @@
         <module>s2tbx-bootstrap</module>
         <module>s2tbx-reader</module>
         <module>s2tbx-reader-new</module>
-        <module>s2tbx-sen2core-processor</module>
+        <!-- <module>s2tbx-sen2core-processor</module> -->
     </modules>
 
     <packaging>pom</packaging>
@@ -140,7 +140,7 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.11</version>
-                <scope>test</scope>
+                <!-- <scope>test</scope> -->
             </dependency>
 
         </dependencies>
