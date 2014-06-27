@@ -20,19 +20,19 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId></artifactId>
+            <artifactId>s2tbx</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>beam-sentinel2-reader</artifactId>
+            <artifactId>s2tbx-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>beam-sentinel2-reader-new</artifactId>
+            <artifactId>s2tbx-reader-new</artifactId>
             <version>${project.version}</version>
         </dependency>
 

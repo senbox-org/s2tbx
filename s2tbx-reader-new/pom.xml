@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>beam-sentinel2-reader-new</artifactId>
+    <artifactId>s2tbx-reader-new</artifactId>
 
     <dependencies>
         <dependency>

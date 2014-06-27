@@ -463,7 +463,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), "beam-sentinel2-reader/cache"),
+        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), "s2tbx-reader/cache"),
                             productDir.getName());
         //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();

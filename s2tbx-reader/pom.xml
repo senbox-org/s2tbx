@@ -26,7 +26,7 @@
     </parent>
 
     <packaging>jar</packaging>
-    <artifactId>beam-sentinel2-reader</artifactId>
+    <artifactId>s2tbx-reader</artifactId>
     <description>
         Reader for data products from Sentinel-2 (MSI Level 1b and L1c)
     </description>

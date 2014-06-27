@@ -41,7 +41,7 @@ public class TileMultiLevelSource extends AbstractMultiLevelSource {
     }
 
     void checkCacheDir(File productDir) {
-        File dir = new File(new File(SystemUtils.getApplicationDataDir(), "beam-sentinel2-reader/cache"),
+        File dir = new File(new File(SystemUtils.getApplicationDataDir(), "s2tbx-reader/cache"),
                             productDir.getName());
         //        noinspection ResultOfMethodCallIgnored
         if(dir != cacheDir) {
