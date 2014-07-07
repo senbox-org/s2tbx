@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:base="http://gs2.esa.int/DICO/1.0/PDGS/base/" xmlns="http://gs2.esa.int/DICO/1.0/IPF/job/IDP_SC_Configuration.xsd" xmlns:job="http://gs2.esa.int/DICO/1.0/IPF/job" targetNamespace="http://gs2.esa.int/DICO/1.0/IPF/job" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:element name="ipfIdpScConfiguration">
+		<xs:annotation>
+			<xs:documentation>Processing configuration Interface for specific IDP-SC or OLQC</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="performanceOptions" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>IDP-SC or OLQC performance requirements</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="maxSizeRAM">
+								<xs:annotation>
+									<xs:documentation>maximum RAM size in GB used for this IDP-SC or OLQC</xs:documentation>
+								</xs:annotation>
+								<xs:complexType/>
+							</xs:element>
+							<xs:element name="diskUsageSize">
+								<xs:annotation>
+									<xs:documentation>Disk usage size in GB</xs:documentation>
+								</xs:annotation>
+								<xs:complexType/>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="softwareList" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>List of IDP-SC or OLQC name and corresponding version. This List is completed only in IDP-SC FORMAT description</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence maxOccurs="39">
+							<xs:element name="softwareElement">
+								<xs:annotation>
+									<xs:documentation>IDP-SC or OLQC description : name and version</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:attribute name="softwareName">
+										<xs:annotation>
+											<xs:documentation>IDP-SC or OLQC name</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+									<xs:attribute name="softwareVersion">
+										<xs:annotation>
+											<xs:documentation>IDP-SC or OLQC version used identifier</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="softwareName">
+				<xs:annotation>
+					<xs:documentation>IDP-SC name or OLQC name</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="softwareVersion">
+				<xs:annotation>
+					<xs:documentation>IDP-SC or OLQC version used identifier</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
