@@ -72,10 +72,8 @@ class L1cTileOpImage extends SingleBandedOpImage {
         if (imageFile != null) {
             PlanarImage opImage = new L1cTileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
             if (spatialResolution != S2SpatialResolution.R10M) {
-                System.err.println("Creating scaled image...");
                 return createScaledImage(opImage, spatialResolution, level);
             }
-            System.err.println("Creating NOT scaled image");
             return opImage;
         } else {
             int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);

@@ -125,24 +125,26 @@ public class MetadataTest {
         Collection<String> tiles = L1cMetadataProc.getTiles(product);
 
         File baseDir = new File("D:\\Users\\opicas-p\\Dev\\beamprojects\\Data\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
-        assertTrue(baseDir.exists());
-        assertTrue(baseDir.isDirectory());
-
-        for (String granuleName: tiles)
+        if(baseDir.exists())
         {
-            File nestedMetadata = new File(baseDir, "GRANULE\\" + granuleName);
-            System.err.println(nestedMetadata.getAbsolutePath());
-            assertTrue(nestedMetadata.exists());
-            assertTrue(nestedMetadata.isDirectory());
+            assertTrue(baseDir.exists());
+            assertTrue(baseDir.isDirectory());
 
-            S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
-            String theName = aGranuleDir.getMetadataFilename().name;
+            for (String granuleName: tiles)
+            {
+                File nestedMetadata = new File(baseDir, "GRANULE\\" + granuleName);
+                System.err.println(nestedMetadata.getAbsolutePath());
+                assertTrue(nestedMetadata.exists());
+                assertTrue(nestedMetadata.isDirectory());
 
-            File nestedGranuleMetadata = new File(baseDir, "GRANULE\\" + granuleName + "\\" + theName);
-            assertTrue(nestedGranuleMetadata.exists());
-            assertTrue(nestedGranuleMetadata.isFile());
+                S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+                String theName = aGranuleDir.getMetadataFilename().name;
+
+                File nestedGranuleMetadata = new File(baseDir, "GRANULE\\" + granuleName + "\\" + theName);
+                assertTrue(nestedGranuleMetadata.exists());
+                assertTrue(nestedGranuleMetadata.isFile());
+            }
         }
-
     }
 
 

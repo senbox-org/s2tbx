@@ -6,6 +6,7 @@ import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1CUserProduct;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -14,6 +15,10 @@ import javax.xml.bind.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 
 /**
@@ -21,9 +26,71 @@ import java.util.*;
  */
 public class L1cMetadataProc {
 
+    public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
+        String subStr = "s2tbx-reader-cs";
+
+        ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
+        URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
+
+        URL[] theURLs = s2ClassLoader.getURLs();
+        for (URL url : theURLs)
+        {
+            if(url.getPath().contains(subStr) && url.getPath().contains(".jar"))
+            {
+                URI uri = url.toURI();
+                URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
+                return parent.getPath();
+            }
+        }
+
+        throw new FileNotFoundException("Module " + subStr + " not found !");
+    }
+
+    public static String getExecutable()
+    {
+        String winPath = "lib-openjpeg-2.0/openjpeg-2.0.0-win32-x86/bin/opj_decompress.exe";
+        String linuxPath = "lib-openjpeg-2.0/openjpeg-2.0.0-Linux-i386/bin/opj_decompress";
+        String macPath = "lib-openjpeg-2.0/openjpeg-2.0.0-Darwin64-universal/bin/opj_decompress";
+
+        String target = "opj_decompress";
+
+        if(SystemUtils.IS_OS_LINUX)
+        {
+            try {
+                target = getModulesDir() + linuxPath;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else if(SystemUtils.IS_OS_MAC)
+        {
+            try {
+                target = getModulesDir() + macPath;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else
+        {
+            try {
+                target = getModulesDir() + winPath;
+            } catch (Exception e) {
+                e.printStackTrace();
+                target = target + ".exe";
+            }
+        }
+
+        return target;
+    }
+
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
-        JAXBContext jaxbContext = JAXBContext
-                .newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap");
+
+        ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
+
+        //todo get modules classpath
+        //todo test new lecture style
+        JAXBContext jaxbContext = JAXBContext.newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap", s2c);
+
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 

@@ -71,11 +71,16 @@ public class RegularExpressionTest {
         assertNotNull(prodl0);
         assertNotNull(prod);
 
-        boolean isGood = StructuralItemMatcher.matches(prod.getThePattern(), new File("D:\\Users\\opicas-p\\Dev\\beamprojects\\Data\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE"));
-        assertTrue(isGood);
+        File f = new File("D:\\Users\\opicas-p\\Dev\\beamprojects\\Data\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
 
-        isGood = StructuralItemMatcher.matches(prodl0.getThePattern(), new File("D:\\Users\\opicas-p\\Dev\\beamprojects\\Data\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE" ));
-        assertFalse(isGood);
+        if(f.exists())
+        {
+            boolean isGood = StructuralItemMatcher.matches(prod.getThePattern(), new File("D:\\Users\\opicas-p\\Dev\\beamprojects\\Data\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE"));
+            assertTrue(isGood);
+
+            isGood = StructuralItemMatcher.matches(prodl0.getThePattern(), new File("D:\\Users\\opicas-p\\Dev\\beamprojects\\Data\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE" ));
+            assertFalse(isGood);
+        }
     }
 
 }

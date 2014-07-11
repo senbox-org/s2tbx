@@ -15,8 +15,9 @@ public interface S2Config {
      */
 
     //todo fix problems with the path length
-    //todo fix os dependent problems with os (.exe for windows, etc.)
-    String OPJ_DECOMPRESSOR_EXE = System.getProperty("openjpeg2.decompressor.path", "opj_decompress.exe");
+    String OPJ_DECOMPRESSOR_EXE = L1cMetadataProc.getExecutable();
+
+    //todo add Path to opj_dump
 
     int DEFAULT_JAI_TILE_SIZE = 512;
 
