@@ -1,0 +1,23 @@
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+    <symbolicName>lib-openjpeg</symbolicName>
+    <name>OpenJpeg Library</name>
+    <version>2.0</version>
+    <packaging>dir</packaging>
+    <native>true</native>
+    <categories>Library,OpenJPEG</categories>
+
+    <description>A wrapper module for the native libraries used to read data products in JPEG2000 format.</description>
+
+    <dependency>
+    </dependency>
+
+    <changelog>
+        <![CDATA[
+        <p>s2tbx-reader-cs<br/>
+            Redistributing OpenJpeg2000 2.0 libraries and binaries for all platforms<br/>
+        </p>
+        ]]>
+    </changelog>
+
+</module>
