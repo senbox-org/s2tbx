@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,15 +72,19 @@ public class RegularExpressionTest {
         assertNotNull(prodl0);
         assertNotNull(prod);
 
-        File f = new File("D:\\Users\\opicas-p\\Dev\\beamprojects\\Data\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
+        URL aUrl = getClass().getResource("l1c/data/S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
 
-        if(f.exists())
+        if(aUrl != null)
         {
-            boolean isGood = StructuralItemMatcher.matches(prod.getThePattern(), new File("D:\\Users\\opicas-p\\Dev\\beamprojects\\Data\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE"));
-            assertTrue(isGood);
+            File f = new File(aUrl.toURI());
+            if(f.exists())
+            {
+                boolean isGood = StructuralItemMatcher.matches(prod.getThePattern(), f);
+                assertTrue(isGood);
 
-            isGood = StructuralItemMatcher.matches(prodl0.getThePattern(), new File("D:\\Users\\opicas-p\\Dev\\beamprojects\\Data\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE" ));
-            assertFalse(isGood);
+                isGood = StructuralItemMatcher.matches(prodl0.getThePattern(), f);
+                assertFalse(isGood);
+            }
         }
     }
 
