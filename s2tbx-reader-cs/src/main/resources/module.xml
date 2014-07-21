@@ -35,6 +35,7 @@
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
             <formatName>SENTINEL-2-MSI-L1C-Beta</formatName>
             <useAllFileFilter>true</useAllFileFilter>
+            <parent>importMultispectral</parent>
         </action>
         <!-- Mock-up reader
                 <action>
