@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>beam</artifactId>
-        <groupId>org.esa.beam</groupId>
-        <version>5.0</version>
+        <groupId>org.esa.s2tbx</groupId>
+        <artifactId>s2tbx</artifactId>
+        <version>0.6.0</version>
     </parent>
 
     <name>OpenJpeg Library</name>
