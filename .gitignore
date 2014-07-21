@@ -1,6 +1,7 @@
-.idea
-modules
-target
+.idea/
+modules/
+target/
+generated-sources/
 *.iml
 *.ipr
 *.iws
