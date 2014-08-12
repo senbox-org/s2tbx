@@ -41,6 +41,8 @@
 
     <properties>
         <beamVersion>5.0</beamVersion>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <user.language>en</user.language>
     </properties>
 
     <repositories>

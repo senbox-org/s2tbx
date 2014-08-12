@@ -11,7 +11,7 @@ public interface S2Config {
     boolean DEBUG = Boolean.getBoolean("org.esa.beam.dataio.s2.S2Config.DEBUG");
 
     /**
-     * Path to "opj_decompress" executable from OpenJPEG 2.0.0 package
+     * Path to "opj_decompress" executable from OpenJPEG 2.1.0 package
      */
 
     //todo fix problems with the path length
