@@ -80,6 +80,12 @@ public class L1cMetadataProc {
             }
         }
 
+        File fileTarget = new File(target);
+        if(fileTarget.exists())
+        {
+            fileTarget.setExecutable(true);
+        }
+
         return target;
     }
 
