@@ -50,7 +50,7 @@ public class L1cMetadataProc {
     {
         String winPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
         String linuxPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
-        String macPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Darwin64-universal/bin/opj_decompress";
+        String macPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
 
         String target = "opj_decompress";
 
