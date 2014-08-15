@@ -19,10 +19,10 @@
     </changelog>
 
     <!--<dependency>-->
-        <!--<module>beam-core</module>-->
+        <!--<module>snap-core</module>-->
     <!--</dependency>-->
     <dependency>
-        <module>beam-ui</module>
+        <module>snap-ui</module>
         <optional>true</optional>
     </dependency>
 
