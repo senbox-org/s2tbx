@@ -27,11 +27,6 @@
     <url>https://github.com/CS-SI/s2tbx</url>
 
     <modules>
-        <module>s2tbx-bootstrap</module>
-
-        <module>s2tbx-reader</module>
-        <module>s2tbx-reader-new</module>
-
         <module>s2tbx-reader-cs</module>
         <module>lib-openjpeg</module>
         <!-- <module>s2tbx-sen2cor-processor</module> -->
@@ -43,6 +38,7 @@
         <beamVersion>5.0</beamVersion>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
+        <outputdir>../../output</outputdir>
     </properties>
 
     <repositories>
@@ -160,6 +156,7 @@
     </dependencies>
 
     <build>
+        <outputDirectory>${outputdir}/modules/${project.artifactId}-${project.version}</outputDirectory>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>

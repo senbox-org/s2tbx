@@ -1,7 +1,0 @@
-The upper right L1C tile 15TXE is completely missing (see tile-grid.png).
-
-Missing L1C tile:
-    IMG_GPPL1C_054_20091210235100_20091210235130_01_000000_15SWD.jp2
-
-opj_decompress: Only first internal tile can be unpacked:
-    IMG_GPPL1C_054_20091210235100_20091210235130_01_000000_15SVC.jp2

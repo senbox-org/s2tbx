@@ -20,21 +20,10 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-reader-new</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-reader-cs</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-reader</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
 </project>
