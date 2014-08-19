@@ -18,34 +18,30 @@
         Reader for data products from Sentinel-2 (MSI Level 1b and L1c)
     </description>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <user.language>en</user.language>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-core</artifactId>
-            <version>5.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.beam</groupId>
-            <artifactId>beam-bootstrap</artifactId>
-            <version>5.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-ui</artifactId>
-            <version>5.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-gpf</artifactId>
-            <version>5.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.beam</groupId>
             <artifactId>beam-visat-rcp</artifactId>
-            <version>5.0</version>
         </dependency>
 
         <dependency>

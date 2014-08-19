@@ -46,18 +46,58 @@ public class L1cMetadataProc {
         throw new FileNotFoundException("Module " + subStr + " not found !");
     }
 
+    public static String convertStreamToString(java.io.InputStream is) {
+        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
+    }
+
+    public static void setExecutable(File file, boolean executable)
+    {
+        try
+        {
+            Process p = Runtime.getRuntime().exec(new String[] {
+            "chmod",
+            "u"+(executable?'+':'-')+"x",
+            file.getAbsolutePath(),
+            });
+            p.waitFor();
+            String output = convertStreamToString(p.getInputStream());
+            String errorOutput = convertStreamToString(p.getErrorStream());
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     public static String getExecutable()
     {
-        String winPath = "lib-openjpeg-2.0/openjpeg-2.0.0-win32-x86/bin/opj_decompress.exe";
-        String linuxPath = "lib-openjpeg-2.0/openjpeg-2.0.0-Linux-i386/bin/opj_decompress";
-        String macPath = "lib-openjpeg-2.0/openjpeg-2.0.0-Darwin64-universal/bin/opj_decompress";
+        String winPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
+        String linuxPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
+        String linux64Path = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
+        String macPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
 
         String target = "opj_decompress";
 
+        //todo log stracktraces
         if(SystemUtils.IS_OS_LINUX)
         {
             try {
-                target = getModulesDir() + linuxPath;
+		Process p = Runtime.getRuntime().exec("uname -m");
+                p.waitFor();
+                String output = convertStreamToString(p.getInputStream());
+                String errorOutput = convertStreamToString(p.getErrorStream());
+
+                System.err.println(output);
+
+                if(output.startsWith("i686"))
+                {
+                    target = getModulesDir() + linuxPath;
+                }
+                else
+                {
+                    target = getModulesDir() + linux64Path;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -66,6 +106,7 @@ public class L1cMetadataProc {
         {
             try {
                 target = getModulesDir() + macPath;
+                setExecutable(new File(target), true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -78,6 +119,12 @@ public class L1cMetadataProc {
                 e.printStackTrace();
                 target = target + ".exe";
             }
+        }
+
+        File fileTarget = new File(target);
+        if(fileTarget.exists())
+        {
+            fileTarget.setExecutable(true);
         }
 
         return target;
