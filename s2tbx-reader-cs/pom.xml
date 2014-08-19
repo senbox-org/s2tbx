@@ -22,36 +22,36 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-core</artifactId>
-            <version>${beamVersion}</version>
+            <version>${snapVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-bootstrap</artifactId>
-            <version>${beamVersion}</version>
+            <version>${snapVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-ui</artifactId>
-            <version>${beamVersion}</version>
+            <version>${snapVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-gpf</artifactId>
-            <version>${beamVersion}</version>
+            <version>${snapVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-visat-rcp</artifactId>
-            <version>${beamVersion}</version>
+            <version>${snapVersion}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-netcdf</artifactId>
-            <version>${beamVersion}</version>
+            <version>${snapVersion}</version>
         </dependency>
 
         <dependency>
