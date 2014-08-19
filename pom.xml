@@ -40,7 +40,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <beamVersion>[0.5-SNAPSHOT,1.0-SNAPSHOT)</beamVersion>
+        <snapVersion>0.5-SNAPSHOT</snapVersion>
 
 		<outputdir>../../output</outputdir>
     </properties>
@@ -98,31 +98,31 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-core</artifactId>
-                <version>${beamVersion}</version>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-ui</artifactId>
-                <version>${beamVersion}</version>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-gpf</artifactId>
-                <version>${beamVersion}</version>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-visat-rcp</artifactId>
-                <version>${beamVersion}</version>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-netcdf</artifactId>
-                <version>${beamVersion}</version>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
