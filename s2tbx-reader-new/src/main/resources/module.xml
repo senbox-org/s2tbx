@@ -28,7 +28,7 @@
 
     <categories>Reader,Sentinel</categories>
 
-    <extension point="beam-ui:actions">
+    <extension point="snap-ui:actions">
         <action>
             <id>importSentinel2ProductUpdate</id>
             <helpId>importSentinel2ProductUpdate</helpId>
@@ -48,7 +48,7 @@
         -->
     </extension>
 
-    <extension point="beam-core:rgbProfiles">
+    <extension point="snap-core:rgbProfiles">
         <rgbProfile>
             <name>Sentinel 2 MSI</name>
             <red>B11</red>

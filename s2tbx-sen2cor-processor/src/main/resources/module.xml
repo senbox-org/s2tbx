@@ -28,7 +28,7 @@
 
     <categories>Reader,Sentinel</categories>
 
-    <extension point="beam-ui:actions">
+    <extension point="snap-ui:actions">
 
         <action>
             <id>performAtmosphericCorrection</id>
