@@ -230,6 +230,15 @@ class L1cTileOpImage extends SingleBandedOpImage {
         {
             String inputFileName = Utils.GetShortPathName(imageFile.getPath());
             String outputFileName = outputFile.getPath();
+
+            if(inputFileName.length() == 0)
+            {
+                inputFileName = imageFile.getPath();
+            }
+
+            System.err.println(imageFile.getPath());
+            System.err.println(inputFileName);
+
             builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
                     "-i", inputFileName,
                     "-o", outputFileName,
@@ -254,8 +263,8 @@ class L1cTileOpImage extends SingleBandedOpImage {
                 "-t", tileIndex + "");
                 */
 
-        final Process process = builder.directory(cacheDir).start();
         System.err.println(builder.command());
+        final Process process = builder.directory(cacheDir).start();
 
         try {
             final int exitCode = process.waitFor();

@@ -18,6 +18,11 @@
         Reader for data products from Sentinel-2 (MSI Level 1b and L1c)
     </description>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <user.language>en</user.language>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
