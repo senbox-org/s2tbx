@@ -35,101 +35,90 @@
     <packaging>pom</packaging>
 
     <properties>
-        <beamVersion>[5.0,5.1-SNAPSHOT)</beamVersion>
+        <snapVersion>0.5-SNAPSHOT</snapVersion>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <outputdir>../../output</outputdir>
     </properties>
 
     <repositories>
-         <repository>
-             <id>bc-mvn-repo-public</id>
-             <name>Public Maven Repository at Brockmann-Consult</name>
-             <url>http://www.brockmann-consult.de/mvn/os</url>
-             <releases>
-                 <enabled>true</enabled>
-                 <checksumPolicy>warn</checksumPolicy>
-             </releases>
-             <snapshots>
-                 <enabled>true</enabled>
-                 <checksumPolicy>warn</checksumPolicy>
-             </snapshots>
-         </repository>
-     </repositories>
+        <repository>
+            <id>snap-repo-public</id>
+            <name>Public Maven Repository for SNAP</name>
+            <url>http://nexus.senbox.net/nexus/content/repositories/public/</url>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 
-     <pluginRepositories>
-         <pluginRepository>
-             <id>bc-mvn-repo-public</id>
-             <name>Public Maven Repository at Brockmann-Consult</name>
-             <url>http://www.brockmann-consult.de/mvn/os</url>
-             <releases>
-                 <enabled>true</enabled>
-                 <checksumPolicy>warn</checksumPolicy>
-             </releases>
-             <snapshots>
-                 <enabled>true</enabled>
-                 <checksumPolicy>warn</checksumPolicy>
-             </snapshots>
-         </pluginRepository>
-         <pluginRepository>
-             <id>apache.org</id>
-             <name>Maven Plugin Snapshots</name>
-             <url>http://people.apache.org/repo/m2-snapshot-repository</url>
-             <releases>
-                 <enabled>false</enabled>
-             </releases>
-             <snapshots>
-                 <enabled>true</enabled>
-             </snapshots>
-         </pluginRepository>
-     </pluginRepositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>snap-repo-public</id>
+            <name>Public Maven Repository for SNAP</name>
+            <url>http://nexus.senbox.net/nexus/content/repositories/public/</url>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <checksumPolicy>warn</checksumPolicy>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
 
-     <distributionManagement>
-         <repository>
-             <id>bc-mvn-repo-public</id>
-             <name>Public Maven Repository at Brockmann Consult</name>
-             <url>scp://www.brockmann-consult.de/var/www/www.brockmann-consult.de/mvn/os</url>
-             <uniqueVersion>false</uniqueVersion>
-         </repository>
-         <snapshotRepository>
-             <id>bc-mvn-repo-public</id>
-             <name>Public Maven Snapshot Repository at Brockmann Consult</name>
-             <url>scp://www.brockmann-consult.de/var/www/www.brockmann-consult.de/mvn/os</url>
-             <uniqueVersion>false</uniqueVersion>
-         </snapshotRepository>
-     </distributionManagement>
+    <distributionManagement>
+        <repository>
+            <id>snap-repo-public</id>
+            <name>Public Maven Repository for SNAP</name>
+            <url>http://nexus.senbox.net/nexus/content/repositories/releases/</url>
+            <uniqueVersion>false</uniqueVersion>
+        </repository>
+        <snapshotRepository>
+            <id>snap-repo-public</id>
+            <name>Public Maven Snapshot Repository for SNAP</name>
+            <url>http://nexus.senbox.net/nexus/content/repositories/snapshots/</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
 
             <dependency>
-                <groupId>org.esa.beam</groupId>
-                <artifactId>beam-core</artifactId>
-                <version>${beamVersion}</version>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-core</artifactId>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.esa.beam</groupId>
-                <artifactId>beam-ui</artifactId>
-                <version>${beamVersion}</version>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-ui</artifactId>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.esa.beam</groupId>
-                <artifactId>beam-gpf</artifactId>
-                <version>${beamVersion}</version>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-gpf</artifactId>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.esa.beam</groupId>
-                <artifactId>beam-visat-rcp</artifactId>
-                <version>${beamVersion}</version>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-visat-rcp</artifactId>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.esa.beam</groupId>
-                <artifactId>beam-netcdf</artifactId>
-                <version>${beamVersion}</version>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-netcdf</artifactId>
+                <version>${snapVersion}</version>
             </dependency>
 
             <dependency>
@@ -198,7 +187,7 @@
         <developer>
             <id>olaf</id>
             <name>Olaf Danne</name>
-            <email>olaf.dannet@brockmann-consult.de</email>
+            <email>olaf.danne@brockmann-consult.de</email>
             <organization>Brockmann Consult</organization>
             <roles>
                 <role>Java Developer</role>
