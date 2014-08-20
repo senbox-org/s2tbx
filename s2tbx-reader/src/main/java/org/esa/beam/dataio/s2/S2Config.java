@@ -42,6 +42,6 @@ public interface S2Config {
             new L1cTileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
     };
 
-    String FORMAT_NAME = "SENTINEL-2-MSI-L1C-Beta";
+    String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
     String MTD_EXT = ".xml";
 }
