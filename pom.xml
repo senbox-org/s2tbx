@@ -27,7 +27,7 @@
     <url>https://github.com/CS-SI/s2tbx</url>
 
     <modules>
-        <module>s2tbx-reader-cs</module>
+        <module>s2tbx-reader</module>
         <module>lib-openjpeg</module>
         <!-- <module>s2tbx-sen2cor-processor</module> -->
     </modules>
@@ -35,7 +35,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <beamVersion>5.0</beamVersion>
+        <beamVersion>[5.0,5.1-SNAPSHOT)</beamVersion>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <outputdir>../../output</outputdir>

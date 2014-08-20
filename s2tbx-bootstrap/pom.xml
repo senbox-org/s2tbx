@@ -20,7 +20,7 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-reader-cs</artifactId>
+            <artifactId>s2tbx-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
 
