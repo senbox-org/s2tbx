@@ -10,7 +10,7 @@
     <vendor>Brockmann Consult GmbH and Array Inc</vendor>
     <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
     <copyright>(C) 2007 by Brockmann Consult GmbH and Array Inc</copyright>
-    <url>https://github.com/bcdev/suhet</url>
+    <url>https://github.com/CS-SI</url>
     <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
     <changelog>
@@ -19,16 +19,16 @@
     </changelog>
 
     <dependency>
-        <module>beam-core</module>
+        <module>snap-core</module>
     </dependency>
     <dependency>
-        <module>beam-visat-rcp</module>
+        <module>snap-visat-rcp</module>
         <optional>true</optional>
     </dependency>
 
     <categories>Reader,Sentinel</categories>
 
-    <extension point="beam-ui:actions">
+    <extension point="snap-ui:actions">
         <action>
             <id>importSentinel2Product</id>
             <helpId>importSentinel2Product</helpId>
