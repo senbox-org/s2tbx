@@ -21,38 +21,41 @@
 
     <categories>Reader, SPOT</categories>
 
-    <extension point="beam-ui:actions">
+    <extension point="snap-ui:actions">
         <action>
             <id>importSPOTSceneProduct</id>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
             <formatName>SPOTDimap</formatName>
             <useAllFileFilter>false</useAllFileFilter>
-            <shortDesc>Import a SPOT DIMAP file</shortDesc>
+            <shortDesc>Import a SPOT DIMAP product</shortDesc>
             <helpId>mySPOTDimapProduct</helpId>
+            <parent>importMultispectral</parent>
         </action>
     </extension>
-    <extension point="beam-ui:actions">
+    <extension point="snap-ui:actions">
         <action>
             <id>importSPOTViewProduct</id>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
             <formatName>SPOTView</formatName>
             <useAllFileFilter>false</useAllFileFilter>
-            <shortDesc>Import a SPOT View file</shortDesc>
+            <shortDesc>Import a SPOT View product</shortDesc>
             <helpId>mySPOTViewProduct</helpId>
+            <parent>importMultispectral</parent>
         </action>
     </extension>
-    <extension point="beam-ui:actions">
+    <extension point="snap-ui:actions">
         <action>
             <id>importSPOTTake5Product</id>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
             <formatName>SPOTTake5</formatName>
             <useAllFileFilter>false</useAllFileFilter>
-            <shortDesc>Import a SPOTTake5 file</shortDesc>
+            <shortDesc>Import a SPOT4 Take5 product</shortDesc>
             <helpId>mySPOTTake5Product</helpId>
+            <parent>importMultispectral</parent>
         </action>
     </extension>
 
-    <extension point="beam-core:rgbProfiles">
+    <extension point="snap-core:rgbProfiles">
         <rgbProfile>
             <name>SPOT</name>
             <red>XS1</red>
