@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Vertex.xsd"/>
+	<xsd:element id="Source_Frame" name="Source_Frame" type="t_Source_Frame">
+		<xsd:annotation>
+			<xsd:documentation source="Source_Frame"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Source_Frame" name="t_Source_Frame">
+		<xsd:sequence>
+			<xsd:element maxOccurs="4" minOccurs="4" ref="Vertex"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

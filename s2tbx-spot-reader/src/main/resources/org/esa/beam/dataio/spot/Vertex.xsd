@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Giacobbo, Didier (SPOT IMAGE) --><xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Vertex" name="Vertex" type="t_Vertex">
+		<xsd:annotation>
+			<xsd:documentation source="Vertex"/>
+			<xsd:appinfo source="FRAME_X"/>
+			<xsd:appinfo source="FRAME_Y"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Vertex" name="t_Vertex">
+		<xsd:all>
+			<xsd:element ref="FRAME_LON"/>
+			<xsd:element ref="FRAME_LAT"/>
+			<xsd:element minOccurs="0" ref="FRAME_X"/>
+			<xsd:element minOccurs="0" ref="FRAME_Y"/>
+			<xsd:element ref="FRAME_COL"/>
+			<xsd:element ref="FRAME_ROW"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="FRAME_LON" name="FRAME_LON" type="t_FRAME_LON">
+		<xsd:annotation>
+			<xsd:documentation source="FRAME_LON"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_FRAME_LON" name="t_FRAME_LON">
+		<xsd:simpleContent>
+			<xsd:extension base="DEG_Angular"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="FRAME_LAT" name="FRAME_LAT" type="t_FRAME_LAT">
+		<xsd:annotation>
+			<xsd:documentation source="FRAME_LAT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_FRAME_LAT" name="t_FRAME_LAT">
+		<xsd:simpleContent>
+			<xsd:extension base="DEG_Angular"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="FRAME_X" name="FRAME_X" type="t_FRAME_X">
+		<xsd:annotation>
+			<xsd:documentation source="FRAME_X"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_FRAME_X" name="t_FRAME_X">
+		<xsd:simpleContent>
+			<xsd:extension base="Dimension"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="FRAME_Y" name="FRAME_Y" type="t_FRAME_Y">
+		<xsd:annotation>
+			<xsd:documentation source="FRAME_Y"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_FRAME_Y" name="t_FRAME_Y">
+		<xsd:simpleContent>
+			<xsd:extension base="Dimension"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="FRAME_COL" name="FRAME_COL" type="t_FRAME_COL">
+		<xsd:annotation>
+			<xsd:documentation source="FRAME_COL"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_FRAME_COL" name="t_FRAME_COL">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="FRAME_ROW" name="FRAME_ROW" type="t_FRAME_ROW">
+		<xsd:annotation>
+			<xsd:documentation source="FRAME_ROW"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_FRAME_ROW" name="t_FRAME_ROW">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+</xsd:schema>

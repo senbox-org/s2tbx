@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Giacobbo, Didier (SPOT IMAGE) --><xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Source_Information.xsd"/>
+	<xsd:element id="Dataset_Sources" name="Dataset_Sources" type="t_Dataset_Sources">
+		<xsd:annotation>
+			<xsd:documentation source="Dataset_Sources"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Dataset_Sources" name="t_Dataset_Sources">
+		<xsd:sequence>
+			<xsd:element maxOccurs="3" ref="Source_Information"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

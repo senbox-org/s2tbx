@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Data_File.xsd"/>
+	<xsd:element id="Data_Access" name="Data_Access" type="t_Data_Access">
+		<xsd:annotation>
+			<xsd:documentation source="Data_Access"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Data_Access" name="t_Data_Access">
+		<xsd:all>
+			<xsd:element ref="DATA_FILE_FORMAT"/>
+			<xsd:element minOccurs="0" ref="DATA_FILE_FORMAT_DESC">
+				<xsd:annotation>
+					<xsd:appinfo source="t_Data_Access"/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element ref="DATA_FILE_ORGANISATION"/>
+			<xsd:element ref="Data_File"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="DATA_FILE_FORMAT" name="DATA_FILE_FORMAT" type="t_DATA_FILE_FORMAT">
+		<xsd:annotation>
+			<xsd:documentation source="DATA_FILE_FORMAT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_DATA_FILE_FORMAT" name="t_DATA_FILE_FORMAT">
+		<!-- PFC -->
+		<xsd:simpleContent>
+			<xsd:restriction base="String_Version">
+				<xsd:enumeration value="RAW"/>
+				<xsd:enumeration value="GEOTIFF"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="DATA_FILE_FORMAT_DESC" name="DATA_FILE_FORMAT_DESC" type="t_DATA_FILE_FORMAT_DESC">
+		<xsd:annotation>
+			<xsd:documentation source="DATA_FILE_FORMAT_DESC"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_DATA_FILE_FORMAT_DESC" name="t_DATA_FILE_FORMAT_DESC">
+		<xsd:simpleContent>
+			<xsd:extension base="String"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="DATA_FILE_ORGANISATION" name="DATA_FILE_ORGANISATION" type="t_DATA_FILE_ORGANISATION">
+		<xsd:annotation>
+			<xsd:documentation source="DATA_FILE_ORGANISATION"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_DATA_FILE_ORGANISATION" name="t_DATA_FILE_ORGANISATION">
+		<xsd:simpleContent>
+			<xsd:extension base="DF_Organisation"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Band_Display_Order.xsd"/>
+	<xsd:include schemaLocation="Special_Value.xsd"/>
+	<xsd:element id="Image_Display" name="Image_Display" type="t_Image_Display">
+		<xsd:annotation>
+			<xsd:documentation source="Image_Display"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Image_Display" name="t_Image_Display">
+		<xsd:sequence>
+			<xsd:element ref="Band_Display_Order"/>
+			<xsd:element maxOccurs="2" minOccurs="2" ref="Special_Value"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

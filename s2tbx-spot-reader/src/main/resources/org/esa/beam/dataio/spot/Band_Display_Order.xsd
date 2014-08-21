@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Band_Display_Order" name="Band_Display_Order" type="t_Band_Display_Order">
+		<xsd:annotation>
+			<xsd:documentation source="Band_Display_Order"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Band_Display_Order" name="t_Band_Display_Order">
+		<xsd:all>
+			<xsd:element ref="RED_CHANNEL"/>
+			<xsd:element ref="GREEN_CHANNEL"/>
+			<xsd:element ref="BLUE_CHANNEL"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="RED_CHANNEL" name="RED_CHANNEL" type="t_RED_CHANNEL">
+		<xsd:annotation>
+			<xsd:documentation source="RED_CHANNEL"/>
+			<xsd:appinfo source="RED_CHANNEL"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_RED_CHANNEL" name="t_RED_CHANNEL">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="GREEN_CHANNEL" name="GREEN_CHANNEL" type="t_GREEN_CHANNEL">
+		<xsd:annotation>
+			<xsd:documentation source="GREEN_CHANNEL"/>
+			<xsd:appinfo source="GREEN_CHANNEL"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_GREEN_CHANNEL" name="t_GREEN_CHANNEL">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="BLUE_CHANNEL" name="BLUE_CHANNEL" type="t_BLUE_CHANNEL">
+		<xsd:annotation>
+			<xsd:documentation source="BLUE_CHANNEL"/>
+			<xsd:appinfo source="BLUE_CHANNEL"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_BLUE_CHANNEL" name="t_BLUE_CHANNEL">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+</xsd:schema>

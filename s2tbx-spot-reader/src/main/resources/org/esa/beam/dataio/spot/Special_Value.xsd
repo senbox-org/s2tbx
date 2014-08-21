@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:include schemaLocation="Special_Value_Color.xsd"/>
+	<xsd:element id="Special_Value" name="Special_Value" type="t_Special_Value">
+		<xsd:annotation>
+			<xsd:documentation source="Special_Value"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Special_Value" name="t_Special_Value">
+		<xsd:all>
+			<xsd:element minOccurs="0" ref="SPECIAL_VALUE_INDEX"/>
+			<xsd:element minOccurs="0" ref="SPECIAL_VALUE_TEXT"/>
+			<xsd:element minOccurs="0" ref="Special_Value_Color"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="SPECIAL_VALUE_INDEX" name="SPECIAL_VALUE_INDEX" type="t_SPECIAL_VALUE_INDEX">
+		<xsd:annotation>
+			<xsd:documentation source="SPECIAL_VALUE_INDEX"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_SPECIAL_VALUE_INDEX" name="t_SPECIAL_VALUE_INDEX">
+		<xsd:restriction base="Integer"/>
+	</xsd:simpleType>
+	<xsd:element id="SPECIAL_VALUE_TEXT" name="SPECIAL_VALUE_TEXT" type="t_SPECIAL_VALUE_TEXT">
+		<xsd:annotation>
+			<xsd:documentation source="SPECIAL_VALUE_TEXT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_SPECIAL_VALUE_TEXT" name="t_SPECIAL_VALUE_TEXT">
+		<xsd:complexContent>
+			<xsd:extension base="Text"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>

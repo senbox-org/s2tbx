@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.1.3" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+		<xsd:appinfo source="schema">
+		</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:include schemaLocation="Vertex.xsd"/>
+	<xsd:element name="Dataset_Frame" type="t_Dataset_Frame" id="Dataset_Frame">
+		<xsd:annotation>
+			<xsd:documentation source="Dataset_Frame">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Dataset_Frame" id="t_Dataset_Frame">
+		<xsd:sequence><xsd:element maxOccurs="unbounded" ref="Vertex" minOccurs="3">
+			</xsd:element>
+			<xsd:element ref="SCENE_ORIENTATION">
+				<xsd:annotation>
+					<xsd:appinfo source="t_Dataset_Frame.SCENE_ORIENTATION">
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="SCENE_ORIENTATION" type="t_SCENE_ORIENTATION" id="SCENE_ORIENTATION">
+		<xsd:annotation>
+			<xsd:documentation source="SCENE_ORIENTATION">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_SCENE_ORIENTATION" id="t_SCENE_ORIENTATION">
+		<xsd:simpleContent>
+			<xsd:restriction base="ANGLE_SCENE_ORIENTATION">
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

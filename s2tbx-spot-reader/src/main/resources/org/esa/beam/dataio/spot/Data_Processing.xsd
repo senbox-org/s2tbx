@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Data_Processing" name="Data_Processing" type="t_Data_Processing">
+		<xsd:annotation>
+			<xsd:documentation source="Data_Processing"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Data_Processing" name="t_Data_Processing">
+		<xsd:all>
+			<xsd:element ref="PROCESSING_LEVEL"/>
+			<xsd:element ref="GEOMETRIC_PROCESSING"/>
+			<xsd:element minOccurs="0" ref="RADIOMETRIC_PROCESSING"/>
+			<xsd:element minOccurs="0" ref="SPECTRAL_PROCESSING"/>
+			<xsd:element ref="Processing_Options"/>
+			<xsd:element minOccurs="0" ref="Regions_Of_Interest"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="PROCESSING_LEVEL" name="PROCESSING_LEVEL" type="t_PROCESSING_LEVEL">
+		<xsd:annotation>
+			<xsd:documentation source="PROCESSING_LEVEL"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_PROCESSING_LEVEL" name="t_PROCESSING_LEVEL">
+		<xsd:restriction base="String">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1A"/>
+			<xsd:enumeration value="1B"/>
+			<xsd:enumeration value="2A"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element id="GEOMETRIC_PROCESSING" name="GEOMETRIC_PROCESSING" type="t_GEOMETRIC_PROCESSING">
+		<xsd:annotation>
+			<xsd:documentation source="GEOMETRIC_PROCESSING"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_GEOMETRIC_PROCESSING" name="t_GEOMETRIC_PROCESSING">
+		<xsd:restriction base="Geometric_Processings"/>
+	</xsd:simpleType>
+	<xsd:element id="RADIOMETRIC_PROCESSING" name="RADIOMETRIC_PROCESSING" type="t_RADIOMETRIC_PROCESSING">
+		<xsd:annotation>
+			<xsd:documentation source="RADIOMETRIC_PROCESSING"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_RADIOMETRIC_PROCESSING" name="t_RADIOMETRIC_PROCESSING">
+		<xsd:restriction base="Radiometric_Processings"/>
+	</xsd:simpleType>
+	<xsd:element id="SPECTRAL_PROCESSING" name="SPECTRAL_PROCESSING" type="t_SPECTRAL_PROCESSING">
+		<xsd:annotation>
+			<xsd:documentation source="SPECTRAL_PROCESSING"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_SPECTRAL_PROCESSING" name="t_SPECTRAL_PROCESSING">
+		<xsd:restriction base="Spectral_Processings"/>
+	</xsd:simpleType>
+	<xsd:element id="Processing_Options" name="Processing_Options" type="t_Processing_Options">
+		<xsd:annotation>
+			<xsd:documentation source="Processing_Options"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Processing_Options" name="t_Processing_Options">
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="MEAN_RECTIFICATION_ELEVATION"/>
+			<xsd:element minOccurs="0" ref="Dynamic_Stretch"/>
+			<xsd:element minOccurs="0" ref="LINE_SHIFT"/>
+			<xsd:element minOccurs="0" ref="DECOMPRESSION_TYPE"/>
+			<xsd:element minOccurs="0" ref="Deconvolution"/>
+			<xsd:element minOccurs="0" ref="RESAMPLING_METHOD"/>
+			<xsd:element minOccurs="0" ref="Sampling_Step"/>
+			<xsd:element minOccurs="0" ref="SWIR_BAND_REGISTRATION_FLAG"/>
+			<xsd:element minOccurs="0" ref="X_BANDS_REGISTRATION_FLAG"/>
+			<xsd:element minOccurs="0" ref="SuperMode_Processings"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" ref="Correction_Algorithm"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="MEAN_RECTIFICATION_ELEVATION" name="MEAN_RECTIFICATION_ELEVATION" type="t_MEAN_RECTIFICATION_ELEVATION">
+		<xsd:annotation>
+			<xsd:documentation source="MEAN_RECTIFICATION_ELEVATION"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_MEAN_RECTIFICATION_ELEVATION" name="t_MEAN_RECTIFICATION_ELEVATION">
+		<xsd:simpleContent>
+			<xsd:extension base="Linear"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="Dynamic_Stretch" name="Dynamic_Stretch" type="t_Dynamic_Stretch">
+		<xsd:annotation>
+			<xsd:documentation source="Dynamic_Stretch"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Dynamic_Stretch" name="t_Dynamic_Stretch">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Thresholds"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Thresholds" name="Thresholds" type="t_Thresholds">
+		<xsd:annotation>
+			<xsd:documentation source="Thresholds"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Thresholds" name="t_Thresholds">
+		<xsd:all>
+			<xsd:element ref="BAND_INDEX"/>
+			<xsd:element ref="LOW_THRESHOLD"/>
+			<xsd:element ref="HIGH_THRESHOLD"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="LOW_THRESHOLD" name="LOW_THRESHOLD" type="t_LOW_THRESHOLD">
+		<xsd:annotation>
+			<xsd:documentation source="LOW_THRESHOLD"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_LOW_THRESHOLD" name="t_LOW_THRESHOLD">
+		<xsd:restriction base="Integer"/>
+	</xsd:simpleType>
+	<xsd:element id="HIGH_THRESHOLD" name="HIGH_THRESHOLD" type="t_HIGH_THRESHOLD">
+		<xsd:annotation>
+			<xsd:documentation source="HIGH_THRESHOLD"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_HIGH_THRESHOLD" name="t_HIGH_THRESHOLD">
+		<xsd:restriction base="Integer"/>
+	</xsd:simpleType>
+	<xsd:element id="LINE_SHIFT" name="LINE_SHIFT" type="t_LINE_SHIFT">
+		<xsd:annotation>
+			<xsd:documentation source="LINE_SHIFT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_LINE_SHIFT" name="t_LINE_SHIFT">
+		<xsd:restriction base="xsd:positiveInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="DECOMPRESSION_TYPE" name="DECOMPRESSION_TYPE" type="t_DECOMPRESSION_TYPE">
+		<xsd:annotation>
+			<xsd:documentation source="DECOMPRESSION_TYPE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_DECOMPRESSION_TYPE" name="t_DECOMPRESSION_TYPE">
+		<xsd:restriction base="Decompression_Types"/>
+	</xsd:simpleType>
+	<xsd:element id="Deconvolution" name="Deconvolution" type="t_Deconvolution">
+		<xsd:annotation>
+			<xsd:documentation source="Deconvolution"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Deconvolution" name="t_Deconvolution">
+		<xsd:all>
+			<xsd:element ref="KERNEL_ID"/>
+			<xsd:element ref="KERNEL_DATE"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="KERNEL_ID" name="KERNEL_ID" type="t_KERNEL_ID">
+		<xsd:annotation>
+			<xsd:documentation source="KERNEL_ID"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_KERNEL_ID" name="t_KERNEL_ID">
+		<xsd:restriction base="String"/>
+	</xsd:simpleType>
+	<xsd:element id="KERNEL_DATE" name="KERNEL_DATE" type="t_KERNEL_DATE">
+		<xsd:annotation>
+			<xsd:documentation source="KERNEL_DATE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_KERNEL_DATE" name="t_KERNEL_DATE">
+		<xsd:restriction base="DateTime"/>
+	</xsd:simpleType>
+	<xsd:element id="RESAMPLING_METHOD" name="RESAMPLING_METHOD" type="t_RESAMPLING_METHOD">
+		<xsd:annotation>
+			<xsd:documentation source="RESAMPLING_METHOD"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_RESAMPLING_METHOD" name="t_RESAMPLING_METHOD">
+		<xsd:restriction base="Resampling_Methods"/>
+	</xsd:simpleType>
+	<xsd:element id="Sampling_Step" name="Sampling_Step" type="t_Sampling_Step">
+		<xsd:annotation>
+			<xsd:documentation source="Sampling_Step"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Sampling_Step" name="t_Sampling_Step">
+		<xsd:all>
+			<xsd:element ref="SAMPLING_STEP_X"/>
+			<xsd:element ref="SAMPLING_STEP_Y"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="SAMPLING_STEP_X" name="SAMPLING_STEP_X" type="t_SAMPLING_STEP_X">
+		<xsd:annotation>
+			<xsd:documentation source="SAMPLING_STEP_X"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_SAMPLING_STEP_X" name="t_SAMPLING_STEP_X">
+		<xsd:simpleContent>
+			<xsd:extension base="Linear"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="SAMPLING_STEP_Y" name="SAMPLING_STEP_Y" type="t_SAMPLING_STEP_Y">
+		<xsd:annotation>
+			<xsd:documentation source="SAMPLING_STEP_Y"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_SAMPLING_STEP_Y" name="t_SAMPLING_STEP_Y">
+		<xsd:simpleContent>
+			<xsd:extension base="Linear"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="SWIR_BAND_REGISTRATION_FLAG" name="SWIR_BAND_REGISTRATION_FLAG" type="t_SWIR_BAND_REGISTRATION_FLAG">
+		<xsd:annotation>
+			<xsd:documentation source="SWIR_BAND_REGISTRATION_FLAG"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_SWIR_BAND_REGISTRATION_FLAG" name="t_SWIR_BAND_REGISTRATION_FLAG">
+		<xsd:restriction base="YesNo"/>
+	</xsd:simpleType>
+	<xsd:element id="X_BANDS_REGISTRATION_FLAG" name="X_BANDS_REGISTRATION_FLAG" type="t_X_BANDS_REGISTRATION_FLAG">
+		<xsd:annotation>
+			<xsd:documentation source="X_BANDS_REGISTRATION_FLAG"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_X_BANDS_REGISTRATION_FLAG" name="t_X_BANDS_REGISTRATION_FLAG">
+		<xsd:restriction base="YesNo"/>
+	</xsd:simpleType>
+	<xsd:element id="SuperMode_Processings" name="SuperMode_Processings" type="t_SuperMode_Processings">
+		<xsd:annotation>
+			<xsd:documentation source="SuperMode_Processings"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_SuperMode_Processings" name="t_SuperMode_Processings">
+		<xsd:all>
+			<xsd:element minOccurs="0" ref="SM_CORRELATION_NEEDED"/>
+			<xsd:element minOccurs="0" ref="SM_RAW_GRID_FILTERING"/>
+			<xsd:element minOccurs="0" ref="SM_PROCESSING_TYPE"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="SM_CORRELATION_NEEDED" name="SM_CORRELATION_NEEDED" type="t_SM_CORRELATION_NEEDED">
+		<xsd:annotation>
+			<xsd:documentation source="SM_CORRELATION_NEEDED"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_SM_CORRELATION_NEEDED" name="t_SM_CORRELATION_NEEDED">
+		<xsd:restriction base="YesNo"/>
+	</xsd:simpleType>
+	<xsd:element id="SM_RAW_GRID_FILTERING" name="SM_RAW_GRID_FILTERING" type="t_SM_RAW_GRID_FILTERING">
+		<xsd:annotation>
+			<xsd:documentation source="SM_RAW_GRID_FILTERING"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_SM_RAW_GRID_FILTERING" name="t_SM_RAW_GRID_FILTERING">
+		<xsd:restriction base="YesNo"/>
+	</xsd:simpleType>
+	<xsd:element id="SM_PROCESSING_TYPE" name="SM_PROCESSING_TYPE" type="t_SM_PROCESSING_TYPE">
+		<xsd:annotation>
+			<xsd:documentation source="SM_PROCESSING_TYPE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_SM_PROCESSING_TYPE" name="t_SM_PROCESSING_TYPE">
+		<xsd:restriction base="SM_Processing_Types"/>
+	</xsd:simpleType>
+	<xsd:element id="Correction_Algorithm" name="Correction_Algorithm" type="t_Correction_Algorithm">
+		<xsd:annotation>
+			<xsd:documentation source="Correction_Algorithm"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Correction_Algorithm" name="t_Correction_Algorithm">
+		<xsd:all>
+			<xsd:element ref="ALGORITHM_TYPE"/>
+			<xsd:element minOccurs="0" ref="ALGORITHM_NAME"/>
+			<xsd:element minOccurs="0" ref="ALGORITHM_ACTIVATION"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="ALGORITHM_TYPE" name="ALGORITHM_TYPE" type="t_ALGORITHM_TYPE">
+		<xsd:annotation>
+			<xsd:documentation source="ALGORITHM_TYPE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_ALGORITHM_TYPE" name="t_ALGORITHM_TYPE">
+		<xsd:restriction base="Correction_Algorithm_Types"/>
+	</xsd:simpleType>
+	<xsd:element id="ALGORITHM_NAME" name="ALGORITHM_NAME" type="t_ALGORITHM_NAME">
+		<xsd:annotation>
+			<xsd:documentation source="ALGORITHM_NAME"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_ALGORITHM_NAME" name="t_ALGORITHM_NAME">
+		<xsd:restriction base="String"/>
+	</xsd:simpleType>
+	<xsd:element id="ALGORITHM_ACTIVATION" name="ALGORITHM_ACTIVATION" type="t_ALGORITHM_ACTIVATION">
+		<xsd:annotation>
+			<xsd:documentation source="ALGORITHM_ACTIVATION"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_ALGORITHM_ACTIVATION" name="t_ALGORITHM_ACTIVATION">
+		<xsd:restriction base="YesNo"/>
+	</xsd:simpleType>
+	<xsd:element id="Regions_Of_Interest" name="Regions_Of_Interest" type="t_Regions_Of_Interest">
+		<xsd:annotation>
+			<xsd:documentation source="Regions_Of_Interest"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Regions_Of_Interest" name="t_Regions_Of_Interest">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Region_Of_Interest"/>
+		</xsd:sequence>
+		<xsd:attribute name="count" type="xsd:integer"/>
+	</xsd:complexType>
+	<xsd:element id="Region_Of_Interest" name="Region_Of_Interest" type="t_Region_Of_Interest">
+		<xsd:annotation>
+			<xsd:documentation source="Region_Of_Interest"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Region_Of_Interest" name="t_Region_Of_Interest">
+		<xsd:all>
+			<xsd:element ref="COL_MIN"/>
+			<xsd:element ref="ROW_MIN"/>
+			<xsd:element ref="COL_MAX"/>
+			<xsd:element ref="ROW_MAX"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="COL_MIN" name="COL_MIN" type="t_COL_MIN">
+		<xsd:annotation>
+			<xsd:documentation source="COL_MIN"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_COL_MIN" name="t_COL_MIN">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="ROW_MIN" name="ROW_MIN" type="t_ROW_MIN">
+		<xsd:annotation>
+			<xsd:documentation source="ROW_MIN"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_ROW_MIN" name="t_ROW_MIN">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="COL_MAX" name="COL_MAX" type="t_COL_MAX">
+		<xsd:annotation>
+			<xsd:documentation source="COL_MAX"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_COL_MAX" name="t_COL_MAX">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="ROW_MAX" name="ROW_MAX" type="t_ROW_MAX">
+		<xsd:annotation>
+			<xsd:documentation source="ROW_MAX"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_ROW_MAX" name="t_ROW_MAX">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+</xsd:schema>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Dataset_Id" name="Dataset_Id" type="t_Dataset_Id">
+		<xsd:annotation>
+			<xsd:documentation source="Dataset_Id"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Dataset_Id" name="t_Dataset_Id">
+		<xsd:all>
+			<xsd:element ref="DATASET_NAME"/>
+			<xsd:element ref="COPYRIGHT"/>
+			<xsd:element ref="DATASET_TN_PATH"/>
+			<xsd:element ref="DATASET_TN_FORMAT"/>
+			<xsd:element ref="DATASET_QL_PATH"/>
+			<xsd:element ref="DATASET_QL_FORMAT"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="DATASET_NAME" name="DATASET_NAME" type="t_DATASET_NAME">
+		<xsd:annotation>
+			<xsd:documentation source="DATASET_NAME"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_DATASET_NAME" name="t_DATASET_NAME">
+		<xsd:restriction base="String"/>
+	</xsd:simpleType>
+	<xsd:element id="COPYRIGHT" name="COPYRIGHT" type="t_COPYRIGHT">
+		<xsd:annotation>
+			<xsd:documentation source="COPYRIGHT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_COPYRIGHT" name="t_COPYRIGHT">
+		<xsd:restriction base="String"/>
+	</xsd:simpleType>
+	<xsd:element id="DATASET_TN_PATH" name="DATASET_TN_PATH" type="t_DATASET_TN_PATH">
+		<xsd:annotation>
+			<xsd:documentation source="DATASET_TN_PATH"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_DATASET_TN_PATH" name="t_DATASET_TN_PATH">
+		<xsd:simpleContent>
+			<xsd:extension base="URI"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="DATASET_TN_FORMAT" name="DATASET_TN_FORMAT" type="t_DATASET_TN_FORMAT">
+		<xsd:annotation>
+			<xsd:documentation source="DATASET_TN_FORMAT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_DATASET_TN_FORMAT" name="t_DATASET_TN_FORMAT">
+		<!-- PFC -->
+		<xsd:simpleContent>
+			<xsd:restriction base="String_Version">
+				<xsd:enumeration value="JFIF"/>
+				<xsd:enumeration value="JPEG"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="DATASET_QL_PATH" name="DATASET_QL_PATH" type="t_DATASET_QL_PATH">
+		<xsd:annotation>
+			<xsd:documentation source="DATASET_QL_PATH"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_DATASET_QL_PATH" name="t_DATASET_QL_PATH">
+		<xsd:simpleContent>
+			<xsd:extension base="URI"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="DATASET_QL_FORMAT" name="DATASET_QL_FORMAT" type="t_DATASET_QL_FORMAT">
+		<xsd:annotation>
+			<xsd:documentation source="DATASET_QL_FORMAT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_DATASET_QL_FORMAT" name="t_DATASET_QL_FORMAT">
+		<!-- PFC -->
+		<xsd:simpleContent>
+			<xsd:restriction base="String_Version">
+				<xsd:enumeration value="JFIF"/>
+				<xsd:enumeration value="JPEG"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

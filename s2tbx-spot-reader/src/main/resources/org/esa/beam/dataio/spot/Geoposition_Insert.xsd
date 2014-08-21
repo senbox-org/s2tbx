@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Geoposition_Insert" name="Geoposition_Insert" type="t_Geoposition_Insert">
+		<xsd:annotation>
+			<xsd:documentation source="Geoposition_Insert"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Geoposition_Insert" name="t_Geoposition_Insert">
+		<xsd:all>
+			<xsd:element ref="ULXMAP"/>
+			<xsd:element ref="ULYMAP"/>
+			<xsd:element ref="XDIM"/>
+			<xsd:element ref="YDIM"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="ULXMAP" name="ULXMAP" type="t_ULXMAP">
+		<xsd:annotation>
+			<xsd:documentation source="ULXMAP"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_ULXMAP" name="t_ULXMAP">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_ULXMAP_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_ULXMAP_Unit">
+		<xsd:restriction base="Unit"/>
+	</xsd:simpleType>
+	<xsd:element id="ULYMAP" name="ULYMAP" type="t_ULYMAP">
+		<xsd:annotation>
+			<xsd:documentation source="ULYMAP"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_ULYMAP" name="t_ULYMAP">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_ULYMAP_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_ULYMAP_Unit">
+		<xsd:restriction base="Unit"/>
+	</xsd:simpleType>
+	<xsd:element id="XDIM" name="XDIM" type="t_XDIM">
+		<xsd:annotation>
+			<xsd:documentation source="XDIM"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_XDIM" name="t_XDIM">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_XDIM_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_XDIM_Unit">
+		<xsd:restriction base="Unit"/>
+	</xsd:simpleType>
+	<xsd:element id="YDIM" name="YDIM" type="t_YDIM">
+		<xsd:annotation>
+			<xsd:documentation source="YDIM"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_YDIM" name="t_YDIM">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_YDIM_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_YDIM_Unit">
+		<xsd:restriction base="Unit"/>
+	</xsd:simpleType>
+</xsd:schema>

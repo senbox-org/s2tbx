@@ -1,0 +1,3 @@
+org.esa.beam.dataio.spot.SpotDimapProductReaderPlugin
+org.esa.beam.dataio.spot.SpotViewProductReaderPlugin
+org.esa.beam.dataio.spot.SpotTake5ProductReaderPlugin

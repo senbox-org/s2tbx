@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema version="1.1.3" elementFormDefault="unqualified" attributeFormDefault="unqualified" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:element name="Special_Value_Color" id="Special_Value_Color" type="t_Special_Value_Color">
+		<xsd:annotation>
+			<xsd:documentation source="Special_Value_Color">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Special_Value_Color" id="t_Special_Value_Color">
+		<xsd:all>
+			<xsd:element ref="RED_LEVEL">
+			</xsd:element>
+			<xsd:element ref="GREEN_LEVEL">
+			</xsd:element>
+			<xsd:element ref="BLUE_LEVEL">
+			</xsd:element>
+			<xsd:element ref="ALPHA_LEVEL" minOccurs="0">
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element name="RED_LEVEL" id="RED_LEVEL" type="t_RED_LEVEL">
+		<xsd:annotation>
+			<xsd:documentation source="RED_LEVEL">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_RED_LEVEL" id="t_RED_LEVEL">
+		<xsd:restriction base="ZeroOne">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="GREEN_LEVEL" id="GREEN_LEVEL" type="t_GREEN_LEVEL">
+		<xsd:annotation>
+			<xsd:documentation source="GREEN_LEVEL">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_GREEN_LEVEL" id="t_GREEN_LEVEL">
+		<xsd:restriction base="ZeroOne">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="BLUE_LEVEL" id="BLUE_LEVEL" type="t_BLUE_LEVEL">
+		<xsd:annotation>
+			<xsd:documentation source="BLUE_LEVEL">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_BLUE_LEVEL" id="t_BLUE_LEVEL">
+		<xsd:restriction base="ZeroOne">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="ALPHA_LEVEL" id="ALPHA_LEVEL" type="t_ALPHA_LEVEL">
+		<xsd:annotation>
+			<xsd:documentation source="ALPHA_LEVEL">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_ALPHA_LEVEL" id="t_ALPHA_LEVEL">
+		<xsd:restriction base="ZeroOne">
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

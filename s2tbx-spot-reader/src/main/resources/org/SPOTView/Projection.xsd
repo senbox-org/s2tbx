@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.1.3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:dim="http://www.spotimage.fr/Dimap">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+		<xsd:appinfo source="schema">
+		</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:element name="Projection" type="t_Projection" id="Projection">
+		<xsd:annotation>
+			<xsd:documentation source="Projection">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Projection" id="t_Projection">
+		<xsd:all>
+			<xsd:element ref="PROJECTION_NAME" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="PROJECTION_CODE" minOccurs="0">
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element name="PROJECTION_NAME" type="t_PROJECTION_NAME" id="PROJECTION_NAME">
+		<xsd:annotation>
+			<xsd:documentation source="PROJECTION_NAME">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_PROJECTION_NAME" id="t_PROJECTION_NAME">
+		<xsd:restriction base="String">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="PROJECTION_CODE" type="t_PROJECTION_CODE" id="PROJECTION_CODE">
+		<xsd:annotation>
+			<xsd:documentation source="PROJECTION_CODE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_PROJECTION_CODE" id="t_PROJECTION_CODE">
+		<xsd:restriction base="Code">
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

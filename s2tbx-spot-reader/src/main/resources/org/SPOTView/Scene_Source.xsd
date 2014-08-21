@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.1.3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:dim="http://www.spotimage.fr/Dimap">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:element name="Scene_Source" type="t_Scene_Source" id="Scene_Source">
+		<xsd:annotation>
+			<xsd:documentation source="Scene_Source">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Scene_Source" id="t_Scene_Source">
+		<xsd:all>
+			<xsd:element ref="IMAGING_DATE">
+			</xsd:element>
+			<xsd:element ref="IMAGING_TIME" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="MISSION">
+			</xsd:element>
+			<xsd:element ref="MISSION_INDEX" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="INSTRUMENT" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="INSTRUMENT_INDEX" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="IMAGING_MODE" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="GRID_REFERENCE" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="SHIFT_VALUE" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="INCIDENCE_ANGLE" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="VIEWING_ANGLE" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="THEORETICAL_RESOLUTION" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="SUN_AZIMUTH" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="SUN_ELEVATION" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="SCENE_RECTIFICATION_ELEV" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="SCENE_PROCESSING_LEVEL" minOccurs="0">
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element name="IMAGING_DATE" type="t_IMAGING_DATE" id="IMAGING_DATE">
+		<xsd:annotation>
+			<xsd:documentation source="IMAGING_DATE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_IMAGING_DATE" id="t_IMAGING_DATE">
+		<xsd:restriction base="Date">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="IMAGING_TIME" type="t_IMAGING_TIME" id="IMAGING_TIME">
+		<xsd:annotation>
+			<xsd:documentation source="IMAGING_TIME">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_IMAGING_TIME" id="t_IMAGING_TIME">
+		<xsd:restriction base="Time">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="MISSION" type="t_MISSION" id="MISSION">
+		<xsd:annotation>
+			<xsd:documentation source="MISSION">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_MISSION" id="t_MISSION"><xsd:restriction base="String">
+			<xsd:enumeration value="SPOT"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="MISSION_INDEX" type="t_MISSION_INDEX" id="MISSION_INDEX">
+		<xsd:annotation>
+			<xsd:documentation source="MISSION_INDEX">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_MISSION_INDEX" id="t_MISSION_INDEX"><xsd:restriction base="PositiveInt">
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+			<xsd:enumeration value="3"/>
+			<xsd:enumeration value="4"/>
+			<xsd:enumeration value="5"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="INSTRUMENT" type="t_INSTRUMENT" id="INSTRUMENT">
+		<xsd:annotation>
+			<xsd:documentation source="INSTRUMENT">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_INSTRUMENT" id="t_INSTRUMENT"><xsd:restriction base="String">
+			<xsd:enumeration value="HRV"/>
+			<xsd:enumeration value="HRVIR"/>
+			<xsd:enumeration value="HRG"/>
+			<xsd:enumeration value="HRS"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="INSTRUMENT_INDEX" type="t_INSTRUMENT_INDEX" id="INSTRUMENT_INDEX">
+		<xsd:annotation>
+			<xsd:documentation source="INSTRUMENT_INDEX">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_INSTRUMENT_INDEX" id="t_INSTRUMENT_INDEX"><xsd:restriction base="PositiveInt">
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="IMAGING_MODE" type="t_IMAGING_MODE" id="IMAGING_MODE">
+		<xsd:annotation>
+			<xsd:documentation source="IMAGING_MODE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_IMAGING_MODE" id="t_IMAGING_MODE"><xsd:restriction base="String">
+			<xsd:enumeration value="Color"/>
+			<xsd:enumeration value="Colour"/>
+			<xsd:enumeration value="B_W"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="GRID_REFERENCE" type="t_GRID_REFERENCE" id="GRID_REFERENCE">
+		<xsd:annotation>
+			<xsd:documentation source="GRID_REFERENCE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_GRID_REFERENCE" id="t_GRID_REFERENCE">
+		<xsd:restriction base="String">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="SHIFT_VALUE" type="t_SHIFT_VALUE" id="SHIFT_VALUE">
+		<xsd:annotation>
+			<xsd:documentation source="SHIFT_VALUE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_SHIFT_VALUE" id="t_SHIFT_VALUE"><xsd:restriction base="Real">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+			<xsd:enumeration value="3"/>
+			<xsd:enumeration value="4"/>
+			<xsd:enumeration value="5"/>
+			<xsd:enumeration value="6"/>
+			<xsd:enumeration value="7"/>
+			<xsd:enumeration value="8"/>
+			<xsd:enumeration value="9"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="INCIDENCE_ANGLE" type="t_INCIDENCE_ANGLE" id="INCIDENCE_ANGLE">
+		<xsd:annotation>
+			<xsd:documentation source="INCIDENCE_ANGLE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_INCIDENCE_ANGLE" id="t_INCIDENCE_ANGLE">
+		<xsd:simpleContent>
+			<xsd:restriction base="Degree_Elt"><xsd:minInclusive value="-28.0">
+				</xsd:minInclusive>
+				<xsd:maxInclusive value="28.0">
+				</xsd:maxInclusive>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element name="VIEWING_ANGLE" type="t_VIEWING_ANGLE" id="VIEWING_ANGLE">
+		<xsd:annotation>
+			<xsd:documentation source="VIEWING_ANGLE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_VIEWING_ANGLE" id="t_VIEWING_ANGLE">
+		<xsd:simpleContent>
+			<xsd:restriction base="Degree_Elt"><xsd:minInclusive value="-32.0">
+				</xsd:minInclusive>
+				<xsd:maxInclusive value="32.0">
+				</xsd:maxInclusive>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element name="THEORETICAL_RESOLUTION" type="t_THEORETICAL_RESOLUTION" id="THEORETICAL_RESOLUTION">
+		<xsd:annotation>
+			<xsd:documentation source="THEORETICAL_RESOLUTION">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_THEORETICAL_RESOLUTION" id="t_THEORETICAL_RESOLUTION">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_THEORETICAL_RESOLUTION_Unit">
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_THEORETICAL_RESOLUTION_Unit"><xsd:restriction base="String">
+			<xsd:enumeration value="M">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="SUN_AZIMUTH" type="t_SUN_AZIMUTH" id="SUN_AZIMUTH">
+		<xsd:annotation>
+			<xsd:documentation source="SUN_AZIMUTH">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_SUN_AZIMUTH" id="t_SUN_AZIMUTH">
+		<xsd:simpleContent>
+			<xsd:restriction base="Degree_Elt"><xsd:minInclusive value="0.0">
+				</xsd:minInclusive>
+				<xsd:maxInclusive value="180.0">
+				</xsd:maxInclusive>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element name="SUN_ELEVATION" type="t_SUN_ELEVATION" id="SUN_ELEVATION">
+		<xsd:annotation>
+			<xsd:documentation source="SUN_ELEVATION">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_SUN_ELEVATION" id="t_SUN_ELEVATION">
+		<xsd:simpleContent>
+			<xsd:restriction base="Degree_Elt"><xsd:minInclusive value="0.0">
+				</xsd:minInclusive>
+				<xsd:maxInclusive value="90.0">
+				</xsd:maxInclusive>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element name="SCENE_RECTIFICATION_ELEV" type="t_SCENE_RECTIFICATION_ELEV" id="SCENE_RECTIFICATION_ELEV">
+		<xsd:annotation>
+			<xsd:documentation source="SCENE_RECTIFICATION_ELEV">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_SCENE_RECTIFICATION_ELEV" id="t_SCENE_RECTIFICATION_ELEV">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_SCENE_RECTIFICATION_ELEV_Linear_Unit">
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_SCENE_RECTIFICATION_ELEV_Linear_Unit"><xsd:restriction base="String">
+			<xsd:enumeration value="M">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="SCENE_PROCESSING_LEVEL" type="t_SCENE_PROCESSING_LEVEL" id="SCENE_PROCESSING_LEVEL">
+		<xsd:annotation>
+			<xsd:documentation source="SCENE_PROCESSING_LEVEL">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_SCENE_PROCESSING_LEVEL" id="t_SCENE_PROCESSING_LEVEL"><xsd:restriction base="String">
+			<xsd:enumeration value="1A"/>
+			<xsd:enumeration value="2A"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

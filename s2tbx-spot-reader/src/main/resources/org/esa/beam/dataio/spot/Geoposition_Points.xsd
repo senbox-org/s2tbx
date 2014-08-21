@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:include schemaLocation="Tie_Point.xsd"/>
+	<xsd:element id="Geoposition_Points" name="Geoposition_Points" type="t_Geoposition_Points">
+		<xsd:annotation>
+			<xsd:documentation source="Geoposition_Points"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Geoposition_Points" name="t_Geoposition_Points">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Tie_Point"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

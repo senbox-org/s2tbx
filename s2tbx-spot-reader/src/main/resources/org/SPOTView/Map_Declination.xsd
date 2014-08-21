@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.1.3" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+		<xsd:appinfo source="schema">
+		</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:element name="Map_Declination" type="t_Map_Declination" id="Map_Declination">
+		<xsd:annotation>
+			<xsd:documentation source="Map_Declination">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Map_Declination" id="t_Map_Declination">
+		<xsd:all>
+			<xsd:element ref="GRID_DECLINATION" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="MAGNETIC_DECLINATION" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="MAGNETIC_DECLINATION_DATE" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="MAGNETIC_DECL_ANNUAL_CHANGE" minOccurs="0">
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element name="GRID_DECLINATION" type="t_GRID_DECLINATION" id="GRID_DECLINATION">
+		<xsd:annotation>
+			<xsd:documentation source="GRID_DECLINATION">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_GRID_DECLINATION" id="t_GRID_DECLINATION">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_GRID_DECLINATION_Angular_Unit">
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_GRID_DECLINATION_Angular_Unit"><xsd:restriction base="String">
+			<xsd:enumeration value="DEG">
+			</xsd:enumeration>
+			<xsd:enumeration value="DMS">
+			</xsd:enumeration>
+			<xsd:enumeration value="GON">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="MAGNETIC_DECLINATION" type="t_MAGNETIC_DECLINATION" id="MAGNETIC_DECLINATION">
+		<xsd:annotation>
+			<xsd:documentation source="MAGNETIC_DECLINATION">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_MAGNETIC_DECLINATION" id="t_MAGNETIC_DECLINATION">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_MAGNETIC_DECLINATION_Angular_Unit">
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_MAGNETIC_DECLINATION_Angular_Unit"><xsd:restriction base="String">
+			<xsd:enumeration value="DEG">
+			</xsd:enumeration>
+			<xsd:enumeration value="DMS">
+			</xsd:enumeration>
+			<xsd:enumeration value="GON">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="MAGNETIC_DECLINATION_DATE" type="t_MAGNETIC_DECLINATION_DATE" id="MAGNETIC_DECLINATION_DATE">
+		<xsd:annotation>
+			<xsd:documentation source="MAGNETIC_DECLINATION_DATE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_MAGNETIC_DECLINATION_DATE" id="t_MAGNETIC_DECLINATION_DATE">
+		<xsd:restriction base="Date">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="MAGNETIC_DECL_ANNUAL_CHANGE" type="t_MAGNETIC_DECL_ANNUAL_CHANGE" id="MAGNETIC_DECL_ANNUAL_CHANGE">
+		<xsd:annotation>
+			<xsd:documentation source="MAGNETIC_DECL_ANNUAL_CHANGE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_MAGNETIC_DECL_ANNUAL_CHANGE" id="t_MAGNETIC_DECL_ANNUAL_CHANGE">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_MAGNETIC_DECL_ANNUAL_CHANGE_Angular_Unit">
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_MAGNETIC_DECL_ANNUAL_CHANGE_Angular_Unit"><xsd:restriction base="String">
+			<xsd:enumeration value="DEG">
+			</xsd:enumeration>
+			<xsd:enumeration value="DMS">
+			</xsd:enumeration>
+			<xsd:enumeration value="GON">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

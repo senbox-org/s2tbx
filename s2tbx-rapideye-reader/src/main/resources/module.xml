@@ -1,0 +1,63 @@
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+    <symbolicName>s2tbx-rapideye-reader</symbolicName>
+    <version>5.0</version>
+    <name>RapidEye Product Reader</name>
+
+    <description>Reads RapidEye NITF products</description>
+
+    <packaging>dir</packaging>
+
+    <dependency>
+        <module>beam-core</module>
+    </dependency>
+    <dependency>
+        <module>beam-geotiff</module>
+    </dependency>
+    <dependency>
+        <module>beam-visat-rcp</module>
+        <optional>true</optional>
+    </dependency>
+    <dependency>
+        <lib>lib/nitf.jar</lib>
+        <optional>false</optional>
+    </dependency>
+    <dependency>
+        <lib>lib/nitf.imageio.jar</lib>
+        <optional>false</optional>
+    </dependency>
+
+    <categories>Reader, RapidEye</categories>
+
+    <extension point="beam-ui:actions">
+        <action>
+            <id>importRapidEyeL1Product</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>RapidEyeNITF</formatName>
+            <useAllFileFilter>false</useAllFileFilter>
+            <shortDesc>Import a RapidEye L1 file</shortDesc>
+            <helpId>myRapidEyeL1Product</helpId>
+        </action>
+    </extension>
+
+    <extension point="beam-ui:actions">
+        <action>
+            <id>importRapidEyeL3Product</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>RapidEyeGeoTIFF</formatName>
+            <useAllFileFilter>false</useAllFileFilter>
+            <shortDesc>Import a RapidEye L3 file</shortDesc>
+            <helpId>myRapidEyeL3Product</helpId>
+        </action>
+    </extension>
+
+    <extension point="beam-core:rgbProfiles">
+        <rgbProfile>
+            <name>RapidEye</name>
+            <red>red</red>
+            <green>green</green>
+            <blue>blue</blue>
+        </rgbProfile>
+    </extension>
+
+</module>

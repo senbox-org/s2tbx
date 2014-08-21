@@ -1,0 +1,64 @@
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+    <symbolicName>s2tbx-spot-reader</symbolicName>
+    <version>5.0</version>
+    <name>SPOT DIMAP Product Reader</name>
+
+    <description>Reads SPOT-1 to SPOT-5 DIMAP products</description>
+
+    <packaging>dir</packaging>
+
+    <dependency>
+        <module>beam-core</module>
+    </dependency>
+    <dependency>
+        <module>beam-geotiff</module>
+    </dependency>
+    <dependency>
+        <module>beam-visat-rcp</module>
+        <optional>true</optional>
+    </dependency>
+
+    <categories>Reader, SPOT</categories>
+
+    <extension point="beam-ui:actions">
+        <action>
+            <id>importSPOTSceneProduct</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>SPOTDimap</formatName>
+            <useAllFileFilter>false</useAllFileFilter>
+            <shortDesc>Import a SPOT DIMAP file</shortDesc>
+            <helpId>mySPOTDimapProduct</helpId>
+        </action>
+    </extension>
+    <extension point="beam-ui:actions">
+        <action>
+            <id>importSPOTViewProduct</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>SPOTView</formatName>
+            <useAllFileFilter>false</useAllFileFilter>
+            <shortDesc>Import a SPOT View file</shortDesc>
+            <helpId>mySPOTViewProduct</helpId>
+        </action>
+    </extension>
+    <extension point="beam-ui:actions">
+        <action>
+            <id>importSPOTTake5Product</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>SPOTTake5</formatName>
+            <useAllFileFilter>false</useAllFileFilter>
+            <shortDesc>Import a SPOTTake5 file</shortDesc>
+            <helpId>mySPOTTake5Product</helpId>
+        </action>
+    </extension>
+
+    <extension point="beam-core:rgbProfiles">
+        <rgbProfile>
+            <name>SPOT</name>
+            <red>XS1</red>
+            <green>XS2</green>
+            <blue>XS3</blue>
+        </rgbProfile>
+    </extension>
+
+</module>

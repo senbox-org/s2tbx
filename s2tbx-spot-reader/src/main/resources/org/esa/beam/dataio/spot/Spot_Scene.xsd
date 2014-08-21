@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Giacobbo, Didier (SPOT IMAGE) --><xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:include schemaLocation="Vertex.xsd"/>
+	<xsd:include schemaLocation="Metadata_Id.xsd"/>
+	<xsd:include schemaLocation="Dataset_Id.xsd"/>
+	<xsd:include schemaLocation="Dataset_Frame.xsd"/>
+	<xsd:include schemaLocation="Production.xsd"/>
+	<xsd:include schemaLocation="Quality_Assessment.xsd"/>
+	<xsd:include schemaLocation="Coordinate_Reference_System.xsd"/>
+	<xsd:include schemaLocation="Raster_CS.xsd"/>
+	<xsd:include schemaLocation="Geoposition.xsd"/>
+	<xsd:include schemaLocation="Raster_Dimensions.xsd"/>
+	<xsd:include schemaLocation="Raster_Encoding.xsd"/>
+	<xsd:include schemaLocation="Data_Processing.xsd"/>
+	<xsd:include schemaLocation="Data_Access.xsd"/>
+	<xsd:include schemaLocation="Image_Display.xsd"/>
+	<xsd:include schemaLocation="Image_Interpretation.xsd"/>
+	<xsd:include schemaLocation="Dataset_Sources.xsd"/>
+	<xsd:include schemaLocation="Data_Strip.xsd"/>
+	<xsd:element id="Dimap_Document" name="Dimap_Document" type="t_Dimap_Document">
+		<xsd:annotation>
+			<xsd:documentation source="Dimap_Document"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Dimap_Document" name="t_Dimap_Document">
+		<xsd:all>
+			<xsd:element ref="Metadata_Id"/>
+			<xsd:element ref="Dataset_Id"/>
+			<xsd:element minOccurs="0" ref="Dataset_Frame"/>
+			<xsd:element ref="Coordinate_Reference_System"/>
+			<xsd:element ref="Raster_CS"/>
+			<xsd:element ref="Geoposition"/>
+			<xsd:element ref="Production"/>
+			<xsd:element minOccurs="0" ref="Quality_Assessment"/>
+			<xsd:element ref="Raster_Dimensions"/>
+			<xsd:element ref="Raster_Encoding"/>
+			<xsd:element ref="Data_Processing"/>
+			<xsd:element ref="Data_Access"/>
+			<xsd:element ref="Image_Display"/>
+			<xsd:element ref="Image_Interpretation"/>
+			<xsd:element ref="Dataset_Sources"/>
+			<xsd:element ref="Data_Strip"/>
+		</xsd:all>
+		<xsd:attribute name="name" type="String"/>
+		<!-- TOOLBOX - ajout de l'attribut name -->
+	</xsd:complexType>
+</xsd:schema>

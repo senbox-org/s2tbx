@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Quality_Parameter" name="Quality_Parameter" type="t_Quality_Parameter">
+		<xsd:annotation>
+			<xsd:documentation source="Quality_Parameter"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Quality_Parameter" name="t_Quality_Parameter">
+		<xsd:sequence>
+			<xsd:element ref="QUALITY_PARAMETER_DESC"/>
+			<xsd:element minOccurs="0" ref="QUALITY_PARAMETER_CODE"/>
+			<xsd:element minOccurs="0" ref="QUALITY_PARAMETER_VALUE"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="QUALITY_PARAMETER_DESC" name="QUALITY_PARAMETER_DESC" type="t_QUALITY_PARAMETER_DESC">
+		<xsd:annotation>
+			<xsd:documentation source="QUALITY_PARAMETER_DESC"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_QUALITY_PARAMETER_DESC" name="t_QUALITY_PARAMETER_DESC">
+		<xsd:restriction base="String"/>
+	</xsd:simpleType>
+	<xsd:element id="QUALITY_PARAMETER_CODE" name="QUALITY_PARAMETER_CODE" type="t_QUALITY_PARAMETER_CODE">
+		<xsd:annotation>
+			<xsd:documentation source="QUALITY_PARAMETER_CODE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_QUALITY_PARAMETER_CODE" name="t_QUALITY_PARAMETER_CODE">
+		<xsd:restriction base="Code"/>
+	</xsd:simpleType>
+	<xsd:element id="QUALITY_PARAMETER_VALUE" name="QUALITY_PARAMETER_VALUE" type="t_QUALITY_PARAMETER_VALUE">
+		<xsd:annotation>
+			<xsd:documentation source="QUALITY_PARAMETER_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_QUALITY_PARAMETER_VALUE" name="t_QUALITY_PARAMETER_VALUE">
+		<xsd:complexContent>
+			<xsd:extension base="Text"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>

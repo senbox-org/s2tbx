@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Vertex.xsd"/>
+	<xsd:element id="Dataset_Frame" name="Dataset_Frame" type="t_Dataset_Frame">
+		<xsd:annotation>
+			<xsd:documentation source="Dataset_Frame"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Dataset_Frame" name="t_Dataset_Frame">
+		<xsd:sequence>
+			<xsd:element maxOccurs="8" minOccurs="3" ref="Vertex"/>
+			<xsd:element ref="Scene_Center"/>
+			<xsd:element ref="SCENE_ORIENTATION"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Scene_Center" name="Scene_Center" type="t_Scene_Center">
+		<xsd:annotation>
+			<xsd:documentation source="Scene_Center"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Scene_Center" name="t_Scene_Center">
+		<xsd:all>
+			<xsd:element ref="FRAME_LON"/>
+			<xsd:element ref="FRAME_LAT"/>
+			<xsd:element ref="FRAME_COL"/>
+			<xsd:element ref="FRAME_ROW"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="SCENE_ORIENTATION" name="SCENE_ORIENTATION" type="t_SCENE_ORIENTATION">
+		<xsd:annotation>
+			<xsd:documentation source="SCENE_ORIENTATION"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_SCENE_ORIENTATION" name="t_SCENE_ORIENTATION">
+		<xsd:simpleContent>
+			<xsd:restriction base="ANGLE_SCENE_ORIENTATION"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

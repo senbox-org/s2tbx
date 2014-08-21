@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Giacobbo, Didier (SPOT IMAGE) --><!-- edited with XMLSPY v5 rel. 3 U (http://www.xmlspy.com) by Patrick Floissac (realix) --><xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:simpleType name="k_Dimap_Version">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="1.0"/>
+			<xsd:enumeration value="1.1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="k_DIMAP">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DIMAP"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Linear_Unit">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="M"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Period_Unit">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="S"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="uPeriod_Unit">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="uS"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DEG_Angular_Unit">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DEG"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Angular_Unit">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DEG"/>
+			<xsd:enumeration value="RAD"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Linear_Velocity_Unit">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="M.S-1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Angular_Velocity_Unit">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="RAD.S-1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Unit">
+		<xsd:union memberTypes="Linear_Unit Angular_Unit Linear_Velocity_Unit Angular_Velocity_Unit"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="L_Unit">
+		<xsd:union memberTypes="Linear_Unit Linear_Velocity_Unit"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="A_Unit">
+		<xsd:union memberTypes="Angular_Unit Angular_Velocity_Unit"/>
+	</xsd:simpleType>
+	<xsd:complexType name="Period">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="Period_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="uPeriod">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="uPeriod_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Linear">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="Linear_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Linear_Velocity">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="Linear_Velocity_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Linear_or_Velocity">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="L_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="DEG_Angular">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="DEG_Angular_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Angular">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="Angular_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Angular_Velocity">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="Angular_Velocity_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Angular_or_Velocity">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="A_Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Dimension">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="Unit"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="URI">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="href" type="xsd:anyURI" use="required"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="Integer">
+		<xsd:restriction base="xsd:integer"/>
+	</xsd:simpleType>
+	<xsd:complexType mixed="true" name="Text">
+		<xsd:sequence>
+			<xsd:any maxOccurs="unbounded" minOccurs="0" processContents="skip"/>
+		</xsd:sequence>
+		<xsd:anyAttribute namespace="http://www.w3.org/1999/xhtml"/>
+	</xsd:complexType>
+	<xsd:simpleType name="Code">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[A-Za-z]+:[0-9A-Za-z]+"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="String">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="Date">
+		<xsd:restriction base="xsd:date">
+			<xsd:pattern value="\d\d\d\d-\d\d-\d\d"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Time">
+		<xsd:restriction base="xsd:time">
+			<xsd:pattern value="\d\d:\d\d:\d\d\.?\d*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DateTime">
+		<xsd:restriction base="xsd:dateTime">
+			<xsd:pattern value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.?\d*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- utilisation des types xsd :
+PositiveInt       > xsd:nonNegativeInteger
+PositiveOrNullInt > xsd:positiveInteger 
+
+	<xsd:simpleType name="PositiveInt">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="PositiveOrNullInt">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+-->
+	<xsd:simpleType name="Byte">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="255"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="ANGLE_SCENE_ORIENTATION">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular">
+				<xsd:minInclusive value="0.0"/>
+				<xsd:maxInclusive value="360.0"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- PFC - 
+	<xsd:complexType name="Latitude">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular">
+				<xsd:minInclusive value="-90.0"/>
+				<xsd:maxInclusive value="90.0"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Longitude">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular">
+				<xsd:minInclusive value="-180.0"/>
+				<xsd:maxInclusive value="180.0"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Azimuth">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular">
+				<xsd:minInclusive value="0.0"/>
+				<xsd:maxInclusive value="360.0"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Elevation">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular">
+				<xsd:minInclusive value="-90.0"/>
+				<xsd:maxInclusive value="90.0"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+-->
+	<xsd:simpleType name="Byte_Order">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="I"/>
+			<xsd:enumeration value="M"/>
+			<xsd:enumeration value="INTEL"/>
+			<xsd:enumeration value="MOTOROLA"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Compression_Names">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="NONE"/>
+			<xsd:enumeration value="JPEG"/>
+			<xsd:enumeration value="MOTOROLA"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Compression_Types">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="LOSSLESS"/>
+			<xsd:enumeration value="LOSSY"/>
+			<xsd:enumeration value="INTEL"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Processing_Levels">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1A"/>
+			<xsd:enumeration value="1B"/>
+			<xsd:enumeration value="2A"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Geometric_Processings">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="RAW"/>
+			<xsd:enumeration value="SYSTEM"/>
+			<xsd:enumeration value="PRECISION 2A"/>
+			<xsd:enumeration value="ORTHO"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Radiometric_Processings">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="NONE"/>
+			<xsd:enumeration value="SYSTEM"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Spectral_Processings">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="X"/>
+			<xsd:enumeration value="T"/>
+			<xsd:enumeration value="M+X"/>
+			<xsd:enumeration value="M+I"/>
+			<xsd:enumeration value="HM+J"/>
+			<xsd:enumeration value="HM+X"/>
+			<xsd:enumeration value="T+X"/>
+			<xsd:enumeration value="T+J"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Decompression_Types">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="QIS"/>
+			<xsd:enumeration value="QIA"/>
+			<xsd:enumeration value="QIC"/>
+			<xsd:enumeration value="QIA+C"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Resampling_Methods">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="CC"/>
+			<xsd:enumeration value="NN"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Special_Value_Texts">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="NODATA"/>
+			<xsd:enumeration value="SATURATED"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="YesNo">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Y"/>
+			<xsd:enumeration value="N"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="SM_Processing_Types">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="F-INTERPOLATION"/>
+			<xsd:enumeration value="F-INTERPOLATION-CONVOLUTION"/>
+			<xsd:enumeration value="W-ALL"/>
+			<xsd:enumeration value="F-INTERPOLATION-W-CONVOLUTION-DENOISING"/>
+			<xsd:enumeration value="F-INTERPOLATION-CONVOLUTION-W-DENOISING"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Correction_Algorithm_Types">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DROP_OUT_DETECTION_CORRECTION"/>
+			<xsd:enumeration value="INTER_ARRAY_CORRECTION"/>
+			<xsd:enumeration value="DCT_COMPRESSION_CORRECTION"/>
+			<xsd:enumeration value="REMANENCE_CORRECTION"/>
+			<xsd:enumeration value="ODD_EVEN_LINES_CORRECTION"/>
+			<xsd:enumeration value="ATTITUDE_CORRECTION"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- TOOLBOX - ajout UNSIGNED -->
+	<xsd:simpleType name="Data_Types">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="BYTE"/>
+			<xsd:enumeration value="SHORT"/>
+			<xsd:enumeration value="UNSIGNED"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="String_Version">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute name="version" type="xsd:string" use="optional"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<!-- PFC	
+	<xsd:complexType name="Data_File_Formats">
+		<xsd:simpleContent>
+			<xsd:restriction base="String_Version">
+				<xsd:enumeration value="RAW"/>
+				<xsd:enumeration value="GEOTIFF"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="QL_Formats">
+		<xsd:simpleContent>
+			<xsd:restriction base="String_Version">
+				<xsd:enumeration value="JFIF"/>
+				<xsd:enumeration value="JPEG"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="Geodetic_Tables">
+		<xsd:simpleContent>
+			<xsd:restriction base="String_Version">
+				<xsd:enumeration value="EPSG"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="QA_Tables">
+		<xsd:simpleContent>
+			<xsd:restriction base="String_Version">
+				<xsd:enumeration value="SPOT"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+-->
+	<xsd:simpleType name="Horizontal_CS_Types">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="PROJECTED"/>
+			<xsd:enumeration value="GEOGRAPHIC"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Component_Types">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DIMAP"/>
+			<xsd:enumeration value="ENCAPSULATED"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="DF_Organisation">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="BAND_COMPOSITE"/>
+			<xsd:enumeration value="BAND_SEPARATE"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Raster_CS_Types">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="POINT"/>
+			<xsd:enumeration value="CELL"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Pixel_Origins">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Revolution_Numbers">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxInclusive value="369"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Mirror_Step_Range">
+		<xsd:restriction base="xsd:nonNegativeInteger">
+			<xsd:minInclusive value="3"/>
+			<xsd:maxInclusive value="93"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Compression_Modes">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="LINEAR"/>
+			<xsd:enumeration value="DPCM"/>
+			<xsd:enumeration value="DCT"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- TOOLBOX - inversion des enumerations de Direct_Playback_Indicators et Swath_Modes -->
+	<xsd:simpleType name="Direct_Playback_Indicators">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DT"/>
+			<xsd:enumeration value="E1"/>
+			<xsd:enumeration value="E2"/>
+			<xsd:enumeration value="PL"/>
+			<xsd:enumeration value="MX"/>
+			<xsd:enumeration value="MP"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Swath_Modes">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="REDUCED"/>
+			<xsd:enumeration value="FULL"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="Bands_Layout">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="BIL"/>
+			<xsd:enumeration value="BSQ"/>
+			<xsd:enumeration value="BIP"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- PFC	
+	<xsd:complexType name="Viewing_Direction">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular">
+				<xsd:minInclusive value="-90.0"/>
+				<xsd:maxInclusive value="90.0"/>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+-->
+	<xsd:simpleType name="Real">
+		<xsd:restriction base="xsd:double"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ZeroOne">
+		<xsd:restriction base="xsd:double">
+			<xsd:minInclusive value="0.0"/>
+			<xsd:maxInclusive value="1.0"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element id="BAND_INDEX" name="BAND_INDEX" type="t_BAND_INDEX">
+		<xsd:annotation>
+			<xsd:documentation source="BAND_INDEX"/>
+			<xsd:appinfo source="BAND_INDEX"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_BAND_INDEX" name="t_BAND_INDEX">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:nonNegativeInteger"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

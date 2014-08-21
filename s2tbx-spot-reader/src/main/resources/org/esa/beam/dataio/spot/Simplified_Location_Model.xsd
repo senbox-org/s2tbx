@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Simplified_Location_Model" name="Simplified_Location_Model" type="t_Simplified_Location_Model">
+		<xsd:annotation>
+			<xsd:documentation source="Simplified_Location_Model"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Simplified_Location_Model" name="t_Simplified_Location_Model">
+		<xsd:all>
+			<xsd:element ref="Direct_Location_Model"/>
+			<xsd:element ref="Reverse_Location_Model"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Direct_Location_Model" name="Direct_Location_Model" type="t_Direct_Location_Model">
+		<xsd:annotation>
+			<xsd:documentation source="Direct_Location_Model"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Direct_Location_Model" name="t_Direct_Location_Model">
+		<xsd:all>
+			<xsd:element ref="lc_List"/>
+			<xsd:element ref="pc_List"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Reverse_Location_Model" name="Reverse_Location_Model" type="t_Reverse_Location_Model">
+		<xsd:annotation>
+			<xsd:documentation source="Reverse_Location_Model"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Reverse_Location_Model" name="t_Reverse_Location_Model">
+		<xsd:all>
+			<xsd:element ref="lc_List"/>
+			<xsd:element ref="pc_List"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="lc_List" name="lc_List" type="t_lc_List">
+		<xsd:annotation>
+			<xsd:documentation source="lc_List"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_lc_List" name="t_lc_List">
+		<xsd:sequence>
+			<xsd:element maxOccurs="6" minOccurs="6" ref="lc"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="lc" name="lc" type="t_lc">
+		<xsd:annotation>
+			<xsd:documentation source="lc"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_lc" name="t_lc">
+		<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="pc_List" name="pc_List" type="t_pc_List">
+		<xsd:annotation>
+			<xsd:documentation source="pc_List"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_pc_List" name="t_pc_List">
+		<xsd:sequence>
+			<xsd:element maxOccurs="6" minOccurs="6" ref="pc"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="pc" name="pc" type="t_pc">
+		<xsd:annotation>
+			<xsd:documentation source="pc"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_pc" name="t_pc">
+		<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+</xsd:schema>

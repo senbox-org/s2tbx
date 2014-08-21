@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Giacobbo, Didier (SPOT IMAGE) --><xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Source_Frame.xsd"/>
+	<xsd:include schemaLocation="Scene_Source.xsd"/>
+	<xsd:include schemaLocation="Quality_Assessment.xsd"/>
+	<xsd:element id="Source_Information" name="Source_Information" type="t_Source_Information">
+		<xsd:annotation>
+			<xsd:documentation source="Source_Information"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Source_Information" name="t_Source_Information">
+		<xsd:all>
+			<xsd:element ref="SOURCE_ID"/>
+			<xsd:element ref="SOURCE_TYPE"/>
+			<xsd:element ref="SOURCE_DESCRIPTION"/>
+			<xsd:element minOccurs="0" ref="Source_Frame"/>
+			<xsd:element minOccurs="0" ref="Scene_Source"/>
+			<xsd:element minOccurs="0" ref="Quality_Assessment"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="SOURCE_ID" name="SOURCE_ID" type="t_SOURCE_ID">
+		<xsd:annotation>
+			<xsd:documentation source="SOURCE_ID"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_SOURCE_ID" name="t_SOURCE_ID">
+		<xsd:restriction base="String"/>
+	</xsd:simpleType>
+	<xsd:element id="SOURCE_TYPE" name="SOURCE_TYPE" type="t_SOURCE_TYPE">
+		<xsd:annotation>
+			<xsd:documentation source="SOURCE_TYPE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_SOURCE_TYPE" name="t_SOURCE_TYPE">
+		<xsd:restriction base="String"/>
+	</xsd:simpleType>
+	<xsd:element id="SOURCE_DESCRIPTION" name="SOURCE_DESCRIPTION" type="t_SOURCE_DESCRIPTION">
+		<xsd:annotation>
+			<xsd:documentation source="SOURCE_DESCRIPTION"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_SOURCE_DESCRIPTION" name="t_SOURCE_DESCRIPTION">
+		<xsd:complexContent>
+			<xsd:extension base="Text"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>

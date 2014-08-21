@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema version="1.1.3" elementFormDefault="unqualified" attributeFormDefault="unqualified" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:element name="Band_Statistics" id="Band_Statistics" type="t_Band_Statistics">
+		<xsd:annotation>
+			<xsd:documentation source="Band_Statistics">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Band_Statistics" id="t_Band_Statistics">
+		<xsd:all>
+			<xsd:element ref="BAND_INDEX">
+			</xsd:element>
+			<xsd:element ref="STX_MIN" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="STX_MAX" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="STX_MEAN" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="STX_STDV" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="STX_LIN_MIN" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="STX_LIN_MAX" minOccurs="1">
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element name="STX_MIN" id="STX_MIN" type="t_STX_MIN">
+		<xsd:annotation>
+			<xsd:documentation source="STX_MIN">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_STX_MIN" id="t_STX_MIN">
+		<xsd:restriction base="Real">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="STX_MAX" id="STX_MAX" type="t_STX_MAX">
+		<xsd:annotation>
+			<xsd:documentation source="STX_MAX">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_STX_MAX" id="t_STX_MAX">
+		<xsd:restriction base="Real">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="STX_MEAN" id="STX_MEAN" type="t_STX_MEAN">
+		<xsd:annotation>
+			<xsd:documentation source="STX_MEAN">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_STX_MEAN" id="t_STX_MEAN">
+		<xsd:restriction base="Real">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="STX_STDV" id="STX_STDV" type="t_STX_STDV">
+		<xsd:annotation>
+			<xsd:documentation source="STX_STDV">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_STX_STDV" id="t_STX_STDV">
+		<xsd:restriction base="Real">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="STX_LIN_MIN" id="STX_LIN_MIN" type="t_STX_LIN_MIN">
+		<xsd:annotation>
+			<xsd:documentation source="STX_LIN_MIN">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_STX_LIN_MIN" id="t_STX_LIN_MIN">
+		<xsd:restriction base="Real">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="STX_LIN_MAX" id="STX_LIN_MAX" type="t_STX_LIN_MAX">
+		<xsd:annotation>
+			<xsd:documentation source="STX_LIN_MAX">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_STX_LIN_MAX" id="t_STX_LIN_MAX">
+		<xsd:restriction base="Real">
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

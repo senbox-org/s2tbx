@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.1.3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:dim="http://www.spotimage.fr/Dimap">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:element name="Gain_Section" type="t_Gain_Section" id="Gain_Section">
+		<xsd:annotation>
+			<xsd:documentation source="Gain_Section">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Gain_Section" id="t_Gain_Section">
+		<xsd:sequence>
+			<xsd:element ref="GAIN_NUMBER">
+			</xsd:element>
+			<xsd:element ref="GAIN_ANALOG_VALUE">
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="t_GAIN_NUMBER" id="t_GAIN_NUMBER">
+		<xsd:restriction base="xsd:int">
+			<xsd:enumeration value="1">
+			</xsd:enumeration>
+			<xsd:enumeration value="2">
+			</xsd:enumeration>
+			<xsd:enumeration value="3">
+			</xsd:enumeration>
+			<xsd:enumeration value="4">
+			</xsd:enumeration>
+			<xsd:enumeration value="5">
+			</xsd:enumeration>
+			<xsd:enumeration value="6">
+			</xsd:enumeration>
+			<xsd:enumeration value="7">
+			</xsd:enumeration>
+			<xsd:enumeration value="8">
+			</xsd:enumeration>
+			<xsd:enumeration value="9">
+			</xsd:enumeration>
+			<xsd:enumeration value="10">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="GAIN_NUMBER" type="t_GAIN_NUMBER" id="GAIN_NUMBER">
+		<xsd:annotation>
+			<xsd:documentation source="GAIN_NUMBER">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_GAIN_ANALOG_VALUE" id="t_GAIN_ANALOG_VALUE">
+		<xsd:restriction base="xsd:float">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="GAIN_ANALOG_VALUE" type="t_GAIN_ANALOG_VALUE" id="GAIN_ANALOG_VALUE">
+		<xsd:annotation>
+			<xsd:documentation source="GAIN_ANALOG_VALUE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+</xsd:schema>

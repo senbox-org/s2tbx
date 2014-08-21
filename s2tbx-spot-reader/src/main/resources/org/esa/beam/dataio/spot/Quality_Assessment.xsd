@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:include schemaLocation="Quality_Parameter.xsd"/>
+	<xsd:element id="Quality_Assessment" name="Quality_Assessment" type="t_Quality_Assessment">
+		<xsd:annotation>
+			<xsd:documentation source="Quality_Assessment"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Quality_Assessment" name="t_Quality_Assessment">
+		<xsd:sequence>
+			<xsd:element ref="QUALITY_TABLES"/>
+			<xsd:element maxOccurs="unbounded" ref="Quality_Parameter"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="QUALITY_TABLES" name="QUALITY_TABLES" type="t_QUALITY_TABLES">
+		<xsd:annotation>
+			<xsd:documentation source="QUALITY_TABLES"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_QUALITY_TABLES" name="t_QUALITY_TABLES">
+		<xsd:complexContent>
+			<xsd:restriction base="String_Version"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>

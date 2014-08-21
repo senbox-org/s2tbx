@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Geoposition_Insert.xsd"/>
+	<xsd:include schemaLocation="Geoposition_Points.xsd"/>
+	<xsd:include schemaLocation="Simplified_Location_Model.xsd"/>
+	<xsd:element id="Geoposition" name="Geoposition" type="t_Geoposition">
+		<xsd:annotation>
+			<xsd:documentation source="Geoposition"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Geoposition" name="t_Geoposition">
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="Geoposition_Insert"/>
+			<xsd:element minOccurs="0" ref="Geoposition_Points"/>
+			<xsd:element minOccurs="0" ref="Simplified_Location_Model"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

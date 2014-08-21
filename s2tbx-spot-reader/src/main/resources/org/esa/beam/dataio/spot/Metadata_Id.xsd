@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Giacobbo, Didier (SPOT IMAGE) --><xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Metadata_Id" name="Metadata_Id" type="t_Metadata_Id">
+		<xsd:annotation>
+			<xsd:documentation source="Metadata_Id"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Metadata_Id" name="t_Metadata_Id">
+		<xsd:all>
+			<xsd:element ref="METADATA_FORMAT"/>
+			<xsd:element ref="METADATA_PROFILE"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="METADATA_FORMAT" name="METADATA_FORMAT" type="t_METADATA_FORMAT">
+		<xsd:annotation>
+			<xsd:documentation source="METADATA_FORMAT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_METADATA_FORMAT" name="t_METADATA_FORMAT">
+		<xsd:simpleContent>
+			<xsd:extension base="k_DIMAP">
+				<xsd:attribute name="version" type="k_Dimap_Version"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="METADATA_PROFILE" name="METADATA_PROFILE" type="t_METADATA_PROFILE">
+		<xsd:annotation>
+			<xsd:documentation source="METADATA_PROFILE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_METADATA_PROFILE" name="t_METADATA_PROFILE">
+		<xsd:restriction base="String">
+			<xsd:enumeration value="SPOTSCENE_1A"/>
+			<xsd:enumeration value="SPOTSCENE_1B"/>
+			<xsd:enumeration value="SPOTSCENE_2A"/>
+			<xsd:enumeration value="SPOTSEGMENT_0"/>
+			<xsd:enumeration value="SPOTSEGMENT_1A"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

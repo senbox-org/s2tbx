@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Spectral_Band_Info.xsd"/>
+	<xsd:element id="Image_Interpretation" name="Image_Interpretation" type="t_Image_Interpretation">
+		<xsd:annotation>
+			<xsd:documentation source="Image_Interpretation">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Image_Interpretation" name="t_Image_Interpretation">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="1" ref="Spectral_Band_Info">
+				<xsd:annotation>
+					<xsd:appinfo source="t_Image_Interpretation">
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

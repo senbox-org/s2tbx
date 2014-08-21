@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.1.3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:dim="http://www.spotimage.fr/Dimap">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:include schemaLocation="Data_File.xsd"/>
+	<xsd:element name="Data_Access" type="t_Data_Access" id="Data_Access">
+		<xsd:annotation>
+			<xsd:documentation source="Data_Access">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Data_Access" id="t_Data_Access">
+		<xsd:sequence>
+			<xsd:element ref="DATA_FILE_FORMAT">
+			</xsd:element>
+			<xsd:element ref="DATA_FILE_ORGANISATION" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Data_File" maxOccurs="unbounded">
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="DATA_FILE_FORMAT" type="t_DATA_FILE_FORMAT" id="DATA_FILE_FORMAT">
+		<xsd:annotation>
+			<xsd:documentation source="DATA_FILE_FORMAT">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_DATA_FILE_FORMAT" id="t_DATA_FILE_FORMAT">
+		<xsd:simpleContent>
+			<xsd:restriction base="String_Version">
+				<xsd:enumeration value="RAW">
+				</xsd:enumeration>
+				<xsd:enumeration value="GEOTIFF">
+				</xsd:enumeration>
+			</xsd:restriction>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element name="DATA_FILE_ORGANISATION" type="t_DATA_FILE_ORGANISATION" id="DATA_FILE_ORGANISATION">
+		<xsd:annotation>
+			<xsd:documentation source="DATA_FILE_ORGANISATION">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_DATA_FILE_ORGANISATION" id="t_DATA_FILE_ORGANISATION">
+		<xsd:restriction base="DF_Organisation">
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

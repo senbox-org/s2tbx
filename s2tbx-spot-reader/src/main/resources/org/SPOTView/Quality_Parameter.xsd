@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema version="1.1.3" elementFormDefault="unqualified" attributeFormDefault="unqualified" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:element name="Quality_Parameter" id="Quality_Parameter" type="t_Quality_Parameter">
+		<xsd:annotation>
+			<xsd:documentation source="Quality_Parameter">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Quality_Parameter" id="t_Quality_Parameter">
+		<xsd:sequence>
+			<xsd:element ref="QUALITY_PARAMETER_DESC">
+			</xsd:element>
+			<xsd:element ref="QUALITY_PARAMETER_CODE" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="QUALITY_PARAMETER_VALUE" minOccurs="1">
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="QUALITY_PARAMETER_DESC" id="QUALITY_PARAMETER_DESC" type="t_QUALITY_PARAMETER_DESC">
+		<xsd:annotation>
+			<xsd:documentation source="QUALITY_PARAMETER_DESC">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_QUALITY_PARAMETER_DESC" id="t_QUALITY_PARAMETER_DESC">
+		<xsd:restriction base="String">
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="QUALITY_PARAMETER_CODE" id="QUALITY_PARAMETER_CODE" type="t_QUALITY_PARAMETER_CODE">
+		<xsd:annotation>
+			<xsd:documentation source="QUALITY_PARAMETER_CODE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_QUALITY_PARAMETER_CODE" id="t_QUALITY_PARAMETER_CODE"><xsd:restriction base="String">
+			<xsd:pattern value="[A-Za-z]+:[0-9A-Za-z_]+"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="QUALITY_PARAMETER_VALUE" id="QUALITY_PARAMETER_VALUE" type="t_QUALITY_PARAMETER_VALUE">
+		<xsd:annotation>
+			<xsd:documentation source="QUALITY_PARAMETER_VALUE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_QUALITY_PARAMETER_VALUE" id="t_QUALITY_PARAMETER_VALUE">
+		<xsd:complexContent>
+			<xsd:extension base="Text">
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>

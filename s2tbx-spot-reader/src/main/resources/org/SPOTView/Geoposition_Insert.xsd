@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.1.3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:dim="http://www.spotimage.fr/Dimap">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:element name="Geoposition_Insert" type="t_Geoposition_Insert" id="Geoposition_Insert">
+		<xsd:annotation>
+			<xsd:documentation source="Geoposition_Insert">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Geoposition_Insert" id="t_Geoposition_Insert">
+		<xsd:all>
+			<xsd:element ref="ULXMAP">
+			</xsd:element>
+			<xsd:element ref="ULYMAP">
+			</xsd:element>
+			<xsd:element ref="XDIM">
+			</xsd:element>
+			<xsd:element ref="YDIM">
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element name="ULXMAP" type="t_ULXMAP" id="ULXMAP">
+		<xsd:annotation>
+			<xsd:documentation source="ULXMAP">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_ULXMAP" id="t_ULXMAP">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_ULXMAP_Unit">
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_ULXMAP_Unit"><xsd:restriction base="String">
+			<xsd:enumeration value="M">
+			</xsd:enumeration>
+			<xsd:enumeration value="FT">
+			</xsd:enumeration>
+			<xsd:enumeration value="DEG">
+			</xsd:enumeration>
+			<xsd:enumeration value="DMS">
+			</xsd:enumeration>
+			<xsd:enumeration value="GON">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="ULYMAP" type="t_ULYMAP" id="ULYMAP">
+		<xsd:annotation>
+			<xsd:documentation source="ULYMAP">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_ULYMAP" id="t_ULYMAP">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_ULYMAP_Unit">
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_ULYMAP_Unit"><xsd:restriction base="String">
+			<xsd:enumeration value="M">
+			</xsd:enumeration>
+			<xsd:enumeration value="FT">
+			</xsd:enumeration>
+			<xsd:enumeration value="DEG">
+			</xsd:enumeration>
+			<xsd:enumeration value="DMS">
+			</xsd:enumeration>
+			<xsd:enumeration value="GON">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="XDIM" type="t_XDIM" id="XDIM">
+		<xsd:annotation>
+			<xsd:documentation source="XDIM">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_XDIM" id="t_XDIM">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_XDIM_Unit">
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_XDIM_Unit"><xsd:restriction base="String">
+			<xsd:enumeration value="M">
+			</xsd:enumeration>
+			<xsd:enumeration value="FT">
+			</xsd:enumeration>
+			<xsd:enumeration value="DEG">
+			</xsd:enumeration>
+			<xsd:enumeration value="DMS">
+			</xsd:enumeration>
+			<xsd:enumeration value="GON">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="YDIM" type="t_YDIM" id="YDIM">
+		<xsd:annotation>
+			<xsd:documentation source="YDIM">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_YDIM" id="t_YDIM">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:double">
+				<xsd:attribute name="unit" type="k_YDIM_Unit">
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:simpleType name="k_YDIM_Unit"><xsd:restriction base="String">
+			<xsd:enumeration value="M">
+			</xsd:enumeration>
+			<xsd:enumeration value="FT">
+			</xsd:enumeration>
+			<xsd:enumeration value="DEG">
+			</xsd:enumeration>
+			<xsd:enumeration value="DMS">
+			</xsd:enumeration>
+			<xsd:enumeration value="GON">
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

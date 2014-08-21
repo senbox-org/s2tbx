@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Tie_Point" name="Tie_Point" type="t_Tie_Point">
+		<xsd:annotation>
+			<xsd:documentation source="Tie_Point"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Tie_Point" name="t_Tie_Point">
+		<xsd:all>
+			<xsd:element ref="TIE_POINT_CRS_X"/>
+			<xsd:element ref="TIE_POINT_CRS_Y"/>
+			<xsd:element minOccurs="0" ref="TIE_POINT_CRS_Z"/>
+			<xsd:element ref="TIE_POINT_DATA_X"/>
+			<xsd:element ref="TIE_POINT_DATA_Y"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="TIE_POINT_CRS_X" name="TIE_POINT_CRS_X" type="t_TIE_POINT_CRS_X">
+		<xsd:annotation>
+			<xsd:documentation source="TIE_POINT_CRS_X"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_TIE_POINT_CRS_X" name="t_TIE_POINT_CRS_X">
+			<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="TIE_POINT_CRS_Y" name="TIE_POINT_CRS_Y" type="t_TIE_POINT_CRS_Y">
+		<xsd:annotation>
+			<xsd:documentation source="TIE_POINT_CRS_Y"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_TIE_POINT_CRS_Y" name="t_TIE_POINT_CRS_Y">
+			<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="TIE_POINT_CRS_Z" name="TIE_POINT_CRS_Z" type="t_TIE_POINT_CRS_Z">
+		<xsd:annotation>
+			<xsd:documentation source="TIE_POINT_CRS_Z"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_TIE_POINT_CRS_Z" name="t_TIE_POINT_CRS_Z">
+		<xsd:simpleContent>
+			<xsd:extension base="Linear"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="TIE_POINT_DATA_X" name="TIE_POINT_DATA_X" type="t_TIE_POINT_DATA_X">
+		<xsd:annotation>
+			<xsd:documentation source="TIE_POINT_DATA_X"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_TIE_POINT_DATA_X" name="t_TIE_POINT_DATA_X">
+			<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="TIE_POINT_DATA_Y" name="TIE_POINT_DATA_Y" type="t_TIE_POINT_DATA_Y">
+		<xsd:annotation>
+			<xsd:documentation source="TIE_POINT_DATA_Y"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_TIE_POINT_DATA_Y" name="t_TIE_POINT_DATA_Y">
+			<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+</xsd:schema>

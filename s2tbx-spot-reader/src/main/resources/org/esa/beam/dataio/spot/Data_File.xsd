@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Data_File" name="Data_File" type="t_Data_File">
+		<xsd:annotation>
+			<xsd:documentation source="Data_File"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Data_File" name="t_Data_File">
+		<xsd:all>
+			<xsd:element ref="DATA_FILE_PATH"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="DATA_FILE_PATH" name="DATA_FILE_PATH" type="t_DATA_FILE_PATH">
+		<xsd:annotation>
+			<xsd:documentation source="DATA_FILE_PATH"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_DATA_FILE_PATH" name="t_DATA_FILE_PATH">
+		<xsd:simpleContent>
+			<xsd:extension base="URI"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

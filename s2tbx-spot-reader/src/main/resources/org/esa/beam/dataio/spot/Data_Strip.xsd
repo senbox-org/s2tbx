@@ -1,0 +1,1449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Giacobbo, Didier (SPOT IMAGE) --><!-- ChA,2002-05-22 : bug correction Q0..4 Double -> Real --><xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Data_Strip" name="Data_Strip" type="t_Data_Strip">
+		<xsd:annotation>
+			<xsd:documentation source="Data_Strip"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Data_Strip" name="t_Data_Strip">
+		<xsd:all>
+			<xsd:element minOccurs="0" ref="Data_Strip_Identification"/>
+			<xsd:element ref="Satellite_Time"/>
+			<xsd:element ref="Ephemeris"/>
+			<xsd:element minOccurs="0" ref="Satellite_Attitudes"/>
+			<xsd:element ref="Sensor_Configuration"/>
+			<xsd:element ref="Frame_Counters"/>
+			<xsd:element ref="Data_Strip_Coordinates"/>
+			<xsd:element ref="Models"/>
+			<xsd:element ref="Sensor_Calibration"/>
+			<xsd:element minOccurs="0" ref="Bad_Lines"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Satellite_Time" name="Satellite_Time" type="t_Satellite_Time">
+		<xsd:annotation>
+			<xsd:documentation source="Satellite_Time"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Satellite_Time" name="t_Satellite_Time">
+		<xsd:all>
+			<xsd:element ref="UT_DATE"/>
+			<xsd:element ref="CLOCK_VALUE"/>
+			<xsd:element ref="CLOCK_PERIOD"/>
+			<xsd:element ref="BOARD_TIME"/>
+			<xsd:element ref="TAI_TUC"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="UT_DATE" name="UT_DATE" type="String">
+		<xsd:annotation>
+			<xsd:documentation source="UT_DATE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="CLOCK_VALUE" name="CLOCK_VALUE" type="t_CLOCK_VALUE">
+		<xsd:annotation>
+			<xsd:documentation source="CLOCK_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_CLOCK_VALUE" name="t_CLOCK_VALUE">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="CLOCK_PERIOD" name="CLOCK_PERIOD" type="Period">
+		<xsd:annotation>
+			<xsd:documentation source="CLOCK_PERIOD"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="BOARD_TIME" name="BOARD_TIME" type="t_BOARD_TIME">
+		<xsd:annotation>
+			<xsd:documentation source="BOARD_TIME"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_BOARD_TIME" name="t_BOARD_TIME">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="TAI_TUC" name="TAI_TUC" type="Period">
+		<xsd:annotation>
+			<xsd:documentation source="TAI_TUC"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Ephemeris" name="Ephemeris" type="t_Ephemeris">
+		<xsd:annotation>
+			<xsd:documentation source="Ephemeris"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Ephemeris" name="t_Ephemeris">
+		<xsd:all>
+			<xsd:element ref="SATELLITE_ALTITUDE"/>
+			<xsd:element ref="NADIR_LAT"/>
+			<xsd:element ref="NADIR_LON"/>
+			<xsd:element ref="Points"/>
+			<xsd:element ref="DORIS_USED"/>
+			<xsd:element minOccurs="0" ref="Doris_Points"/>
+			<xsd:element minOccurs="0" ref="Orbital_Bulletin"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="SATELLITE_ALTITUDE" name="SATELLITE_ALTITUDE" type="t_SATELLITE_ALTITUDE">
+		<xsd:annotation>
+			<xsd:documentation source="SATELLITE_ALTITUDE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_SATELLITE_ALTITUDE" name="t_SATELLITE_ALTITUDE">
+		<xsd:simpleContent>
+			<xsd:restriction base="Linear"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="NADIR_LAT" name="NADIR_LAT" type="t_NADIR_LAT">
+		<xsd:annotation>
+			<xsd:documentation source="NADIR_LAT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_NADIR_LAT" name="t_NADIR_LAT">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="NADIR_LON" name="NADIR_LON" type="t_NADIR_LON">
+		<xsd:annotation>
+			<xsd:documentation source="NADIR_LON"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_NADIR_LON" name="t_NADIR_LON">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="Points" name="Points" type="t_Points">
+		<xsd:annotation>
+			<xsd:documentation source="Points"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Points" name="t_Points">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Point"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Point" name="Point" type="t_Point">
+		<xsd:annotation>
+			<xsd:documentation source="Point"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Point" name="t_Point">
+		<xsd:all>
+			<xsd:element ref="Location"/>
+			<xsd:element ref="Velocity"/>
+			<xsd:element ref="TIME"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="DORIS_USED" name="DORIS_USED" type="t_DORIS_USED">
+		<xsd:annotation>
+			<xsd:documentation source="DORIS_USED"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_DORIS_USED" name="t_DORIS_USED">
+		<xsd:restriction base="YesNo"/>
+	</xsd:simpleType>
+	<xsd:element id="Doris_Points" name="Doris_Points" type="t_Doris_Points">
+		<xsd:annotation>
+			<xsd:documentation source="Doris_Points"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Doris_Points" name="t_Doris_Points">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Doris_Point"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Doris_Point" name="Doris_Point" type="t_Doris_Point">
+		<xsd:annotation>
+			<xsd:documentation source="Doris_Point"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Doris_Point" name="t_Doris_Point">
+		<xsd:all>
+			<xsd:element ref="Location"/>
+			<xsd:element ref="Velocity"/>
+			<xsd:element ref="TIME"/>
+			<xsd:element ref="ERROR_ESTIMATION"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Location" name="Location" type="t_Location">
+		<xsd:annotation>
+			<xsd:documentation source="Location"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Location" name="t_Location">
+		<xsd:all>
+			<xsd:element ref="X"/>
+			<xsd:element ref="Y"/>
+			<xsd:element ref="Z"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Velocity" name="Velocity" type="t_Velocity">
+		<xsd:annotation>
+			<xsd:documentation source="Velocity"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Velocity" name="t_Velocity">
+		<xsd:all>
+			<xsd:element ref="X"/>
+			<xsd:element ref="Y"/>
+			<xsd:element ref="Z"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="X" name="X" type="t_X">
+		<xsd:annotation>
+			<xsd:documentation source="X"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_X" name="t_X">
+		<xsd:simpleContent>
+			<xsd:restriction base="Linear_or_Velocity"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="Y" name="Y" type="t_Y">
+		<xsd:annotation>
+			<xsd:documentation source="Y"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Y" name="t_Y">
+		<xsd:simpleContent>
+			<xsd:restriction base="Linear_or_Velocity"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="Z" name="Z" type="t_Z">
+		<xsd:annotation>
+			<xsd:documentation source="Z"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Z" name="t_Z">
+		<xsd:simpleContent>
+			<xsd:restriction base="Linear_or_Velocity"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="TIME" name="TIME" type="t_TIME">
+		<xsd:annotation>
+			<xsd:documentation source="TIME"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_TIME" name="t_TIME">
+		<xsd:restriction base="DateTime"/>
+	</xsd:simpleType>
+	<xsd:element id="ERROR_ESTIMATION" name="ERROR_ESTIMATION" type="t_ERROR_ESTIMATION">
+		<xsd:annotation>
+			<xsd:documentation source="ERROR_ESTIMATION"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_ERROR_ESTIMATION" name="t_ERROR_ESTIMATION">
+		<xsd:simpleContent>
+			<xsd:restriction base="Linear"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="Orbital_Bulletin" name="Orbital_Bulletin" type="t_Orbital_Bulletin">
+		<xsd:annotation>
+			<xsd:documentation source="Orbital_Bulletin"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Orbital_Bulletin" name="t_Orbital_Bulletin">
+		<xsd:all>
+			<xsd:element ref="UT_DATE"/>
+			<xsd:element ref="ELLIPSE_AXIS"/>
+			<xsd:element ref="ELLIPSE_ECCENTRICITY_VECTOR_EX"/>
+			<xsd:element ref="ELLIPSE_ECCENTRICITY_VECTOR_EY"/>
+			<xsd:element ref="ELLIPSE_INCLINATION"/>
+			<xsd:element ref="RIGHT_ASCENSION"/>
+			<xsd:element ref="LATITUDE_ARGUMENT"/>
+			<xsd:element ref="P7"/>
+			<xsd:element ref="P8"/>
+			<xsd:element ref="P9"/>
+			<xsd:element ref="P10"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="ELLIPSE_AXIS" name="ELLIPSE_AXIS" type="t_ELLIPSE_AXIS">
+		<xsd:annotation>
+			<xsd:documentation source="ELLIPSE_AXIS"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_ELLIPSE_AXIS" name="t_ELLIPSE_AXIS">
+		<xsd:simpleContent>
+			<xsd:restriction base="Linear"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="ELLIPSE_ECCENTRICITY_VECTOR_EX" name="ELLIPSE_ECCENTRICITY_VECTOR_EX" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="ELLIPSE_ECCENTRICITY_VECTOR_EX"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="ELLIPSE_ECCENTRICITY_VECTOR_EY" name="ELLIPSE_ECCENTRICITY_VECTOR_EY" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="ELLIPSE_ECCENTRICITY_VECTOR_EY"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="ELLIPSE_INCLINATION" name="ELLIPSE_INCLINATION" type="t_ELLIPSE_INCLINATION">
+		<xsd:annotation>
+			<xsd:documentation source="ELLIPSE_INCLINATION"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_ELLIPSE_INCLINATION" name="t_ELLIPSE_INCLINATION">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="RIGHT_ASCENSION" name="RIGHT_ASCENSION" type="t_RIGHT_ASCENSION">
+		<xsd:annotation>
+			<xsd:documentation source="RIGHT_ASCENSION"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_RIGHT_ASCENSION" name="t_RIGHT_ASCENSION">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="LATITUDE_ARGUMENT" name="LATITUDE_ARGUMENT" type="t_LATITUDE_ARGUMENT">
+		<xsd:annotation>
+			<xsd:documentation source="LATITUDE_ARGUMENT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_LATITUDE_ARGUMENT" name="t_LATITUDE_ARGUMENT">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="P7" name="P7" type="t_P7">
+		<xsd:annotation>
+			<xsd:documentation source="P7"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_P7" name="t_P7">
+		<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="P8" name="P8" type="t_P8">
+		<xsd:annotation>
+			<xsd:documentation source="P8"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_P8" name="t_P8">
+		<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="P9" name="P9" type="t_P9">
+		<xsd:annotation>
+			<xsd:documentation source="P9"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_P9" name="t_P9">
+		<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="P10" name="P10" type="t_P10">
+		<xsd:annotation>
+			<xsd:documentation source="P10"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_P10" name="t_P10">
+		<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="Satellite_Attitudes" name="Satellite_Attitudes" type="t_Satellite_Attitudes">
+		<xsd:annotation>
+			<xsd:documentation source="Satellite_Attitudes"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Satellite_Attitudes" name="t_Satellite_Attitudes">
+		<xsd:all>
+			<xsd:element ref="Raw_Attitudes"/>
+			<xsd:element minOccurs="0" ref="Corrected_Attitudes"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Raw_Attitudes" name="Raw_Attitudes" type="t_Raw_Attitudes">
+		<xsd:annotation>
+			<xsd:documentation source="Raw_Attitudes"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Raw_Attitudes" name="t_Raw_Attitudes">
+		<xsd:all>
+			<xsd:element ref="Aocs_Attitude"/>
+			<xsd:element minOccurs="0" ref="Star_Tracker_Attitude"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Aocs_Attitude" name="Aocs_Attitude" type="t_Aocs_Attitude">
+		<xsd:annotation>
+			<xsd:documentation source="Aocs_Attitude"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Aocs_Attitude" name="t_Aocs_Attitude">
+		<xsd:all>
+			<xsd:element minOccurs="0" ref="Angles_List"/>
+			<xsd:element ref="Angular_Speeds_List"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Angles_List" name="Angles_List" type="t_Angles_List">
+		<xsd:annotation>
+			<xsd:documentation source="Angles_List"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Angles_List" name="t_Angles_List">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Angles"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Angular_Speeds_List" name="Angular_Speeds_List" type="t_Angular_Speeds_List">
+		<xsd:annotation>
+			<xsd:documentation source="Angular_Speeds_List"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Angular_Speeds_List" name="t_Angular_Speeds_List">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Angular_Speeds"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Angles" name="Angles" type="t_Angles">
+		<xsd:annotation>
+			<xsd:documentation source="Angles"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Angles" name="t_Angles">
+		<xsd:all>
+			<xsd:element ref="TIME"/>
+			<xsd:element ref="YAW"/>
+			<xsd:element ref="PITCH"/>
+			<xsd:element ref="ROLL"/>
+			<xsd:element ref="OUT_OF_RANGE"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="YAW" name="YAW" type="t_YAW">
+		<xsd:annotation>
+			<xsd:documentation source="YAW"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_YAW" name="t_YAW">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular_or_Velocity"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="PITCH" name="PITCH" type="t_PITCH">
+		<xsd:annotation>
+			<xsd:documentation source="PITCH"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_PITCH" name="t_PITCH">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular_or_Velocity"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="ROLL" name="ROLL" type="t_ROLL">
+		<xsd:annotation>
+			<xsd:documentation source="ROLL"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_ROLL" name="t_ROLL">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular_or_Velocity"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="OUT_OF_RANGE" name="OUT_OF_RANGE" type="YesNo">
+		<xsd:annotation>
+			<xsd:documentation source="OUT_OF_RANGE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Angular_Speeds" name="Angular_Speeds" type="t_Angular_Speeds">
+		<xsd:annotation>
+			<xsd:documentation source="Angular_Speeds"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Angular_Speeds" name="t_Angular_Speeds">
+		<xsd:all>
+			<xsd:element ref="TIME"/>
+			<xsd:element ref="YAW"/>
+			<xsd:element ref="PITCH"/>
+			<xsd:element ref="ROLL"/>
+			<xsd:element ref="OUT_OF_RANGE"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Star_Tracker_Attitude" name="Star_Tracker_Attitude" type="t_Star_Tracker_Attitude">
+		<xsd:annotation>
+			<xsd:documentation source="Star_Tracker_Attitude"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Star_Tracker_Attitude" name="t_Star_Tracker_Attitude">
+		<xsd:all>
+			<xsd:element ref="TU1_TUC"/>
+			<xsd:element ref="U"/>
+			<xsd:element ref="V"/>
+			<xsd:element minOccurs="0" ref="Quaternion_List"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="TU1_TUC" name="TU1_TUC" type="Period">
+		<xsd:annotation>
+			<xsd:documentation source="TU1_TUC"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="U" name="U" type="Angular">
+		<xsd:annotation>
+			<xsd:documentation source="U"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="V" name="V" type="Angular">
+		<xsd:annotation>
+			<xsd:documentation source="V"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Quaternion_List" name="Quaternion_List" type="t_Quaternion_List">
+		<xsd:annotation>
+			<xsd:documentation source="Quaternion_List"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Quaternion_List" name="t_Quaternion_List">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Quaternion"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Quaternion" name="Quaternion" type="t_Quaternion">
+		<xsd:annotation>
+			<xsd:documentation source="Quaternion"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Quaternion" name="t_Quaternion">
+		<xsd:all>
+			<xsd:element ref="Q_TIME"/>
+			<xsd:element ref="Q_STATUS"/>
+			<xsd:element ref="Q0"/>
+			<xsd:element ref="Q1"/>
+			<xsd:element ref="Q2"/>
+			<xsd:element ref="Q3"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Q_TIME" name="Q_TIME" type="t_Q_TIME">
+		<xsd:annotation>
+			<xsd:documentation source="Q_TIME"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_Q_TIME" name="t_Q_TIME">
+		<xsd:restriction base="DateTime"/>
+	</xsd:simpleType>
+	<xsd:element id="Q_STATUS" name="Q_STATUS" type="t_Q_STATUS">
+		<xsd:annotation>
+			<xsd:documentation source="Q_STATUS"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_Q_STATUS" name="t_Q_STATUS">
+		<xsd:restriction base="Integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="3"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- ChA,2002-05-22 : bug correction Q0..4 Double -> Real -->
+	<xsd:element id="Q0" name="Q0" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="Q0"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Q1" name="Q1" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="Q1"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Q2" name="Q2" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="Q2"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Q3" name="Q3" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="Q3"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Corrected_Attitudes" name="Corrected_Attitudes" type="t_Corrected_Attitudes">
+		<xsd:annotation>
+			<xsd:documentation source="Corrected_Attitudes"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Corrected_Attitudes" name="t_Corrected_Attitudes">
+		<xsd:all>
+			<xsd:element minOccurs="0" ref="STAR_TRACKER_USED"/>
+			<xsd:element ref="Corrected_Attitude"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="STAR_TRACKER_USED" name="STAR_TRACKER_USED" type="YesNo">
+		<xsd:annotation>
+			<xsd:documentation source="STAR_TRACKER_USED"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Corrected_Attitude" name="Corrected_Attitude" type="t_Corrected_Attitude">
+		<xsd:annotation>
+			<xsd:documentation source="Corrected_Attitude"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Corrected_Attitude" name="t_Corrected_Attitude">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" ref="Angles"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Sensor_Configuration" name="Sensor_Configuration" type="t_Sensor_Configuration">
+		<xsd:annotation>
+			<xsd:documentation source="Sensor_Configuration"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Sensor_Configuration" name="t_Sensor_Configuration">
+		<xsd:all>
+			<xsd:element ref="Time_Stamp"/>
+			<xsd:element minOccurs="0" ref="DEREGISTRATION_VALUE"/>
+			<xsd:element minOccurs="0" ref="COUPLED_DEREGISTRATION_VALUE"/>
+			<xsd:element minOccurs="0" ref="THR_SYNCHRO_LINES"/>
+			<xsd:element ref="Instrument_Look_Angles_List"/>
+			<xsd:element minOccurs="0" ref="Mirror_Position"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Time_Stamp" name="Time_Stamp" type="t_Time_Stamp">
+		<xsd:annotation>
+			<xsd:documentation source="Time_Stamp"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Time_Stamp" name="t_Time_Stamp">
+		<xsd:all>
+			<xsd:element ref="LINE_PERIOD"/>
+			<xsd:element ref="SCENE_CENTER_TIME"/>
+			<xsd:element ref="SCENE_CENTER_LINE"/>
+			<xsd:element ref="SCENE_CENTER_COL"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="LINE_PERIOD" name="LINE_PERIOD" type="Period">
+		<xsd:annotation>
+			<xsd:documentation source="LINE_PERIOD"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="SCENE_CENTER_TIME" name="SCENE_CENTER_TIME" type="DateTime">
+		<xsd:annotation>
+			<xsd:documentation source="SCENE_CENTER_TIME"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="SCENE_CENTER_LINE" name="SCENE_CENTER_LINE" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="SCENE_CENTER_LINE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="SCENE_CENTER_COL" name="SCENE_CENTER_COL" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="SCENE_CENTER_COL"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="DEREGISTRATION_VALUE" name="DEREGISTRATION_VALUE" type="t_DEREGISTRATION_VALUE">
+		<xsd:annotation>
+			<xsd:documentation source="DEREGISTRATION_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_DEREGISTRATION_VALUE" name="t_DEREGISTRATION_VALUE">
+		<xsd:simpleContent>
+			<xsd:restriction base="uPeriod"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="COUPLED_DEREGISTRATION_VALUE" name="COUPLED_DEREGISTRATION_VALUE" type="t_COUPLED_DEREGISTRATION_VALUE">
+		<xsd:annotation>
+			<xsd:documentation source="COUPLED_DEREGISTRATION_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_COUPLED_DEREGISTRATION_VALUE" name="t_COUPLED_DEREGISTRATION_VALUE">
+		<xsd:simpleContent>
+			<xsd:restriction base="uPeriod"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="THR_SYNCHRO_LINES" name="THR_SYNCHRO_LINES" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="THR_SYNCHRO_LINES"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Instrument_Look_Angles_List" name="Instrument_Look_Angles_List" type="t_Instrument_Look_Angles_List">
+		<xsd:annotation>
+			<xsd:documentation source="Instrument_Look_Angles_List"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Instrument_Look_Angles_List" name="t_Instrument_Look_Angles_List">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Instrument_Look_Angles"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Instrument_Look_Angles" name="Instrument_Look_Angles" type="t_Instrument_Look_Angles">
+		<xsd:annotation>
+			<xsd:documentation source="Instrument_Look_Angles"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Instrument_Look_Angles" name="t_Instrument_Look_Angles">
+		<xsd:all>
+			<xsd:element ref="VALIDITY_DATE"/>
+			<xsd:element ref="BAND_INDEX"/>
+			<xsd:element ref="Look_Angles_List"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Look_Angles_List" name="Look_Angles_List" type="t_Look_Angles_List">
+		<xsd:annotation>
+			<xsd:documentation source="Look_Angles_List"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Look_Angles_List" name="t_Look_Angles_List">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="2" ref="Look_Angles"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Look_Angles" name="Look_Angles" type="t_Look_Angles">
+		<xsd:annotation>
+			<xsd:documentation source="Look_Angles"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Look_Angles" name="t_Look_Angles">
+		<xsd:all>
+			<xsd:element ref="DETECTOR_ID"/>
+			<xsd:element ref="PSI_X"/>
+			<xsd:element ref="PSI_Y"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="DETECTOR_ID" name="DETECTOR_ID" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="DETECTOR_ID"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="PSI_X" name="PSI_X" type="t_PSI_X">
+		<xsd:annotation>
+			<xsd:documentation source="PSI_X"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_PSI_X" name="t_PSI_X">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="PSI_Y" name="PSI_Y" type="t_PSI_Y">
+		<xsd:annotation>
+			<xsd:documentation source="PSI_Y"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_PSI_Y" name="t_PSI_Y">
+		<xsd:simpleContent>
+			<xsd:restriction base="Angular"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="Mirror_Position" name="Mirror_Position" type="t_Mirror_Position">
+		<xsd:annotation>
+			<xsd:documentation source="Mirror_Position"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Mirror_Position" name="t_Mirror_Position">
+		<xsd:all>
+			<xsd:element ref="STEP_COUNT"/>
+			<xsd:element minOccurs="0" ref="AVERAGE_ENCODER_COUNT"/>
+			<xsd:element minOccurs="0" ref="Encoder_Counts"/>
+			<xsd:element minOccurs="0" ref="MCV_Matrix"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="STEP_COUNT" name="STEP_COUNT" type="Mirror_Step_Range">
+		<xsd:annotation>
+			<xsd:documentation source="STEP_COUNT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="AVERAGE_ENCODER_COUNT" name="AVERAGE_ENCODER_COUNT" type="Integer">
+		<xsd:annotation>
+			<xsd:documentation source="AVERAGE_ENCODER_COUNT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Encoder_Counts" name="Encoder_Counts" type="t_Encoder_Counts">
+		<xsd:annotation>
+			<xsd:documentation source="Encoder_Counts"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Encoder_Counts" name="t_Encoder_Counts">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Encoder_Count"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Encoder_Count" name="Encoder_Count" type="t_Encoder_Count">
+		<xsd:annotation>
+			<xsd:documentation source="Encoder_Count"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Encoder_Count" name="t_Encoder_Count">
+		<xsd:all>
+			<xsd:element ref="LINE_INDEX"/>
+			<xsd:element ref="ENCODER_VALUE"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="LINE_INDEX" name="LINE_INDEX" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="LINE_INDEX"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="ENCODER_VALUE" name="ENCODER_VALUE" type="Integer">
+		<xsd:annotation>
+			<xsd:documentation source="ENCODER_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="MCV_Matrix" name="MCV_Matrix" type="t_MCV_Matrix">
+		<xsd:annotation>
+			<xsd:documentation source="MCV_Matrix"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_MCV_Matrix" name="t_MCV_Matrix">
+		<xsd:all>
+			<xsd:element ref="VALIDITY_DATE"/>
+			<xsd:element ref="MCV_Matrix_Row_List"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="MCV_Matrix_Row_List" name="MCV_Matrix_Row_List" type="t_MCV_Matrix_Row_List">
+		<xsd:annotation>
+			<xsd:documentation source="MCV_Matrix_Row_List"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_MCV_Matrix_Row_List" name="t_MCV_Matrix_Row_List">
+		<xsd:sequence>
+			<xsd:element maxOccurs="3" minOccurs="3" ref="MCV_Matrix_Row"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="MCV_Matrix_Row" name="MCV_Matrix_Row" type="t_MCV_Matrix_Row">
+		<xsd:annotation>
+			<xsd:documentation source="MCV_Matrix_Row"/>
+		</xsd:annotation>
+	</xsd:element>
+	<!-- TOOLBOX - 3 elements MCV_MATRIX_COEFFICIENT sont necessaires -->
+	<xsd:complexType id="t_MCV_Matrix_Row" name="t_MCV_Matrix_Row">
+		<xsd:sequence>
+			<xsd:element maxOccurs="3" minOccurs="3" ref="MCV_MATRIX_COEFFICIENT"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="MCV_MATRIX_COEFFICIENT" name="MCV_MATRIX_COEFFICIENT" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="MCV_MATRIX_COEFFICIENT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Frame_Counters" name="Frame_Counters" type="t_Frame_Counters">
+		<xsd:annotation>
+			<xsd:documentation source="Frame_Counters"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Frame_Counters" name="t_Frame_Counters">
+		<xsd:all>
+			<xsd:element ref="SEGMENT_START"/>
+			<xsd:element ref="SCENE_START"/>
+			<xsd:element ref="SEGMENT_END"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="SEGMENT_START" name="SEGMENT_START" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="SEGMENT_START"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="SCENE_START" name="SCENE_START" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="SCENE_START"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="SEGMENT_END" name="SEGMENT_END" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="SEGMENT_END"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Data_Strip_Coordinates" name="Data_Strip_Coordinates" type="t_Data_Strip_Coordinates">
+		<xsd:annotation>
+			<xsd:documentation source="Data_Strip_Coordinates"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Data_Strip_Coordinates" name="t_Data_Strip_Coordinates">
+		<xsd:all>
+			<xsd:element ref="FIRST_PIXEL_RAW"/>
+			<xsd:element ref="FIRST_LINE_RAW"/>
+			<xsd:element ref="FIRST_PIXEL_1B"/>
+			<xsd:element ref="FIRST_LINE_1B"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="FIRST_PIXEL_RAW" name="FIRST_PIXEL_RAW" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="FIRST_PIXEL_RAW"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="FIRST_LINE_RAW" name="FIRST_LINE_RAW" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="FIRST_LINE_RAW"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="FIRST_PIXEL_1B" name="FIRST_PIXEL_1B" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="FIRST_PIXEL_1B"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="FIRST_LINE_1B" name="FIRST_LINE_1B" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="FIRST_LINE_1B"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Models" name="Models" type="t_Models">
+		<xsd:annotation>
+			<xsd:documentation source="Models"/>
+		</xsd:annotation>
+	</xsd:element>
+	<!-- TOOLBOX - le contenu de Model devient optionnel -->
+	<xsd:complexType id="t_Models" name="t_Models">
+		<xsd:all>
+			<xsd:element minOccurs="0" ref="OneB_Model"/>
+			<xsd:element minOccurs="0" ref="Attitude_Model"/>
+			<xsd:element minOccurs="0" ref="SWIR_Registration_Model"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="OneB_Model" name="OneB_Model" type="t_OneB_Model">
+		<xsd:annotation>
+			<xsd:documentation source="OneB_Model"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_OneB_Model" name="t_OneB_Model">
+		<xsd:all>
+			<xsd:element ref="Coordinate_Normalization"/>
+			<xsd:element ref="Direct_OneB_Model"/>
+			<xsd:element ref="Reverse_OneB_Model"/>
+			<xsd:element ref="A"/>
+			<xsd:element ref="B"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Coordinate_Normalization" name="Coordinate_Normalization" type="t_Coordinate_Normalization">
+		<xsd:annotation>
+			<xsd:documentation source="Coordinate_Normalization"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Coordinate_Normalization" name="t_Coordinate_Normalization">
+		<xsd:all>
+			<xsd:element ref="LINES_I_M"/>
+			<xsd:element ref="LINES_DELTA_I"/>
+			<xsd:element ref="COLUMNS_J_M"/>
+			<xsd:element ref="COLUMNS_DELTA_J"/>
+			<xsd:element ref="LINES_L_M"/>
+			<xsd:element ref="LINES_DELTA_L"/>
+			<xsd:element ref="COLUMNS_P_M"/>
+			<xsd:element ref="COLUMNS_DELTA_P"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="LINES_I_M" name="LINES_I_M" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="LINES_I_M"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="LINES_DELTA_I" name="LINES_DELTA_I" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="LINES_DELTA_I"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="COLUMNS_J_M" name="COLUMNS_J_M" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="COLUMNS_J_M"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="COLUMNS_DELTA_J" name="COLUMNS_DELTA_J" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="COLUMNS_DELTA_J"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="LINES_L_M" name="LINES_L_M" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="LINES_L_M"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="LINES_DELTA_L" name="LINES_DELTA_L" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="LINES_DELTA_L"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="COLUMNS_P_M" name="COLUMNS_P_M" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="COLUMNS_P_M"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="COLUMNS_DELTA_P" name="COLUMNS_DELTA_P" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="COLUMNS_DELTA_P"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Direct_OneB_Model" name="Direct_OneB_Model" type="t_Direct_OneB_Model">
+		<xsd:annotation>
+			<xsd:documentation source="Direct_OneB_Model"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Direct_OneB_Model" name="t_Direct_OneB_Model">
+		<xsd:all>
+			<xsd:element ref="I"/>
+			<xsd:element ref="J"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="I" name="I" type="t_I">
+		<xsd:annotation>
+			<xsd:documentation source="I"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_I" name="t_I">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="c"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="J" name="J" type="t_J">
+		<xsd:annotation>
+			<xsd:documentation source="J"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_J" name="t_J">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="c"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="c" name="c" type="t_c">
+		<xsd:annotation>
+			<xsd:documentation source="c"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_c" name="t_c">
+		<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="Reverse_OneB_Model" name="Reverse_OneB_Model" type="t_Reverse_OneB_Model">
+		<xsd:annotation>
+			<xsd:documentation source="Reverse_OneB_Model"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Reverse_OneB_Model" name="t_Reverse_OneB_Model">
+		<xsd:all>
+			<xsd:element ref="L"/>
+			<xsd:element ref="P"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="L" name="L" type="t_L">
+		<xsd:annotation>
+			<xsd:documentation source="L"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_L" name="t_L">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="c"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="P" name="P" type="t_P">
+		<xsd:annotation>
+			<xsd:documentation source="P"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_P" name="t_P">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="c"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="A" name="A" type="t_A">
+		<xsd:annotation>
+			<xsd:documentation source="A"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_A" name="t_A">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="c"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="B" name="B" type="t_B">
+		<xsd:annotation>
+			<xsd:documentation source="B"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_B" name="t_B">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="c"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Attitude_Model" name="Attitude_Model" type="t_Attitude_Model">
+		<xsd:annotation>
+			<xsd:documentation source="Attitude_Model"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Attitude_Model" name="t_Attitude_Model">
+		<xsd:all>
+			<xsd:element ref="D_L"/>
+			<xsd:element ref="D_P"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="SWIR_Registration_Model" name="SWIR_Registration_Model" type="t_SWIR_Registration_Model">
+		<xsd:annotation>
+			<xsd:documentation source="SWIR_Registration_Model"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_SWIR_Registration_Model" name="t_SWIR_Registration_Model">
+		<xsd:all>
+			<xsd:element ref="D_L"/>
+			<xsd:element ref="D_P"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="D_L" name="D_L" type="t_D_L">
+		<xsd:annotation>
+			<xsd:documentation source="D_L"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_D_L" name="t_D_L">
+		<xsd:sequence>
+			<xsd:element maxOccurs="3" minOccurs="3" ref="abc"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="D_P" name="D_P" type="t_D_P">
+		<xsd:annotation>
+			<xsd:documentation source="D_P"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_D_P" name="t_D_P">
+		<xsd:sequence>
+			<xsd:element maxOccurs="3" minOccurs="3" ref="abc"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="abc" name="abc" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="abc"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Sensor_Calibration" name="Sensor_Calibration" type="t_Sensor_Calibration">
+		<xsd:annotation>
+			<xsd:documentation source="Sensor_Calibration"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Sensor_Calibration" name="t_Sensor_Calibration">
+		<xsd:all>
+			<xsd:element ref="METHOD"/>
+			<xsd:element ref="Calibration"/>
+			<xsd:element ref="Spectral_Sensitivities"/>
+			<xsd:element ref="Solar_Irradiance"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="METHOD" name="METHOD" type="String">
+		<xsd:annotation>
+			<xsd:documentation source="METHOD"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Calibration" name="Calibration" type="t_Calibration">
+		<xsd:annotation>
+			<xsd:documentation source="Calibration"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Calibration" name="t_Calibration">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Band_Parameters"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Band_Parameters" name="Band_Parameters" type="t_Band_Parameters">
+		<xsd:annotation>
+			<xsd:documentation source="Band_Parameters"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Band_Parameters" name="t_Band_Parameters">
+		<xsd:all>
+			<xsd:element ref="BAND_INDEX"/>
+			<xsd:element minOccurs="0" ref="Gain_Section"/>
+			<xsd:element minOccurs="0" ref="Dead_Detectors"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Gain_Section" name="Gain_Section" type="t_Gain_Section">
+		<xsd:annotation>
+			<xsd:documentation source="Gain_Section"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Gain_Section" name="t_Gain_Section">
+		<xsd:all>
+			<xsd:element ref="GAIN_NUMBER"/>
+			<xsd:element ref="GAIN_ANALOG_VALUE"/>
+			<xsd:element ref="Pixel_Parameters"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="GAIN_NUMBER" name="GAIN_NUMBER" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="GAIN_NUMBER"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="GAIN_ANALOG_VALUE" name="GAIN_ANALOG_VALUE" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="GAIN_ANALOG_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Pixel_Parameters" name="Pixel_Parameters" type="t_Pixel_Parameters">
+		<xsd:annotation>
+			<xsd:documentation source="Pixel_Parameters"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Pixel_Parameters" name="t_Pixel_Parameters">
+		<xsd:all>
+			<xsd:element ref="G_DATE"/>
+			<xsd:element ref="DC_DATE"/>
+			<xsd:element ref="Cells"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="G_DATE" name="G_DATE" type="DateTime">
+		<xsd:annotation>
+			<xsd:documentation source="G_DATE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="DC_DATE" name="DC_DATE" type="DateTime">
+		<xsd:annotation>
+			<xsd:documentation source="DC_DATE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Cells" name="Cells" type="t_Cells">
+		<xsd:annotation>
+			<xsd:documentation source="Cells"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Cells" name="t_Cells">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Cell"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Cell" name="Cell" type="t_Cell">
+		<xsd:annotation>
+			<xsd:documentation source="Cell"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Cell" name="t_Cell">
+		<xsd:all>
+			<xsd:element ref="G"/>
+			<xsd:element ref="DARK_CURRENT"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="G" name="G" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="G"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="DARK_CURRENT" name="DARK_CURRENT" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="DARK_CURRENT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Dead_Detectors" name="Dead_Detectors" type="t_Dead_Detectors">
+		<xsd:annotation>
+			<xsd:documentation source="Dead_Detectors"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Dead_Detectors" name="t_Dead_Detectors">
+		<xsd:all>
+			<xsd:element ref="VALIDITY_DATE"/>
+			<xsd:element ref="Bad_Pixels"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="VALIDITY_DATE" name="VALIDITY_DATE" type="DateTime">
+		<xsd:annotation>
+			<xsd:documentation source="VALIDITY_DATE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Bad_Pixels" name="Bad_Pixels" type="t_Bad_Pixels">
+		<xsd:annotation>
+			<xsd:documentation source="Bad_Pixels"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Bad_Pixels" name="t_Bad_Pixels">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" ref="Bad_Pixel"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Bad_Pixel" name="Bad_Pixel" type="t_Bad_Pixel">
+		<xsd:annotation>
+			<xsd:documentation source="Bad_Pixel"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Bad_Pixel" name="t_Bad_Pixel">
+		<xsd:all>
+			<xsd:element ref="PIXEL_INDEX"/>
+			<xsd:element ref="BAD_PIXEL_STATUS"/>
+			<xsd:element minOccurs="0" ref="PIXEL_VALUE"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="PIXEL_INDEX" name="PIXEL_INDEX" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="PIXEL_INDEX"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="BAD_PIXEL_STATUS" name="BAD_PIXEL_STATUS" type="String">
+		<xsd:annotation>
+			<xsd:documentation source="BAD_PIXEL_STATUS"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="PIXEL_VALUE" name="PIXEL_VALUE" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="PIXEL_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Spectral_Sensitivities" name="Spectral_Sensitivities" type="t_Spectral_Sensitivities">
+		<xsd:annotation>
+			<xsd:documentation source="Spectral_Sensitivities"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Spectral_Sensitivities" name="t_Spectral_Sensitivities">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Band_Spectral_Sensitivities"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Band_Spectral_Sensitivities" name="Band_Spectral_Sensitivities" type="t_Band_Spectral_Sensitivities">
+		<xsd:annotation>
+			<xsd:documentation source="Band_Spectral_Sensitivities"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Band_Spectral_Sensitivities" name="t_Band_Spectral_Sensitivities">
+		<xsd:all>
+			<xsd:element ref="BAND_INDEX"/>
+			<xsd:element ref="FIRST_WAVELENGTH_VALUE"/>
+			<xsd:element ref="WAVELENGTH_STEP"/>
+			<xsd:element ref="CALIBRATION_DATE"/>
+			<xsd:element ref="Spectral_Sensitivity_Values"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="FIRST_WAVELENGTH_VALUE" name="FIRST_WAVELENGTH_VALUE" type="t_FIRST_WAVELENGTH_VALUE">
+		<xsd:annotation>
+			<xsd:documentation source="FIRST_WAVELENGTH_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_FIRST_WAVELENGTH_VALUE" name="t_FIRST_WAVELENGTH_VALUE">
+		<xsd:simpleContent>
+			<xsd:extension base="Linear"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="WAVELENGTH_STEP" name="WAVELENGTH_STEP" type="t_WAVELENGTH_STEP">
+		<xsd:annotation>
+			<xsd:documentation source="WAVELENGTH_STEP"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_WAVELENGTH_STEP" name="t_WAVELENGTH_STEP">
+		<xsd:simpleContent>
+			<xsd:extension base="Linear"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="CALIBRATION_DATE" name="CALIBRATION_DATE" type="DateTime">
+		<xsd:annotation>
+			<xsd:documentation source="CALIBRATION_DATE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Spectral_Sensitivity_Values" name="Spectral_Sensitivity_Values" type="t_Spectral_Sensitivity_Values">
+		<xsd:annotation>
+			<xsd:documentation source="Spectral_Sensitivity_Values"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Spectral_Sensitivity_Values" name="t_Spectral_Sensitivity_Values">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="SPECTRAL_SENSITIVITY_VALUE"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="SPECTRAL_SENSITIVITY_VALUE" name="SPECTRAL_SENSITIVITY_VALUE" type="Real">
+		<xsd:annotation>
+			<xsd:documentation source="SPECTRAL_SENSITIVITY_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Solar_Irradiance" name="Solar_Irradiance" type="t_Solar_Irradiance">
+		<xsd:annotation>
+			<xsd:documentation source="Solar_Irradiance"/>
+		</xsd:annotation>
+	</xsd:element>
+	<!-- TOOLBOX - Band_Solar_Irradiance : maxOccurs="unbounded" -->
+	<xsd:complexType id="t_Solar_Irradiance" name="t_Solar_Irradiance">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Band_Solar_Irradiance"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Band_Solar_Irradiance" name="Band_Solar_Irradiance" type="t_Band_Solar_Irradiance">
+		<xsd:annotation>
+			<xsd:documentation source="Band_Solar_Irradiance"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Band_Solar_Irradiance" name="t_Band_Solar_Irradiance">
+		<xsd:all>
+			<xsd:element ref="BAND_INDEX"/>
+			<xsd:element ref="SOLAR_IRRADIANCE_VALUE"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="SOLAR_IRRADIANCE_VALUE" name="SOLAR_IRRADIANCE_VALUE" type="Integer">
+		<xsd:annotation>
+			<xsd:documentation source="SOLAR_IRRADIANCE_VALUE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Bad_Lines" name="Bad_Lines" type="t_Bad_Lines">
+		<xsd:annotation>
+			<xsd:documentation source="Bad_Lines"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Bad_Lines" name="t_Bad_Lines">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Band_Bad_Lines"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Band_Bad_Lines" name="Band_Bad_Lines" type="t_Band_Bad_Lines">
+		<xsd:annotation>
+			<xsd:documentation source="Band_Bad_Lines"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Band_Bad_Lines" name="t_Band_Bad_Lines">
+		<xsd:all>
+			<xsd:element ref="BAND_INDEX"/>
+			<xsd:element ref="Bad_Line_List"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="Bad_Line_List" name="Bad_Line_List" type="t_Bad_Line_List">
+		<xsd:annotation>
+			<xsd:documentation source="Bad_Line_List"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Bad_LineList" name="t_Bad_Line_List">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="Bad_Line"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="Bad_Line" name="Bad_Line" type="t_Bad_Line">
+		<xsd:annotation>
+			<xsd:documentation source="Bad_Line"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Bad_Line" name="t_Bad_Line">
+		<xsd:all>
+			<xsd:element ref="BL_INDEX"/>
+			<xsd:element ref="BL_STATUS"/>
+			<xsd:element minOccurs="0" ref="BL_Portions"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="BL_INDEX" name="BL_INDEX" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="BL_INDEX"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="BL_STATUS" name="BL_STATUS" type="String">
+		<xsd:annotation>
+			<xsd:documentation source="BL_STATUS"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="BL_Portions" name="BL_Portions" type="t_BL_Portions">
+		<xsd:annotation>
+			<xsd:documentation source="BL_Portions"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_BL_Portions" name="t_BL_Portions">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="BL_Portion"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="BL_Portion" name="BL_Portion" type="t_BL_Portion">
+		<xsd:annotation>
+			<xsd:documentation source="BL_Portion"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_BL_Portion" name="t_BL_Portion">
+		<xsd:all>
+			<xsd:element ref="PIX_MIN"/>
+			<xsd:element ref="PIX_MAX"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="PIX_MIN" name="PIX_MIN" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="PIX_MIN"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="PIX_MAX" name="PIX_MAX" type="xsd:nonNegativeInteger">
+		<xsd:annotation>
+			<xsd:documentation source="PIX_MAX"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:element id="Data_Strip_Identification" name="Data_Strip_Identification" type="t_Data_Strip_Identification">
+		<xsd:annotation>
+			<xsd:documentation source="Data_Strip_Identification"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Data_Strip_Identification" name="t_Data_Strip_Identification">
+		<xsd:sequence>
+			<xsd:element ref="DATA_STRIP_ID"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element id="DATA_STRIP_ID" name="DATA_STRIP_ID" type="String">
+		<xsd:annotation>
+			<xsd:documentation source="DATA_STRIP_ID"/>
+		</xsd:annotation>
+	</xsd:element>
+</xsd:schema>

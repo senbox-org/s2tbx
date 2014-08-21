@@ -1,0 +1,168 @@
+package org.esa.beam.dataio.rapideye;
+
+import org.esa.beam.dataio.ZipVirtualDir;
+import org.esa.beam.dataio.geotiff.GeoTiffProductReader;
+import org.esa.beam.dataio.metadata.XmlMetadataParser;
+import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.beam.dataio.rapideye.metadata.RapidEyeMetadata;
+import org.esa.beam.framework.dataio.AbstractProductReader;
+import org.esa.beam.framework.dataio.ProductReaderPlugIn;
+import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.jai.ImageManager;
+import org.esa.beam.util.logging.BeamLogManager;
+
+import javax.media.jai.Interpolation;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.operator.ScaleDescriptor;
+import java.awt.*;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Logger;
+
+/**
+ * Base class for RapidEye readers.
+ *
+ * @author  Cosmin Cara
+ */
+public abstract class RapidEyeReader extends AbstractProductReader {
+    public static final int WIDTH_THRESHOLD = 8192;
+    protected RapidEyeMetadata metadata;
+    protected Product product;
+    protected Logger logger;
+    protected ZipVirtualDir productDirectory;
+
+    static {
+        XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<RapidEyeMetadata>(RapidEyeMetadata.class));
+    }
+
+    public RapidEyeReader(ProductReaderPlugIn readerPlugIn) {
+        super(readerPlugIn);
+        logger = BeamLogManager.getSystemLogger();
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (productDirectory != null) {
+            productDirectory.close();
+        }
+        super.close();
+    }
+
+    protected void readMasks(ZipVirtualDir folder) {
+        File file;
+        if (metadata != null) {
+            try {
+                file = folder.getFile(metadata.getMaskFileName());
+                if (file != null && file.exists()) {
+                    GeoTiffProductReader reader = new GeoTiffProductReader(getReaderPlugIn());
+                    Product udmProduct = reader.readProductNodes(file,  null);
+                    Band srcBand = udmProduct.getBandAt(0);
+                    float scaleX = metadata.getRasterWidth() / udmProduct.getSceneRasterWidth();
+                    float scaleY = metadata.getRasterHeight() / udmProduct.getSceneRasterHeight();
+                    RenderedOp renderedOp = ScaleDescriptor.create((RenderedImage) srcBand.getSourceImage(), scaleX, scaleY, 0.0f, 0.0f, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                    Band targetBand = product.addBand("unusable_data", srcBand.getDataType());
+                    targetBand.setSourceImage(renderedOp);
+                    FlagCoding cloudsFlagCoding = createFlagCoding(product);
+                    targetBand.setSampleCoding(cloudsFlagCoding);
+
+                    List<Mask> cloudsMasks = createMasksFromFlagCodding(product, cloudsFlagCoding);
+                    for (Mask mask : cloudsMasks) {
+                        product.getMaskGroup().add(mask);
+                    }
+                }
+            } catch (IOException e) {
+                logger.warning(e.getMessage());
+            }
+        }
+    }
+
+    protected FlagCoding createFlagCoding(Product product) {
+        FlagCoding flagCoding = new FlagCoding("unusable_data");
+        flagCoding.addFlag("black_fill", 1, "area was not imaged by spacecraft");
+        flagCoding.addFlag("clouds", 2, "cloud covered");
+        flagCoding.addFlag("missing_blue_data", 4, "missing/suspect data in blue band");
+        flagCoding.addFlag("missing_green_data", 8, "missing/suspect data in green band");
+        flagCoding.addFlag("missing_red_data", 16, "missing/suspect data in red band");
+        flagCoding.addFlag("missing_red_edge_data", 32, "missing/suspect data in red edge band");
+        flagCoding.addFlag("missing_nir_data", 64, "missing/suspect data in nir band");
+        product.getFlagCodingGroup().add(flagCoding);
+        return flagCoding;
+    }
+
+    protected List<Mask> createMasksFromFlagCodding(Product product, FlagCoding flagCoding) {
+        String flagCodingName = flagCoding.getName();
+        ArrayList<Mask> masks = new ArrayList<Mask>();
+        final int width = product.getSceneRasterWidth();
+        final int height = product.getSceneRasterHeight();
+
+        for (String flagName : flagCoding.getFlagNames()) {
+            MetadataAttribute flag = flagCoding.getFlag(flagName);
+            masks.add(Mask.BandMathsType.create(flagName,
+                    flag.getDescription(),
+                    width, height,
+                    flagCodingName + "." + flagName,
+                    ColorIterator.next(),
+                    0.5));
+        }
+        return masks;
+    }
+
+    protected Dimension getPreferredTileSize() {
+        Dimension tileSize = null;
+        if (product != null) {
+            tileSize = product.getPreferredTileSize();
+            if (tileSize == null) {
+                int width = product.getSceneRasterWidth();
+                int height = product.getSceneRasterHeight();
+                Dimension suggestedTileSize = ImageManager.getPreferredTileSize(product);
+                width = width > WIDTH_THRESHOLD ? width / 24 : (int)suggestedTileSize.getWidth();
+                height = height > WIDTH_THRESHOLD ? height / 24 : (int)suggestedTileSize.getHeight();
+                tileSize = new Dimension(width, height);
+            }
+        }
+        return tileSize;
+    }
+
+    protected static class ColorIterator {
+
+        static ArrayList<Color> colors;
+        static Iterator<Color> colorIterator;
+
+        static {
+            colors = new ArrayList<Color>();
+            colors.add(Color.red);
+            colors.add(Color.red.darker());
+            colors.add(Color.blue);
+            colors.add(Color.blue.darker());
+            colors.add(Color.green);
+            colors.add(Color.green.darker());
+            colors.add(Color.yellow);
+            colors.add(Color.yellow.darker());
+            colors.add(Color.magenta);
+            colors.add(Color.magenta.darker());
+            colors.add(Color.pink);
+            colors.add(Color.pink.darker());
+            colors.add(Color.cyan);
+            colors.add(Color.cyan.darker());
+            colors.add(Color.orange);
+            colors.add(Color.orange.darker());
+            colors.add(Color.blue.darker().darker());
+            colors.add(Color.green.darker().darker());
+            colors.add(Color.yellow.darker().darker());
+            colors.add(Color.magenta.darker().darker());
+            colors.add(Color.pink.darker().darker());
+            colorIterator = colors.iterator();
+        }
+
+        static Color next() {
+            if (!colorIterator.hasNext()) {
+                colorIterator = colors.iterator();
+            }
+            return colorIterator.next();
+        }
+    }
+}

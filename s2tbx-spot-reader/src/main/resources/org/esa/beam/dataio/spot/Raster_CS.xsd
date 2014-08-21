@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Raster_CS" name="Raster_CS" type="t_Raster_CS">
+		<xsd:annotation>
+			<xsd:documentation source="Raster_CS"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Raster_CS" name="t_Raster_CS">
+		<xsd:all>
+			<xsd:element ref="RASTER_CS_TYPE"/>
+			<xsd:element ref="PIXEL_ORIGIN"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="RASTER_CS_TYPE" name="RASTER_CS_TYPE" type="t_RASTER_CS_TYPE">
+		<xsd:annotation>
+			<xsd:documentation source="RASTER_CS_TYPE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_RASTER_CS_TYPE" name="t_RASTER_CS_TYPE">
+		<xsd:restriction base="Raster_CS_Types"/>
+	</xsd:simpleType>
+	<xsd:element id="PIXEL_ORIGIN" name="PIXEL_ORIGIN" type="t_PIXEL_ORIGIN">
+		<xsd:annotation>
+			<xsd:documentation source="PIXEL_ORIGIN"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_PIXEL_ORIGIN" name="t_PIXEL_ORIGIN">
+		<xsd:restriction base="Pixel_Origins"/>
+	</xsd:simpleType>
+</xsd:schema>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Spectral_Band_Info" name="Spectral_Band_Info" type="t_Spectral_Band_Info">
+		<xsd:annotation>
+			<xsd:documentation source="Spectral_Band_Info"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Spectral_Band_Info" name="t_Spectral_Band_Info">
+		<xsd:all>
+			<xsd:element ref="BAND_INDEX"/>
+			<xsd:element ref="BAND_DESCRIPTION"/>
+			<xsd:element ref="PHYSICAL_CALIBRATION_DATE"/>
+			<xsd:element ref="PHYSICAL_GAIN"/>
+			<xsd:element ref="PHYSICAL_BIAS"/>
+			<xsd:element ref="PHYSICAL_UNIT"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="BAND_DESCRIPTION" name="BAND_DESCRIPTION" type="t_BAND_DESCRIPTION">
+		<xsd:annotation>
+			<xsd:documentation source="BAND_DESCRIPTION"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_BAND_DESCRIPTION" name="t_BAND_DESCRIPTION">
+			<xsd:restriction base="String"/>
+	</xsd:simpleType>
+	<xsd:element id="PHYSICAL_CALIBRATION_DATE" name="PHYSICAL_CALIBRATION_DATE" type="t_PHYSICAL_CALIBRATION_DATE">
+		<xsd:annotation>
+			<xsd:documentation source="PHYSICAL_CALIBRATION_DATE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_PHYSICAL_CALIBRATION_DATE" name="t_PHYSICAL_CALIBRATION_DATE">
+		<xsd:restriction base="DateTime"/>
+	</xsd:simpleType>
+	<xsd:element id="PHYSICAL_GAIN" name="PHYSICAL_GAIN" type="t_PHYSICAL_GAIN">
+		<xsd:annotation>
+			<xsd:documentation source="PHYSICAL_GAIN"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_PHYSICAL_GAIN" name="t_PHYSICAL_GAIN">
+		<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="PHYSICAL_BIAS" name="PHYSICAL_BIAS" type="t_PHYSICAL_BIAS">
+		<xsd:annotation>
+			<xsd:documentation source="PHYSICAL_BIAS"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_PHYSICAL_BIAS" name="t_PHYSICAL_BIAS">
+		<xsd:restriction base="Real"/>
+	</xsd:simpleType>
+	<xsd:element id="PHYSICAL_UNIT" name="PHYSICAL_UNIT" type="t_PHYSICAL_UNIT">
+		<xsd:annotation>
+			<xsd:documentation source="PHYSICAL_UNIT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_PHYSICAL_UNIT" name="t_PHYSICAL_UNIT">
+		<xsd:restriction base="String"/>
+	</xsd:simpleType>
+</xsd:schema>

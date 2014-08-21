@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.1.3" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:include schemaLocation="Source_Frame.xsd"/>
+	<xsd:include schemaLocation="Scene_Source.xsd"/>
+	<xsd:include schemaLocation="Coordinate_Reference_System.xsd"/>
+	<xsd:include schemaLocation="Sensor_Calibration.xsd"/>
+	<xsd:element name="Source_Information" type="t_Source_Information" id="Source_Information">
+		<xsd:annotation>
+			<xsd:documentation source="Source_Information">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Source_Information" id="t_Source_Information">
+		<xsd:all>
+			<xsd:element ref="SOURCE_ID">
+			</xsd:element>
+			<xsd:element ref="SOURCE_TYPE" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="SOURCE_DESCRIPTION" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Coordinate_Reference_System" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="Source_Frame" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="Scene_Source" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="Sensor_Calibration" minOccurs="0">
+				<xsd:annotation>
+					<xsd:appinfo source="t_Sensor_Calibration">
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element name="SOURCE_ID" type="t_SOURCE_ID" id="SOURCE_ID">
+		<xsd:annotation>
+			<xsd:documentation source="SOURCE_ID">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_SOURCE_ID" id="t_SOURCE_ID"><xsd:restriction base="String">
+			<xsd:maxLength value="21"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="SOURCE_TYPE" type="t_SOURCE_TYPE" id="SOURCE_TYPE">
+		<xsd:annotation>
+			<xsd:documentation source="SOURCE_TYPE">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="t_SOURCE_TYPE" id="t_SOURCE_TYPE"><xsd:restriction base="String">
+			<xsd:enumeration value="SCENE"/>
+			<xsd:enumeration value="SEGMENT"/>
+			<xsd:enumeration value="Digital Elevation Model"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="SOURCE_DESCRIPTION" type="t_SOURCE_DESCRIPTION" id="SOURCE_DESCRIPTION">
+		<xsd:annotation>
+			<xsd:documentation source="SOURCE_DESCRIPTION">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_SOURCE_DESCRIPTION" id="t_SOURCE_DESCRIPTION">
+		<xsd:complexContent>
+			<xsd:extension base="Text">
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:element name="SOURCE_REF" type="t_SOURCE_REF" id="SOURCE_REF">
+		<xsd:annotation>
+			<xsd:documentation source="SOURCE_REF">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_SOURCE_REF" id="t_SOURCE_REF">
+		<xsd:sequence>
+		</xsd:sequence>
+		<xsd:attribute name="href" type="String" use="required">
+		</xsd:attribute>
+	</xsd:complexType>
+</xsd:schema>

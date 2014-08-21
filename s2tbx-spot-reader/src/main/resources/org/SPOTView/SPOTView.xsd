@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.1.3" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:dim="http://www.spotimage.fr/Dimap">
+	<xsd:annotation>
+		<xsd:documentation source="schema">
+		</xsd:documentation>
+	</xsd:annotation>
+	<xsd:include schemaLocation="SPOTView_Common.xsd"/>
+	<xsd:include schemaLocation="Metadata_Id.xsd"/>
+	<xsd:include schemaLocation="Dataset_Id.xsd"/>
+	<xsd:include schemaLocation="Dataset_Frame.xsd"/>
+	<xsd:include schemaLocation="Production.xsd"/>
+	<xsd:include schemaLocation="Dataset_Components.xsd"/>
+	<xsd:include schemaLocation="Quality_Assessment.xsd"/>
+	<xsd:include schemaLocation="Coordinate_Reference_System.xsd"/>
+	<xsd:include schemaLocation="Raster_CS.xsd"/>
+	<xsd:include schemaLocation="Geoposition.xsd"/>
+	<xsd:include schemaLocation="Map_Declination.xsd"/>
+	<xsd:include schemaLocation="Raster_Dimensions.xsd"/>
+	<xsd:include schemaLocation="Raster_Encoding.xsd"/>
+	<xsd:include schemaLocation="Data_Processing.xsd"/>
+	<xsd:include schemaLocation="Data_Access.xsd"/>
+	<xsd:include schemaLocation="Image_Display.xsd"/>
+	<xsd:include schemaLocation="Image_Interpretation.xsd"/>
+	<xsd:include schemaLocation="Dataset_Sources.xsd"/>
+	<xsd:element name="Dimap_Document" type="t_Dimap_Document" id="Dimap_Document">
+		<xsd:annotation>
+			<xsd:documentation source="Dimap_Document">
+			</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="t_Dimap_Document" id="t_Dimap_Document">
+		<xsd:all>
+			<xsd:element ref="Metadata_Id">
+			</xsd:element>
+			<xsd:element ref="Dataset_Id" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Dataset_Frame" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Production" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Dataset_Components" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="Quality_Assessment" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="Coordinate_Reference_System" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Raster_CS" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Geoposition" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Map_Declination" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="Raster_Dimensions" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Raster_Encoding" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="Data_Processing" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Data_Access" minOccurs="1">
+			</xsd:element>
+			<xsd:element ref="Image_Display" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="Image_Interpretation" minOccurs="0">
+			</xsd:element>
+			<xsd:element ref="Dataset_Sources" minOccurs="1">
+			</xsd:element>
+		</xsd:all>
+		<xsd:attribute name="name" type="String" use="optional">
+		</xsd:attribute>
+	</xsd:complexType>
+</xsd:schema>

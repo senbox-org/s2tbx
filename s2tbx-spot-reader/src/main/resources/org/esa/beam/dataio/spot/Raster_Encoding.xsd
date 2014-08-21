@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Giacobbo, Didier (SPOT IMAGE) --><xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Raster_Encoding" name="Raster_Encoding" type="t_Raster_Encoding">
+		<xsd:annotation>
+			<xsd:documentation source="Raster_Encoding"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Raster_Encoding" name="t_Raster_Encoding">
+		<xsd:all>
+			<xsd:element minOccurs="0" ref="DATA_TYPE">
+				<xsd:annotation>
+					<xsd:appinfo source="t_Raster_Encoding.DATA_TYPE"/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element ref="NBITS"/>
+			<xsd:element ref="BYTEORDER">
+				<xsd:annotation>
+					<xsd:appinfo source="t_Raster_Encoding.BYTEORDER"/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element minOccurs="0" ref="BANDS_LAYOUT">
+				<xsd:annotation>
+					<xsd:appinfo source="t_Raster_Encoding.BANDS_LAYOUT"/>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element minOccurs="0" ref="SKIPBYTES"/>
+			<xsd:element minOccurs="0" ref="COMPRESSION_NAME"/>
+			<xsd:element minOccurs="0" ref="COMPRESSION_TYPE"/>
+			<!-- TOOLBOX - ajout COMPRESSION_NAME et COMPRESSION_TYPE -->
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="DATA_TYPE" name="DATA_TYPE" type="t_DATA_TYPE">
+		<xsd:annotation>
+			<xsd:documentation source="DATA_TYPE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_DATA_TYPE" name="t_DATA_TYPE">
+		<xsd:restriction base="Data_Types"/>
+	</xsd:simpleType>
+	<xsd:element id="NBITS" name="NBITS" type="t_NBITS">
+		<xsd:annotation>
+			<xsd:documentation source="NBITS"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_NBITS" name="t_NBITS">
+		<xsd:restriction base="xsd:nonNegativeInteger"/>
+	</xsd:simpleType>
+	<xsd:element id="BYTEORDER" name="BYTEORDER" type="t_BYTEORDER">
+		<xsd:annotation>
+			<xsd:documentation source="BYTEORDER"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_BYTEORDER" name="t_BYTEORDER">
+		<xsd:restriction base="Byte_Order"/>
+	</xsd:simpleType>
+	<xsd:element id="BANDS_LAYOUT" name="BANDS_LAYOUT" type="t_BANDS_LAYOUT">
+		<xsd:annotation>
+			<xsd:documentation source="BANDS_LAYOUT"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_BANDS_LAYOUT" name="t_BANDS_LAYOUT">
+		<xsd:restriction base="Bands_Layout"/>
+	</xsd:simpleType>
+	<xsd:element id="SKIPBYTES" name="SKIPBYTES" type="t_SKIPBYTES">
+		<xsd:annotation>
+			<xsd:documentation source="SKIPBYTES"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_SKIPBYTES" name="t_SKIPBYTES">
+		<xsd:restriction base="xsd:positiveInteger"/>
+	</xsd:simpleType>
+	<!-- TOOLBOX - ajout COMPRESSION_NAME et COMPRESSION_TYPE -->
+	<xsd:element id="COMPRESSION_NAME" name="COMPRESSION_NAME" type="t_COMPRESSION_NAME">
+		<xsd:annotation>
+			<xsd:documentation source="COMPRESSION_NAME"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_COMPRESSION_NAME" name="t_COMPRESSION_NAME">
+		<xsd:restriction base="Compression_Names"/>
+	</xsd:simpleType>
+	<xsd:element id="COMPRESSION_TYPE" name="COMPRESSION_TYPE" type="t_COMPRESSION_TYPE">
+		<xsd:annotation>
+			<xsd:documentation source="COMPRESSION_TYPE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType id="t_COMPRESSION_TYPE" name="t_COMPRESSION_TYPE">
+		<xsd:restriction base="Compression_Types"/>
+	</xsd:simpleType>
+</xsd:schema>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- oct. 19, 2004 -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" version="1.1.2" xmlns:dim="http://www.spotimage.fr/Dimap" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:annotation>
+		<xsd:documentation source="schema"/>
+		<xsd:appinfo source="schema"/>
+	</xsd:annotation>
+	<xsd:include schemaLocation="Scene_Common.xsd"/>
+	<xsd:element id="Horizontal_CS" name="Horizontal_CS" type="t_Horizontal_CS">
+		<xsd:annotation>
+			<xsd:documentation source="Horizontal_CS"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_Horizontal_CS" name="t_Horizontal_CS">
+		<xsd:all>
+			<xsd:element ref="HORIZONTAL_CS_TYPE"/>
+			<xsd:element ref="HORIZONTAL_CS_NAME"/>
+			<xsd:element ref="HORIZONTAL_CS_CODE"/>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:element id="HORIZONTAL_CS_TYPE" name="HORIZONTAL_CS_TYPE" type="t_HORIZONTAL_CS_TYPE">
+		<xsd:annotation>
+			<xsd:documentation source="HORIZONTAL_CS_TYPE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_HORIZONTAL_CS_TYPE" name="t_HORIZONTAL_CS_TYPE">
+		<xsd:simpleContent>
+			<xsd:extension base="Horizontal_CS_Types"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="HORIZONTAL_CS_NAME" name="HORIZONTAL_CS_NAME" type="t_HORIZONTAL_CS_NAME">
+		<xsd:annotation>
+			<xsd:documentation source="HORIZONTAL_CS_NAME"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_HORIZONTAL_CS_NAME" name="t_HORIZONTAL_CS_NAME">
+		<xsd:simpleContent>
+			<xsd:extension base="String"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:element id="HORIZONTAL_CS_CODE" name="HORIZONTAL_CS_CODE" type="t_HORIZONTAL_CS_CODE">
+		<xsd:annotation>
+			<xsd:documentation source="HORIZONTAL_CS_CODE"/>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType id="t_HORIZONTAL_CS_CODE" name="t_HORIZONTAL_CS_CODE">
+		<xsd:simpleContent>
+			<xsd:extension base="Code"/>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>
