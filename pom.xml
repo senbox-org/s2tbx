@@ -29,6 +29,7 @@
     <modules>
         <module>s2tbx-reader</module>
         <module>lib-openjpeg</module>
+        <module>s2tbx-bootstrap</module>
         <!-- <module>s2tbx-sen2cor-processor</module> -->
     </modules>
 
