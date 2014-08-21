@@ -149,7 +149,7 @@
     </dependencies>
 
     <build>
-		<outputDirectory>${outputdir}/modules/${project.artifactId}-${project.version}</outputDirectory>
+        <outputDirectory>${outputdir}/modules/${project.artifactId}-${project.version}</outputDirectory>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
