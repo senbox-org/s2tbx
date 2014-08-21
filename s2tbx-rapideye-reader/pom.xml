@@ -14,16 +14,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.esa.beam</groupId>
-            <artifactId>beam-core</artifactId>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-core</artifactId>
+            <version>${snapVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.esa.beam</groupId>
-            <artifactId>beam-geotiff</artifactId>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-geotiff</artifactId>
+            <version>${snapVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.esa.beam</groupId>
-            <artifactId>beam-visat-rcp</artifactId>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-visat-rcp</artifactId>
+            <version>${snapVersion}</version>
         </dependency>
         <dependency>
             <groupId>net.java.dev.jna</groupId>

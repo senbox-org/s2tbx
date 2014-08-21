@@ -1,0 +1,37 @@
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+    <symbolicName>s2tbx-commons</symbolicName>
+    <version>5.0</version>
+    <name>S2TBX common library</name>
+
+    <description>Common S2TBX library</description>
+
+    <packaging>jar</packaging>
+
+    <dependency>
+        <module>beam-core</module>
+    </dependency>
+    <dependency>
+        <module>beam-visat-rcp</module>
+        <optional>true</optional>
+    </dependency>
+
+    <categories>Reader, Sentinel-2</categories>
+
+    <extension point="beam-ui:toolViews">
+
+        <toolView>
+            <id>org.esa.beam.ui.ConsoleToolView</id>
+            <class>org.esa.beam.ui.ConsoleToolView</class>
+            <title>Console View</title>
+            <tabTitle>Console Info</tabTitle>
+            <description>Display logged messages</description>
+            <helpId>ConsoleToolView</helpId>
+            <initState>DOCKED</initState>
+            <initSide>SOUTH</initSide>
+            <initIndex>0</initIndex>
+        </toolView>
+
+    </extension>
+
+</module>

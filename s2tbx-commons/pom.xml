@@ -9,8 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <packaging>jar</packaging>
-    <artifactId>s2tbx-spot-reader</artifactId>
+    <artifactId>s2tbx-commons</artifactId>
 
     <dependencies>
         <dependency>
@@ -20,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-geotiff</artifactId>
+            <artifactId>snap-ui</artifactId>
             <version>${snapVersion}</version>
         </dependency>
         <dependency>
@@ -29,13 +28,9 @@
             <version>${snapVersion}</version>
         </dependency>
         <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-commons</artifactId>
-            <version>0.6.0</version>
+            <groupId>org.xeustechnologies</groupId>
+            <artifactId>jtar</artifactId>
+            <version>1.1</version>
         </dependency>
     </dependencies>
 
