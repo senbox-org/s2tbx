@@ -1,23 +1,22 @@
 package org.esa.beam.dataio.s2;
 
+import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata.Level1CTile;
+import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1CUserProduct;
+import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
-import org.esa.beam.util.StringUtils;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import javax.xml.bind.JAXBException;
+import java.io.*;
+import java.util.*;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
@@ -30,7 +29,9 @@ public class L1cMetadata {
 
     static Element NULL_ELEM = new Element("null") {
     };
-    private final MetadataElement metadataElement;
+
+
+    private MetadataElement metadataElement;
 
 
     static class Tile {
@@ -65,11 +66,6 @@ public class L1cMetadata {
         double upperLeftY;
         double xDim;
         double yDim;
-    }
-
-    static class ResampleData {
-        ReflectanceConversion reflectanceConversion;
-        int quantificationValue;
     }
 
     static class ReflectanceConversion {
@@ -114,45 +110,102 @@ public class L1cMetadata {
         double stdDev;
     }
 
-    private final List<Tile> tileList;
-    private final ResampleData resampleData;
-    private final ProductCharacteristics productCharacteristics;
-    private final QuicklookDescriptor quicklookDescriptor;
+    private List<Tile> tileList;
+    private List<String> imageList; //todo populate imagelist
+    private ProductCharacteristics productCharacteristics;
 
     public static L1cMetadata parseHeader(File file) throws JDOMException, IOException {
-        return new L1cMetadata(new SAXBuilder().build(file).getRootElement());
-    }
-
-    public static L1cMetadata parseHeader(Reader reader) throws JDOMException, IOException {
-        return new L1cMetadata(new SAXBuilder().build(reader).getRootElement());
+        return new L1cMetadata(new FileInputStream(file), file, file.getParent());
     }
 
     public List<Tile> getTileList() {
         return tileList;
     }
 
-    public ResampleData getResampleData() {
-        return resampleData;
-    }
-
     public ProductCharacteristics getProductCharacteristics() {
         return productCharacteristics;
     }
 
-    public QuicklookDescriptor getQuicklookDescriptor() {
-        return quicklookDescriptor;
-    }
 
     public MetadataElement getMetadataElement() {
         return metadataElement;
     }
 
-    private L1cMetadata(Element rootElement) throws DataConversionException {
-        tileList = parseTileList(rootElement);
-        resampleData = parseResampleData(rootElement);
-        productCharacteristics = parseProductCharacteristics(rootElement);
-        quicklookDescriptor = parseQuicklookDescriptor(rootElement);
-        metadataElement = parseAll(rootElement);
+    private L1cMetadata(InputStream stream, File file, String parent) throws DataConversionException
+    {
+        try {
+
+            Level1CUserProduct product = (Level1CUserProduct) L1cMetadataProc.readJaxbFromFilename(stream);
+            productCharacteristics = L1cMetadataProc.getProductOrganization(product);
+
+            Collection<String> tileNames = L1cMetadataProc.getTiles(product);
+            List<File> fullTileNamesList = new ArrayList<File>();
+
+            tileList = new ArrayList<Tile>();
+
+            for (String granuleName: tileNames)
+            {
+                FileInputStream fi = (FileInputStream) stream;
+                File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
+
+                S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+                String theName = aGranuleDir.getMetadataFilename().name;
+
+                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
+                fullTileNamesList.add(nestedGranuleMetadata);
+            }
+
+            for(File aGranuleMetadataFile: fullTileNamesList)
+            {
+                Level1CTile aTile = (Level1CTile) L1cMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
+                Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
+
+                Tile t = new Tile(aTile.getGeneralInfo().getTILEID().getValue());
+                t.horizontalCsCode = aTile.getGeometricInfo().getTileGeocoding().getHORIZONTALCSCODE();
+                t.horizontalCsName = aTile.getGeometricInfo().getTileGeocoding().getHORIZONTALCSNAME();
+
+                t.tileGeometry10M = geoms.get(10);
+                t.tileGeometry20M = geoms.get(20);
+                t.tileGeometry60M = geoms.get(60);
+
+                t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
+                t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
+
+                tileList.add(t);
+            }
+
+            S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
+            S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);
+
+            File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
+
+            //todo improve exception handling
+            metadataElement = new MetadataElement("root");
+            MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
+            MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
+            metadataElement.addElement(userProduct);
+            metadataElement.addElement(dataStrip);
+            MetadataElement granulesMetaData = new MetadataElement("Granules");
+
+            for(File aGranuleMetadataFile: fullTileNamesList)
+            {
+                MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
+                granulesMetaData.addElement(aGranule);
+            }
+
+            metadataElement.addElement(granulesMetaData);
+
+
+            //todo improve exception handling
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (JDOMException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private MetadataElement parseAll(Element parent) {
@@ -195,190 +248,8 @@ public class L1cMetadata {
         return mdElement;
     }
 
-    private static ProductCharacteristics parseProductCharacteristics(Element rootElement) throws DataConversionException {
-        Element productCharacteristicsElem = getChild(rootElement, "Product_Characteristics");
-        ProductCharacteristics resampleData = new ProductCharacteristics();
-        resampleData.spacecraft = getElementValueString(productCharacteristicsElem, "SPACECRAFT");
-        resampleData.datasetProductionDate = getElementValueString(productCharacteristicsElem, "DATASET_PRODUCTION_DATE");
-        resampleData.processingLevel = getElementValueString(productCharacteristicsElem, "PROCESSING_LEVEL");
-        resampleData.bandInformations = parseBandInformation(productCharacteristicsElem);
-        return resampleData;
-    }
-
-    private static SpectralInformation[] parseBandInformation(Element resampleDataElem) throws DataConversionException {
-        List<Element> spectralInformationElemList = getChildren(resampleDataElem, "Spectral_Information", "Spectral_Information_List");
-        SpectralInformation[] spectralInformations = new SpectralInformation[spectralInformationElemList.size()];
-        for (int i = 0; i < spectralInformations.length; i++) {
-            SpectralInformation spectralInformation = new SpectralInformation();
-            Element element = spectralInformationElemList.get(i);
-            spectralInformation.bandId = Integer.parseInt(element.getAttributeValue("band_id"));
-            spectralInformation.physicalBand = element.getAttributeValue("physical_band");
-            spectralInformation.resolution = getElementValueInt(element, "RESOLUTION");
-            Element wavelenght = getChild(element, "Wavelenght");
-            spectralInformation.wavelenghtMin = getElementValueDouble(wavelenght, "MIN");
-            spectralInformation.wavelenghtMin = getElementValueDouble(wavelenght, "MAX");
-            spectralInformation.wavelenghtCentral = getElementValueDouble(wavelenght, "CENTRAL");
-            Element spectralResponse = getChild(element, "Spectral_Response");
-            spectralInformation.spectralResponseStep = getElementValueDouble(spectralResponse, "STEP");
-            spectralInformation.spectralResponseValues = StringUtils.toDoubleArray(getElementValueString(spectralResponse, "VALUES"), " ");
-            spectralInformations[i] = spectralInformation;
-        }
-        return spectralInformations;
-    }
-
-    private static QuicklookDescriptor parseQuicklookDescriptor(Element rootElement) throws DataConversionException {
-        QuicklookDescriptor quicklookDescriptor = new QuicklookDescriptor();
-        Element imageSize = getChild(rootElement, "Data_Strip", "Quicklook_Descriptor", "Image_Size");
-        quicklookDescriptor.imageNCols = getElementValueInt(imageSize, "NCOLS");
-        quicklookDescriptor.imageNRows = getElementValueInt(imageSize, "NROWS");
-
-        List<Element> histogramElements = getChildren(rootElement, "Histogram", "Data_Strip", "Quicklook_Descriptor", "Histogram_List");
-        quicklookDescriptor.histogramList = new Histogram[histogramElements.size()];
-
-        for (int i = 0; i < quicklookDescriptor.histogramList.length; i++) {
-            Element histogramElement = histogramElements.get(i);
-            Histogram histogram = new Histogram();
-            String valuesText = getElementValueString(histogramElement, "VALUES");
-            histogram.bandId = getAttributeValueInt(histogramElement, "band_id");
-            histogram.values = StringUtils.toIntArray(valuesText, " ");
-            histogram.step = getElementValueInt(histogramElement, "STEP");
-            histogram.min = getElementValueDouble(histogramElement, "MIN");
-            histogram.max = getElementValueDouble(histogramElement, "MAX");
-            histogram.mean = getElementValueDouble(histogramElement, "MEAN");
-            histogram.stdDev = getElementValueDouble(histogramElement, "STD_DEV");
-            quicklookDescriptor.histogramList[i] = histogram;
-        }
-
-        return quicklookDescriptor;
-    }
-
-    private static ResampleData parseResampleData(Element rootElement) throws DataConversionException {
-        Element resampleDataElem = getChild(rootElement, "Resample_Data");
-        ResampleData resampleData = new ResampleData();
-        resampleData.quantificationValue = getElementValueInt(resampleDataElem, "QUANTIFICATION_VALUE");
-        resampleData.reflectanceConversion = parseReflectanceConversion(resampleDataElem);
-        return resampleData;
-    }
-
-    private static ReflectanceConversion parseReflectanceConversion(Element resampleDataElem) throws DataConversionException {
-        Element reflectanceConversionElem = getChild(resampleDataElem, "Reflectance_Conversion");
-        ReflectanceConversion reflectanceConversion = new ReflectanceConversion();
-        reflectanceConversion.u = getElementValueDouble(reflectanceConversionElem, "U");
-
-        List<Element> solarIrradianceList = getChildren(reflectanceConversionElem, "SOLAR_IRRADIANCE", "Solar_Irradiance_List");
-        double[] solarIrradiances = new double[solarIrradianceList.size()];
-        for (int i = 0; i < solarIrradiances.length; i++) {
-            solarIrradiances[i] = getElementValueDouble(solarIrradianceList.get(i).getValue(), "SOLAR_IRRADIANCE");
-        }
-        reflectanceConversion.solarIrradiances = solarIrradiances;
-        return reflectanceConversion;
-    }
-
-    private static List<Tile> parseTileList(Element rootElement) throws DataConversionException {
-        List<Element> tileElements = getChildren(rootElement, "Tile", "Data_Strip", "Tiles_List");
-
-        List<Tile> tileList = new ArrayList<Tile>(tileElements.size());
-        for (Element tileElem : tileElements) {
-            Tile tile = new Tile(tileElem.getAttributeValue("id"));
-            tileList.add(tile);
-
-            Element descriptionElem = getChild(tileElem, "Tile_Description");
-            tile.horizontalCsName = getElementValueString(descriptionElem, "HORIZONTAL_CS_NAME");
-            tile.horizontalCsCode = getElementValueString(descriptionElem, "HORIZONTAL_CS_CODE");
-
-            List<Element> sizeElements = getChildren(descriptionElem, "Size");
-            for (Element sizeElement : sizeElements) {
-                TileGeometry tileGeometry;
-                if ("10".equals(sizeElement.getAttributeValue("resolution"))) {
-                    tileGeometry = tile.tileGeometry10M;
-                } else if ("20".equals(sizeElement.getAttributeValue("resolution"))) {
-                    tileGeometry = tile.tileGeometry20M;
-                } else if ("60".equals(sizeElement.getAttributeValue("resolution"))) {
-                    tileGeometry = tile.tileGeometry60M;
-                } else {
-                    tileGeometry = null;
-                }
-                if (tileGeometry != null) {
-                    tileGeometry.numRows = getElementValueInt(sizeElement, "NROWS");
-                    tileGeometry.numCols = getElementValueInt(sizeElement, "NCOLS");
-                }
-            }
-
-            List<Element> geoposElements = getChildren(descriptionElem, "Geoposition");
-            for (Element geoposElement : geoposElements) {
-                TileGeometry tileGeometry;
-                if ("10".equals(geoposElement.getAttributeValue("resolution"))) {
-                    tileGeometry = tile.tileGeometry10M;
-                } else if ("20".equals(geoposElement.getAttributeValue("resolution"))) {
-                    tileGeometry = tile.tileGeometry20M;
-                } else if ("60".equals(geoposElement.getAttributeValue("resolution"))) {
-                    tileGeometry = tile.tileGeometry60M;
-                } else {
-                    tileGeometry = null;
-                }
-                if (tileGeometry != null) {
-                    tileGeometry.upperLeftX = getElementValueDouble(geoposElement, "ULX");
-                    tileGeometry.upperLeftY = getElementValueDouble(geoposElement, "ULY");
-                    tileGeometry.xDim = getElementValueDouble(geoposElement, "XDIM");
-                    tileGeometry.yDim = getElementValueDouble(geoposElement, "YDIM");
-                }
-            }
-
-            Element saGridElem = getChild(tileElem, "Sun_Angles_Grid");
-            AnglesGrid saGrid = new AnglesGrid();
-            saGrid.bandId = -1;
-            saGrid.detectorId = -1;
-            saGrid.zenith = getAnglesMatrix(saGridElem, "Zenith");
-            saGrid.azimuth = getAnglesMatrix(saGridElem, "Azimuth");
-            tile.sunAnglesGrid = saGrid;
-
-            List<Element> vaGridElemList = getChildren(tileElem, "Viewing_Incidence_Angles_Grids");
-            tile.viewingIncidenceAnglesGrids = new AnglesGrid[vaGridElemList.size()];
-            for (int j = 0; j < vaGridElemList.size(); j++) {
-                Element vaGridElem = vaGridElemList.get(j);
-                AnglesGrid vaGrid = new AnglesGrid();
-                vaGrid.bandId = Integer.parseInt(vaGridElem.getAttributeValue("band_id"));
-                vaGrid.detectorId = Integer.parseInt(vaGridElem.getAttributeValue("detector_id"));
-                vaGrid.zenith = getAnglesMatrix(vaGridElem, "Zenith");
-                vaGrid.azimuth = getAnglesMatrix(vaGridElem, "Azimuth");
-                tile.viewingIncidenceAnglesGrids[j] = vaGrid;
-            }
-        }
-        return tileList;
-    }
-
-    void dumpMatrix(float[][] matrix) {
-        for (float[] floats : matrix) {
-            for (float aFloat : floats) {
-                System.out.print(Float.isNaN(aFloat) ? 'O' : '*');
-            }
-            System.out.println();
-        }
-    }
 
 
-    private static float[][] getAnglesMatrix(Element viagElem, String parentName) {
-        List<Element> values = getChildren(viagElem, "VALUES", parentName, "Values_List");
-        float[][] matrix = new float[values.size()][];
-        for (int i1 = 0; i1 < values.size(); i1++) {
-            Element value = values.get(i1);
-            float[] row = StringUtils.toFloatArray(value.getValue(), " ");
-            matrix[i1] = row;
-        }
-        return matrix;
-    }
-
-
-    private static Element getChild(Element parent, String name) {
-        if (parent == null) {
-            return NULL_ELEM;
-        }
-        Element child = parent.getChild(name);
-        if (child == null) {
-            return NULL_ELEM;
-        }
-        return child;
-    }
 
     private static Element getChild(Element parent, String... path) {
         Element child = parent;
@@ -387,24 +258,12 @@ public class L1cMetadata {
         }
         for (String name : path) {
             child = child.getChild(name);
-            if (child == null) {
+            if (child == null)
+            {
                 return NULL_ELEM;
             }
         }
         return child;
-    }
-
-    private static List<Element> getChildren(Element parent, String name) {
-        return (List<Element>) parent.getChildren(name);
-    }
-
-    public static List<Element> getChildren(Element parent, String name, String... path) {
-        Element child = getChild(parent, path);
-        return (List<Element>) child.getChildren(name);
-    }
-
-    private static String getElementValueString(Element parent, String name) {
-        return getChild(parent, name).getValue().trim();
     }
 
     private static double getElementValueDouble(String elementValue, String name) throws DataConversionException {
@@ -412,33 +271,6 @@ public class L1cMetadata {
             return Double.parseDouble(elementValue);
         } catch (NumberFormatException e) {
             throw new DataConversionException(name, "double");
-        }
-    }
-
-    private static double getElementValueDouble(Element parent, String name) throws DataConversionException {
-        Element child = getChild(parent, name);
-        return getElementValueDouble(child.getValue().trim(), name);
-    }
-
-
-    private static int getElementValueInt(String elementValue, String name) throws DataConversionException {
-        try {
-            return Integer.parseInt(elementValue);
-        } catch (NumberFormatException e) {
-            throw new DataConversionException(name, "int");
-        }
-    }
-
-    private static int getElementValueInt(Element parent, String name) throws DataConversionException {
-        Element child = getChild(parent, name);
-        return getElementValueInt(child.getValue().trim(), name);
-    }
-
-    private static int getAttributeValueInt(Element element, String name) throws DataConversionException {
-        try {
-            return Integer.parseInt(element.getAttributeValue(name));
-        } catch (NumberFormatException e) {
-            throw new DataConversionException(name, "int");
         }
     }
 }

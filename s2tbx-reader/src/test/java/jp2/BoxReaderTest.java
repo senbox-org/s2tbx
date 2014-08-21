@@ -1,11 +1,6 @@
 package jp2;
 
-import jp2.boxes.ColorSpecificationBox;
-import jp2.boxes.FileTypeBox;
-import jp2.boxes.IgnoredBox;
-import jp2.boxes.ImageHeaderBox;
-import jp2.boxes.Jpeg2000SignatureBox;
-import jp2.boxes.UuidBox;
+import jp2.boxes.*;
 import org.junit.Test;
 
 import javax.imageio.stream.FileImageInputStream;
@@ -15,9 +10,7 @@ import java.net.URISyntaxException;
 
 import static jp2.BoxType.decode4b;
 import static jp2.BoxType.encode4b;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * @author Norman Fomferra
@@ -26,11 +19,10 @@ public class BoxReaderTest {
     @Test
     public void testSentinel2L1cTile() throws URISyntaxException, IOException {
         final BoxReader boxReader = openBoxReader("/org/esa/beam/dataio/s2/l1c/IMG_GPPL1C_054_20091210235100_20091210235130_02_000000_15SUC.jp2");
-
         final Box box1 = boxReader.readBox();
         assertEquals("jP  ", box1.getSymbol());
         assertEquals(12, box1.getLength());
-        assertEquals(0x0D0A870A, ((Jpeg2000SignatureBox)box1).getSignature());
+        assertEquals(218793738, ((Jpeg2000SignatureBox)box1).getSignature());
 
         final Box box2 = boxReader.readBox();
         assertEquals("ftyp", box2.getSymbol());
@@ -89,7 +81,7 @@ public class BoxReaderTest {
 
     @Test
     public void testIsoSpecPart1ConformanceFiles() throws IOException, URISyntaxException {
-        test("images/conformance/Otoe_OrthoImage8.jp2", 968, 920, 635565L);
+        test("images/conformance/Otoe_OrthoImage8.jp2", 968, 920, 635565);
         test("images/conformance/sekscir25.jp2", 10726, 9147, 11803226L);
         test("images/conformance/CB_TM_QQ432.jp2", 3164, 2982, 18759332L);
         test("images/conformance/CB_TM432.jp2", 361, 488,348981L);

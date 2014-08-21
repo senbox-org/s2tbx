@@ -11,9 +11,13 @@ public interface S2Config {
     boolean DEBUG = Boolean.getBoolean("org.esa.beam.dataio.s2.S2Config.DEBUG");
 
     /**
-     * Path to "opj_decompress" executable from OpenJPEG 2.0.0 package
+     * Path to "opj_decompress" executable from OpenJPEG 2.1.0 package
      */
-    String OPJ_DECOMPRESSOR_EXE = System.getProperty("openjpeg2.decompressor.path", "opj_decompress");
+
+    //todo fix problems with the path length
+    String OPJ_DECOMPRESSOR_EXE = L1cMetadataProc.getExecutable();
+
+    //todo add Path to opj_dump
 
     int DEFAULT_JAI_TILE_SIZE = 512;
 
@@ -29,35 +33,15 @@ public interface S2Config {
 
     short RAW_NO_DATA_THRESHOLD = DEBUG ? (short) 4 : (short) 1;
 
-    // these numbers should actually been read from the JP2 files,
-    // because they are likely to change if prod. spec. changes
-    //
+    //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
+    //todo use classes from jp2 package to read the data
+    //todo future improvement: use opj_dump.exe to retrieve the data
     L1cTileLayout[] L1C_TILE_LAYOUTS = new L1cTileLayout[]{
-            new L1cTileLayout(10960, 10960, 4096, 4096, 3, 3, 6),
-            new L1cTileLayout(5480, 5480, 4096, 4096, 2, 2, 6),
-            new L1cTileLayout(1826, 1826, 1826, 1826, 1, 1, 6),
-    };
-
-    /**
-     * Only used, if metadata header (manifest file) is not found.
-     */
-    S2WavebandInfo[] S2_WAVEBAND_INFOS = new S2WavebandInfo[]{
-            new S2WavebandInfo(0, "B1", S2SpatialResolution.R60M, 443, 20, 1895.27, 3413, 1.030577302),
-            new S2WavebandInfo(1, "B2", S2SpatialResolution.R10M, 490, 65, 1962.16, 3413, 1.030577302),
-            new S2WavebandInfo(2, "B3", S2SpatialResolution.R10M, 560, 35, 1822.88, 3413, 1.030577302),
-            new S2WavebandInfo(3, "B4", S2SpatialResolution.R10M, 665, 30, 1511.88, 3413, 1.030577302),
-            new S2WavebandInfo(4, "B5", S2SpatialResolution.R20M, 705, 15, 1420.58, 3413, 1.030577302),
-            new S2WavebandInfo(5, "B6", S2SpatialResolution.R20M, 740, 15, 1292.17, 3413, 1.030577302),
-            new S2WavebandInfo(6, "B7", S2SpatialResolution.R20M, 775, 20, 1165.87, 3413, 1.030577302),
-            new S2WavebandInfo(7, "B8", S2SpatialResolution.R10M, 842, 115, 1037.44, 3413, 1.030577302),
-            new S2WavebandInfo(8, "B8a", S2SpatialResolution.R20M, 865, 20, 959.53, 3413, 1.030577302),
-            new S2WavebandInfo(9, "B9", S2SpatialResolution.R60M, 940, 20, 814.1, 3413, 1.030577302),
-            new S2WavebandInfo(10, "B10", S2SpatialResolution.R60M, 1380, 30, 363.67, 3413, 1.030577302),
-            new S2WavebandInfo(11, "B11", S2SpatialResolution.R20M, 1610, 90, 246.28, 3413, 1.030577302),
-            new S2WavebandInfo(12, "B12", S2SpatialResolution.R20M, 2190, 180, 86.98, 3413, 1.030577302),
+            new L1cTileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
+            new L1cTileLayout(5490, 5490, 2048, 2048, 3, 3, 6),
+            new L1cTileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
     };
 
     String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
     String MTD_EXT = ".xml";
-    String JP2_EXT = ".jp2";
 }

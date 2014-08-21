@@ -27,12 +27,7 @@
     <url>https://github.com/CS-SI/s2tbx</url>
 
     <modules>
-        <module>s2tbx-bootstrap</module>
-
         <module>s2tbx-reader</module>
-        <module>s2tbx-reader-new</module>
-
-        <module>s2tbx-reader-cs</module>
         <module>lib-openjpeg</module>
         <!-- <module>s2tbx-sen2cor-processor</module> -->
     </modules>
@@ -41,10 +36,9 @@
 
     <properties>
         <snapVersion>0.5-SNAPSHOT</snapVersion>
-
-		<outputdir>../../output</outputdir>
-	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
+        <outputdir>../../output</outputdir>
     </properties>
 
     <repositories>

@@ -52,6 +52,12 @@ public class CodestreamReaderTest {
         final MarkerSegment seg3 = reader.readSegment();
         assertEquals(MarkerType.COD, seg3.getMarkerType());
         assertEquals(CodingStyleDefaultSegment.class, seg3.getClass());
+        CodingStyleDefaultSegment roar = (CodingStyleDefaultSegment) seg3;
+        assertEquals(18, roar.getLcod());
+        assertEquals(1, roar.getOrder());
+        assertEquals(12, roar.getLayers());
+        assertEquals(5, roar.getLevels());
+
 
 
 //        assertEquals(MarkerType.EOC, reader.readMarker());

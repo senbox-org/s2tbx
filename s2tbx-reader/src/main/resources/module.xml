@@ -10,7 +10,7 @@
     <vendor>Brockmann Consult GmbH and Array Inc</vendor>
     <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
     <copyright>(C) 2007 by Brockmann Consult GmbH and Array Inc</copyright>
-    <url>https://github.com/CS-SI/s2tbx</url>
+    <url>https://github.com/CS-SI</url>
     <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
     <changelog>
@@ -51,9 +51,9 @@
     <extension point="snap-core:rgbProfiles">
         <rgbProfile>
             <name>Sentinel 2 MSI L1</name>
-            <red>B11</red>
-            <green>B9</green>
-            <blue>B3</blue>
+            <red>B4</red>
+            <green>B3</green>
+            <blue>B2</blue>
         </rgbProfile>
 
     </extension>

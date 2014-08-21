@@ -17,7 +17,15 @@ public class BoxReader {
     public BoxReader(ImageInputStream stream, long fileLength, Listener listener) {
         this.stream = stream;
         this.fileLength = fileLength;
-        this.listener = listener;
+
+        if(listener == null)
+        {
+            this.listener = new EmptyListener();
+        }
+        else
+        {
+            this.listener = listener;
+        }
     }
 
     public ImageInputStream getStream() {
@@ -73,5 +81,19 @@ public class BoxReader {
         void knownBoxSeen(Box box);
 
         void unknownBoxSeen(Box box);
+    }
+}
+
+class EmptyListener implements BoxReader.Listener
+{
+
+    @Override
+    public void knownBoxSeen(Box box) {
+        // do nothing
+    }
+
+    @Override
+    public void unknownBoxSeen(Box box) {
+        // do nothing
     }
 }

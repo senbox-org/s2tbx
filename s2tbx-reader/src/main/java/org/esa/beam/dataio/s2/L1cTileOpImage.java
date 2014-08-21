@@ -2,6 +2,7 @@ package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
+import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.jai.ResolutionLevel;
 import org.esa.beam.jai.SingleBandedOpImage;
 import org.esa.beam.util.ImageUtils;
@@ -9,20 +10,12 @@ import org.esa.beam.util.io.FileUtils;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.BorderExtender;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -230,11 +223,48 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = l1cTileLayout.numXTiles * jp2TileY + jp2TileX;
-        final Process process = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
-                                                   "-i", imageFile.getPath(),
-                                                   "-o", outputFile.getPath(),
-                                                   "-r", getLevel() + "",
-                                                   "-t", tileIndex + "").directory(cacheDir).start();
+
+
+        ProcessBuilder builder = null;
+        if(SystemUtils.IS_OS_WINDOWS)
+        {
+            String inputFileName = Utils.GetShortPathName(imageFile.getPath());
+            String outputFileName = outputFile.getPath();
+
+            if(inputFileName.length() == 0)
+            {
+                inputFileName = imageFile.getPath();
+            }
+
+            System.err.println(imageFile.getPath());
+            System.err.println(inputFileName);
+
+            builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
+                    "-i", inputFileName,
+                    "-o", outputFileName,
+                    "-r", getLevel() + "",
+                    "-t", tileIndex + "");
+        }
+        else
+        {
+            builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
+                    "-i", imageFile.getPath(),
+                    "-o", outputFile.getPath(),
+                    "-r", getLevel() + "",
+                    "-t", tileIndex + "");
+        }
+
+
+        /*
+        ProcessBuilder builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
+                "-i", imageFile.getPath(),
+                "-o", outputFile.getPath(),
+                "-r", getLevel() + "",
+                "-t", tileIndex + "");
+                */
+
+        System.err.println(builder.command());
+        final Process process = builder.directory(cacheDir).start();
 
         try {
             final int exitCode = process.waitFor();

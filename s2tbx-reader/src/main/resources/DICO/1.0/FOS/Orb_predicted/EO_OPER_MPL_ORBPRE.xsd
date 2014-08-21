@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 U (http://www.altova.com) by user (EMBRACE) -->
+<xsd:schema xmlns="http://gs2.esa.int/DICO/1.0/FOS/Orb_predicted/" xmlns:Orb_predicted="http://gs2.esa.int/DICO/1.0/FOS/Orb_predicted/" xmlns:misc="http://gs2.esa.int/DICO/1.0/SY/misc/" xmlns:header="http://gs2.esa.int/DICO/1.0/PDGS/header/" xmlns:orbital="http://gs2.esa.int/DICO/1.0/SY/orbital/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://gs2.esa.int/DICO/1.0/FOS/Orb_predicted/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:import namespace="http://gs2.esa.int/DICO/1.0/SY/misc/" schemaLocation="../../SY/misc/misc.xsd"/>
+	<xsd:import namespace="http://gs2.esa.int/DICO/1.0/SY/orbital/" schemaLocation="../../SY/orbital/orbital.xsd"/>
+	<xsd:import namespace="http://gs2.esa.int/DICO/1.0/SY/orbital/" schemaLocation="../../SY/orbital/HeaderTypes_Orbit.xsd"/>
+	<xsd:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/header/" schemaLocation="../../PDGS/header/EOF_Header.xsd"/>
+	<xsd:annotation>
+		<xsd:documentation>Earth Explorer Header data types</xsd:documentation>
+	</xsd:annotation>
+	<xsd:annotation>
+		<xsd:documentation>$Revision: 1.1 $ $Date: 2011/10/07 08:02:08 $</xsd:documentation>
+	</xsd:annotation>
+	<xsd:annotation>
+		<xsd:documentation>Predicted Orbit File</xsd:documentation>
+	</xsd:annotation>
+	<xsd:annotation>
+		<xsd:documentation>$Revision: 1.1 $ $Date: 2011/10/07 08:01:47 $</xsd:documentation>
+	</xsd:annotation>
+	<xsd:complexType name="Predicted_Orbit_File_Type">
+		<xsd:sequence>
+			<xsd:element name="Earth_Explorer_Header" type="Predicted_Orbit_Header_Type"/>
+			<xsd:element name="Data_Block" type="Predicted_Orbit_Data_Block_Type"/>
+		</xsd:sequence>
+		<xsd:attribute name="schemaVersion" type="xsd:decimal" use="required"/>
+	</xsd:complexType>
+	<xsd:element name="Earth_Explorer_File" type="Predicted_Orbit_File_Type"/>
+	<!--Predicted Orbit Header Type  -->
+	<xsd:complexType name="Predicted_Orbit_Header_Type">
+		<xsd:sequence>
+			<xsd:element name="Fixed_Header" type="header:Fixed_Header_Type"/>
+			<xsd:element name="Variable_Header" type="orbital:Orbit_File_Variable_Header"/>
+		</xsd:sequence>
+		<xsd:attribute name="schemaVersion" type="xsd:decimal" use="optional"/>
+	</xsd:complexType>
+	<xsd:element name="Earth_Explorer_Header" type="Predicted_Orbit_Header_Type"/>
+	<!-- Predicted Orbit Data Block Type -->
+	<xsd:complexType name="Predicted_Orbit_Data_Block_Type" mixed="false">
+		<xsd:sequence>
+			<xsd:element name="List_of_OSVs" type="orbital:List_of_OSVs_Type"/>
+		</xsd:sequence>
+		<xsd:attribute name="type" type="misc:String_Type" use="required" fixed="xml"/>
+		<xsd:attribute name="schemaVersion" type="xsd:decimal" use="optional"/>
+	</xsd:complexType>
+	<xsd:element name="Data_Block" type="Predicted_Orbit_Data_Block_Type"/>
+</xsd:schema>

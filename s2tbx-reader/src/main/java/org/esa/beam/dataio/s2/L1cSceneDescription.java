@@ -47,12 +47,17 @@ public class L1cSceneDescription {
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
         TileInfo[] tileInfos = new TileInfo[tileList.size()];
         Envelope2D sceneEnvelope = null;
+
+        if(tileList.isEmpty())
+        {
+            throw new IllegalStateException();
+        }
         for (int i = 0; i < tileList.size(); i++) {
             L1cMetadata.Tile tile = tileList.get(i);
             if (crs == null) {
                 try {
                     crs = CRS.decode(tile.horizontalCsCode);
-                    //System.out.println("crs = " + crs);
+                    System.out.println("crs = " + crs);
                 } catch (FactoryException e) {
                     System.err.println("Unknown CRS: " + tile.horizontalCsCode);
                 }

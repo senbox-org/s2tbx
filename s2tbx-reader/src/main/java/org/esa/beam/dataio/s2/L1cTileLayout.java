@@ -3,7 +3,7 @@ package org.esa.beam.dataio.s2;
 /**
 * @author Norman Fomferra
 */
-class L1cTileLayout {
+public class L1cTileLayout {
     /** Width of L1C tile  */
     int width;
     /** Height of L1C tile  */
@@ -18,7 +18,7 @@ class L1cTileLayout {
     int numYTiles;
     int numResolutions;
 
-    L1cTileLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions) {
+    public L1cTileLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions) {
         this.width = width;
         this.height = height;
         this.tileWidth = tileWidth;

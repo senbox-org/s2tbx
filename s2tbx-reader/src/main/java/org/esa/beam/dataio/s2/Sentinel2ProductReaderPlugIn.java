@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.s2;
 
+import org.esa.beam.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
@@ -15,9 +16,9 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
+        System.err.println("Getting decoders...");
         File file = new File(input.toString());
-        return S2MetadataFilename.isMetadataFilename(file.getName()) ? DecodeQualification.INTENDED :
-                S2ImageFilename.isImageFilename(file.getName()) ? DecodeQualification.SUITABLE :
+        return S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.INTENDED :
                         DecodeQualification.UNABLE;
     }
 
@@ -28,6 +29,7 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
+        System.err.println("Building product reader");
         return new Sentinel2ProductReader(this);
     }
 
@@ -38,7 +40,7 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[]{S2Config.JP2_EXT, S2Config.MTD_EXT};
+        return new String[]{S2Config.MTD_EXT};
     }
 
     @Override

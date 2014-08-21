@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://pdgs.s2.esa.int/PSD/User_Product_Level-1B.xsd" xmlns:dimap="http://gs2.esa.int/DICO/1.0/PDGS/dimap/" targetNamespace="http://pdgs.s2.esa.int/PSD/User_Product_Level-1B.xsd" elementFormDefault="qualified" version="11">
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/dimap/" schemaLocation="DICO/1.0/PDGS/dimap/dimap.xsd"/>
+	<xs:element name="Level-1B_User_Product" type="Level-1B_User_Product"/>
+	<xs:complexType name="Level-1B_User_Product">
+		<xs:sequence>
+			<xs:element name="General_Info" type="dimap:A_PRODUCT_INFO_USERL1B"/>
+			<xs:element name="Geometric_Info" type="dimap:A_GEOMETRIC_INFO_USERL0L1AL1B"/>
+			<xs:element name="Auxiliary_Data_Info" type="dimap:AN_AUXILIARY_DATA_INFO_USERL1B"/>
+			<xs:element name="Quality_Indicators_Info" type="dimap:A_QUALITY_INDICATORS_INFO_USER_PROD_L1B_L1C"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

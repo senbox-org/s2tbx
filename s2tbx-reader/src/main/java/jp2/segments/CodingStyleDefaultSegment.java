@@ -12,6 +12,14 @@ import java.io.IOException;
 public class CodingStyleDefaultSegment extends MarkerSegment {
 
     private short lcod;
+    private int layers;
+    private int order;
+    private int SGcod;
+    private short levels;
+
+    public short getLevels() {
+        return levels;
+    }
 
     public CodingStyleDefaultSegment(MarkerType markerType) {
         super(markerType);
@@ -20,6 +28,26 @@ public class CodingStyleDefaultSegment extends MarkerSegment {
     @Override
     public void readFrom(ImageInputStream stream) throws IOException {
         lcod = stream.readShort();
+        order = stream.readByte();
+        int raw = stream.readInt();
+        layers = raw & 0x00ffff00 ;
+        layers = layers >> 8;
+        levels = stream.readByte();
+    }
 
+    public short getLcod() {
+        return lcod;
+    }
+
+    public int getLayers() {
+        return layers;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public int getSGcod() {
+        return SGcod;
     }
 }
