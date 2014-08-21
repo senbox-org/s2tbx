@@ -9,16 +9,16 @@
     <packaging>jar</packaging>
 
     <dependency>
-        <module>beam-core</module>
+        <module>snap-core</module>
     </dependency>
     <dependency>
-        <module>beam-visat-rcp</module>
+        <module>snap-visat-rcp</module>
         <optional>true</optional>
     </dependency>
 
     <categories>Reader, Sentinel-2</categories>
 
-    <extension point="beam-ui:toolViews">
+    <extension point="snap-ui:toolViews">
 
         <toolView>
             <id>org.esa.beam.ui.ConsoleToolView</id>

@@ -9,13 +9,13 @@
     <packaging>dir</packaging>
 
     <dependency>
-        <module>beam-core</module>
+        <module>snap-core</module>
     </dependency>
     <dependency>
-        <module>beam-geotiff</module>
+        <module>snap-geotiff</module>
     </dependency>
     <dependency>
-        <module>beam-visat-rcp</module>
+        <module>snap-visat-rcp</module>
         <optional>true</optional>
     </dependency>
 
