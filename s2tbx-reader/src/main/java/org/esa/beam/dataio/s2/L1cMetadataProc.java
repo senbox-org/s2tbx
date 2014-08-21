@@ -41,6 +41,16 @@ public class L1cMetadataProc {
                 URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
                 return parent.getPath();
             }
+            else
+            {
+                //todo please note that in dev, all the module jar files are unzipped in modules folder, so SNAP only reaches this code in dev environments
+                if(url.getPath().contains(subStr))
+                {
+                    URI uri = url.toURI();
+                    URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
+                    return parent.getPath();
+                }
+            }
         }
 
         throw new FileNotFoundException("Module " + subStr + " not found !");
