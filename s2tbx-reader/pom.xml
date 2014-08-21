@@ -29,11 +29,6 @@
             <artifactId>snap-core</artifactId>
             <version>${snapVersion}</version>
         </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-bootstrap</artifactId>
-            <version>${snapVersion}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.esa.snap</groupId>
