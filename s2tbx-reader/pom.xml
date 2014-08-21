@@ -4,18 +4,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>s2tbx-reader</artifactId>
-
-    <packaging>jar</packaging>
-
     <parent>
         <groupId>org.esa.s2tbx</groupId>
         <artifactId>s2tbx</artifactId>
         <version>0.6.0</version>
     </parent>
 
+    <packaging>jar</packaging>
+    <artifactId>s2tbx-reader</artifactId>
+    <name>Sentinel-2 Reader</name>
     <description>
-        Reader for data products from Sentinel-2 (MSI Level 1b and L1c)
+        This module enables the Sentinel Toolbox to read the following Sentinel-2 data products: L1B,L1C
     </description>
 
     <properties>
@@ -32,6 +31,12 @@
 
         <dependency>
             <groupId>org.esa.snap</groupId>
+            <artifactId>snap-visat-rcp</artifactId>
+            <version>${snapVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
             <artifactId>snap-ui</artifactId>
             <version>${snapVersion}</version>
         </dependency>
@@ -39,12 +44,6 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-gpf</artifactId>
-            <version>${snapVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-visat-rcp</artifactId>
             <version>${snapVersion}</version>
         </dependency>
 
