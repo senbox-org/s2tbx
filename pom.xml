@@ -29,7 +29,7 @@
     <modules>
         <module>s2tbx-reader</module>
         <module>lib-openjpeg</module>
-        <!-- <module>s2tbx-rapideye-reader</module> -->
+        <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-bootstrap</module>
@@ -247,6 +247,15 @@
             <name>Julien Malik</name>
             <email>julien.malik@c-s.fr</email>
             <organization>CS</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>kraftek</id>
+            <name>Cosmin Cara</name>
+            <email>cosmin.cara@c-s.ro</email>
+            <organization>CS ROMANIA</organization>
             <roles>
                 <role>Java Developer</role>
             </roles>

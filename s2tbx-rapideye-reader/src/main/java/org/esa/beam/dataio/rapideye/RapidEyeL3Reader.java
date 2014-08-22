@@ -49,7 +49,7 @@ public class RapidEyeL3Reader extends RapidEyeReader {
             //metadataFileName = selection.getAbsolutePath();
             metadataFile = selection;
         } else {
-            metadataFileName = productDirectory.find(RapidEyeConstants.METADATA_FILE_SUFFIX);
+            metadataFileName = productDirectory.findFirst(RapidEyeConstants.METADATA_FILE_SUFFIX);
             metadataFile = productDirectory.getFile(metadataFileName);
         }
         if (metadataFile.exists()) {

@@ -1,7 +1,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-spot-reader</symbolicName>
-    <version>5.0</version>
+    <version>1.0</version>
     <name>SPOT DIMAP Product Reader</name>
 
     <description>Reads SPOT-1 to SPOT-5 DIMAP products</description>

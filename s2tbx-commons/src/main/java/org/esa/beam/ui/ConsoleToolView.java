@@ -97,7 +97,6 @@ public class ConsoleToolView extends AbstractToolView {
 
             }
         };
-        BeamLogManager.getSystemLogger().addHandler(logHandler);
     }
 
     @Override
@@ -137,7 +136,7 @@ public class ConsoleToolView extends AbstractToolView {
         }
         consoleViewPanel.add(toolbar, BorderLayout.WEST);
         consoleViewPanel.add(scrollPane, BorderLayout.CENTER);
-
+        BeamLogManager.getSystemLogger().addHandler(logHandler);
         return consoleViewPanel;
     }
 

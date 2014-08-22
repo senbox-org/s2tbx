@@ -5,6 +5,8 @@ import org.esa.beam.util.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is an extension of com.bc.ceres.core.VirtualDir class for
@@ -68,12 +70,12 @@ public class ZipVirtualDir {
     }
 
     /**
-     * Tries to find the first file that contains the given string.
+     * Tries to findFirst the first file that contains the given string.
      * @param pattern       A string to be found in the file name (if any).
      * @return      The name of the found file, or <code>NULL</code> if no file was found.
      * @throws IOException
      */
-    public String find(String pattern) throws IOException {
+    public String findFirst(String pattern) throws IOException {
         String found = null;
         String[] entries = wrappedVirtualDir.list("");
         if (entries != null) {
@@ -85,6 +87,25 @@ public class ZipVirtualDir {
             }
         }
         return found;
+    }
+
+    /**
+     * Tries to findFirst the first file that contains the given string.
+     * @param pattern       A string to be found in the file name (if any).
+     * @return      The name of the found file, or <code>NULL</code> if no file was found.
+     * @throws IOException
+     */
+    public String[] findAll(String pattern) throws IOException {
+        List<String> found = new ArrayList<String>();
+        String[] entries = wrappedVirtualDir.list("");
+        if (entries != null) {
+            for (String entry : entries) {
+                if (entry.toLowerCase().contains(pattern)) {
+                    found.add(entry);
+                }
+            }
+        }
+        return found.toArray(new String[found.size()]);
     }
 
     /**

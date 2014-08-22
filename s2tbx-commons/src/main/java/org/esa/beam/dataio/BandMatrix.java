@@ -4,6 +4,7 @@ import org.esa.beam.framework.datamodel.Band;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,12 @@ public class BandMatrix {
 
     private BandMatrixCell[] cachedCells;
 
+    /**
+     * This class represents a cell in the matrix of "bands".
+     * Besides acting as a container for Band references, this class exposes methods for
+     * computing the overlapping area of two cells and for computing intersection of a cell
+     * with a given rectangle (useful when requesting a smaller area to a band reader).
+     */
     public class BandMatrixCell {
         /**
          * The associated cell band
@@ -71,6 +78,14 @@ public class BandMatrix {
          * The height of the cell, in pixels.
          */
         public int cellPixelHeight;
+        /**
+         * The number of pixels (from left edge) this cell overlaps the left one.
+         */
+        public int cellOffsetX;
+        /**
+         * The number of pixels (from top edge) this cells overlaps the upper one.
+         */
+        public int cellOffsetY;
 
         /**
          * The only (package protected) constructor of the cell.
@@ -116,10 +131,26 @@ public class BandMatrix {
          */
         public Rectangle intersection(Rectangle rectangle) {
             Rectangle result = new Rectangle();
-            Rectangle.intersect(new Rectangle(cellStartPixelX, cellStartPixelY, cellPixelWidth, cellPixelHeight),
+            Rectangle.intersect(new Rectangle(cellStartPixelX + cellOffsetX, cellStartPixelY + cellOffsetY, cellPixelWidth - cellOffsetX, cellPixelHeight - cellOffsetY),
                                 rectangle,
                                 result);
             return (result.width > 0 && result.height > 0) ? result : null;
+        }
+
+        /**
+         * Returns the overlapping area (i.e. common area) between two cells.
+         * @param otherCell    The second cell to test for overlapping with.
+         * @return      A rectangle with integer bounds representing pixels.
+         */
+        public Rectangle overlapping(BandMatrixCell otherCell) {
+            Rectangle2D otherCellArea = new Rectangle2D.Double(otherCell.origin.getX(), otherCell.origin.getY(), otherCell.cellWidth, otherCell.cellHeight);
+            Rectangle2D cellArea = new Rectangle2D.Double(origin.getX(), origin.getY(), cellWidth, cellHeight);
+            Rectangle2D overlap2D = cellArea.createIntersection(otherCellArea);
+            Rectangle overlap = overlap2D.getBounds();
+            return new Rectangle((int)(overlap.getX() - origin.getX()),
+                                 (int)(overlap.getY() - origin.getY()),
+                                 (int)(overlap.getWidth() - 1),         // subtract 1 because for cells continuing each other width is 1
+                                 (int)(overlap.getHeight() - 1));
         }
     }
 
@@ -212,16 +243,22 @@ public class BandMatrix {
         BandMatrixCell cell = new BandMatrixCell(band, cellOrigin, stepX, stepY);
         this.internal[row][col] = cell;
         if (col > 0) {
-            if (cell.cellPixelHeight != this.internal[row][col - 1].cellPixelHeight)
+            BandMatrixCell leftCell = this.internal[row][col - 1];
+            if (cell.cellPixelHeight != leftCell.cellPixelHeight)
                 throw new IllegalArgumentException("Band height is different from that of previously added bands");
-            cell.cellStartPixelX = this.internal[row][col - 1].cellStartPixelX + this.internal[row][col - 1].cellPixelWidth;
+            cell.cellStartPixelX = leftCell.cellStartPixelX + leftCell.cellPixelWidth;
+            Rectangle leftOverlap = cell.overlapping(leftCell);
+            cell.cellOffsetX = leftOverlap.width;
         } else {
             cell.cellStartPixelX = 0;
         }
         if (row > 0) {
-            if (cell.cellPixelWidth != this.internal[row][col - 1].cellPixelWidth)
+            BandMatrixCell upperCell = this.internal[row - 1][col];
+            if (cell.cellPixelWidth != upperCell.cellPixelWidth)
                 throw new IllegalArgumentException("Band width is different from that of previously added bands");
-            cell.cellStartPixelY = this.internal[row - 1][col].cellStartPixelY + this.internal[row - 1][col].cellPixelHeight;
+            cell.cellStartPixelY = upperCell.cellStartPixelY + upperCell.cellPixelHeight;
+            Rectangle upperOverlap = cell.overlapping(upperCell);
+            cell.cellOffsetY = upperOverlap.height;
         } else {
             cell.cellStartPixelY = 0;
         }
