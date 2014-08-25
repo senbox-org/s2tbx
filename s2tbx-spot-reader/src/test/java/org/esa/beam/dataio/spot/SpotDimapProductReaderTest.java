@@ -40,8 +40,8 @@ public class SpotDimapProductReaderTest {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
-        //System.setProperty("beam.reader.tileWidth", "100");
-        //System.setProperty("beam.reader.tileHeight", "100");
+        //System.setProperty("snap.reader.tileWidth", "100");
+        //System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
@@ -64,8 +64,8 @@ public class SpotDimapProductReaderTest {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "200");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "200");
         try {
 
             Product finalProduct = reader.readProductNodes(file, null);
@@ -90,8 +90,8 @@ public class SpotDimapProductReaderTest {
     public void testGetProductComponentsOnVolumeFileInputBySimpleProductReader(){
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("vol_list.dim");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "100");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
@@ -117,8 +117,8 @@ public class SpotDimapProductReaderTest {
     public void testGetProductComponentsOnArchiveInputBySimpleProductReader(){
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "100");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
@@ -135,13 +135,13 @@ public class SpotDimapProductReaderTest {
     public void testConfigurePreferredTileSizeBySimpleProductReader(){
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
-        System.setProperty("beam.reader.tileWidth", "200");
-        System.setProperty("beam.reader.tileHeight", "200");
+        System.setProperty("snap.reader.tileWidth", "200");
+        System.setProperty("snap.reader.tileHeight", "200");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
-            System.setProperty("beam.reader.tileWidth", "300");
-            System.setProperty("beam.reader.tileHeight", "100");
+            System.setProperty("snap.reader.tileWidth", "300");
+            System.setProperty("snap.reader.tileHeight", "100");
             reader.configurePreferredTileSize(finalProduct);
             Dimension size = finalProduct.getPreferredTileSize();
             assertEquals(100, size.height);
@@ -157,8 +157,8 @@ public class SpotDimapProductReaderTest {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
-        //System.setProperty("beam.reader.tileWidth", "100");
-        //System.setProperty("beam.reader.tileHeight", "100");
+        //System.setProperty("snap.reader.tileWidth", "100");
+        //System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
@@ -181,8 +181,8 @@ public class SpotDimapProductReaderTest {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "200");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "200");
         try {
 
             Product finalProduct = reader.readProductNodes(file, null);
@@ -207,8 +207,8 @@ public class SpotDimapProductReaderTest {
     public void testGetProductComponentsOnVolumeFileInputByVolumeProductReader(){
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "100");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
@@ -238,8 +238,8 @@ public class SpotDimapProductReaderTest {
         /*
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "100");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
@@ -257,13 +257,13 @@ public class SpotDimapProductReaderTest {
     public void testConfigurePreferredTileSizeByVolumeProductReader(){
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
-        System.setProperty("beam.reader.tileWidth", "200");
-        System.setProperty("beam.reader.tileHeight", "200");
+        System.setProperty("snap.reader.tileWidth", "200");
+        System.setProperty("snap.reader.tileHeight", "200");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(SpotDimapVolumeProductReader.class, finalProduct.getProductReader().getClass());
-            System.setProperty("beam.reader.tileWidth", "300");
-            System.setProperty("beam.reader.tileHeight", "100");
+            System.setProperty("snap.reader.tileWidth", "300");
+            System.setProperty("snap.reader.tileHeight", "100");
             reader.configurePreferredTileSize(finalProduct);
             Dimension size = finalProduct.getPreferredTileSize();
             assertEquals(100, size.height);

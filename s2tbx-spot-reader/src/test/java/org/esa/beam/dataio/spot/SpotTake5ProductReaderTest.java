@@ -38,8 +38,8 @@ public class SpotTake5ProductReaderTest {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.xml");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "100");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(4, finalProduct.getBands().length);
@@ -62,8 +62,8 @@ public class SpotTake5ProductReaderTest {
         Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.xml");
         File rasterFile = TestUtil.getTestFile("mediumImage.tif");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "200");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "200");
         try {
 
             Product finalProduct = reader.readProductNodes(file, null);
@@ -87,8 +87,8 @@ public class SpotTake5ProductReaderTest {
     public void testGetProductComponentsOnFileInput() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.xml");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "100");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
@@ -105,8 +105,8 @@ public class SpotTake5ProductReaderTest {
     public void testGetProductComponentsOnArchiveInput() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.tgz");
-        System.setProperty("beam.reader.tileWidth", "100");
-        System.setProperty("beam.reader.tileHeight", "100");
+        System.setProperty("snap.reader.tileWidth", "100");
+        System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
@@ -122,12 +122,12 @@ public class SpotTake5ProductReaderTest {
     public void testConfigurePreferredTileSize() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.tgz");
-        System.setProperty("beam.reader.tileWidth", "200");
-        System.setProperty("beam.reader.tileHeight", "200");
+        System.setProperty("snap.reader.tileWidth", "200");
+        System.setProperty("snap.reader.tileHeight", "200");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            System.setProperty("beam.reader.tileWidth", "300");
-            System.setProperty("beam.reader.tileHeight", "100");
+            System.setProperty("snap.reader.tileWidth", "300");
+            System.setProperty("snap.reader.tileHeight", "100");
             reader.configurePreferredTileSize(finalProduct);
             Dimension size = finalProduct.getPreferredTileSize();
             assertEquals(100, size.height);
