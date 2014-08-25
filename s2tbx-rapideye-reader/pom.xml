@@ -17,6 +17,11 @@
         This module enables the Sentinel Toolbox to read RapidEye data products
     </description>
 
+    <!--
+        NOTE: In order to properly load the native libraries, please set the java.library.path
+        to  ${outputdir}\lib.
+    -->
+
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
@@ -42,7 +47,20 @@
             <artifactId>s2tbx-commons</artifactId>
             <version>0.6.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>nitro</groupId>
+            <artifactId>nitf</artifactId>
+            <version>2.7</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/lib/nitf.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>nitro</groupId>
+            <artifactId>nitf-imageio</artifactId>
+            <version>2.7</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/lib/nitf.imageio.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -68,8 +86,17 @@
                                 </goals>
                                 <configuration>
                                     <overwrite>true</overwrite>
-                                    <outputDirectory>${outputdir}/modules/s2tbx-rapideye-reader-${project.version}</outputDirectory>
+                                    <outputDirectory>${outputdir}</outputDirectory>
                                     <resources>
+                                        <resource>
+                                            <targetPath>lib</targetPath>
+                                            <directory>${basedir}/src/main/resources/lib</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>nitf.jar</include>
+                                                <include>nitf.imageio.jar</include>
+                                            </includes>
+                                        </resource>
                                         <resource>
                                             <targetPath>lib</targetPath>
                                             <directory>${basedir}/src/main/resources/lib/win64</directory>
@@ -108,8 +135,17 @@
                                 </goals>
                                 <configuration>
                                     <overwrite>true</overwrite>
-                                    <outputDirectory>${outputdir}/modules/s2tbx-rapideye-reader-${project.version}</outputDirectory>
+                                    <outputDirectory>${outputdir}</outputDirectory>
                                     <resources>
+                                        <resource>
+                                            <targetPath>lib</targetPath>
+                                            <directory>${basedir}/src/main/resources/lib</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>nitf.jar</include>
+                                                <include>nitf.imageio.jar</include>
+                                            </includes>
+                                        </resource>
                                         <resource>
                                             <targetPath>lib</targetPath>
                                             <directory>${basedir}/src/main/resources/lib/win32</directory>
@@ -147,8 +183,17 @@
                                 </goals>
                                 <configuration>
                                     <overwrite>true</overwrite>
-                                    <outputDirectory>${outputdir}/modules/s2tbx-rapideye-reader-${project.version}</outputDirectory>
+                                    <outputDirectory>${outputdir}</outputDirectory>
                                     <resources>
+                                        <resource>
+                                            <targetPath>lib</targetPath>
+                                            <directory>${basedir}/src/main/resources/lib</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>nitf.jar</include>
+                                                <include>nitf.imageio.jar</include>
+                                            </includes>
+                                        </resource>
                                         <resource>
                                             <targetPath>lib</targetPath>
                                             <directory>${basedir}/src/main/resources/lib/linux</directory>
@@ -188,6 +233,15 @@
                                     <overwrite>true</overwrite>
                                     <outputDirectory>${outputdir}/modules/s2tbx-rapideye-reader-${project.version}</outputDirectory>
                                     <resources>
+                                        <resource>
+                                            <targetPath>lib</targetPath>
+                                            <directory>${basedir}/src/main/resources/lib</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>nitf.jar</include>
+                                                <include>nitf.imageio.jar</include>
+                                            </includes>
+                                        </resource>
                                         <resource>
                                             <targetPath>lib</targetPath>
                                             <directory>${basedir}/src/main/resources/lib/solaris</directory>

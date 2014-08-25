@@ -25,12 +25,12 @@
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-spot-reader</artifactId>
+            <artifactId>s2tbx-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-commons</artifactId>
+            <artifactId>s2tbx-spot-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
