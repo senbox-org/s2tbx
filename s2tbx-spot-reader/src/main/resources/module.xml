@@ -64,4 +64,11 @@
         </rgbProfile>
     </extension>
 
+    <extension point="snap-ui:helpSets">
+        <helpSet>
+            <parent>snap-beam-help</parent>
+            <path>doc/help/spotdimap.hs</path>
+        </helpSet>
+    </extension>
+
 </module>

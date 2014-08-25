@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>SPOT Scene Product Reader</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp; Import SPOT View (not DIMAP) Products</td>
+        <td class="header" align="right">
+            <a href="../general/BeamOverview.html"><img src="../images/BeamHeader.jpg" border=0></a>
+        </td>
+    </tr>
+</table>
+
+<p>This command allows to import SPOT-4 and SPOT-5 View products in (older) BIL format (L3 products).</p>
+<p>These products have a specific file structure, containing:
+    <ul>
+        <li>A metadata file for the actual product, in a non-standard XML format</li>
+        <li>A metadata file, in DIMAP format, for the product that has been used as input for the L3 product</li>
+        <li>A BIL raster file containing the L3 product image</li>
+        <li>A BIL geolayer file containing the latitude and longitude bands that have been used for obtaining the current product</li>
+    </ul>
+</p>
+</body>
+</html>

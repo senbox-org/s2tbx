@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>SPOT Scene Product Reader</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+    <table class="header">
+        <tr class="header">
+            <td class="header">&nbsp; Import SPOT Scene DIMAP Products</td>
+            <td class="header" align="right">
+                <a href="../general/BeamOverview.html"><img src="../images/BeamHeader.jpg" border=0></a>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Import SPOT DIMAP Products</h3>
+
+    <p>This command allows to import the data of SPOT (1 to 5) products in DIMAP format.
+        The products can be either compressed in a zip archive, or uncompressed in a specific folder structure.
+    </p>
+
+    <p>The DIMAP format is a public format for describing geographic data. Among its key features one can find:
+        geocoded data sets, full raster layer description, any geographic area coverage, multiple data layers,
+        super tiling (for very large datasets handling), and humanly readable metadata.<br/>
+        For detailed information about this format, please have a look at the following documentation:
+        <ul>
+            <li><a href="http://www.spotimage.com/dimap/spec/documentation/refdoc.htm">DIMAP Reference Documentation</a></li>
+        </ul>
+    </p>
+
+    <p>A SPOT DIMAP product consists of two parts, one for the image - in GeoTIFF format - and the other for a description of the image - XML metadata.</p>
+    <p>The general file structure of a SPOT DIMAP product is:
+        <ul>
+            <li>A volume metadata file, describing the contents of the folder structure</li>
+            <li>One or more subfolders containing GeoTIFF images together with their associated DIMAP metadata</li>
+        </ul>
+    </p>
+
+    <p>SPOT DIMAP products fall into one of the following two profiles:</p>
+
+    <h4>SPOTScene</h4>
+
+    <p>SPOTScene products are full satellite scenes preprocessed at levels 1A, 1B or 2A.</p>
+
+    <h4>SPOT View</h4>
+
+    <p>SPOTView products are full satellite scenes preprocessed at level 3.
+        In the case of very large SPOTView products, they can contain more than one image. In this case, they are called "multi-volume" products.
+        Each component image represents a tile of the overall scene.
+        VISAT renders such products as a single-tiled product on the fly.
+    </p>
+
+</body>
+</html>
