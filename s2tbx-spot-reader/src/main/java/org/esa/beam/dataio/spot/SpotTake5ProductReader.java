@@ -126,7 +126,6 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             product.setEndTime(startTime);
 
             //all the bands of the tiff files are added to the product
-            product.getMetadataRoot().addElement(imageMetadata.getRootElement());
             for (Map.Entry<String, String> entry : imageMetadata.getTiffFiles().entrySet()) {
                 addBands(product, metaSubFolder + entry.getValue(), entry.getKey());
             }
