@@ -1,7 +1,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-rapideye-reader</symbolicName>
-    <version>5.0</version>
+    <version>1.0</version>
     <name>RapidEye Product Reader</name>
 
     <description>Reads RapidEye NITF products</description>
@@ -15,16 +15,11 @@
         <module>snap-geotiff</module>
     </dependency>
     <dependency>
+        <module>s2tbx-commons</module>
+    </dependency>
+    <dependency>
         <module>snap-visat-rcp</module>
         <optional>true</optional>
-    </dependency>
-    <dependency>
-        <lib>lib/nitf.jar</lib>
-        <optional>false</optional>
-    </dependency>
-    <dependency>
-        <lib>lib/nitf.imageio.jar</lib>
-        <optional>false</optional>
     </dependency>
 
     <categories>Reader, RapidEye</categories>

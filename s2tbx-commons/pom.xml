@@ -38,20 +38,6 @@
             <artifactId>jtar</artifactId>
             <version>1.1</version>
         </dependency>
-        <dependency>
-            <groupId>nitro</groupId>
-            <artifactId>nitf</artifactId>
-            <version>2.7</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/../s2tbx-rapideye-reader/src/main/resources/lib/nitf.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>nitro</groupId>
-            <artifactId>nitf-imageio</artifactId>
-            <version>2.7</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/../s2tbx-rapideye-reader/src/main/resources/lib/nitf.imageio.jar</systemPath>
-        </dependency>
     </dependencies>
 
 </project>
