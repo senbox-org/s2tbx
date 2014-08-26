@@ -28,8 +28,6 @@ public class SpotDimapMetadataTest {
 
     @Test
     public void testGetFileName() throws Exception {
-        //wrong!!!
-        //assertEquals("metadata.dim", metadata.getFileName());
         assertEquals("SPOTSCENE_1A", metadata.getFileName());
     }
 
@@ -131,9 +129,7 @@ public class SpotDimapMetadataTest {
 
     @Test
     public void testGetCenterTime() throws Exception {
-        //WRONG!!!
-        //Date expected = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")).parse("2007-05-04 10:18:44.370");
-        Date expected = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")).parse("2007-05-04 10:24:54.370");
+        Date expected = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")).parse("2007-05-04 10:18:44.370");
         assertEquals(expected.getTime(), metadata.getCenterTime().getAsDate().getTime());
     }
 

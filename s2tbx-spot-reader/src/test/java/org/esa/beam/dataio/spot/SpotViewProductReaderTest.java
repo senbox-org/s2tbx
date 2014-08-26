@@ -92,8 +92,8 @@ public class SpotViewProductReaderTest {
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
-            assertEquals(4, components.getChildren().length);
-            String[] expectedIds = new String[]{"metadata.dim", "metadata.xml", "geolayer.bil", "imagery.bil"};
+            assertEquals(3, components.getChildren().length);
+            String[] expectedIds = new String[]{"metadata.dim", "metadata.xml", "geolayer.bil"};
             int componentsAsExpected = 0;
             for(TreeNode<File> component: components.getChildren()){
                 for(String expectedValue: expectedIds){
@@ -102,7 +102,7 @@ public class SpotViewProductReaderTest {
                     }
                 }
             }
-            assertEquals(4, componentsAsExpected);
+            assertEquals(3, componentsAsExpected);
         } catch (IOException e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
