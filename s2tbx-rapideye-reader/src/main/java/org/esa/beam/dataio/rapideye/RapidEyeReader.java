@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.rapideye;
 
+import org.esa.beam.dataio.FileImageInputStreamSpi;
 import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.geotiff.GeoTiffProductReader;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
@@ -11,6 +12,8 @@ import org.esa.beam.framework.datamodel.*;
 import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.logging.BeamLogManager;
 
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageInputStreamSpi;
 import javax.media.jai.Interpolation;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.ScaleDescriptor;
@@ -34,6 +37,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
     protected Product product;
     protected Logger logger;
     protected ZipVirtualDir productDirectory;
+    private ImageInputStreamSpi channelImageInputStreamSpi;
 
     static {
         XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<RapidEyeMetadata>(RapidEyeMetadata.class));
@@ -42,12 +46,16 @@ public abstract class RapidEyeReader extends AbstractProductReader {
     public RapidEyeReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
+        registerSpi();
     }
 
     @Override
     public void close() throws IOException {
         if (productDirectory != null) {
             productDirectory.close();
+        }
+        if (channelImageInputStreamSpi != null) {
+            IIORegistry.getDefaultInstance().deregisterServiceProvider(channelImageInputStreamSpi);
         }
         super.close();
     }
@@ -56,22 +64,25 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         File file;
         if (metadata != null) {
             try {
-                file = folder.getFile(metadata.getMaskFileName());
-                if (file != null && file.exists()) {
-                    GeoTiffProductReader reader = new GeoTiffProductReader(getReaderPlugIn());
-                    Product udmProduct = reader.readProductNodes(file,  null);
-                    Band srcBand = udmProduct.getBandAt(0);
-                    float scaleX = metadata.getRasterWidth() / udmProduct.getSceneRasterWidth();
-                    float scaleY = metadata.getRasterHeight() / udmProduct.getSceneRasterHeight();
-                    RenderedOp renderedOp = ScaleDescriptor.create((RenderedImage) srcBand.getSourceImage(), scaleX, scaleY, 0.0f, 0.0f, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
-                    Band targetBand = product.addBand("unusable_data", srcBand.getDataType());
-                    targetBand.setSourceImage(renderedOp);
-                    FlagCoding cloudsFlagCoding = createFlagCoding(product);
-                    targetBand.setSampleCoding(cloudsFlagCoding);
+                String maskFileName = metadata.getMaskFileName();
+                if (maskFileName != null) {
+                    file = folder.getFile(maskFileName);
+                    if (file != null && file.exists()) {
+                        GeoTiffProductReader reader = new GeoTiffProductReader(getReaderPlugIn());
+                        Product udmProduct = reader.readProductNodes(file, null);
+                        Band srcBand = udmProduct.getBandAt(0);
+                        float scaleX = metadata.getRasterWidth() / udmProduct.getSceneRasterWidth();
+                        float scaleY = metadata.getRasterHeight() / udmProduct.getSceneRasterHeight();
+                        RenderedOp renderedOp = ScaleDescriptor.create((RenderedImage) srcBand.getSourceImage(), scaleX, scaleY, 0.0f, 0.0f, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                        Band targetBand = product.addBand("unusable_data", srcBand.getDataType());
+                        targetBand.setSourceImage(renderedOp);
+                        FlagCoding cloudsFlagCoding = createFlagCoding(product);
+                        targetBand.setSampleCoding(cloudsFlagCoding);
 
-                    List<Mask> cloudsMasks = createMasksFromFlagCodding(product, cloudsFlagCoding);
-                    for (Mask mask : cloudsMasks) {
-                        product.getMaskGroup().add(mask);
+                        List<Mask> cloudsMasks = createMasksFromFlagCodding(product, cloudsFlagCoding);
+                        for (Mask mask : cloudsMasks) {
+                            product.getMaskGroup().add(mask);
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -116,15 +127,34 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         if (product != null) {
             tileSize = product.getPreferredTileSize();
             if (tileSize == null) {
-                int width = product.getSceneRasterWidth();
-                int height = product.getSceneRasterHeight();
                 Dimension suggestedTileSize = ImageManager.getPreferredTileSize(product);
-                width = width > WIDTH_THRESHOLD ? width / 24 : (int)suggestedTileSize.getWidth();
-                height = height > WIDTH_THRESHOLD ? height / 24 : (int)suggestedTileSize.getHeight();
-                tileSize = new Dimension(width, height);
+                tileSize = new Dimension((int)suggestedTileSize.getWidth(), (int)suggestedTileSize.getHeight());
             }
         }
         return tileSize;
+    }
+
+    private void registerSpi() {
+        // We will register a new Spi for creating NIO-based ImageInputStreams.
+        final IIORegistry defaultInstance = IIORegistry.getDefaultInstance();
+        Iterator<ImageInputStreamSpi> serviceProviders = defaultInstance.getServiceProviders(ImageInputStreamSpi.class, true);
+        ImageInputStreamSpi toUnorder = null;
+        if (defaultInstance.getServiceProviderByClass(FileImageInputStreamSpi.class) == null) {
+            // register only if not already registered
+            while (serviceProviders.hasNext()) {
+                ImageInputStreamSpi current = serviceProviders.next();
+                if (current.getInputClass() == File.class) {
+                    toUnorder = current;
+                    break;
+                }
+            }
+            channelImageInputStreamSpi = new FileImageInputStreamSpi();
+            defaultInstance.registerServiceProvider(channelImageInputStreamSpi);
+            if (toUnorder != null) {
+                // Make the custom Spi to be the first one to be used.
+                defaultInstance.setOrdering(ImageInputStreamSpi.class, channelImageInputStreamSpi, toUnorder);
+            }
+        }
     }
 
     protected static class ColorIterator {
