@@ -70,13 +70,9 @@ public class RapidEyeL3Reader extends RapidEyeReader {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
                 throw ex;
             }
-            product = new Product(metadata.getProductName() != null ? metadata.getProductName() : RapidEyeConstants.PRODUCT_GENERIC_NAME,
-                                  RapidEyeConstants.L3_FORMAT_NAMES[0],
-                                  metadata.getRasterWidth(), metadata.getRasterHeight());
-            product.getMetadataRoot().addElement(metadata.getRootElement());
-            product.setStartTime(metadata.getProductStartTime());
-            product.setEndTime(metadata.getProductEndTime());
-            product.setProductType(metadataProfile);
+            if (metadata.getRasterWidth() > 0 && metadata.getRasterHeight() > 0) {
+                createProduct(metadata.getRasterWidth(), metadata.getRasterHeight(), metadataProfile);
+            }
             addBands(product, metadata);
             readMasks(productDirectory);
 
@@ -99,12 +95,26 @@ public class RapidEyeL3Reader extends RapidEyeReader {
         }
     }
 
+    private Product createProduct(int width, int height, String metadataProfile) {
+        product = new Product(metadata.getProductName() != null ? metadata.getProductName() : RapidEyeConstants.PRODUCT_GENERIC_NAME,
+                                RapidEyeConstants.L3_FORMAT_NAMES[0],
+                                width, height);
+        product.getMetadataRoot().addElement(metadata.getRootElement());
+        product.setStartTime(metadata.getProductStartTime());
+        product.setEndTime(metadata.getProductEndTime());
+        product.setProductType(metadataProfile);
+        return product;
+    }
+
     private void addBands(Product product, RapidEyeMetadata metadataFile) {
         try {
             File rasterFile = productDirectory.getFile(metadataFile.getRasterFileNames(false)[0]);
             GeoTiffProductReader reader = new GeoTiffProductReader(getReaderPlugIn());
             Product tiffProduct = reader.readProductNodes(rasterFile, null);
             if (tiffProduct != null) {
+                if (product == null) {
+                    product = createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), metadata.getMetadataProfile());;
+                }
                 MetadataElement tiffMetadata = tiffProduct.getMetadataRoot();
                 if (tiffMetadata != null) {
                     RapidEyeMetadata.CopyChildElements(tiffMetadata, product.getMetadataRoot());

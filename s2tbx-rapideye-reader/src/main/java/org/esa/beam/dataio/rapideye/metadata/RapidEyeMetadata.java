@@ -18,6 +18,8 @@ import java.util.Date;
  */
 public class RapidEyeMetadata extends XmlMetadata {
 
+    public static final String TAG_MOSAIC_DECOMPOSITION = "mosaicDecomposition";
+    public static final String TAG_MOSAIC_TILE = "mosaicTile";
     private float[] scaleFactors;
 
     public RapidEyeMetadata(String name) {
@@ -176,20 +178,29 @@ public class RapidEyeMetadata extends XmlMetadata {
             MetadataElement currentElement;
             if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_RESULT_OF)) != null) &&
                     ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_EARTH_OBSERVATION_RESULT)) != null) &&
-                    ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_PRODUCT)) != null) &&
-                    ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_PRODUCT_INFORMATION)) != null)) {
-                String baseName = currentElement.getAttributeString(RapidEyeConstants.TAG_FILE_NAME);
-                if (isL1Product) {
-                    if (baseName != null && !baseName.isEmpty()) {
-                        fileNames = new String[getNumBands()];
-                        for (int i = 0; i < fileNames.length; i++) {
-                            fileNames[i] = baseName.replace(RapidEyeConstants.TOKEN_BAND_N, String.format(RapidEyeConstants.TOKEN_BAND_X, i + 1));
+                    ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_PRODUCT)) != null)) {
+                MetadataElement element = currentElement.getElement(RapidEyeConstants.TAG_PRODUCT_INFORMATION);
+                // other than L3b products
+                if (element != null) {
+                    String baseName = element.getAttributeString(RapidEyeConstants.TAG_FILE_NAME);
+                    if (isL1Product) {
+                        if (baseName != null && !baseName.isEmpty()) {
+                            fileNames = new String[getNumBands()];
+                            for (int i = 0; i < fileNames.length; i++) {
+                                fileNames[i] = baseName.replace(RapidEyeConstants.TOKEN_BAND_N, String.format(RapidEyeConstants.TOKEN_BAND_X, i + 1));
+                            }
+                        } else {
+                            logger.warning("Band names not found in metadata. Will scan product folder.");
                         }
                     } else {
-                        logger.warning("Band names not found in metadata. Will scan product folder.");
+                        fileNames = new String[] { baseName };
                     }
                 } else {
-                    fileNames = new String[] { baseName };
+                    if (((currentElement = currentElement.getElement(TAG_MOSAIC_DECOMPOSITION)) != null) &&
+                            ((currentElement = currentElement.getElement(TAG_MOSAIC_TILE)) != null)) {
+                        String baseName = currentElement.getAttributeString(RapidEyeConstants.TAG_FILE_NAME);
+                        fileNames = new String[] { baseName };
+                    }
                 }
             }
         }
