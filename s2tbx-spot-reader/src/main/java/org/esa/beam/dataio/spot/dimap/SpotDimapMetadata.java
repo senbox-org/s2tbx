@@ -325,6 +325,7 @@ public class SpotDimapMetadata extends XmlMetadata {
             String stringData = currentElement.getAttributeString(SpotConstants.TAG_SCENE_CENTER_TIME);
             if (stringData != null) {
                 String milliseconds = stringData.substring(stringData.indexOf(".") + 1);
+                stringData = stringData.substring(0, stringData.indexOf(".")) + ".000000";
                 try {
                     Date date = new SimpleDateFormat(SpotConstants.UTC_DATE_FORMAT).parse(stringData);
                     centerTime = ProductData.UTC.create(date, Long.parseLong(milliseconds));
