@@ -134,9 +134,8 @@ public final class Extensions extends NITFObject
     public void print(PrintStream out) throws NITFException
     {
         final Iterable tres = getAll();
-        for (Iterator iter = tres.iterator(); iter.hasNext();)
-        {
-            TRE tre = (TRE) iter.next();
+        for (Object tre1 : tres) {
+            TRE tre = (TRE) tre1;
             tre.print(out);
         }
     }

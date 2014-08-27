@@ -32,7 +32,7 @@ public class NITFReaderWrapper {
     protected static final Object lock = new Object();
 
     protected nitf.imageio.NITFReader reader;
-    protected Logger logger;
+    protected final Logger logger;
     protected int numImages;
     protected int numBands;
     protected boolean hasBandPerImage;
@@ -121,9 +121,9 @@ public class NITFReaderWrapper {
                 }
             }
             pm.worked(1);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
             logger.severe(e.getMessage());
+            throw e;
         } finally {
             pm.done();
         }

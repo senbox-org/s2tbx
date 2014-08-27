@@ -26,7 +26,7 @@ import java.util.logging.Level;
  */
 public class RapidEyeL1Reader extends RapidEyeReader {
 
-    private Map<Band, NITFReaderWrapper> readerMap;
+    private final Map<Band, NITFReaderWrapper> readerMap;
 
     public RapidEyeL1Reader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);

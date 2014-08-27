@@ -154,15 +154,7 @@ public final class SubWindow extends DestructibleObject
 
     public String toString()
     {
-        StringBuffer buf = new StringBuffer();
-        buf.append(SubWindow.class.getName() + ":[");
-        buf.append("startCol=" + getStartCol());
-        buf.append(",startRow=" + getStartRow());
-        buf.append(",numCols=" + getNumCols());
-        buf.append(",numRows=" + getNumRows());
-        buf.append(",numBands=" + getNumBands());
-        buf.append("]");
-        return buf.toString();
+        return SubWindow.class.getName() + ":[" + "startCol=" + getStartCol() + ",startRow=" + getStartRow() + ",numCols=" + getNumCols() + ",numRows=" + getNumRows() + ",numBands=" + getNumBands() + "]";
     }
 
     @Override

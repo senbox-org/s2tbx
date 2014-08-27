@@ -179,7 +179,7 @@ public final class TRE extends DestructibleObject
 
         for (TREIterator it = iterator(); it.hasNext();)
         {
-            FieldPair pair = (FieldPair) it.next();
+            FieldPair pair = it.next();
 
             String desc = it.getFieldDescription();
 

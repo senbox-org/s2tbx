@@ -40,7 +40,7 @@ public abstract class DownSampler extends DestructibleObject
      * where we do underlying callback code, we need to know if this is a
      * user-extended DownSampler, or one of the provided ones.
      */
-    protected static Map downSamplerMap = Collections
+    protected static final Map downSamplerMap = Collections
             .synchronizedMap(new HashMap());
 
     /**
@@ -107,7 +107,7 @@ public abstract class DownSampler extends DestructibleObject
      * 
      * @param inputWindows
      *            Array of input image fragments (one/band)
-     * @param outputWindow
+     * @param outputWindows
      *            Array of sub-sampled image fragments (one/band)
      * @param numBands
      *            Number of bands to down-sample
@@ -202,7 +202,7 @@ public abstract class DownSampler extends DestructibleObject
         DownSampler downSampler = null;
         synchronized (downSamplerMap)
         {
-            final Object o = downSamplerMap.get(new Long(address));
+            final Object o = downSamplerMap.get(address);
             if (o != null)
             {
                 downSampler = (DownSampler) o;
@@ -214,13 +214,13 @@ public abstract class DownSampler extends DestructibleObject
     /**
      * This sets the class type for the given DownSampler instance
      * 
-     * @param bandSource
+     * @param downSampler
      */
     protected static final void register(DownSampler downSampler)
     {
         synchronized (downSamplerMap)
         {
-            final Long key = new Long(downSampler.getAddress());
+            final Long key = downSampler.getAddress();
             if (!downSamplerMap.containsKey(key))
                 downSamplerMap.put(key, downSampler);
         }

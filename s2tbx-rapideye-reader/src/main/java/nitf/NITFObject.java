@@ -25,7 +25,6 @@ package nitf;
 import org.esa.beam.dataio.NativeLibraryLoader;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
@@ -50,9 +49,7 @@ public abstract class NITFObject
         try {
             NativeLibraryLoader.loadLibraryFromJar("/resources/lib/" + NativeLibraryLoader.getOSFamily() + "/" + NITF_LIBRARY_NAME);
 			//System.loadLibrary(NITF_LIBRARY_NAME);
-		} catch (IOException e) {
-
-        } catch (UnsatisfiedLinkError e) {
+        } catch (Throwable e) {
 			/* Try to load the library in the lib directory */
 			String path;
 			try {

@@ -18,7 +18,6 @@ import javax.media.jai.Interpolation;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.ScaleDescriptor;
 import java.awt.*;
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
     public static final int WIDTH_THRESHOLD = 8192;
     protected RapidEyeMetadata metadata;
     protected Product product;
-    protected Logger logger;
+    protected final Logger logger;
     protected ZipVirtualDir productDirectory;
     private ImageInputStreamSpi channelImageInputStreamSpi;
 
@@ -73,7 +72,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
                         Band srcBand = udmProduct.getBandAt(0);
                         float scaleX = metadata.getRasterWidth() / udmProduct.getSceneRasterWidth();
                         float scaleY = metadata.getRasterHeight() / udmProduct.getSceneRasterHeight();
-                        RenderedOp renderedOp = ScaleDescriptor.create((RenderedImage) srcBand.getSourceImage(), scaleX, scaleY, 0.0f, 0.0f, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                        RenderedOp renderedOp = ScaleDescriptor.create(srcBand.getSourceImage(), scaleX, scaleY, 0.0f, 0.0f, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
                         Band targetBand = product.addBand("unusable_data", srcBand.getDataType());
                         targetBand.setSourceImage(renderedOp);
                         FlagCoding cloudsFlagCoding = createFlagCoding(product);
@@ -159,7 +158,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
 
     protected static class ColorIterator {
 
-        static ArrayList<Color> colors;
+        static final ArrayList<Color> colors;
         static Iterator<Color> colorIterator;
 
         static {

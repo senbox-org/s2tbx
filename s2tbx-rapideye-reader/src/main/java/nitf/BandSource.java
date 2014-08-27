@@ -37,8 +37,7 @@ public abstract class BandSource extends DestructibleObject
      * where we do underlying callback code, we need to know if this is a
      * user-extended BandSource, or one of the provided ones.
      */
-    protected static Map bandSourceMap = Collections
-            .synchronizedMap(new HashMap());
+    protected static final Map bandSourceMap = Collections.synchronizedMap(new HashMap());
 
     /**
      * Constructor
@@ -120,16 +119,17 @@ public abstract class BandSource extends DestructibleObject
      */
     protected static final BandSource getByAddress(long address)
     {
-        BandSource source = null;
+        /*BandSource source = null;
         synchronized (bandSourceMap)
         {
-            final Object o = bandSourceMap.get(new Long(address));
+            final Object o = bandSourceMap.get(address);
             if (o != null)
             {
                 source = (BandSource) o;
             }
         }
-        return source;
+        return source;*/
+        return (BandSource) bandSourceMap.get(address);
     }
 
     /**
@@ -141,7 +141,7 @@ public abstract class BandSource extends DestructibleObject
     {
         synchronized (bandSourceMap)
         {
-            final Long key = new Long(bandSource.getAddress());
+            final Long key = bandSource.getAddress();
             if (!bandSourceMap.containsKey(key))
                 bandSourceMap.put(key, bandSource);
         }

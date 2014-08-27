@@ -79,7 +79,7 @@ public class FieldWarning extends DestructibleObject
         Field field = getField();
         String warning = getWarning();
         String name = getFieldName();
-        StringBuffer buf = new StringBuffer("WARNING: [");
+        StringBuilder buf = new StringBuilder("WARNING: [");
 
         if (name != null)
         {
@@ -92,7 +92,7 @@ public class FieldWarning extends DestructibleObject
         buf.append("] --> ");
         if (warning != null)
         {
-            buf.append("[" + warning + "]");
+            buf.append("[").append(warning).append("]");
         }
 
         if (field != null)
@@ -100,7 +100,7 @@ public class FieldWarning extends DestructibleObject
             String data = field.getStringData();
             if (data != null)
             {
-                buf.append(" data = [" + data + "]");
+                buf.append(" data = [").append(data).append("]");
             }
         }
 

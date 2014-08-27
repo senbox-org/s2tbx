@@ -71,9 +71,6 @@ public class NativeLibraryLoader {
             } catch (Exception e) {
                 BeamLogManager.getSystemLogger().severe(e.getMessage());
             }
-            if (is == null) {
-                throw new FileNotFoundException("File " + path + " was not found inside JAR.");
-            }
         } else {
             // Prepare temporary file
             File temp = File.createTempFile(prefix, suffix);
@@ -115,13 +112,11 @@ public class NativeLibraryLoader {
             File tmpDir = new File(tmpDirName);
             File[] tmpFiles = tmpDir.listFiles(tmpDirFilter);
             // delete all files which don't have n accompanying lock file
-            for (int i = 0; i < tmpFiles.length; i++)
-            {
+            for (File tmpFile : tmpFiles) {
                 // Create a file to represent the lock and test.
-                File lockFile = new File( tmpFiles[i].getAbsolutePath() + lockSuffix);
-                if (!lockFile.exists())
-                {
-                    tmpFiles[i].delete();
+                File lockFile = new File(tmpFile.getAbsolutePath() + lockSuffix);
+                if (!lockFile.exists()) {
+                    tmpFile.delete();
                 }
             }
         }
@@ -134,7 +129,7 @@ public class NativeLibraryLoader {
     }
 
     public static String getOSFamily() {
-        String ret = null;
+        String ret;
         String sysName = System.getProperty("os.name").toLowerCase();
         String sysArch = System.getProperty("os.arch").toLowerCase();
         if (sysName.contains("windows")) {

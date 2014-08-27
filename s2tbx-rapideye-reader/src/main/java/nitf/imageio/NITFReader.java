@@ -130,12 +130,12 @@ public class NITFReader extends ImageReader
     {
         checkIndex(imageIndex);
 
-        Integer key = new Integer(imageIndex);
+//        Integer key = new Integer(imageIndex);
         try
         {
-            if (!imageReaderMap.containsKey(key))
-                imageReaderMap.put(key, reader.getNewImageReader(imageIndex));
-            return imageReaderMap.get(key);
+            if (!imageReaderMap.containsKey(imageIndex))
+                imageReaderMap.put(imageIndex, reader.getNewImageReader(imageIndex));
+            return imageReaderMap.get(imageIndex);
         }
         catch (NITFException e)
         {
@@ -294,21 +294,20 @@ public class NITFReader extends ImageReader
         {
             throw new IOException(ExceptionUtils.getStackTrace(e));
         }
-        String irep = subheader.getImageRepresentation().getStringData().trim();
+//        String irep = subheader.getImageRepresentation().getStringData().trim();
         String pvType = subheader.getPixelValueType().getStringData().trim();
         int nbpp = subheader.getNumBitsPerPixel().getIntData();
         int bandCount = subheader.getBandCount();
 
         // make the band offsets array, for the output
-        int[] bandOffsets = null;
+        int[] bandOffsets;
         int[] sourceBands = param != null ? param.getSourceBands() : null;
         if (param != null && param.getDestinationBands() != null)
             bandOffsets = param.getDestinationBands();
         else if (param != null && sourceBands != null)
         {
             bandOffsets = new int[sourceBands.length];
-            for (int i = 0; i < bandOffsets.length; i++)
-                bandOffsets[i] = sourceBands[i];
+            System.arraycopy(sourceBands, 0, bandOffsets, 0, bandOffsets.length);
         }
         else
         {
@@ -321,7 +320,7 @@ public class NITFReader extends ImageReader
 
         int nBytes = ((nbpp - 1) / 8) + 1;
 
-        int bufType = -1;
+        int bufType;
 
         // byte
         if (nBytes == 1)
@@ -379,12 +378,12 @@ public class NITFReader extends ImageReader
     {
         try
         {
-            ImageSubheader subheader = record.getImages()[imageIndex]
-                    .getSubheader();
+//            ImageSubheader subheader = record.getImages()[imageIndex]
+//                    .getSubheader();
             int numCols = destRegion.width;
             int numRows = destRegion.height;
 
-            int nBands = subheader.getBandCount();
+//            int nBands = subheader.getBandCount();
 
             /*
              * NOTE: This is a "fix" that will be removed once the underlying
@@ -396,7 +395,7 @@ public class NITFReader extends ImageReader
              * request.
              */
 
-            int[] requestBands = bandOffsets;
+            //int[] requestBands = bandOffsets;
             /*
              * if (nBands != bandOffsets.length && bandOffsets.length == 1
              * && bandOffsets[0] != 0)
@@ -408,15 +407,15 @@ public class NITFReader extends ImageReader
              */
 
             int bufSize = numCols * numRows * pixelSize;
-            byte[][] imageBuf = new byte[requestBands.length][bufSize];
+            byte[][] imageBuf = new byte[bandOffsets.length][bufSize];
 
             // make a SubWindow from the params
             // TODO may want to read by blocks or rows to make faster and more
             // memory efficient
             SubWindow window;
             window = new SubWindow();
-            window.setNumBands(requestBands.length);
-            window.setBandList(requestBands);
+            window.setNumBands(bandOffsets.length);
+            window.setBandList(bandOffsets);
             window.setNumCols(numCols);
             window.setNumRows(numRows);
             window.setStartCol(0);
@@ -445,17 +444,17 @@ public class NITFReader extends ImageReader
 
             for (int i = 0; i < bandOffsets.length; ++i)
             {
-                ByteBuffer bandBuf = null;
+//                ByteBuffer bandBuf = null;
 
                 // the special "fix" we added needs to do this
-                if (bandOffsets.length != requestBands.length)
-                {
-                    bandBuf = ByteBuffer.wrap(imageBuf[bandOffsets[i]]);
-                }
-                else
-                {
-                    bandBuf = ByteBuffer.wrap(imageBuf[i]);
-                }
+//                if (bandOffsets.length != requestBands.length)
+//                {
+//                    bandBuf = ByteBuffer.wrap(imageBuf[bandOffsets[i]]);
+//                }
+//                else
+//                {
+                    ByteBuffer bandBuf = ByteBuffer.wrap(imageBuf[i]);
+//                }
                 // ban dBuf.order(ByteOrder.nativeOrder());
                 // shouldSwap ? ByteOrder.LITTLE_ENDIAN
                 // : ByteOrder.BIG_ENDIAN);
@@ -575,7 +574,6 @@ public class NITFReader extends ImageReader
             {
                 readFullImage(imageIndex, destRegion, sourceXSubsampling,
                         sourceYSubsampling, bandOffsets, pixelSize, imRas);
-                return;
             }
             // the general purpose case
             else
@@ -634,8 +632,7 @@ public class NITFReader extends ImageReader
                 List<ByteBuffer> bandBufs = new ArrayList<ByteBuffer>();
                 for (int i = 0; i < requestBands.length; ++i)
                 {
-                    ByteBuffer bandBuf = null;
-                    bandBuf = ByteBuffer.wrap(rowBuf[i]);
+                    ByteBuffer bandBuf = ByteBuffer.wrap(rowBuf[i]);
                     // bandBuf.order(ByteOrder.nativeOrder());
                     // bandBuf.order(swap == 0 ? ByteOrder.BIG_ENDIAN
                     // : ByteOrder.LITTLE_ENDIAN);

@@ -30,7 +30,7 @@ import java.util.logging.Level;
 public class RapidEyeL3Reader extends RapidEyeReader {
 
     private ImageInputStreamSpi channelImageInputStreamSpi;
-    private Map<Band, Band> bandMap;
+    private final Map<Band, Band> bandMap;
 
     public RapidEyeL3Reader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
@@ -91,6 +91,7 @@ public class RapidEyeL3Reader extends RapidEyeReader {
         if (reader == null) {
             logger.severe("No reader found for band data");
         } else {
+            logger.info("Band:" + tiffBand.getName() + ",destOffsetX=" + destOffsetX + ",destOffsetY=" + destOffsetY + ",destWidth=" + destWidth + ",destHeight=" + destHeight);
             reader.readBandRasterData(tiffBand, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer, pm);
         }
     }
@@ -113,7 +114,7 @@ public class RapidEyeL3Reader extends RapidEyeReader {
             Product tiffProduct = reader.readProductNodes(rasterFile, null);
             if (tiffProduct != null) {
                 if (product == null) {
-                    product = createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), metadata.getMetadataProfile());;
+                    product = createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), metadata.getMetadataProfile());
                 }
                 MetadataElement tiffMetadata = tiffProduct.getMetadataRoot();
                 if (tiffMetadata != null) {

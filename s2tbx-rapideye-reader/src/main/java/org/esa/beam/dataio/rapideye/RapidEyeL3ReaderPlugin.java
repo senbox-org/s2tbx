@@ -19,17 +19,21 @@ public class RapidEyeL3ReaderPlugin implements ProductReaderPlugIn {
         DecodeQualification qualification = DecodeQualification.UNABLE;
         File file = new File(input.toString());
         String fileName = file.getName().toLowerCase();
-        if (fileName.endsWith(RapidEyeConstants.METADATA_FILE_SUFFIX)) {
+        if (fileName.endsWith(".zip")) {
+            qualification = DecodeQualification.SUITABLE;
+        } else if (fileName.endsWith(RapidEyeConstants.METADATA_FILE_SUFFIX)) {
             File folder = file.getParentFile();
             File[] files = folder.listFiles();
             if (files != null) {
                 boolean consistentProduct = true;
                 for (String namePattern : RapidEyeConstants.L3_FILENAME_PATTERNS) {
-                    boolean patternMatched = false;
-                    for (File f : files) {
-                        patternMatched |= f.getName().matches(namePattern);
+                    if (!namePattern.endsWith("zip")) {
+                        boolean patternMatched = false;
+                        for (File f : files) {
+                            patternMatched |= f.getName().matches(namePattern);
+                        }
+                        consistentProduct &= patternMatched;
                     }
-                    consistentProduct &= patternMatched;
                 }
                 if (consistentProduct)
                     qualification = DecodeQualification.INTENDED;
@@ -84,12 +88,20 @@ public class RapidEyeL3ReaderPlugin implements ProductReaderPlugIn {
         @Override
         public boolean accept(File file) {
             boolean shouldAccept = super.accept(file);
-            if (file.isFile()) {
-                String lcName = file.getName().toLowerCase();
-                for (String pattern : RapidEyeConstants.L1_FILENAME_PATTERNS) {
-                    shouldAccept = lcName.matches(pattern) && (lcName.endsWith(RapidEyeConstants.METADATA_FILE_SUFFIX) || lcName.endsWith(".zip"));
-                    if (shouldAccept) break;
+            if (file.isFile() && !file.getName().endsWith(".zip")) {
+                File folder = file.getParentFile();
+                String[] list = folder.list();
+                boolean consistent = true;
+                for (String pattern : RapidEyeConstants.L3_FILENAME_PATTERNS) {
+                    for (String fName : list) {
+                        String lcName = fName.toLowerCase();
+                        if (!pattern.endsWith("zip"))
+                            shouldAccept = lcName.matches(pattern);
+                        if (shouldAccept) break;
+                    }
+                    consistent &= shouldAccept;
                 }
+                shouldAccept = consistent;
             }
             return shouldAccept;
         }

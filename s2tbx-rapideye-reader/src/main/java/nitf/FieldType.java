@@ -64,10 +64,10 @@ public class FieldType
      */
     public boolean equals(Object obj)
     {
-        if (obj == null)
-            return false;
-        if (!(obj instanceof FieldType))
-            return false;
-        return obj.toString().equals(toString());
+//        if (obj == null)
+//            return false;
+//        if (!(obj instanceof FieldType))
+//            return false;
+        return obj != null && obj instanceof FieldType && obj.toString().equals(toString());
     }
 }

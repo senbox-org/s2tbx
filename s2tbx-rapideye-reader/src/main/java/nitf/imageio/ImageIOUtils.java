@@ -158,10 +158,8 @@ public class ImageIOUtils
         log.info("Data Type: " + image.getSampleModel().getDataType());
         log.info("Pixel Size: " + image.getColorModel().getPixelSize());
 
-        if (image.getSampleModel().getDataType() == DataBuffer.TYPE_FLOAT
-                && image.getColorModel().getPixelSize() == 64)
-            return false;
-        return !GraphicsEnvironment.isHeadless();
+        return !(image.getSampleModel().getDataType() == DataBuffer.TYPE_FLOAT && image.getColorModel().getPixelSize() == 64) &&
+                !GraphicsEnvironment.isHeadless();
     }
 
     /**
@@ -177,22 +175,16 @@ public class ImageIOUtils
     {
         List<File> files = new ArrayList<File>();
         final String[] exts = extensions;
-        for (int i = 0; i < filesOrDirs.length; i++)
-        {
-            String arg = filesOrDirs[i];
+        for (String arg : filesOrDirs) {
             File file = new File(arg);
-            if (file.isDirectory() && file.exists())
-            {
-                files.addAll(Arrays.asList(file.listFiles(new FilenameFilter()
-                {
-                    public boolean accept(File dir, String name)
-                    {
+            if (file.isDirectory() && file.exists()) {
+                files.addAll(Arrays.asList(file.listFiles(new FilenameFilter() {
+                    public boolean accept(File dir, String name) {
                         return ArrayUtils.contains(exts, FilenameUtils
                                 .getExtension(name.toLowerCase()));
                     }
                 })));
-            }
-            else
+            } else
                 files.add(file);
         }
         return files;
@@ -358,7 +350,7 @@ public class ImageIOUtils
         for (int i = 0; i < numBands; ++i)
             bandOffsets[i] = i;
 
-        DataBuffer d = null;
+        DataBuffer d;
         if (dataType == DataBuffer.TYPE_BYTE)
             d = new DataBufferByte(numElems * numLines * numBands);
         else if (dataType == DataBuffer.TYPE_FLOAT)
@@ -369,8 +361,7 @@ public class ImageIOUtils
         BandedSampleModel bsm = new BandedSampleModel(dataType, numElems,
                 numLines, bandOffsets.length, bandOffsets, bandOffsets);
 
-        SunWritableRaster ras = new SunWritableRaster(bsm, d, new Point(0, 0));
-        return ras;
+        return new SunWritableRaster(bsm, d, new Point(0, 0));
     }
 
     /**
@@ -392,7 +383,7 @@ public class ImageIOUtils
         for (int i = 0; i < numBands; ++i)
             bandOffsets[i] = i;
 
-        DataBuffer d = null;
+        DataBuffer d;
         if (dataType == DataBuffer.TYPE_BYTE)
             d = new DataBufferByte(numElems * numLines * numBands);
         else if (dataType == DataBuffer.TYPE_SHORT)
@@ -410,8 +401,7 @@ public class ImageIOUtils
                 dataType, numElems, numLines, bandOffsets.length, numElems
                         * bandOffsets.length, bandOffsets);
 
-        SunWritableRaster ras = new SunWritableRaster(pism, d, new Point(0, 0));
-        return ras;
+        return new SunWritableRaster(pism, d, new Point(0, 0));
     }
 
     /**

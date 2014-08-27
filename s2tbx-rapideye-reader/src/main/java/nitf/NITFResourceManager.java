@@ -97,11 +97,7 @@ public final class NITFResourceManager
 
         boolean destroy()
         {
-            if (canDestroy() && destructor != null)
-            {
-                return destructor.destructMemory(address);
-            }
-            return false;
+            return canDestroy() && destructor != null && destructor.destructMemory(address);
         }
 
         @Override
