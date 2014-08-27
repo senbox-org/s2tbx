@@ -1,4 +1,4 @@
-package org.esa.beam.dataio.spot;
+package org.esa.beam.dataio.rapideye;
 
 import java.io.File;
 

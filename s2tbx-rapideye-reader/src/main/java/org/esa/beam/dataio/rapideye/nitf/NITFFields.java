@@ -75,4 +75,5 @@ public class NITFFields {
     public static final String NUMRES = "NUMRES";
     public static final String TAG_FILE_HEADER = "File Header";
     public static final String TAG_IMAGE_SUBHEADERS = "Image Subheaders";
+    public static final String TAG_IMAGE_SUBHEADER = "Image Subheader ";
 }

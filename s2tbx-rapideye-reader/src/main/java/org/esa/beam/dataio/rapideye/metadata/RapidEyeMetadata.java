@@ -217,10 +217,10 @@ public class RapidEyeMetadata extends XmlMetadata {
                     ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_PRODUCT_INFORMATION)) != null) &&
                     ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_SPATIAL_REFERENCE_SYSTEM)) != null)) {
                 srs = new SpatialReferenceSystem();
-                srs.epsgCode = currentElement.getAttributeString(RapidEyeConstants.TAG_EPSG_CODE);
-                srs.geodeticDatum = currentElement.getAttributeString(RapidEyeConstants.TAG_GEODETIC_DATUM);
-                srs.projectionCode = currentElement.getAttributeString(RapidEyeConstants.TAG_PROJECTION);
-                srs.projectionZone = currentElement.getAttributeString(RapidEyeConstants.TAG_PROJECTION_ZONE);
+                srs.epsgCode = currentElement.getAttributeString(RapidEyeConstants.TAG_EPSG_CODE, "N/A");
+                srs.geodeticDatum = currentElement.getAttributeString(RapidEyeConstants.TAG_GEODETIC_DATUM, "N/A");
+                srs.projectionCode = currentElement.getAttributeString(RapidEyeConstants.TAG_PROJECTION, "N/A");
+                srs.projectionZone = currentElement.getAttributeString(RapidEyeConstants.TAG_PROJECTION_ZONE, "N/A");
             }
         }
         return srs;

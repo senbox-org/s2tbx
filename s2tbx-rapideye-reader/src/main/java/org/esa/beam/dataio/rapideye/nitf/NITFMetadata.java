@@ -241,10 +241,13 @@ public class NITFMetadata {
             throw new IllegalArgumentException("Invalid image index");
         MetadataElement currentElement = root.getElement(NITFFields.TAG_IMAGE_SUBHEADERS);
         if (currentElement != null) {
-            String value = currentElement.getAttributeString(NITFFields.ICAT, null);
-            if (value != null) {
-                if ("MS".equals(value) || "HS".equals(value) || "IR".equals(value)) {
-                    ret = "nm";
+            currentElement = currentElement.getElement(NITFFields.TAG_IMAGE_SUBHEADER + imageIndex);
+            if (currentElement != null) {
+                String value = currentElement.getAttributeString(NITFFields.ICAT, null);
+                if (value != null) {
+                    if ("MS".equals(value) || "HS".equals(value) || "IR".equals(value)) {
+                        ret = "nm";
+                    }
                 }
             }
         }
