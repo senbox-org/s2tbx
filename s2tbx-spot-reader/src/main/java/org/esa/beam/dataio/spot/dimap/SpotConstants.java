@@ -187,4 +187,6 @@ public class SpotConstants {
     public static final String BAND_GROUP_SEPARATOR = ":";
     public static final String SPOT4_TAKE5_METADATA_FILE_EXTENSION = ".xml";
     public static final String SPOT4_TAKE5_FORMAT = "SPOT-4 Take5";
+    public static final String SPOT4_TAKE5_TAG_ZONE_GEO = "ZONE_GEO";
+    public static final String VALUE_NOT_AVAILABLE = "N/A";
 }
