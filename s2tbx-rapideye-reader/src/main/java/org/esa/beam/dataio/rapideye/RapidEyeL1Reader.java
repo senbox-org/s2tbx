@@ -9,6 +9,7 @@ import org.esa.beam.dataio.rapideye.nitf.NITFMetadata;
 import org.esa.beam.dataio.rapideye.nitf.NITFReaderWrapper;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.util.TreeNode;
 
 import javax.imageio.IIOException;
 import java.io.File;
@@ -209,5 +210,39 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         TiePointGrid lonGrid = addTiePointGrid(product.getSceneRasterWidth(), product.getSceneRasterHeight(), product, "longitude", metadata.getCornersLongitudes());
         GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
         product.setGeoCoding(geoCoding);
+    }
+
+    @Override
+    public TreeNode<File> getProductComponents() {
+        if (productDirectory.isThisZipFile()) {
+            return super.getProductComponents();
+        } else {
+            TreeNode<File> result = super.getProductComponents();
+            String[] fileNames = getMetadataFileNames(productDirectory, RapidEyeConstants.METADATA_FILE_SUFFIX);
+            for(String fileName : fileNames){
+                try{
+                    addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
+                } catch (IOException e) {
+                    logger.warning(String.format("Error encountered while searching file %s", fileName));
+                }
+            }
+            String[] nitfFiles = getRasterFileNames(productDirectory);
+            for(String fileName : nitfFiles){
+                try{
+                    addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
+                } catch (IOException e) {
+                    logger.warning(String.format("Error encountered while searching file %s", fileName));
+                }
+            }
+            String maskFileName = metadata.getMaskFileName();
+            if (maskFileName != null) {
+                try{
+                    addProductComponentIfNotPresent(maskFileName, productDirectory.getFile(maskFileName), result);
+                } catch (IOException e) {
+                    logger.warning(String.format("Error encountered while searching file %s", maskFileName));
+                }
+            }
+            return result;
+        }
     }
 }

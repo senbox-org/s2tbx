@@ -11,6 +11,7 @@ import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.util.TreeNode;
 
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
@@ -177,6 +178,38 @@ public class RapidEyeL3Reader extends RapidEyeReader {
                 // Make the custom Spi to be the first one to be used.
                 defaultInstance.setOrdering(ImageInputStreamSpi.class, channelImageInputStreamSpi, toUnorder);
             }
+        }
+    }
+
+    @Override
+    public TreeNode<File> getProductComponents() {
+        if (productDirectory.isThisZipFile()) {
+            return super.getProductComponents();
+        } else {
+            TreeNode<File> result = super.getProductComponents();
+            String metaFileName = metadata.getFileName();
+                try{
+                    addProductComponentIfNotPresent(metaFileName, productDirectory.getFile(metaFileName), result);
+                } catch (IOException e) {
+                    logger.warning(String.format("Error encountered while searching file %s", metaFileName));
+                }
+            String[] nitfFiles = metadata.getRasterFileNames(false);
+            for(String fileName : nitfFiles){
+                try{
+                    addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
+                } catch (IOException e) {
+                    logger.warning(String.format("Error encountered while searching file %s", fileName));
+                }
+            }
+            String maskFileName = metadata.getMaskFileName();
+            if (maskFileName != null) {
+                try{
+                    addProductComponentIfNotPresent(maskFileName, productDirectory.getFile(maskFileName), result);
+                } catch (IOException e) {
+                    logger.warning(String.format("Error encountered while searching file %s", maskFileName));
+                }
+            }
+            return result;
         }
     }
 }
