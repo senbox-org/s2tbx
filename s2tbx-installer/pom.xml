@@ -262,6 +262,57 @@
         </dependency>
 
         <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-alos-reader</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-atsr-reader</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-avhrr-reader</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-chris-reader</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-landsat-reader</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-meris-cloud</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-merisl3-reader</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-meris-radiometry</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-meris-smac</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s3tbx</groupId>
+            <artifactId>s3tbx-spot-vgt-reader</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>ncsa.hdf</groupId>
             <artifactId>lib-hdf</artifactId>
             <version>2.7</version>
