@@ -262,57 +262,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-alos-reader</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-atsr-reader</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-avhrr-reader</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-chris-reader</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-landsat-reader</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-meris-cloud</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-merisl3-reader</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-meris-radiometry</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-meris-smac</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s3tbx</groupId>
-            <artifactId>s3tbx-spot-vgt-reader</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>ncsa.hdf</groupId>
             <artifactId>lib-hdf</artifactId>
             <version>2.7</version>
@@ -321,44 +270,6 @@
             <groupId>gov.nasa.gsfc.seadas</groupId>
             <artifactId>seadas-reader</artifactId>
             <version>1.5.6</version>
-        </dependency>
-
-        <!-- SMOS dependencies -->
-
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-dgg</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-ee2netcdf</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-gui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-lsmask</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-tools</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-visat</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>bufr</artifactId>
-            <version>4.3.21</version>
         </dependency>
 
         <!-- S2 dependencies -->
@@ -372,22 +283,6 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.7.2</version>
         </dependency>
-        <dependency>
-            <groupId>com.sun.xsom</groupId>
-            <artifactId>xsom</artifactId>
-            <version>20110809</version>
-        </dependency>
-        <dependency>
-            <groupId>relaxngDatatype</groupId>
-            <artifactId>relaxngDatatype</artifactId>
-            <version>20020414</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.xml.parsers</groupId>
-            <artifactId>jaxp-api</artifactId>
-            <version>1.4.5</version>
-        </dependency>
-
 
     </dependencies>
 
