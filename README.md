@@ -4,9 +4,11 @@ Sentinel-2 Toolbox (s2tbx)
 A toolbox for the MSI instrument on board of ESA's Sentinel-2 satellite.
 
 Use the following command to build BEAM modules:
+
 	mvn compile package install -U -DskipTests -Duser.language=eng
 
-To create a Install4j installer use the following command:
+To create a Install4j installer use the following commands:
+
     cd s2tbx-installer
 	mvn compile package assembly:assembly -U -DskipTests -Duser.language=eng
 
