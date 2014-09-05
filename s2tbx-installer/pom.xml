@@ -417,6 +417,24 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.sonatype.install4j</groupId>
+                <artifactId>install4j-maven-plugin</artifactId>
+                <version>1.0.7</version>
+                <executions>
+                    <execution>
+                        <id>compile-installers</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <projectFile>${project.basedir}/s2tbx.install4j</projectFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
 
             <!--<plugin>-->
                 <!--<artifactId>maven-dependency-plugin</artifactId>-->
