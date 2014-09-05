@@ -424,7 +424,7 @@
                 <executions>
                     <execution>
                         <id>compile-installers</id>
-                        <phase>package</phase>
+                        <phase>verify</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
