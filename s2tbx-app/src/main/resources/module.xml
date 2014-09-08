@@ -1,0 +1,88 @@
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+    <symbolicName>s2tbx-app</symbolicName>
+    <version>0.6.0</version>
+    <name>S-2 Toolbox Application</name>
+
+    <vendor>Brockmann Consult GmbH</vendor>
+    <contactAddress>Max-Planck-Str. 2, 21502 Geesthacht (Germany)</contactAddress>
+    <copyright>(c) Copyright 2002-2014 by Brockmann Consult and contributors.&lt;br/&gt;All rights reserved.</copyright>
+    <url>http://envisat.esa.int/beam</url>
+
+    <description>Sentinel-2 Toolbox Display and Analysis Tool</description>
+
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
+    <funding>European Space Agency</funding>
+
+    <dependency>
+        <module>snap-visat-rcp</module>
+    </dependency>
+    <dependency>
+        <module>snap-core</module>
+    </dependency>
+
+    <categories>Application</categories>
+
+    <extension point="snap-ceres-core:applications">
+        <application id="S2tbxMain" class="org.esa.s2tbx.S2tbxMain"/>
+    </extension>
+
+    <extension point="snap-ui:applicationDescriptors">
+        <applicationDescriptor>
+            <applicationId>S2tbxMain</applicationId>
+            <displayName>ESA S-2 Toolbox</displayName>
+            <version>${s2tbx.version}</version>
+            <buildId>${s2tbx.build.id}</buildId>
+            <buildDate>${s2tbx.build.date}</buildDate>
+
+            <frameIcons>
+                /org/esa/s2tbx/images/s2tbx-icon-16.png,
+                /org/esa/s2tbx/images/s2tbx-icon-32.png,
+                /org/esa/s2tbx/images/s2tbx-icon-48.png,
+                /org/esa/s2tbx/images/s2tbx-icon-64.png,
+                /org/esa/s2tbx/images/s2tbx-icon-96.png,
+                /org/esa/s2tbx/images/s2tbx-icon-128.png
+            </frameIcons>
+            <aboutImage>
+                /org/esa/s2tbx/images/s2tbx-about.png
+            </aboutImage>
+
+            <excludedActions>
+            </excludedActions>
+
+            <excludedToolViews>
+            </excludedToolViews>
+
+
+        </applicationDescriptor>
+    </extension>
+
+
+    <extension point="snap-ui:layerSources">
+
+    </extension>
+
+    <extension point="snap-ui:layerEditors">
+
+    </extension>
+
+    <extension point="snap-ui:toolViews">
+
+
+    </extension>
+
+    <extension point="snap-ui:actions">
+
+
+
+    </extension>
+
+    <extension point="snap-ui:helpSets">
+        <helpSet>
+            <parent>snap-beam-help</parent>
+            <id>Help</id>
+            <path>doc/help/dat.hs</path>
+        </helpSet>
+    </extension>
+
+</module>

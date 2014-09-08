@@ -124,6 +124,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             ProductData.UTC startTime = imageMetadata.getDatePdv();
             product.setStartTime(startTime);
             product.setEndTime(startTime);
+            product.setDescription(SpotConstants.SPOT4_TAKE5_FORMAT + " level:"+imageMetadata.getMetadataProfile()+ " zone:"+imageMetadata.getGeographicZone());
 
             //all the bands of the tiff files are added to the product
             for (Map.Entry<String, String> entry : imageMetadata.getTiffFiles().entrySet()) {
@@ -254,14 +255,16 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                     bandMap.put(targetBand, srcBand);
                     //targetBand.setRasterData(srcBand.getRasterData());
                     //targetBand.setSourceImage(srcBand.getSourceImage());
+                    targetBand.setValidPixelExpression(srcBand.getValidPixelExpression());
                     targetBand.setNoDataValue(srcBand.getNoDataValue());
                     targetBand.setNoDataValueUsed(false);
+                    targetBand.setUnit(getNotNullValueOrDefault(srcBand.getUnit()));
+                    targetBand.setGeophysicalNoDataValue(srcBand.getGeophysicalNoDataValue());
                     targetBand.setSpectralWavelength(srcBand.getSpectralWavelength());
                     targetBand.setSpectralBandwidth(srcBand.getSpectralBandwidth());
                     targetBand.setScalingFactor(srcBand.getScalingFactor());
                     targetBand.setScalingOffset(srcBand.getScalingOffset());
                     targetBand.setSolarFlux(srcBand.getSolarFlux());
-                    targetBand.setUnit(srcBand.getUnit());
                     targetBand.setSampleCoding(srcBand.getSampleCoding());
                     targetBand.setImageInfo(srcBand.getImageInfo());
                     targetBand.setSpectralBandIndex(srcBand.getSpectralBandIndex());
@@ -271,6 +274,10 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         } catch (IOException ioEx) {
             logger.severe("Error while reading component: " + ioEx.getMessage());
         }
+    }
+
+    private String getNotNullValueOrDefault(String value){
+        return (value == null ? SpotConstants.VALUE_NOT_AVAILABLE : value);
     }
 
     /**

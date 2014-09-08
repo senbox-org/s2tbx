@@ -143,7 +143,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the projection code, as it appears in the metadata file, under the tag METADAT/GEOMETRY/PROJECTION
+     * Reads the projection code, as it appears in the metadata file, under the tag METADATA/GEOMETRY/PROJECTION
      *
      * @return the String value representing the projection code, as it appears in the metadata file
      */
@@ -158,7 +158,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the Y dimension of the raster, as it appears in the metadata file, under the tag METADAT/GEOMETRY/ORIGIN_Y
+     * Reads the Y dimension of the raster, as it appears in the metadata file, under the tag METADATA/GEOMETRY/ORIGIN_Y
      *
      * @return the float value representing the Y dimension of the raster, as it appears in the metadata file
      */
@@ -173,7 +173,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the X dimension of the raster, as it appears in the metadata file, under the tag METADAT/GEOMETRY/ORIGIN_X
+     * Reads the X dimension of the raster, as it appears in the metadata file, under the tag METADATA/GEOMETRY/ORIGIN_X
      *
      * @return the float value representing the X dimension of the raster, as it appears in the metadata file
      */
@@ -188,7 +188,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the Y dimension of the raster size, as it appears in the metadata file, under the tag METADAT/GEOMETRY/PIXEL_SIZE_Y
+     * Reads the Y dimension of the raster size, as it appears in the metadata file, under the tag METADATA/GEOMETRY/PIXEL_SIZE_Y
      *
      * @return the float value representing the Y dimension of the raster size, as it appears in the metadata file
      */
@@ -203,7 +203,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the X dimension of the raster size, as it appears in the metadata file, under the tag METADAT/GEOMETRY/PIXEL_SIZE_X
+     * Reads the X dimension of the raster size, as it appears in the metadata file, under the tag METADATA/GEOMETRY/PIXEL_SIZE_X
      *
      * @return the float value representing the X dimension of the raster size, as it appears in the metadata file
      */
@@ -268,7 +268,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the date of the acquisition of the image, as it appears in the metadata file, under the tag METADAT/HEADER/DATE_PDV
+     * Reads the date of the acquisition of the image, as it appears in the metadata file, under the tag METADATA/HEADER/DATE_PDV
      *
      * @return the UTC date representing the date of the acquisition of the image, as it appears in the metadata file
      */
@@ -288,5 +288,20 @@ public class SpotTake5Metadata extends XmlMetadata {
             }
         }
         return dateValue;
+    }
+
+    /**
+     * Reads the geographic zone of the image, as it appears in the metadata file, under the tag METADATA/HEADER/ZONE_GEO
+     *
+     * @return the geographic zone of the image, as it appears in the metadata file
+     */
+    public String getGeographicZone() {
+        MetadataElement currentElement;
+        String result = null;
+        if ((rootElement != null) &&
+                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_HEADER)) != null)) {
+            result = currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_ZONE_GEO);
+        }
+        return result;
     }
 }

@@ -10,6 +10,7 @@ import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.*;
 import org.esa.beam.jai.ImageManager;
+import org.esa.beam.util.TreeNode;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.imageio.spi.IIORegistry;
@@ -153,6 +154,21 @@ public abstract class RapidEyeReader extends AbstractProductReader {
                 // Make the custom Spi to be the first one to be used.
                 defaultInstance.setOrdering(ImageInputStreamSpi.class, channelImageInputStreamSpi, toUnorder);
             }
+        }
+    }
+
+    protected void addProductComponentIfNotPresent(String componentId, File componentFile, TreeNode<File> currentComponents) {
+        TreeNode<File> resultComponent = null;
+        for (TreeNode node : currentComponents.getChildren()) {
+            if (node.getId().toLowerCase().equals(componentId.toLowerCase())) {
+                //noinspection unchecked
+                resultComponent = node;
+                break;
+            }
+        }
+        if (resultComponent == null) {
+            resultComponent = new TreeNode<File>(componentId, componentFile);
+            currentComponents.addChild(resultComponent);
         }
     }
 
