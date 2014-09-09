@@ -30,9 +30,6 @@
           <entry location="images" fileType="regular" />
         </exclude>
       </dirEntry>
-      <dirEntry mountPoint="17" file="./src/main/patch" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" entryMode="direct" subDirectory="" excludeSuffixes="" dirMode="755" overrideDirMode="false">
-        <exclude />
-      </dirEntry>
     </entries>
     <components />
   </files>
