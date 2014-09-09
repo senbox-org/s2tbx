@@ -175,6 +175,9 @@
                 <include>org.tukaani:*</include>
                 <include>org.xerial:sqlite-jdbc</include>
                 <include>org.xeustechnologies:*</include>
+                <include>javax.xml.parsers:*</include>
+                <include>relaxngDatatype:*</include>
+                <include>com.sun.xsom:*</include>
             </includes>
             <excludes>
                 <exclude>ncsa.hdf:lib-hdf</exclude>
