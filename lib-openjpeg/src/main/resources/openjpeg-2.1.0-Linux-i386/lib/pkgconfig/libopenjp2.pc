@@ -1,7 +1,7 @@
-prefix=/home/vagrant/projects/s2tbx/lib-openjpeg/src/main/resources/openjpeg-2.0.0-Linux-i386
+prefix=/home/vagrant/openjpeg-read-only/release
 bindir=${prefix}/bin
-mandir=${prefix}/share/man/
-docdir=${prefix}/share/doc/openjpeg-2.1
+mandir=${prefix}/
+docdir=${prefix}/
 libdir=${prefix}/lib
 includedir=${prefix}/include/openjpeg-2.1
 
