@@ -62,7 +62,7 @@
             <artifactId>snap-reader-tests</artifactId>
             <version>${snap.version}</version>
         </dependency>
-        <!--
+
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-reader-tests</artifactId>
@@ -70,7 +70,7 @@
             <scope>test</scope>
             <version>${snap.version}</version>
         </dependency>
-        -->
+
     </dependencies>
 
     <build>
