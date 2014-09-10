@@ -246,6 +246,15 @@
                 <role>Java Developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>ramonam</id>
+            <name>Ramona Manda</name>
+            <email>ramona.manda@c-s.ro</email>
+            <organization>CS ROMANIA</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
     </developers>
 
 </project>
