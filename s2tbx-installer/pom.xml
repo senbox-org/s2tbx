@@ -22,19 +22,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <s2tbx.version>0.6.0</s2tbx.version>
+        <s2tbx.version>0.5.0-SNAPSHOT</s2tbx.version>
     </properties>
 
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>0.6.0</version>
+        <version>0.5.0-SNAPSHOT</version>
     </parent>
 
     <name>Sentinel-2 Installer Resources</name>
     <artifactId>s2tbx-installer</artifactId>
 
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -46,31 +46,31 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-reader</artifactId>
-            <version>0.6.0</version>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-app</artifactId>
-            <version>0.6.0</version>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-rapideye-reader</artifactId>
-            <version>0.6.0</version>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-spot-reader</artifactId>
-            <version>0.6.0</version>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
-            <version>0.6.0</version>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
@@ -372,8 +372,65 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.7.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.sun.xsom</groupId>
+            <artifactId>xsom</artifactId>
+            <version>20110809</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.relaxng</groupId>
+            <artifactId>relaxngDatatype</artifactId>
+            <version>2011.1</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.parsers</groupId>
+            <artifactId>jaxp-api</artifactId>
+            <version>1.4.5</version>
+        </dependency>
 
     </dependencies>
+
+    <!--
+    <profiles>
+        <profile>
+            <id>skipTests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>1.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>enforce-property</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireProperty>
+                                            <property>products.dir</property>
+                                            <message>The unit test directory defined in property products.dir must exist</message>
+                                            <regex>.*</regex>
+                                            <regexMessage>Installer cannot be created until the build has passed unit tests.</regexMessage>
+                                        </requireProperty>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    -->
 
     <build>
         <directory>target</directory>
@@ -404,16 +461,20 @@
 
             <plugin>
                 <!--Install4j v5.1.12 can currently run only with Java 1.7 -->
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>2.1</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
-                    <debug>true</debug>
+                    <debug>false</debug>
                     <encoding>UTF-8</encoding>
                     <excludes>
                         <exclude>.gitignore</exclude>
                     </excludes>
+                    <includes>
+                        <include>com/**</include>
+                    </includes>
                 </configuration>
             </plugin>
 
@@ -429,6 +490,7 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipTests}</skip>
                             <projectFile>${project.basedir}/s2tbx-ci.install4j</projectFile>
                         </configuration>
                     </execution>
@@ -484,6 +546,8 @@
             <!--</plugin>-->
         </plugins>
     </build>
+
+
 
 
 </project>
