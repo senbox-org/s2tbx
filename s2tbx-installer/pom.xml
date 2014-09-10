@@ -490,7 +490,9 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
+                            <!-- TODO Fix when all unit tests are integrated
                             <skip>${skipTests}</skip>
+                            -->
                             <projectFile>${project.basedir}/s2tbx-ci.install4j</projectFile>
                         </configuration>
                     </execution>
