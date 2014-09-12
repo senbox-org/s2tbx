@@ -128,7 +128,7 @@
         </plugins>
     </build>
 
-    <profiles>
+    <!--profiles>
         <profile>
             <id>skipTests</id>
             <activation>
@@ -208,7 +208,7 @@ r MAVEN_OPTS)</regexMessage>
                 </plugins>
             </build>
         </profile>
-    </profiles>
+    </profiles-->
 
     <repositories>
         <repository>

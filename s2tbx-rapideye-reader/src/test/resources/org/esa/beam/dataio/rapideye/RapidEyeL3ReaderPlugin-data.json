@@ -1,0 +1,9 @@
+{
+    "testProducts": [
+        {
+            "id": "RapidEyeL3-Eritrea",
+            "relativePath": "Eritrea.zip",
+            "description": "RapidEye L3 product in an archive"
+        }
+    ]
+}

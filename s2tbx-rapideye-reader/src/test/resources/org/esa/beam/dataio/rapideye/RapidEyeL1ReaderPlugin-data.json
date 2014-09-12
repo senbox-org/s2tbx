@@ -1,0 +1,9 @@
+{
+    "testProducts": [
+        {
+            "id": "RapidEyeL1-Demo03",
+            "relativePath": "Demo03_1B.zip",
+            "description": "RapidEye L1 product in an archive"
+        }
+    ]
+}

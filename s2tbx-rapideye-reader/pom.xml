@@ -47,6 +47,19 @@
             <artifactId>commons-io</artifactId>
             <version>1.3.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-reader-tests</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-reader-tests</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <version>${snap.version}</version>
+        </dependency>
     </dependencies>
 
     <profiles>

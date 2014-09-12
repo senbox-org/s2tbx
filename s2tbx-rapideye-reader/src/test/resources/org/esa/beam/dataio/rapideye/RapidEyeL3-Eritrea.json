@@ -1,0 +1,97 @@
+{
+    "id": "RapidEyeL3-Eritrea",
+    "decodeQualification": "INTENDED",
+    "expectedContent": {
+        "sceneWidth": 10985,
+        "sceneHeight": 11232,
+        "geoCoding": {
+            "coordinates": [
+                {
+                    "x": 1020,
+                    "y": 200,
+                    "lat": 13.9970130,
+                    "lon": 41.5462913
+                },
+                {
+                    "x": 2000,
+                    "y": 2500,
+                    "lat": 13.8926563,
+                    "lon": 41.5904579
+                }
+            ]
+        },
+        "bands": [
+            {
+                "name": "blue",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "440.0",
+                "spectralBandwidth": "70.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 77.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 89.0
+                    }
+                ]
+            },
+            {
+                "name": "green",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "520.0",
+                "spectralBandwidth": "70.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 75.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 82.0
+                    }
+                ]
+            },
+            {
+                "name": "red",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "630.0",
+                "spectralBandwidth": "55.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 68.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 73.0
+                    }
+                ]
+            }
+        ],
+        "metadata": [
+            {
+                "path": "L3M/resultOf/earthObservationResult/product/mosaicDecomposition/mosaicTile/browse/BrowseInformation/type",
+                "value": "QUICKLOOK"
+            },
+            {
+                "path": "TIFF Metadata/GeoTIFF Metadata/GTCitationGeoKey",
+                "value": "WGS 84 / UTM zone 37N"
+            },
+            {
+                "path": "TIFF Metadata/GeoTIFF Metadata/ProjLinearUnitsGeoKey",
+                "value": "Linear_Meter"
+            }
+        ]
+    }
+}

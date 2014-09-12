@@ -1,0 +1,140 @@
+{
+    "id": "RapidEyeL1-Demo03",
+    "decodeQualification": "INTENDED",
+    "expectedContent": {
+        "sceneWidth": 11829,
+        "sceneHeight": 7422,
+        "geoCoding": {
+            "coordinates": [
+                {
+                    "x": 1020,
+                    "y": 200,
+                    "lat": 53.0628852,
+                    "lon": 15.1729831
+                },
+                {
+                    "x": 2000,
+                    "y": 2500,
+                    "lat": 52.9198684,
+                    "lon": 15.2058973
+                }
+            ]
+        },
+        "bands": [
+            {
+                "name": "blue",
+                "geophysicalUnit": "nm",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "440.0",
+                "spectralBandwidth": "70.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 54.64
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 47.98
+                    }
+                ]
+            },
+            {
+                "name": "green",
+                "geophysicalUnit": "nm",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "520.0",
+                "spectralBandwidth": "70.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 43.329998
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 32.53
+                    }
+                ]
+            },
+            {
+                "name": "red",
+                "geophysicalUnit": "nm",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "630.0",
+                "spectralBandwidth": "55.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 26.73
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 19.24
+                    }
+                ]
+            },
+            {
+                "name": "red_edge",
+                "geophysicalUnit": "nm",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "690.0",
+                "spectralBandwidth": "40.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 36.309998
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 26.289999
+                    }
+                ]
+            },
+            {
+                "name": "near_infrared",
+                "geophysicalUnit": "nm",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "760.0",
+                "spectralBandwidth": "90.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 57.27
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 48.59
+                    }
+                ]
+            }
+        ],
+        "metadata": [
+            {
+                "path": "L1B/resultOf/EarthObservationResult/product/ProductInformation/spatialReferenceSystem/epsgCode",
+                "value": "4326"
+            },
+            {
+                "path": "NITF Metadata/File Header/FHDR",
+                "value": "NITF"
+            },
+            {
+                "path": "NITF Metadata/File Header/ONAME",
+                "value": "~~~RapidEye"
+            }
+        ]
+    }
+}

@@ -1,0 +1,116 @@
+{
+    "id": "Spot4View-DLR70",
+    "decodeQualification": "INTENDED",
+    "expectedContent": {
+        "sceneWidth": 2713,
+        "sceneHeight": 2568,
+        "geoCoding": {
+            "coordinates": [
+                {
+                    "x": 1020,
+                    "y": 200,
+                    "lat": 40.0261,
+                    "lon": 26.924987
+                },
+                {
+                    "x": 2000,
+                    "y": 2500,
+                    "lat": 39.518272,
+                    "lon": 27.070484
+                }
+            ]
+        },
+        "bands": [
+            {
+                "name": "band_0",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "true",
+                "spectralWavelength": "470.0",
+                "spectralBandwidth": "5.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 85.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 103.0
+                    }
+                ]
+            },
+            {
+                "name": "band_1",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "true",
+                "spectralWavelength": "590.0",
+                "spectralBandwidth": "5.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 46.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 63.0
+                    }
+                ]
+            },
+            {
+                "name": "band_2",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "true",
+                "spectralWavelength": "730.0",
+                "spectralBandwidth": "5.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 101.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 94.0
+                    }
+                ]
+            },
+            {
+                "name": "band_3",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "true",
+                "spectralWavelength": "1510.0",
+                "spectralBandwidth": "5.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 90.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 104.0
+                    }
+                ]
+            }
+        ],
+        "metadata": [
+            {
+                "path": "SPOTScene/Image/FORMAT",
+                "value": "BIL"
+            },
+            {
+                "path": "SPOTScene/Production/DATASET_NAME",
+                "value": "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP"
+            },
+            {
+                 "path": "SPOTScene/Production/DATASET_SENSOR",
+                 "value": "SPOT 4"
+            }
+        ]
+    }
+}
