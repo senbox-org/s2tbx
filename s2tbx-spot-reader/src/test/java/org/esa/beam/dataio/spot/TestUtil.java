@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 public class TestUtil {
 
     public static String ABSOLUTE_PATH = "D:\\Sentinel2_PROJECT\\Satellite_Imagery\\TestingJUnitFiles";
+    private static final String PROPERTYNAME_DATA_DIR = "beam.reader.tests.data.dir";
 
     public static File getTestFile(String file) {
         final File testTgz = getTestFileOrDirectory(file);
@@ -26,6 +27,7 @@ public class TestUtil {
             testTgz = new File("./src/test/resources/org/esa/beam/dataio/spot/" + file);
         }
         return testTgz;*/
-        return new File(ABSOLUTE_PATH, file);
+        String path = System.getProperty(PROPERTYNAME_DATA_DIR);
+        return new File(path, file);
     }
 }
