@@ -10,7 +10,9 @@ import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.*;
 import org.esa.beam.jai.ImageManager;
+import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.TreeNode;
+import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.imageio.spi.IIORegistry;
@@ -209,5 +211,37 @@ public abstract class RapidEyeReader extends AbstractProductReader {
             }
             return colorIterator.next();
         }
+    }
+
+    static File getFileInput(Object input) {
+        if (input instanceof String) {
+            return new File((String) input);
+        } else if (input instanceof File) {
+            return (File) input;
+        }
+        return null;
+    }
+
+    static boolean isCompressedFile(File file) {
+        boolean retVal = false;
+        String extension = FileUtils.getExtension(file);
+        if (!StringUtils.isNullOrEmpty(extension)) {
+            retVal = extension.toLowerCase().contains("zip");
+        }
+        return retVal;
+    }
+
+    static ZipVirtualDir getInput(Object input) throws IOException {
+        File inputFile = getFileInput(input);
+
+        if (inputFile.isFile() && !isCompressedFile(inputFile)) {
+            final File absoluteFile = inputFile.getAbsoluteFile();
+            inputFile = absoluteFile.getParentFile();
+            if (inputFile == null) {
+                throw new IOException(String.format("Unable to retrieve parent to file %s.", absoluteFile.getAbsolutePath()));
+            }
+        }
+
+        return new ZipVirtualDir(inputFile);
     }
 }

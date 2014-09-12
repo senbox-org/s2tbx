@@ -6,6 +6,7 @@ import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.util.io.BeamFileFilter;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
 
 /**
@@ -19,25 +20,33 @@ public class RapidEyeL3ReaderPlugin implements ProductReaderPlugIn {
         DecodeQualification qualification = DecodeQualification.UNABLE;
         File file = new File(input.toString());
         String fileName = file.getName().toLowerCase();
+        String[] files = null;
         if (fileName.endsWith(".zip")) {
-            qualification = DecodeQualification.SUITABLE;
+            try {
+                files = RapidEyeReader.getInput(input).list(".");
+            } catch (IOException e) {//if the content files cannot be listed, the plugin will return unable!
+            }
         } else if (fileName.endsWith(RapidEyeConstants.METADATA_FILE_SUFFIX)) {
             File folder = file.getParentFile();
-            File[] files = folder.listFiles();
-            if (files != null) {
-                boolean consistentProduct = true;
-                for (String namePattern : RapidEyeConstants.L3_FILENAME_PATTERNS) {
-                    if (!namePattern.endsWith("zip")) {
-                        boolean patternMatched = false;
-                        for (File f : files) {
-                            patternMatched |= f.getName().matches(namePattern);
+            files = folder.list();
+        }
+        if (files != null) {
+            boolean consistentProduct = true;
+            for (String namePattern : RapidEyeConstants.L3_FILENAME_PATTERNS) {
+                if (!namePattern.endsWith("zip")) {
+                    boolean patternMatched = false;
+                    for (String f : files) {
+                        if(f.matches(RapidEyeConstants.NOT_L3_FILENAME_PATTERN)) {
+                            consistentProduct = false;
+                        } else {
+                            patternMatched |= f.matches(namePattern);
                         }
-                        consistentProduct &= patternMatched;
                     }
+                    consistentProduct &= patternMatched;
                 }
-                if (consistentProduct)
-                    qualification = DecodeQualification.INTENDED;
             }
+            if (consistentProduct)
+                qualification = DecodeQualification.INTENDED;
         }
         return qualification;
     }

@@ -36,7 +36,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        productDirectory = RapidEyeL1ReaderPlugin.getInput(getInput());
+        productDirectory = RapidEyeReader.getInput(getInput());
         //String dirName = productDirectory.getBasePath().substring(productDirectory.getBasePath().lastIndexOf(File.separator) + 1);
         String metadataFileName = productDirectory.findFirst(RapidEyeConstants.METADATA_FILE_SUFFIX);
         File metadataFile = productDirectory.getFile(metadataFileName);
