@@ -136,6 +136,7 @@ public class SpotConstants {
             "3\\d{19}(P|X)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
             "4\\d{19}(I|M)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
             "5\\d{19}J\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
+            "SPOT-5_\\d+\\.{0,1}\\d*m[a-z]{1,2}_\\d[a-z].(zip|ZIP)",
             "(vol_list|VOL_LIST)\\.(dim|DIM)",
             "(metadata|METADATA)\\.(dim|DIM)" };
 
