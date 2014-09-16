@@ -141,6 +141,12 @@ public class SpotConstants {
             "(vol_list|VOL_LIST)\\.(dim|DIM)",
             "(metadata|METADATA)\\.(dim|DIM)" };
 
+    public static final String[] DIMAP_MINIMAL_PRODUCT_PATTERNS = new String[] {
+        "vol_list\\.dim",
+        "scene\\d{2}[/\\]metadata\\.dim",
+        "scene\\d{2}[/\\]imagery\\.tif",
+    };
+
     public static final Class[] SPOTVIEW_READER_INPUT_TYPES = new Class[]{String.class, File.class};
     public static final String SPOTVIEW_DESCRIPTION = "SPOTView (not DIMAP) Data Products";
     public static final String[] SPOTVIEW_DEFAULT_EXTENSIONS = new String[]{".xml", ".XML", ".zip", ".ZIP"};

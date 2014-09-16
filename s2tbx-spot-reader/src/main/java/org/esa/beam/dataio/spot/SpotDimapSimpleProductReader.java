@@ -37,15 +37,9 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
         Assert.argument(metadata.getComponentsMetadata().size() == 1, "Wrong reader for multiple volume components");
 
         SpotDimapMetadata dimapMetadata = metadata.getComponentMetadata(0);
-        rootProduct = new Product(dimapMetadata.getProductName(),
-                                  SpotConstants.DIMAP_FORMAT_NAMES[0],
-                                  dimapMetadata.getRasterWidth(),
-                                  dimapMetadata.getRasterHeight());
-        rootProduct.getMetadataRoot().addElement(dimapMetadata.getRootElement());
-        ProductData.UTC centerTime = dimapMetadata.getCenterTime();
-        rootProduct.setStartTime(centerTime);
-        rootProduct.setEndTime(centerTime);
-        rootProduct.setDescription(dimapMetadata.getProductDescription());
+        if (dimapMetadata.getRasterWidth() > 0 && dimapMetadata.getRasterHeight() > 0) {
+            rootProduct = initProduct(dimapMetadata.getRasterWidth(), dimapMetadata.getRasterHeight(), dimapMetadata);
+        }
         for (int fileIndex = 0; fileIndex < metadata.getNumComponents(); fileIndex++) {
             addBands(rootProduct, metadata.getComponentMetadata(fileIndex), fileIndex);
             addMasks(rootProduct, metadata.getComponentMetadata(fileIndex));
@@ -73,6 +67,19 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
         }
     }
 
+    Product initProduct(int width, int height, SpotDimapMetadata dimapMetadata) {
+        rootProduct = new Product(dimapMetadata.getProductName(),
+                SpotConstants.DIMAP_FORMAT_NAMES[0],
+                width,
+                height);
+        rootProduct.getMetadataRoot().addElement(dimapMetadata.getRootElement());
+        ProductData.UTC centerTime = dimapMetadata.getCenterTime();
+        rootProduct.setStartTime(centerTime);
+        rootProduct.setEndTime(centerTime);
+        rootProduct.setDescription(dimapMetadata.getProductDescription());
+        return rootProduct;
+    }
+
     void addBands(Product product, SpotDimapMetadata componentMetadata, int componentIndex) {
         String[] bandNames = componentMetadata.getBandNames();
         String[] bandUnits = componentMetadata.getBandUnits();
@@ -93,6 +100,8 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
                     logger.info("Read product nodes");
                     Product tiffProduct = tiffReader.readProductNodes(rasterFile, null);
                     if (tiffProduct != null) {
+                        if (product == null)
+                            product = initProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), metadata.getComponentMetadata(0));
                         MetadataElement tiffMetadata = tiffProduct.getMetadataRoot();
                         if (tiffMetadata != null) {
                             XmlMetadata.CopyChildElements(tiffMetadata, product.getMetadataRoot());
