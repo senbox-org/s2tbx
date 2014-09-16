@@ -64,8 +64,9 @@ public class SpotDimapMetadata extends XmlMetadata {
         }
         String name = null;
         MetadataElement currentElement;
-        if ((currentElement = rootElement.getElement(SpotConstants.TAG_DATASET_ID)) != null) {
-            name = currentElement.getAttributeString(SpotConstants.TAG_DATASET_NAME);
+        if ((currentElement = rootElement.getElement(SpotConstants.TAG_DATASET_SOURCES)) != null &&
+                (currentElement = currentElement.getElement(SpotConstants.TAG_SOURCE_INFORMATION)) != null) {
+            name = currentElement.getAttributeString(SpotConstants.TAG_SOURCE_ID);
             rootElement.setDescription(name);
         } else {
             logger.warning(String.format(MISSING_ELEMENT_WARNING, SpotConstants.TAG_DATASET_NAME));

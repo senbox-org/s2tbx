@@ -65,6 +65,7 @@ public class SpotConstants {
     public static final String TAG_PHYSICAL_UNIT = "PHYSICAL_UNIT";
     public static final String TAG_DATASET_SOURCES = "Dataset_Sources";
     public static final String TAG_SOURCE_INFORMATION = "Source_Information";
+    public static final String TAG_SOURCE_ID = "SOURCE_ID";
     public static final String TAG_SOURCE_DESCRIPTION = "Source_Description";
     // Elements from metadata.xml in SPOTView products
     public static final String TAG_IMAGE = "Image";
@@ -136,7 +137,7 @@ public class SpotConstants {
             "3\\d{19}(P|X)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
             "4\\d{19}(I|M)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
             "5\\d{19}J\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
-            "SPOT-5_\\d+\\.{0,1}\\d*m[a-z]{1,2}_\\d[a-z].(zip|ZIP)",
+            "SPOT-5_\\d+\\.{0,1}\\d*m[a-z]{1,2}_\\d[a-z]*.(zip|ZIP)",
             "(vol_list|VOL_LIST)\\.(dim|DIM)",
             "(metadata|METADATA)\\.(dim|DIM)" };
 
@@ -155,8 +156,8 @@ public class SpotConstants {
     public static final String[] SPOT4_TAKE5_DEFAULT_EXTENSION = new String[]{".xml", ".XML", ".tgz", ".TGZ"};
     public static final String[] SPOT4_TAKE5_FORMAT_NAME = new String[]{"SPOTTake5"};
     public static final String[] SPOT4_TAKE5_FILENAME_PATTERNS = new String[] {
-            "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC]\\.(tgz|TGZ)",
-            "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}(.*)\\.(xml|XML)"};
+            "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC](_.+){0,1}\\.(tgz|TGZ)",
+            "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC](_.+){0,1}\\.(xml|XML)"};
 
     public static final String SPOT4_TAKE5_TAG_METADATA = "METADATA";
     public static final String SPOT4_TAKE5_TAG_RADIOMETRY = "RADIOMETRY";

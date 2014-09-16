@@ -2,6 +2,7 @@ package org.esa.beam.dataio.spot.dimap;
 
 import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.metadata.XmlMetadata;
+import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.datamodel.MetadataElement;
 
 import java.io.File;
@@ -15,18 +16,18 @@ import java.util.logging.Logger;
  * This class holds the metadata extracted from DIMAP XML file.
  * It exposes convenience methods for fetching various useful metadata values.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class SpotSceneMetadata {
 
-    private final ZipVirtualDir folder;
+    private final SpotVirtualDir folder;
     private VolumeMetadata volumeMetadata;
     private final List<SpotDimapMetadata> componentMetadata;
     private final Logger logger;
     private int numComponents;
     private final MetadataElement rootElement;
 
-    private SpotSceneMetadata(ZipVirtualDir folder, Logger logger) {
+    private SpotSceneMetadata(SpotVirtualDir folder, Logger logger) {
         this.folder = folder;
         this.logger = logger;
         componentMetadata = new ArrayList<SpotDimapMetadata>();
@@ -38,13 +39,17 @@ public class SpotSceneMetadata {
         rootElement = new MetadataElement("SPOT Metadata");
     }
 
-    public static SpotSceneMetadata create(ZipVirtualDir folder, Logger logger) {
+    public static SpotSceneMetadata create(SpotVirtualDir folder, Logger logger) {
         return new SpotSceneMetadata(folder, logger);
     }
 
-    public VolumeMetadata getVolumeMetadata() { return volumeMetadata; }
+    public VolumeMetadata getVolumeMetadata() {
+        return volumeMetadata;
+    }
 
-    public List<SpotDimapMetadata> getComponentsMetadata() { return componentMetadata; }
+    public List<SpotDimapMetadata> getComponentsMetadata() {
+        return componentMetadata;
+    }
 
     public MetadataElement getRootElement() {
         if (rootElement.getNumElements() == 0) {
@@ -55,7 +60,9 @@ public class SpotSceneMetadata {
         return rootElement;
     }
 
-    public int getNumComponents() { return numComponents; }
+    public int getNumComponents() {
+        return numComponents;
+    }
 
     public SpotDimapMetadata getComponentMetadata(int index) {
         if ((index < 0) || (index > componentMetadata.size() - 1))
@@ -63,7 +70,9 @@ public class SpotSceneMetadata {
         return componentMetadata.get(index);
     }
 
-    public boolean hasMultipleComponents() { return numComponents > 1; }
+    public boolean hasMultipleComponents() {
+        return numComponents > 1;
+    }
 
     /*public int[][] getTileComponentIndices() {
         return volumeMetadata.getTileComponentIndices();
@@ -135,8 +144,12 @@ public class SpotSceneMetadata {
 
     private void readMetadataFiles() throws IOException {
         // try to get first the volume metadata file
-        File file = folder.getFile(SpotConstants.DIMAP_VOLUME_FILE);
-        if (!file.exists()) { // no volume, then look for metadata*.dim
+        File file = null;
+        try {
+            file = folder.getFile(SpotConstants.DIMAP_VOLUME_FILE);
+        } catch (Exception e) {
+        }
+        if (file == null || !file.exists()) { // no volume, then look for metadata*.dim
             File selectedMetadataFile = folder.getFile(SpotConstants.SPOTSCENE_METADATA_FILE);
             logger.info("Read metadata file " + selectedMetadataFile.getName());
             SpotDimapMetadata metadata = XmlMetadata.create(SpotDimapMetadata.class, selectedMetadataFile);
