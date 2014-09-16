@@ -49,14 +49,9 @@ public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
         }
 
         for (String fName : list) {
-            try {
-                File file = virtualDir.getFile(fName);
-                if (isMetadataFile(file)) {
+                if (isMetadataFile(fName)) {
                     return DecodeQualification.INTENDED;
                 }
-            } catch (IOException ignore) {
-                // file is broken, but be tolerant here
-            }
         }
         // didn't find the expected metadata file
         return DecodeQualification.UNABLE;
@@ -139,9 +134,9 @@ public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
                 || extension.contains("gz");
     }
 
-    private static boolean isMetadataFile(File file)
+    private static boolean isMetadataFile(String file)
     {
-        return (file.getName().toLowerCase().endsWith(".dim"));
+        return (file.toLowerCase().endsWith(".dim"));
     }
 
     /**
