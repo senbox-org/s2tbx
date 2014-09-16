@@ -1,10 +1,10 @@
 package org.esa.beam.dataio.spot.internal;
 
-import com.sun.xml.internal.xsom.XSElementDecl;
-import com.sun.xml.internal.xsom.XSSchema;
-import com.sun.xml.internal.xsom.XSSchemaSet;
-import com.sun.xml.internal.xsom.XSType;
-import com.sun.xml.internal.xsom.parser.XSOMParser;
+import com.sun.xml.xsom.XSElementDecl;
+import com.sun.xml.xsom.XSSchema;
+import com.sun.xml.xsom.XSSchemaSet;
+import com.sun.xml.xsom.XSType;
+import com.sun.xml.xsom.parser.XSOMParser;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.util.logging.BeamLogManager;
 import org.xml.sax.EntityResolver;

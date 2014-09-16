@@ -1,0 +1,9 @@
+{
+    "testProducts": [
+        {
+            "id": "Spot4View-DLR70",
+            "relativePath": "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP",
+            "description": "Spot4View product in an archive"
+        }
+    ]
+}

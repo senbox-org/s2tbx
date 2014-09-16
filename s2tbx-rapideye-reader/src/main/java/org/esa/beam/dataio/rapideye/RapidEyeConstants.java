@@ -31,6 +31,7 @@ public class RapidEyeConstants {
                                                                        ".*_metadata\\.xml",
                                                                        /*".*_udm\\.(tif|tiff)",
                                                                        ".*_browse\\.(tif|tiff)"*/};
+    public static final String NOT_L3_FILENAME_PATTERN = ".*\\.ntf";
     public static final String L1_FILENAME_PATTERNS_ALL = "(.*\\.zip)|(.*_band[1-6]\\.ntf)|(*_metadata\\.xml)";
     public static final String METADATA_FILE_SUFFIX = "metadata.xml";
     public static final String BROWSE_FILE_SUFFIX = "browse.tif";

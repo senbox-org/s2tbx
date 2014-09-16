@@ -25,25 +25,29 @@ public class RapidEyeL1ReaderPlugin implements ProductReaderPlugIn {
         DecodeQualification qualification = DecodeQualification.UNABLE;
         File file = new File(input.toString());
         String fileName = file.getName().toLowerCase();
+        String[] files = null;
         if (fileName.endsWith(".zip")) {
-            qualification = DecodeQualification.SUITABLE;
+            try {
+                files = RapidEyeReader.getInput(input).list(".");
+            } catch (IOException e) {//if the content files cannot be listed, the plugin will return unable!
+            }
         } else if (fileName.endsWith(RapidEyeConstants.METADATA_FILE_SUFFIX)) {
             File folder = file.getParentFile();
-            File[] files = folder.listFiles();
-            if (files != null) {
-                boolean consistentProduct = true;
-                for (String namePattern : RapidEyeConstants.L1_FILENAME_PATTERNS) {
-                    if (!namePattern.endsWith("zip")) {
-                        boolean patternMatched = false;
-                        for (File f : files) {
-                            patternMatched |= f.getName().matches(namePattern);
-                        }
-                        consistentProduct &= patternMatched;
+            files = folder.list();
+        }
+        if (files != null) {
+            boolean consistentProduct = true;
+            for (String namePattern : RapidEyeConstants.L1_FILENAME_PATTERNS) {
+                if (!namePattern.endsWith("zip")) {
+                    boolean patternMatched = false;
+                    for (String f : files) {
+                        patternMatched |= f.matches(namePattern);
                     }
+                    consistentProduct &= patternMatched;
                 }
-                if (consistentProduct)
-                    qualification = DecodeQualification.INTENDED;
             }
+            if (consistentProduct)
+                qualification = DecodeQualification.INTENDED;
         }
         return qualification;
     }
@@ -69,38 +73,6 @@ public class RapidEyeL1ReaderPlugin implements ProductReaderPlugIn {
     public BeamFileFilter getProductFileFilter() {
         //return new BeamFileFilter(RapidEyeConstants.L1_FORMAT_NAMES[0], RapidEyeConstants.DEFAULT_EXTENSIONS[0], RapidEyeConstants.L1_DESCRIPTION);
         return new RapidEyeL1Filter();
-    }
-
-    static ZipVirtualDir getInput(Object input) throws IOException {
-        File inputFile = getFileInput(input);
-
-        if (inputFile.isFile() && !isCompressedFile(inputFile)) {
-            final File absoluteFile = inputFile.getAbsoluteFile();
-            inputFile = absoluteFile.getParentFile();
-            if (inputFile == null) {
-                throw new IOException(String.format("Unable to retrieve parent to file %s.", absoluteFile.getAbsolutePath()));
-            }
-        }
-
-        return new ZipVirtualDir(inputFile);
-    }
-
-    static File getFileInput(Object input) {
-        if (input instanceof String) {
-            return new File((String) input);
-        } else if (input instanceof File) {
-            return (File) input;
-        }
-        return null;
-    }
-
-    static boolean isCompressedFile(File file) {
-        boolean retVal = false;
-        String extension = FileUtils.getExtension(file);
-        if (!StringUtils.isNullOrEmpty(extension)) {
-            retVal = extension.toLowerCase().contains("zip");
-        }
-        return retVal;
     }
 
     /**

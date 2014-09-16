@@ -1,0 +1,132 @@
+{
+    "id": "Spot3-MUL-L1A",
+    "decodeQualification": "INTENDED",
+    "expectedContent": {
+        "sceneWidth": 3000,
+        "sceneHeight": 3000,
+        "geoCoding": {
+            "coordinates": [
+                {
+                    "x": 1020,
+                    "y": 200,
+                    "lat": 33.66062,
+                    "lon": 6.6288357
+                },
+                {
+                    "x": 2000,
+                    "y": 2500,
+                    "lat": 33.225346,
+                    "lon": 6.738797
+                }
+            ]
+        },
+        "bands": [
+            {
+                "name": "XS1",
+                "description": "XS1",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "true",
+                "spectralWavelength": "470.0",
+                "spectralBandwidth": "5.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 138.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 138.0
+                    }
+                ]
+            },
+            {
+                "name": "XS2",
+                "description": "XS2",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "true",
+                "spectralWavelength": "590.0",
+                "spectralBandwidth": "5.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 163.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 165.0
+                    }
+                ]
+            },
+            {
+                "name": "XS3",
+                "description": "XS3",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "true",
+                "spectralWavelength": "730.0",
+                "spectralBandwidth": "5.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 162.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 161.0
+                    }
+                ]
+            },
+            {
+                "name": "SWIR",
+                "description": "SWIR",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "true",
+                "spectralWavelength": "1510.0",
+                "spectralBandwidth": "5.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 159.0
+                    },
+                    {
+                        "x": 2214,
+                        "y": 2254,
+                        "value": 155.0
+                    }
+                ]
+            }
+        ],
+        "metadata": [
+            {
+                "path": "SPOTSCENE_1A/Metadata_Id/METADATA_FORMAT",
+                "value": "DIMAP"
+            },
+            {
+                "path": "SPOTSCENE_1A/Metadata_Id/METADATA_PROFILE",
+                "value": "SPOTSCENE_1A"
+            },
+            {
+                 "path": "TIFF Metadata/GeoTIFF Metadata/GeoKeyDirectory/GTModelTypeGeoKey",
+                 "value": "ModelTypeGeographic"
+            },
+            {
+                 "path": "TIFF Metadata/GeoTIFF Metadata/GeoKeyDirectory/GTRasterTypeGeoKey",
+                 "value": "RasterPixelIsPoint"
+            },
+            {
+                 "path": "TIFF Metadata/GeoTIFF Metadata/GeoKeyDirectory/GTCitationGeoKey",
+                 "value": "Uncorrected Satellite Data"
+            },
+            {
+                 "path": "TIFF Metadata/GeoTIFF Metadata/GeoKeyDirectory/GeographicTypeGeoKey",
+                 "value": "GCS_WGS_84"
+            }
+        ]
+    }
+}

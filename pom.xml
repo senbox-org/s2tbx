@@ -5,7 +5,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>0.6.0</version>
+    <version>0.5.0-SNAPSHOT</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/CS-SI/s2tbx</url>
@@ -25,7 +25,6 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snapVersion>0.5.0-SNAPSHOT</snapVersion>
         <snap.version>0.5.0-SNAPSHOT</snap.version>
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
@@ -85,31 +84,31 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-core</artifactId>
-                <version>${snapVersion}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-ui</artifactId>
-                <version>${snapVersion}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-gpf</artifactId>
-                <version>${snapVersion}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-visat-rcp</artifactId>
-                <version>${snapVersion}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-netcdf</artifactId>
-                <version>${snapVersion}</version>
+                <version>${snap.version}</version>
             </dependency>
 
             <dependency>
@@ -242,6 +241,15 @@
             <id>kraftek</id>
             <name>Cosmin Cara</name>
             <email>cosmin.cara@c-s.ro</email>
+            <organization>CS ROMANIA</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>ramonam</id>
+            <name>Ramona Manda</name>
+            <email>ramona.manda@c-s.ro</email>
             <organization>CS ROMANIA</organization>
             <roles>
                 <role>Java Developer</role>
