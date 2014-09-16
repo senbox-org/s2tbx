@@ -45,6 +45,10 @@
                 <checksumPolicy>warn</checksumPolicy>
             </snapshots>
         </repository>
+        <repository>
+            <id>boundless</id>
+            <url>http://repo.boundlessgeo.com</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
