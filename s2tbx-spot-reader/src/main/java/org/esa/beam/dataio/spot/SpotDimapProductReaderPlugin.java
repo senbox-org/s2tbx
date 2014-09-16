@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.spot;
 
+import org.esa.beam.dataio.ProductContentEnforcer;
 import org.esa.beam.dataio.spot.dimap.SpotConstants;
 import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.dataio.DecodeQualification;
@@ -22,40 +23,21 @@ public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        String fileName = new File(input.toString()).getName();
-        if (!isDimapFilename(fileName)) {
-            return DecodeQualification.UNABLE;
-        }
-
+        DecodeQualification retVal = DecodeQualification.UNABLE;
         SpotVirtualDir virtualDir;
         try {
             virtualDir = getInput(input);
-        } catch (IOException e) {
-            return DecodeQualification.UNABLE;
-        }
-
-        if (virtualDir == null) {
-            return DecodeQualification.UNABLE;
-        }
-
-        String[] list;
-        try {
-            list = virtualDir.list("");
-            if (list == null || list.length == 0) {
-                return DecodeQualification.UNABLE;
+            if (virtualDir != null) {
+                String[] allFiles = virtualDir.listAll();
+                ProductContentEnforcer enforcer = ProductContentEnforcer.create(SpotConstants.DIMAP_MINIMAL_PRODUCT_PATTERNS);
+                if (enforcer.isConsistent(allFiles)) {
+                    retVal = DecodeQualification.INTENDED;
+                }
             }
         } catch (IOException e) {
-            return DecodeQualification.UNABLE;
+            retVal = DecodeQualification.UNABLE;
         }
-
-        for (String fName : list) {
-                if (isMetadataFile(fName)) {
-                    return DecodeQualification.INTENDED;
-                }
-        }
-        // didn't find the expected metadata file
-        return DecodeQualification.UNABLE;
-
+        return retVal;
     }
 
     @Override

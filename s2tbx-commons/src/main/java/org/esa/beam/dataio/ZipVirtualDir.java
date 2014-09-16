@@ -6,7 +6,10 @@ import org.esa.beam.util.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * This is an extension of com.bc.ceres.core.VirtualDir class for
@@ -112,6 +115,28 @@ public class ZipVirtualDir {
         return wrappedVirtualDir.list(path);
     }
 
+    public String[] listAll() {
+        List<String> fileNames = new ArrayList<String>();
+        if (wrappedVirtualDir != null) {
+            String path = wrappedVirtualDir.getBasePath();
+            if (path.toLowerCase().endsWith(".zip")) {
+                try {
+                    ZipFile zipFile = new ZipFile(path);
+                    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                    while (entries.hasMoreElements()) {
+                        fileNames.add(entries.nextElement().getName().toLowerCase());
+                    }
+                    zipFile.close();
+                } catch (IOException e) {
+                    // cannot open zip, list will be empty
+                }
+            } else {
+                listFiles(new File(path), fileNames);
+            }
+        }
+        return fileNames.toArray(new String[fileNames.size()]);
+    }
+
     /**
      * Tries to findFirst the first file that contains the given string.
      *
@@ -184,5 +209,18 @@ public class ZipVirtualDir {
      */
     protected boolean correctCapitalisation() throws IOException {
         return (shouldConvertCase = false);
+    }
+
+    private void listFiles(File parent, List<String> outList) {
+        if (parent.isFile())
+            return;
+        File[] files = parent.listFiles();
+        for(File file : files) {
+            if(file.isFile())
+                outList.add(file.getName().toLowerCase());
+            else {
+                listFiles(file, outList);
+            }
+        }
     }
 }
