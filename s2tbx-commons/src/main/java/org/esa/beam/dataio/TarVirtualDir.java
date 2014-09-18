@@ -8,6 +8,8 @@ import org.xeustechnologies.jtar.TarHeader;
 import org.xeustechnologies.jtar.TarInputStream;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,6 +24,7 @@ public class TarVirtualDir extends VirtualDir {
     private File extractDir;
     private FutureTask<Void> unpackTask;
     private ExecutorService executor;
+    private boolean unpackStarted = false;
 
     private class UnpackProcess implements Callable<Void> {
 
@@ -40,7 +43,7 @@ public class TarVirtualDir extends VirtualDir {
         extractDir = null;
         unpackTask = new FutureTask<Void>(new UnpackProcess());
         executor = Executors.newSingleThreadExecutor();
-        executor.execute(unpackTask);
+        //executor.execute(unpackTask);
     }
 
     public static String getFilenameFromPath(String path) {
@@ -74,6 +77,7 @@ public class TarVirtualDir extends VirtualDir {
     @Override
     public File getFile(String path) throws IOException {
         //ensureUnpacked();
+        ensureUnpackedStarted();
         try {
             while (!unpackTask.isDone()) {
                 Thread.sleep(100);
@@ -123,6 +127,7 @@ public class TarVirtualDir extends VirtualDir {
 
     @Override
     public File getTempDir() throws IOException {
+        ensureUnpackedStarted();
         return extractDir;
     }
 
@@ -215,6 +220,56 @@ public class TarVirtualDir extends VirtualDir {
             if (!targetDir.mkdirs()) {
                 throw new IOException("unable to create directory: " + targetDir.getAbsolutePath());
             }
+        }
+    }
+
+    public String[] listAll(){
+        List<String> fileNames = new ArrayList<String>();
+        TarInputStream tis = null;
+        try {
+            if (isTgz(archiveFile.getName())) {
+                tis = new TarInputStream(
+                        new GZIPInputStream(new BufferedInputStream(new FileInputStream(archiveFile))));
+            } else {
+                tis = new TarInputStream(new BufferedInputStream(new FileInputStream(archiveFile)));
+            }
+            TarEntry entry;
+
+            String longLink = null;
+            while ((entry = tis.getNextEntry()) != null) {
+                String entryName = entry.getName();
+                boolean entryIsLink = entry.getHeader().linkFlag == TarHeader.LF_LINK || entry.getHeader().linkFlag == LF_SPEC_LINK;
+                if (longLink != null && longLink.startsWith(entryName)) {
+                    entryName = longLink;
+                    longLink = null;
+                }
+                //if the entry is a link, must be saved, since the name of the next entry depends on this
+                if (entryIsLink) {
+                    final byte data[] = new byte[1024 * 1024];
+                    int count;
+                    while ((count = tis.read(data)) != -1) {
+                        longLink = (longLink == null ? "" : longLink) + new String(data, 0, count);
+                    }
+                } else {
+                    longLink = null;
+                    fileNames.add(entryName);
+                }
+                //the last character is \u0000, so it must be removed
+                if (longLink != null) {
+                    longLink = longLink.substring(0, longLink.length() - 1);
+                }
+            }
+        } catch (IOException e) {
+            // cannot open/read tar, list will be empty
+            fileNames = new ArrayList<String>();
+        }
+        return fileNames.toArray(new String[fileNames.size()]);
+    }
+
+    public void ensureUnpackedStarted(){
+        if(!unpackStarted){
+            unpackStarted = true;
+            executor.execute(unpackTask);
         }
     }
 }
