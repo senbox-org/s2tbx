@@ -22,6 +22,7 @@ import java.util.zip.ZipFile;
  */
 public class ZipVirtualDir {
     protected boolean isZipFile;
+    protected boolean isTarFile;
     protected boolean shouldConvertCase;
     protected String unnecessaryPath;
     protected VirtualDir wrappedVirtualDir;
@@ -37,9 +38,15 @@ public class ZipVirtualDir {
             throw new IllegalArgumentException("Input file shall not be null");
         }
         wrappedVirtualDir = VirtualDir.create(source);
-        if (wrappedVirtualDir == null)
-            throw new IOException("Failed to open " + source.getName());
+        if (wrappedVirtualDir == null) {
+            //try to open as a tar!
+            wrappedVirtualDir = new TarVirtualDir(source);
+            if (wrappedVirtualDir == null) {
+                throw new IOException("Failed to open " + source.getName());
+            }
+        }
         isZipFile = isZip(source.getName());
+        isTarFile = isTar(source.getName());
         unnecessaryPath = "";
         if (isZipFile) {
             correctCapitalisation();
@@ -55,7 +62,7 @@ public class ZipVirtualDir {
      */
     public File getFile(String relativePath) throws IOException {
         String pathSeparator;
-        if (!isZipFile) {
+        if (!isZipFile && !isTarFile) {
             pathSeparator = "\\\\";
             relativePath = relativePath.replaceAll("/", "\\\\");
         } else {
@@ -93,15 +100,10 @@ public class ZipVirtualDir {
         if (index > 0) {//if the file was found (meaning the index is not 0), then the last path separator should be removed!
             newRelativePath = newRelativePath.substring(0, newRelativePath.length() - pathSeparator.length());
         }
-        return wrappedVirtualDir.getFile(newRelativePath);
-        /*if (!isZipFile) {
-            relativePath = relativePath.replaceAll("/", "\\\\");
-        } else {
-            if (unnecessaryPath != null && !relativePath.startsWith(unnecessaryPath)) {
-                relativePath = unnecessaryPath + "/" + relativePath;
-            }
+        if (index == 0) {
+            throw new IOException();
         }
-        return shouldConvertCase ? wrappedVirtualDir.getFile(relativePath.toUpperCase()) : wrappedVirtualDir.getFile(relativePath);*/
+        return wrappedVirtualDir.getFile(newRelativePath);
     }
 
     /**
@@ -118,8 +120,11 @@ public class ZipVirtualDir {
     public String[] listAll() {
         List<String> fileNames = new ArrayList<String>();
         if (wrappedVirtualDir != null) {
+            if (isTarFile) {
+                return ((TarVirtualDir) wrappedVirtualDir).listAll();
+            }
             String path = wrappedVirtualDir.getBasePath();
-            if (path.toLowerCase().endsWith(".zip")) {
+            if (isZipFile) {
                 try {
                     ZipFile zipFile = new ZipFile(path);
                     Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -195,8 +200,17 @@ public class ZipVirtualDir {
         return (".zip".equals(extension) || ".ZIP".equals(extension));
     }
 
+    static boolean isTar(String filename) {
+        final String extension = FileUtils.getExtension(filename);
+        return (".tgz".equals(extension) || ".TGZ".equals(extension));
+    }
+
     public boolean isThisZipFile() {
         return this.isZipFile;
+    }
+
+    public boolean isThisTarFile() {
+        return this.isTarFile;
     }
 
     /**
@@ -215,12 +229,20 @@ public class ZipVirtualDir {
         if (parent.isFile())
             return;
         File[] files = parent.listFiles();
-        for(File file : files) {
-            if(file.isFile())
-                outList.add(file.getName().toLowerCase());
+        for (File file : files) {
+            if (file.isFile())
+                outList.add(new File(wrappedVirtualDir.getBasePath()).toURI().relativize(file.toURI()).getPath().toLowerCase());
             else {
                 listFiles(file, outList);
             }
         }
+    }
+
+    public String getBasePath() {
+        return wrappedVirtualDir.getBasePath();
+    }
+
+    public File getTempDir() throws IOException {
+        return wrappedVirtualDir.getTempDir();
     }
 }
