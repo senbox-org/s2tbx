@@ -1,7 +1,9 @@
 package org.esa.beam.dataio.spot;
 
 import com.bc.ceres.core.VirtualDir;
+import org.esa.beam.dataio.ProductContentEnforcer;
 import org.esa.beam.dataio.TarVirtualDir;
+import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.spot.dimap.SpotConstants;
 import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
@@ -31,11 +33,7 @@ public class SpotTake5ProductReaderPlugin implements ProductReaderPlugIn {
         return isMatch;
     }
 
-    private static boolean isMetadataFile(File file) {
-        return (!file.getName().toLowerCase().endsWith(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
-    }
-
-    static VirtualDir getInput(Object input) throws IOException {
+    static ZipVirtualDir getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
 
         if (inputFile.isFile() && !isCompressedFile(inputFile)) {
@@ -46,10 +44,7 @@ public class SpotTake5ProductReaderPlugin implements ProductReaderPlugIn {
             }
         }
 
-        VirtualDir virtualDir = VirtualDir.create(inputFile);
-        if (virtualDir == null) {
-            virtualDir = new TarVirtualDir(inputFile);
-        }
+        ZipVirtualDir virtualDir = new ZipVirtualDir(inputFile);
         return virtualDir;
     }
 
@@ -78,45 +73,21 @@ public class SpotTake5ProductReaderPlugin implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        String fileName = new File(input.toString()).getName();
-        if (!(isSpotTake5Filename(fileName))) {
-            return DecodeQualification.UNABLE;
-        }
-
-        VirtualDir virtualDir;
+        DecodeQualification retVal = DecodeQualification.UNABLE;
+        ZipVirtualDir virtualDir;
         try {
             virtualDir = getInput(input);
-        } catch (IOException e) {
-            return DecodeQualification.UNABLE;
-        }
-
-        if (virtualDir == null) {
-            return DecodeQualification.UNABLE;
-        }
-
-        String[] list;
-        try {
-            list = virtualDir.list("");
-            if (list == null || list.length == 0) {
-                return DecodeQualification.UNABLE;
-            }
-        } catch (IOException e) {
-            return DecodeQualification.UNABLE;
-        }
-
-        for (String fName : list) {
-            try {
-                File file = virtualDir.getFile(fName);
-                if (isMetadataFile(file)) {
-                    return DecodeQualification.INTENDED;
+            if (virtualDir != null) {
+                String[] allFiles = virtualDir.listAll();
+                ProductContentEnforcer enforcer = ProductContentEnforcer.create(SpotConstants.SPOTTAKE5_MINIMAL_PRODUCT_PATTERNS);
+                if (enforcer.isConsistent(allFiles)) {
+                    retVal = DecodeQualification.INTENDED;
                 }
-            } catch (IOException ignore) {
-                // file is broken, but be tolerant here
             }
+        } catch (IOException e) {
+            retVal = DecodeQualification.UNABLE;
         }
-        // didn't find the expected metadata file
-        return DecodeQualification.UNABLE;
-
+        return retVal;
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.esa.beam.dataio.spot;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.core.VirtualDir;
 import org.esa.beam.dataio.TarVirtualDir;
+import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.geotiff.GeoTiffProductReader;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
@@ -36,7 +37,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
 
     private final Logger logger;
     private SpotTake5Metadata imageMetadata;
-    private VirtualDir input;
+    private ZipVirtualDir input;
     private final Map<Band, GeoTiffProductReader> readerMap;
     private final Map<Band, Band> bandMap;
 
@@ -54,7 +55,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
     @Override
     public TreeNode<File> getProductComponents() {
         TreeNode<File> result = super.getProductComponents();
-        if (input.getClass().equals(TarVirtualDir.class)) {
+        if (input.isThisZipFile() || input.isThisTarFile()) {
             return result;
         } else {
             for(String inputFile: imageMetadata.getTiffFiles().values()){
@@ -84,7 +85,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         input = SpotTake5ProductReaderPlugin.getInput(getInput());
         File imageMetadataFile = null;
         String metaSubFolder = "";
-        if (input.getClass().equals(TarVirtualDir.class)) {
+        if (input.isThisTarFile()) {
             //if the input is an archive, check the metadata file as being the name of the archive, followed by ".xml", right under the unpacked archive folder
             String path = input.getBasePath();
             String metaFile = path.substring(path.lastIndexOf("\\") + 1, path.lastIndexOf("."));
@@ -92,7 +93,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 imageMetadataFile = input.getFile(metaFile + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
             } catch (Exception ex) {
                 //if the metadata is not found as described above, the subfolders as checked, and for each subfolder, an xml file with the same name as the subfolder is searched
-                ((TarVirtualDir) input).ensureUnpacked();
+                //((TarVirtualDir) input).ensureUnpacked();
                 for (String entrySubFolder : input.getTempDir().list()) {
                     if (new File(input.getTempDir(), entrySubFolder).isDirectory()) {
                         try {

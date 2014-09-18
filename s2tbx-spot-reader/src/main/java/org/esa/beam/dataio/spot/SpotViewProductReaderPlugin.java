@@ -1,7 +1,9 @@
 package org.esa.beam.dataio.spot;
 
+import org.esa.beam.dataio.ProductContentEnforcer;
 import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.spot.dimap.SpotConstants;
+import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
@@ -23,45 +25,21 @@ public class SpotViewProductReaderPlugin implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        String fileName = new File(input.toString()).getName();
-        if (!isSpotViewFilename(fileName)) {
-            return DecodeQualification.UNABLE;
-        }
-
+        DecodeQualification retVal = DecodeQualification.UNABLE;
         ZipVirtualDir virtualDir;
         try {
             virtualDir = getInput(input);
-        } catch (IOException e) {
-            return DecodeQualification.UNABLE;
-        }
-
-        if (virtualDir == null) {
-            return DecodeQualification.UNABLE;
-        }
-
-        String[] list;
-        try {
-            list = virtualDir.list("");
-            if (list == null || list.length == 0) {
-                return DecodeQualification.UNABLE;
-            }
-        } catch (IOException e) {
-            return DecodeQualification.UNABLE;
-        }
-
-        for (String fName : list) {
-            try {
-                File file = virtualDir.getFile(fName);
-                if (isMetadataFile(file)) {
-                    return DecodeQualification.INTENDED;
+            if (virtualDir != null) {
+                String[] allFiles = virtualDir.listAll();
+                ProductContentEnforcer enforcer = ProductContentEnforcer.create(SpotConstants.SPOTVIEW_MINIMAL_PRODUCT_PATTERNS);
+                if (enforcer.isConsistent(allFiles)) {
+                    retVal = DecodeQualification.INTENDED;
                 }
-            } catch (IOException ignore) {
-                // file is broken, but be tolerant here
             }
+        } catch (IOException e) {
+            retVal = DecodeQualification.UNABLE;
         }
-        // didn't find the expected metadata file
-        return DecodeQualification.UNABLE;
-
+        return retVal;
     }
 
     @Override

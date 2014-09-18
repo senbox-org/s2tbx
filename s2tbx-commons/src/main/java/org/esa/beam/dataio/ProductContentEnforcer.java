@@ -30,7 +30,7 @@ public class ProductContentEnforcer {
             for (String pattern : minimalFilePatternList) {
                 boolean localMatch = false;
                 for (String fileName : fileNames) {
-                    localMatch = fileName.matches(pattern);
+                    localMatch = fileName.toLowerCase().matches(pattern);
                     if (localMatch)
                         break;
                 }

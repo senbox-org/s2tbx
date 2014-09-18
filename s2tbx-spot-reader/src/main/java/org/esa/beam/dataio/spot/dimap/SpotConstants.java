@@ -140,12 +140,10 @@ public class SpotConstants {
             "SPOT-5_\\d+\\.{0,1}\\d*m[a-z]{1,2}_\\d[a-z]*.(zip|ZIP)",
             "(vol_list|VOL_LIST)\\.(dim|DIM)",
             "(metadata|METADATA)\\.(dim|DIM)" };
-
     public static final String[] DIMAP_MINIMAL_PRODUCT_PATTERNS = new String[] {
         "vol_list\\.dim",
-        "scene\\d{2}[/\\]metadata\\.dim",
-        "scene\\d{2}[/\\]imagery\\.tif",
-    };
+        "(scene\\d{2}[/\\\\]metadata\\.dim)|(spview((\\d*_)\\d*)*[/\\\\]metadata(_\\d)*.dim)",
+        "(scene\\d{2}[/\\\\]imagery\\.tif)|((spview((\\d*_)\\d*)*[/\\\\]imagery(_\\d)*.tif))"};
 
     public static final Class[] SPOTVIEW_READER_INPUT_TYPES = new Class[]{String.class, File.class};
     public static final String SPOTVIEW_DESCRIPTION = "SPOTView (not DIMAP) Data Products";
@@ -156,6 +154,11 @@ public class SpotConstants {
             "SP05_HRG\\d{1}_X__1O_\\d{8}T\\d{6}_\\d{8}T\\d{6}_(DLR|MET)_\\d{2,3}_PREU.BIL\\.(zip|ZIP)",
             "(metadata|METADATA)\\.(xml|XML)"};
     public static final String SPOTVIEW_METADATA_FILE = "metadata.xml";
+    public static final String[] SPOTVIEW_MINIMAL_PRODUCT_PATTERNS = new String[] {
+            SPOTVIEW_METADATA_FILE,
+            SPOTVIEW_RASTER_FILENAME,
+            SPOTVIEW_GEOLAYER_FILENAME};
+
     //take5:
     public static final Class[] SPOT4_TAKE5_READER_INPUT_TYPES = new Class[]{String.class, File.class};
     public static final String SPOT4_TAKE5_DESCRIPTION = "SPOTTake5 Data Products";
@@ -164,6 +167,9 @@ public class SpotConstants {
     public static final String[] SPOT4_TAKE5_FILENAME_PATTERNS = new String[] {
             "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC](_.+){0,1}\\.(tgz|TGZ)",
             "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC](_.+){0,1}\\.(xml|XML)"};
+    public static final String[] SPOTTAKE5_MINIMAL_PRODUCT_PATTERNS = new String[] {
+            "(.+[/\\\\]){0,1}spot4_hrvir1_xs_.*\\.xml",
+            "(.+[/\\\\]){0,1}spot4_hrvir1_xs_.*\\.tif"};
 
     public static final String SPOT4_TAKE5_TAG_METADATA = "METADATA";
     public static final String SPOT4_TAKE5_TAG_RADIOMETRY = "RADIOMETRY";
