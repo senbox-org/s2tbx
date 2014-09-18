@@ -23,10 +23,12 @@
 package nitf;
 
 import org.esa.beam.dataio.NativeLibraryLoader;
+import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.logging.Level;
 
 /**
  * The Base NITF Object
@@ -54,7 +56,7 @@ public abstract class NITFObject
 			String path;
 			try {
 				path = NITFObject.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-				path = URLDecoder.decode((new File(path).getParent()), "UTF-8");
+				path = URLDecoder.decode(path, "UTF-8");
 			} catch (UnsupportedEncodingException x) {
 				throw new UnsatisfiedLinkError();
 			}	

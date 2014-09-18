@@ -4,14 +4,15 @@ import org.esa.beam.util.logging.BeamLogManager;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.*;
+import java.net.URLDecoder;
 
 /**
  * Simple library class for working with JNI (Java Native Interface)
  *
- * @see "http://frommyplayground.com/how-to-load-native-jni-library-from-jar"
  * @author Adam Heirnich <adam@adamh.cz>, http://www.adamh.cz
  * @author Slightly modified by Cosmin Cara <cosmin.cara@c-s.ro> to work with file system libraries,
- *          and also to detect the OS and processor type.
+ *         and also to detect the OS and processor type.
+ * @see "http://frommyplayground.com/how-to-load-native-jni-library-from-jar"
  */
 public class NativeLibraryLoader {
 
@@ -23,12 +24,12 @@ public class NativeLibraryLoader {
 
     /**
      * Loads library either from the current JAR archive, or from file system
-     *
+     * <p/>
      * The file from JAR is copied into system temporary directory and then loaded. The temporary file is deleted after exiting.
      * Method uses String as filename because the pathname is "abstract", not system-dependent.
      *
      * @param path The filename inside JAR as absolute path (beginning with '/'), e.g. /package/File.ext
-     * @throws IOException If temporary file creation or read/write operation fails
+     * @throws IOException              If temporary file creation or read/write operation fails
      * @throws IllegalArgumentException If source file (param path) does not exist
      * @throws IllegalArgumentException If the filename is shorter than three characters (restriction of {@see File#createTempFile(java.lang.String, java.lang.String)}).
      */
@@ -46,7 +47,7 @@ public class NativeLibraryLoader {
         if (filename != null) {
             parts = filename.split("\\.", 2);
             prefix = parts[0];
-            suffix = (parts.length > 1) ? "."+parts[parts.length - 1] : null; // Thanks, davs! :-)
+            suffix = (parts.length > 1) ? "." + parts[parts.length - 1] : null; // Thanks, davs! :-)
         }
         // Check if the filename is okay
         if (filename == null || prefix.length() < 3) {
@@ -62,7 +63,7 @@ public class NativeLibraryLoader {
         if (is == null) {
             // maybe we are not inside a JAR
             try {
-                String parentPath = NativeLibraryLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+                String parentPath = URLDecoder.decode(NativeLibraryLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "UTF-8");
                 File test = new File(parentPath + "/lib");
 
                 if (test.exists())
@@ -97,15 +98,15 @@ public class NativeLibraryLoader {
             final String libraryPrefix = prefix;
             final String lockSuffix = ".lock";
             // create lock file
-            final File lock = new File( temp.getAbsolutePath() + lockSuffix);
+            final File lock = new File(temp.getAbsolutePath() + lockSuffix);
             lock.createNewFile();
             lock.deleteOnExit();
             // file filter for library file (without .lock files)
             FileFilter tmpDirFilter = new FileFilter() {
-                public boolean accept(File pathname)
-                {
-                    return pathname.getName().startsWith( libraryPrefix) && !pathname.getName().endsWith( lockSuffix);
-                }};
+                public boolean accept(File pathname) {
+                    return pathname.getName().startsWith(libraryPrefix) && !pathname.getName().endsWith(lockSuffix);
+                }
+            };
 
             // get all library files from temp folder
             String tmpDirName = System.getProperty("java.io.tmpdir");
