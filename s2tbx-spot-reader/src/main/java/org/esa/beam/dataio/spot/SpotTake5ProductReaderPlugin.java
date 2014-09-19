@@ -36,7 +36,7 @@ public class SpotTake5ProductReaderPlugin implements ProductReaderPlugIn {
     static ZipVirtualDir getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
 
-        if (inputFile.isFile() && !isCompressedFile(inputFile)) {
+        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
             final File absoluteFile = inputFile.getAbsoluteFile();
             inputFile = absoluteFile.getParentFile();
             if (inputFile == null) {
@@ -55,20 +55,6 @@ public class SpotTake5ProductReaderPlugin implements ProductReaderPlugIn {
             return (File) input;
         }
         return null;
-    }
-
-    private static boolean isCompressedFile(File file) {
-        String extension = FileUtils.getExtension(file);
-        if (StringUtils.isNullOrEmpty(extension)) {
-            return false;
-        }
-
-        extension = extension.toLowerCase();
-
-        return extension.contains("zip")
-                || extension.contains("tar")
-                || extension.contains("tgz")
-                || extension.contains("gz");
     }
 
     @Override

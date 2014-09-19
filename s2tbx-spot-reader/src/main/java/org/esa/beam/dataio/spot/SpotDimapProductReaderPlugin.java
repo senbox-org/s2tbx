@@ -1,6 +1,7 @@
 package org.esa.beam.dataio.spot;
 
 import org.esa.beam.dataio.ProductContentEnforcer;
+import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.spot.dimap.SpotConstants;
 import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.dataio.DecodeQualification;
@@ -83,7 +84,7 @@ public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
     static SpotVirtualDir getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
 
-        if (inputFile.isFile() && !isCompressedFile(inputFile)) {
+        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
             final File absoluteFile = inputFile.getAbsoluteFile();
             inputFile = absoluteFile.getParentFile();
             if (inputFile == null) {
@@ -100,20 +101,6 @@ public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
             return (File) input;
         }
         return null;
-    }
-
-    private static boolean isCompressedFile(File file) {
-        String extension = FileUtils.getExtension(file);
-        if (StringUtils.isNullOrEmpty(extension)) {
-            return false;
-        }
-
-        extension = extension.toLowerCase();
-
-        return extension.contains("zip")
-                || extension.contains("tar")
-                || extension.contains("tgz")
-                || extension.contains("gz");
     }
 
     private static boolean isMetadataFile(String file)

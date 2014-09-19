@@ -222,19 +222,10 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         return null;
     }
 
-    static boolean isCompressedFile(File file) {
-        boolean retVal = false;
-        String extension = FileUtils.getExtension(file);
-        if (!StringUtils.isNullOrEmpty(extension)) {
-            retVal = extension.toLowerCase().contains("zip");
-        }
-        return retVal;
-    }
-
     static ZipVirtualDir getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
 
-        if (inputFile.isFile() && !isCompressedFile(inputFile)) {
+        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
             final File absoluteFile = inputFile.getAbsoluteFile();
             inputFile = absoluteFile.getParentFile();
             if (inputFile == null) {

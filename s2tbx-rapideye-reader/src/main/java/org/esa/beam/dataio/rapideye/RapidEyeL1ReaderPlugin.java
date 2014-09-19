@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.rapideye;
 
+import org.esa.beam.dataio.ProductContentEnforcer;
 import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
@@ -20,36 +21,46 @@ import java.util.Locale;
  */
 public class RapidEyeL1ReaderPlugin implements ProductReaderPlugIn {
 
+    public static final ProductContentEnforcer enforcer = ProductContentEnforcer.create(RapidEyeConstants.L1_MINIMAL_PRODUCT_PATTERNS);
+
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        DecodeQualification qualification = DecodeQualification.UNABLE;
-        File file = new File(input.toString());
-        String fileName = file.getName().toLowerCase();
-        String[] files = null;
-        if (fileName.endsWith(".zip")) {
-            try {
-                files = RapidEyeReader.getInput(input).list(".");
-            } catch (IOException e) {//if the content files cannot be listed, the plugin will return unable!
-            }
-        } else if (fileName.endsWith(RapidEyeConstants.METADATA_FILE_SUFFIX)) {
-            File folder = file.getParentFile();
-            files = folder.list();
-        }
-        if (files != null) {
-            boolean consistentProduct = true;
-            for (String namePattern : RapidEyeConstants.L1_FILENAME_PATTERNS) {
-                if (!namePattern.endsWith("zip")) {
-                    boolean patternMatched = false;
-                    for (String f : files) {
-                        patternMatched |= f.matches(namePattern);
-                    }
-                    consistentProduct &= patternMatched;
+        DecodeQualification retVal = DecodeQualification.UNABLE;
+        ZipVirtualDir virtualDir;
+        try {
+            virtualDir = getInput(input);
+            if (virtualDir != null) {
+                String[] allFiles = virtualDir.listAll();
+                if (enforcer.isConsistent(allFiles)) {
+                    retVal = DecodeQualification.INTENDED;
                 }
             }
-            if (consistentProduct)
-                qualification = DecodeQualification.INTENDED;
+        } catch (IOException e) {
+            retVal = DecodeQualification.UNABLE;
         }
-        return qualification;
+        return retVal;
+    }
+
+    static ZipVirtualDir getInput(Object input) throws IOException {
+        File inputFile = getFileInput(input);
+
+        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
+            final File absoluteFile = inputFile.getAbsoluteFile();
+            inputFile = absoluteFile.getParentFile();
+            if (inputFile == null) {
+                throw new IOException("Unable to retrieve parent to file: " + absoluteFile.getAbsolutePath());
+            }
+        }
+        return new ZipVirtualDir(inputFile);
+    }
+
+    private static File getFileInput(Object input) {
+        if (input instanceof String) {
+            return new File((String) input);
+        } else if (input instanceof File) {
+            return (File) input;
+        }
+        return null;
     }
 
     @Override

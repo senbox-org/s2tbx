@@ -10,13 +10,19 @@ import java.util.List;
 public class ProductContentEnforcer {
 
     private String[] minimalFilePatternList;
+    private String[] notAcceptedFilePatternList;
 
     public static ProductContentEnforcer create(String[] minimalPatterns) {
-        return new ProductContentEnforcer(minimalPatterns);
+        return new ProductContentEnforcer(minimalPatterns, null);
     }
 
-    private ProductContentEnforcer(String[] patterns) {
-        this.minimalFilePatternList = patterns;
+    public static ProductContentEnforcer create(String[] minimalPatterns, String[] notAcceptedPatterns) {
+        return new ProductContentEnforcer(minimalPatterns, notAcceptedPatterns);
+    }
+
+    private ProductContentEnforcer(String[] requiredPatterns, String[] notAcceptedPatterns) {
+        this.minimalFilePatternList = requiredPatterns;
+        this.notAcceptedFilePatternList = notAcceptedPatterns;
     }
 
     public boolean isConsistent(File input) {
@@ -27,15 +33,7 @@ public class ProductContentEnforcer {
         } else {
             List<String> fileNames = new ArrayList<String>();
             listFiles(input, fileNames);
-            for (String pattern : minimalFilePatternList) {
-                boolean localMatch = false;
-                for (String fileName : fileNames) {
-                    localMatch = fileName.toLowerCase().matches(pattern);
-                    if (localMatch)
-                        break;
-                }
-                retFlag &= localMatch;
-            }
+            retFlag &= isConsistent((String[])fileNames.toArray());
         }
         return retFlag;
     }
@@ -45,6 +43,14 @@ public class ProductContentEnforcer {
         if (minimalFilePatternList == null || minimalFilePatternList.length == 0) {
             retFlag = false;
         } else {
+            if (notAcceptedFilePatternList != null && notAcceptedFilePatternList.length > 0) {
+                for (String pattern : notAcceptedFilePatternList) {
+                    for (String fileName : fileNames) {
+                        if (fileName.toLowerCase().matches(pattern))
+                            return false;
+                    }
+                }
+            }
             for (String pattern : minimalFilePatternList) {
                 boolean localMatch = false;
                 for (String fileName : fileNames) {
@@ -64,8 +70,8 @@ public class ProductContentEnforcer {
         if (parent.isFile())
             return;
         File[] files = parent.listFiles();
-        for(File file : files) {
-            if(file.isFile())
+        for (File file : files) {
+            if (file.isFile())
                 outList.add(file.getName().toLowerCase());
             else {
                 listFiles(file, outList);

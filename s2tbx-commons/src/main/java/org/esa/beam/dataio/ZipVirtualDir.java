@@ -1,6 +1,7 @@
 package org.esa.beam.dataio;
 
 import com.bc.ceres.core.VirtualDir;
+import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.io.FileUtils;
 
 import java.io.File;
@@ -244,5 +245,45 @@ public class ZipVirtualDir {
 
     public File getTempDir() throws IOException {
         return wrappedVirtualDir.getTempDir();
+    }
+
+    public static boolean isCompressedFile(File file) {
+        String extension = FileUtils.getExtension(file);
+        if (StringUtils.isNullOrEmpty(extension)) {
+            return false;
+        }
+
+        extension = extension.toLowerCase();
+
+        return extension.contains("zip")
+                || extension.contains("tar")
+                || extension.contains("tgz")
+                || extension.contains("gz")
+                || extension.contains("rar")
+                || extension.contains("arj")
+                || extension.contains("arc")
+                || extension.contains("as")
+                || extension.contains("b64")
+                || extension.contains("btoa")
+                || extension.contains("bz")
+                || extension.contains("cab")
+                || extension.contains("cpt")
+                || extension.contains("hqx")
+                || extension.contains("iso")
+                || extension.contains("lha")
+                || extension.contains("lzh")
+                || extension.contains("mim")
+                || extension.contains("mme")
+                || extension.contains("pak")
+                || extension.contains("pf")
+                || extension.contains("sea")
+                || extension.contains("sit")
+                || extension.contains("sitx")
+                || extension.contains("tbz")
+                || extension.contains("tbz2")
+                || extension.contains("uu")
+                || extension.contains("uue")
+                || extension.contains("z")
+                || extension.contains("zoo");
     }
 }

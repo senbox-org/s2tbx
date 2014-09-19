@@ -23,6 +23,8 @@ import java.util.Locale;
  */
 public class SpotViewProductReaderPlugin implements ProductReaderPlugIn {
 
+    private static ProductContentEnforcer enforcer = ProductContentEnforcer.create(SpotConstants.SPOTVIEW_MINIMAL_PRODUCT_PATTERNS);
+
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         DecodeQualification retVal = DecodeQualification.UNABLE;
@@ -31,7 +33,6 @@ public class SpotViewProductReaderPlugin implements ProductReaderPlugIn {
             virtualDir = getInput(input);
             if (virtualDir != null) {
                 String[] allFiles = virtualDir.listAll();
-                ProductContentEnforcer enforcer = ProductContentEnforcer.create(SpotConstants.SPOTVIEW_MINIMAL_PRODUCT_PATTERNS);
                 if (enforcer.isConsistent(allFiles)) {
                     retVal = DecodeQualification.INTENDED;
                 }
@@ -83,7 +84,7 @@ public class SpotViewProductReaderPlugin implements ProductReaderPlugIn {
     static ZipVirtualDir getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
 
-        if (inputFile.isFile() && !isCompressedFile(inputFile)) {
+        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
             final File absoluteFile = inputFile.getAbsoluteFile();
             inputFile = absoluteFile.getParentFile();
             if (inputFile == null) {
@@ -101,20 +102,6 @@ public class SpotViewProductReaderPlugin implements ProductReaderPlugIn {
             return (File) input;
         }
         return null;
-    }
-
-    private static boolean isCompressedFile(File file) {
-        String extension = FileUtils.getExtension(file);
-        if (StringUtils.isNullOrEmpty(extension)) {
-            return false;
-        }
-
-        extension = extension.toLowerCase();
-
-        return extension.contains("zip")
-                || extension.contains("tar")
-                || extension.contains("tgz")
-                || extension.contains("gz");
     }
 
     private static boolean isMetadataFile(File file)
