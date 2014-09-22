@@ -1,0 +1,55 @@
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+    <symbolicName>s2tbx-deimos-reader</symbolicName>
+    <version>1.0</version>
+    <name>DEIMOS-1 Product Reader</name>
+
+    <description>Reads DEIMOS-1 products</description>
+
+    <packaging>dir</packaging>
+
+    <dependency>
+        <module>snap-core</module>
+    </dependency>
+    <dependency>
+        <module>snap-geotiff</module>
+    </dependency>
+    <dependency>
+        <module>snap-visat-rcp</module>
+        <optional>true</optional>
+    </dependency>
+    <dependency>
+        <module>s2tbx-commons</module>
+    </dependency>
+
+    <categories>Reader, DEIMOS</categories>
+
+    <extension point="snap-ui:actions">
+        <action>
+            <id>importDEIMOSProduct</id>
+            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <formatName>DEIMOS</formatName>
+            <useAllFileFilter>false</useAllFileFilter>
+            <shortDesc>Import a DEIMOS product</shortDesc>
+            <helpId>myDEIMOSProduct</helpId>
+            <parent>importMultispectral</parent>
+        </action>
+    </extension>
+
+<!--    <extension point="snap-core:rgbProfiles">
+        <rgbProfile>
+            <name>SPOT</name>
+            <red>XS1</red>
+            <green>XS2</green>
+            <blue>XS3</blue>
+        </rgbProfile>
+    </extension>
+
+    <extension point="snap-ui:helpSets">
+        <helpSet>
+            <parent>snap-beam-help</parent>
+            <path>doc/help/spotdimap.hs</path>
+        </helpSet>
+    </extension>-->
+
+</module>
