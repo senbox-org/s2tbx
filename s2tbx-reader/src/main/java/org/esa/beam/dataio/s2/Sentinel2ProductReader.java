@@ -139,18 +139,20 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 HashMap<String, File> tileFileMap = new HashMap<String, File>();
                 for (Tile tile : tileList) {
                     S2GranuleDirFilename gf = S2GranuleDirFilename.create(tile.id);
-                    S2GranuleImageFilename reallyHappy = gf.getImageFilename(bandInformation.physicalBand);
+                    if (gf != null) {
+                        S2GranuleImageFilename reallyHappy = gf.getImageFilename(bandInformation.physicalBand);
 
-                    String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + reallyHappy.name;
+                        String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + reallyHappy.name;
 
-                    //todo use beam login instead of System.err
-                    System.err.println("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
-                    File file = new File(productDir, imgFilename);
-                    if (file.exists()) {
-                        tileFileMap.put(tile.id, file);
-                    } else {
-                        // {@report "missing file"}
-                        System.out.printf("Warning: missing file %s\n", file);
+                        //todo use beam login instead of System.err
+                        System.err.println("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
+                        File file = new File(productDir, imgFilename);
+                        if (file.exists()) {
+                            tileFileMap.put(tile.id, file);
+                        } else {
+                            // {@report "missing file"}
+                            System.out.printf("Warning: missing file %s\n", file);
+                        }
                     }
                 }
 

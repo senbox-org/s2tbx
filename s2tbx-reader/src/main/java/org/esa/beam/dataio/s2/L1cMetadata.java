@@ -8,6 +8,7 @@ import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.util.logging.BeamLogManager;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
@@ -17,6 +18,8 @@ import org.jdom.input.SAXBuilder;
 import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
@@ -32,6 +35,7 @@ public class L1cMetadata {
 
 
     private MetadataElement metadataElement;
+    protected Logger logger = BeamLogManager.getSystemLogger();
 
 
     static class Tile {
@@ -152,7 +156,12 @@ public class L1cMetadata {
                 String theName = aGranuleDir.getMetadataFilename().name;
 
                 File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-                fullTileNamesList.add(nestedGranuleMetadata);
+                if(nestedGranuleMetadata.exists()) {
+                    fullTileNamesList.add(nestedGranuleMetadata);
+                } else {
+                    String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
+                    logger.log(Level.WARNING, errorMessage);
+                }
             }
 
             for(File aGranuleMetadataFile: fullTileNamesList)
