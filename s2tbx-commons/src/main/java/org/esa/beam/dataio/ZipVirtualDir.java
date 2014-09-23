@@ -3,6 +3,7 @@ package org.esa.beam.dataio;
 import com.bc.ceres.core.VirtualDir;
 import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.io.FileUtils;
+import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -130,11 +131,28 @@ public class ZipVirtualDir {
                     ZipFile zipFile = new ZipFile(path);
                     Enumeration<? extends ZipEntry> entries = zipFile.entries();
                     while (entries.hasMoreElements()) {
-                        fileNames.add(entries.nextElement().getName().toLowerCase());
+                        ZipEntry zipEntry = entries.nextElement();
+                        String fileName = zipEntry.getName();//.toLowerCase();
+                        if (isTar(fileName)) {
+                            File file = getFile(fileName);
+                            TarVirtualDir innerTar = new TarVirtualDir(file) {
+                                @Override
+                                public void close() {
+                                }
+                            };
+                            innerTar.ensureUnpacked(wrappedVirtualDir.getTempDir());
+                            String[] tarFiles = innerTar.listAll();
+                            for (String tarFile : tarFiles)
+                                fileNames.add(tarFile);
+                            file.delete();
+                        } else {
+                            fileNames.add(fileName);
+                        }
                     }
                     zipFile.close();
                 } catch (IOException e) {
                     // cannot open zip, list will be empty
+                    BeamLogManager.getSystemLogger().severe(e.getMessage());
                 }
             } else {
                 listFiles(new File(path), fileNames);
@@ -173,7 +191,7 @@ public class ZipVirtualDir {
      */
     public String[] findAll(String pattern) throws IOException {
         List<String> found = new ArrayList<String>();
-        String[] entries = wrappedVirtualDir.list("");
+        String[] entries = listAll(); //wrappedVirtualDir.list("");
         if (entries != null) {
             for (String entry : entries) {
                 if (entry.toLowerCase().contains(pattern)) {
@@ -203,7 +221,7 @@ public class ZipVirtualDir {
 
     static boolean isTar(String filename) {
         final String extension = FileUtils.getExtension(filename);
-        return (".tgz".equals(extension) || ".TGZ".equals(extension));
+        return (".tgz".equalsIgnoreCase(extension) || ".tar".equalsIgnoreCase(extension));
     }
 
     public boolean isThisZipFile() {

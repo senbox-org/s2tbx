@@ -132,8 +132,12 @@ public class TarVirtualDir extends VirtualDir {
     }
 
     public void ensureUnpacked() throws IOException {
+        ensureUnpacked(null);
+    }
+
+    public void ensureUnpacked(File unpackFolder) throws IOException {
         if (extractDir == null) {
-            extractDir = VirtualDir.createUniqueTempDir();
+            extractDir = unpackFolder != null ? unpackFolder : VirtualDir.createUniqueTempDir();
             TarInputStream tis = null;
             OutputStream outStream = null;
             try {
