@@ -55,6 +55,12 @@
             <version>${snap.version}</version>
         </dependency>
 
+	<dependency>
+	    <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-help</artifactId>
+	    <version>${snap.version}</version>
+	</dependency>
+
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-rapideye-reader</artifactId>
@@ -324,42 +330,6 @@
         </dependency>
 
         <!-- SMOS dependencies -->
-
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-dgg</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-ee2netcdf</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-gui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-lsmask</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-tools</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.smostbx</groupId>
-            <artifactId>smostbx-visat</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>bufr</artifactId>
-            <version>4.3.21</version>
-        </dependency>
 
         <!-- S2 dependencies -->
         <dependency>
