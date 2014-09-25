@@ -112,7 +112,6 @@
                 <include>org.esa.snap:*</include>
                 <include>org.esa.s2tbx:*</include>
                 <include>org.esa.s3tbx:*</include>
-                <include>org.esa.smostbx:*</include>
                 <include>ncsa.hdf:lib-hdf</include>
                 <include>gov.nasa.gsfc.seadas:seadas-reader</include>
             </includes>
