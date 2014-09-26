@@ -94,8 +94,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     }
 
     static PlanarImage createScaledImage(PlanarImage sourceImage, S2SpatialResolution resolution, int level) {
-        // todo critical change scaling
-        BeamLogManager.getSystemLogger().info("Asking for scaled image: " + resolution.toString());
+        BeamLogManager.getSystemLogger().fine("Asking for scaled image: " + resolution.toString());
 
         int sourceWidth = sourceImage.getWidth();
         int sourceHeight = sourceImage.getHeight();
@@ -249,8 +248,6 @@ class L1cTileOpImage extends SingleBandedOpImage {
             String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
             String outputFileName = outputFile.getPath();
 
-            logger.warning("Writing to " + outputFileName);
-
             if(inputFileName.length() == 0)
             {
                 inputFileName = imageFile.getPath();
@@ -264,8 +261,6 @@ class L1cTileOpImage extends SingleBandedOpImage {
         }
         else
         {
-            logger.warning("Writing to " + outputFile.getPath());
-
             builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
                     "-i", imageFile.getPath(),
                     "-o", outputFile.getPath(),
@@ -273,7 +268,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
                     "-t", tileIndex + "");
         }
 
-        logger.info(builder.command().toString());
+        logger.fine(builder.command().toString());
         final Process process = builder.directory(cacheDir).start();
 
         try {
