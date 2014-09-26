@@ -141,8 +141,8 @@ public class NativeLibraryLoader {
             }
         } else if (sysName.contains("linux")) {
             ret = "linux";
-        } else if (sysName.contains("solaris")) {
-            ret = "solaris";
+        } else if (sysName.contains("mac")) {
+            ret = "macosx";
         } else {
             throw new NotImplementedException();
         }
