@@ -138,7 +138,6 @@ public class L1cMetadata {
     private L1cMetadata(InputStream stream, File file, String parent) throws DataConversionException
     {
         try {
-
             Level1CUserProduct product = (Level1CUserProduct) L1cMetadataProc.readJaxbFromFilename(stream);
             productCharacteristics = L1cMetadataProc.getProductOrganization(product);
 
