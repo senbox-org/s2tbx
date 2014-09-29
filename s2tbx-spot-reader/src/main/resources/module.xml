@@ -2,9 +2,9 @@
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-spot-reader</symbolicName>
     <version>1.0</version>
-    <name>SPOT DIMAP Product Reader</name>
+    <name>SPOT Product Reader</name>
 
-    <description>Reads SPOT-1 to SPOT-5 DIMAP products</description>
+    <description>Enables SNAP to read SPOT 1-5 data products of type SpotScene or SpotView</description>
 
     <packaging>dir</packaging>
 

@@ -2,10 +2,9 @@
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-reader</symbolicName>
     <version>1.0.0</version>
-    <name>BEAM Sentinel-2 Reader</name>
+    <name>Sentinel-2 Product Reader</name>
 
-    <description>Enables BEAM to read Sentinel 2 products (MSI L1b and L1c)
-    </description>
+    <description>Enables SNAP to read Sentinel 2 products of type L1C</description>
 
     <vendor>Brockmann Consult GmbH and Array Inc</vendor>
     <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>

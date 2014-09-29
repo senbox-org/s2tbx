@@ -4,7 +4,7 @@
     <version>1.0</version>
     <name>RapidEye Product Reader</name>
 
-    <description>Reads RapidEye NITF products</description>
+    <description>Enables SNAP to read RapidEye products in NITF or GeoTIFF format</description>
 
     <packaging>dir</packaging>
 

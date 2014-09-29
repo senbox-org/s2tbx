@@ -2,9 +2,9 @@
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-commons</symbolicName>
     <version>5.0</version>
-    <name>S2TBX common library</name>
+    <name>Sentinel 2 Toolbox Common Utilities Library</name>
 
-    <description>Common S2TBX library</description>
+    <description>This modules provides common tools for different modules of the Sentinel 2 Toolbox. It is an internal module.</description>
 
     <packaging>jar</packaging>
 
