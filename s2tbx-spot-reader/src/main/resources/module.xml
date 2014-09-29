@@ -75,7 +75,7 @@
 
     <extension point="snap-ui:helpSets">
         <helpSet>
-            <parent>snap-beam-help</parent>
+            <parent>s2tbx-help</parent>
             <path>doc/help/spotdimap.hs</path>
         </helpSet>
     </extension>
