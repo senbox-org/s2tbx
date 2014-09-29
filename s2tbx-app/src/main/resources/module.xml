@@ -8,6 +8,7 @@
     <contactAddress>ZAC de la Grande Plaine,5 Rue Brindejonc des Moulinais, Toulouse Cedex 5, France </contactAddress>
     <copyright>(c) Copyright 2014 by CS and contributors.&lt;br/&gt;All rights reserved.</copyright>
     <url>https://earth.esa.int/web/sentinel-tbx/home</url>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
     <description>Sentinel-2 Toolbox Display and Analysis Tool</description>
 
