@@ -18,8 +18,8 @@
     <manifestVersion>1.0.0</manifestVersion>
 
     <symbolicName>s2tbx-help</symbolicName>
-    <name>Sentinel 2 Toolbox Help</name>
-    <version>0.5</version>
+    <name>Sentinel-2 Toolbox Help</name>
+    <version>1.0.0</version>
     <packaging>dir</packaging>
 
     <description>Provides the software user manual.</description>

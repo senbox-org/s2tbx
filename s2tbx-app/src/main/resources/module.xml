@@ -1,8 +1,8 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-app</symbolicName>
-    <version>1.0</version>
-    <name>S-2 Toolbox Application</name>
+    <version>1.0.0</version>
+    <name>Sentinel-2 Toolbox Application</name>
 
     <vendor>CS</vendor>
     <contactAddress>ZAC de la Grande Plaine,5 Rue Brindejonc des Moulinais, Toulouse Cedex 5, France </contactAddress>

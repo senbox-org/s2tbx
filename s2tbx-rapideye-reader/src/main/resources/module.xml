@@ -1,7 +1,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-rapideye-reader</symbolicName>
-    <version>1.0</version>
+    <version>1.0.0</version>
     <name>RapidEye Product Reader</name>
 
     <description>Enables SNAP to read RapidEye products in NITF or GeoTIFF format</description>
