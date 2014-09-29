@@ -2,7 +2,7 @@
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>atm-corr-processor</symbolicName>
     <version>1.0.0</version>
-    <name>Atmospheric Correction Processor (Sentinel 2 L2)</name>
+    <name>Atmospheric Correction Processor (Sentinel 2 L2A)</name>
 
     <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products
     </description>
@@ -10,7 +10,7 @@
     <vendor>Brockmann Consult GmbH</vendor>
     <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
     <copyright>(C) 2007 by Brockmann Consult GmbH</copyright>
-    <url>https://github.com/CS-SI/s2tbx</url>
+    <url>https://github.com/senbox-org/s2tbx</url>
     <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
     <changelog>
