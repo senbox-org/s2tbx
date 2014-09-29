@@ -24,10 +24,10 @@
 
     <description>Provides the software user manual.</description>
 
-    <vendor>Brockmann Consult GmbH</vendor>
-    <contactAddress>Max-Planck-Str. 2, 21502 Geesthacht (Germany)</contactAddress>
-    <copyright>(C) 2014 by Brockmann Consult GmbH</copyright>
-    <url>http://envisat.esa.int/beam/</url>
+    <vendor>CS</vendor>
+    <contactAddress>ZAC de la Grande Plaine,5 Rue Brindejonc des Moulinais, Toulouse Cedex 5, France </contactAddress>
+    <copyright>(c) Copyright 2014 by CS and contributors.&lt;br/&gt;All rights reserved.</copyright>
+    <url>https://earth.esa.int/web/sentinel-tbx/home</url>
     <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
     <categories>System,Help</categories>
