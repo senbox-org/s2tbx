@@ -17,7 +17,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
 
-    <symbolicName>snap-beam-help</symbolicName>
+    <symbolicName>s2tbx-help</symbolicName>
     <name>Sentinel 2 Toolbox Help</name>
     <version>0.5</version>
     <packaging>dir</packaging>
@@ -38,7 +38,7 @@
 
     <extension point="snap-ui:helpSets">
         <helpSet>
-            <id>snap-beam-help</id>
+            <id>s2tbx-help</id>
             <path>doc/help/beam.hs</path>
         </helpSet>
     </extension>
