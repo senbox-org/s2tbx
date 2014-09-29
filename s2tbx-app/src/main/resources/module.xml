@@ -12,7 +12,6 @@
 
     <description>Sentinel-2 Toolbox Display and Analysis Tool</description>
 
-    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
     <funding>European Space Agency</funding>
 
     <dependency>
