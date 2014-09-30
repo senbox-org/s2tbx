@@ -28,7 +28,7 @@
 
     <packaging>jar</packaging>
 
-    <name>SNAP Help</name>
+    <name>S2Tbx Help</name>
     <artifactId>s2tbx-help</artifactId>
 
     <description>Provides the software user manual.</description>
@@ -38,6 +38,7 @@
             <plugin>
                 <groupId>com.bc.maven.plugins</groupId>
                 <artifactId>maven-javahelp-plugin</artifactId>
+                <version>1.1</version>
                 <configuration>
                     <excludes>
                         <exclude>index.html</exclude>
