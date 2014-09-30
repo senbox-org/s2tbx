@@ -34,7 +34,7 @@ public final class S2tbxApp extends VisatApp {
 
     @Override
     protected ModalDialog createAboutBox() {
-        //todo
+        //todo about box
         return null;
     }
 

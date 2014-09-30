@@ -376,8 +376,8 @@
                                 <configuration>
                                     <rules>
                                         <requireProperty>
-                                            <property>products.dir</property>
-                                            <message>The unit test directory defined in property products.dir must exist</message>
+                                            <property>beam.reader.tests.data.dir</property>
+                                            <message>The unit test directory defined in property beam.reader.tests.data.dir must exist</message>
                                             <regex>.*</regex>
                                             <regexMessage>Installer cannot be created until the build has passed unit tests.</regexMessage>
                                         </requireProperty>

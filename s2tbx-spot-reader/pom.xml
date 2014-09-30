@@ -112,7 +112,7 @@
                                 <configuration>
                                     <rules>
                                         <requireProperty>
-                                            <property>products.dir</property>
+                                            <property>beam.reader.tests.data.dir</property>
                                             <message>The unit test directory must exist</message>
                                             <regex>.*</regex>
                                             <regexMessage>The unit test files cannot be empty.</regexMessage>

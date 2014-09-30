@@ -209,28 +209,30 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
-        if (!outputFile0.exists()) {
-            //System.out.printf("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
+        if (!outputFile0.exists())
+        {
+            logger.fine(String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
+
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
             } catch (IOException e) {
-                // {@report "opj_decompress process failed"}
+                logger.severe("opj_decompress process failed: " + e.getMessage());
                 if (outputFile0.exists() && !outputFile0.delete()) {
-                    // {@report "Failed to delete"}
+                    logger.severe("Failed to delete file: " + outputFile0.getAbsolutePath());
                 }
             }
             if (!outputFile0.exists()) {
-                // {@report "No output file generated"}
+                logger.fine("No output file generated");
                 Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
                 return;
             }
         }
 
         try {
-            //System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
+            logger.fine(String.format("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
         } catch (IOException e) {
-            // {@report "Failed to read uncompressed tile data"}
+            logger.severe("Failed to read uncompressed tile data");
         }
     }
 
@@ -274,11 +276,9 @@ class L1cTileOpImage extends SingleBandedOpImage {
         try {
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
-                // {@report "Failed to uncompress tile"}
                 logger.severe("Failed to uncompress tile: exitCode = " + exitCode);
             }
         } catch (InterruptedException e) {
-            // {@report "Process was interrupted"}
             logger.severe("InterruptedException: " + e.getMessage());
         }
     }
@@ -287,7 +287,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     public synchronized void dispose() {
 
         for (Map.Entry<File, Jp2File> entry : openFiles.entrySet()) {
-            System.out.println("closing " + entry.getKey());
+            logger.fine("closing " + entry.getKey());
             try {
                 final Jp2File jp2File = entry.getValue();
                 if (jp2File.stream != null) {
@@ -295,21 +295,21 @@ class L1cTileOpImage extends SingleBandedOpImage {
                     jp2File.stream = null;
                 }
             } catch (IOException e) {
-                // {@report "Failed to close stream"}
+                logger.severe("Failed to close stream: " + e.getMessage());
             }
         }
 
         for (File file : openFiles.keySet()) {
-            System.out.println("deleting " + file);
+            logger.fine("deleting " + file.getAbsolutePath());
             if (!file.delete()) {
-                // {@report "Failed to delete file"}
+                logger.severe("Failed to delete file: " + file.getAbsolutePath());
             }
         }
 
         openFiles.clear();
 
         if (!cacheDir.delete()) {
-            // {@report "Failed to delete cache dir"}
+            logger.severe("Failed to delete cache dir: " + cacheDir.getAbsolutePath() );
         }
     }
 
