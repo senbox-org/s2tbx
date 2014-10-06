@@ -1932,6 +1932,6 @@ if (wizardContext != null) {
   <buildIds buildAll="true">
     <mediaSet refId="4707" />
   </buildIds>
-  <buildOptions verbose="false" faster="false" disableSigning="false" debug="false" />
+  <buildOptions verbose="true" faster="false" disableSigning="false" debug="false" />
 </install4j>
 
