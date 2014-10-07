@@ -29,8 +29,11 @@
 
     <name>Sentinel-2 Installer Resources</name>
     <artifactId>s2tbx-installer</artifactId>
-
     <packaging>jar</packaging>
+
+    <properties>
+        <public.s2tbx.version>1.0.6</public.s2tbx.version>
+    </properties>
 
     <dependencies>
         <dependency>

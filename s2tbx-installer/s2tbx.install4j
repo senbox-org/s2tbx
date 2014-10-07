@@ -1928,7 +1928,7 @@ if (wizardContext != null) {
       </installerScript>
     </unixInstaller>
   </mediaSets>
-  <buildIds buildAll="true">
+  <buildIds buildAll="false">
     <mediaSet refId="4707" />
   </buildIds>
   <buildOptions verbose="false" faster="false" disableSigning="false" debug="false" />
