@@ -16,6 +16,7 @@
     <description>
         This module enables the Sentinel Toolbox to read the following Sentinel-2 data products: L1B,L1C
     </description>
+    <version>1.0.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
