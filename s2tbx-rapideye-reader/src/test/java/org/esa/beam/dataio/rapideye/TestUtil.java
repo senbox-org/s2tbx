@@ -1,5 +1,7 @@
 package org.esa.beam.dataio.rapideye;
 
+import org.apache.commons.lang.SystemUtils;
+
 import java.io.File;
 
 import static org.junit.Assert.assertTrue;
@@ -22,12 +24,13 @@ public class TestUtil {
     }
 
     private static File getTestFileOrDirectory(String file) {
-        /*File testTgz = new File("./s2tbx-spot-reader/src/test/resources/org/esa/beam/dataio/spot/" + file);
-        if (!testTgz.exists()) {
-            testTgz = new File("./src/test/resources/org/esa/beam/dataio/spot/" + file);
+        String partialPath = file;
+        if(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
+        {
+            partialPath = file.replaceAll("\\\\", "/");
         }
-        return testTgz;*/
+
         String path = System.getProperty(PROPERTYNAME_DATA_DIR);
-        return new File(path, file);
+        return new File(path, partialPath);
     }
 }
