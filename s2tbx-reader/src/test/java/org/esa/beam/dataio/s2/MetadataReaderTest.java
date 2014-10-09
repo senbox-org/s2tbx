@@ -48,7 +48,6 @@ public class MetadataReaderTest {
     {
         Level1CTile o = null;
 
-        //todo read metadata product
         try {
             JAXBContext jaxbContext = JAXBContext
                     .newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap");
@@ -72,7 +71,6 @@ public class MetadataReaderTest {
     {
         Level1CDatastrip o = null;
 
-        //todo read metadata product
         try {
             JAXBContext jaxbContext = JAXBContext
                     .newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap");

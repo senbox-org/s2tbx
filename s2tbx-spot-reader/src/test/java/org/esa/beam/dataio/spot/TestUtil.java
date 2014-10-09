@@ -13,13 +13,13 @@ public class TestUtil {
 
     public static File getTestFile(String file) {
         final File testTgz = getTestFileOrDirectory(file);
-        assertTrue(String.format("Looking for file: [%s]", file), testTgz.isFile());
+        assertTrue(String.format("Looking for file: [%s]", testTgz.getAbsolutePath()), testTgz.isFile());
         return testTgz;
     }
 
     public static File getTestDirectory(String file) {
         final File testTgz = getTestFileOrDirectory(file);
-        assertTrue(String.format("Is directory: [%s]", file), testTgz.isDirectory());
+        assertTrue(String.format("Is directory: [%s]", testTgz.getAbsolutePath()), testTgz.isDirectory());
         return testTgz;
     }
 
