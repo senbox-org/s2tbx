@@ -16,6 +16,4 @@ public class S2tbxMain extends VisatMain {
     protected VisatApp createApplication(ApplicationDescriptor applicationDescriptor) {
         return new S2tbxApp(applicationDescriptor);
     }
-
-
 }
