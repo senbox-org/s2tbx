@@ -32,6 +32,10 @@
 
     <packaging>jar</packaging>
 
+    <properties>
+        <public.s2tbx.version>1.0.2</public.s2tbx.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.install4j</groupId>
@@ -455,6 +459,9 @@
                             <skip>${skipTests}</skip>
                             -->
                             <projectFile>${project.basedir}/s2tbx-ci.install4j</projectFile>
+                            <release>${public.s2tbx.version}</release>
+                            <verbose>true</verbose>
+                            <failIfMissing>true</failIfMissing>
                         </configuration>
                     </execution>
                 </executions>
