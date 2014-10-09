@@ -5,13 +5,10 @@ import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.beam.dataio.rapideye.TestUtil;
-import org.esa.beam.dataio.rapideye.nitf.NITFReaderWrapper;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ramona Manda
@@ -154,7 +151,8 @@ public class RapidEyeMetadataTest extends TestCase {
 
     @Test
     public void testGetPath() throws Exception {
-        assertEquals(TestUtil.ABSOLUTE_PATH + "\\2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml", metadata.getPath());
+        String root = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
+        assertEquals(root + "\\2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml", metadata.getPath());
     }
 
     @Test
