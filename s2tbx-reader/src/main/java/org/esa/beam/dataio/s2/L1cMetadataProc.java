@@ -10,6 +10,7 @@ import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.xml.bind.*;
 import java.io.File;
@@ -76,7 +77,7 @@ public class L1cMetadataProc {
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
         }
     }
 
@@ -89,16 +90,16 @@ public class L1cMetadataProc {
 
         String target = "opj_decompress";
 
-        //todo log stracktraces
         if(SystemUtils.IS_OS_LINUX)
         {
             try {
-                Process p = Runtime.getRuntime().exec("uname -m");
+		        Process p = Runtime.getRuntime().exec("uname -m");
                 p.waitFor();
                 String output = convertStreamToString(p.getInputStream());
                 String errorOutput = convertStreamToString(p.getErrorStream());
 
-                System.err.println(output);
+                BeamLogManager.getSystemLogger().fine(output);
+                BeamLogManager.getSystemLogger().severe(errorOutput);
 
                 if(output.startsWith("i686"))
                 {
@@ -109,7 +110,7 @@ public class L1cMetadataProc {
                     target = getModulesDir() + linux64Path;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
             }
         }
         else if(SystemUtils.IS_OS_MAC)
@@ -118,7 +119,7 @@ public class L1cMetadataProc {
                 target = getModulesDir() + macPath;
                 setExecutable(new File(target), true);
             } catch (Exception e) {
-                e.printStackTrace();
+                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
             }
         }
         else
@@ -126,7 +127,7 @@ public class L1cMetadataProc {
             try {
                 target = getModulesDir() + winPath;
             } catch (Exception e) {
-                e.printStackTrace();
+                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
                 target = target + ".exe";
             }
         }

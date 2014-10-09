@@ -8,6 +8,7 @@ import org.esa.beam.jai.SingleBandedOpImage;
 import org.esa.beam.util.ImageUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
+import org.geotools.geometry.Envelope2D;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -66,21 +67,13 @@ class L1cTileOpImage extends SingleBandedOpImage {
         Assert.notNull(spatialResolution, "spatialResolution");
 
         if (imageFile != null) {
+            BeamLogManager.getSystemLogger().fine("Image layout: " + l1cTileLayout);
             PlanarImage opImage = new L1cTileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
-
-            BeamLogManager.getSystemLogger().fine("The size before: " + opImage.getWidth() + ", " + opImage.getHeight());
-
-            // todo skipping scale
-
-            if (spatialResolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = createScaledImage(opImage, spatialResolution, level);
-                BeamLogManager.getSystemLogger().fine("The size after: " + scaled.getWidth() + ", " + scaled.getHeight());
-
-                return scaled;
-            }
 
             return opImage;
         } else {
+            BeamLogManager.getSystemLogger().warning("Using empty image !");
+
             int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
             int targetHeight = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].height, level);
             Dimension targetTileDim = getTileDimAtResolutionLevel(L1C_TILE_LAYOUTS[0].tileWidth, L1C_TILE_LAYOUTS[0].tileHeight, level);
@@ -93,44 +86,50 @@ class L1cTileOpImage extends SingleBandedOpImage {
         }
     }
 
-    static PlanarImage createScaledImage(PlanarImage sourceImage, S2SpatialResolution resolution, int level) {
-        BeamLogManager.getSystemLogger().fine("Asking for scaled image: " + resolution.toString());
+    static PlanarImage createGenericScaledImage(PlanarImage sourceImage, Envelope2D sceneEnvelope, S2SpatialResolution resolution, int level) {
+        BeamLogManager.getSystemLogger().fine("Asking for scaled mosaic image: " + resolution.toString());
+        BeamLogManager.getSystemLogger().fine("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
+        BeamLogManager.getSystemLogger().fine("TargetImage:" + sceneEnvelope.getWidth() + ", " + sceneEnvelope.getHeight());
 
-        int sourceWidth = sourceImage.getWidth();
-        int sourceHeight = sourceImage.getHeight();
-        int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
-        int targetHeight = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].height, level);
-        float scaleX = resolution.resolution / (float) S2SpatialResolution.R10M.resolution;
-        float scaleY = resolution.resolution / (float) S2SpatialResolution.R10M.resolution;
-        final Dimension tileDim = getTileDim(targetWidth, targetHeight);
-        ImageLayout imageLayout = new ImageLayout();
-        imageLayout.setTileWidth(tileDim.width);
-        imageLayout.setTileHeight(tileDim.height);
+        int targetWidth = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getWidth() / (S2SpatialResolution.R10M.resolution)), level);
+        int targetHeight = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getHeight() / (S2SpatialResolution.R10M.resolution )), level);
+
+
+        float scaleX = targetWidth / ((float) sourceImage.getWidth());
+        float scaleY = targetHeight / ((float) sourceImage.getHeight());
+
         BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
         RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                                                           borderExtender);
-        renderingHints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+                borderExtender);
+
         RenderedOp scaledImage = ScaleDescriptor.create(sourceImage,
-                                                        scaleX,
-                                                        scaleY,
-                                                        sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
-                                                        sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
-                                                        Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                                                        renderingHints);
+                scaleX,
+                scaleY,
+                sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
+                sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
+                Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                renderingHints);
+
+        BeamLogManager.getSystemLogger().fine(String.format("After scaling: (%d, %d)", scaledImage.getWidth(), scaledImage.getHeight()));
+
         if (scaledImage.getWidth() == targetWidth && scaledImage.getHeight() == targetHeight) {
             return scaledImage;
         }
-        else if (scaledImage.getWidth() >= targetWidth && scaledImage.getHeight() >= targetHeight) {
+        else if (scaledImage.getWidth() >= targetWidth || scaledImage.getHeight() >= targetHeight) {
+            BeamLogManager.getSystemLogger().fine(String.format("Cropping: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
+
             return CropDescriptor.create(scaledImage,
-                                         (float) sourceImage.getMinX(),
-                                         (float) sourceImage.getMinY(),
-                                         (float) targetWidth,
-                                         (float) targetHeight,
-                                         null);
+                    (float) sourceImage.getMinX(),
+                    (float) sourceImage.getMinY(),
+                    (float) targetWidth,
+                    (float) targetHeight,
+                    null);
         }
         else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
             int rightPad = targetWidth - scaledImage.getWidth();
             int bottomPad = targetHeight - scaledImage.getHeight();
+            BeamLogManager.getSystemLogger().fine(String.format("Border: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
+
             return BorderDescriptor.create(scaledImage, 0, rightPad, 0, bottomPad, borderExtender, null);
         } else {
             throw new IllegalStateException();
@@ -202,37 +201,37 @@ class L1cTileOpImage extends SingleBandedOpImage {
                                                               String.format("_R%d_TX%d_TY%d.pgx",
                                                                             getLevel(), jp2TileX, jp2TileY)));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.severe(Utils.getStackTrace(e));
         }
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
 
 
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
-        if (!outputFile0.exists())
-        {
-            logger.fine(String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
-
+        if (!outputFile0.exists()) {
+            //System.out.printf("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
-            } catch (IOException e) {
-                logger.severe("opj_decompress process failed: " + e.getMessage());
-                if (outputFile0.exists() && !outputFile0.delete()) {
+            } catch (IOException e)
+            {
+                logger.severe("opj_decompress process failed! :" + Utils.getStackTrace(e));
+                if (outputFile0.exists() && !outputFile0.delete())
+                {
                     logger.severe("Failed to delete file: " + outputFile0.getAbsolutePath());
                 }
             }
             if (!outputFile0.exists()) {
-                logger.fine("No output file generated");
+                logger.severe("No output file generated");
                 Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
                 return;
             }
         }
 
         try {
-            logger.fine(String.format("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
+            //System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
             readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
         } catch (IOException e) {
-            logger.severe("Failed to read uncompressed tile data");
+            logger.severe("Failed to read uncompressed file data: " + Utils.getStackTrace(e));
         }
     }
 
@@ -263,6 +262,8 @@ class L1cTileOpImage extends SingleBandedOpImage {
         }
         else
         {
+            logger.warning("Writing to " + outputFile.getPath());
+
             builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
                     "-i", imageFile.getPath(),
                     "-o", outputFile.getPath(),
@@ -279,7 +280,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
                 logger.severe("Failed to uncompress tile: exitCode = " + exitCode);
             }
         } catch (InterruptedException e) {
-            logger.severe("InterruptedException: " + e.getMessage());
+            logger.severe("Process was interrupted, InterruptedException: " + e.getMessage());
         }
     }
 
@@ -287,7 +288,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     public synchronized void dispose() {
 
         for (Map.Entry<File, Jp2File> entry : openFiles.entrySet()) {
-            logger.fine("closing " + entry.getKey());
+            System.out.println("closing " + entry.getKey());
             try {
                 final Jp2File jp2File = entry.getValue();
                 if (jp2File.stream != null) {
@@ -295,21 +296,21 @@ class L1cTileOpImage extends SingleBandedOpImage {
                     jp2File.stream = null;
                 }
             } catch (IOException e) {
-                logger.severe("Failed to close stream: " + e.getMessage());
+                logger.severe("Failed to close stream: " + Utils.getStackTrace(e));
             }
         }
 
         for (File file : openFiles.keySet()) {
-            logger.fine("deleting " + file.getAbsolutePath());
+            logger.fine("Deleting " + file);
             if (!file.delete()) {
-                logger.severe("Failed to delete file: " + file.getAbsolutePath());
+                logger.severe("Failed to delete file! :" + file.getAbsolutePath());
             }
         }
 
         openFiles.clear();
 
         if (!cacheDir.delete()) {
-            logger.severe("Failed to delete cache dir: " + cacheDir.getAbsolutePath() );
+            logger.severe("Failed to delete cache dir! :" + cacheDir.getAbsolutePath());
         }
     }
 
@@ -448,6 +449,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
         if (sizeTest < fullSize) {
             size++;
         }
+
         return size;
     }
 

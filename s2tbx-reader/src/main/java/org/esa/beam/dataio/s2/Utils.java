@@ -4,9 +4,18 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.regex.Pattern;
 
 public class Utils {
+
+    public static String getStackTrace(Throwable tr)
+    {
+        StringWriter sw = new StringWriter();
+        tr.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
+    }
 
     public static String GetShortPathName(String path)
     {
