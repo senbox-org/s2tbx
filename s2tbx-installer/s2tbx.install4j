@@ -12,7 +12,7 @@
       <envVar name="JAVA_HOME" />
     </searchSequence>
     <variables>
-      <variable name="version.gui" value="1.0.2" description="" category="" />
+      <variable name="version.gui" value="1.0" description="" category="" />
     </variables>
     <mergedProjects />
     <codeSigning macEnabled="false" macPkcs12File="" windowsEnabled="false" windowsKeySource="pkcs12" windowsPvkFile="" windowsSpcFile="" windowsPkcs12File="" />
