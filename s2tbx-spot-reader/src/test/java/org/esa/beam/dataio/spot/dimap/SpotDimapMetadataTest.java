@@ -33,7 +33,7 @@ public class SpotDimapMetadataTest {
 
     @Test
     public void testGetProductName() throws Exception {
-        assertEquals("SCENE 4 060-283 07/05/04 10:18:44 2 I", metadata.getProductName());
+        assertEquals("40602830705041018442I", metadata.getProductName());
     }
 
     @Test

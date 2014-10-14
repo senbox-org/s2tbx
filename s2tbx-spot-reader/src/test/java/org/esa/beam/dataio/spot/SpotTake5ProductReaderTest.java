@@ -94,7 +94,7 @@ public class SpotTake5ProductReaderTest {
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(2, components.getChildren().length);
             assertEquals("SPOT4_HRVIR1_XS_88888888_N1A.xml", components.getChildren()[0].getId());
-            assertEquals("mediumImage.tif", components.getChildren()[1].getId());
+            assertEquals("SPOT4_HRVIR1_XS_88888888_N1A.tif", components.getChildren()[1].getId());
         } catch (IOException e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
