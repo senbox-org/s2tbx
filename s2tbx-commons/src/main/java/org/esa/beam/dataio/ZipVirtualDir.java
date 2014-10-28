@@ -21,6 +21,8 @@ import java.util.zip.ZipFile;
  * @author Cosmin Cara
  * @see com.bc.ceres.core.VirtualDir
  */
+
+// todo Shouldn't this extend VirtualDir ?
 public class ZipVirtualDir {
     protected boolean isZipFile;
     protected boolean isTarFile;

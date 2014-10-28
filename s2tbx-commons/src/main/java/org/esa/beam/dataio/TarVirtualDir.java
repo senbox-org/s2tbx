@@ -102,6 +102,11 @@ public class TarVirtualDir extends VirtualDir {
     }
 
     @Override
+    public boolean exists(String s) {
+        return archiveFile.exists();
+    }
+
+    @Override
     public void close() {
         if (extractDir != null) {
             FileUtils.deleteTree(extractDir);
