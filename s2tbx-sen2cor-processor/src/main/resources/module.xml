@@ -1,7 +1,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>atm-corr-processor</symbolicName>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <name>Atmospheric Correction Processor (Sentinel 2 L2A)</name>
 
     <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products

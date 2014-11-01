@@ -1,7 +1,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-commons</symbolicName>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <name>Sentinel-2 Toolbox Common Utilities Library</name>
 
     <description>This modules provides common tools for different modules of the Sentinel 2 Toolbox. It is an internal module.</description>

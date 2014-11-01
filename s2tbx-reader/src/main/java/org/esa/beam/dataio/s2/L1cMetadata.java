@@ -1,7 +1,7 @@
 package org.esa.beam.dataio.s2;
 
-import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata.Level1CTile;
-import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1CUserProduct;
+import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
@@ -190,7 +190,7 @@ public class L1cMetadata {
     {
         try {
 
-            Level1CUserProduct product = (Level1CUserProduct) L1cMetadataProc.readJaxbFromFilename(stream);
+            Level1C_User_Product product = (Level1C_User_Product) L1cMetadataProc.readJaxbFromFilename(stream);
             productCharacteristics = L1cMetadataProc.getProductOrganization(product);
 
             Collection<String> tileNames = L1cMetadataProc.getTiles(product);
@@ -217,12 +217,12 @@ public class L1cMetadata {
 
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
-                Level1CTile aTile = (Level1CTile) L1cMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
+                Level1C_Tile aTile = (Level1C_Tile) L1cMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
                 Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
-                Tile t = new Tile(aTile.getGeneralInfo().getTILEID().getValue());
-                t.horizontalCsCode = aTile.getGeometricInfo().getTileGeocoding().getHORIZONTALCSCODE();
-                t.horizontalCsName = aTile.getGeometricInfo().getTileGeocoding().getHORIZONTALCSNAME();
+                Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
+                t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
+                t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
 
                 t.tileGeometry10M = geoms.get(10);
                 t.tileGeometry20M = geoms.get(20);
