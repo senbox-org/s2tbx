@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns="http://gs2.esa.int/DICO/1.0/GS" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:date_time="http://gs2.esa.int/DICO/1.0/SY/date_time/" xmlns:center="http://gs2.esa.int/DICO/1.0/PDGS/center/" xmlns:orbit="http://gs2.esa.int/DICO/1.0/SY/orbital/" xmlns:spacecraft="http://gs2.esa.int/DICO/1.0/PDGS/spacecraft/" targetNamespace="http://gs2.esa.int/DICO/1.0/GS" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/date_time/" schemaLocation="..\..\SY\date_time\date_time.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/center/" schemaLocation="..\..\PDGS\center\center.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/orbital/" schemaLocation="..\..\SY\orbital\orbital.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/spacecraft/" schemaLocation="..\..\PDGS\spacecraft\spacecraft.xsd"/>
+	<xs:complexType name="acq_type">
+		<xs:annotation>
+			<xs:documentation>Id of the ACQ. Must be unique for each ACQ
+element transmitted to the station.
+By convention it is coded as indicated in the 
+format </xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element name="Orbit_Number" type="orbit:AN_ORBIT_NUMBER">
+				<xs:annotation>
+					<xs:documentation>Absolute orbit number relevant to the planned 
+acquisition</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Station_Id" type="center:A_S2_CENTER">
+				<xs:annotation>
+					<xs:documentation>Identification of the station, three characters 
+according to the station codes listed in [AD-02], 
+right padded with an underscore</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Satellite_Id" type="spacecraft:S2_SATELLITE_ID">
+				<xs:annotation>
+					<xs:documentation>Identification of the Satellite
+S2A, S2B</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Downlink_Channels">
+				<xs:annotation>
+					<xs:documentation>Identification of the Downlink Channels
+“1”, “2”, “1+2”</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:token">
+						<xs:enumeration value="1"/>
+						<xs:enumeration value="2"/>
+						<xs:enumeration value="1+2"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Acquisition_Start" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>UTC  time of acquisition of signal.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Acquisition_Stop" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>UTC  time of loss of signal</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Data_Start" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>UTC time for start of data dump.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Data_Stop" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>UTC time for stop of data dump.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+	<xs:group name="acquisitions">
+		<xs:choice>
+			<xs:element name="ACQ" type="acq_type"/>
+		</xs:choice>
+	</xs:group>
+	<xs:element name="SCHEDULE">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:group ref="acquisitions" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

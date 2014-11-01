@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:center="http://gs2.esa.int/DICO/1.0/PDGS/center/" xmlns="http://gs2.esa.int/DICO/1.0/DPC/processing/synthesisReport" xmlns:job="http://gs2.esa.int/DICO/1.0/IPF/job" targetNamespace="http://gs2.esa.int/DICO/1.0/DPC/processing/synthesisReport" elementFormDefault="qualified" attributeFormDefault="unqualified" version="3.2">
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/IPF/job" schemaLocation="..\..\IPF\job\IDP_SC_LaunchReport.xsd"/>
+	<xs:complexType name="MISSING_DATAS">
+		<xs:annotation>
+			<xs:documentation>This type is not used</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="MISSING_DATA" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Description d'une donnee manquante</xs:documentation>
+				</xs:annotation>
+				<xs:complexType/>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="Product_Report">
+		<xs:annotation>
+			<xs:documentation> from RD 213: this schema describes the whole synthesis reports of each steps and jobs for a workplan id</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Work_plan_Id"/>
+				<xs:element name="Step_Report" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>For each IPF launch of the workplan</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Launchs" type="TYPE_LAUNCHS_IPF"/>
+						</xs:sequence>
+						<xs:attribute name="Ipf_Step_Name"/>
+					</xs:complexType>
+				</xs:element>
+				<xs:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="CR_FILE">
+		<xs:annotation>
+			<xs:documentation>This type is not used</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="INPUT_FILES">
+					<xs:annotation>
+						<xs:documentation>Recopie du tag equivalent du fichier de Commande</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:any processContents="skip" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="INPUT_GIPP_FILES" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Recopie du tag equivalent du fichier de Commande si present (cas des LAI)</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:any processContents="skip" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="OUTPUT_FILES">
+					<xs:annotation>
+						<xs:documentation>Recopie du tag equivalent du fichier de Commande avec mise a jour dans le cas de creation de fichiers</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="ACTIVATION_PARAMETERS">
+					<xs:annotation>
+						<xs:documentation>Recopie du tag equivalent du fichier de Commande</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="EXECUTION_REPORT">
+					<xs:annotation>
+						<xs:documentation>Compte-rendu d'execution</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="EXECUTION">
+								<xs:annotation>
+									<xs:documentation>Etat d'execution ("RUNNING", "FINISHED", "STOPPED")</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="RUNNING"/>
+										<xs:enumeration value="FINISHED"/>
+										<xs:enumeration value="STOPPED"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="DIAGNOSTIC">
+								<xs:annotation>
+									<xs:documentation>Etat de fin d'execution ("OK", "WARNING", "ERROR", "ABORTED")</xs:documentation>
+								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="OK"/>
+										<xs:enumeration value="WARNING"/>
+										<xs:enumeration value="ERROR"/>
+										<xs:enumeration value="ABORTED"/>
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="EXECUTION_LOG_REPORT" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Messages de log generes au cours de l'execution (tag present uniquement dans le cas des LAI)</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="WARNINGS" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation>Messages de type WARNING</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="MESSAGE" type="MESSAGE" maxOccurs="unbounded"/>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="ERRORS" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation>Messages de type ERROR</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="MESSAGE" type="MESSAGE" maxOccurs="unbounded"/>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="STATE">
+		<xs:annotation>
+			<xs:documentation>This type is not used</xs:documentation>
+		</xs:annotation>
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="NONE"/>
+				<xs:enumeration value="OK"/>
+				<xs:enumeration value="WARNING"/>
+				<xs:enumeration value="ERROR"/>
+				<xs:enumeration value="ABORTED"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:complexType name="REQUESTED_DATAS">
+		<xs:annotation>
+			<xs:documentation>This type is not used</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="REQUESTED_DATA" type="REQUESTED_DATA" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Description d'une donnee demandee a l'archive</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="REQUESTED_DATA">
+		<xs:annotation>
+			<xs:documentation>DThis type is not used</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="DATA_TYPE">
+				<xs:annotation>
+					<xs:documentation>Type de la donnee recherchee</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="IAP"/>
+						<xs:enumeration value="RAW"/>
+						<xs:enumeration value="GIPP"/>
+						<xs:enumeration value="MNT_SYSTEM"/>
+						<xs:enumeration value="TAAD"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="CRITERION" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Critere de selection (SQL)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="MESSAGE">
+		<xs:annotation>
+			<xs:documentation>This type is not used</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="FUNCTION_NAME">
+				<xs:annotation>
+					<xs:documentation>nom de la fonction impact�e</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="MESSAGE_CODE">
+				<xs:annotation>
+					<xs:documentation>Code  du message</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="MESSAGE_TEXT">
+				<xs:annotation>
+					<xs:documentation>Libell� du message</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="MESSAGE_DESC">
+				<xs:annotation>
+					<xs:documentation>Descriptif du message</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TYPE_LAUNCHS_IPF">
+		<xs:annotation>
+			<xs:documentation>This type describes the report of each ipf</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Launch" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="LAUNCH_ID">
+							<xs:annotation>
+								<xs:documentation>Number of the launch ID for each launch, 1 if no parallelisation for the IPF step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Idp_Sc_Launch_Report" type="job:IDP_SC_LAUNCH_REPORTType">
+							<xs:annotation>
+								<xs:documentation>Including of each Idp_Sc_Launch_Report, only one if no parallelisation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

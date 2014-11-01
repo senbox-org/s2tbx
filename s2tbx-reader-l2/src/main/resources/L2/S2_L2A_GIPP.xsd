@@ -1,0 +1,239 @@
+<?xml version="1.0"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Telespazio VEGA Deutschland GMBH -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="Level-2A_Ground_Image_Processing_Parameter">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Common_Section">
+					<xs:annotation>
+						<xs:documentation> will be ignored if DEM is false. Either a DEM will be downloaded from this reference, if no local DEM is available </xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Trace_Level" type="xs:string"/>
+							<xs:element name="DN_Scale" type="xs:float">
+								<xs:annotation>
+									<xs:documentation> can be: NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL </xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="DEM_Directory" type="xs:string"/>
+							<xs:element name="DEM_Reference" type="xs:anyURI">
+								<xs:annotation>
+									<xs:documentation> should be either a directory tree under S2L2APPHOME or 'false'. If false, no DEM will be used </xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Scene_Classification">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Snow_Map_Reference" type="xs:string"/>
+							<xs:element name="Classificators">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="NO_DATA" type="xs:byte"/>
+										<xs:element name="SATURATED_DEFECTIVE" type="xs:byte"/>
+										<xs:element name="DARK_FEATURES" type="xs:byte"/>
+										<xs:element name="CLOUD_SHADOWS" type="xs:byte"/>
+										<xs:element name="VEGETATION" type="xs:byte"/>
+										<xs:element name="BARE_SOILS" type="xs:byte"/>
+										<xs:element name="WATER" type="xs:byte"/>
+										<xs:element name="LOW_PROBA_CLOUDS" type="xs:byte"/>
+										<xs:element name="MEDIUM_PROBA_CLOUDS" type="xs:byte"/>
+										<xs:element name="HIGH_PROBA_CLOUDS" type="xs:byte"/>
+										<xs:element name="THIN_CIRRUS" type="xs:byte"/>
+										<xs:element name="SNOW_ICE" type="xs:byte"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Calibration">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Median_Filter" type="xs:byte"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Thresholds">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="T1_B02" type="xs:float"/>
+										<xs:element name="T2_B02" type="xs:float"/>
+										<xs:element name="T1_B04" type="xs:float"/>
+										<xs:element name="T2_B04" type="xs:float"/>
+										<xs:element name="T1_B8A" type="xs:float"/>
+										<xs:element name="T2_B8A" type="xs:float"/>
+										<xs:element name="T1_B10" type="xs:float"/>
+										<xs:element name="T2_B10" type="xs:float"/>
+										<xs:element name="T1_B12" type="xs:float"/>
+										<xs:element name="T2_B12" type="xs:float"/>
+										<xs:element name="T_B02_B12" type="xs:float"/>
+										<xs:element name="T_CLOUD_LP" type="xs:float"/>
+										<xs:element name="T_CLOUD_MP" type="xs:float"/>
+										<xs:element name="T_CLOUD_HP" type="xs:float"/>
+										<xs:element name="T1_NDSI_CLD" type="xs:float"/>
+										<xs:element name="T2_NDSI_CLD" type="xs:float"/>
+										<xs:element name="T1_NDSI_SNW" type="xs:float"/>
+										<xs:element name="T2_NDSI_SNW" type="xs:float"/>
+										<xs:element name="T1_NDVI" type="xs:float"/>
+										<xs:element name="T2_NDVI" type="xs:float"/>
+										<xs:element name="T1_SNOW" type="xs:float"/>
+										<xs:element name="T2_SNOW" type="xs:float"/>
+										<xs:element name="T1_R_B02_B04" type="xs:float"/>
+										<xs:element name="T2_R_B02_B04" type="xs:float"/>
+										<xs:element name="T1_R_B8A_B03" type="xs:float"/>
+										<xs:element name="T2_R_B8A_B03" type="xs:float"/>
+										<xs:element name="T1_R_B8A_B11" type="xs:float"/>
+										<xs:element name="T2_R_B8A_B11" type="xs:float"/>
+										<xs:element name="T11_B02" type="xs:float"/>
+										<xs:element name="T12_B02" type="xs:float"/>
+										<xs:element name="T11_R_B02_B11" type="xs:float"/>
+										<xs:element name="T12_R_B02_B11" type="xs:float"/>
+										<xs:element name="T21_R_B02_B11" type="xs:float"/>
+										<xs:element name="T22_R_B02_B11" type="xs:float"/>
+										<xs:element name="T21_B12" type="xs:float"/>
+										<xs:element name="T22_B12" type="xs:float"/>
+										<xs:element name="RV_B2" type="xs:float"/>
+										<xs:element name="RV_B3" type="xs:float"/>
+										<xs:element name="RV_B4" type="xs:float"/>
+										<xs:element name="RV_B8" type="xs:float"/>
+										<xs:element name="RV_B11" type="xs:float"/>
+										<xs:element name="RV_B12" type="xs:float"/>
+										<xs:element name="T_SDW" type="xs:float"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Atmospheric_Correction">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="References">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Lib_Dir" type="xs:string"/>
+										<xs:element name="Atm_Data_Filename" type="xs:string"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Flags">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="WV_Correction" type="xs:byte"/>
+										<xs:element name="VIS_Update_Mode" type="xs:byte"/>
+										<xs:element name="WV_Watermask" type="xs:byte">
+											<xs:annotation>
+												<xs:documentation> 0: constant, 1: variable visibility </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="Cirrus_Correction" type="xs:byte">
+											<xs:annotation>
+												<xs:documentation> 0: not replaced, 1: land-average, 2: line-average </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="BRDF_Correction" type="xs:byte"/>
+										<xs:element name="BRDF_Lower_Bound" type="xs:float"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Calibration">
+								<xs:annotation>
+									<xs:documentation> water vapor threshold to switch off cirrus algorithm [cm] </xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="DEM_Unit" type="xs:byte"/>
+										<xs:element name="Adj_Km" type="xs:float">
+											<xs:annotation>
+												<xs:documentation> (0=[m], 1=[dm], 2=[cm]) </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="Visibility" type="xs:float">
+											<xs:annotation>
+												<xs:documentation> [km] </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="Altitude" type="xs:float">
+											<xs:annotation>
+												<xs:documentation> [km] </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="Smooth_WV_Map" type="xs:float">
+											<xs:annotation>
+												<xs:documentation> [km] </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="WV_Threshold_Cirrus" type="xs:float">
+											<xs:annotation>
+												<xs:documentation> length of square box, [meters] </xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="Sensor">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Solar_Irradiance">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="Band_List">
+														<xs:complexType>
+															<xs:sequence>
+																<xs:element name="wavelength" minOccurs="0" maxOccurs="unbounded">
+																	<xs:annotation>
+																		<xs:documentation> B8  B8A </xs:documentation>
+																	</xs:annotation>
+																	<xs:complexType>
+																		<xs:simpleContent>
+																			<xs:extension base="xs:float">
+																				<xs:attribute name="fwhm" type="xs:float" use="optional"/>
+																				<xs:attribute name="e0" type="xs:float" use="optional"/>
+																			</xs:extension>
+																		</xs:simpleContent>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+												<xs:attribute name="units" type="xs:string"/>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="Calibration">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="Band_List">
+														<xs:complexType>
+															<xs:sequence>
+																<xs:element name="wavelength" minOccurs="0" maxOccurs="unbounded">
+																	<xs:annotation>
+																		<xs:documentation> B8  B8A </xs:documentation>
+																	</xs:annotation>
+																	<xs:complexType>
+																		<xs:simpleContent>
+																			<xs:extension base="xs:float">
+																				<xs:attribute name="c0" type="xs:float" use="optional"/>
+																				<xs:attribute name="c1" type="xs:float" use="optional"/>
+																			</xs:extension>
+																		</xs:simpleContent>
+																	</xs:complexType>
+																</xs:element>
+															</xs:sequence>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+												<xs:attribute name="units" type="xs:string"/>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
