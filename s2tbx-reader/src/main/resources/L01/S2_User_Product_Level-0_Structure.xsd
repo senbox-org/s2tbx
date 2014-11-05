@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://pdgs.s2.esa.int/PSD/user_product_Level-0.xsd" targetNamespace="http://pdgs.s2.esa.int/PSD/user_product_Level-0.xsd" elementFormDefault="qualified" version="11">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-12.sentinel2.eo.esa.int/PSD/user_product_Level-0.xsd" targetNamespace="https://psd-12.sentinel2.eo.esa.int/PSD/user_product_Level-0.xsd" elementFormDefault="qualified" version="12">
 	<xs:element name="Level-0_User_Product_Structure" type="Level-0_User_Product_Structure"/>
 	<xs:complexType name="Level-0_User_Product_Structure">
 		<xs:annotation>
@@ -32,7 +32,7 @@
 			</xs:element>
 			<xs:element name="ANC_DATA">
 				<xs:annotation>
-					<xs:documentation>Folder containing SAD raw provided on temporal extent on the full Datatake</xs:documentation>
+					<xs:documentation>Folder containing SAD raw data. The latest SAD related to the downlink time will be embeded in the L0 User Product</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="Browse_Image" minOccurs="0">

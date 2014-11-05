@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://pdgs.s2.esa.int/PSD/S2_PDI_Level-1A_Granule_Structure.xsd" targetNamespace="http://pdgs.s2.esa.int/PSD/S2_PDI_Level-1A_Granule_Structure.xsd" elementFormDefault="qualified" version="11">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-12.sentinel2.eo.esa.int/PSD/S2_PDI_Level-1A_Granule_Structure.xsd" targetNamespace="https://psd-12.sentinel2.eo.esa.int/PSD/S2_PDI_Level-1A_Granule_Structure.xsd" elementFormDefault="qualified" version="12">
 	<xs:element name="Level-1A_Granule" type="Level-1A_Granule"/>
 	<xs:complexType name="Level-1A_Granule">
 		<xs:annotation>

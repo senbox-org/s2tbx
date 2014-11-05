@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:gs2="http://gs2.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:representation="http://gs2.esa.int/DICO/1.0/SY/representation/" xmlns:misc="http://gs2.esa.int/DICO/1.0/SY/misc/" targetNamespace="http://gs2.esa.int/DICO/1.0/SY/representation/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/misc/" schemaLocation="../misc/misc.xsd"/>
+<xs:schema xmlns:gs2="https://psd-12.sentinel2.eo.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:representation="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/representation/" xmlns:misc="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/misc/" targetNamespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/representation/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/misc/" schemaLocation="../misc/misc.xsd"/>
 	<xs:simpleType name="AN_EPSG_CODE">
 		<xs:annotation>
 			<xs:documentation>EPSG code : it should follow the 'EPSG:xxxx' pattern where xxxx is the unique identification code in the EPSG tables.</xs:documentation>

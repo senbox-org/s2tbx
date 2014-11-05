@@ -1,8 +1,8 @@
 package org.esa.beam.dataio.s2;
 
-import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata.Level1C_Datastrip;
-import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1C_User_Product;
+import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata.Level1C_Datastrip;
+import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import junit.framework.Assert;
 import org.junit.Test;
 

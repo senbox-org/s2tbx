@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:gs2="http://gs2.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tile="http://gs2.esa.int/DICO/1.0/SY/tile/" xmlns:misc="http://gs2.esa.int/DICO/1.0/SY/misc/" xmlns:image="http://gs2.esa.int/DICO/1.0/SY/image/" xmlns:representation="http://gs2.esa.int/DICO/1.0/SY/representation/" targetNamespace="http://gs2.esa.int/DICO/1.0/SY/tile/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/misc/" schemaLocation="../misc/misc.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/representation/" schemaLocation="../representation/representation.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/image/" schemaLocation="../image/image.xsd"/>
+<xs:schema xmlns:gs2="https://psd-12.sentinel2.eo.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tile="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/tile/" xmlns:misc="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/misc/" xmlns:image="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/image/" xmlns:representation="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/representation/" targetNamespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/tile/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/misc/" schemaLocation="../misc/misc.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/representation/" schemaLocation="../representation/representation.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/image/" schemaLocation="../image/image.xsd"/>
 	<xs:complexType name="A_TILE_DESCRIPTION_S2">
 		<xs:annotation>
 			<xs:documentation>Description of a tile in a given representation</xs:documentation>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:gs2="http://gs2.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:platform="http://gs2.esa.int/DICO/1.0/SY/platform/" targetNamespace="http://gs2.esa.int/DICO/1.0/SY/platform/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+<xs:schema xmlns:gs2="https://psd-12.sentinel2.eo.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:platform="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/platform/" targetNamespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/platform/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
 	<xs:simpleType name="A_LIST_OF_Q_VALUES">
 		<xs:annotation>
 			<xs:documentation>A list of quaternion values.</xs:documentation>

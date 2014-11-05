@@ -1,9 +1,7 @@
 package org.esa.beam.dataio.s2;
 
-import _int.esa.gs2.dico._1_0.pdgs.dimap.APRODUCTINFO;
-import _int.esa.gs2.dico._1_0.pdgs.dimap.APRODUCTORGANIZATION;
-import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata.Level1CTile;
-import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1CUserProduct;
+import _int.esa.s2.pdgs.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
+import _int.esa.s2.pdgs.psd.s2_user_product_level_2a_metadata.Level2A_User_Product;
 import junit.framework.Assert;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.junit.Test;
@@ -26,9 +24,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class MetadataTest {
 
-    public Level1CUserProduct getUserProduct() throws Exception
+    public Level2A_User_Product getUserProduct() throws Exception
     {
-        Level1CUserProduct o = null;
+        Level2A_User_Product o = null;
 
         JAXBContext jaxbContext = JAXBContext
                 .newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap");
@@ -36,18 +34,18 @@ public class MetadataTest {
         Marshaller marshaller = jaxbContext.createMarshaller();
 
 
-        InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
+        InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_SAFL2A_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
 
         Object ob =  unmarshaller.unmarshal(stream);
 
-        o = (Level1CUserProduct) ((JAXBElement)ob).getValue();
+        o = (Level2A_User_Product) ((JAXBElement)ob).getValue();
 
         return o;
     }
 
-    public Level1CTile getTileProduct() throws Exception
+    public Level2A_Tile getTileProduct() throws Exception
     {
-        Level1CTile o = null;
+        Level2A_Tile o = null;
 
         JAXBContext jaxbContext = JAXBContext
                 .newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap");
@@ -55,11 +53,11 @@ public class MetadataTest {
         Marshaller marshaller = jaxbContext.createMarshaller();
 
 
-        InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLF.xml");
+        InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_L2A_TL_CGS1_20130621T120000_A000065_T14SLF.xml");
 
         Object ob =  unmarshaller.unmarshal(stream);
 
-        o = (Level1CTile) ((JAXBElement)ob).getValue();
+        o = (Level2A_Tile) ((JAXBElement)ob).getValue();
 
         return o;
     }
@@ -69,40 +67,21 @@ public class MetadataTest {
     @Test
     public void test1() throws Exception
     {
-        Level1CUserProduct o = getUserProduct();
+        Level2A_User_Product o = getUserProduct();
 
         Assert.assertNotNull(o);
 
         L2aMetadata.ProductCharacteristics pchar = L2aMetadataProc.parseCharacteristics(o);
         assertEquals("Sentinel-2A", pchar.spacecraft);
         assertEquals("2013-06-21T12:00:00Z", pchar.datasetProductionDate);
-        assertEquals("LEVEL_1_C", pchar.processingLevel);
+        assertEquals("LEVEL___1_C", pchar.processingLevel);
         assertEquals(0.0000082, pchar.bandInformations[0].spectralResponseValues[1], 1e-15);
-    }
-
-    @Test
-    public void test2() throws Exception
-    {
-        Level1CUserProduct product = getUserProduct();
-
-        Assert.assertNotNull(product);
-
-        APRODUCTINFO.ProductOrganisation info = product.getGeneralInfo().getProductInfo().getProductOrganisation();
-
-        APRODUCTORGANIZATION.Granules beautyQueen = info.getGranuleList().get(0).getGranules();
-        String fallApart = beautyQueen.getGranuleIdentifier();
-
-        assertEquals("S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_N01.01", fallApart);
-
-        S2GranuleDirFilename gdir = S2GranuleDirFilename.create(fallApart);
-
-        Assert.assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", gdir.getMetadataFilename().name);
     }
 
     @Test
     public void test3() throws Exception
     {
-        Level1CUserProduct product = getUserProduct();
+        Level2A_User_Product product = getUserProduct();
 
         Assert.assertNotNull(product);
 
@@ -112,20 +91,18 @@ public class MetadataTest {
         {
             System.err.println(granuleName);
         }
-
     }
-
 
     @Test
     public void testTileProductsMetadataExistence() throws Exception
     {
-        Level1CUserProduct product = getUserProduct();
+        Level2A_User_Product product = getUserProduct();
 
         Assert.assertNotNull(product);
 
         Collection<String> tiles = L2aMetadataProc.getTiles(product);
 
-        URL aUrl = getClass().getResource("l1c/data/S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
+        URL aUrl = getClass().getResource("l1c/data/S2A_OPER_PRD_MSIL2A_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
 
         if(aUrl != null)
         {
@@ -157,7 +134,7 @@ public class MetadataTest {
     @Test
     public void testPopulateTileInfo() throws Exception
     {
-        Level1CTile product = getTileProduct();
+        Level2A_Tile product = getTileProduct();
 
         Assert.assertNotNull(product);
 
@@ -168,7 +145,7 @@ public class MetadataTest {
     @Test
     public void testPopulateOtherTileInfo() throws Exception
     {
-        Level1CTile product = getTileProduct();
+        Level2A_Tile product = getTileProduct();
 
         Assert.assertNotNull(product);
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://pdgs.s2.esa.int/PSD/user_product_Level-1C.xsd" targetNamespace="http://pdgs.s2.esa.int/PSD/user_product_Level-1C.xsd" elementFormDefault="qualified" version="11">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-12.sentinel2.eo.esa.int/PSD/user_product_Level-1C.xsd" targetNamespace="https://psd-12.sentinel2.eo.esa.int/PSD/user_product_Level-1C.xsd" elementFormDefault="qualified" version="12">
 	<xs:element name="Level-1C_User_Product_Structure" type="Level-1C_User_Product_Structure"/>
 	<xs:complexType name="Level-1C_User_Product_Structure">
 		<xs:sequence>

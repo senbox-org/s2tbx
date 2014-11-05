@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!-- edited with XMLSpy v2008 rel. 2 (http://www.altova.com) by mazuki (darksiderg) -->
-<xs:schema xmlns:base="http://gs2.esa.int/DICO/1.0/PDGS/base/" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://gs2.esa.int/DICO/1.0/PDGS/base/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+<xs:schema xmlns:base="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/base/" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/base/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
 	<xs:simpleType name="CENTER">
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
@@ -110,7 +110,7 @@
 		</xs:annotation>
 		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
-		<xs:simpleType name="A_SATELLITE_IDENTIFIER">
+	<xs:simpleType name="A_SATELLITE_IDENTIFIER">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="S2A"/>
 			<xs:enumeration value="S2B"/>

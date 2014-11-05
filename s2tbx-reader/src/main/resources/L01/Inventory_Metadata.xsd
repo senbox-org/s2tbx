@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://pdgs.s2.esa.int/PSD/Inventory_Metadata.xsd" xmlns:date_time="http://gs2.esa.int/DICO/1.0/SY/date_time/" xmlns:item="http://gs2.esa.int/DICO/1.0/DataAccess/item/" xmlns:center="http://gs2.esa.int/DICO/1.0/PDGS/center/" targetNamespace="http://pdgs.s2.esa.int/PSD/Inventory_Metadata.xsd" elementFormDefault="qualified" version="11">
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/DataAccess/item/" schemaLocation="DICO/1.0/DataAccess/item/item.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/center/" schemaLocation="DICO/1.0/PDGS/center/center.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/date_time/" schemaLocation="DICO/1.0/SY/date_time/date_time.xsd"/>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-12.sentinel2.eo.esa.int/PSD/Inventory_Metadata.xsd" xmlns:date_time="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/date_time/" xmlns:item="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/DataAccess/item/" xmlns:center="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/center/" targetNamespace="https://psd-12.sentinel2.eo.esa.int/PSD/Inventory_Metadata.xsd" elementFormDefault="qualified" version="12">
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/DataAccess/item/" schemaLocation="DICO/1.0/DataAccess/item/item.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/center/" schemaLocation="DICO/1.0/PDGS/center/center.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/date_time/" schemaLocation="DICO/1.0/SY/date_time/date_time.xsd"/>
 	<xs:element name="Inventory_Metadata">
 		<xs:complexType>
 			<xs:sequence>

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:gs2="http://gs2.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:center="http://gs2.esa.int/DICO/1.0/PDGS/center/" xmlns:image="http://gs2.esa.int/DICO/1.0/SY/image/" xmlns:date_time="http://gs2.esa.int/DICO/1.0/SY/date_time/" xmlns:base="http://gs2.esa.int/DICO/1.0/PDGS/base/" xmlns:orbital="http://gs2.esa.int/DICO/1.0/SY/orbital/" xmlns:platform="http://gs2.esa.int/DICO/1.0/SY/platform/" xmlns:misc="http://gs2.esa.int/DICO/1.0/SY/misc/" xmlns:geographical="http://gs2.esa.int/DICO/1.0/SY/geographical/" xmlns:spatio="http://gs2.esa.int/DICO/1.0/SY/spatio/" xmlns:tile="http://gs2.esa.int/DICO/1.0/SY/tile/" xmlns:representation="http://gs2.esa.int/DICO/1.0/SY/representation/" xmlns:item="http://gs2.esa.int/DICO/1.0/DataAccess/item/" xmlns:dimap="http://gs2.esa.int/DICO/1.0/PDGS/dimap/" targetNamespace="http://gs2.esa.int/DICO/1.0/PDGS/dimap/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="11">
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/image/" schemaLocation="../../SY/image/image.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/date_time/" schemaLocation="../../SY/date_time/date_time.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/base/" schemaLocation="../base/base.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/center/" schemaLocation="../center/center.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/orbital/" schemaLocation="../../SY/orbital/orbital.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/platform/" schemaLocation="../../SY/platform/platform.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/misc/" schemaLocation="../../SY/misc/misc.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/geographical/" schemaLocation="../../SY/geographical/geographical.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/spatio/" schemaLocation="../../SY/spatio/spatio.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/tile/" schemaLocation="../../SY/tile/tile.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/representation/" schemaLocation="../../SY/representation/representation.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/DataAccess/item/" schemaLocation="../../DataAccess/item/item.xsd"/>
+<xs:schema xmlns:gs2="https://psd-12.sentinel2.eo.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:center="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/center/" xmlns:image="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/image/" xmlns:date_time="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/date_time/" xmlns:base="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/base/" xmlns:orbital="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/orbital/" xmlns:platform="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/platform/" xmlns:misc="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/misc/" xmlns:geographical="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/geographical/" xmlns:spatio="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/spatio/" xmlns:tile="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/tile/" xmlns:representation="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/representation/" xmlns:item="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/DataAccess/item/" xmlns:dimap="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/dimap/" targetNamespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/dimap/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="12">
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/image/" schemaLocation="../../SY/image/image.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/date_time/" schemaLocation="../../SY/date_time/date_time.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/base/" schemaLocation="../base/base.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/center/" schemaLocation="../center/center.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/orbital/" schemaLocation="../../SY/orbital/orbital.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/platform/" schemaLocation="../../SY/platform/platform.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/misc/" schemaLocation="../../SY/misc/misc.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/geographical/" schemaLocation="../../SY/geographical/geographical.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/spatio/" schemaLocation="../../SY/spatio/spatio.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/tile/" schemaLocation="../../SY/tile/tile.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/representation/" schemaLocation="../../SY/representation/representation.xsd"/>
+	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/DataAccess/item/" schemaLocation="../../DataAccess/item/item.xsd"/>
 	<xs:complexType name="AN_IMAGE_POINTING_ANGLES">
 		<xs:annotation>
 			<xs:documentation>Pointing angles </xs:documentation>
@@ -5116,7 +5116,7 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 		<xs:sequence>
 			<xs:element name="Granule_Footprint">
 				<xs:annotation>
-					<xs:documentation>Geolocation of the four corners of the granule envelope (Lat, Lon, H coordinates with horizontal CRS as WGS84 and altitude given over EGM96). The polygon must be closed (the first and last vertices are the same).</xs:documentation>
+					<xs:documentation>Geolocation of the four corners of the granule envelope (Lat, Lon, H coordinates with horizontal CRS as WGS84 and altitude given over EGM96). The polygon must be closed (five points, the first and last vertices are the same).</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -5338,18 +5338,13 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 			<xs:element name="SPACECRAFT_NAME">
 				<xs:annotation>
 					<xs:documentation>Sentinel-2 Spacecraft name</xs:documentation>
-					<xs:appinfo>
-						<gs2:DOC>
-							<gs2:DEFINITION/>
-							<gs2:CREATED_BY>DATATION</gs2:CREATED_BY>
-						</gs2:DOC>
-					</xs:appinfo>
 				</xs:annotation>
-				<xs:complexType>
-					<xs:simpleContent>
-						<xs:extension base="base:A_SATELLITE_ID"/>
-					</xs:simpleContent>
-				</xs:complexType>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="Sentinel-2A"/>
+						<xs:enumeration value="Sentinel-2B"/>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:element>
 			<xs:element name="DATATAKE_TYPE" type="image:A_DATATAKE_TYPE">
 				<xs:annotation>
@@ -5499,10 +5494,9 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
-						<xs:enumeration value="CGS1"/>
-						<xs:enumeration value="CGS2"/>
-						<xs:enumeration value="CGS3"/>
-						<xs:enumeration value="CGS4"/>
+						<xs:enumeration value="SGS_"/>
+						<xs:enumeration value="MPS_"/>
+						<xs:enumeration value="MTI_"/>
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:element>
@@ -5574,7 +5568,7 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 					<xs:sequence>
 						<xs:element name="ACTIVE_DETECTOR" type="image:A_DETECTOR_NUMBER" maxOccurs="12"/>
 					</xs:sequence>
-					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
+					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Expertise"/>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="TDI_Configuration_List">
@@ -6083,7 +6077,7 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 			</xs:element>
 			<xs:element name="ANC_DATA_REF" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>Reference to the folder containing the SAD raw data</xs:documentation>
+					<xs:documentation>Reference to the ANC_DATA folder containing the SAD raw data</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:simpleContent>
@@ -6091,6 +6085,33 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 						</xs:extension>
 					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Other_Ancillary_Data" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="CSM_Flags_List">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Values">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="INUSE_FLAG">
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:enumeration value="NOT_USEABLE"/>
+															<xs:enumeration value="USEABLE"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Expertise"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
@@ -6522,7 +6543,6 @@ available.</xs:documentation>
 											<xs:documentation>Space separated list of 4 quaternion values ordered as Q0 Q1 Q2 Q3 (qv1 qv2 qv3 qs)</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="QUATERNION_STATUS" type="platform:A_QUATERNION_STATUS"/>
 									<xs:element name="QUATERNION_VALIDITY" type="misc:A_VALIDITY_FLAG">
 										<xs:annotation>
 											<xs:documentation>When 1 : quaternion is valid</xs:documentation>
@@ -6621,6 +6641,16 @@ available.</xs:documentation>
 											</xs:appinfo>
 										</xs:annotation>
 									</xs:element>
+									<xs:element name="ATTITUDE_QUALITY_INDICATOR">
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:enumeration value="INVALID"/>
+												<xs:enumeration value="PROPAGATED"/>
+												<xs:enumeration value="ONE_VALID_STR"/>
+												<xs:enumeration value="TWO_VALID_STR"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
@@ -6675,11 +6705,6 @@ available.</xs:documentation>
 																	<xs:documentation>Space separated list of 4 quaternion values ordered as (Q0 Q1 Q2 Q3) = (qs qv1 qv2 qv3)  (inertial attitude J2000).</xs:documentation>
 																</xs:annotation>
 															</xs:element>
-															<xs:element name="QUATERNION_STATUS">
-																<xs:simpleType>
-																	<xs:restriction base="platform:A_QUATERNION_STATUS"/>
-																</xs:simpleType>
-															</xs:element>
 															<xs:element name="ANGULAR_RATE" type="misc:A_LIST_OF_3_DOUBLE_WITH_DEGS_ATTR">
 																<xs:annotation>
 																	<xs:documentation>Angular rate (X, Y, Z) in BRF in deg/s</xs:documentation>
@@ -6695,7 +6720,7 @@ available.</xs:documentation>
 																	<xs:documentation>Julian date used for precession correction (if enabled); specified in number of days since the epoch date of the built-in star catalog; day 0 corresponds to JD 2451545</xs:documentation>
 																</xs:annotation>
 															</xs:element>
-															<xs:element name="ATTITUDE_QUALITY_INDICATOR">
+															<xs:element name="ATTITUDE_QUALITY">
 																<xs:annotation>
 																	<xs:appinfo>
 																		<gs2:DOC>
@@ -6706,10 +6731,11 @@ available.</xs:documentation>
 																</xs:annotation>
 																<xs:simpleType>
 																	<xs:restriction base="xs:string">
-																		<xs:enumeration value="SOL_INVALID"/>
-																		<xs:enumeration value="SOL_PROPAG"/>
-																		<xs:enumeration value="ONE_STRMEA_AVL"/>
-																		<xs:enumeration value="TWO_STRMEA_AVL"/>
+																		<xs:enumeration value="NOATTITUDE"/>
+																		<xs:enumeration value="APRIORIATT"/>
+																		<xs:enumeration value="COARSEATT"/>
+																		<xs:enumeration value="UNCONFATT"/>
+																		<xs:enumeration value="VALIDATT"/>
 																	</xs:restriction>
 																</xs:simpleType>
 															</xs:element>
@@ -7156,7 +7182,7 @@ available.</xs:documentation>
 	</xs:complexType>
 	<xs:complexType name="A_THERMAL_DATA_INV">
 		<xs:sequence>
-			<xs:element name="FPA_List">
+			<xs:element name="FPA_List" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>FPA temperature information (thermal control and monitoring, relevant to the detector transmission VNIR or SWIR) </xs:documentation>
 					<xs:appinfo>
@@ -7946,7 +7972,16 @@ available.</xs:documentation>
 								<xs:documentation>Processing Baseline</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="DataStrip_Generation_Info" type="dimap:A_PROCESSING_STEP_LIST"/>
+						<xs:element name="PROCESSING_CENTER" type="center:A_S2_PROCESSING_CENTRE">
+							<xs:annotation>
+								<xs:documentation>Processing Center name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="UTC_DATE_TIME" type="date_time:AN_UTC_DATE_TIME">
+							<xs:annotation>
+								<xs:documentation>Represents the execution date of the first launch of the first IDP-SC of the processing chain at a specific level</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Expertise"/>
 					<!--<xs:attribute name="metadataLevel" type="xs:string" fixed="Expertise"/>-->
@@ -8612,6 +8647,39 @@ available.</xs:documentation>
 					<xs:documentation>Reflectance quantification value (in order to convert digit count into reflectance)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="Reflectance_Conversion">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="U" type="xs:double">
+							<xs:annotation>
+								<xs:documentation>Correction to take into account the Sun-Earth distance variation (this correction is computed using the acquisition date)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Solar_Irradiance_List">
+							<xs:annotation>
+								<xs:documentation>Reflectance parameters for each band</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="SOLAR_IRRADIANCE" maxOccurs="13">
+										<xs:annotation>
+											<xs:documentation>Equivalent solar irradiance</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:simpleContent>
+												<xs:extension base="xs:double">
+													<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+													<xs:attribute name="unit" type="xs:string" use="required" fixed="W/m²/µm"/>
+												</xs:extension>
+											</xs:simpleContent>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="A_GEOMETRIC_DATA_DSL1C">
@@ -8847,7 +8915,7 @@ available.</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="Correlation_Quality" type="dimap:A_CORRELATION_QUALITY">
+						<xs:element name="Correlation_Quality" type="dimap:A_CORRELATION_QUALITY" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>Indicators allowing to evaluate the success of the correlation</xs:documentation>
 							</xs:annotation>
@@ -8948,7 +9016,7 @@ available.</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="Correlation_Quality" type="dimap:A_CORRELATION_QUALITY">
+						<xs:element name="Correlation_Quality" type="dimap:A_CORRELATION_QUALITY" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>Indicators allowing to evaluate the success of the correlation</xs:documentation>
 							</xs:annotation>
@@ -9628,6 +9696,39 @@ Examples: EPSG:4326, RAW</xs:documentation>
 								<xs:documentation>Reflectance quantification value (in order to convert digit count into reflectance)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="Reflectance_Conversion">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="U" type="xs:double">
+										<xs:annotation>
+											<xs:documentation>Correction to take into account the Sun-Earth distance variation (this correction is computed using the acquisition date)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Solar_Irradiance_List">
+										<xs:annotation>
+											<xs:documentation>Reflectance parameters for each band</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="SOLAR_IRRADIANCE" maxOccurs="13">
+													<xs:annotation>
+														<xs:documentation>Equivalent solar irradiance</xs:documentation>
+													</xs:annotation>
+													<xs:complexType>
+														<xs:simpleContent>
+															<xs:extension base="xs:double">
+																<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+																<xs:attribute name="unit" type="xs:string" use="required" fixed="W/m²/µm"/>
+															</xs:extension>
+														</xs:simpleContent>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
 						<xs:element name="Spectral_Information_List" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
@@ -9782,7 +9883,7 @@ Examples: EPSG:4326, RAW</xs:documentation>
 					<xs:documentation>Area Of Interest selected by the User</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="FULL_SWATH_DATATAKE " type="xs:boolean">
+			<xs:element name="FULL_SWATH_DATATAKE" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>Option to extend the user selected area to the full MSI swath (L0/L1A/L1B) or the full Datatake (L0/L1A/L1B/L1C)</xs:documentation>
 				</xs:annotation>
@@ -11119,7 +11220,7 @@ Examples: EPSG:4326, RAW</xs:documentation>
 									<xs:documentation>Coordinates position (2D, Lat/Lon) of the minimal point (bottom right) within the envelope</xs:documentation>
 								</xs:annotation>
 							</xs:element>
-							<xs:element name="APPER_CORNER" type="misc:A_LIST_OF_2_DOUBLE">
+							<xs:element name="UPPER_CORNER" type="misc:A_LIST_OF_2_DOUBLE">
 								<xs:annotation>
 									<xs:documentation>Coordinates position (2D, Lat/Lon) of the maximal point (upper left) within the envelope</xs:documentation>
 								</xs:annotation>

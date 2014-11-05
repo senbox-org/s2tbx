@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
-<xs:schema xmlns="http://gs2.esa.int/DATA_STRUCTURE/olqcReport" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://gs2.esa.int/DATA_STRUCTURE/olqcReport" elementFormDefault="qualified" attributeFormDefault="unqualified" version="10">
+<xs:schema xmlns="http://gs2.esa.int/DATA_STRUCTURE/olqcReport" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://gs2.esa.int/DATA_STRUCTURE/olqcReport" elementFormDefault="qualified" attributeFormDefault="unqualified" version="12">
 	<xs:element name="Earth_Explorer_File">
 		<xs:annotation>
 			<xs:documentation>EOFFS entry point of this xml file</xs:documentation>

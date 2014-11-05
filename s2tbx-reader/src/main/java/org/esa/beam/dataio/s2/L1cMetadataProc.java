@@ -1,8 +1,9 @@
 package org.esa.beam.dataio.s2;
 
-import _int.esa.gs2.dico._1_0.pdgs.dimap.*;
-import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1C_User_Product;
+
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
+import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
@@ -163,7 +164,7 @@ public class L1cMetadataProc {
         A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getProduct_Info().getDatatake();
 
         L1cMetadata.ProductCharacteristics characteristics = new L1cMetadata.ProductCharacteristics();
-        characteristics.spacecraft = info.getSPACECRAFT_NAME().getValue();
+        characteristics.spacecraft = info.getSPACECRAFT_NAME();
         characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString();
         characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString();
 
@@ -196,7 +197,7 @@ public class L1cMetadataProc {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
 
         L1cMetadata.ProductCharacteristics characteristics= new L1cMetadata.ProductCharacteristics();
-        characteristics.spacecraft = product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME().getValue();
+        characteristics.spacecraft = product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME();
         characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString();
         characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value();
 

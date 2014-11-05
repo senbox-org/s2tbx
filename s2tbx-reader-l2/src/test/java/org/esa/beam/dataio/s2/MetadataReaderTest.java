@@ -1,8 +1,8 @@
 package org.esa.beam.dataio.s2;
 
-import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata.Level1CDatastrip;
-import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata.Level1CTile;
-import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1CUserProduct;
+import _int.esa.s2.pdgs.psd.s2_pdi_level_2a_datastrip_structure.Level2A_Datastrip;
+import _int.esa.s2.pdgs.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
+import _int.esa.s2.pdgs.psd.s2_user_product_level_2a_metadata.Level2A_User_Product;
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -14,9 +14,9 @@ import java.io.InputStream;
  */
 public class MetadataReaderTest {
 
-    public Level1CUserProduct getUserProduct() throws Exception
+    public Level2A_User_Product getUserProduct() throws Exception
     {
-        Level1CUserProduct o = (Level1CUserProduct) readJaxbFromStreamResource("l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
+        Level2A_User_Product o = (Level2A_User_Product) readJaxbFromStreamResource("l1c/metadata/S2A_OPER_MTD_SAFL2A_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
         return o;
     }
 
@@ -38,7 +38,7 @@ public class MetadataReaderTest {
     @Test
     public void test1() throws Exception
     {
-        Level1CUserProduct o = getUserProduct();
+        Level2A_User_Product o = getUserProduct();
 
         Assert.assertNotNull(o);
     }
@@ -46,7 +46,7 @@ public class MetadataReaderTest {
     @Test
     public void test2() throws Exception
     {
-        Level1CTile o = null;
+        Level2A_Tile o = null;
 
         try {
             JAXBContext jaxbContext = JAXBContext
@@ -54,11 +54,11 @@ public class MetadataReaderTest {
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             Marshaller marshaller = jaxbContext.createMarshaller();
 
-            InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLF.xml");
+            InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_L2A_TL_CGS1_20130621T120000_A000065_T14SLF.xml");
 
             Object ob =  unmarshaller.unmarshal(stream);
 
-            o = (Level1CTile) ((JAXBElement)ob).getValue();
+            o = (Level2A_Tile) ((JAXBElement)ob).getValue();
 
 
         } catch (JAXBException e) {
@@ -69,7 +69,7 @@ public class MetadataReaderTest {
     @Test
     public void test3() throws Exception
     {
-        Level1CDatastrip o = null;
+        Level2A_Datastrip o = null;
 
         try {
             JAXBContext jaxbContext = JAXBContext
@@ -77,11 +77,11 @@ public class MetadataReaderTest {
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             Marshaller marshaller = jaxbContext.createMarshaller();
 
-            InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928.xml");
+            InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_L2A_DS_CGS1_20130621T120000_S20091211T165928.xml");
 
             Object ob =  unmarshaller.unmarshal(stream);
 
-            o = (Level1CDatastrip) ((JAXBElement)ob).getValue();
+            o = (Level2A_Datastrip) ((JAXBElement)ob).getValue();
 
         } catch (JAXBException e) {
             e.printStackTrace();

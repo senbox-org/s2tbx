@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XMLSpy v2008 rel. 2 (http://www.altova.com) by mazuki (darksiderg) -->
-<xs:schema xmlns:gs2="http://gs2.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:image="http://gs2.esa.int/DICO/1.0/SY/image/" targetNamespace="http://gs2.esa.int/DICO/1.0/SY/image/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+<xs:schema xmlns:gs2="https://psd-12.sentinel2.eo.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:image="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/image/" targetNamespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/image/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
 	<xs:simpleType name="A_10M_BAND_NUMBER">
 		<xs:annotation>
 			<xs:documentation>Spectral band identification</xs:documentation>
