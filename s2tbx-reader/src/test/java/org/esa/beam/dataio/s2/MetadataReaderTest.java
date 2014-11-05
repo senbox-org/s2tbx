@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.s2;
 
+
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata.Level1C_Datastrip;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
@@ -22,7 +23,7 @@ public class MetadataReaderTest {
 
     public Object readJaxbFromStreamResource(String streamResource) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext
-                .newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap");
+                .newInstance("https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap");
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -50,7 +51,7 @@ public class MetadataReaderTest {
 
         try {
             JAXBContext jaxbContext = JAXBContext
-                    .newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap");
+                    .newInstance("https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap");
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -73,7 +74,7 @@ public class MetadataReaderTest {
 
         try {
             JAXBContext jaxbContext = JAXBContext
-                    .newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap");
+                    .newInstance("https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap");
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             Marshaller marshaller = jaxbContext.createMarshaller();
 
