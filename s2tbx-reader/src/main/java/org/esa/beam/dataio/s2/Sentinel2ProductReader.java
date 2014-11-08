@@ -5,6 +5,7 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
+import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -23,6 +24,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.*;
+import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
@@ -542,6 +544,20 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                     null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
                     new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+
+            // todo add crop or extend here to ensure "right" size...
+            Rectangle fitrect = new Rectangle(0, 0, (int) sceneDescription.getSceneEnvelope().getWidth() / bandInfo.wavebandInfo.resolution.resolution, (int) sceneDescription.getSceneEnvelope().getHeight() / bandInfo.wavebandInfo.resolution.resolution);
+            final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitrect, Math.pow(2.0, level));
+
+            BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
+
+            if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
+                int rightPad = destBounds.width - mosaicOp.getWidth();
+                int bottomPad = destBounds.height - mosaicOp.getHeight();
+                BeamLogManager.getSystemLogger().fine(String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
+
+                mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
+            }
 
             if (this.bandInfo.wavebandInfo.resolution != S2SpatialResolution.R10M)
             {
