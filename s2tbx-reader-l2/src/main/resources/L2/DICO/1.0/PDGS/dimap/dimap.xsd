@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- edited with XMLSpy v2008 rel. 2 (http://www.altova.com) by mazuki (darksiderg) -->
-<xs:schema xmlns:gs2="http://gs2.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:center="http://gs2.esa.int/DICO/1.0/PDGS/center/" xmlns:image="http://gs2.esa.int/DICO/1.0/SY/image/" xmlns:date_time="http://gs2.esa.int/DICO/1.0/SY/date_time/" xmlns:base="http://gs2.esa.int/DICO/1.0/PDGS/base/" xmlns:orbital="http://gs2.esa.int/DICO/1.0/SY/orbital/" xmlns:platform="http://gs2.esa.int/DICO/1.0/SY/platform/" xmlns:misc="http://gs2.esa.int/DICO/1.0/SY/misc/" xmlns:geographical="http://gs2.esa.int/DICO/1.0/SY/geographical/" xmlns:spatio="http://gs2.esa.int/DICO/1.0/SY/spatio/" xmlns:tile="http://gs2.esa.int/DICO/1.0/SY/tile/" xmlns:representation="http://gs2.esa.int/DICO/1.0/SY/representation/" xmlns:item="http://gs2.esa.int/DICO/1.0/DataAccess/item/" xmlns:dimap="http://gs2.esa.int/DICO/1.0/PDGS/dimap/" targetNamespace="http://gs2.esa.int/DICO/1.0/PDGS/dimap/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+<xs:schema xmlns:gs2="http://gs2.esa.int/doc/1.0/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:center="http://gs2.esa.int/DICO/1.0/PDGS/center/" xmlns:image="http://gs2.esa.int/DICO/1.0/SY/image/" xmlns:date_time="http://gs2.esa.int/DICO/1.0/SY/date_time/" xmlns:base="http://gs2.esa.int/DICO/1.0/PDGS/base/" xmlns:orbital="http://gs2.esa.int/DICO/1.0/SY/orbital/" xmlns:platform="http://gs2.esa.int/DICO/1.0/SY/platform/" xmlns:misc="http://gs2.esa.int/DICO/1.0/SY/misc/" xmlns:geographical="http://gs2.esa.int/DICO/1.0/SY/geographical/" xmlns:spatio="http://gs2.esa.int/DICO/1.0/SY/spatio/" xmlns:tile="http://gs2.esa.int/DICO/1.0/SY/tile/" xmlns:representation="http://gs2.esa.int/DICO/1.0/SY/representation/" xmlns:item="http://gs2.esa.int/DICO/1.0/DataAccess/item/" xmlns:dimap="http://gs2.esa.int/DICO/1.0/PDGS/dimap/" targetNamespace="http://gs2.esa.int/DICO/1.0/PDGS/dimap/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="10">
 	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/image/" schemaLocation="../../SY/image/image.xsd"/>
 	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/date_time/" schemaLocation="../../SY/date_time/date_time.xsd"/>
 	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/base/" schemaLocation="../base/base.xsd"/>
@@ -530,7 +530,7 @@
 						<xs:element name="Detector_List">
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="Detector">
+									<xs:element name="Detector" maxOccurs="unbounded">
 										<xs:complexType>
 											<xs:sequence>
 												<xs:element name="Band_List">
@@ -610,7 +610,7 @@
 								<xs:documentation>Number of  lost packets for  the whole datastrip</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="NUMBER_OF_T00_DEGRADED_PACKETS" type="xs:nonNegativeInteger">
+						<xs:element name="NUMBER_OF_TOO_DEGRADED_PACKETS" type="xs:nonNegativeInteger">
 							<xs:annotation>
 								<xs:documentation>Number of too degraded packets (i.e. erroneous packets not trustworthy, meaning they will not be used by further processing) for  the whole datastrip</xs:documentation>
 							</xs:annotation>
@@ -623,7 +623,7 @@
 					</xs:sequence>
 					<xs:attribute name="degradationPercentage">
 						<xs:annotation>
-							<xs:documentation>Percentage of lost or degraded (either too degraded or not) packets in the data-strip</xs:documentation>
+							<xs:documentation>Percentage of lost or degraded (either too degraded or not) ancillary data packets in the data-strip</xs:documentation>
 						</xs:annotation>
 						<xs:simpleType>
 							<xs:restriction base="xs:float">
@@ -781,7 +781,7 @@ Possible types of error (from AnaTm specifications in DPM) are:
 							</xs:simpleType>
 						</xs:element>
 					</xs:sequence>
-					<xs:attribute name="band_Id" use="required">
+					<xs:attribute name="bandId" use="required">
 						<xs:annotation>
 							<xs:documentation>Band identifier</xs:documentation>
 						</xs:annotation>
@@ -792,7 +792,7 @@ Possible types of error (from AnaTm specifications in DPM) are:
 							</xs:restriction>
 						</xs:simpleType>
 					</xs:attribute>
-					<xs:attribute name="detector_Id" use="required">
+					<xs:attribute name="detectorId" use="required">
 						<xs:annotation>
 							<xs:documentation>Detector identifier</xs:documentation>
 						</xs:annotation>
@@ -1079,145 +1079,6 @@ Possible types of error (from AnaTm specifications in DPM) are:
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-	<!--<xs:complexType name="A_TIME_STAMP">
-		<xs:sequence>
-			<xs:element name="LINE_PERIOD" type="misc:A_DOUBLE_WITH_MS_UNIT_ATTR">
-				<xs:annotation>
-					<xs:documentation>Line period for the acquisition of line of 10 m full-resolution image data</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Band_Time_Stamp" maxOccurs="13">
-				<xs:annotation>
-					<xs:documentation>Datation model : for each couple (band, detector)</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="Detector" maxOccurs="unbounded">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="REFERENCE_LINE" type="xs:int">
-										<xs:annotation>
-											<xs:documentation>Line number corresponding to the time stamp</xs:documentation>
-											<xs:appinfo>
-												<gs2:DOC>
-													<gs2:CREATED_BY>DATATION</gs2:CREATED_BY>
-													<gs2:UPDATED_BY>INIT_LOC_PROD</gs2:UPDATED_BY>
-												</gs2:DOC>
-											</xs:appinfo>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="GPS_TIME" type="date_time:A_GPS_DATE_TIME">
-										<xs:annotation>
-											<xs:documentation>Time-stamp</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-								</xs:sequence>
-								<xs:attribute name="detector_id" type="image:A_DETECTOR_NUMBER" use="required">
-									<xs:annotation>
-										<xs:documentation>Detector identifier</xs:documentation>
-									</xs:annotation>
-								</xs:attribute>
-							</xs:complexType>
-						</xs:element>
-					</xs:sequence>
-					<xs:attribute name="band_id" type="image:A_BAND_NUMBER" use="required"/>
-				</xs:complexType>
-				<xs:unique name="detector_id_band_time_stamp_unique">
-					<xs:selector xpath="./Detector"/>
-					<xs:field xpath="@detector_id"/>
-				</xs:unique>
-			</xs:element>
-			<xs:element name="GPS_SYNC" type="misc:A_VALIDITY_FLAG">
-				<xs:annotation>
-					<xs:documentation>Flag to indicate if MSI is synchronize with GPS time</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="TDOP_QUALITY" type="xs:double">
-				<xs:annotation>
-					<xs:documentation>Synthetis of TDOP</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="THEORETICAL_LINE_PERIOD" type="misc:A_DOUBLE_WITH_MS_UNIT_ATTR" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>Theoretical line period for the acquisition of line of 10 m full-resolution image data</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Quality_Indicators" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>Created when datation models are estimated through linear regression.</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="Global">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="RMOY" type="misc:A_DOUBLE_WITH_S_UNIT_ATTR">
-										<xs:annotation>
-											<xs:documentation>Global least square residual </xs:documentation>
-										</xs:annotation>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
-						<xs:element name="GSP_List">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="GSP" maxOccurs="unbounded">
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="RMOY" type="misc:A_DOUBLE_WITH_S_UNIT_ATTR">
-													<xs:annotation>
-														<xs:documentation>Least square residual for the GSP Rmoy(GSP) </xs:documentation>
-													</xs:annotation>
-												</xs:element>
-											</xs:sequence>
-											<xs:attribute name="gsp_id" use="required">
-												<xs:simpleType>
-													<xs:restriction base="image:A_GSP_ID"/>
-												</xs:simpleType>
-											</xs:attribute>
-										</xs:complexType>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-							<xs:unique name="gsp_id_unique">
-								<xs:selector xpath="./GSP"/>
-								<xs:field xpath="@gsp_id"/>
-							</xs:unique>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-		<xs:attribute name="used_model" use="required">
-			<xs:simpleType>
-				<xs:restriction base="xs:string">
-					<xs:enumeration value="INITIAL"/>
-					<xs:enumeration value="EXOGENEOUS"/>
-					<xs:enumeration value="CORRECTED"/>
-				</xs:restriction>
-			</xs:simpleType>
-		</xs:attribute>
-	</xs:complexType>-->
-	<!--<xs:complexType name="A_SENSOR_CONFIGURATION">
-		<xs:sequence>
-			<xs:element name="Acquisition_Configuration" type="dimap:AN_ACQUISITION_CONFIGURATION"/>
-			<xs:element name="Source_Packet_Description" type="dimap:A_SOURCE_PACKET_DESCRIPTION">
-				<xs:annotation>
-					<xs:documentation>Source packet information </xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Time_Stamp" type="dimap:A_TIME_STAMP">
-				<xs:annotation>
-					<xs:documentation>Datation model</xs:documentation>
-				</xs:annotation>
-				<xs:unique name="band_id_time_stamp_expertise_unique">
-					<xs:selector xpath="./Band_Time_Stamp"/>
-					<xs:field xpath="@band_id"/>
-				</xs:unique>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>-->
 	<xs:complexType name="A_SENSOR_CONFIGURATION_EXPERTISE">
 		<xs:sequence>
 			<xs:element name="Acquisition_Configuration" type="dimap:AN_ACQUISITION_CONFIGURATION_EXPERTISE"/>
@@ -1285,895 +1146,6 @@ Possible types of error (from AnaTm specifications in DPM) are:
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
-	<!--<xs:complexType name="A_RAW_ATTITUDE">
-		<xs:annotation>
-			<xs:appinfo>
-				<gs2:DOC>
-					<gs2:DEFINITION>Raw attitudes</gs2:DEFINITION>
-					<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-					<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-					<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-					<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-				</gs2:DOC>
-			</xs:appinfo>
-		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="STR_List">
-				<xs:annotation>
-					<xs:documentation>Startracker in the J2000 frame. There are 3 startrackers among which one in cold redundancy.</xs:documentation>
-					<xs:appinfo>
-						<gs2:DOC>
-							<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-						</gs2:DOC>
-					</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="STR" minOccurs="2" maxOccurs="3">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="Attitude_Data_List">
-										<xs:annotation>
-											<xs:documentation>STR data at 10 Hz coming from Attitude Data Block</xs:documentation>
-											<xs:appinfo>
-												<gs2:DOC>
-													<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-												</gs2:DOC>
-											</xs:appinfo>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="Attitude_Data" maxOccurs="unbounded">
-													<xs:complexType>
-														<xs:sequence>
-															<xs:element name="QUATERNION_VALUES" type="platform:A_QUATERNION">
-																<xs:annotation>
-																	<xs:documentation>Space separated list of 4 quaternion values ordered as (Q0 Q1 Q2 Q3) = (qs qv1 qv2 qv3)  (inertial attitude J2000).</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="QUATERNION_STATUS" type="platform:A_QUATERNION_STATUS">
-																<xs:annotation>
-																	<xs:documentation>0:invalid, 1:propagated, 2: 1STR, 3:2 STR</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="ANGULAR_RATE" type="misc:A_LIST_OF_3_DOUBLE_WITH_DEGS_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Angular rate (X, Y, Z) in BRF in deg/s</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="GPS_TIME" type="date_time:A_GPS_DATE_TIME">
-																<xs:annotation>
-																	<xs:documentation>Time stamp of the center of integration associated with the attitude (with  a precision up to 2pow-16 seconds). This field is computed from the centerOfIntegrationTimeStamp value provided in the data block</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="Julian_Date" type="date_time:A_JULIAN_DAY">
-																<xs:annotation>
-																	<xs:documentation>Julian date used for precession correction (if enabled); specified in number of days since the epoch date of the built-in star catalog; day 0 corresponds to JD 2451545</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="ATTITUDE_QUALITY">
-																<xs:annotation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:DEFINITION>Navigation Solution Method: NO_ATTITUDE : No attitude available, A_PRIORI_ATTITUDE : Attitude based solely on user input, COARSE_ATTITUDE : Predicted from previous measurements, UNCONFIRMED_ATTITUDE : Calculated from current measurements but not yet confirmed, VALID_ATTITUDE : Like unconfirmed Attitude but additionally validated</gs2:DEFINITION>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																	<xs:documentation>Attitude Quality</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-																<xs:simpleType>
-																	<xs:restriction base="xs:string">
-																		<xs:enumeration value="NO_ATTITUDE"/>
-																		<xs:enumeration value="A_PRIORI_ATTITUDE"/>
-																		<xs:enumeration value="COARSE_ATTITUDE"/>
-																		<xs:enumeration value="UNCONFIRMED_ATTITUDE"/>
-																		<xs:enumeration value="VALID_ATTITUDE"/>
-																	</xs:restriction>
-																</xs:simpleType>
-															</xs:element>
-															<xs:element name="RATE_QUALITY">
-																<xs:annotation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:DEFINITION>Rate quality: NO_RATE : No rate information available, COARSE_RATE : A-priori rate or rate derived from star coordinates, FINE_RATE : Rate derived from attitude, FILTERED_RATE :  Rate derived from attitude and filtered</gs2:DEFINITION>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																	<xs:documentation>Rate Quality</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-																<xs:simpleType>
-																	<xs:restriction base="xs:string">
-																		<xs:enumeration value="NO_RATE"/>
-																		<xs:enumeration value="COARSE_RATE"/>
-																		<xs:enumeration value="FINE_RATE"/>
-																		<xs:enumeration value="FILTERED_RATE"/>
-																	</xs:restriction>
-																</xs:simpleType>
-															</xs:element>
-															<xs:element name="VALIDITY_RATE">
-																<xs:annotation>
-																	<xs:documentation>if set to 1, the rate information is valid (i.e. derived from current measurements)</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-																<xs:simpleType>
-																	<xs:restriction base="xs:int">
-																		<xs:minInclusive value="0"/>
-																		<xs:maxInclusive value="1"/>
-																		<xs:enumeration value="1"/>
-																	</xs:restriction>
-																</xs:simpleType>
-															</xs:element>
-														</xs:sequence>
-													</xs:complexType>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-									<xs:element name="Status_And_Health_Data_List">
-										<xs:annotation>
-											<xs:documentation>STR status and health data block (at 1 Hz).</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="Status_And_Health_Data" maxOccurs="unbounded">
-													<xs:complexType>
-														<xs:sequence>
-															<xs:element name="OP_MODE" type="xs:string">
-																<xs:annotation>
-																	<xs:documentation>STR operating mode. possible values are: BOOT : Boot mode, STANDBY : Standby mode, PHOTO :  Photo mode, AADF : AAD mode with submode ‘full frame’, AADW : AAD mode with submode ‘window’, NAT : NAT mode</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="TEC_MODE" type="xs:string">
-																<xs:annotation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																	<xs:documentation>Thermo electric cooler mode. possible values are: COOLER_OFF : TEC switched off, COOLER_CONTROLLED : TEC operating in controlled mode to reach target temperature, COOLER_MAXIMUM : TEC operating at maximum power</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="TARGET" type="misc:A_DOUBLE_WITH_DEGREE_CELSIUS_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Target temperature for temperature control</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="DETECTOR" type="misc:A_DOUBLE_WITH_DEGREE_CELSIUS_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Detector temperature</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="OPTICS" type="misc:A_DOUBLE_WITH_DEGREE_CELSIUS_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Optics temperature</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="HOUSING" type="misc:A_DOUBLE_WITH_DEGREE_CELSIUS_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Housing temperature</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="SYNC_SOURCE" type="xs:string">
-																<xs:annotation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																	<xs:documentation>The source selected for external synchronization. possible values are : NONE :  no external synchronization, PRIMARY : external synchronization via primary line, SECONDARY : external synchronization via secondary line, ANY : external synchronization via XOR of both lines</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="SECONDS_SINCE_TIME_SYNC">
-																<xs:annotation>
-																	<xs:documentation>The number of seconds since the latest received time synchronization; saturates at 63 seconds</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-																<xs:complexType>
-																	<xs:simpleContent>
-																		<xs:restriction base="misc:A_DOUBLE_WITH_S_UNIT_ATTR">
-																			<xs:maxInclusive value="63"/>
-																		</xs:restriction>
-																	</xs:simpleContent>
-																</xs:complexType>
-															</xs:element>
-															<xs:element name="TRACKABLE_STARS">
-																<xs:annotation>
-																	<xs:documentation>Number of trackable stars</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-																<xs:simpleType>
-																	<xs:restriction base="xs:int">
-																		<xs:minInclusive value="1"/>
-																	</xs:restriction>
-																</xs:simpleType>
-															</xs:element>
-															<xs:element name="TRACKED_STARS">
-																<xs:annotation>
-																	<xs:documentation>Number of stars tracked </xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-																<xs:simpleType>
-																	<xs:restriction base="xs:int">
-																		<xs:minInclusive value="1"/>
-																	</xs:restriction>
-																</xs:simpleType>
-															</xs:element>
-															<xs:element name="IDENTIFIED_STARS">
-																<xs:annotation>
-																	<xs:documentation>Number of identified stars </xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-																<xs:simpleType>
-																	<xs:restriction base="xs:int">
-																		<xs:minInclusive value="0"/>
-																	</xs:restriction>
-																</xs:simpleType>
-															</xs:element>
-															<xs:element name="USED_STARS">
-																<xs:annotation>
-																	<xs:documentation>Number of stars used for attitude determination</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-																<xs:simpleType>
-																	<xs:restriction base="xs:int">
-																		<xs:minInclusive value="1"/>
-																	</xs:restriction>
-																</xs:simpleType>
-															</xs:element>
-															<xs:element name="ATT_RESULT" type="xs:string">
-																<xs:annotation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																	<xs:documentation>Last result of attitude determination:			-  NOT_ENOUGH_STARS : Not enough stars suitable for attitude determination		-  SUCCESS : Attitude calculated successfully		-  REFINED : Like attitudeSuccess but with additional a-posteriori refinement			-  NA : Attitude determination failed &lt;br></xs:documentation>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="ID_RESULT" type="xs:string">
-																<xs:annotation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																	<xs:documentation>Last result of star identification error:			- IDLE  : Star identification not yet started			- SUCCESS  : Star identification succeeded		- RUNNING  : Star identification is running		- NOT_ENOUGH_STARS  : Not enough tracked stars for star identification			- NA  : Star identification failed</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-														</xs:sequence>
-													</xs:complexType>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-									<xs:element name="GPS_SYNC" type="misc:A_VALIDITY_FLAG">
-										<xs:annotation>
-											<xs:documentation>Flag to indicate if STR is synchronize with GPS time</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-								</xs:sequence>
-								<xs:attribute name="str_id" use="required">
-									<xs:simpleType>
-										<xs:restriction base="xs:string">
-											<xs:enumeration value="STR1"/>
-											<xs:enumeration value="STR2"/>
-											<xs:enumeration value="STR3"/>
-										</xs:restriction>
-									</xs:simpleType>
-								</xs:attribute>
-							</xs:complexType>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-				<xs:unique name="str_id_unique">
-					<xs:selector xpath="./STR"/>
-					<xs:field xpath="@str_id"/>
-				</xs:unique>
-			</xs:element>
-			<xs:element name="IMU_List">
-				<xs:annotation>
-					<xs:documentation>IMU values are angle increment data in radians, around the rotation axis of the IMU. 4 IMU are in hot redundancy.</xs:documentation>
-					<xs:appinfo>
-						<gs2:DOC>
-							<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-						</gs2:DOC>
-					</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="IMU" maxOccurs="4">
-							<xs:annotation>
-								<xs:documentation>Inertial Measurement Unit</xs:documentation>
-							</xs:annotation>
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="Value" maxOccurs="unbounded">
-										<xs:annotation>
-											<xs:documentation>One sample for one GPS_TIME.</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="FILTERED_ANGLE" type="misc:A_DOUBLE_WITH_RAD_ATTR">
-													<xs:annotation>
-														<xs:documentation>IMU filtered data are angle increments</xs:documentation>
-														<xs:appinfo>
-															<gs2:DOC>
-																<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-															</gs2:DOC>
-														</xs:appinfo>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="RAW_ANGLE" type="misc:A_DOUBLE_WITH_RAD_ATTR">
-													<xs:annotation>
-														<xs:documentation>IMU raw data are angle increments</xs:documentation>
-														<xs:appinfo>
-															<gs2:DOC>
-																<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-															</gs2:DOC>
-														</xs:appinfo>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="GPS_TIME" type="date_time:A_GPS_DATE_TIME">
-													<xs:annotation>
-														<xs:documentation>GPS time value</xs:documentation>
-														<xs:appinfo>
-															<gs2:DOC>
-																<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-															</gs2:DOC>
-														</xs:appinfo>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="Temperatures">
-													<xs:complexType>
-														<xs:sequence>
-															<xs:element name="ORGANISER" type="misc:A_DOUBLE_WITH_MVOLT_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Organiser temperature</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="SIA" type="misc:A_DOUBLE_WITH_MVOLT_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Sagnac Interferometer Assembly temperature</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="OPTICAL_SOURCE" type="misc:A_DOUBLE_WITH_MVOLT_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Optical Source temperature</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="BOARD" type="misc:A_DOUBLE_WITH_MVOLT_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Board temperature</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="VOLTAGE_OFFSET" type="misc:A_DOUBLE_WITH_MVOLT_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Temperature reference voltage offset</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="VOLTAGE" type="misc:A_DOUBLE_WITH_MVOLT_UNIT_ATTR">
-																<xs:annotation>
-																	<xs:documentation>Temperature reference voltage</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="ACQUISITION">
-																<xs:annotation>
-																	<xs:documentation>0:not acquired, 1:acq failed, 2:acquired</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-																<xs:simpleType>
-																	<xs:restriction base="misc:A_POSITIVE_INT">
-																		<xs:enumeration value="0"/>
-																		<xs:enumeration value="1"/>
-																		<xs:enumeration value="2"/>
-																	</xs:restriction>
-																</xs:simpleType>
-															</xs:element>
-															<xs:element name="VALIDITY" type="misc:A_VALIDITY_FLAG">
-																<xs:annotation>
-																	<xs:documentation>Acquisition validity flag</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="TIME" type="date_time:AN_UTC_MILLISEC_DATE_TIME">
-																<xs:annotation>
-																	<xs:documentation>Time corresponding to the measurements</xs:documentation>
-																	<xs:appinfo>
-																		<gs2:DOC>
-																			<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																			<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-																		</gs2:DOC>
-																	</xs:appinfo>
-																</xs:annotation>
-															</xs:element>
-														</xs:sequence>
-													</xs:complexType>
-												</xs:element>
-												<xs:element name="TIME" type="date_time:A_GPS_DATE_TIME">
-													<xs:annotation>
-														<xs:documentation>10PPS time corresponding to the measurements  (provided by CSW)</xs:documentation>
-														<xs:appinfo>
-															<gs2:DOC>
-																<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-															</gs2:DOC>
-														</xs:appinfo>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="ACQUISITION">
-													<xs:annotation>
-														<xs:documentation>0:not acquired, 1:acq failed, 2:acquired</xs:documentation>
-														<xs:appinfo>
-															<gs2:DOC>
-																<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-															</gs2:DOC>
-														</xs:appinfo>
-													</xs:annotation>
-													<xs:simpleType>
-														<xs:restriction base="misc:A_POSITIVE_INT">
-															<xs:enumeration value="0"/>
-															<xs:enumeration value="1"/>
-															<xs:enumeration value="2"/>
-														</xs:restriction>
-													</xs:simpleType>
-												</xs:element>
-												<xs:element name="VALIDITY" type="misc:A_VALIDITY_FLAG">
-													<xs:annotation>
-														<xs:documentation>Acquisition validity flag</xs:documentation>
-														<xs:appinfo>
-															<gs2:DOC>
-																<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-															</gs2:DOC>
-														</xs:appinfo>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="HEALTH_STATUS_BITS" type="misc:A_LIST_OF_8_BOOLEAN">
-													<xs:annotation>
-														<xs:documentation>Validity flags: Adc survey/Hard reset/Optical power delta/Input Rate>opi/Detected power max threshold/Detected power min threshold/Vpi loop error/ADC Saturation</xs:documentation>
-														<xs:appinfo>
-															<gs2:DOC>
-																<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-															</gs2:DOC>
-														</xs:appinfo>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="HEALTH_STATUS_BITS_VALIDITY" type="misc:A_VALIDITY_FLAG">
-													<xs:annotation>
-														<xs:documentation>1 when all health status validity flag are ok(0)/ 0 otherwise</xs:documentation>
-														<xs:appinfo>
-															<gs2:DOC>
-																<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-																<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-															</gs2:DOC>
-														</xs:appinfo>
-													</xs:annotation>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-									<xs:element name="GPS_SYNC" type="misc:A_VALIDITY_FLAG">
-										<xs:annotation>
-											<xs:documentation>Flag to indicate if IMU is synchronize with GPS time</xs:documentation>
-											<xs:appinfo>
-												<gs2:DOC>
-													<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-												</gs2:DOC>
-											</xs:appinfo>
-										</xs:annotation>
-									</xs:element>
-								</xs:sequence>
-								<xs:attribute name="imu_id" use="required">
-									<xs:simpleType>
-										<xs:restriction base="xs:string">
-											<xs:enumeration value="IMU1"/>
-											<xs:enumeration value="IMU2"/>
-											<xs:enumeration value="IMU3"/>
-											<xs:enumeration value="IMU4"/>
-										</xs:restriction>
-									</xs:simpleType>
-								</xs:attribute>
-							</xs:complexType>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-				<xs:unique name="imu_id_unique">
-					<xs:selector xpath="./IMU"/>
-					<xs:field xpath="@imu_id"/>
-				</xs:unique>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>-->
-	<!--<xs:complexType name="AN_ATTITUDE_DATA_INV">
-		<xs:sequence>
-			<xs:element name="Corrected_Attitudes">
-				<xs:annotation>
-					<xs:documentation>Onboard Hybrided attitude (STR+IMU), provided at 10Hz, gives the PRF frame in the J2000.</xs:documentation>
-					<xs:appinfo>
-						<gs2:DOC>
-							<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-						</gs2:DOC>
-					</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="Values" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>Only one sample for one GPS_TIME.</xs:documentation>
-							</xs:annotation>
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="QUATERNION_VALUES" type="platform:A_QUATERNION">
-										<xs:annotation>
-											<xs:documentation>Space separated list of 4 quaternion values ordered as Q0 Q1 Q2 Q3</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="QUATERNION_STATUS" type="platform:A_QUATERNION_STATUS">
-										<xs:annotation>
-											<xs:documentation>0:invalid, 1:propagated, 2: 1STR, 3:2 STR</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="QUATERNION_VALIDITY" type="misc:A_VALIDITY_FLAG">
-										<xs:annotation>
-											<xs:documentation>When 1 : quaternion is valid</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="VELOCITY_VALUES" type="misc:A_LIST_OF_3_DOUBLE">
-										<xs:annotation>
-											<xs:documentation>Dated angular velocities</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="VELOCITY_ERRORS" type="misc:A_LIST_OF_3_DOUBLE">
-										<xs:annotation>
-											<xs:documentation>Velocity angular errors</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="GPS_TIME" type="date_time:A_GPS_DATE_TIME"/>
-									<xs:element name="INUSE_FLAGS" minOccurs="0">
-										<xs:annotation>
-											<xs:documentation>List of 11 boolean flags separated by whitespace: STR1 STR2 STR3 GPSR-A GPSR-B VCU-A VCU-B IMU-1 IMU-2 IMU-3 IMU-4</xs:documentation>
-											<xs:appinfo>
-												<gs2:DOC>
-													<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-												</gs2:DOC>
-											</xs:appinfo>
-										</xs:annotation>
-										<xs:simpleType>
-											<xs:restriction base="misc:A_LIST_OF_11_BOOLEAN"/>
-										</xs:simpleType>
-									</xs:element>
-									<xs:element name="AOCS_MODE" minOccurs="0">
-										<xs:annotation>
-											<xs:documentation>AOCS Mode</xs:documentation>
-											<xs:appinfo>
-												<gs2:DOC>
-													<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-												</gs2:DOC>
-											</xs:appinfo>
-										</xs:annotation>
-										<xs:simpleType>
-											<xs:restriction base="xs:int">
-												<xs:enumeration value="0"/>
-												<xs:enumeration value="1"/>
-												<xs:enumeration value="2"/>
-												<xs:enumeration value="3"/>
-												<xs:enumeration value="4"/>
-											</xs:restriction>
-										</xs:simpleType>
-									</xs:element>
-									<xs:element name="AOCS_SUBMODE" minOccurs="0">
-										<xs:annotation>
-											<xs:documentation>AOCS Submode</xs:documentation>
-											<xs:appinfo>
-												<gs2:DOC>
-													<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-												</gs2:DOC>
-											</xs:appinfo>
-										</xs:annotation>
-										<xs:simpleType>
-											<xs:restriction base="xs:int">
-												<xs:enumeration value="0"/>
-												<xs:enumeration value="1"/>
-												<xs:enumeration value="2"/>
-												<xs:enumeration value="3"/>
-												<xs:enumeration value="4"/>
-												<xs:enumeration value="5"/>
-												<xs:enumeration value="6"/>
-											</xs:restriction>
-										</xs:simpleType>
-									</xs:element>
-									<xs:element name="INNOVATION_STR1" type="misc:A_LIST_OF_3_DOUBLE" minOccurs="0">
-										<xs:annotation>
-											<xs:documentation>Difference Between GSE filter estimate and first in-use STR measurement</xs:documentation>
-											<xs:appinfo>
-												<gs2:DOC>
-													<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-												</gs2:DOC>
-											</xs:appinfo>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="INNOVATION_STR2" type="misc:A_LIST_OF_3_DOUBLE" minOccurs="0">
-										<xs:annotation>
-											<xs:documentation>Difference Between GSE filter estimate and second in-use STR measurement</xs:documentation>
-											<xs:appinfo>
-												<gs2:DOC>
-													<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-													<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-												</gs2:DOC>
-											</xs:appinfo>
-										</xs:annotation>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="Raw_Attitudes" type="dimap:A_RAW_ATTITUDE"/>
-		</xs:sequence>
-	</xs:complexType>-->
 	<xs:complexType name="AN_ATTITUDE_DATA_EXPERTISE">
 		<xs:sequence>
 			<xs:element name="Corrected_Attitudes">
@@ -2311,109 +1283,6 @@ Possible types of error (from AnaTm specifications in DPM) are:
 			<xs:element name="Raw_Attitudes" type="dimap:A_RAW_ATTITUDE" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
-	<!--<xs:complexType name="AN_ANCILLARY_DATA_INV">
-		<xs:sequence>
-			<xs:element name="Time_Correlation_Data_List" type="dimap:A_TIME_CORRELATION_DATA_LIST"/>
-			<xs:element name="Ephemeris" type="dimap:AN_EPHEMERIS_DATA_INV">
-				<xs:annotation>
-					<xs:documentation>Description of ephemeris data (filtered and raw)</xs:documentation>
-					<xs:appinfo>
-						<gs2:DOC>
-							<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-						</gs2:DOC>
-					</xs:appinfo>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Attitudes" type="dimap:AN_ATTITUDE_DATA_INV">
-				<xs:annotation>
-					<xs:documentation>Description of attitudes data (filtered and raw)</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Thermal_Data" type="dimap:A_THERMAL_DATA_INV">
-				<xs:annotation>
-					<xs:appinfo>
-						<gs2:DOC>
-							<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-							<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-						</gs2:DOC>
-					</xs:appinfo>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Lost_Source_Packet_List" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>List of source packets lost / degraded</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="Lost_Source_Packet" maxOccurs="unbounded">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="DEGRADATION_TYPE" type="image:A_SOURCE_PACKET_DEGRADATION_TYPE">
-										<xs:annotation>
-											<xs:documentation>Type of degradation</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="ERROR_BEGINNING_DATE" type="date_time:A_GPS_DATE_TIME"/>
-									<xs:element name="ERROR_ENDING_DATE" type="date_time:A_GPS_DATE_TIME"/>
-								</xs:sequence>
-								<xs:attribute name="unit" use="required">
-									<xs:simpleType>
-										<xs:restriction base="xs:string">
-											<xs:enumeration value="TIME_CORRELATION"/>
-											<xs:enumeration value="GPS"/>
-											<xs:enumeration value="AOCS"/>
-										</xs:restriction>
-									</xs:simpleType>
-								</xs:attribute>
-							</xs:complexType>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="Other_Ancillary_Data">
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="CSM_Flags_List" minOccurs="0">
-							<xs:annotation>
-								<xs:appinfo>
-									<gs2:DOC>
-										<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-										<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-										<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-										<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-									</gs2:DOC>
-								</xs:appinfo>
-							</xs:annotation>
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="CSM_Flags" maxOccurs="unbounded">
-										<xs:annotation>
-											<xs:documentation>These data are acquired at 0.1 Hz</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="FLAGS" type="misc:A_LIST_OF_BOOLEAN">
-													<xs:annotation>
-														<xs:documentation>List of 11 booleans from MSI-SAD packet</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="GPS_TIME" type="date_time:A_GPS_DATE_TIME"/>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>-->
 	<xs:complexType name="AN_ANCILLARY_DATA_ARCHIVE_EXPERTISE">
 		<xs:sequence>
 			<xs:element name="Time_Correlation_Data_List" type="dimap:A_TIME_CORRELATION_DATA_LIST" minOccurs="0"/>
@@ -2678,115 +1547,6 @@ Possible types of error (from AnaTm specifications in DPM) are:
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-	<!--<xs:complexType name="AN_IERS_BULLETIN">
-		<xs:sequence>
-			<xs:element name="UT1_UTC">
-				<xs:annotation>
-					<xs:documentation>UT1 –-UTC in [-0.9;0.9] seconds</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:simpleContent>
-						<xs:restriction base="misc:A_DOUBLE_WITH_S_UNIT_ATTR">
-							<xs:attribute name="unit" type="misc:A_S_UNIT" use="required"/>
-						</xs:restriction>
-					</xs:simpleContent>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="GPS_TIME_UTC" type="misc:A_DOUBLE_WITH_S_UNIT_ATTR">
-				<xs:annotation>
-					<xs:documentation>GPS_time – UTC = in number of seconds</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="GPS_TIME_TAI">
-				<xs:annotation>
-					<xs:documentation>GPS_time – TAI</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:simpleContent>
-						<xs:restriction base="misc:A_DOUBLE_WITH_S_UNIT_ATTR"/>
-					</xs:simpleContent>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="POLE_U_ANGLE" type="misc:A_DOUBLE_WITH_ARCSEC_UNIT_ATTR">
-				<xs:annotation>
-					<xs:documentation>U angle pole motion (in arcsec)</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="POLE_V_ANGLE" type="misc:A_DOUBLE_WITH_ARCSEC_UNIT_ATTR">
-				<xs:annotation>
-					<xs:documentation>V angle pole motion (in arcsec)</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>-->
-	<!--<xs:complexType name="A_SPECTRAL_BAND_INFORMATION_LIST">
-		<xs:sequence>
-			<xs:element name="Spectral_Band_Information" maxOccurs="unbounded">
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="PHYSICAL_GAINS">
-							<xs:annotation>
-								<xs:documentation>Created by DATATION, updated by RADIO_S2. Coefficient also called Absolute calibration coefficient or Ak (used to perform the transform between Level-1B numerical count to radiances)</xs:documentation>
-								<xs:appinfo>
-									<gs2:DOC>
-										<gs2:DEFINITION/>
-										<gs2:CREATED_BY>DATATION</gs2:CREATED_BY>
-										<gs2:UPDATED_BY>RADIO_S2</gs2:UPDATED_BY>
-									</gs2:DOC>
-								</xs:appinfo>
-							</xs:annotation>
-							<xs:complexType>
-								<xs:simpleContent>
-									<xs:extension base="xs:double">
-										<xs:attribute name="geometry" use="required">
-											<xs:simpleType>
-												<xs:restriction base="xs:string">
-													<xs:enumeration value="QL"/>
-													<xs:enumeration value="FULL_RESOLUTION"/>
-												</xs:restriction>
-											</xs:simpleType>
-										</xs:attribute>
-									</xs:extension>
-								</xs:simpleContent>
-							</xs:complexType>
-						</xs:element>
-						<xs:element name="COMPRESSION_RATE" type="image:A_COMPRESSION_RATE">
-							<xs:annotation>
-								<xs:appinfo>
-									<gs2:DOC>
-										<gs2:DEFINITION>Compression rate</gs2:DEFINITION>
-										<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-										<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-										<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-										<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-									</gs2:DOC>
-								</xs:appinfo>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="INTEGRATION_TIME" type="misc:A_DOUBLE_WITH_MS_UNIT_ATTR">
-							<xs:annotation>
-								<xs:appinfo>
-									<gs2:DOC>
-										<gs2:DEFINITION>Integration time</gs2:DEFINITION>
-										<gs2:EXPERTISE>ARCHIVE_PRODUCT</gs2:EXPERTISE>
-										<gs2:EXPERTISE>L1A_PRODUCT</gs2:EXPERTISE>
-										<gs2:EXPERTISE>L1B_PRODUCT</gs2:EXPERTISE>
-										<gs2:EXPERTISE>L1C_PRODUCT</gs2:EXPERTISE>
-									</gs2:DOC>
-								</xs:appinfo>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="NUC_TABLE_ID" type="xs:string">
-							<xs:annotation>
-								<xs:documentation>In-flight Non Uniform Correction table ID defined by 10 bits. This ID is uniform for all transmitted bands. It identifies the correction coefficients table used in-flight</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-					<xs:attribute name="band_id" type="image:A_BAND_NUMBER" use="required"/>
-				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>-->
 	<xs:complexType name="A_SPECTRAL_BAND_INFORMATION_LIST_EXPERTISE">
 		<xs:sequence>
 			<xs:element name="Spectral_Band_Information" maxOccurs="unbounded">
@@ -2921,11 +1681,6 @@ Possible types of error (from AnaTm specifications in DPM) are:
 																</xs:annotation>
 															</xs:element>
 														</xs:sequence>
-														<!--<xs:attribute name="granule_id" type="image:AN_INVENTORY_GRANULE_ID" use="required">
-															<xs:annotation>
-																<xs:documentation>Granule identifier</xs:documentation>
-															</xs:annotation>
-														</xs:attribute>-->
 													</xs:complexType>
 												</xs:element>
 											</xs:sequence>
@@ -3761,44 +2516,6 @@ Considering the length of the S2 segments, each datum should be computed at poin
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-	<!--<xs:complexType name="A_L1C_DATA_STRIP">
-		<xs:sequence>
-			<xs:element name="Data_Strip_Identification" type="dimap:A_DATASTRIP_IDENTIFICATION">
-				<xs:annotation>
-					<xs:documentation>Identification of the source datastrip acquisition. General informations</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Sensor_Configuration" type="dimap:A_SENSOR_CONFIGURATION_EXPERTISE">
-				<xs:annotation>
-					<xs:documentation>MSI Sensor configuration (Information from MSI telemetry)</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Satellite_Ancillary_Data" type="dimap:AN_ANCILLARY_DATA_L1A_L1B_L1C">
-				<xs:annotation>
-					<xs:documentation>Ancillary data</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="IERS_Bulletin" type="dimap:AN_IERS_BULLETIN">
-				<xs:annotation>
-					<xs:documentation>IERS bulletin. These data are provided for the start acquisition date.</xs:documentation>
-					<xs:appinfo>
-						<gs2:DOC>
-							<gs2:DEFINITION/>
-							<gs2:CREATED_BY>DATATION</gs2:CREATED_BY>
-						</gs2:DOC>
-					</xs:appinfo>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Tiles_List" type="dimap:A_GRANULES_L1C"/>
-			<xs:element name="Quicklook_Descriptor" type="dimap:A_QUICKLOOK_DESCRIPTOR" minOccurs="0"/>
-			<xs:element name="Geometric_Header_List" type="dimap:A_GEOMETRIC_HEADER_LIST_EXPERTISE">
-				<xs:annotation>
-					<xs:documentation>Considering the width of S2 swath, some data should be computed at the center, and the two borders of the swath. 
-Considering the length of the S2 segments, each datum should be computed at points, which are distributed along the segment.</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>-->
 	<xs:complexType name="AN_HISTOGRAM_DEFINITION">
 		<xs:annotation>
 			<xs:appinfo>
@@ -4287,7 +3004,6 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 	</xs:simpleType>-->
 	<xs:complexType name="A_MASK_LIST">
 		<xs:annotation>
-			<xs:documentation>Quality assessement created by INIT_LOC_INV</xs:documentation>
 			<xs:appinfo>
 				<gs2:DOC>
 					<gs2:DEFINITION/>
@@ -4301,15 +3017,27 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 		<xs:sequence>
 			<xs:element name="MASK_FILENAME" maxOccurs="unbounded">
 				<xs:annotation>
-					<xs:documentation>File name of the mask. It is possible that there is a mask file type for each band and each detector. The mask format is GML</xs:documentation>
+					<xs:documentation>File name of the masks.       L1A/L1B: mask file types for each band and detector.        L1C: mask file types for each band and tile and mask file types band independent.  The mask format is GML</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:simpleContent>
 						<xs:extension base="xs:string">
-							<xs:attribute name="type" type="xs:string" use="required">
+							<xs:attribute name="type" use="required">
 								<xs:annotation>
 									<xs:documentation>Mask type</xs:documentation>
 								</xs:annotation>
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:enumeration value="MSK_TECQUA"/>
+										<xs:enumeration value="MSK_DEFECT"/>
+										<xs:enumeration value="MSK_SATURA"/>
+										<xs:enumeration value="MSK_NODATA"/>
+										<xs:enumeration value="MSK_DETFOO"/>
+										<xs:enumeration value="MSK_CLOLOW"/>
+										<xs:enumeration value="MSK_CLOUDS"/>
+										<xs:enumeration value="MSK_LANWAT"/>
+									</xs:restriction>
+								</xs:simpleType>
 							</xs:attribute>
 							<xs:attribute name="bandId" type="image:A_BAND_NUMBER">
 								<xs:annotation>
@@ -4632,7 +3360,7 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="Unitary_Footprint" minOccurs="0" maxOccurs="12">
+									<xs:element name="Unitary_Footprint" maxOccurs="13">
 										<xs:complexType>
 											<xs:sequence>
 												<xs:element name="Footprint" maxOccurs="unbounded">
@@ -4647,20 +3375,88 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 											</xs:sequence>
 											<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
 										</xs:complexType>
-										<xs:unique name="detector_id_footprint_unique">
+										<xs:unique name="det_id_footprint_unique">
 											<xs:selector xpath="./Footprint"/>
 											<xs:field xpath="@detector_id"/>
 										</xs:unique>
 									</xs:element>
 								</xs:sequence>
 							</xs:complexType>
-							<xs:unique name="band_id_unitary_footprint_unique">
+							<xs:unique name="band_id_unit_footprint_unique">
 								<xs:selector xpath="./Unitary_Footprint"/>
 								<xs:field xpath="@band_id"/>
 							</xs:unique>
 						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
+			</xs:element>
+			<xs:element name="RASTER_CS_TYPE">
+				<xs:annotation>
+					<xs:documentation>Pixel representation. Values is "POINT" for L0 and L1 levels. </xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="POINT"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="PIXEL_ORIGIN">
+				<xs:annotation>
+					<xs:documentation>First pixel number (convention)</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minInclusive value="0"/>
+						<xs:enumeration value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AN_INIT_LOC_PROD_PRODUCT_FOOTPRINT_SAFE">
+		<xs:annotation>
+			<xs:appinfo>
+				<gs2:DOC>
+					<gs2:DEFINITION/>
+					<gs2:CREATED_BY>INIT_LOC_INV</gs2:CREATED_BY>
+					<gs2:UPDATED_BY>INIT_LOC_PROD</gs2:UPDATED_BY>
+					<gs2:UPDATED_BY>GEO_S2</gs2:UPDATED_BY>
+				</gs2:DOC>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Unitary_Footprint_List" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Unitary footprint for each detector, each band of the product. This is not required for the Level-0 product.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Unitary_Footprint" minOccurs="0" maxOccurs="12">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Footprint" maxOccurs="unbounded">
+										<xs:complexType>
+											<xs:complexContent>
+												<xs:extension base="geographical:A_GML_POLYGON_2D">
+													<xs:attribute name="detectorId" type="image:A_DETECTOR_NUMBER" use="required"/>
+												</xs:extension>
+											</xs:complexContent>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+								<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+							</xs:complexType>
+							<xs:unique name="detector_id_footprint_unique">
+								<xs:selector xpath="./Footprint"/>
+								<xs:field xpath="@detector_id"/>
+							</xs:unique>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+				<xs:unique name="band_id_unitary_footprint_unique">
+					<xs:selector xpath="./Unitary_Footprint"/>
+					<xs:field xpath="@band_id"/>
+				</xs:unique>
 			</xs:element>
 			<xs:element name="RASTER_CS_TYPE">
 				<xs:annotation>
@@ -6176,6 +4972,19 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="A_PROCESSING_SPECIFIC_PARAMETERS">
+		<xs:sequence>
+			<xs:element name="PROCESSING_SPECIFIC_PARAMETERS">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="0"/>
+						<xs:maxLength value="1024"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Expertise"/>
+	</xs:complexType>
 	<xs:complexType name="A_GENERAL_INFO_L0_L1A_L1B">
 		<xs:sequence>
 			<xs:element name="GRANULE_ID">
@@ -6261,6 +5070,11 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 					</xs:complexContent>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Processing_Specific_Parameters" type="dimap:A_PROCESSING_SPECIFIC_PARAMETERS" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Optional field reserved for production chain only (i.e. DPC and/or IPF) and not propagated to User Product</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="AN_ARCHIVE_IDENTIFICATION">
@@ -6307,23 +5121,7 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="Unitary_Footprint_List">
-							<xs:annotation>
-								<xs:documentation>Unitary footprint for one detector, each band of the granule.</xs:documentation>
-							</xs:annotation>
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="Unitary_Footprint" maxOccurs="13">
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="Footprint" type="geographical:A_GML_POLYGON_3D"/>
-											</xs:sequence>
-											<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
-										</xs:complexType>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
+						<xs:element name="Footprint" type="geographical:A_GML_POLYGON_3D"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -6454,11 +5252,6 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 					</xs:simpleContent>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="DEGRADED_ANC_DATA_PERCENTAGE" type="misc:A_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>A percentage of degraded ancillary data</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 			<xs:element name="DEGRADED_MSI_DATA_PERCENTAGE" type="misc:A_PERCENTAGE">
 				<xs:annotation>
 					<xs:documentation>A percentage of degraded MSI data</xs:documentation>
@@ -6559,9 +5352,14 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 					<xs:documentation>MSI operation mode </xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="SENSING_TIME" type="date_time:AN_UTC_DATE_TIME">
+			<xs:element name="DATATAKE_SENSING_START" type="date_time:AN_UTC_DATE_TIME">
 				<xs:annotation>
 					<xs:documentation>Imaging Start Time (Sensing start time of the Datatake)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DATATAKE_SENSING_STOP" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>Imaging Stop Time (Sensing stop time of the Datatake)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="SENSING_ORBIT_NUMBER">
@@ -6589,11 +5387,39 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 		</xs:sequence>
 		<xs:attribute name="datatakeIdentifier" type="item:DATATAKE_ID" use="required"/>
 	</xs:complexType>
+	<xs:complexType name="A_DATATAKE_IDENTIFICATION_SAFE">
+		<xs:sequence>
+			<xs:element name="DATATAKE_SENSING_STOP" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>Imaging Stop Time (Sensing stop time of the Datatake)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="datatakeIdentifier" type="item:DATATAKE_ID" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="A_DATASTRIP_TIME_INFO">
+		<xs:sequence>
+			<xs:element name="DATASTRIP_SENSING_START" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>Sensing start time of the DataStrip</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DATASTRIP_SENSING_STOP" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>Sensing stop time of the DataStrip</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="A_MSI_OPERATION_MODE">
 		<xs:sequence>
-			<xs:element name="Nominal_Mode"/>
-			<xs:element name="Dark_Signal"/>
-			<xs:element name="newElement"/>
+			<xs:element name="Nominal_Observation"/>
+			<xs:element name="Dark_Signal_Calibration"/>
+			<xs:element name="Extended_Observation"/>
+			<xs:element name="Absolute_Radiometry_Calibration"/>
+			<xs:element name="Vicarious_Calibration"/>
+			<xs:element name="Raw_Measurement"/>
+			<xs:element name="Test_Mode"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="A_PROCESSING_STEP_LIST">
@@ -6749,7 +5575,7 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 					<xs:sequence>
 						<xs:element name="ACTIVE_DETECTOR" type="image:A_DETECTOR_NUMBER" maxOccurs="12"/>
 					</xs:sequence>
-					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Expertise"/>
+					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="TDI_Configuration_List">
@@ -7100,6 +5926,24 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 				<xs:complexType>
 					<xs:complexContent>
 						<xs:extension base="dimap:AN_EPHEMERIS_DATA_INV">
+							<xs:sequence>
+								<xs:element name="POD_Info" minOccurs="0">
+									<xs:complexType>
+										<xs:sequence>
+											<xs:element name="POD_FLAG">
+												<xs:annotation>
+													<xs:documentation>Flag to indicate if POD (Precise Orbit Determination) data has been used for product generation</xs:documentation>
+												</xs:annotation>
+											</xs:element>
+											<xs:element name="POD_FILENAME" minOccurs="0">
+												<xs:annotation>
+													<xs:documentation>If applicable, reference to the file containing POD data used</xs:documentation>
+												</xs:annotation>
+											</xs:element>
+										</xs:sequence>
+									</xs:complexType>
+								</xs:element>
+							</xs:sequence>
 							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 						</xs:extension>
 					</xs:complexContent>
@@ -7244,7 +6088,7 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 				</xs:annotation>
 				<xs:complexType>
 					<xs:simpleContent>
-						<xs:extension base="item:SAD_ID">
+						<xs:extension base="item:GLOBAL_SAD_ID">
 							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 						</xs:extension>
 					</xs:simpleContent>
@@ -7261,26 +6105,7 @@ Information is provided on QL geometry or on the full resolution</xs:documentati
 				</xs:annotation>
 				<xs:complexType>
 					<xs:complexContent>
-						<xs:extension base="dimap:AN_EPHEMERIS_DATA_INV">
-							<xs:sequence>
-								<xs:element name="POD_Info" minOccurs="0">
-									<xs:complexType>
-										<xs:sequence>
-											<xs:element name="POD_FLAG">
-												<xs:annotation>
-													<xs:documentation>Flag to indicate if POD (Precise Orbit Determination) data has been used for product generation</xs:documentation>
-												</xs:annotation>
-											</xs:element>
-											<xs:element name="POD_FILENAME" minOccurs="0">
-												<xs:annotation>
-													<xs:documentation>If applicable, reference to the file containing POD data used</xs:documentation>
-												</xs:annotation>
-											</xs:element>
-										</xs:sequence>
-									</xs:complexType>
-								</xs:element>
-							</xs:sequence>
-						</xs:extension>
+						<xs:extension base="dimap:AN_EPHEMERIS_DATA_INV"/>
 					</xs:complexContent>
 				</xs:complexType>
 			</xs:element>
@@ -7702,16 +6527,6 @@ available.</xs:documentation>
 									<xs:element name="QUATERNION_VALIDITY" type="misc:A_VALIDITY_FLAG">
 										<xs:annotation>
 											<xs:documentation>When 1 : quaternion is valid</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="VELOCITY_VALUES" type="misc:A_LIST_OF_3_DOUBLE">
-										<xs:annotation>
-											<xs:documentation>Dated angular velocities</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="VELOCITY_ERRORS" type="misc:A_LIST_OF_3_DOUBLE">
-										<xs:annotation>
-											<xs:documentation>Velocity angular errors</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="GPS_TIME" type="date_time:A_GPS_DATE_TIME">
@@ -9115,6 +7930,15 @@ available.</xs:documentation>
 					</xs:complexContent>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Datastrip_Time_Info">
+				<xs:complexType>
+					<xs:complexContent>
+						<xs:extension base="dimap:A_DATASTRIP_TIME_INFO">
+							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
+						</xs:extension>
+					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="Processing_Info">
 				<xs:complexType>
 					<xs:sequence>
@@ -9146,6 +7970,11 @@ available.</xs:documentation>
 						</xs:extension>
 					</xs:complexContent>
 				</xs:complexType>
+			</xs:element>
+			<xs:element name="PROCESSING_SPECIFIC_PARAMETERS" type="dimap:A_PROCESSING_SPECIFIC_PARAMETERS" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Optional field reserved for production chain only (i.e. DPC and/or IPF) and not propagated to User Product</xs:documentation>
+				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
@@ -9258,6 +8087,25 @@ available.</xs:documentation>
 							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 						</xs:extension>
 					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Product_Compression" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="COMPRESSION">
+							<xs:annotation>
+								<xs:documentation>Product Compression</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="NONE"/>
+									<xs:enumeration value="LOSSY"/>
+									<xs:enumeration value="LOSSLESS"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
@@ -9442,17 +8290,20 @@ available.</xs:documentation>
 			</xs:element>
 			<xs:element name="SENSING_TIME">
 				<xs:annotation>
-					<xs:documentation>Inherited from Level-0 metadata. This is the sensing start time of the Datatake (with precision in seconds)</xs:documentation>
+					<xs:documentation>TILE Start Time = DataStrip Start Time</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:simpleContent>
-						<xs:extension base="date_time:AN_UTC_DATE_TIME">
+						<xs:extension base="date_time:AN_UTC_DATE_TIME_TWO">
 							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 						</xs:extension>
 					</xs:simpleContent>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="Archiving_Info">
+				<xs:annotation>
+					<xs:documentation>Centre/Time</xs:documentation>
+				</xs:annotation>
 				<xs:complexType>
 					<xs:complexContent>
 						<xs:extension base="dimap:AN_ARCHIVE_IDENTIFICATION">
@@ -9460,6 +8311,11 @@ available.</xs:documentation>
 						</xs:extension>
 					</xs:complexContent>
 				</xs:complexType>
+			</xs:element>
+			<xs:element name="Processing_Specific_Parameters" type="dimap:A_PROCESSING_SPECIFIC_PARAMETERS" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Optional field reserved for production chain only (i.e. DPC and/or IPF) and not propagated to User Product</xs:documentation>
+				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
@@ -9627,7 +8483,7 @@ available.</xs:documentation>
 					<xs:documentation>Pointer to the Mask files contained in the QI_DATA folder</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="PVI_FILENAME" type="xs:string">
+			<xs:element name="PVI_FILENAME" type="item:PVI_ID">
 				<xs:annotation>
 					<xs:documentation>Reference to PVI contained in the QI_DATA folder</xs:documentation>
 				</xs:annotation>
@@ -9635,7 +8491,7 @@ available.</xs:documentation>
 		</xs:sequence>
 		<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 	</xs:complexType>
-	<xs:simpleType name="A_PDI_L1C_ID">
+	<!--<xs:simpleType name="A_PDI_L1C_ID">
 		<xs:annotation>
 			<xs:documentation>PDI L1C Granule and Datastrip identification string</xs:documentation>
 			<xs:appinfo>
@@ -9651,7 +8507,7 @@ available.</xs:documentation>
 		<xs:restriction base="xs:string">
 			<xs:pattern value="S2(A|B)_OPER_\d\d\d\d\d\d\d\d\d\d_\d\d\d\d_\d\d\d\d\d\d\d\dT\d\d\d\d\d\d_\d\d\d\d\d\d_\d\d\d\d\d\d_\d\d\d\d\d_\d\d\d\d"/>
 		</xs:restriction>
-	</xs:simpleType>
+	</xs:simpleType>-->
 	<xs:complexType name="AN_AUXILIARY_DATA_INFO_DSL1C">
 		<xs:sequence>
 			<xs:element name="IERS_Bulletin" type="dimap:AN_IERS_BULLETIN">
@@ -9675,14 +8531,19 @@ available.</xs:documentation>
 					<xs:documentation>Reference to ECMWF data</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
+			<xs:element name="PRODUCTION_DEM_TYPE" type="xs:string">
 				<xs:annotation>
-					<xs:documentation>Relation between product image channels and on board spectral bands</xs:documentation>
+					<xs:documentation>Reference to used DEM</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+			<xs:element name="IERS_BULLETIN_FILENAME" type="xs:string">
 				<xs:annotation>
-					<xs:documentation>Reflectance quantification value (in order to convert digit count into reflectance)</xs:documentation>
+					<xs:documentation>Reference to IERS Bulletin</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GRI_FILENAME" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to GRI data </xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -9703,6 +8564,55 @@ available.</xs:documentation>
 					<xs:documentation>Management of saturated pixels. A 'true' value indicates that saturated pixels has been processed.</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="Spectral_Information_List" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Spectral_Information" maxOccurs="13">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+									<xs:element name="Wavelength">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="Spectral_Response">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+													<xs:annotation>
+														<xs:documentation>List of measures</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+								<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME" use="required"/>
+								<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
+				<xs:annotation>
+					<xs:documentation>Relation between product image channels and on board spectral bands</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+				<xs:annotation>
+					<xs:documentation>Reflectance quantification value (in order to convert digit count into reflectance)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="A_GEOMETRIC_DATA_DSL1C">
@@ -9718,7 +8628,7 @@ available.</xs:documentation>
 		<xs:sequence>
 			<xs:element name="RGM" type="image:A_RGMF_USE_CASE">
 				<xs:annotation>
-					<xs:documentation>Flag to identify if the Refined Geometric Model File is computed or obtained from a existing RGMF (reused)</xs:documentation>
+					<xs:documentation>Flag to identify if the Refined Geometric Model file is computed or obtained from a existing RGM file (reused)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="Image_Refining">
@@ -9848,13 +8758,16 @@ available.</xs:documentation>
 						<xs:element name="Tile_List">
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="Tile" maxOccurs="unbounded"/>
+									<xs:element name="Tile" maxOccurs="unbounded">
+										<xs:complexType>
+											<xs:attribute name="tileId" type="item:TILE_ID" use="required">
+												<xs:annotation>
+													<xs:documentation>Tile Identifier</xs:documentation>
+												</xs:annotation>
+											</xs:attribute>
+										</xs:complexType>
+									</xs:element>
 								</xs:sequence>
-								<xs:attribute name="tileId" type="item:TILE_ID" use="required">
-									<xs:annotation>
-										<xs:documentation>Tile Identifier</xs:documentation>
-									</xs:annotation>
-								</xs:attribute>
 							</xs:complexType>
 							<xs:unique name="tile_identifier_L1C_unique">
 								<xs:selector xpath="./Tile_Description/TILE_IDENTIFIER"/>
@@ -9886,6 +8799,25 @@ available.</xs:documentation>
 							<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 						</xs:extension>
 					</xs:complexContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Product_Compression" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="COMPRESSION">
+							<xs:annotation>
+								<xs:documentation>Product Compression</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="NONE"/>
+									<xs:enumeration value="LOSSY"/>
+									<xs:enumeration value="LOSSLESS"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
@@ -10102,8 +9034,56 @@ available.</xs:documentation>
 					<xs:documentation/>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="DEGRADED_ANC_DATA_PERCENTAGE" type="misc:A_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>A percentage of degraded ancillary data</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 		<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
+	</xs:complexType>
+	<xs:complexType name="A_PRODUCT_INFO_USERL0">
+		<xs:annotation>
+			<xs:documentation>General PDGS Product Information</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Product_Info" type="dimap:A_PRODUCT_INFO"/>
+			<xs:element name="Product_Image_Characteristics">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="PHYSICAL_GAINS">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:double">
+										<xs:attribute name="bandId" use="required">
+											<xs:simpleType>
+												<xs:restriction base="xs:int">
+													<xs:enumeration value="0"/>
+													<xs:enumeration value="1"/>
+													<xs:enumeration value="2"/>
+													<xs:enumeration value="3"/>
+													<xs:enumeration value="4"/>
+													<xs:enumeration value="5"/>
+													<xs:enumeration value="6"/>
+													<xs:enumeration value="7"/>
+													<xs:enumeration value="8"/>
+													<xs:enumeration value="9"/>
+													<xs:enumeration value="10"/>
+													<xs:enumeration value="11"/>
+													<xs:enumeration value="12"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:attribute>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="REFERENCE_BAND" type="xs:int"/>
+						<xs:element name="ON_BOARD_COMPRESSION_MODE" type="xs:boolean"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="A_PRODUCT_INFO">
 		<xs:annotation>
@@ -10164,6 +9144,111 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:element name="Datatake" type="dimap:A_DATATAKE_IDENTIFICATION">
 				<xs:annotation>
 					<xs:documentation>General information about the MSI datatake</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Query_Options" type="dimap:A_PRODUCT_OPTIONS"/>
+			<xs:element name="Product_Organisation">
+				<xs:annotation>
+					<xs:documentation>Logical map of the elements compounding the User Product</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Granule_List" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:complexContent>
+									<xs:extension base="dimap:A_PRODUCT_ORGANIZATION"/>
+								</xs:complexContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_PRODUCT_ORGANIZATION">
+		<xs:annotation>
+			<xs:documentation>General PDGS Product Information</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Granules">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="IMAGE_ID" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="item:IMAGE_ID"/>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="datastripIdentifier" type="item:DATASTRIP_ID"/>
+					<xs:attribute name="granuleIdentifier" type="item:GRANULE_TILE_ID"/>
+					<xs:attribute name="imageFormat">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="JPEG2000"/>
+								<xs:enumeration value="BINARY"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_PRODUCT_INFO_SAFE">
+		<xs:annotation>
+			<xs:documentation>General PDGS Product Information</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PRODUCT_URI" type="xs:anyURI">
+				<xs:annotation>
+					<xs:documentation>User-Product URI. This is the User-Product URI resolved and provided by ngEO</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PROCESSING_LEVEL">
+				<xs:annotation>
+					<xs:documentation>Processing level of the product</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="image:A_PROCESSING_LEVEL"/>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="PRODUCT_TYPE">
+				<xs:annotation>
+					<xs:documentation>Product type Identifier</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="S2MSI0"/>
+						<xs:enumeration value="S2MSI1A"/>
+						<xs:enumeration value="S2MSI1B"/>
+						<xs:enumeration value="S2MSI1C"/>
+						<xs:enumeration value="S2MSI2Ap"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="PROCESSING_BASELINE" type="dimap:A_PROCESSING_BASELINE_IDENTIFICATION"/>
+			<xs:element name="PREVIEW_IMAGE_URL">
+				<xs:annotation>
+					<xs:documentation>Link to the preview image URL</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:anyURI"/>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="PREVIEW_GEO_INFO" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Preview georeferencing information. Coordinate system / datum used for specifying the georeferencing information supplied with the Browse Image.
+Examples: EPSG:4326, RAW</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Datatake" type="dimap:A_DATATAKE_IDENTIFICATION_SAFE">
+				<xs:annotation>
+					<xs:documentation>Datatake info</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="Query_Options" type="dimap:A_PRODUCT_OPTIONS"/>
@@ -10244,7 +9329,7 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="A_PRODUCT_INFO_USERL1AL1B">
+	<xs:complexType name="A_PRODUCT_INFO_USERL1A">
 		<xs:annotation>
 			<xs:documentation>General PDGS Product Information</xs:documentation>
 		</xs:annotation>
@@ -10268,6 +9353,239 @@ Examples: EPSG:4326, RAW</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="Product_Image_Size" type="dimap:A_RASTER_DIMENSIONS_L1A"/>
+						<xs:element name="Spectral_Information_List" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Spectral_Information" maxOccurs="13">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+												<xs:element name="Wavelength">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="Spectral_Response">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+																<xs:annotation>
+																	<xs:documentation>List of measures</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME" use="required"/>
+											<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="PHYSICAL_GAINS">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:double">
+										<xs:attribute name="bandId" use="required">
+											<xs:simpleType>
+												<xs:restriction base="xs:int">
+													<xs:enumeration value="0"/>
+													<xs:enumeration value="1"/>
+													<xs:enumeration value="2"/>
+													<xs:enumeration value="3"/>
+													<xs:enumeration value="4"/>
+													<xs:enumeration value="5"/>
+													<xs:enumeration value="6"/>
+													<xs:enumeration value="7"/>
+													<xs:enumeration value="8"/>
+													<xs:enumeration value="9"/>
+													<xs:enumeration value="10"/>
+													<xs:enumeration value="11"/>
+													<xs:enumeration value="12"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:attribute>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="REFERENCE_BAND" type="xs:int"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_PRODUCT_INFO_USERL1B">
+		<xs:annotation>
+			<xs:documentation>General PDGS Product Information</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Product_Info" type="dimap:A_PRODUCT_INFO">
+				<xs:annotation>
+					<xs:documentation>Common general Product Information</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Product_Image_Characteristics">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Special_Values" type="dimap:A_SPECIAL_VALUES" minOccurs="2" maxOccurs="2">
+							<xs:annotation>
+								<xs:documentation>Special values encoding (NO_DATA, SATURATION)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
+							<xs:annotation>
+								<xs:documentation>Relation between product image channels and on board spectral bands.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Product_Image_Size" type="dimap:A_RASTER_DIMENSIONS_L1A"/>
+						<xs:element name="Spectral_Information_List" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Spectral_Information" maxOccurs="13">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+												<xs:element name="Wavelength">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="Spectral_Response">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+																<xs:annotation>
+																	<xs:documentation>List of measures</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME" use="required"/>
+											<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="PHYSICAL_GAINS">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:double">
+										<xs:attribute name="bandId" use="required">
+											<xs:simpleType>
+												<xs:restriction base="xs:int">
+													<xs:enumeration value="0"/>
+													<xs:enumeration value="1"/>
+													<xs:enumeration value="2"/>
+													<xs:enumeration value="3"/>
+													<xs:enumeration value="4"/>
+													<xs:enumeration value="5"/>
+													<xs:enumeration value="6"/>
+													<xs:enumeration value="7"/>
+													<xs:enumeration value="8"/>
+													<xs:enumeration value="9"/>
+													<xs:enumeration value="10"/>
+													<xs:enumeration value="11"/>
+													<xs:enumeration value="12"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:attribute>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="REFERENCE_BAND" type="xs:int"/>
+						<xs:element name="Restoration_Parameters" type="dimap:A_RESTORATION_PARAMETERS"/>
+						<xs:element name="Equalization_Parameters" type="dimap:AN_EQUALIZATION_PARAMETERS"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_PRODUCT_INFO_USERL1AL1B_SAFE">
+		<xs:annotation>
+			<xs:documentation>General PDGS Product Information</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Product_Info" type="dimap:A_PRODUCT_INFO_SAFE">
+				<xs:annotation>
+					<xs:documentation>Common general Product Information</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Product_Image_Characteristics">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Special_Values" type="dimap:A_SPECIAL_VALUES" minOccurs="2" maxOccurs="2">
+							<xs:annotation>
+								<xs:documentation>Special values encoding (NO_DATA, SATURATION)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
+							<xs:annotation>
+								<xs:documentation>Relation between product image channels and on board spectral bands.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Product_Image_Size" type="dimap:A_RASTER_DIMENSIONS_L1A"/>
+						<xs:element name="Spectral_Information_List">
+							<xs:annotation>
+								<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Spectral_Information" maxOccurs="13">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+												<xs:element name="Wavelength">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="Spectral_Response">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+																<xs:annotation>
+																	<xs:documentation>List of measures</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME" use="required"/>
+											<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -10301,6 +9619,145 @@ Examples: EPSG:4326, RAW</xs:documentation>
 								<xs:documentation>Reflectance quantification value (in order to convert digit count into reflectance)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="Spectral_Information_List" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Spectral_Information" maxOccurs="13">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+												<xs:element name="Wavelength">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="Spectral_Response">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+																<xs:annotation>
+																	<xs:documentation>List of measures</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME" use="required"/>
+											<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="PHYSICAL_GAINS">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:double">
+										<xs:attribute name="bandId" use="required">
+											<xs:simpleType>
+												<xs:restriction base="xs:int">
+													<xs:enumeration value="0"/>
+													<xs:enumeration value="1"/>
+													<xs:enumeration value="2"/>
+													<xs:enumeration value="3"/>
+													<xs:enumeration value="4"/>
+													<xs:enumeration value="5"/>
+													<xs:enumeration value="6"/>
+													<xs:enumeration value="7"/>
+													<xs:enumeration value="8"/>
+													<xs:enumeration value="9"/>
+													<xs:enumeration value="10"/>
+													<xs:enumeration value="11"/>
+													<xs:enumeration value="12"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:attribute>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="REFERENCE_BAND" type="xs:int"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_PRODUCT_INFO_USERL1C_SAFE">
+		<xs:annotation>
+			<xs:documentation>General PDGS Product Information</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Product_Info" type="dimap:A_PRODUCT_INFO_SAFE">
+				<xs:annotation>
+					<xs:documentation>Common general Product Information</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Product_Image_Characteristics">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Special_Values" type="dimap:A_SPECIAL_VALUES" minOccurs="2" maxOccurs="2">
+							<xs:annotation>
+								<xs:documentation>Special values encoding (NO_DATA, SATURATION)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
+							<xs:annotation>
+								<xs:documentation>Relation between product image channels and on board spectral bands.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+							<xs:annotation>
+								<xs:documentation>Reflectance quantification value (in order to convert digit count into reflectance)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Spectral_Information_List">
+							<xs:annotation>
+								<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Spectral_Information" maxOccurs="13">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+												<xs:element name="Wavelength">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="Spectral_Response">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+															<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+																<xs:annotation>
+																	<xs:documentation>List of measures</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME" use="required"/>
+											<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -10311,13 +9768,23 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:documentation>Product Download Options according to ngEO download options</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+			<xs:element name="FULL_SWATH_DATATAKE " type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Flag to extend the user selected area to the full MSI swath (L0/L1A/L1B) or the full Datatake (L0/L1A/L1B/L1C)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PREVIEW_IMAGE" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Selection of preview image of the User Product</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="Band_List">
 				<xs:annotation>
 					<xs:documentation>List of band mapped to ngEO download options</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="BAND_NAME" type="image:A_PHYSICAL_BAND_NAME">
+						<xs:element name="BAND_NAME" type="image:A_PHYSICAL_BAND_NAME" maxOccurs="13">
 							<xs:annotation>
 								<xs:documentation>Spectral Band name </xs:documentation>
 							</xs:annotation>
@@ -10325,26 +9792,17 @@ Examples: EPSG:4326, RAW</xs:documentation>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="Metadata_Level_List">
+			<xs:element name="METADATA_LEVEL">
 				<xs:annotation>
 					<xs:documentation>List of metadata levels</xs:documentation>
 				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="METADATA_LEVEL">
-							<xs:annotation>
-								<xs:documentation>List of metadata levels</xs:documentation>
-							</xs:annotation>
-							<xs:simpleType>
-								<xs:restriction base="xs:string">
-									<xs:enumeration value="Brief"/>
-									<xs:enumeration value="Standard"/>
-									<xs:enumeration value="Expertise"/>
-								</xs:restriction>
-							</xs:simpleType>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="Brief"/>
+						<xs:enumeration value="Standard"/>
+						<xs:enumeration value="Expertise"/>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:element>
 			<xs:element name="Aux_List">
 				<xs:complexType>
@@ -10353,31 +9811,18 @@ Examples: EPSG:4326, RAW</xs:documentation>
 							<xs:complexType>
 								<xs:sequence>
 									<xs:annotation>
-										<xs:documentation>Level-0: GIPP, IERS. Level-1A: GIPP, IERS. Level-1B: GIPP, IERS. Level-1C: GIPP       ECMWF for L1C always embedded (no embedding option)                        DEM never downloaded (no embedding option)          GRI never downloaded (no embedding option)         SAD for L0 always embedded (no embedding option)   </xs:documentation>
+										<xs:documentation>Level-0: GIPP, IERS. Level-1A: GIPP, IERS. Level-1B: GIPP, IERS. Level-1C: GIPP.       ECMWF (raw): no embedding option.               DEM: no embedding option   GRI: no embedding option</xs:documentation>
 									</xs:annotation>
 									<xs:choice>
-										<xs:element name="GIPP" type="xs:anyURI">
-											<xs:annotation>
-												<xs:documentation>Link to used GIPP files</xs:documentation>
-											</xs:annotation>
-										</xs:element>
-										<xs:element name="IERS" type="xs:anyURI">
-											<xs:annotation>
-												<xs:documentation>Link to used IERS Bullettin</xs:documentation>
-											</xs:annotation>
-										</xs:element>
+										<xs:element name="GIPP" type="xs:anyURI"/>
+										<xs:element name="IERS" type="xs:anyURI"/>
 									</xs:choice>
 								</xs:sequence>
-								<xs:attribute name="productLevel" type="image:A_PROCESSING_LEVEL" use="required"/>
 							</xs:complexType>
 						</xs:element>
 					</xs:sequence>
+					<xs:attribute name="productLevel" type="image:A_PROCESSING_LEVEL" use="required"/>
 				</xs:complexType>
-			</xs:element>
-			<xs:element name="PREVIEW_IMAGE" type="xs:boolean">
-				<xs:annotation>
-					<xs:documentation>Selection of preview image of the User Product</xs:documentation>
-				</xs:annotation>
 			</xs:element>
 			<xs:element name="PRODUCT_FORMAT" type="image:A_PRODUCT_S2_FORMAT">
 				<xs:annotation>
@@ -10386,7 +9831,7 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			</xs:element>
 			<xs:element name="AGGREGATION_FLAG" type="misc:A_VALIDITY_FLAG">
 				<xs:annotation>
-					<xs:documentation>Boolean flag: to aggregate or not  several granules in a single file per band and per detector (concatenation of granules along the detectors). For Level-0, aggregation is always FALSE</xs:documentation>
+					<xs:documentation>Flag to select Along-Track Aggregated Granules (L1A/L1B) and Consolidated Tiles (L1C)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -10431,6 +9876,20 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="A_GEOMETRIC_INFO_USER1C_SAFE">
+		<xs:sequence>
+			<xs:element name="Product_Footprint" type="dimap:AN_INIT_LOC_PROD_PRODUCT_FOOTPRINT_SAFE">
+				<xs:annotation>
+					<xs:documentation>Geolocation over WGS84 of the contour of the product. The footprint is provided as a serie of vertices (lat, lon) counter-clockwise oriented. The polygon must be closed (the first and last vertices are the same). This is computed by the DAG based on the singular granules footprint</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Coordinate_Reference_System" type="dimap:A_COORDINATE_REFERENCE_SYSTEM_L1C">
+				<xs:annotation>
+					<xs:documentation>Description of the horizontal coordinates reference system</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="A_RADIOMETRIC_INFO_USERL1C">
 		<xs:sequence>
 			<xs:element name="Reflectance_quantification_value" type="dimap:A_RESAMPLE_DATA"/>
@@ -10438,79 +9897,30 @@ Examples: EPSG:4326, RAW</xs:documentation>
 	</xs:complexType>
 	<xs:complexType name="AN_AUXILIARY_DATA_INFO_USERL1C">
 		<xs:sequence>
-			<xs:element name="IERS_Bulletin_Info" type="dimap:AN_IERS_BULLETIN">
+			<xs:element name="GIPP_List" type="dimap:A_GIPP_LIST">
 				<xs:annotation>
-					<xs:documentation>IERS bulletin. These data are provided for the start acquisition date.</xs:documentation>
-					<xs:appinfo>
-						<xs:DOC>
-							<xs:DEFINITION/>
-							<xs:CREATED_BY>DATATION</xs:CREATED_BY>
-						</xs:DOC>
-					</xs:appinfo>
+					<xs:documentation>Reference to the used GIPPs</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="PHYSICAL_GAINS">
-				<xs:complexType>
-					<xs:simpleContent>
-						<xs:extension base="xs:double">
-							<xs:attribute name="bandId" use="required">
-								<xs:simpleType>
-									<xs:restriction base="xs:int">
-										<xs:enumeration value="0"/>
-										<xs:enumeration value="1"/>
-										<xs:enumeration value="2"/>
-										<xs:enumeration value="3"/>
-										<xs:enumeration value="4"/>
-										<xs:enumeration value="5"/>
-										<xs:enumeration value="6"/>
-										<xs:enumeration value="7"/>
-										<xs:enumeration value="8"/>
-										<xs:enumeration value="9"/>
-										<xs:enumeration value="10"/>
-										<xs:enumeration value="11"/>
-										<xs:enumeration value="12"/>
-									</xs:restriction>
-								</xs:simpleType>
-							</xs:attribute>
-						</xs:extension>
-					</xs:simpleContent>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="REFERENCE_BAND" type="xs:int"/>
-			<xs:element name="DataStrip_Generation_Info" type="dimap:A_PROCESSING_STEP_LIST"/>
-			<xs:element name="Aux_Data">
+			<xs:element name="PRODUCTION_DEM_TYPE" type="xs:string">
 				<xs:annotation>
-					<xs:documentation>Links to the AUX_DATA items</xs:documentation>
+					<xs:documentation>Reference to used DEM</xs:documentation>
 				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="GIPP_List" type="dimap:A_GIPP_LIST">
-							<xs:annotation>
-								<xs:documentation>Used GIPP files</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="PRODUCTION_DEM_TYPE" type="xs:string">
-							<xs:annotation>
-								<xs:documentation>Reference to used DEM</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="IERS_BULLETIN_FILENAME" type="xs:string">
-							<xs:annotation>
-								<xs:documentation>Reference to IERS Bulletin</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="GRI_FILENAME" type="xs:string">
-							<xs:annotation>
-								<xs:documentation>Reference to GRI data </xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="ECMWF_FILENAME" type="xs:string">
-							<xs:annotation>
-								<xs:documentation>Reference to ECMWF data</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
+			</xs:element>
+			<xs:element name="IERS_BULLETIN_FILENAME" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to IERS Bulletin</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GRI_FILENAME" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to GRI data </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ECMWF_FILENAME" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to ECMWF data</xs:documentation>
+				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
@@ -10558,12 +9968,161 @@ Examples: EPSG:4326, RAW</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="Quality_Summary" type="dimap:A_QUALITY_SUMMARY">
+						<xs:element name="Quality_Inspections" type="dimap:A_QUALITY_SUMMARY">
 							<xs:annotation>
 								<xs:documentation>Synthesis of the OLQC checks.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="Failed_Inspections">
+							<xs:annotation>
+								<xs:documentation>Reference to OLQC reports containing FAILED inspections</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Datastrip_Report" type="dimap:A_DATASTRIP_REPORT_LIST">
+										<xs:annotation>
+											<xs:documentation>Failed Datastrip Report</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Granule_Report" type="dimap:A_GRANULE_REPORT_LIST">
+										<xs:annotation>
+											<xs:documentation>Failed Granule Report</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_QUALITY_INDICATORS_INFO_USER_PROD_L0_L1A">
+		<xs:sequence>
+			<xs:element name="Cloud_Coverage_Assessment">
+				<xs:annotation>
+					<xs:documentation>Percentage of cloud coverage of the product</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Technical_Quality_Assessment">
+				<xs:annotation>
+					<xs:documentation>Computed as sythesis from granule data</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="DEGRADED_ANC_DATA_PERCENTAGE">
+							<xs:simpleType>
+								<xs:restriction base="xs:double">
+									<xs:minInclusive value="0"/>
+									<xs:maxInclusive value="100"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="DEGRADED_MSI_DATA_PERCENTAGE">
+							<xs:simpleType>
+								<xs:restriction base="xs:double">
+									<xs:minInclusive value="0"/>
+									<xs:maxInclusive value="100"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Quality_Control_Checks">
+				<xs:annotation>
+					<xs:documentation>Only failed checks (OLQC reports at granule and datastip level) will be referenced here. In addition general flags summarising the performed inspections (for each checklist defined at granule and datastrip level) are added</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Quality_Inspections" type="dimap:A_QUALITY_SUMMARY_L0_L1A_USER">
+							<xs:annotation>
+								<xs:documentation>Synthesis of the OLQC checks</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Failed_Inspections">
+							<xs:annotation>
+								<xs:documentation>Reference to OLQC reports containing FAILED inspections</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Datastrip_Report" type="dimap:A_DATASTRIP_REPORT_LIST">
+										<xs:annotation>
+											<xs:documentation>Failed Datastrip Report</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Granule_Report" type="dimap:A_GRANULE_REPORT_LIST">
+										<xs:annotation>
+											<xs:documentation>Failed Granule Report</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_QUALITY_INDICATORS_INFO_USER_PROD_L1B_L1C">
+		<xs:sequence>
+			<xs:element name="Cloud_Coverage_Assessment">
+				<xs:annotation>
+					<xs:documentation>Percentage of cloud coverage of the product.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Technical_Quality_Assessment">
+				<xs:annotation>
+					<xs:documentation>Computed as sythesis from granule data</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="DEGRADED_ANC_DATA_PERCENTAGE">
+							<xs:simpleType>
+								<xs:restriction base="xs:double">
+									<xs:minInclusive value="0"/>
+									<xs:maxInclusive value="100"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="DEGRADED_MSI_DATA_PERCENTAGE">
+							<xs:simpleType>
+								<xs:restriction base="xs:double">
+									<xs:minInclusive value="0"/>
+									<xs:maxInclusive value="100"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Quality_Control_Checks">
+				<xs:annotation>
+					<xs:documentation>Only failed checks (OLQC reports at granule and datastip level) will be referenced here. In addition general flags summarising the performed inspections (for each checklist defined at granule and datastrip level) are added</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Quality_Inspections" type="dimap:A_QUALITY_SUMMARY_L1B_L1C_USER">
+							<xs:annotation>
+								<xs:documentation>Synthesis of the OLQC checks</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Failed_Inspections">
+							<xs:annotation>
+								<xs:documentation>Reference to OLQC reports containing FAILED inspections</xs:documentation>
+							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
 									<xs:element name="Datastrip_Report" type="dimap:A_DATASTRIP_REPORT_LIST">
@@ -10618,6 +10177,50 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:element name="SATURATED_PIXELS_PROC" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>Management of saturated pixels. A 'true' value indicates that saturated pixels has been processed.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Spectral_Information_List" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Spectral_Information" maxOccurs="13">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+									<xs:element name="Wavelength">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="Spectral_Response">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+													<xs:annotation>
+														<xs:documentation>List of measures</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+								<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME" use="required"/>
+								<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
+				<xs:annotation>
+					<xs:documentation>Relation between product image channels and on board spectral bands</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -10721,6 +10324,25 @@ Examples: EPSG:4326, RAW</xs:documentation>
 					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Product_Compression" minOccurs="0">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="COMPRESSION">
+							<xs:annotation>
+								<xs:documentation>Product Compression</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="NONE"/>
+									<xs:enumeration value="LOSSY"/>
+									<xs:enumeration value="LOSSLESS"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
+				</xs:complexType>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="A_QUALITY_INDICATORS_INFO_DSL1A">
@@ -10738,6 +10360,11 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:element name="Radiometric_Info" type="dimap:A_RADIOMETRIC_L1PRODUCT_QUALITY_ASSESSMENT">
 				<xs:annotation>
 					<xs:documentation/>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DEGRADED_ANC_DATA_PERCENTAGE" type="misc:A_PERCENTAGE">
+				<xs:annotation>
+					<xs:documentation>A percentage of degraded ancillary data</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -10781,11 +10408,6 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:element name="REFERENCE_BAND" type="image:A_BAND_NUMBER">
 				<xs:annotation>
 					<xs:documentation>Used Reference Band</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
-				<xs:annotation>
-					<xs:documentation>Relation between product image channels and on board spectral bands</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -10844,6 +10466,50 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:element name="SATURATED_PIXELS_PROC" type="xs:boolean">
 				<xs:annotation>
 					<xs:documentation>Management of saturated pixels. A 'true' value indicates that saturated pixels has been processed.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Spectral_Information_List" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Spectral information which provided by the GIPP  ABSOLUTE_CALIBRATION</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Spectral_Information" maxOccurs="13">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="RESOLUTION" type="image:A_BAND_RESOLUTION"/>
+									<xs:element name="Wavelength">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="MIN" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="MAX" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="CENTRAL" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="Spectral_Response">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="STEP" type="misc:A_DOUBLE_WITH_NM_ATTR"/>
+												<xs:element name="VALUES" type="misc:A_LIST_OF_DOUBLE">
+													<xs:annotation>
+														<xs:documentation>List of measures</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+								<xs:attribute name="physicalBand" type="image:A_PHYSICAL_BAND_NAME" use="required"/>
+								<xs:attribute name="bandId" type="image:A_BAND_NUMBER" use="required"/>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
+				<xs:annotation>
+					<xs:documentation>Relation between product image channels and on board spectral bands</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -11006,11 +10672,6 @@ Examples: EPSG:4326, RAW</xs:documentation>
 					<xs:documentation>Used Reference Band</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
-				<xs:annotation>
-					<xs:documentation>Relation between product image channels and on board spectral bands</xs:documentation>
-				</xs:annotation>
-			</xs:element>
 		</xs:sequence>
 		<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Standard"/>
 	</xs:complexType>
@@ -11141,7 +10802,22 @@ Examples: EPSG:4326, RAW</xs:documentation>
 		<xs:sequence>
 			<xs:element name="Product_Footprint" type="dimap:AN_INIT_LOC_PROD_PRODUCT_FOOTPRINT">
 				<xs:annotation>
-					<xs:documentation>Geolocation over WGS84 of the contour of the product. The footprint is provided as a serie of vertices (lat, lon) counter-clockwise oriented. The polygon must be closed (the first and last vertices are the same). This is computed by the DAG based on the singular granules footprint</xs:documentation>
+					<xs:documentation>Geolocation over WGS84 of the contour of the product. The footprint is provided as a serie of vertices (lat, lon) counter-clockwise oriented. The polygon must be closed (the first and last vertices are the same). </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Coordinate_Reference_System" type="dimap:A_COORDINATE_REFERENCE_SYSTEM_L0_L1A_L1B">
+				<xs:annotation>
+					<xs:documentation>Description of the horizontal coordinates reference system</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Geometric_Header_List" type="dimap:A_GEOMETRIC_HEADER_LIST"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_GEOMETRIC_INFO_USERL0L1AL1B_SAFE">
+		<xs:sequence>
+			<xs:element name="Product_Footprint" type="dimap:AN_INIT_LOC_PROD_PRODUCT_FOOTPRINT_SAFE">
+				<xs:annotation>
+					<xs:documentation>Granules footprint. The footprint is provided as a serie of vertices (lat, lon) counter-clockwise oriented. The polygon must be closed (the first and last vertices are the same).</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="Coordinate_Reference_System" type="dimap:A_COORDINATE_REFERENCE_SYSTEM_L0_L1A_L1B">
@@ -11232,69 +10908,20 @@ Examples: EPSG:4326, RAW</xs:documentation>
 	</xs:complexType>
 	<xs:complexType name="AN_AUXILIARY_DATA_INFO_USERL0L1A">
 		<xs:sequence>
-			<xs:element name="IERS_Bulletin_Info" type="dimap:AN_IERS_BULLETIN">
+			<xs:element name="GIPP_List_Ref" type="dimap:A_GIPP_LIST">
 				<xs:annotation>
-					<xs:documentation>IERS bulletin. These data are provided for the start acquisition date.</xs:documentation>
-					<xs:appinfo>
-						<xs:DOC>
-							<xs:DEFINITION/>
-							<xs:CREATED_BY>DATATION</xs:CREATED_BY>
-						</xs:DOC>
-					</xs:appinfo>
+					<xs:documentation>Reference to GIPP files used by the processing</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="PHYSICAL_GAINS">
-				<xs:complexType>
-					<xs:simpleContent>
-						<xs:extension base="xs:double">
-							<xs:attribute name="bandId" use="required">
-								<xs:simpleType>
-									<xs:restriction base="xs:int">
-										<xs:enumeration value="0"/>
-										<xs:enumeration value="1"/>
-										<xs:enumeration value="2"/>
-										<xs:enumeration value="3"/>
-										<xs:enumeration value="4"/>
-										<xs:enumeration value="5"/>
-										<xs:enumeration value="6"/>
-										<xs:enumeration value="7"/>
-										<xs:enumeration value="8"/>
-										<xs:enumeration value="9"/>
-										<xs:enumeration value="10"/>
-										<xs:enumeration value="11"/>
-										<xs:enumeration value="12"/>
-									</xs:restriction>
-								</xs:simpleType>
-							</xs:attribute>
-						</xs:extension>
-					</xs:simpleContent>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="REFERENCE_BAND" type="xs:int"/>
-			<xs:element name="DataStrip_Generation_Info" type="dimap:A_PROCESSING_STEP_LIST"/>
-			<xs:element name="Aux_Data">
+			<xs:element name="PRODUCTION_DEM_TYPE" type="item:DEM_ID">
 				<xs:annotation>
-					<xs:documentation>Reference to the AUX DATA items used for the processing</xs:documentation>
+					<xs:documentation>Reference to used DEM</xs:documentation>
 				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="GIPP_List_Ref" type="dimap:A_GIPP_LIST">
-							<xs:annotation>
-								<xs:documentation>Reference to GIPP files used by the processing</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="PRODUCTION_DEM_TYPE" type="item:DEM_ID">
-							<xs:annotation>
-								<xs:documentation>Reference to used DEM</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="IERS_BULLETIN_FILENAME" type="item:IERS_ID">
-							<xs:annotation>
-								<xs:documentation>Reference to IERS Bullettin</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
+			</xs:element>
+			<xs:element name="IERS_BULLETIN_FILENAME" type="item:IERS_ID">
+				<xs:annotation>
+					<xs:documentation>Reference to IERS Bullettin IERS bulletin provided for the start acquisition date</xs:documentation>
+				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
@@ -11345,79 +10972,114 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="A_QUALITY_SUMMARY_L0_L1A_USER">
+		<xs:annotation>
+			<xs:documentation>Synthesis of the OLQC checks</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SENSOR_QUALITY_FLAG">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="PASSED"/>
+						<xs:enumeration value="FAILED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="GEOMETRIC_QUALITY_FLAG">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="PASSED"/>
+						<xs:enumeration value="FAILED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="GENERAL_QUALITY_FLAG">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="PASSED"/>
+						<xs:enumeration value="FAILED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="FORMAT_CORRECTNESS_FLAG">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="PASSED"/>
+						<xs:enumeration value="FAILED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="A_QUALITY_SUMMARY_L1B_L1C_USER">
+		<xs:annotation>
+			<xs:documentation>Synthesis of the OLQC checks</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SENSOR_QUALITY_FLAG">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="PASSED"/>
+						<xs:enumeration value="FAILED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="GEOMETRIC_QUALITY_FLAG">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="PASSED"/>
+						<xs:enumeration value="FAILED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="GENERAL_QUALITY_FLAG">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="PASSED"/>
+						<xs:enumeration value="FAILED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="FORMAT_CORRECTNESS_FLAG">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="PASSED"/>
+						<xs:enumeration value="FAILED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="RADIOMETRIC_QUALITY_FLAG">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="PASSED"/>
+						<xs:enumeration value="FAILED"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="AN_AUXILIARY_DATA_INFO_USERL1B">
 		<xs:sequence>
-			<xs:element name="IERS_Bulletin_Info" type="dimap:AN_IERS_BULLETIN">
+			<xs:element name="GIPP_List_Ref" type="dimap:A_GIPP_LIST">
 				<xs:annotation>
-					<xs:documentation>IERS bulletin. These data are provided for the start acquisition date.</xs:documentation>
-					<xs:appinfo>
-						<xs:DOC>
-							<xs:DEFINITION/>
-							<xs:CREATED_BY>DATATION</xs:CREATED_BY>
-						</xs:DOC>
-					</xs:appinfo>
+					<xs:documentation>Reference to GIPP files used by the processing</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="PHYSICAL_GAINS">
-				<xs:complexType>
-					<xs:simpleContent>
-						<xs:extension base="xs:double">
-							<xs:attribute name="bandId" use="required">
-								<xs:simpleType>
-									<xs:restriction base="xs:int">
-										<xs:enumeration value="0"/>
-										<xs:enumeration value="1"/>
-										<xs:enumeration value="2"/>
-										<xs:enumeration value="3"/>
-										<xs:enumeration value="4"/>
-										<xs:enumeration value="5"/>
-										<xs:enumeration value="6"/>
-										<xs:enumeration value="7"/>
-										<xs:enumeration value="8"/>
-										<xs:enumeration value="9"/>
-										<xs:enumeration value="10"/>
-										<xs:enumeration value="11"/>
-										<xs:enumeration value="12"/>
-									</xs:restriction>
-								</xs:simpleType>
-							</xs:attribute>
-						</xs:extension>
-					</xs:simpleContent>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="REFERENCE_BAND" type="xs:int"/>
-			<xs:element name="DataStrip_Generation_Info" type="dimap:A_PROCESSING_STEP_LIST"/>
-			<xs:element name="Aux_Data">
+			<xs:element name="PRODUCTION_DEM_TYPE" type="xs:string">
 				<xs:annotation>
-					<xs:documentation>Reference to the AUX DATA items used for the processing</xs:documentation>
+					<xs:documentation>Reference to used DEM</xs:documentation>
 				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="GIPP_List_Ref" type="dimap:A_GIPP_LIST">
-							<xs:annotation>
-								<xs:documentation>Reference to GIPP files used by the processing</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="PRODUCTION_DEM_TYPE" type="xs:string">
-							<xs:annotation>
-								<xs:documentation>Reference to used DEM</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="IERS_BULLETIN_FILENAME" type="xs:string">
-							<xs:annotation>
-								<xs:documentation>Reference to IERS Bullettin</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="GRI_FILENAME" type="xs:string">
-							<xs:annotation>
-								<xs:documentation>Reference to GRI data </xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
 			</xs:element>
-			<xs:element name="Restoration_Parameters" type="dimap:A_RESTORATION_PARAMETERS"/>
-			<xs:element name="Equalization_Parameters" type="dimap:AN_EQUALIZATION_PARAMETERS"/>
+			<xs:element name="IERS_BULLETIN_FILENAME" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to IERS Bullettin</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="GRI_FILENAME" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Reference to GRI data </xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:simpleType name="A_DATASTRIP_ID">

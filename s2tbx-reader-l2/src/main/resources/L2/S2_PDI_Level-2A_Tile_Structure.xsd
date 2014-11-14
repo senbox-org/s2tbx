@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XMLSpy v2011 rel. 2 sp1 (http://www.altova.com) by David Pattenden (Vega Technologies SAS) -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://pdgs.s2.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd" xmlns:S2="http://gs2.esa.int/DICO/1.0/PDGS/logical_definition/" targetNamespace="http://pdgs.s2.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd" elementFormDefault="qualified">
-	<xs:element name="Level-2A_Tile" type="Level-2A_Tile"/>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://pdgs.s2.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd"
+	targetNamespace="http://pdgs.s2.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd"
+	elementFormDefault="qualified" version="10">
+	<xs:element name="Level-2A_Tile"
+				type="Level-2A_Tile"/>
 	<xs:complexType name="Level-2A_Tile">
 		<xs:annotation>
 			<xs:documentation>Folder</xs:documentation>
@@ -13,9 +16,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="General_Info">
-                            <xs:complexType/>
-                        </xs:element>
+						<xs:element name="General_Info"/>
 						<xs:element name="Geometric_Info">
 							<xs:complexType/>
 						</xs:element>

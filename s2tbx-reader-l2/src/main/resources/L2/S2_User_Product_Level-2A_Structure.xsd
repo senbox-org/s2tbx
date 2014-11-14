@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XMLSpy v2011 rel. 2 sp1 (http://www.altova.com) by David Pattenden (Vega Technologies SAS) -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://pdgs.s2.esa.int/PSD/S2_User_Product_Level-2A_Structure.xsd" targetNamespace="http://pdgs.s2.esa.int/PSD/S2_User_Product_Level-2A_Structure.xsd" elementFormDefault="qualified" version="2.0">
-	<xs:element name="Level-2A_User_Product_Structure" type="Level-2A_User_Product_Structure"/>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+	xmlns="http://pdgs.s2.esa.int/PSD/S2_User_Product_Level-2A_Structure.xsd"
+	targetNamespace="http://pdgs.s2.esa.int/PSD/S2_User_Product_Level-2A_Structure.xsd"
+	elementFormDefault="qualified" version="10">
+	<xs:element name="Level-2A_User_Product_Structure"
+	            type="Level-2A_User_Product_Structure"/>
 	<xs:complexType name="Level-2A_User_Product_Structure">
 		<xs:sequence>
 			<xs:element name="Product_Metadata_File">

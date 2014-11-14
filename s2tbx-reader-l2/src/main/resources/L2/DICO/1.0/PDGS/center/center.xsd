@@ -9,21 +9,21 @@
 		</xsd:annotation>
 		<xsd:union memberTypes="A_S2_ACQUISITION_CENTER A_S2_PAC A_S2_MPCC A_S2_PDMC A_S2_RP"/>
 	</xsd:simpleType>
-	<xsd:simpleType name="A_S2_PROCESSING_CENTRE">
+	<!--<xsd:simpleType name="A_S2_PROCESSING_CENTRE">
 		<xsd:annotation>
 			<xsd:documentation>CGS1, CGS2, CGS3, PAC1, MPAC</xsd:documentation>
 		</xsd:annotation>
 		<xsd:union memberTypes="A_Full_CGS A_S2_PAC1 A_S2_MPCC"/>
-	</xsd:simpleType>
+	</xsd:simpleType>-->
 	<!--..............................................................................................................................................-->
 	<!--................................... CGS (Acq Center / Full CGS /  Basic CGS) ...........................................-->
 	<!--..............................................................................................................................................-->
-	<xsd:simpleType name="A_S2_ACQUISITION_CENTER">
+	<!--<xsd:simpleType name="A_S2_ACQUISITION_CENTER">
 		<xsd:annotation>
 			<xsd:documentation> CGS1, CGS2, CGS3, CGS4</xsd:documentation>
 		</xsd:annotation>
 		<xsd:union memberTypes="A_Full_CGS A_Basic_CGS"/>
-	</xsd:simpleType>
+	</xsd:simpleType>-->
 	<xsd:simpleType name="A_Full_CGS">
 		<xsd:annotation>
 			<xsd:documentation> Center used for Acquisition and Processing</xsd:documentation>
@@ -159,6 +159,39 @@
 			<xsd:enumeration value="PAC2"/>
 			<xsd:enumeration value="CDAM"/>
 			<xsd:enumeration value="MPCC"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!--..............................................................................................................................................-->
+	<!--.......................................................... Processing Centers  .....................................................-->
+	<!--..............................................................................................................................................-->
+	<xsd:simpleType name="A_S2_PROCESSING_CENTRE">
+		<xsd:annotation>
+			<xsd:documentation>Processing Center</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="SVLB"/>
+			<xsd:enumeration value="MASP"/>
+			<xsd:enumeration value="MATA"/>
+			<xsd:enumeration value="CGS1"/>
+			<xsd:enumeration value="CGS2"/>
+			<xsd:enumeration value="CGS3"/>
+			<xsd:enumeration value="CGS4"/>
+			<xsd:enumeration value="PAC1"/>
+			<xsd:enumeration value="MPCC"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+		<!--..............................................................................................................................................-->
+	<!--.......................................................... Acquisition Centers  .........................................................-->
+	<!--..............................................................................................................................................    -->
+	<xsd:simpleType name="A_S2_ACQUISITION_CENTER">
+		<xsd:annotation>
+			<xsd:documentation>Processing Center</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="CGS1"/>
+			<xsd:enumeration value="CGS2"/>
+			<xsd:enumeration value="CGS3"/>
+			<xsd:enumeration value="CGS4"/>
 		</xsd:restriction>
 	</xsd:simpleType>
 </xsd:schema>

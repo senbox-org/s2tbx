@@ -717,8 +717,7 @@ GS[SS]_[YYYYMMDDTHHMMSS]_[RRR]_[TTTTT], where :<br/>
 			<xs:enumeration value="INS-DASC"/>
 			<xs:enumeration value="INS-ABSR"/>
 			<xs:enumeration value="INS-VIC"/>
-			<xs:enumeration value="INS-RAW"/>
-			<xs:enumeration value="INS-TST"/>
+			<xs:enumeration value="NS-RAW"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="A_DATA_TAKE_ID">

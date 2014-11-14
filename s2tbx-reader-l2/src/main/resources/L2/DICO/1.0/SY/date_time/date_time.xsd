@@ -111,6 +111,22 @@
 			<xs:pattern value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z"/>
 		</xs:restriction>
 	</xs:simpleType>
+	<xs:simpleType name="AN_UTC_DATE_TIME_TWO">
+		<xs:annotation>
+			<xs:documentation>An UTC date-time value</xs:documentation>
+			<xs:appinfo>
+				<gs2:DOC>
+					<gs2:DEFINITION>date-time value restricted to the
+						yyyy-mm-ddThh:mm:ss(.sss)Z pattern and excluding
+						thus a TimeZone definition.</gs2:DEFINITION>
+				</gs2:DOC>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:restriction base="xs:dateTime">
+			<xs:pattern value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z"/>
+			<xs:pattern value="\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z \d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:simpleType name="AN_UTC_MICROSEC_DATE_TIME">
 		<xs:annotation>
 			<xs:documentation>An UTC date-time value with a precision of one microsecond</xs:documentation>
