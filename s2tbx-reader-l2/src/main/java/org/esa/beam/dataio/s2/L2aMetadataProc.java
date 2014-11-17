@@ -9,7 +9,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.xml.bind.*;
@@ -160,12 +159,12 @@ public class L2aMetadataProc {
 
     public static L2aMetadata.ProductCharacteristics parseCharacteristics(Level2A_User_Product product)
     {
-        A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getProduct_Info().getDatatake();
+        A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getL2A_Product_Info().getDatatake();
 
         L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
         characteristics.spacecraft = info.getSPACECRAFT_NAME().getValue();
-        characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString();
-        characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString();
+        characteristics.datasetProductionDate = product.getGeneral_Info().getL2A_Product_Info().getGENERATION_TIME().toString();
+        characteristics.processingLevel = product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().toString();
 
         List<L2aMetadata.SpectralInformation> targetList = new ArrayList<L2aMetadata.SpectralInformation>();
 
@@ -193,12 +192,12 @@ public class L2aMetadataProc {
 
     public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product)
     {
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
+        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
         L2aMetadata.ProductCharacteristics characteristics= new L2aMetadata.ProductCharacteristics();
-        characteristics.spacecraft = product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME().getValue();
-        characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString();
-        characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value();
+        characteristics.spacecraft = product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME().getValue();
+        characteristics.datasetProductionDate = product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString();
+        characteristics.processingLevel = product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value();
 
 
         List<A_PRODUCT_CHARACTERISTICS.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getProduct_Characteristics().getSpectral_Information_List().getSpectral_Information();
@@ -229,69 +228,56 @@ public class L2aMetadataProc {
     }
 
     public static Collection<String> getTiles(Level2A_User_Product product) {
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
+        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
-        List<A_PRODUCT_INFO.Product_Organisation.Datastrip_List.Datastrip> datastrips = info.getDatastrip_List().getDatastrip();
+        List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
 
-        int numStrips = datastrips.size();
+        Transformer tileSelector = new Transformer() {
+            @Override
+            public Object transform(Object o) {
+                A_L2A_Product_Info.L2A_Product_Organisation.Granule_List ali = (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List) o;
+                A_PRODUCT_ORGANIZATION_2A.Granules gr = ali.getGranules();
+                return gr.getGranuleIdentifier();
+            }
+        };
 
-        List<String> aGranuleList = new ArrayList<String>();
-
-        for(int stripIndex = 0; stripIndex < numStrips; stripIndex++)
-        {
-            aGranuleList.add(datastrips.get(stripIndex).getDATASTRIP_ID());
-        }
-
-        return aGranuleList;
+        Collection col = CollectionUtils.collect(aGranuleList, tileSelector);
+        return col;
     }
 
     public static S2DatastripFilename getDatastrip(Level2A_User_Product product)
     {
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
-        List<A_PRODUCT_INFO.Product_Organisation.Datastrip_List.Datastrip> aGranuleList = info.getDatastrip_List().getDatastrip();
-        String granule = aGranuleList.get(0).getDATASTRIP_ID();
-        S2GranuleDirFilename grafile = S2GranuleDirFilename.create(granule);
-        String fileCategory = grafile.fileCategory;
+        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
-        String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getDATASTRIP_ID();
+        String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
         return dirDatastrip.getDatastripFilename(null);
     }
 
     public static S2DatastripDirFilename getDatastripDir(Level2A_User_Product product)
     {
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
-        List<A_PRODUCT_INFO.Product_Organisation.Datastrip_List.Datastrip> aGranuleList = info.getDatastrip_List().getDatastrip();
-        String granule = aGranuleList.get(0).getDATASTRIP_ID();
-        S2GranuleDirFilename grafile = S2GranuleDirFilename.create(granule);
-        String fileCategory = grafile.fileCategory;
+        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
+        String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
 
-        String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getDATASTRIP_ID();
-        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
+        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
         return dirDatastrip;
     }
 
     public static Collection<String> getImages(Level2A_User_Product product) {
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
-        List<A_PRODUCT_INFO.Product_Organisation.Datastrip_List.Datastrip> aGranuleList = info.getDatastrip_List().getDatastrip();
+        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
-        List<String> imageList = new ArrayList<String>();
+        A_L2A_Product_Info.L2A_Product_Organisation.Granule_List granuleList = info.getGranule_List().get(0);
 
-        for(A_PRODUCT_INFO.Product_Organisation.Datastrip_List.Datastrip das: aGranuleList)
+        List<A_PRODUCT_ORGANIZATION_2A.Granules.IMAGE_ID_2A> images = granuleList.getGranules().getIMAGE_ID_2A();
+
+        List<String> aGranuleList = new ArrayList<String>();
+
+        for(int granuleIndex = 0; granuleIndex < images.size(); granuleIndex++)
         {
-            A_PRODUCT_INFO.Product_Organisation.Datastrip_List.Datastrip.Granule_List grl = das.getGranule_List();
-            List<A_PRODUCT_INFO.Product_Organisation.Datastrip_List.Datastrip.Granule_List.Granule> lig = grl.getGranule();
-            for(A_PRODUCT_INFO.Product_Organisation.Datastrip_List.Datastrip.Granule_List.Granule gra: lig)
-            {
-                for(int index=0; index < gra.getIMAGE_DATA_ID().size(); index++)
-                {
-                    imageList.add(gra.getIMAGE_DATA_ID().get(index).getValue());
-                }
-            }
+            aGranuleList.add(images.get(granuleIndex).getValue());
         }
 
-        Collections.sort(imageList);
-        return imageList;
+        return aGranuleList;
     }
 
     public static Map<Integer, L2aMetadata.TileGeometry> getTileGeometries(Level2A_Tile product) {
