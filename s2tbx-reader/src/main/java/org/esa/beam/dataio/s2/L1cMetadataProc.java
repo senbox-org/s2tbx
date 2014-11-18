@@ -148,7 +148,7 @@ public class L1cMetadataProc {
 
         //todo get modules classpath
         //todo test new lecture style
-        JAXBContext jaxbContext = JAXBContext.newInstance("https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap", s2c);
+        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
@@ -275,10 +275,10 @@ public class L1cMetadataProc {
     public static Collection<String> getImages(Level1C_User_Product product) {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
 
-        List<A_PRODUCT_INFO.Product_Organisation.Granule_List> beautyQueen = info.getGranule_List();
+        List<A_PRODUCT_INFO.Product_Organisation.Granule_List> granulesList = info.getGranule_List();
         List<String> imagesList = new ArrayList<String>();
 
-        for(A_PRODUCT_INFO.Product_Organisation.Granule_List aGranule: beautyQueen)
+        for(A_PRODUCT_INFO.Product_Organisation.Granule_List aGranule: granulesList)
         {
             A_PRODUCT_ORGANIZATION.Granules gr = aGranule.getGranules();
             String dir_id = gr.getGranuleIdentifier();

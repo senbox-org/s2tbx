@@ -32,7 +32,7 @@ public class MetadataTest {
         Level1C_User_Product o = null;
 
         JAXBContext jaxbContext = JAXBContext
-                .newInstance("https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap");
+                .newInstance(MetadataType.L1C);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -51,7 +51,7 @@ public class MetadataTest {
         Level1C_Tile o = null;
 
         JAXBContext jaxbContext = JAXBContext
-                .newInstance("https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap");
+                .newInstance(MetadataType.L1C);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -90,12 +90,12 @@ public class MetadataTest {
 
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
 
-        A_PRODUCT_ORGANIZATION.Granules beautyQueen = info.getGranule_List().get(0).getGranules();
-        String fallApart = beautyQueen.getGranuleIdentifier();
+        A_PRODUCT_ORGANIZATION.Granules granulesList = info.getGranule_List().get(0).getGranules();
+        String granuleId = granulesList.getGranuleIdentifier();
 
-        assertEquals("S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_N01.01", fallApart);
+        assertEquals("S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_N01.01", granuleId);
 
-        S2GranuleDirFilename gdir = S2GranuleDirFilename.create(fallApart);
+        S2GranuleDirFilename gdir = S2GranuleDirFilename.create(granuleId);
 
         Assert.assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", gdir.getMetadataFilename().name);
     }
