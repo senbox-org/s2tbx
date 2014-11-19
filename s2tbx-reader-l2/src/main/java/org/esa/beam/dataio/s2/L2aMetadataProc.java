@@ -27,7 +27,7 @@ import java.util.*;
 public class L2aMetadataProc {
 
     public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
-        String subStr = "s2tbx-reader";
+        String subStr = "s2tbx-l2-reader";
 
         ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
         URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
@@ -146,7 +146,7 @@ public class L2aMetadataProc {
 
         //todo get modules classpath
         //todo test new lecture style
-        JAXBContext jaxbContext = JAXBContext.newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap", s2c);
+        JAXBContext jaxbContext = JAXBContext.newInstance(L2AMetadataType.L2A, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
