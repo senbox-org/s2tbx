@@ -774,7 +774,7 @@ GS[SS]_[YYYYMMDDTHHMMSS]_[RRRRRR], where :<br/>
 			<xs:enumeration value="Level-1A"/>
 			<xs:enumeration value="Level-1B"/>
 			<xs:enumeration value="Level-1C"/>
-			<xs:enumeration value="LeveI-2Ap"/>
+			<xs:enumeration value="Level-2Ap"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="A_PRODUCT_S2_FORMAT">
