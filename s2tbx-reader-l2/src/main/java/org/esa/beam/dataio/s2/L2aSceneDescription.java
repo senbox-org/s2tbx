@@ -20,7 +20,7 @@ import java.util.Map;
 public class L2aSceneDescription {
 
     private static final double PIXEL_RESOLUTION_10M = S2SpatialResolution.R10M.resolution;
-    private static final int TILE_SIZE_10M = S2Config.L1C_TILE_LAYOUTS[0].width;
+    private static final int TILE_SIZE_10M = S2L2AConfig.L2A_TILE_LAYOUTS[0].width;
     private static final double TILE_RESOLUTION_10M = PIXEL_RESOLUTION_10M * TILE_SIZE_10M;
 
     private final TileInfo[] tileInfos;

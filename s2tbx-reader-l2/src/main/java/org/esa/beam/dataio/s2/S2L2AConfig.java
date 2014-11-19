@@ -7,7 +7,7 @@ import java.awt.image.DataBuffer;
 /**
  * @author Norman Fomferra
  */
-public interface S2Config {
+public interface S2L2AConfig {
     boolean DEBUG = Boolean.getBoolean("org.esa.beam.dataio.s2.S2Config.DEBUG");
 
     /**
@@ -35,12 +35,12 @@ public interface S2Config {
     //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
     //todo use classes from jp2 package to read the data
     //todo future improvement: use opj_dump.exe to retrieve the data
-    L2aTileLayout[] L1C_TILE_LAYOUTS = new L2aTileLayout[]{
+    L2aTileLayout[] L2A_TILE_LAYOUTS = new L2aTileLayout[]{
             new L2aTileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
             new L2aTileLayout(5490, 5490, 2048, 2048, 3, 3, 6),
             new L2aTileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
     };
 
-    String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
+    String FORMAT_NAME = "SENTINEL-2-MSI-L2A";
     String MTD_EXT = ".xml";
 }

@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static org.esa.beam.dataio.s2.S2Config.L1C_TILE_LAYOUTS;
+import static org.esa.beam.dataio.s2.S2L2AConfig.L2A_TILE_LAYOUTS;
 
 // todo - better log problems during read process, see {@report "Problem detected..."} code marks
 
@@ -74,14 +74,14 @@ class L2aTileOpImage extends SingleBandedOpImage {
         } else {
             BeamLogManager.getSystemLogger().warning("Using empty image !");
 
-            int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
-            int targetHeight = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].height, level);
-            Dimension targetTileDim = getTileDimAtResolutionLevel(L1C_TILE_LAYOUTS[0].tileWidth, L1C_TILE_LAYOUTS[0].tileHeight, level);
-            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
+            int targetWidth = getSizeAtResolutionLevel(L2A_TILE_LAYOUTS[0].width, level);
+            int targetHeight = getSizeAtResolutionLevel(L2A_TILE_LAYOUTS[0].height, level);
+            Dimension targetTileDim = getTileDimAtResolutionLevel(L2A_TILE_LAYOUTS[0].tileWidth, L2A_TILE_LAYOUTS[0].tileHeight, level);
+            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2L2AConfig.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
                                              (float) imageLayout.getHeight(null),
-                                             new Short[]{S2Config.FILL_CODE_NO_FILE},
+                                             new Short[]{S2L2AConfig.FILL_CODE_NO_FILE},
                                              new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
         }
     }
@@ -142,7 +142,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
                    L2aTileLayout l2aTileLayout,
                    MultiLevelModel imageModel,
                    int level) {
-        super(S2Config.SAMPLE_DATA_BUFFER_TYPE,
+        super(S2L2AConfig.SAMPLE_DATA_BUFFER_TYPE,
               imagePos,
               l2aTileLayout.width,
               l2aTileLayout.height,
@@ -222,7 +222,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
             }
             if (!outputFile0.exists()) {
                 logger.severe("No output file generated");
-                Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
+                Arrays.fill(tileData, S2L2AConfig.FILL_CODE_NO_FILE);
                 return;
             }
         }
@@ -254,7 +254,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
                 inputFileName = imageFile.getPath();
             }
 
-            builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
+            builder = new ProcessBuilder(S2L2AConfig.OPJ_DECOMPRESSOR_EXE,
                     "-i", inputFileName,
                     "-o", outputFileName,
                     "-r", getLevel() + "",
@@ -264,7 +264,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
         {
             logger.warning("Writing to " + outputFile.getPath());
 
-            builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
+            builder = new ProcessBuilder(S2L2AConfig.OPJ_DECOMPRESSOR_EXE,
                     "-i", imageFile.getPath(),
                     "-o", outputFile.getPath(),
                     "-r", getLevel() + "",
@@ -370,24 +370,24 @@ class L2aTileOpImage extends SingleBandedOpImage {
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
                 //System.out.printf("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection);
                 if (!intersection.isEmpty()) {
-                    long seekPos = jp2File.dataPos + S2Config.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
+                    long seekPos = jp2File.dataPos + S2L2AConfig.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;
                     for (int y = 0; y < intersection.height; y++) {
                         stream.seek(seekPos);
                         stream.readFully(tileData, tilePos, intersection.width);
-                        seekPos += S2Config.SAMPLE_BYTE_COUNT * jp2Width;
+                        seekPos += S2L2AConfig.SAMPLE_BYTE_COUNT * jp2Width;
                         tilePos += tileWidth;
                         for (int x = intersection.width; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_X_BOUNDS;
+                            tileData[y * tileWidth + x] = S2L2AConfig.FILL_CODE_OUT_OF_X_BOUNDS;
                         }
                     }
                     for (int y = intersection.height; y < tileWidth; y++) {
                         for (int x = 0; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_Y_BOUNDS;
+                            tileData[y * tileWidth + x] = S2L2AConfig.FILL_CODE_OUT_OF_Y_BOUNDS;
                         }
                     }
                 } else {
-                    Arrays.fill(tileData, S2Config.FILL_CODE_NO_INTERSECTION);
+                    Arrays.fill(tileData, S2L2AConfig.FILL_CODE_NO_INTERSECTION);
                 }
             }
         }
@@ -454,7 +454,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
     }
 
     static Dimension getTileDim(int width, int height) {
-        return new Dimension(width < S2Config.DEFAULT_JAI_TILE_SIZE ? width : S2Config.DEFAULT_JAI_TILE_SIZE,
-                             height < S2Config.DEFAULT_JAI_TILE_SIZE ? height : S2Config.DEFAULT_JAI_TILE_SIZE);
+        return new Dimension(width < S2L2AConfig.DEFAULT_JAI_TILE_SIZE ? width : S2L2AConfig.DEFAULT_JAI_TILE_SIZE,
+                             height < S2L2AConfig.DEFAULT_JAI_TILE_SIZE ? height : S2L2AConfig.DEFAULT_JAI_TILE_SIZE);
     }
 }

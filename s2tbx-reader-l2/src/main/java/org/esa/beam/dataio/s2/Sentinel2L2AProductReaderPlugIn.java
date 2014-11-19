@@ -13,7 +13,7 @@ import java.util.Locale;
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
+public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -33,28 +33,28 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
     public ProductReader createReaderInstance() {
         BeamLogManager.getSystemLogger().info("Building product reader...");
 
-        return new Sentinel2ProductReader(this);
+        return new Sentinel2L2AProductReader(this);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2Config.FORMAT_NAME};
+        return new String[]{S2L2AConfig.FORMAT_NAME};
     }
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[]{S2Config.MTD_EXT};
+        return new String[]{S2L2AConfig.MTD_EXT};
     }
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1C";
+        return "Sentinel-2 MSI L2A";
     }
 
     @Override
     public BeamFileFilter getProductFileFilter() {
-        return new BeamFileFilter(S2Config.FORMAT_NAME,
+        return new BeamFileFilter(S2L2AConfig.FORMAT_NAME,
                                   getDefaultFileExtensions(),
-                                  "Sentinel-2 MSI L1C product or tile");
+                                  "Sentinel-2 MSI L2A product or tile");
     }
 }

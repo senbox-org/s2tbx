@@ -11,7 +11,7 @@
     </parent>
 
     <packaging>jar</packaging>
-    <artifactId>s2tbx-reader-l2</artifactId>
+    <artifactId>s2tbx-l2-reader</artifactId>
     <name>Sentinel-2 Reader L2</name>
     <description>
         This module enables the Sentinel Toolbox to read the following Sentinel-2 data products: L1B,L1C

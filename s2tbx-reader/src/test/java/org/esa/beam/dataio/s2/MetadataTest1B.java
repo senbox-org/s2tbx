@@ -46,7 +46,7 @@ public class MetadataTest1B {
         Marshaller marshaller = jaxbContext.createMarshaller();
 
 
-        InputStream stream = getClass().getResourceAsStream("l1b/metadata/S2A_OPER_MTD_L1B_GR_MPS__20140926T120000_S20130707T171927_D06.xml");
+        InputStream stream = getClass().getResourceAsStream("l1b/S2A_OPER_MTD_L1B_GR_MPS__20140926T120000_S20130707T171927_D06.xml");
 
         Object ob =  unmarshaller.unmarshal(stream);
 
@@ -55,13 +55,17 @@ public class MetadataTest1B {
         return o;
     }
 
-
-
     @Test
     public void test1() throws Exception
     {
         Level1B_User_Product o = getUserProduct();
+        Assert.assertNotNull(o);
+    }
 
+    @Test
+    public void test2() throws Exception
+    {
+        Level1B_Granule o = getTileProduct();
         Assert.assertNotNull(o);
     }
 

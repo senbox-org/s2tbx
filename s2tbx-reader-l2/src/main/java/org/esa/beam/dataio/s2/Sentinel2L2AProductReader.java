@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import static org.esa.beam.dataio.s2.L2aMetadata.*;
-import static org.esa.beam.dataio.s2.S2Config.*;
+import static org.esa.beam.dataio.s2.S2L2AConfig.*;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)
@@ -62,7 +62,7 @@ import static org.esa.beam.dataio.s2.S2Config.*;
  *
  * @author Norman Fomferra
  */
-public class Sentinel2ProductReader extends AbstractProductReader {
+public class Sentinel2L2AProductReader extends AbstractProductReader {
 
     private File cacheDir;
     protected final Logger logger;
@@ -86,7 +86,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
 
-    Sentinel2ProductReader(Sentinel2ProductReaderPlugIn readerPlugIn) {
+    Sentinel2L2AProductReader(Sentinel2L2AProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
     }
@@ -201,7 +201,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
+        product.setNumResolutionsMax(L2A_TILE_LAYOUTS[0].numResolutions);
         product.setAutoGrouping("reflec:radiance:sun:view");
 
         ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
@@ -242,7 +242,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     private void setValidPixelMask(Band band, String bandName) {
         band.setNoDataValue(0);
         band.setValidPixelExpression(String.format("%s.raw > %s",
-                                                   bandName, S2Config.RAW_NO_DATA_THRESHOLD));
+                                                   bandName, S2L2AConfig.RAW_NO_DATA_THRESHOLD));
     }
 
     private void addL1cTileTiePointGrids(L2aMetadata metadataHeader, Product product, int tileIndex) {
@@ -321,7 +321,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                             wavebandInfo,
                             // aLayout);
                             //todo test this
-                            L1C_TILE_LAYOUTS[wavebandInfo.resolution.id]);
+                            L2A_TILE_LAYOUTS[wavebandInfo.resolution.id]);
 
     }
 
@@ -333,7 +333,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                bandInformation.physicalBand,
                                                spatialResolution, bandInformation.wavelenghtCentral,
                                                Math.abs(bandInformation.wavelenghtMax + bandInformation.wavelenghtMin)),
-                            L1C_TILE_LAYOUTS[spatialResolution.id]);
+                            L2A_TILE_LAYOUTS[spatialResolution.id]);
     }
 
     private void setGeoCoding(Product product, Envelope2D envelope) {
@@ -427,8 +427,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         public L1cTileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
-                                             L1C_TILE_LAYOUTS[0].width, //todo we must use data from jp2 files to update this
-                                             L1C_TILE_LAYOUTS[0].height)); //todo we must use data from jp2 files to update this
+                                             L2A_TILE_LAYOUTS[0].width, //todo we must use data from jp2 files to update this
+                                             L2A_TILE_LAYOUTS[0].height)); //todo we must use data from jp2 files to update this
             this.bandInfo = bandInfo;
         }
 

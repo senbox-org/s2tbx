@@ -1,8 +1,8 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
-    <symbolicName>s2tbx-reader-L2</symbolicName>
+    <symbolicName>s2tbx-l2-reader</symbolicName>
     <version>2.0.0</version>
-    <name>Sentinel-2 Product Reader L2</name>
+    <name>Sentinel-2 L2A Product Reader</name>
 
     <description>Enables SNAP to read Sentinel 2 products of type L2A</description>
 
@@ -29,8 +29,8 @@
 
     <extension point="snap-ui:actions">
         <action>
-            <id>importSentinel2ProductL2</id>
-            <helpId>importSentinel2ProductL2</helpId>
+            <id>importSentinel2L2Product</id>
+            <helpId>importSentinel2L2Product</helpId>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
             <formatName>SENTINEL-2-MSI-L2A</formatName>
             <useAllFileFilter>true</useAllFileFilter>
