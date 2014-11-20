@@ -32,7 +32,7 @@
             <id>importSentinel2L2Product</id>
             <helpId>importSentinel2L2Product</helpId>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
-            <formatName>SENTINEL-2-MSI-L2A-PSD10</formatName>
+            <formatName>SENTINEL-2-MSI-PSD10</formatName>
             <useAllFileFilter>true</useAllFileFilter>
             <parent>importMultispectral</parent>
         </action>

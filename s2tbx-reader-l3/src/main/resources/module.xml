@@ -29,8 +29,8 @@
 
     <extension point="snap-ui:actions">
         <action>
-            <id>importSentinel2L2Product</id>
-            <helpId>importSentinel2L2Product</helpId>
+            <id>importSentinel2L2APSD12Product</id>
+            <helpId>importSentinel2L2APSD12Product</helpId>
             <class>org.esa.beam.visat.actions.ProductImportAction</class>
             <formatName>SENTINEL-2-MSI-L2A</formatName>
             <useAllFileFilter>true</useAllFileFilter>

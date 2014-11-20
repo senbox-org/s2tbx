@@ -41,6 +41,6 @@ public interface S2L2AConfig {
             new L2aTileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
     };
 
-    String FORMAT_NAME = "SENTINEL-2-MSI-L2A-PSD10";
+    String FORMAT_NAME = "SENTINEL-2-MSI-PSD10";
     String MTD_EXT = ".xml";
 }
