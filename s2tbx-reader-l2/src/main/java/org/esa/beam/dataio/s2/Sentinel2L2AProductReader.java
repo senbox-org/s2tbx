@@ -86,7 +86,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
     }
 
 
-    Sentinel2L2AProductReader(Sentinel2L2AProductReaderPlugIn readerPlugIn) {
+    Sentinel2L2AProductReader(Sentinel2L2APSD10ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
     }
