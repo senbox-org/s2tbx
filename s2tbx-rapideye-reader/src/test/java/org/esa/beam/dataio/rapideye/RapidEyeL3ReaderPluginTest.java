@@ -38,7 +38,7 @@ public class RapidEyeL3ReaderPluginTest {
         DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("dimap/test_ST4_MT.xml"));
         assertEquals(DecodeQualification.UNABLE, decodeQualification);
         decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("Demo26_3A.zip"));
-        assertEquals(DecodeQualification.SUITABLE, decodeQualification);
+        assertEquals(DecodeQualification.INTENDED, decodeQualification);
         decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("Eritrea/1234567890_metadata.xml"));
         assertEquals(DecodeQualification.INTENDED, decodeQualification);
         Date endDate = Calendar.getInstance().getTime();

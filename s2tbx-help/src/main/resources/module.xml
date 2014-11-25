@@ -1,0 +1,46 @@
+<!--
+  ~ Copyright (C) 2011 Brockmann Consult GmbH (info@brockmann-consult.de)
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+
+    <symbolicName>s2tbx-help</symbolicName>
+    <name>Sentinel-2 Toolbox Help</name>
+    <version>2.0.0</version>
+    <packaging>dir</packaging>
+
+    <description>Provides the software user manual.</description>
+
+    <vendor>CS</vendor>
+    <contactAddress>ZAC de la Grande Plaine,5 Rue Brindejonc des Moulinais, Toulouse Cedex 5, France </contactAddress>
+    <copyright>(c) Copyright 2014 by CS and contributors.&lt;br/&gt;All rights reserved.</copyright>
+    <url>https://earth.esa.int/web/sentinel-tbx/home</url>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
+
+    <categories>System,Help</categories>
+
+    <dependency>
+        <module>snap-ui</module>
+    </dependency>
+
+    <extension point="snap-ui:helpSets">
+        <helpSet>
+            <id>s2tbx-help</id>
+            <path>doc/help/beam.hs</path>
+        </helpSet>
+    </extension>
+
+</module>

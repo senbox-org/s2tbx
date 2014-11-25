@@ -1,10 +1,16 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-commons</symbolicName>
-    <version>5.0</version>
-    <name>S2TBX common library</name>
+    <version>2.0.0</version>
+    <name>Sentinel-2 Toolbox Common Utilities Library</name>
 
-    <description>Common S2TBX library</description>
+    <description>This modules provides common tools for different modules of the Sentinel 2 Toolbox. It is an internal module.</description>
+
+    <vendor>CS</vendor>
+    <contactAddress>ZAC de la Grande Plaine,5 Rue Brindejonc des Moulinais, Toulouse Cedex 5, France </contactAddress>
+    <copyright>(c) Copyright 2014 by CS and contributors.&lt;br/&gt;All rights reserved.</copyright>
+    <url>https://earth.esa.int/web/sentinel-tbx/home</url>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
     <packaging>jar</packaging>
 

@@ -93,7 +93,7 @@ public class L1cMetadataProc {
         if(SystemUtils.IS_OS_LINUX)
         {
             try {
-		Process p = Runtime.getRuntime().exec("uname -m");
+                Process p = Runtime.getRuntime().exec("uname -m");
                 p.waitFor();
                 String output = convertStreamToString(p.getInputStream());
                 String errorOutput = convertStreamToString(p.getErrorStream());

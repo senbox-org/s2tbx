@@ -1,10 +1,16 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-rapideye-reader</symbolicName>
-    <version>1.0</version>
+    <version>2.0.0</version>
     <name>RapidEye Product Reader</name>
 
-    <description>Reads RapidEye NITF products</description>
+    <description>Enables SNAP to read RapidEye products in NITF or GeoTIFF format</description>
+
+    <vendor>CS</vendor>
+    <contactAddress>ZAC de la Grande Plaine,5 Rue Brindejonc des Moulinais, Toulouse Cedex 5, France </contactAddress>
+    <copyright>(c) Copyright 2014 by CS and contributors.&lt;br/&gt;All rights reserved.</copyright>
+    <url>https://earth.esa.int/web/sentinel-tbx/home</url>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
     <packaging>dir</packaging>
 
