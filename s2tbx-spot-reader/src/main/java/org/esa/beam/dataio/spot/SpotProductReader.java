@@ -1,8 +1,8 @@
 package org.esa.beam.dataio.spot;
 
+import org.esa.beam.dataio.VirtualDirEx;
 import org.esa.beam.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.beam.dataio.spot.dimap.SpotSceneMetadata;
-import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Band;
@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  */
 public abstract class SpotProductReader extends AbstractProductReader {
 
-    protected SpotVirtualDir productDirectory;
+    protected VirtualDirEx productDirectory;
     protected SpotSceneMetadata metadata;
     protected Logger logger;
 
@@ -27,7 +27,7 @@ public abstract class SpotProductReader extends AbstractProductReader {
         super(readerPlugIn);
     }
 
-    public void setProductDirectory(SpotVirtualDir productDirectory) {
+    public void setProductDirectory(VirtualDirEx productDirectory) {
         this.productDirectory = productDirectory;
     }
 

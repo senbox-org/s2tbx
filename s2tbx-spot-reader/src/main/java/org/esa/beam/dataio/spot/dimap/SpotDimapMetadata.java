@@ -157,6 +157,16 @@ public class SpotDimapMetadata extends XmlMetadata {
         return (path != null ? new String[] { path.toLowerCase() } : null);
     }
 
+    @Override
+    public ProductData.UTC getProductStartTime() {
+        return null;
+    }
+
+    @Override
+    public ProductData.UTC getProductEndTime() {
+        return null;
+    }
+
     /**
      * Returns the names of the bands found in the metadata file.
      * If the expected metadata nodes are not present, then the default band names

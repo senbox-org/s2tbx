@@ -1,4 +1,4 @@
-package org.esa.beam.dataio;
+package org.esa.beam.dataio.readers;
 
 import java.io.File;
 import java.util.ArrayList;

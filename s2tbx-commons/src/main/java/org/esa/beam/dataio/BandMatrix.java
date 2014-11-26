@@ -1,6 +1,10 @@
 package org.esa.beam.dataio;
 
+import com.bc.ceres.core.Assert;
 import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.GeoCoding;
+import org.esa.beam.framework.datamodel.GeoPos;
+import org.esa.beam.framework.datamodel.PixelPos;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -151,6 +155,24 @@ public class BandMatrix {
                                  (int)(overlap.getY() - origin.getY()),
                                  (int)(overlap.getWidth() - 1),         // subtract 1 because for cells continuing each other width is 1
                                  (int)(overlap.getHeight() - 1));
+        }
+
+        /**
+         * Returns the rotation angle of otherCell relative to the current cell.
+         * @param otherCell The second cell to get the rotation from.
+         * @return      The angle value (radians)
+         */
+        public double rotation(BandMatrixCell otherCell) {
+            Assert.notNull(otherCell);
+            Assert.notNull(otherCell.band);
+            double angle = 0.0;
+            GeoCoding otherGeoCoding = otherCell.band.getGeoCoding();
+            if (otherGeoCoding != null) {
+                GeoPos brCorner = new GeoPos();
+                otherGeoCoding.getGeoPos(new PixelPos(otherCell.band.getRasterWidth() - 1, otherCell.band.getRasterHeight() - 1), brCorner);
+                angle = (brCorner.getLat() - otherCell.origin.getY()) / (brCorner.getLon() - otherCell.origin.getX());
+            }
+            return angle;
         }
     }
 

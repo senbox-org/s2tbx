@@ -99,10 +99,10 @@ public class DeimosMetadata extends XmlMetadata {
 
     @Override
     public String getMetadataProfile() {
-        String profile = "SPOTScene";
+        String profile = null;
         MetadataElement currentElement;
         if ((currentElement = rootElement.getElement(DeimosConstants.TAG_METADATA_ID)) != null) {
-            profile = currentElement.getAttributeString(DeimosConstants.TAG_METADATA_PROFILE);
+            profile = currentElement.getAttributeString(DeimosConstants.TAG_METADATA_PROFILE, "DEIMOS-1");
         } else {
             logger.warning(String.format(MISSING_ELEMENT_WARNING, DeimosConstants.TAG_METADATA_PROFILE));
         }
@@ -150,6 +150,16 @@ public class DeimosMetadata extends XmlMetadata {
             logger.warning(String.format(MISSING_ELEMENT_WARNING, DeimosConstants.TAG_DATA_FILE_PATH));
         }
         return (path != null ? new String[] { path.toLowerCase() } : null);
+    }
+
+    @Override
+    public ProductData.UTC getProductStartTime() {
+        return null;
+    }
+
+    @Override
+    public ProductData.UTC getProductEndTime() {
+        return null;
     }
 
     /**
@@ -245,6 +255,8 @@ public class DeimosMetadata extends XmlMetadata {
                             int green = (int) (255.0 * Double.parseDouble(currentElement.getAttributeString(DeimosConstants.TAG_GREEN_LEVEL)));
                             int blue = (int) (255.0 * Double.parseDouble(currentElement.getAttributeString(DeimosConstants.TAG_BLUE_LEVEL)));
                             color = new Color(red, green, blue);
+                        } else {
+                            color = Color.black;
                         }
                     }
                 }
@@ -288,6 +300,8 @@ public class DeimosMetadata extends XmlMetadata {
                             int green = (int) (255.0 * Double.parseDouble(currentElement.getAttributeString(DeimosConstants.TAG_GREEN_LEVEL)));
                             int blue = (int) (255.0 * Double.parseDouble(currentElement.getAttributeString(DeimosConstants.TAG_BLUE_LEVEL)));
                             color = new Color(red, green, blue);
+                        } else {
+                            color = Color.white;
                         }
                     }
                 }

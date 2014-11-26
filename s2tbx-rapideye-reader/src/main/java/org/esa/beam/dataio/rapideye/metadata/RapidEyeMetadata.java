@@ -94,6 +94,32 @@ public class RapidEyeMetadata extends XmlMetadata {
     }
 
     @Override
+    public String getProductDescription() {
+        StringBuilder description = new StringBuilder();
+        if (rootElement != null) {
+            MetadataElement currentElement;
+            if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_USING)) != null) &&
+                    ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_EARTH_OBSERVATION_EQUIPMENT)) != null)) {
+                MetadataElement childElement;
+                if (((childElement = currentElement.getElement(RapidEyeConstants.TAG_PLATFORM_OUTER)) != null) &&
+                        ((childElement = childElement.getElement(RapidEyeConstants.TAG_PLATFORM_INNER)) != null)) {
+                    description.append("Platform: ").append(childElement.getAttributeString(RapidEyeConstants.TAG_SERIAL_IDENTIFIER, RapidEyeConstants.NOT_AVAILABLE)).append("; ")
+                               .append("Orbit type: ").append(childElement.getAttributeString(RapidEyeConstants.TAG_ORBIT_TYPE, RapidEyeConstants.NOT_AVAILABLE)).append("; ");
+                }
+                if (((childElement = currentElement.getElement(RapidEyeConstants.TAG_INSTRUMENT_OUTER)) != null) &&
+                        ((childElement = childElement.getElement(RapidEyeConstants.TAG_INSTRUMENT_INNER)) != null)) {
+                    description.append("Instrument: ").append(childElement.getAttributeString(RapidEyeConstants.TAG_SHORT_NAME, RapidEyeConstants.NOT_AVAILABLE)).append("; ");
+                }
+                if (((childElement = currentElement.getElement(RapidEyeConstants.TAG_SENSOR_OUTER)) != null) &&
+                        ((childElement = childElement.getElement(RapidEyeConstants.TAG_SENSOR_INNER)) != null)) {
+                    description.append("Sensor: ").append(childElement.getAttributeString(RapidEyeConstants.TAG_SENSOR_TYPE, RapidEyeConstants.NOT_AVAILABLE)).append(";");
+                }
+            }
+        }
+        return description.toString();
+    }
+
+    @Override
     public int getRasterWidth() {
         if (width == 0 && rootElement != null) {
             MetadataElement currentElement;
@@ -294,6 +320,10 @@ public class RapidEyeMetadata extends XmlMetadata {
             }
         }
         return endTime;
+    }
+
+    public ProductData.UTC getCenterTime() {
+        return null;
     }
 
     public float getScaleFactor(int bandIndex) {

@@ -1,8 +1,7 @@
 package org.esa.beam.dataio.spot.dimap;
 
-import org.esa.beam.dataio.ZipVirtualDir;
+import org.esa.beam.dataio.VirtualDirEx;
 import org.esa.beam.dataio.metadata.XmlMetadata;
-import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.datamodel.MetadataElement;
 
 import java.io.File;
@@ -20,14 +19,14 @@ import java.util.logging.Logger;
  */
 public class SpotSceneMetadata {
 
-    private final SpotVirtualDir folder;
+    private final VirtualDirEx folder;
     private VolumeMetadata volumeMetadata;
     private final List<SpotDimapMetadata> componentMetadata;
     private final Logger logger;
     private int numComponents;
     private final MetadataElement rootElement;
 
-    private SpotSceneMetadata(SpotVirtualDir folder, Logger logger) {
+    private SpotSceneMetadata(VirtualDirEx folder, Logger logger) {
         this.folder = folder;
         this.logger = logger;
         componentMetadata = new ArrayList<SpotDimapMetadata>();
@@ -39,7 +38,7 @@ public class SpotSceneMetadata {
         rootElement = new MetadataElement("SPOT Metadata");
     }
 
-    public static SpotSceneMetadata create(SpotVirtualDir folder, Logger logger) {
+    public static SpotSceneMetadata create(VirtualDirEx folder, Logger logger) {
         return new SpotSceneMetadata(folder, logger);
     }
 

@@ -2,7 +2,6 @@ package org.esa.beam.dataio.rapideye;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.beam.dataio.rapideye.nitf.NITFMetadata;
@@ -62,7 +61,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         parseAdditionalMetadataFiles();
 
         try {
-            String[] nitfFiles = getRasterFileNames(productDirectory);
+            String[] nitfFiles = getRasterFileNames();
             for (int i = 0; i < nitfFiles.length; i++) {
                 NITFReaderWrapper reader = new NITFReaderWrapper(productDirectory.getFile(nitfFiles[i]));
                 if (product == null) {
@@ -85,7 +84,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
                 addBandToProduct(product, reader, i);
             }
             if (product != null) {
-                readMasks(productDirectory);
+                readMasks();
                 initGeoCoding(product);
                 product.setModified(false);
             }
@@ -118,14 +117,14 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         super.close();
     }
 
-    private String[] getRasterFileNames(ZipVirtualDir folder) {
+    private String[] getRasterFileNames() {
         String[] fileNames;
         if (metadata != null) {
             fileNames = metadata.getRasterFileNames(true);
         } else {
             try {
                 List<String> files = new ArrayList<String>();
-                String[] productFiles = folder.list(".");
+                String[] productFiles = productDirectory.list(".");
                 for (String file : productFiles) {
                     if (file.toLowerCase().endsWith(RapidEyeConstants.NTF_EXTENSION))
                         files.add(file);
@@ -140,11 +139,11 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         return fileNames;
     }
 
-    private String[] getMetadataFileNames(ZipVirtualDir folder, String exclusion) {
+    private String[] getMetadataFileNames(String exclusion) {
         String[] fileNames;
         try {
             List<String> files = new ArrayList<String>();
-            String[] productFiles = folder.list(".");
+            String[] productFiles = productDirectory.list(".");
             for (String file : productFiles) {
                 String lCase = file.toLowerCase();
                 if ((exclusion == null || !lCase.endsWith(exclusion)) && lCase.endsWith(RapidEyeConstants.METADATA_EXTENSION))
@@ -159,7 +158,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
     }
 
     private void parseAdditionalMetadataFiles() {
-        String[] fileNames = getMetadataFileNames(productDirectory, RapidEyeConstants.METADATA_FILE_SUFFIX);
+        String[] fileNames = getMetadataFileNames(RapidEyeConstants.METADATA_FILE_SUFFIX);
         if (fileNames != null && fileNames.length > 0) {
             for (String fileName : fileNames) {
                 try {
@@ -214,11 +213,11 @@ public class RapidEyeL1Reader extends RapidEyeReader {
 
     @Override
     public TreeNode<File> getProductComponents() {
-        if (productDirectory.isThisZipFile()) {
+        if (productDirectory.isCompressed()) {
             return super.getProductComponents();
         } else {
             TreeNode<File> result = super.getProductComponents();
-            String[] fileNames = getMetadataFileNames(productDirectory, RapidEyeConstants.METADATA_FILE_SUFFIX);
+            String[] fileNames = getMetadataFileNames(RapidEyeConstants.METADATA_FILE_SUFFIX);
             for(String fileName : fileNames){
                 try{
                     addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
@@ -226,7 +225,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
                     logger.warning(String.format("Error encountered while searching file %s", fileName));
                 }
             }
-            String[] nitfFiles = getRasterFileNames(productDirectory);
+            String[] nitfFiles = getRasterFileNames();
             for(String fileName : nitfFiles){
                 try{
                     addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);

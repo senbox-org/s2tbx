@@ -1,10 +1,11 @@
 package org.esa.beam.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.beam.dataio.ZipVirtualDir;
+import org.esa.beam.dataio.VirtualDirEx;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.beam.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.beam.dataio.spot.dimap.SpotConstants;
 import org.esa.beam.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.beam.dataio.spot.dimap.SpotViewMetadata;
@@ -44,7 +45,7 @@ public class SpotViewProductReader extends AbstractProductReader {
     private SpotViewMetadata metadata;
     private SpotDimapMetadata imageMetadata;
     private final Logger logger;
-    private ZipVirtualDir zipDir;
+    private VirtualDirEx zipDir;
     private final Object sharedLock;
 
     static {
@@ -61,7 +62,7 @@ public class SpotViewProductReader extends AbstractProductReader {
     @Override
     protected Product readProductNodesImpl() throws IOException {
         logger.info("Reading product metadata");
-        zipDir = SpotViewProductReaderPlugin.getInput(getInput());
+        zipDir = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
         File metadataFile = zipDir.getFile(SpotConstants.SPOTVIEW_METADATA_FILE);
         File imageMetadataFile = zipDir.getFile(SpotConstants.SPOTSCENE_METADATA_FILE);
         if (metadataFile != null) {
@@ -207,7 +208,7 @@ public class SpotViewProductReader extends AbstractProductReader {
 
     @Override
     public TreeNode<File> getProductComponents() {
-        if (zipDir.isThisZipFile()) {
+        if (zipDir.isCompressed()) {
             return super.getProductComponents();
         } else {
             TreeNode<File> result = super.getProductComponents();

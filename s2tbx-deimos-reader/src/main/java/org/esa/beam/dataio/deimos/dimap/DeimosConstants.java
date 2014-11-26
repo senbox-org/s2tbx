@@ -126,14 +126,15 @@ public class DeimosConstants {
     // constants for plugins
     public static final Class[] DIMAP_READER_INPUT_TYPES = new Class[]{String.class, File.class};
     public static final String DIMAP_DESCRIPTION = "DEIMOS Data Products";
-    public static final String[] DIMAP_DEFAULT_EXTENSIONS = new String[]{".dim", ".DIM", ".zip", ".ZIP"};
+    public static final String[] DIMAP_DEFAULT_EXTENSIONS = new String[]{".dim", ".DIM", ".zip", ".ZIP", ".tar", ".TAR"};
     public static final String[] DIMAP_FORMAT_NAMES = new String[]{"DEIMOSDimap"};
     public static final String[] FILENAME_PATTERNS = new String[] {
             "(.+)\\.zip",
-            "DE[0-1][0-9]_SL[1-9]_\\d{1,3}[PST]_([0-1][RGT]|2R)_\\d{8}T\\d{6}_\\d{8}T\\d{6}_([A-Z]+)_\\d+_[0-9a-f]+\\.dim"
+            "DE[0-1][0-9]_SL[1-9]_\\d{1,3}[PST]_([0-1][RGT]|2R)_\\d{8}T\\d{6}_\\d{8}T\\d{6}_([A-Z]+)_\\d+_[0-9a-f]+\\.dim",
+            "DE[0-1][0-9]_SL[1-9]_\\d{1,3}[PST]_([0-1][RGT]|2R)_\\d{8}T\\d{6}_\\d{8}T\\d{6}_([A-Z]+)_\\d+_[0-9a-f]+\\.tar"
             };
     public static final String[] MINIMAL_PRODUCT_PATTERNS = new String[] {
-            "DE[0-1][0-9]_SL[1-9]_\\d{1,3}[PST]_([0-1][RGT]|2R)_\\d{8}T\\d{6}_\\d{8}T\\d{6}_([A-Z]+)_\\d+_[0-9a-f]+(\\w+)\\.dim",
-            "DE[0-1][0-9]_SL[1-9]_\\d{1,3}[PST]_([0-1][RGT]|2R)_\\d{8}T\\d{6}_\\d{8}T\\d{6}_([A-Z]+)_\\d+_[0-9a-f]+(\\w+)\\.tif"
+            "de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2r)_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+(\\w+)\\.dim",
+            "de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2r)_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+(\\w+)\\.tif"
             };
 }

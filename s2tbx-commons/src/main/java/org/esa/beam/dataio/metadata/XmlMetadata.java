@@ -3,6 +3,7 @@ package org.esa.beam.dataio.metadata;
 import com.bc.ceres.core.Assert;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
@@ -218,4 +219,12 @@ public abstract class XmlMetadata {
         this.name = value;
         this.rootElement.setName(value);
     }
+
+    public abstract ProductData.UTC getProductStartTime();
+
+    public abstract ProductData.UTC getProductEndTime();
+
+    public abstract ProductData.UTC getCenterTime();
+
+    public abstract String getProductDescription();
 }

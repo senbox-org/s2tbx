@@ -112,6 +112,19 @@ public class RapidEyeConstants {
     public static final String[] BAND_NAMES = new String[]{"blue", "green", "red", "red_edge", "near_infrared"};
     public static final float[] WAVELENGTHS = new float[]{440, 520, 630, 690, 760};
     public static final float[] BANDWIDTHS = new float[]{70, 70, 55, 40, 90};
+    public static final String TAG_USING = "using";
+    public static final String TAG_EARTH_OBSERVATION_EQUIPMENT = "EarthObservationEquipment";
+    public static final String TAG_PLATFORM_OUTER = "platform";
+    public static final String TAG_PLATFORM_INNER = "Platform";
+    public static final String TAG_SERIAL_IDENTIFIER = "serialIdentifier";
+    public static final String TAG_ORBIT_TYPE = "orbitType";
+    public static final String TAG_INSTRUMENT_OUTER = "instrument";
+    public static final String TAG_INSTRUMENT_INNER = "Instrument";
+    public static final String TAG_SHORT_NAME = "shortName";
+    public static final String TAG_SENSOR_OUTER = "sensor";
+    public static final String TAG_SENSOR_INNER = "Sensor";
+    public static final String TAG_SENSOR_TYPE = "sensorType";
+    public static final String NOT_AVAILABLE = "N/A";
     public static double[] SCALING_FACTORS = new double[]{510 / 4095 * RADIOMETRIC_SCALE_FACTOR, 590 / 4095 * RADIOMETRIC_SCALE_FACTOR, 685 / 4095 * RADIOMETRIC_SCALE_FACTOR, 730 / 4095 * RADIOMETRIC_SCALE_FACTOR, 850 / 4095 * RADIOMETRIC_SCALE_FACTOR};
     public static double[] SCALING_OFFSETS = new double[]{440 * RADIOMETRIC_SCALE_FACTOR, 520 * RADIOMETRIC_SCALE_FACTOR, 630 * RADIOMETRIC_SCALE_FACTOR, 690 * RADIOMETRIC_SCALE_FACTOR, 760 * RADIOMETRIC_SCALE_FACTOR};
 
