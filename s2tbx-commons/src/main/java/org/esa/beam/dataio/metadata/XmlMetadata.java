@@ -97,6 +97,29 @@ public abstract class XmlMetadata {
         this.logger = BeamLogManager.getSystemLogger();
     }
 
+    public String getElementValueAsString(String xPath) {
+        String retVal = null;
+        if (rootElement != null && xPath != null) {
+            String[] elementNames = xPath.split("/");
+            int idx = 0;
+            MetadataElement element = rootElement;
+            do {
+                int attrStartIdx = elementNames[idx].indexOf("[");
+                String elementName;
+                if (attrStartIdx > 0) {
+                    elementName = elementNames[idx].substring(0, attrStartIdx - 1);
+                    String[] attributeConditions = elementNames[idx].substring(attrStartIdx + 1).split("and");
+
+                } else {
+                    elementName = elementNames[idx];
+                }
+                element = element.getElement(elementName);
+                idx++;
+            } while (idx < elementNames.length && element != null);
+        }
+        return retVal;
+    }
+
     /**
      * Returns the root node of this metadata file.
      * @return The root metadata element

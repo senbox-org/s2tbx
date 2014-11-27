@@ -257,7 +257,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                     //targetBand.setSourceImage(srcBand.getSourceImage());
                     targetBand.setValidPixelExpression(srcBand.getValidPixelExpression());
                     targetBand.setNoDataValue(srcBand.getNoDataValue());
-                    targetBand.setNoDataValueUsed(false);
+                    targetBand.setNoDataValueUsed(true);
                     targetBand.setUnit(getNotNullValueOrDefault(srcBand.getUnit()));
                     targetBand.setGeophysicalNoDataValue(srcBand.getGeophysicalNoDataValue());
                     targetBand.setSpectralWavelength(srcBand.getSpectralWavelength());
