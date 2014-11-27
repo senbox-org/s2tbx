@@ -18,7 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
- * Commodity tool view for echoing and filtering application log messages.
+ * Commodity model view for echoing and filtering application log messages.
  *
  * @author  Cosmin Cara
  */

@@ -272,4 +272,9 @@ public class TarVirtualDir extends VirtualDir {
             executor.execute(unpackTask);
         }
     }
+
+	@Override
+	public boolean exists(String path) {
+		return new File(path).exists();
+	}
 }
