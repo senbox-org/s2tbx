@@ -1,0 +1,35 @@
+<module>
+    <manifestVersion>1.0.0</manifestVersion>
+    <symbolicName>s2tbx-tool-adapter</symbolicName>
+    <version>1.0</version>
+    <name>Sentinel-2 Tool Adapter</name>
+
+    <description>Allows the execution of external tools</description>
+
+    <vendor>CS</vendor>
+    <contactAddress>ZAC de la Grande Plaine,5 Rue Brindejonc des Moulinais, Toulouse Cedex 5, France </contactAddress>
+    <copyright>(c) Copyright 2012-2014 by Brockmann Consult GmbH&lt;br/&gt;(c) Copyright 2014 by CS and contributors.&lt;br/&gt;All rights reserved.</copyright>
+    <url>https://earth.esa.int/web/sentinel-tbx/home</url>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
+
+    <changelog>
+        <![CDATA[
+                ]]>
+    </changelog>
+
+    <categories>Sentinel</categories>
+
+    <extension point="snap-ui:actions">
+        <action>
+            <parent>processing</parent>
+            <id>S2tbxToolAdapterOp</id>
+            <placeLast>false</placeLast>
+            <class>org.esa.s2tbx.tooladapter.S2tbxToolAdapterAction</class>
+            <helpId>toolAdapter</helpId>
+            <text>Run external tools...</text>
+            <shortDescr>Run an external tool.</shortDescr>
+            <mnemonic>T</mnemonic>
+        </action>
+    </extension>
+
+</module>
