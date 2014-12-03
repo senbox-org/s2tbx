@@ -146,11 +146,11 @@ public class SpotViewProductReader extends AbstractProductReader {
     private void initTiePointGeoCoding(Product product) {
         TiePoint[] tiePoints = imageMetadata.getTiePoints();
         if (tiePoints != null && tiePoints.length == 4) {
-            float[] latPoints = new float[tiePoints.length];
-            float[] lonPoints = new float[tiePoints.length];
+            double[] latPoints = new double[tiePoints.length];
+            double[] lonPoints = new double[tiePoints.length];
             for (int i = 0; i < tiePoints.length; i++) {
-                latPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = (float) tiePoints[i].getValueAt(4);
-                lonPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = (float) tiePoints[i].getValueAt(3);
+                latPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = tiePoints[i].getValueAt(4);
+                lonPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = tiePoints[i].getValueAt(3);
             }
             TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), latPoints);
             product.addTiePointGrid(latGrid);

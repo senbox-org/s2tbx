@@ -250,10 +250,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         Tile tile = metadataHeader.getTileList().get(tileIndex);
         int gridHeight = tile.sunAnglesGrid.zenith.length;
         int gridWidth = tile.sunAnglesGrid.zenith[0].length;
-        float[] sunZeniths = new float[gridWidth * gridHeight];
-        float[] sunAzimuths = new float[gridWidth * gridHeight];
-        float[] viewingZeniths = new float[gridWidth * gridHeight];
-        float[] viewingAzimuths = new float[gridWidth * gridHeight];
+        double[] sunZeniths = new double[gridWidth * gridHeight];
+        double[] sunAzimuths = new double[gridWidth * gridHeight];
+        double[] viewingZeniths = new double[gridWidth * gridHeight];
+        double[] viewingAzimuths = new double[gridWidth * gridHeight];
         Arrays.fill(viewingZeniths, Float.NaN);
         Arrays.fill(viewingAzimuths, Float.NaN);
         L1cMetadata.AnglesGrid sunAnglesGrid = tile.sunAnglesGrid;
@@ -281,7 +281,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         };
     }
 
-    private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, float[] values) {
+    private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, double[] values) {
         final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, values);
         tiePointGrid.setNoDataValue(Double.NaN);
         tiePointGrid.setNoDataValueUsed(true);
