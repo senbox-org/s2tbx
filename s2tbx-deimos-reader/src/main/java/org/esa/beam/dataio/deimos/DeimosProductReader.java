@@ -49,7 +49,7 @@ public class DeimosProductReader extends GeotiffBasedReader<DeimosMetadata> {
     }
 
     @Override
-    protected void addMetatdataMasks(Product product, DeimosMetadata componentMetadata) {
+    protected void addMetadataMasks(Product product, DeimosMetadata componentMetadata) {
         logger.info("Create masks");
         int noDataValue,saturatedValue;
         if ((noDataValue = componentMetadata.getNoDataValue()) >= 0) {

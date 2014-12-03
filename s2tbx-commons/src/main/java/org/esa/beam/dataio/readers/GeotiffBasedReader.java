@@ -182,7 +182,7 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
                 groupText = groupText.substring(0, groupText.length() - 1);
                 product.setAutoGrouping(groupText);
             }
-            addMetatdataMasks(product, firstMetadata);
+            addMetadataMasks(product, firstMetadata);
             readAdditionalMasks(productDirectory);
 
             product.setModified(false);
@@ -263,7 +263,7 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
         }
     }
 
-    protected void addMetatdataMasks(Product product, M metadata) {
+    protected void addMetadataMasks(Product product, M metadata) {
     }
     protected void readAdditionalMasks(VirtualDirEx directory) {
 

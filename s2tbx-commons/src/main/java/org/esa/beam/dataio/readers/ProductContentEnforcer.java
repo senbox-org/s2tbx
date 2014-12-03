@@ -3,14 +3,17 @@ package org.esa.beam.dataio.readers;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by kraftek on 9/16/2014.
  */
 public class ProductContentEnforcer {
 
-    private String[] minimalFilePatternList;
-    private String[] notAcceptedFilePatternList;
+    //private String[] minimalFilePatternList;
+    private Pattern[] minimalFilePatternList;
+    //private String[] notAcceptedFilePatternList;
+    private Pattern[] notAcceptedFilePatternList;
 
     public static ProductContentEnforcer create(String[] minimalPatterns) {
         return new ProductContentEnforcer(minimalPatterns, null);
@@ -21,8 +24,20 @@ public class ProductContentEnforcer {
     }
 
     private ProductContentEnforcer(String[] requiredPatterns, String[] notAcceptedPatterns) {
-        this.minimalFilePatternList = requiredPatterns;
-        this.notAcceptedFilePatternList = notAcceptedPatterns;
+        /*this.minimalFilePatternList = requiredPatterns;
+        this.notAcceptedFilePatternList = notAcceptedPatterns;*/
+        if (requiredPatterns != null) {
+            minimalFilePatternList = new Pattern[requiredPatterns.length];
+            for (int i = 0; i < requiredPatterns.length; i++) {
+                minimalFilePatternList[i] = Pattern.compile(requiredPatterns[i], Pattern.CASE_INSENSITIVE);
+            }
+        }
+        if (notAcceptedPatterns != null) {
+            notAcceptedFilePatternList = new Pattern[notAcceptedPatterns.length];
+            for (int i = 0; i < notAcceptedPatterns.length; i++) {
+                notAcceptedFilePatternList[i] = Pattern.compile(notAcceptedPatterns[i], Pattern.CASE_INSENSITIVE);
+            }
+        }
     }
 
     public boolean isConsistent(File input) {
@@ -43,24 +58,26 @@ public class ProductContentEnforcer {
         if (minimalFilePatternList == null || minimalFilePatternList.length == 0) {
             retFlag = false;
         } else {
-            if (notAcceptedFilePatternList != null && notAcceptedFilePatternList.length > 0) {
-                for (String pattern : notAcceptedFilePatternList) {
+            if (notAcceptedFilePatternList != null) {
+                for (Pattern pattern : notAcceptedFilePatternList) {
                     for (String fileName : fileNames) {
-                        if (fileName.toLowerCase().matches(pattern))
+                        if (pattern.matcher(fileName.toLowerCase()).matches());
                             return false;
                     }
                 }
             }
-            for (String pattern : minimalFilePatternList) {
-                boolean localMatch = false;
-                for (String fileName : fileNames) {
-                    localMatch = fileName.toLowerCase().matches(pattern);
-                    if (localMatch)
+            if (minimalFilePatternList != null) {
+                for (Pattern pattern : minimalFilePatternList) {
+                    boolean localMatch = false;
+                    for (String fileName : fileNames) {
+                        localMatch = pattern.matcher(fileName.toLowerCase()).matches();
+                        if (localMatch)
+                            break;
+                    }
+                    retFlag &= localMatch;
+                    if (!retFlag)
                         break;
                 }
-                retFlag &= localMatch;
-                if (!retFlag)
-                    break;
             }
         }
         return retFlag;

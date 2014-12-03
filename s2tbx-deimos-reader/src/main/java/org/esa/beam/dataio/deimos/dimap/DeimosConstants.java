@@ -54,11 +54,11 @@ public class DeimosConstants {
     public static final String[] DIMAP_FORMAT_NAMES = new String[]{"DEIMOSDimap"};
     public static final String[] FILENAME_PATTERNS = new String[] {
             "(.+)\\.zip",
-            "de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2r)_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+\\.dim",
-            "de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2r)_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+\\.tar"
+            "de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2[rt])_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+(\\w+)\\.dim",
+            "de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2[rt])_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+(\\w+)\\.tar"
             };
     public static final String[] MINIMAL_PRODUCT_PATTERNS = new String[] {
-            "de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2r)_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+(\\w+)\\.dim",
-            "de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2r)_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+(\\w+)\\.tif"
+            ".*[/\\\\]?de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2[rt])_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+(\\w+)\\.dim",
+            ".*[/\\\\]?de[0-1][0-9]_sl[1-9]_\\d{1,3}[pst]_([0-1][rgt]|2[rt])_\\d{8}t\\d{6}_\\d{8}t\\d{6}_([a-z]+)_\\d+_[0-9a-f]+(\\w+)\\.tif"
             };
 }
