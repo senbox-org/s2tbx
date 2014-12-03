@@ -11,12 +11,19 @@ import java.io.IOException;
 import java.util.Locale;
 
 /**
- * Created by kraftek on 11/26/2014.
+ * Base class for product reader plugins which follow the logic of checking consistency
+ * of products using naming consistency rules.
+ *
+ * @see org.esa.beam.dataio.readers.ProductContentEnforcer
+ * @author Cosmin Cara
  */
 public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
 
     protected final ProductContentEnforcer enforcer;
 
+    /**
+     * Default constructor
+     */
     public BaseProductReaderPlugIn() {
         enforcer = ProductContentEnforcer.create(getMinimalPatternList(), getExclusionPatternList());
     }
@@ -59,12 +66,34 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         return new BaseProductFileFilter(this);
     }
 
+    /**
+     * Returns the list of possible file patterns of a product.
+     * @return  The list of regular expressions.
+     */
     protected abstract String[] getProductFilePatterns();
 
+    /**
+     * Returns the minimal list of file patterns of a product.
+     * @return  The list of regular expressions.
+     */
     protected abstract String[] getMinimalPatternList();
 
+    /**
+     * Returns the exclusion list (i.e. anti-patterns) of a product.
+     * @return  The list of regular expressions.
+     */
     protected abstract String[] getExclusionPatternList();
 
+    /**
+     * Returns an abstraction of the given input.
+     * If the input is a (not compressed or packed) file, it returns a <code>com.bc.ceres.core.VirtualDir.File</code> object.
+     * If the input is a folder, it returns a <code>com.bc.ceres.core.VirtualDir.Dir</code> object.
+     * If the input is either a tar file or a tgz file, it returns a <code>org.sa.beam.dataio.VirtualDirEx.TarVirtualDir</code> object.
+     * If the input is a compressed file, it returns a wrapper over a <code>com.bc.ceres.core.VirtualDir.Zip</code> object.
+     * @param input The input object
+     * @return  An instance of a VirtualDir or VirtualDirEx implementations.
+     * @throws IOException  If unable to retrieve the parent of the input.
+     */
     public VirtualDirEx getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
         if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
@@ -87,6 +116,9 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         return outFile;
     }
 
+    /**
+     * Default implementation for a file filter using product naming rules.
+     */
     public class BaseProductFileFilter extends BeamFileFilter {
 
         private BaseProductReaderPlugIn parent;
@@ -109,16 +141,6 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
             if (shouldAccept && file.isFile() && !VirtualDirEx.isPackedFile(file)) {
                 File folder = file.getParentFile();
                 String[] list = folder.list();
-                /*boolean consistent = true;
-                for (String pattern : getProductFilePatterns()) {
-                    for (String fName : list) {
-                        if (!pattern.endsWith("zip"))
-                            shouldAccept = fName.toLowerCase().matches(pattern.toLowerCase());
-                        if (shouldAccept) break;
-                    }
-                    consistent &= shouldAccept;
-                }
-                shouldAccept = consistent;*/
                 shouldAccept &= enforcer.isConsistent(list);
             }
             return shouldAccept;

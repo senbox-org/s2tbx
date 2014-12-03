@@ -19,7 +19,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Created by kraftek on 11/24/2014.
+ * This class extends or alters the features of com.bc.ceres.core.VirtualDir class with a Tar/Tgz implementation
+ * and proper methods of retrieving the contents of the virtual directory.
+ *
+ * @author Cosmin Cara
  */
 public abstract class VirtualDirEx extends VirtualDir {
 
@@ -34,6 +37,12 @@ public abstract class VirtualDirEx extends VirtualDir {
         add(".tbz");
     }};
 
+    /**
+     * Factory method to create an instance of either a VirtualDir object (File, Dir)
+     * or of a VirtualDirEx object (VirtualDirWrapper for zip files, TarVirtualDir).
+     * @param file  The file object to be wrapped.
+     * @return  See the description
+     */
     public static VirtualDirEx create(File file) {
         if (file.isFile() && (TarVirtualDir.isTgz(file.getName()) || TarVirtualDir.isTar(file.getName()))) {
             try {
@@ -46,15 +55,32 @@ public abstract class VirtualDirEx extends VirtualDir {
         }
     }
 
+    /**
+     * Helper method to check if a file is either packed (i.e. tar file) or compressed.
+     * The test is performed agains a set of pre-defined file extensions.
+     * @param file  The file to be tested
+     * @return
+     */
     public static boolean isPackedFile(File file) {
         String extension = FileUtils.getExtension(file);
         return !StringUtils.isNullOrEmpty(extension) && compressedExtensions.contains(extension.toLowerCase());
     }
 
+    /**
+     * Checks if the file name belongs to a tar file.
+     * @param filename  The name of the file to be tested.
+     * @return
+     */
     public static boolean isTar(String filename) {
         return TarVirtualDir.isTar(filename);
     }
 
+    /**
+     * Finds the first occurrence of the pattern in the list of files of this instance.
+     * @param pattern   The pattern to be found.
+     * @return  The first found entry matching the pattern, or <code>null</code> if none found.
+     * @throws IOException
+     */
     public String findFirst(String pattern) throws IOException {
         String found = null;
         String[] entries = list("");
@@ -70,10 +96,10 @@ public abstract class VirtualDirEx extends VirtualDir {
     }
 
     /**
-     * Tries to findFirst the first file that contains the given string.
+     * Finds all the files that contain the given string.
      *
      * @param pattern A string to be found in the file name (if any).
-     * @return The name of the found file, or <code>NULL</code> if no file was found.
+     * @return The array of file names that matched the pattern, or <code>NULL</code> if no file was found.
      * @throws IOException
      */
     public String[] findAll(String pattern) throws IOException {
@@ -89,6 +115,10 @@ public abstract class VirtualDirEx extends VirtualDir {
         return found.toArray(new String[found.size()]);
     }
 
+    /**
+     * List all the files contained in this virtual directory instance.
+     * @return  An array of file names
+     */
     public String[] listAll() {
         String path = getBasePath();
         if (TarVirtualDir.isTar(path) || TarVirtualDir.isTgz(path)) {
@@ -143,6 +173,17 @@ public abstract class VirtualDirEx extends VirtualDir {
         }
     }
 
+    /**
+     * Private implementation of a wrapper over the "classic" VirtualDir class.
+     * It is needed because the implementations of VirtualDir are not visible, and hence their
+     * methods cannot be overridden.
+     * With the exception of the getFile() method, all the methods are delegated to the wrapped instance.
+     *
+     * Another difference from the File/Dir/Zip implementations of VirtualDir is the ability to get files
+     * on partial matches of the names (see findKeyFile() method)
+     *
+     * @author Cosmin Cara
+     */
     private static class VirtualDirWrapper extends VirtualDirEx {
 
         private VirtualDir wrapped;
@@ -300,6 +341,9 @@ public abstract class VirtualDirEx extends VirtualDir {
         }
     }
 
+    /**
+     * Private implementation of a virtual directory representing the contents of a tar file.
+     */
     private static class TarVirtualDir extends VirtualDirEx {
 
         public static final byte LF_SPEC_LINK = (byte) 'L';

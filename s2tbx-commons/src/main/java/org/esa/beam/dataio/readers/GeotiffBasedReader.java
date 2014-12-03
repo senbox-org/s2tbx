@@ -30,7 +30,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by kraftek on 11/24/2014.
+ * Base class for all GeoTIFF-based readers for S2TBX.
+ * This class has been created from the need of gathering all common code of several similar readers into a single place.
  */
 public abstract class GeotiffBasedReader<M extends XmlMetadata> extends AbstractProductReader {
 
@@ -134,16 +135,7 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
     protected Product readProductNodesImpl() throws IOException {
         productDirectory = getInput(super.getInput());
         File selection = getFileInput(super.getInput());
-        //String metadataFileName;
-        //File metadataFile;
         String[] metadataFiles = productDirectory.findAll(getMetadataExtension());
-//        if (selection.isFile() && selection.getName().toLowerCase().endsWith(getMetadataExtension())) {
-//            metadataFile = selection;
-//        } else {
-//            metadataFileName = productDirectory.findFirst(getMetadataExtension());
-//            metadataFile = productDirectory.getFile(metadataFileName);
-//        }
-//        if (metadataFile != null && metadataFile.exists()) {
         if (metadataFiles != null) {
             logger.info("Reading product metadata");
             for (String file : metadataFiles) {
