@@ -15,7 +15,10 @@ import java.util.Locale;
  */
 public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
 
+    protected final ProductContentEnforcer enforcer;
+
     public BaseProductReaderPlugIn() {
+        enforcer = ProductContentEnforcer.create(getMinimalPatternList(), getExclusionPatternList());
     }
 
     @Override
@@ -26,7 +29,6 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
             virtualDir = getInput(input);
             if (virtualDir != null) {
                 String[] allFiles = virtualDir.listAll();
-                ProductContentEnforcer enforcer = ProductContentEnforcer.create(getMinimalPatternList(), getExclusionPatternList());
                 if (enforcer.isConsistent(allFiles)) {
                     retVal = DecodeQualification.INTENDED;
                 }
@@ -104,20 +106,20 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         @Override
         public boolean accept(File file) {
             boolean shouldAccept = super.accept(file);
-            if (file.isFile() && !VirtualDirEx.isPackedFile(file)) {
+            if (shouldAccept && file.isFile() && !VirtualDirEx.isPackedFile(file)) {
                 File folder = file.getParentFile();
                 String[] list = folder.list();
-                boolean consistent = true;
+                /*boolean consistent = true;
                 for (String pattern : getProductFilePatterns()) {
                     for (String fName : list) {
-                        String lcName = fName.toLowerCase();
                         if (!pattern.endsWith("zip"))
-                            shouldAccept = lcName.matches(pattern);
+                            shouldAccept = fName.toLowerCase().matches(pattern.toLowerCase());
                         if (shouldAccept) break;
                     }
                     consistent &= shouldAccept;
                 }
-                shouldAccept = consistent;
+                shouldAccept = consistent;*/
+                shouldAccept &= enforcer.isConsistent(list);
             }
             return shouldAccept;
         }

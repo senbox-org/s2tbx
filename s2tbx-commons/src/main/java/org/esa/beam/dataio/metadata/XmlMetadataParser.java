@@ -114,6 +114,7 @@ public class XmlMetadataParser<T extends XmlMetadata> {
     {
         private T result;
         private String buffer;
+        private String currentPath;
         private Stack<MetadataElement> elementStack;
         private Logger systemLogger;
 
@@ -128,6 +129,7 @@ public class XmlMetadataParser<T extends XmlMetadata> {
             try {
                 @SuppressWarnings("unchecked") Constructor<T> ctor = fileClass.getConstructor(String.class);
                 result = ctor.newInstance("Metadata");
+                currentPath = "/";
             } catch (Exception e) {
                 systemLogger.severe(e.getMessage());
             }
@@ -151,9 +153,12 @@ public class XmlMetadataParser<T extends XmlMetadata> {
             }
             MetadataElement element = new MetadataElement(qName);
             buffer = "";
+            currentPath += qName + "/";
             for (int i = 0; i < attributes.getLength(); i++)
             {
-                element.addAttribute(new MetadataAttribute(attributes.getQName(i), ProductData.ASCII.createInstance(attributes.getValue(i)), false));
+                MetadataAttribute attribute = new MetadataAttribute(attributes.getQName(i), ProductData.ASCII.createInstance(attributes.getValue(i)), false);
+                element.addAttribute(attribute);
+                result.indexAttribute(currentPath, attribute);
             }
             elementStack.push(element);
         }
@@ -164,14 +169,19 @@ public class XmlMetadataParser<T extends XmlMetadata> {
             if (!elementStack.empty())
             {
                 if (buffer != null && !buffer.isEmpty() && !buffer.startsWith("\n")) {
-                    elementStack.peek().addAttribute(new MetadataAttribute(closingElement.getName(), inferType(qName, buffer), false));
+                    MetadataAttribute attribute = new MetadataAttribute(closingElement.getName(), inferType(qName, buffer), false);
+                    elementStack.peek().addAttribute(attribute);
+                    currentPath = currentPath.replace(closingElement.getName() + "/", "");
+                    result.indexAttribute(currentPath, attribute);
                     buffer = "";
                 } else {
                     elementStack.peek().addElement(closingElement);
+                    currentPath = currentPath.replace(closingElement.getName() + "/", "");
                 }
             } else {
                 XmlMetadata.CopyChildElements(closingElement, result.getRootElement());
                 result.getRootElement().setName("Metadata");
+                currentPath = currentPath.replace(closingElement.getName() + "/", "");
             }
         }
 

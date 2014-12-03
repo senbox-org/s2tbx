@@ -9,6 +9,10 @@ import org.esa.beam.util.logging.BeamLogManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -17,14 +21,17 @@ import java.util.logging.Logger;
  * @author Cosmin Cara
  */
 public abstract class XmlMetadata {
-    protected static final String MISSING_ELEMENT_WARNING = "Metadata: %s element is missing or has a bad value";
-    protected MetadataElement rootElement;
+    protected static final String MISSING_ELEMENT_WARNING = "Metadata: [%s] element is missing or has a bad value";
+    protected static final String NO_SUCH_PATH_WARNING = "Metadata: the path to element [%s] does not exist";
+    protected final MetadataElement rootElement;
     protected String name;
     protected int width;
     protected int height;
     protected int numBands;
     protected String path;
     protected Logger logger;
+
+    protected Map<String, List<MetadataAttribute>> attributeMap;
 
     /**
      * Factory method for creating instances of classes that (at least) extend
@@ -73,8 +80,7 @@ public abstract class XmlMetadata {
         MetadataAttribute[] attributes = source.getAttributes();
         if (attributes != null) {
             for (MetadataAttribute attribute : attributes) {
-                if (!target.containsAttribute(attribute.getName()) &&
-                        attribute.getName().indexOf(":") == -1) {
+                if (!target.containsAttribute(attribute.getName()) && !attribute.getName().contains(":")) {
                     target.addAttribute(attribute);
                 }
             }
@@ -95,38 +101,14 @@ public abstract class XmlMetadata {
         this.name = name;
         this.rootElement = new MetadataElement(this.name);
         this.logger = BeamLogManager.getSystemLogger();
-    }
-
-    public String getElementValueAsString(String xPath) {
-        String retVal = null;
-        if (rootElement != null && xPath != null) {
-            String[] elementNames = xPath.split("/");
-            int idx = 0;
-            MetadataElement element = rootElement;
-            do {
-                int attrStartIdx = elementNames[idx].indexOf("[");
-                String elementName;
-                if (attrStartIdx > 0) {
-                    elementName = elementNames[idx].substring(0, attrStartIdx - 1);
-                    String[] attributeConditions = elementNames[idx].substring(attrStartIdx + 1).split("and");
-
-                } else {
-                    elementName = elementNames[idx];
-                }
-                element = element.getElement(elementName);
-                idx++;
-            } while (idx < elementNames.length && element != null);
-        }
-        return retVal;
+        this.attributeMap = new HashMap<String, List<MetadataAttribute>>();
     }
 
     /**
      * Returns the root node of this metadata file.
      * @return The root metadata element
      */
-    public MetadataElement getRootElement() {
-        return rootElement;
-    }
+    public MetadataElement getRootElement() { return rootElement; }
 
     /**
      * Gets the name of the metadata file used to obtain this instance.
@@ -243,6 +225,54 @@ public abstract class XmlMetadata {
         this.rootElement.setName(value);
     }
 
+    public String getAttributeValue(String attributePath, String defaultValue) {
+        return getAttributeValue(attributePath, 0, defaultValue);
+    }
+
+    public String getAttributeValue(String attributePath, int attributeIndex, String defaultValue) {
+        String value = defaultValue;
+        if (attributePath != null) {
+            attributePath = ensureAttributeTagPresent(attributePath);
+            List<MetadataAttribute> attributes;
+            if (attributeMap.containsKey(attributePath) && (attributes = attributeMap.get(attributePath)) != null && attributes.size() > attributeIndex) {
+                value = attributes.get(attributeIndex).getData().getElemString();
+                if (value == null) {
+                    value = defaultValue;
+                    warn(MISSING_ELEMENT_WARNING, attributes.get(attributeIndex).getName());
+                }
+            } else {
+                warn(NO_SUCH_PATH_WARNING, attributePath);
+            }
+        }
+        return value;
+    }
+
+    public String getAttributeSiblingValue(String attributePath, String attributeValue, String siblingPath, String defaultSiblingValue) {
+        String value = defaultSiblingValue;
+        if (attributePath != null && siblingPath != null && attributeValue != null) {
+            attributePath = ensureAttributeTagPresent(attributePath);
+            List<MetadataAttribute> attributes;
+            if (attributeMap.containsKey(attributePath) && (attributes = attributeMap.get(attributePath)) != null && attributes.size() > 0) {
+                int foundIndex = -1;
+                for (int i = 0; i < attributes.size(); i++) {
+                    if (attributeValue.equalsIgnoreCase(attributes.get(i).getData().getElemString())) {
+                        foundIndex = i;
+                        break;
+                    }
+                }
+                if (foundIndex != -1) {
+                    value = getAttributeValue(siblingPath, foundIndex, null);
+                    if (value == null) {
+                        value = defaultSiblingValue;
+                    }
+                }
+            } else {
+                warn(NO_SUCH_PATH_WARNING, attributePath);
+            }
+        }
+        return value;
+    }
+
     public abstract ProductData.UTC getProductStartTime();
 
     public abstract ProductData.UTC getProductEndTime();
@@ -250,4 +280,38 @@ public abstract class XmlMetadata {
     public abstract ProductData.UTC getCenterTime();
 
     public abstract String getProductDescription();
+
+    protected void warn(String message, String argument) {
+        if (argument == null) {
+            logger.warning(message);
+        } else
+        {
+            argument = argument.replace("@", "");
+            if (argument.contains("/")) {
+                logger.warning(String.format(message, argument.substring(argument.lastIndexOf("/") + 1)));
+            } else {
+                logger.warning(String.format(message, argument));
+            }
+        }
+    }
+
+    void indexAttribute(String parentElementPath, MetadataAttribute attribute) {
+        String key = (parentElementPath + "@" + attribute.getName()).toLowerCase();
+        if (!this.attributeMap.containsKey(key)) {
+            this.attributeMap.put(key, new ArrayList<MetadataAttribute>());
+        }
+        this.attributeMap.get(key).add(attribute);
+    }
+
+    private String ensureAttributeTagPresent(String path) {
+        if (path != null) {
+            path = path.toLowerCase();
+            if (!path.contains("@")) {
+                int idx = path.lastIndexOf("/") + 1;
+                path = path.substring(0, idx) + "@" + path.substring(idx);
+            }
+        }
+        return path;
+    }
+
 }
