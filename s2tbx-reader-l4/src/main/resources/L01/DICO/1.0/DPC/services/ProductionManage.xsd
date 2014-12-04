@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:base="http://gs2.esa.int/DICO/1.0/PDGS/base/" xmlns:center="http://gs2.esa.int/DICO/1.0/PDGS/center/" xmlns:date_time="http://gs2.esa.int/DICO/1.0/SY/date_time/" xmlns:baseProcessing="http://gs2.esa.int/DICO/1.0/DPC/processing/baseProcessing" xmlns:DPCservices="http://gs2.esa.int/DICO/1.0/DPC/services" targetNamespace="http://gs2.esa.int/DICO/1.0/DPC/services" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/center/" schemaLocation="..\..\PDGS\center\center.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/base/" schemaLocation="..\..\PDGS\base\base.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/date_time/" schemaLocation="..\..\SY\date_time\date_time.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/DPC/processing/baseProcessing" schemaLocation="..\processing\baseProcessing.xsd"/>
+	<xs:element name="MANAGE_PRODUCTION">
+		<xs:annotation>
+			<xs:documentation>Root: Control order description file</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="PROVIDER">
+					<xs:annotation>
+						<xs:documentation>Providers parameters</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="SATELLITE" type="base:SATELLITE" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Satellite identification</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="CENTRE" type="center:A_S2_CENTER" minOccurs="0"/>
+							<xs:element name="ENTITY" type="base:UNIT" minOccurs="0"/>
+							<xs:element name="USERNAME" type="xs:string">
+								<xs:annotation>
+									<xs:documentation>Userame of the operator that  launches the control order</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="CREATION_DATE" type="date_time:A_TAI_DATE_TIME" minOccurs="0">
+								<xs:annotation>
+									<xs:documentation>Date of XML file creation</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="EXECUTION_PARAMETERS">
+					<xs:complexType>
+						<xs:choice>
+							<xs:element name="STOP">
+								<xs:annotation>
+									<xs:documentation>not filled for the current version of DPC</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="RESUME">
+								<xs:annotation>
+									<xs:documentation>not filled for the current version of DPC</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="CANCEL">
+								<xs:annotation>
+									<xs:documentation>not filled for the current version of DPC</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="CHANGE_PRIORITY">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="LEVEL" type="baseProcessing:A_PRIORITY_LEVEL">
+											<xs:annotation>
+												<xs:documentation>New priority level.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+						<xs:attribute name="type" type="baseProcessing:A_PROCESSING_CONTROL">
+							<xs:annotation>
+								<xs:documentation>The type of action to be applied : STOP / CANCEL / RESUME/ CHANGE_PRIORITY</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="schema" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>name of XML Schema validating this file</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="version" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>XML Schema version number</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

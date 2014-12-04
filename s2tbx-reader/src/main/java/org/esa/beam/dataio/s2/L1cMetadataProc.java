@@ -148,7 +148,7 @@ public class L1cMetadataProc {
 
         //todo get modules classpath
         //todo test new lecture style
-        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C, s2c);
+        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();

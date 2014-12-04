@@ -14,6 +14,7 @@
         <module>s2tbx-reader</module>
         <module>s2tbx-reader-l2</module>
         <module>s2tbx-reader-l3</module>
+        <module>s2tbx-reader-l4</module>
         <module>lib-openjpeg</module>
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
