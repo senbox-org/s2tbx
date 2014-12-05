@@ -199,30 +199,34 @@ public class L2aMetadataProc {
         characteristics.datasetProductionDate = product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString();
         characteristics.processingLevel = product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value();
 
+        A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List spectralInformationList = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getSpectral_Information_List();
 
-        List<A_PRODUCT_CHARACTERISTICS.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getProduct_Characteristics().getSpectral_Information_List().getSpectral_Information();
-
-        List<L2aMetadata.SpectralInformation> aInfo = new ArrayList<L2aMetadata.SpectralInformation>();
-
-        for(A_PRODUCT_CHARACTERISTICS.Spectral_Information_List.Spectral_Information sin : spectralInfoList)
+        if(spectralInformationList != null)
         {
-            L2aMetadata.SpectralInformation data = new L2aMetadata.SpectralInformation();
-            data.bandId = Integer.parseInt(sin.getBandId());
-            data.physicalBand = sin.getPhysicalBand().value();
-            data.resolution = sin.getRESOLUTION();
-            data.spectralResponseStep = sin.getSpectral_Response().getSTEP().getValue();
+            List<A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = spectralInformationList.getSpectral_Information();
 
-            int size = sin.getSpectral_Response().getVALUES().size();
-            data.spectralResponseValues = ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size]));
-            data.wavelenghtCentral = sin.getWavelength().getCENTRAL().getValue();
-            data.wavelenghtMax = sin.getWavelength().getMAX().getValue();
-            data.wavelenghtMin = sin.getWavelength().getMIN().getValue();
+            List<L2aMetadata.SpectralInformation> aInfo = new ArrayList<L2aMetadata.SpectralInformation>();
 
-            aInfo.add(data);
+            for(A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList)
+            {
+                L2aMetadata.SpectralInformation data = new L2aMetadata.SpectralInformation();
+                data.bandId = Integer.parseInt(sin.getBandId());
+                data.physicalBand = sin.getPhysicalBand().value();
+                data.resolution = sin.getRESOLUTION();
+                data.spectralResponseStep = sin.getSpectral_Response().getSTEP().getValue();
+
+                int size = sin.getSpectral_Response().getVALUES().size();
+                data.spectralResponseValues = ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size]));
+                data.wavelenghtCentral = sin.getWavelength().getCENTRAL().getValue();
+                data.wavelenghtMax = sin.getWavelength().getMAX().getValue();
+                data.wavelenghtMin = sin.getWavelength().getMIN().getValue();
+
+                aInfo.add(data);
+            }
+
+            int size = aInfo.size();
+            characteristics.bandInformations = aInfo.toArray(new L2aMetadata.SpectralInformation[size]);
         }
-
-        int size = aInfo.size();
-        characteristics.bandInformations = aInfo.toArray(new L2aMetadata.SpectralInformation[size]);
 
         return characteristics;
     }
