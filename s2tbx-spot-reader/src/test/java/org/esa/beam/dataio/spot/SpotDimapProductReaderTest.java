@@ -95,7 +95,7 @@ public class SpotDimapProductReaderTest {
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(4, components.getChildren().length);
-            String[] expectedIds = new String[]{"wrappingMetadata.dim", "vol_list.dim", "mediumImage.tif", "icon.jpg"};
+            String[] expectedIds = new String[]{"metadata.dim", "vol_list.dim", "mediumImage.tif", "icon.jpg"};
             int componentsAsExpected = 0;
             for(TreeNode<File> component: components.getChildren()){
                 for(String expectedValue: expectedIds){

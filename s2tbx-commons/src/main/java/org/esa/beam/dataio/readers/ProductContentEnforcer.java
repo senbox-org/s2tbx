@@ -109,7 +109,7 @@ public class ProductContentEnforcer {
             if (minimalFilePatternList != null) {
                 for (Pattern pattern : minimalFilePatternList) {
                     for (String fileName : fileNames) {
-                        if ((retFlag = pattern.matcher(fileName.toLowerCase()).matches()));
+                        if ((retFlag = pattern.matcher(fileName.toLowerCase()).matches()))
                             break;
                     }
                     if (!retFlag)

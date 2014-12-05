@@ -22,12 +22,12 @@ public class SpotViewMetadataTest {
     @Before
     public void setUp() throws Exception {
         XmlMetadataParserFactory.registerParser(SpotViewMetadata.class, new XmlMetadataParser<SpotViewMetadata>(SpotViewMetadata.class));
-        metadata = XmlMetadata.create(SpotViewMetadata.class, TestUtil.getTestFile("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/wrappingMetadata.xml"));
+        metadata = XmlMetadata.create(SpotViewMetadata.class, TestUtil.getTestFile("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml"));
     }
 
     @Test
     public void testGetFileName() throws Exception {
-        assertEquals("wrappingMetadata.xml", metadata.getFileName()); ;
+        assertEquals("metadata.xml", metadata.getFileName()); ;
     }
 
     @Test
@@ -153,15 +153,15 @@ public class SpotViewMetadataTest {
     @Test
     public void testSetFileName() throws Exception {
         metadata.setFileName("testtest");
-        //wrong!!!, actual result=wrappingMetadata.xml
-        //assertEquals("testtest", wrappingMetadata.getFileName());
-        assertEquals("wrappingMetadata.xml", metadata.getFileName());
+        //wrong!!!, actual result=metadata.xml
+        //assertEquals("testtest", metadata.getFileName());
+        assertEquals("metadata.xml", metadata.getFileName());
     }
 
     @Test
     public void testGetPath() throws Exception {
         String root = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
-        String partialPath = root + "\\SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL\\wrappingMetadata.xml";
+        String partialPath = root + "\\SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL\\metadata.xml";
         if(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
         {
             partialPath = partialPath.replaceAll("\\\\", "/");
@@ -180,6 +180,6 @@ public class SpotViewMetadataTest {
     public void testSetName() throws Exception {
         metadata.setName("testtest");
         //no get method available, how to test is was changed?
-        //assertEquals(0, wrappingMetadata.getName());
+        //assertEquals(0, metadata.getName());
     }
 }

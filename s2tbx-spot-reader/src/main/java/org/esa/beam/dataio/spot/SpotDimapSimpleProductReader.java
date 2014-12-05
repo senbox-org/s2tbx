@@ -86,7 +86,7 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
                 if (SpotConstants.DIMAP.equals(componentMetadata.getFormatName())) {
                     String[] fileNames = componentMetadata.getRasterFileNames();
                     if (fileNames == null || fileNames.length == 0)
-                        throw new InvalidMetadataException("No raster file found in wrappingMetadata");
+                        throw new InvalidMetadataException("No raster file found in metadata");
                     String rasterFileName = componentMetadata.getPath().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(), fileNames[0].toLowerCase());
                     File rasterFile = productDirectory.getFile(rasterFileName);
                     GeoTiffProductReader tiffReader = new GeoTiffReaderEx(getReaderPlugIn());

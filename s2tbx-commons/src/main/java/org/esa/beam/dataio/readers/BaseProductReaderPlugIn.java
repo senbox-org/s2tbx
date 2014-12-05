@@ -106,6 +106,11 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         return VirtualDirEx.create(inputFile);
     }
 
+    /**
+     * Returns the input object as a File object.
+     * @param input the plugin input
+     * @return  a File object instance
+     */
     protected File getFileInput(Object input) {
         File outFile = null;
         if (input instanceof String) {

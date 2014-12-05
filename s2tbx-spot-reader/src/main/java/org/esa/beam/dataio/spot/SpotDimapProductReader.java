@@ -63,7 +63,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 internalReader = new SpotDimapSimpleProductReader(getReaderPlugIn());
             }
         } else {
-            logger.warning("No volume wrappingMetadata found. Will assume single volume product.");
+            logger.warning("No volume metadata found. Will assume single volume product.");
             internalReader = new SpotDimapSimpleProductReader(getReaderPlugIn());
         }
         //internalReader.setLogger(logger);
@@ -100,7 +100,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             return super.getProductComponents();
         } else {
             TreeNode<File> result = super.getProductComponents();
-            //if the volume wrappingMetadata file is present, but it is not in the list, add it!
+            //if the volume metadata file is present, but it is not in the list, add it!
             try {
                 File volumeMetadataPhysicalFile = productDirectory.getFile(SpotConstants.DIMAP_VOLUME_FILE);
                 if (metadata.getVolumeMetadata() != null) {
@@ -131,7 +131,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 try {
                     String[] fileNames = componentMetadata.getRasterFileNames();
                     if (fileNames == null || fileNames.length == 0)
-                        throw new InvalidMetadataException("No raster file found in wrappingMetadata");
+                        throw new InvalidMetadataException("No raster file found in metadata");
                     String fileId = componentMetadata.getPath().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(),
                                                                                       fileNames[0].toLowerCase());
                     addProductComponentIfNotPresent(fileId, productDirectory.getFile(fileId), result);

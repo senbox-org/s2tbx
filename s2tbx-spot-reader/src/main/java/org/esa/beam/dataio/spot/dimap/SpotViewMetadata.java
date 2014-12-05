@@ -7,8 +7,8 @@ import org.esa.beam.framework.datamodel.ProductData;
 import java.nio.ByteOrder;
 
 /**
- * This class holds parsed wrappingMetadata from XML file (which is not DIMAP).
- * It exposes convenience methods for fetching various useful wrappingMetadata values.
+ * This class holds parsed metadata from XML file (which is not DIMAP).
+ * It exposes convenience methods for fetching various useful metadata values.
  *
  * @author  Cosmin Cara
  */
@@ -135,8 +135,8 @@ public class SpotViewMetadata extends XmlMetadata {
     public ProductData.UTC getCenterTime() { return null; }
 
     /**
-     * Returns the names of the bands found in the wrappingMetadata file.
-     * If the expected wrappingMetadata nodes are not present, then the default band names
+     * Returns the names of the bands found in the metadata file.
+     * If the expected metadata nodes are not present, then the default band names
      * are returned (i.e. band_n).
      * @return  an array of band names
      */

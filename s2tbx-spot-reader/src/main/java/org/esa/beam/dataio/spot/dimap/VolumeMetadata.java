@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Represents a DIMAP volume wrappingMetadata file, which points to individual components (products).
+ * Represents a DIMAP volume metadata file, which points to individual components (products).
  * As of now, SPOT scene products have only one component.
  * @author Cosmin Cara
  */
