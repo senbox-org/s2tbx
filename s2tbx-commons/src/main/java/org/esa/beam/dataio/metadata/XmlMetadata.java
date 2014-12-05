@@ -225,10 +225,24 @@ public abstract class XmlMetadata {
         this.rootElement.setName(value);
     }
 
+    /**
+     * Returns the value of the attribute (or the default value) specified by its XPath expression.
+     * @param attributePath the XPath location of the attribute
+     * @param defaultValue  the default value if the attribute is not found or has a <code>null</code> value
+     * @return  The attribute (or default) value
+     */
     public String getAttributeValue(String attributePath, String defaultValue) {
         return getAttributeValue(attributePath, 0, defaultValue);
     }
 
+    /**
+     * Returns the value of the attribute (or the default value) specified by its XPath expression and the given index,
+     * when multiple such attributes are present at the same XPath location.
+     * @param attributePath the XPath location of the attribute
+     * @param attributeIndex    the index of the attribute in the attribute array
+     * @param defaultValue  the default value if the attribute is not found or has a <code>null</code> value
+     * @return  The attribute (or default) value
+     */
     public String getAttributeValue(String attributePath, int attributeIndex, String defaultValue) {
         String value = defaultValue;
         if (attributePath != null) {
@@ -247,6 +261,14 @@ public abstract class XmlMetadata {
         return value;
     }
 
+    /**
+     * Returns the value of the attribute (or the default value) specified by its XPath expression, and whose sibling value is equal to a certain value.
+     * @param attributePath The path of the attribute to be tested
+     * @param attributeValue    The test value
+     * @param siblingPath   The path of the attribute whose value we want to retrieve
+     * @param defaultSiblingValue   The default value if the attribute does not exist or the condition of the sibling value is not met.
+     * @return  The attribute (or default) value.
+     */
     public String getAttributeSiblingValue(String attributePath, String attributeValue, String siblingPath, String defaultSiblingValue) {
         String value = defaultSiblingValue;
         if (attributePath != null && siblingPath != null && attributeValue != null) {
@@ -273,12 +295,34 @@ public abstract class XmlMetadata {
         return value;
     }
 
+    /**
+     * Returns the product start time in UTC format.
+     * This method has to be implemented by subclasses since the value may be or may not be present in metadata,
+     * or may be in different formats for different products.
+     * @return  the product start time
+     */
     public abstract ProductData.UTC getProductStartTime();
 
+    /**
+     * Returns the product end time in UTC format.
+     * This method has to be implemented by subclasses since the value may be or may not be present in metadata,
+     * or may be in different formats for different products.
+     * @return  the product end time
+     */
     public abstract ProductData.UTC getProductEndTime();
 
+    /**
+     * Returns the product center time in UTC format.
+     * This method has to be implemented by subclasses since the value may be or may not be present in metadata,
+     * or may be in different formats for different products.
+     * @return  the product center time.
+     */
     public abstract ProductData.UTC getCenterTime();
 
+    /**
+     * Returns the product description, preferably from metadata
+     * @return  the product description
+     */
     public abstract String getProductDescription();
 
     protected void warn(String message, String argument) {

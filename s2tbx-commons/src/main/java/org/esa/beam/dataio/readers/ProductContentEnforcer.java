@@ -107,12 +107,14 @@ public class ProductContentEnforcer {
                 }
             }
             if (minimalFilePatternList != null) {
+                boolean global = true;
                 for (Pattern pattern : minimalFilePatternList) {
                     for (String fileName : fileNames) {
                         if ((retFlag = pattern.matcher(fileName.toLowerCase()).matches()))
                             break;
                     }
-                    if (!retFlag)
+                    global &= retFlag;
+                    if (!global)
                         break;
                 }
             }

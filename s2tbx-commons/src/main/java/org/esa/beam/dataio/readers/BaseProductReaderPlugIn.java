@@ -8,6 +8,11 @@ import org.esa.beam.util.io.BeamFileFilter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -138,7 +143,36 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
             boolean shouldAccept = super.accept(file);
             if (shouldAccept && file.isFile() && !VirtualDirEx.isPackedFile(file)) {
                 File folder = file.getParentFile();
-                String[] list = folder.list();
+                List<String> files = new ArrayList<>();
+                try {
+                    Files.walkFileTree(Paths.get(folder.getAbsolutePath()),
+                            EnumSet.noneOf(FileVisitOption.class),
+                            2,
+                            new FileVisitor<Path>() {
+                                @Override
+                                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                                    return FileVisitResult.CONTINUE;
+                                }
+
+                                @Override
+                                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                                    files.add(file.toFile().getAbsolutePath().replace(folder.getAbsolutePath(), "").substring(1));
+                                    return FileVisitResult.CONTINUE;
+                                }
+
+                                @Override
+                                public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                                    return FileVisitResult.CONTINUE;
+                                }
+
+                                @Override
+                                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                                    return FileVisitResult.CONTINUE;
+                                }
+                            });
+                } catch (IOException e) {
+                }
+                String[] list = files.toArray(new String[files.size()]); //folder.list();
                 shouldAccept &= enforcer.isConsistent(list);
             }
             return shouldAccept;
