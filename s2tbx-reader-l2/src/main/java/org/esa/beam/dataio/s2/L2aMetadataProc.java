@@ -1,7 +1,6 @@
 package org.esa.beam.dataio.s2;
 
 import _int.esa.gs2.dico._1_0.pdgs.dimap.*;
-import _int.esa.s2.pdgs.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
 import _int.esa.s2.pdgs.psd.s2_user_product_level_2a_metadata.Level2A_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -199,7 +198,7 @@ public class L2aMetadataProc {
         characteristics.datasetProductionDate = product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString();
         characteristics.processingLevel = product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value();
 
-
+        product.getGeneral_Info().getProduct_Image_Characteristics();
         Object theList = product.getProduct_Characteristics().getSpectral_Information_List();
 
         if(theList != null)
