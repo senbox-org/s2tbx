@@ -1,0 +1,149 @@
+{
+    "id": "Deimos-Indonesia",
+    "decodeQualification": "INTENDED",
+    "expectedContent": {
+        "sceneWidth": 2000,
+        "sceneHeight": 2000,
+        "geoCoding": {
+            "coordinates": [
+                {
+                    "x": 1020,
+                    "y": 200,
+                    "lat": 0.74069488,
+                    "lon": 117.2696228
+                },
+                {
+                    "x": 175,
+                    "y": 1500,
+                    "lat": 0.4819495,
+                    "lon": 117.102539
+                }
+            ]
+        },
+        "bands": [
+            {
+                "name": "Red",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 16.0
+                    },
+                    {
+                        "x": 14,
+                        "y": 154,
+                        "value": 13.0
+                    }
+                ]
+            },
+            {
+                "name": "Green",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 49.0
+                    },
+                    {
+                        "x": 14,
+                        "y": 154,
+                        "value": 46.0
+                    }
+                ]
+            },
+            {
+                "name": "Synthetic Blue",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 1374,
+                        "y": 1247,
+                        "value": 9.0
+                    },
+                    {
+                        "x": 14,
+                        "y": 254,
+                        "value": 1.0
+                    }
+                ]
+            }
+        ],
+        "metadata": [
+            {
+                "path": "DMCII/Metadata_Id/METADATA_FORMAT",
+                "value": "DIMAP"
+            },
+            {
+                "path": "DMCII/Metadata_Id/METADATA_PROFILE",
+                "value": "DMCII"
+            },
+            {
+                 "path": "DMCII/Dataset_Id/DATASET_NAME",
+                 "value": "DE01_SL6_22S_2T_20110121T024927_20110121T024935_DMI_0_2838_RGB"
+            },
+            {
+                 "path": "DMCII/Production/DATASET_PRODUCTION_DATE",
+                 "value": "2012-10-05"
+            },
+            {
+                 "path": "DMCII/Production/PRODUCT_TYPE",
+                 "value": "L2T"
+            },
+            {
+                 "path": "DMCII/Coordinate_Reference_System/Horizontal_CS/HORIZONTAL_CS_CODE",
+                 "value": "EPSG:32650"
+            },
+            {
+                 "path": "DMCII/Coordinate_Reference_System/Horizontal_CS/Projection/PROJECTION_CODE",
+                 "value": "EPSG:16050"
+            },
+            {
+                 "path": "DMCII/Coordinate_Reference_System/Horizontal_CS/Projection/Projection_CT_Method/PROJECTION_CT_CODE",
+                 "value": "EPSG:9807"
+            },
+            {
+                 "path": "DMCII/Raster_Dimensions/NCOLS",
+                 "value": "2000"
+            },
+            {
+                 "path": "DMCII/Raster_Dimensions/NROWS",
+                 "value": "2000"
+            },
+            {
+                 "path": "DMCII/Raster_Dimensions/NBANDS",
+                 "value": "3"
+            },
+            {
+                 "path": "TIFF Metadata/GeoTIFF Metadata/GeoKeyDirectory/ProjectedCSTypeGeoKey",
+                 "value": "PCS_WGS84_UTM_zone_50N"
+            },
+            {
+                 "path": "TIFF Metadata/ImageWidth",
+                 "value": "2000"
+            },
+            {
+                 "path": "TIFF Metadata/TileWidth",
+                 "value": "512"
+            },
+            {
+                 "path": "TIFF Metadata/ImageLength",
+                 "value": "2000"
+            },
+            {
+                 "path": "TIFF Metadata/TileLength",
+                 "value": "512"
+            }
+        ]
+    }
+}

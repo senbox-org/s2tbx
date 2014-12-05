@@ -1,0 +1,9 @@
+{
+    "testProducts": [
+        {
+            "id": "Deimos-Indonesia",
+            "relativePath": "DEIMOS-1_INDONESIA-TrueColor-22m.zip",
+            "description": "Deimos product in an archive"
+        }
+    ]
+}
