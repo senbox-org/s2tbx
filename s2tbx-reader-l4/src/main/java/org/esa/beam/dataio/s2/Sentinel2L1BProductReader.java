@@ -64,7 +64,7 @@ import static org.esa.beam.dataio.s2.S2Config.*;
  *
  * @author Norman Fomferra
  */
-public class Sentinel2ProductReader extends AbstractProductReader {
+public class Sentinel2L1BProductReader extends AbstractProductReader {
 
     private File cacheDir;
     protected final Logger logger;
@@ -88,7 +88,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
 
-    Sentinel2ProductReader(Sentinel2ProductReaderPlugIn readerPlugIn) {
+    Sentinel2L1BProductReader(Sentinel2L1BProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
     }

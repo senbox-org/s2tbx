@@ -12,7 +12,7 @@
 
     <packaging>jar</packaging>
     <artifactId>s2tbx-l4-reader</artifactId>
-    <name>Sentinel-2 Reader L2 PSD12 L1B</name>
+    <name>Sentinel-2 Reader PSD12 L1B</name>
     <description>
         This module enables the Sentinel Toolbox to read the following Sentinel-2 data products: L1B,L1C
     </description>

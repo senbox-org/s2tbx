@@ -29,9 +29,9 @@ import java.util.*;
 public class L1cMetadataProc {
 
     public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
-        String subStr = "s2tbx-reader";
+        String subStr = "s2tbx-l4-reader";
 
-        ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
+        ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
         URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
 
         URL[] theURLs = s2ClassLoader.getURLs();
@@ -144,7 +144,7 @@ public class L1cMetadataProc {
 
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
 
-        ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
+        ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
 
         //todo get modules classpath
         //todo test new lecture style

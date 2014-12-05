@@ -2,7 +2,7 @@
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-l4-reader</symbolicName>
     <version>2.0.0</version>
-    <name>Sentinel-2 Product Reader</name>
+    <name>Sentinel-2 Product Reader L1B</name>
 
     <description>Enables SNAP to read Sentinel 2 products of type L1B</description>
 
