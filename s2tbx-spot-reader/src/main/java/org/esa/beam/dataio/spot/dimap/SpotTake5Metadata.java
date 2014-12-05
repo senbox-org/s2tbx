@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Holder for SPOT4 TAKE5 metadata file.
+ * Holder for SPOT4 TAKE5 wrappingMetadata file.
  * @author Ramona Manda
  */
 public class SpotTake5Metadata extends XmlMetadata {
@@ -23,7 +23,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     /**
      * Parameter for the SPOT4 TAKE5 products
      *
-     * @param name the name of the metadata format
+     * @param name the name of the wrappingMetadata format
      */
     public SpotTake5Metadata(String name) {
         super(name);
@@ -48,9 +48,9 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * This method returns the name of the bands, as they appear in the metadata file, under the tag METADATA/RADIOMETRY/BANDS
+     * This method returns the name of the bands, as they appear in the wrappingMetadata file, under the tag METADATA/RADIOMETRY/BANDS
      *
-     * @return a list of String values, representing the name of the bands from the metadata
+     * @return a list of String values, representing the name of the bands from the wrappingMetadata
      */
     public String[] getBandNames() {
         MetadataElement currentElement;
@@ -63,14 +63,14 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * This method returns the name of the tiff files, as they appear in the metadata file, under the tags:
+     * This method returns the name of the tiff files, as they appear in the wrappingMetadata file, under the tags:
      * <ul><li>METADATA/FILES/GEOTIFF</li></ul>
      * <ul><li>METADATA/FILES/ORTHO_SURF_AOT</li></ul>
      * <ul><li>METADATA/FILES/ORTHO_SURF_CORR_ENV</li></ul>
      * <ul><li>METADATA/FILES/ORTHO_SURF_CORR_PENTE</li></ul>
      * <ul><li>METADATA/FILES/ORTHO_VAP_EAU</li></ul>
      *
-     * @return a map of String values, representing pairs of the tag of the file and the file name, as they appear in the metadata file
+     * @return a map of String values, representing pairs of the tag of the file and the file name, as they appear in the wrappingMetadata file
      */
     public Map<String, String> getTiffFiles() {
         if (this.tiffFiles != null && this.tiffFiles.size() > 0) {
@@ -101,12 +101,12 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * This method returns the name of the tiff files for the masks, as they appear in the metadata file, under the tags:
+     * This method returns the name of the tiff files for the masks, as they appear in the wrappingMetadata file, under the tags:
      * <ul><li>METADATA/FILES/MASK_SATURATION</li></ul>
      * <ul><li>METADATA/FILES/MASK_CLOUDS</li></ul>
      * <ul><li>METADATA/FILES/MASK_DIVERSE</li></ul>
      *
-     * @return a map of String values, representing pairs of the tag of the file and the file name, as they appear in the metadata file
+     * @return a map of String values, representing pairs of the tag of the file and the file name, as they appear in the wrappingMetadata file
      */
     public Map<String, String> getMaskFiles() {
         if (this.maskFiles != null && this.maskFiles.size() > 0) {
@@ -143,9 +143,9 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the projection code, as it appears in the metadata file, under the tag METADATA/GEOMETRY/PROJECTION
+     * Reads the projection code, as it appears in the wrappingMetadata file, under the tag METADATA/GEOMETRY/PROJECTION
      *
-     * @return the String value representing the projection code, as it appears in the metadata file
+     * @return the String value representing the projection code, as it appears in the wrappingMetadata file
      */
     public String getProjectionCode() {
         String name = null;
@@ -158,9 +158,9 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the Y dimension of the raster, as it appears in the metadata file, under the tag METADATA/GEOMETRY/ORIGIN_Y
+     * Reads the Y dimension of the raster, as it appears in the wrappingMetadata file, under the tag METADATA/GEOMETRY/ORIGIN_Y
      *
-     * @return the float value representing the Y dimension of the raster, as it appears in the metadata file
+     * @return the float value representing the Y dimension of the raster, as it appears in the wrappingMetadata file
      */
     public float getRasterGeoRefY() {
         float value = 0.0f;
@@ -173,9 +173,9 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the X dimension of the raster, as it appears in the metadata file, under the tag METADATA/GEOMETRY/ORIGIN_X
+     * Reads the X dimension of the raster, as it appears in the wrappingMetadata file, under the tag METADATA/GEOMETRY/ORIGIN_X
      *
-     * @return the float value representing the X dimension of the raster, as it appears in the metadata file
+     * @return the float value representing the X dimension of the raster, as it appears in the wrappingMetadata file
      */
     public float getRasterGeoRefX() {
         float value = 0.0f;
@@ -188,9 +188,9 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the Y dimension of the raster size, as it appears in the metadata file, under the tag METADATA/GEOMETRY/PIXEL_SIZE_Y
+     * Reads the Y dimension of the raster size, as it appears in the wrappingMetadata file, under the tag METADATA/GEOMETRY/PIXEL_SIZE_Y
      *
-     * @return the float value representing the Y dimension of the raster size, as it appears in the metadata file
+     * @return the float value representing the Y dimension of the raster size, as it appears in the wrappingMetadata file
      */
     public float getRasterGeoRefSizeY() {
         float value = 0.0f;
@@ -203,9 +203,9 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the X dimension of the raster size, as it appears in the metadata file, under the tag METADATA/GEOMETRY/PIXEL_SIZE_X
+     * Reads the X dimension of the raster size, as it appears in the wrappingMetadata file, under the tag METADATA/GEOMETRY/PIXEL_SIZE_X
      *
-     * @return the float value representing the X dimension of the raster size, as it appears in the metadata file
+     * @return the float value representing the X dimension of the raster size, as it appears in the wrappingMetadata file
      */
     public float getRasterGeoRefSizeX() {
         float value = 0.0f;
@@ -288,9 +288,9 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the date of the acquisition of the image, as it appears in the metadata file, under the tag METADATA/HEADER/DATE_PDV
+     * Reads the date of the acquisition of the image, as it appears in the wrappingMetadata file, under the tag METADATA/HEADER/DATE_PDV
      *
-     * @return the UTC date representing the date of the acquisition of the image, as it appears in the metadata file
+     * @return the UTC date representing the date of the acquisition of the image, as it appears in the wrappingMetadata file
      */
     public ProductData.UTC getDatePdv() {
         String dateStr = null;
@@ -311,9 +311,9 @@ public class SpotTake5Metadata extends XmlMetadata {
     }
 
     /**
-     * Reads the geographic zone of the image, as it appears in the metadata file, under the tag METADATA/HEADER/ZONE_GEO
+     * Reads the geographic zone of the image, as it appears in the wrappingMetadata file, under the tag METADATA/HEADER/ZONE_GEO
      *
-     * @return the geographic zone of the image, as it appears in the metadata file
+     * @return the geographic zone of the image, as it appears in the wrappingMetadata file
      */
     public String getGeographicZone() {
         MetadataElement currentElement;

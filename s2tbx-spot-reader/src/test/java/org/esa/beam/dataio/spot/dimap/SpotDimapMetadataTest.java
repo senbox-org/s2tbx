@@ -23,7 +23,7 @@ public class SpotDimapMetadataTest {
     @Before
     public void setUp() throws Exception {
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new SpotDimapMetadata.SpotDimapMetadataParser(SpotDimapMetadata.class));
-        metadata = XmlMetadata.create(SpotDimapMetadata.class, TestUtil.getTestFile("metadata.dim"));
+        metadata = XmlMetadata.create(SpotDimapMetadata.class, TestUtil.getTestFile("wrappingMetadata.dim"));
     }
 
     @Test
@@ -211,7 +211,7 @@ public class SpotDimapMetadataTest {
 
     @Test
     public void testGetPath() throws Exception {
-        assertEquals(TestUtil.getTestFile("metadata.dim").getAbsolutePath(), metadata.getPath());
+        assertEquals(TestUtil.getTestFile("wrappingMetadata.dim").getAbsolutePath(), metadata.getPath());
     }
 
     @Test

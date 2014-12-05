@@ -13,7 +13,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 /**
- * SAX parser for DIMAP volume metadata file.
+ * SAX parser for DIMAP volume wrappingMetadata file.
  * @author Cosmin Cara
  */
 class VolumeMetadataParser {

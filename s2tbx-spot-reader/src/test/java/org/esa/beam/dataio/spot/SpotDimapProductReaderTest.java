@@ -13,9 +13,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Ramona Manda
@@ -97,7 +95,7 @@ public class SpotDimapProductReaderTest {
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(4, components.getChildren().length);
-            String[] expectedIds = new String[]{"metadata.dim", "vol_list.dim", "mediumImage.tif", "icon.jpg"};
+            String[] expectedIds = new String[]{"wrappingMetadata.dim", "vol_list.dim", "mediumImage.tif", "icon.jpg"};
             int componentsAsExpected = 0;
             for(TreeNode<File> component: components.getChildren()){
                 for(String expectedValue: expectedIds){

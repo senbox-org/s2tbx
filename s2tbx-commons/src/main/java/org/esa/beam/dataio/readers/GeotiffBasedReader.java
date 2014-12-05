@@ -8,7 +8,6 @@ import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.beam.framework.dataio.AbstractProductReader;
-import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -24,6 +23,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
@@ -42,15 +42,23 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
     protected ImageInputStreamSpi imageInputStreamSpi;
     protected VirtualDirEx productDirectory;
     protected final Map<Band, Band> bandMap;
+    protected List<String> rasterFileNames;
 
     protected GeotiffBasedReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
-        this.metadataClass = (Class<M>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        Type superclass = getClass().getGenericSuperclass();
+        if (superclass instanceof  ParameterizedType) {
+            this.metadataClass = (Class<M>) ((ParameterizedType) superclass).getActualTypeArguments()[0];
+        } else if ((superclass = getClass().getSuperclass().getGenericSuperclass()) instanceof ParameterizedType) {
+            this.metadataClass = (Class<M>) ((ParameterizedType) superclass).getActualTypeArguments()[0];
+        } else {
+            throw new ClassCastException("Cannot find parameterized type");
+        }
         registerMetadataParser();
         registerSpi();
-        bandMap = new HashMap<Band, Band>();
-        metadata = new ArrayList<M>();
+        bandMap = new HashMap<>();
+        metadata = new ArrayList<>();
     }
 
     protected abstract String getMetadataExtension();
@@ -134,7 +142,7 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
     @Override
     protected Product readProductNodesImpl() throws IOException {
         productDirectory = getInput(super.getInput());
-        File selection = getFileInput(super.getInput());
+        //File selection = getFileInput(super.getInput());
         String[] metadataFiles = productDirectory.findAll(getMetadataExtension());
         if (metadataFiles != null) {
             logger.info("Reading product metadata");
@@ -162,18 +170,18 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
             if (firstMetadata.getRasterWidth() > 0 && firstMetadata.getRasterHeight() > 0) {
                 createProduct(firstMetadata.getRasterWidth(), firstMetadata.getRasterHeight(), firstMetadata);
             }
-            if (metadata.size() == 1) {
-                addBands(product, firstMetadata);
-            } else {
-                String groupText = "";
+//            if (metadata.size() == 1) {
+//                addBands(product, firstMetadata);
+//            } else {
+//                String groupText = "";
                 for (int i = 0; i < metadata.size(); i++) {
                     M currentMetadata = metadata.get(i);
-                    addBands(product, currentMetadata);
-                    groupText += currentMetadata.getProductName() + ":";
+                    addBands(product, currentMetadata, i);
+                    //groupText += currentMetadata.getProductName() + ":";
                 }
-                groupText = groupText.substring(0, groupText.length() - 1);
-                product.setAutoGrouping(groupText);
-            }
+                //groupText = groupText.substring(0, groupText.length() - 1);
+                //product.setAutoGrouping(groupText);
+//            }
             addMetadataMasks(product, firstMetadata);
             readAdditionalMasks(productDirectory);
 
@@ -187,11 +195,11 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
         Band sourceBand = bandMap.get(destBand);
-        ProductReader reader = sourceBand.getProductReader();
+        GeoTiffReaderEx reader = (GeoTiffReaderEx)sourceBand.getProductReader();
         if (reader == null) {
             logger.severe("No reader found for band data");
         } else {
-            reader.readBandRasterData(sourceBand, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer, pm);
+            reader.readBandRasterDataImpl(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, sourceBand, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer, pm);
         }
     }
 
@@ -213,10 +221,16 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
         return product;
     }
 
-    protected void addBands(Product product, M componentMetadata) {
+    protected void addBands(Product product, M componentMetadata, int componentIndex) {
         try {
-            File rasterFile = productDirectory.getFile(componentMetadata.getRasterFileNames()[0]);
-            GeoTiffProductReader reader = new GeoTiffProductReader(getReaderPlugIn());
+            File rasterFile = null;
+            rasterFileNames = getRasterFileNames();
+            if (componentIndex >= rasterFileNames.size()) {
+                throw new ArrayIndexOutOfBoundsException(String.format("Invalid component index: %d", componentIndex));
+            }
+            rasterFile = productDirectory.getFile(rasterFileNames.get(componentIndex));
+
+            GeoTiffProductReader reader = new GeoTiffReaderEx(getReaderPlugIn());
             Product tiffProduct = reader.readProductNodes(rasterFile, null);
             if (tiffProduct != null) {
                 if (product == null) {
@@ -232,9 +246,20 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
                     preferredTileSize = getPreferredTileSize();
                 product.setPreferredTileSize(preferredTileSize);
                 int numBands = tiffProduct.getNumBands();
+                String bandPrefix = "";
+                if (rasterFileNames.size() > 1) {
+                    bandPrefix = "scene_" + String.valueOf(componentIndex) + "_";
+                    String groupPattern = "";
+                    for (int idx = 0; idx < rasterFileNames.size(); idx++) {
+                        groupPattern += "scene_" + String.valueOf(idx) + ":";
+                    }
+                    groupPattern = groupPattern.substring(0, groupPattern.length() - 1);
+                    product.setAutoGrouping(groupPattern);
+                }
                 for (int idx = 0; idx < numBands; idx++) {
                     Band srcBand = tiffProduct.getBandAt(idx);
-                    Band targetBand = product.addBand((metadata.size() <= 1 ? "" : componentMetadata.getProductName()) + getBandNames()[idx], srcBand.getDataType());
+                    String bandName = bandPrefix + getBandNames()[idx];
+                    Band targetBand = product.addBand(bandName, srcBand.getDataType());
                     targetBand.setNoDataValue(srcBand.getNoDataValue());
                     targetBand.setNoDataValueUsed(srcBand.isNoDataValueUsed());
                     targetBand.setSpectralWavelength(srcBand.getSpectralWavelength());
@@ -250,7 +275,7 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
                     bandMap.put(targetBand, srcBand);
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.severe(e.getMessage());
         }
     }
@@ -273,6 +298,46 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
         if (resultComponent == null) {
             resultComponent = new TreeNode<File>(componentId, componentFile);
             currentComponents.addChild(resultComponent);
+        }
+    }
+
+    protected List<String> getRasterFileNames() {
+        if (rasterFileNames == null) {
+            rasterFileNames = new ArrayList<>();
+            if (metadata != null) {
+                for (M metadataComponent : metadata) {
+                    String[] partialList = metadataComponent.getRasterFileNames();
+                    if (partialList != null) {
+                        for (String item : partialList) {
+                            rasterFileNames.add(item);
+                        }
+                    }
+                }
+            }
+            if (rasterFileNames.size() == 0) {
+                try {
+                    String[] allTiffFiles = productDirectory.findAll(".tif");
+                    if (allTiffFiles != null) {
+                        for (String item : allTiffFiles) {
+                            rasterFileNames.add(item);
+                        }
+                    }
+                } catch (IOException e) {
+                }
+            }
+        }
+        return rasterFileNames;
+    }
+
+    protected class GeoTiffReaderEx extends GeoTiffProductReader {
+
+        public GeoTiffReaderEx(ProductReaderPlugIn readerPlugIn) {
+            super(readerPlugIn);
+        }
+
+        @Override
+        protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
+            super.readBandRasterDataImpl(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, destBand, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer, pm);
         }
     }
 }

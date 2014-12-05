@@ -24,11 +24,11 @@ import java.util.logging.Logger;
 
 /**
  * This product reader is used for products of SPOT4 TAKE5 experiment, products distributed by Theia.
- * The input format of the product is an archive with the ".tgz" extension or an xml file corresponding to the metadata.
- * If the input is an archive, the archive is expected to have a subfolder, containing the xml metadata file, that should have the same name as this subfolder.
- * If the input as a xml metadata file, the rest of the files (images and masks) are expected to be found in the location defined by the metadata values,
- * depending on the location of the metadata file.
- * In both cases, the input file (the archive or the metadata file) shoud start with "SPOT4_HRVIR1_XS_" (HVIR1 is the sensor of SPOT4 satellites).
+ * The input format of the product is an archive with the ".tgz" extension or an xml file corresponding to the wrappingMetadata.
+ * If the input is an archive, the archive is expected to have a subfolder, containing the xml wrappingMetadata file, that should have the same name as this subfolder.
+ * If the input as a xml wrappingMetadata file, the rest of the files (images and masks) are expected to be found in the location defined by the wrappingMetadata values,
+ * depending on the location of the wrappingMetadata file.
+ * In both cases, the input file (the archive or the wrappingMetadata file) shoud start with "SPOT4_HRVIR1_XS_" (HVIR1 is the sensor of SPOT4 satellites).
  *
  * @author Ramona Manda
  */
@@ -85,19 +85,19 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         File imageMetadataFile = null;
         String metaSubFolder = "";
         if (VirtualDirEx.isPackedFile(new File(input.getBasePath()))) {
-            //if the input is an archive, check the metadata file as being the name of the archive, followed by ".xml", right under the unpacked archive folder
+            //if the input is an archive, check the wrappingMetadata file as being the name of the archive, followed by ".xml", right under the unpacked archive folder
             String path = input.getBasePath();
             String metaFile = path.substring(path.lastIndexOf("\\") + 1, path.lastIndexOf("."));
             try {
                 imageMetadataFile = input.getFile(metaFile + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
             } catch (Exception ex) {
-                //if the metadata is not found as described above, the subfolders as checked, and for each subfolder, an xml file with the same name as the subfolder is searched
+                //if the wrappingMetadata is not found as described above, the subfolders as checked, and for each subfolder, an xml file with the same name as the subfolder is searched
                 //((TarVirtualDir) input).ensureUnpacked();
                 for (String entrySubFolder : input.getTempDir().list()) {
                     if (new File(input.getTempDir(), entrySubFolder).isDirectory()) {
                         try {
                             imageMetadataFile = input.getFile(entrySubFolder + File.separator + entrySubFolder + SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION);
-                            //if the metadata is found under a subfolder of the archive, this subfolder must be used in order to compute the path for the rest of the files found in the metadata file
+                            //if the wrappingMetadata is found under a subfolder of the archive, this subfolder must be used in order to compute the path for the rest of the files found in the wrappingMetadata file
                             metaSubFolder = entrySubFolder + File.separator;
                             break;
                         } catch (Exception ex2) {
@@ -131,7 +131,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 addBands(product, metaSubFolder + entry.getValue(), entry.getKey());
             }
 
-            //for each mask found in the metadata, the first band of the mask is added to the product, in order to create the masks
+            //for each mask found in the wrappingMetadata, the first band of the mask is added to the product, in order to create the masks
             Map<String, Band> maskBands = new HashMap<String, Band>();
             for (Map.Entry<String, String> entry : imageMetadata.getMaskFiles().entrySet()) {
                 Band maskBand = addMaskBand(product, metaSubFolder + entry.getValue(), entry.getKey());

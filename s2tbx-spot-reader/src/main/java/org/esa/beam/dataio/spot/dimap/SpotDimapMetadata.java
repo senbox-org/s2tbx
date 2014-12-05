@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Holder for DIMAP metadata file (either Scene or View).
+ * Holder for DIMAP wrappingMetadata file (either Scene or View).
  *
  * @author Cosmin Cara
  */
@@ -168,8 +168,8 @@ public class SpotDimapMetadata extends XmlMetadata {
     }
 
     /**
-     * Returns the names of the bands found in the metadata file.
-     * If the expected metadata nodes are not present, then the default band names
+     * Returns the names of the bands found in the wrappingMetadata file.
+     * If the expected wrappingMetadata nodes are not present, then the default band names
      * are returned (i.e. band_n).
      *
      * @return an array of band names

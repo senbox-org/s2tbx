@@ -86,14 +86,14 @@ public class SpotViewProductReaderTest {
     @Test
     public void testGetProductComponentsOnFileInput() {
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml");
+        File file = TestUtil.getTestFile("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/wrappingMetadata.xml");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(3, components.getChildren().length);
-            String[] expectedIds = new String[]{"metadata.dim", "metadata.xml", "geolayer.bil"};
+            String[] expectedIds = new String[]{"wrappingMetadata.dim", "wrappingMetadata.xml", "geolayer.bil"};
             int componentsAsExpected = 0;
             for(TreeNode<File> component: components.getChildren()){
                 for(String expectedValue: expectedIds){

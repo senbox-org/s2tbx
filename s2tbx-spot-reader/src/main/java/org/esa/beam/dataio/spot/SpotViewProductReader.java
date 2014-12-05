@@ -61,7 +61,7 @@ public class SpotViewProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        logger.info("Reading product metadata");
+        logger.info("Reading product wrappingMetadata");
         zipDir = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
         File metadataFile = zipDir.getFile(SpotConstants.SPOTVIEW_METADATA_FILE);
         File imageMetadataFile = zipDir.getFile(SpotConstants.SPOTSCENE_METADATA_FILE);
@@ -91,7 +91,7 @@ public class SpotViewProductReader extends AbstractProductReader {
                 logger.info("Trying to attach geocoding");
                 initGeoCoding(product);
             }
-            //initGeoCoding(product, zipDir.getFile("geolayer.bil"), metadata.getGeolayerJavaByteOrder());
+            //initGeoCoding(product, zipDir.getFile("geolayer.bil"), wrappingMetadata.getGeolayerJavaByteOrder());
             logger.info("Reading product bands");
             initBands(product);
 
@@ -214,7 +214,7 @@ public class SpotViewProductReader extends AbstractProductReader {
             TreeNode<File> result = super.getProductComponents();
             addProductComponentIfNotPresent(metadata.getFileName(), result);
             addProductComponentIfNotPresent(metadata.getGeolayerFileName(), result);
-            //addProductComponentIfNotPresent(metadata.getRasterFileName(), result);
+            //addProductComponentIfNotPresent(wrappingMetadata.getRasterFileName(), result);
             addProductComponentIfNotPresent(SpotConstants.SPOTSCENE_METADATA_FILE, result);//WARN: it should be imageMetadata.getFileName()
             for (String name : imageMetadata.getRasterFileNames())
                 addProductComponentIfNotPresent(name, result);

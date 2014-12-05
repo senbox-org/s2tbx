@@ -123,16 +123,9 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
 
         private BaseProductReaderPlugIn parent;
 
-        public BaseProductFileFilter() {
-            super();
-        }
-
         public BaseProductFileFilter(BaseProductReaderPlugIn plugIn) {
-            this();
+            super(plugIn.getFormatNames()[0], plugIn.getDefaultFileExtensions(), plugIn.getDescription(Locale.getDefault()));
             this.parent = plugIn;
-            setFormatName(parent.getFormatNames()[0]);
-            setDescription(parent.getDescription(Locale.getDefault()));
-            setExtensions(parent.getDefaultFileExtensions());
         }
 
         @Override

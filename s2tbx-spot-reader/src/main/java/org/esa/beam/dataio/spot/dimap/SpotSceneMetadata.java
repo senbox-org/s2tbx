@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * This class holds the metadata extracted from DIMAP XML file.
- * It exposes convenience methods for fetching various useful metadata values.
+ * This class holds the wrappingMetadata extracted from DIMAP XML file.
+ * It exposes convenience methods for fetching various useful wrappingMetadata values.
  *
  * @author Cosmin Cara
  */
@@ -142,25 +142,25 @@ public class SpotSceneMetadata {
     }
 
     private void readMetadataFiles() throws IOException {
-        // try to get first the volume metadata file
+        // try to get first the volume wrappingMetadata file
         File file = null;
         try {
             file = folder.getFile(SpotConstants.DIMAP_VOLUME_FILE);
         } catch (Exception e) {
         }
-        if (file == null || !file.exists()) { // no volume, then look for metadata*.dim
+        if (file == null || !file.exists()) { // no volume, then look for wrappingMetadata*.dim
             File selectedMetadataFile = folder.getFile(SpotConstants.SPOTSCENE_METADATA_FILE);
-            logger.info("Read metadata file " + selectedMetadataFile.getName());
+            logger.info("Read wrappingMetadata file " + selectedMetadataFile.getName());
             SpotDimapMetadata metadata = XmlMetadata.create(SpotDimapMetadata.class, selectedMetadataFile);
             if (metadata == null) {
-                logger.warning(String.format("Error while reading metadata file %s",
+                logger.warning(String.format("Error while reading wrappingMetadata file %s",
                         selectedMetadataFile.getName()));
             } else {
                 metadata.setFileName(selectedMetadataFile.getName());
                 componentMetadata.add(metadata);
             }
-        } else { // vol_list.dim metadata file is present
-            logger.info("Read volume metadata file");
+        } else { // vol_list.dim wrappingMetadata file is present
+            logger.info("Read volume wrappingMetadata file");
             FileInputStream stream = null;
             try {
                 stream = new FileInputStream(file);
@@ -173,10 +173,10 @@ public class SpotSceneMetadata {
                 for (VolumeComponent component : encapsulatedComponents) {
                     File metadataFile = folder.getFile(component.getPath().toLowerCase());
                     if (metadataFile.getName().toLowerCase().endsWith(".dim")) {
-                        logger.info("Read component metadata file " + metadataFile.getName());
+                        logger.info("Read component wrappingMetadata file " + metadataFile.getName());
                         SpotDimapMetadata metadata = XmlMetadata.create(SpotDimapMetadata.class, metadataFile);
                         if (metadata == null) {
-                            logger.warning(String.format("Error while reading metadata file %s",
+                            logger.warning(String.format("Error while reading wrappingMetadata file %s",
                                     metadataFile.getName()));
                         } else {
                             metadata.setFileName(metadataFile.getName());

@@ -9,6 +9,7 @@ import java.io.File;
  */
 public class SpotConstants {
 
+    public static final String DEFAULT_PRODUCT_NAME = "SPOT DIMAP Product";
     public static final String DIMAP_VOLUME_FILE = "vol_list.dim";
     public static final String SPOTSCENE_METADATA_FILE = "metadata.dim";
     public static final String DEFAULT_METADATA_NAME = "DIMAP Metadata";
@@ -126,6 +127,7 @@ public class SpotConstants {
     public static final String TAG_BAND_INDEX = "BAND_INDEX";
     public static final String TAG_STX_LIN_MIN = "STX_LIN_MIN";
     public static final String TAG_STX_LIN_MAX = "STX_LIN_MAX";
+    public static final String[] DEFAULT_BAND_NAMES = {"XS1", "XS2", "XS3", "SWIR"};
     // constants for plugins
     public static final Class[] DIMAP_READER_INPUT_TYPES = new Class[]{String.class, File.class};
     public static final String DIMAP_DESCRIPTION = "SPOT DIMAP Data Products";
