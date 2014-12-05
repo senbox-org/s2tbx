@@ -14,7 +14,7 @@ public interface S2Config {
      * Path to "opj_decompress" executable from OpenJPEG 2.1.0 package
      */
 
-    String OPJ_DECOMPRESSOR_EXE = L1cMetadataProc.getExecutable();
+    String OPJ_DECOMPRESSOR_EXE = L1bMetadataProc.getExecutable();
 
     //todo add Path to opj_dump
 
@@ -35,10 +35,10 @@ public interface S2Config {
     //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
     //todo use classes from jp2 package to read the data
     //todo future improvement: use opj_dump.exe to retrieve the data
-    L1cTileLayout[] L1C_TILE_LAYOUTS = new L1cTileLayout[]{
-            new L1cTileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
-            new L1cTileLayout(5490, 5490, 2048, 2048, 3, 3, 6),
-            new L1cTileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
+    L1bTileLayout[] L1C_TILE_LAYOUTS = new L1bTileLayout[]{
+            new L1bTileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
+            new L1bTileLayout(5490, 5490, 2048, 2048, 3, 3, 6),
+            new L1bTileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
     };
 
     String FORMAT_NAME = "SENTINEL-2-MSI-L1B";

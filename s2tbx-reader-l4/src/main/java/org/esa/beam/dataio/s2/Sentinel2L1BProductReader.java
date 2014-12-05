@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.esa.beam.dataio.s2.L1cMetadata.*;
+import static org.esa.beam.dataio.s2.L1bMetadata.*;
 import static org.esa.beam.dataio.s2.S2Config.*;
 
 // todo - register reasonable RGB profile(s)
@@ -73,9 +73,9 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         final Map<String, File> tileIdToFileMap;
         final int bandIndex;
         final S2WavebandInfo wavebandInfo;
-        final L1cTileLayout imageLayout;
+        final L1bTileLayout imageLayout;
 
-        BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo, L1cTileLayout imageLayout) {
+        BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo, L1bTileLayout imageLayout) {
             this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
             this.bandIndex = bandIndex;
             this.wavebandInfo = wavebandInfo;
@@ -119,7 +119,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     }
 
     private Product getL1cMosaicProduct(File metadataFile) throws IOException {
-        L1cMetadata metadataHeader;
+        L1bMetadata metadataHeader;
 
         try {
             metadataHeader = parseHeader(metadataFile);
@@ -131,7 +131,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         S2GranuleMetadataFilename mtdFilename = S2GranuleMetadataFilename.create(metadataFile.getName());
         S2ProductFilename mtdFN = S2ProductFilename.create(metadataFile.getName());
 
-        L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader, Tile.idGeom.G10M);
+        L1bSceneDescription sceneDescription = L1bSceneDescription.create(metadataHeader, Tile.idGeom.G10M);
         logger.fine("Scene Description: " + sceneDescription);
 
         File productDir = getProductDir(metadataFile);
@@ -140,7 +140,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
         Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
-        List<L1cMetadata.Tile> tileList = metadataHeader.getTileList();
+        List<L1bMetadata.Tile> tileList = metadataHeader.getTileList();
         for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
             int bandIndex = bandInformation.bandId;
             if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
@@ -196,7 +196,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         return product;
     }
 
-    private void addTiePointGridBand(Product product, L1cMetadata metadataHeader, L1cSceneDescription sceneDescription, String name, int tiePointGridIndex) {
+    private void addTiePointGridBand(Product product, L1bMetadata metadataHeader, L1bSceneDescription sceneDescription, String name, int tiePointGridIndex) {
         final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
@@ -247,14 +247,14 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                                                    bandName, S2Config.RAW_NO_DATA_THRESHOLD));
     }
 
-    private void addL1cTileTiePointGrids(L1cMetadata metadataHeader, Product product, int tileIndex) {
+    private void addL1cTileTiePointGrids(L1bMetadata metadataHeader, Product product, int tileIndex) {
         final TiePointGrid[] tiePointGrids = createL1cTileTiePointGrids(metadataHeader, tileIndex);
         for (TiePointGrid tiePointGrid : tiePointGrids) {
             product.addTiePointGrid(tiePointGrid);
         }
     }
 
-    private TiePointGrid[] createL1cTileTiePointGrids(L1cMetadata metadataHeader, int tileIndex) {
+    private TiePointGrid[] createL1cTileTiePointGrids(L1bMetadata metadataHeader, int tileIndex) {
         Tile tile = metadataHeader.getTileList().get(tileIndex);
         int gridHeight = tile.sunAnglesGrid.zenith.length;
         int gridWidth = tile.sunAnglesGrid.zenith[0].length;
@@ -264,14 +264,14 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         float[] viewingAzimuths = new float[gridWidth * gridHeight];
         Arrays.fill(viewingZeniths, Float.NaN);
         Arrays.fill(viewingAzimuths, Float.NaN);
-        L1cMetadata.AnglesGrid sunAnglesGrid = tile.sunAnglesGrid;
-        L1cMetadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.viewingIncidenceAnglesGrids;
+        L1bMetadata.AnglesGrid sunAnglesGrid = tile.sunAnglesGrid;
+        L1bMetadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.viewingIncidenceAnglesGrids;
         for (int y = 0; y < gridHeight; y++) {
             for (int x = 0; x < gridWidth; x++) {
                 final int index = y * gridWidth + x;
                 sunZeniths[index] = sunAnglesGrid.zenith[y][x];
                 sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
-                for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
+                for (L1bMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
                     if (!Float.isNaN(grid.zenith[y][x])) {
                         viewingZeniths[index] = grid.zenith[y][x];
                     }
@@ -401,9 +401,9 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
     private class L1cSceneMultiLevelImageFactory extends MultiLevelImageFactory {
 
-        private final L1cSceneDescription sceneDescription;
+        private final L1bSceneDescription sceneDescription;
 
-        public L1cSceneMultiLevelImageFactory(L1cSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
+        public L1cSceneMultiLevelImageFactory(L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
             super(imageToModelTransform);
 
             BeamLogManager.getSystemLogger().fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
@@ -437,13 +437,13 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         @Override
         protected RenderedImage createImage(int level) {
             File imageFile = bandInfo.tileIdToFileMap.values().iterator().next();
-            return L1cTileOpImage.create(imageFile,
-                                         cacheDir,
-                                         null,
-                                         bandInfo.imageLayout,
-                                         getModel(),
-                                         bandInfo.wavebandInfo.resolution,
-                                         level);
+            return L1bTileOpImage.create(imageFile,
+                    cacheDir,
+                    null,
+                    bandInfo.imageLayout,
+                    getModel(),
+                    bandInfo.wavebandInfo.resolution,
+                    level);
         }
 
     }
@@ -452,9 +452,9 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
      * A MultiLevelSource for a scene made of multiple L1C tiles.
      */
     private abstract class AbstractL1cSceneMultiLevelSource extends AbstractMultiLevelSource {
-        protected final L1cSceneDescription sceneDescription;
+        protected final L1bSceneDescription sceneDescription;
 
-        AbstractL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
+        AbstractL1cSceneMultiLevelSource(L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
             super(new DefaultMultiLevelModel(numResolutions,
                                              imageToModelTransform,
                                              sceneDescription.getSceneRectangle().width,
@@ -473,7 +473,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     private final class BandL1cSceneMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
         private final BandInfo bandInfo;
 
-        public BandL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
+        public BandL1cSceneMultiLevelSource(L1bSceneDescription sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(sceneDescription, imageToModelTransform, bandInfo.imageLayout.numResolutions);
             this.bandInfo = bandInfo;
         }
@@ -482,13 +482,13 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         protected PlanarImage createL1cTileImage(String tileId, int level)
         {
             File imageFile = bandInfo.tileIdToFileMap.get(tileId);
-            PlanarImage planarImage = L1cTileOpImage.create(imageFile,
-                                                            cacheDir,
-                                                            null, // tileRectangle.getLocation(),
-                                                            bandInfo.imageLayout,
-                                                            getModel(),
-                                                            bandInfo.wavebandInfo.resolution,
-                                                            level);
+            PlanarImage planarImage = L1bTileOpImage.create(imageFile,
+                    cacheDir,
+                    null, // tileRectangle.getLocation(),
+                    bandInfo.imageLayout,
+                    getModel(),
+                    bandInfo.wavebandInfo.resolution,
+                    level);
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
@@ -561,7 +561,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
             if (this.bandInfo.wavebandInfo.resolution != S2SpatialResolution.R10M)
             {
-                PlanarImage scaled = L1cTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level);
+                PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level);
 
                 logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 
@@ -585,11 +585,11 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
      */
     private final class TiePointGridL1cSceneMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
 
-        private final L1cMetadata metadata;
+        private final L1bMetadata metadata;
         private final int tiePointGridIndex;
         private HashMap<String, TiePointGrid[]> tiePointGridsMap;
 
-        public TiePointGridL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, L1cMetadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
+        public TiePointGridL1cSceneMultiLevelSource(L1bSceneDescription sceneDescription, L1bMetadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
             super(sceneDescription, imageToModelTransform, numResolutions);
             this.metadata = metadata;
             this.tiePointGridIndex = tiePointGridIndex;

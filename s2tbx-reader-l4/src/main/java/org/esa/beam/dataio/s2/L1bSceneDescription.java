@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * @author Norman Fomferra
  */
-public class L1cSceneDescription {
+public class L1bSceneDescription {
 
     private static final double PIXEL_RESOLUTION_10M = S2SpatialResolution.R10M.resolution;
     private static final int TILE_SIZE_10M = S2Config.L1C_TILE_LAYOUTS[0].width;
@@ -27,9 +27,9 @@ public class L1cSceneDescription {
     private final Envelope2D sceneEnvelope;
     private final Rectangle sceneRectangle;
     private final Map<String, TileInfo> tileInfoMap;
-    private final L1cMetadata.Tile.idGeom geometry;
+    private final L1bMetadata.Tile.idGeom geometry;
 
-    public L1cMetadata.Tile.idGeom getGeometry() {
+    public L1bMetadata.Tile.idGeom getGeometry() {
         return geometry;
     }
 
@@ -51,9 +51,9 @@ public class L1cSceneDescription {
         }
     }
 
-    public static L1cSceneDescription create(L1cMetadata header, L1cMetadata.Tile.idGeom index)
+    public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index)
     {
-        List<L1cMetadata.Tile> tileList = header.getTileList();
+        List<L1bMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
         TileInfo[] tileInfos = new TileInfo[tileList.size()];
@@ -64,7 +64,7 @@ public class L1cSceneDescription {
             throw new IllegalStateException();
         }
         for (int i = 0; i < tileList.size(); i++) {
-            L1cMetadata.Tile tile = tileList.get(i);
+            L1bMetadata.Tile tile = tileList.get(i);
             if (crs == null) {
                 try {
                     crs = CRS.decode(tile.horizontalCsCode);
@@ -74,7 +74,7 @@ public class L1cSceneDescription {
                 }
             }
 
-            L1cMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
+            L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
             Envelope2D envelope = new Envelope2D(crs,
                     selectedGeometry.upperLeftX,
                     selectedGeometry.upperLeftY + selectedGeometry.numRows * selectedGeometry.yDim,
@@ -97,8 +97,8 @@ public class L1cSceneDescription {
         double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
         Rectangle sceneBounds = null;
         for (int i = 0; i < tileEnvelopes.length; i++) {
-            L1cMetadata.Tile tile = tileList.get(i);
-            L1cMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
+            L1bMetadata.Tile tile = tileList.get(i);
+            L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
             Envelope2D tileEnvelope = tileEnvelopes[i];
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
@@ -114,10 +114,10 @@ public class L1cSceneDescription {
             tileInfos[i] = new TileInfo(i, tile.id, tileEnvelope, rectangle);
         }
 
-        return new L1cSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index);
+        return new L1bSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index);
     }
 
-    private L1cSceneDescription(TileInfo[] tileInfos, Envelope2D sceneEnvelope, Rectangle sceneRectangle, L1cMetadata.Tile.idGeom geometry) {
+    private L1bSceneDescription(TileInfo[] tileInfos, Envelope2D sceneEnvelope, Rectangle sceneRectangle, L1bMetadata.Tile.idGeom geometry) {
         this.tileInfos = tileInfos;
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;

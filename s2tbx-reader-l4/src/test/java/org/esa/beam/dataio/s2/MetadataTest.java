@@ -74,7 +74,7 @@ public class MetadataTest {
 
         Assert.assertNotNull(o);
 
-        L1cMetadata.ProductCharacteristics pchar = L1cMetadataProc.parseCharacteristics(o);
+        L1bMetadata.ProductCharacteristics pchar = L1bMetadataProc.parseCharacteristics(o);
         assertEquals("Sentinel-2A", pchar.spacecraft);
         assertEquals("2013-06-21T12:00:00Z", pchar.datasetProductionDate);
         assertEquals("LEVEL___1_C", pchar.processingLevel);
@@ -107,7 +107,7 @@ public class MetadataTest {
 
         Assert.assertNotNull(product);
 
-        Collection<String> tiles = L1cMetadataProc.getTiles(product);
+        Collection<String> tiles = L1bMetadataProc.getTiles(product);
 
         for (String granuleName: tiles)
         {
@@ -124,7 +124,7 @@ public class MetadataTest {
 
         Assert.assertNotNull(product);
 
-        Collection<String> tiles = L1cMetadataProc.getTiles(product);
+        Collection<String> tiles = L1bMetadataProc.getTiles(product);
 
         URL aUrl = getClass().getResource("l1c/data/S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
 
@@ -162,7 +162,7 @@ public class MetadataTest {
 
         Assert.assertNotNull(product);
 
-        Map<Integer, L1cMetadata.TileGeometry> geoms = L1cMetadataProc.getTileGeometries(product);
+        Map<Integer, L1bMetadata.TileGeometry> geoms = L1bMetadataProc.getTileGeometries(product);
     }
 
 
@@ -173,9 +173,9 @@ public class MetadataTest {
 
         Assert.assertNotNull(product);
 
-        L1cMetadata.AnglesGrid sunGrid = L1cMetadataProc.getSunGrid(product);
+        L1bMetadata.AnglesGrid sunGrid = L1bMetadataProc.getSunGrid(product);
 
-        L1cMetadata.AnglesGrid[] otherGrid = L1cMetadataProc.getAnglesGrid(product);
+        L1bMetadata.AnglesGrid[] otherGrid = L1bMetadataProc.getAnglesGrid(product);
     }
 
 }

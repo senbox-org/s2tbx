@@ -3,7 +3,7 @@ package jp2;
 import jp2.segments.CodingStyleDefaultSegment;
 import jp2.segments.ImageAndTileSizeSegment;
 
-import org.esa.beam.dataio.s2.L1cTileLayout;
+import org.esa.beam.dataio.s2.L1bTileLayout;
 
 import javax.imageio.stream.FileImageInputStream;
 import java.io.File;
@@ -67,7 +67,7 @@ public class CodeStreamUtils {
         return roar;
     }
 
-    public static L1cTileLayout getL1cTileLayout(String uri, BoxReader.Listener listener) throws URISyntaxException, IOException {
+    public static L1bTileLayout getL1cTileLayout(String uri, BoxReader.Listener listener) throws URISyntaxException, IOException {
         final File file = new File(CodeStreamUtils.class.getResource(uri).toURI());
         final FileImageInputStream stream = new FileImageInputStream(file);
         BoxReader boxReader = new BoxReader(stream, file.length(), listener);
@@ -93,7 +93,7 @@ public class CodeStreamUtils {
 
         CodingStyleDefaultSegment roar = (CodingStyleDefaultSegment) seg3;
 
-        return new L1cTileLayout((int) is.getXsiz(), (int) is.getYsiz(), (int) is.getXtsiz(), (int) is.getYtsiz(), getXNumTiles(is), getYNumTiles(is), roar.getLevels());
+        return new L1bTileLayout((int) is.getXsiz(), (int) is.getYsiz(), (int) is.getXtsiz(), (int) is.getYtsiz(), getXNumTiles(is), getYNumTiles(is), roar.getLevels());
     }
 
     public static int getNumTiles(ImageAndTileSizeSegment imageAndTileSizeSegment)

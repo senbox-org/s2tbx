@@ -1,7 +1,7 @@
 package org.esa.beam.dataio.s2;
 
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
+import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
@@ -30,7 +30,7 @@ import java.util.logging.Logger;
  *
  * @author Norman Fomferra
  */
-public class L1cMetadata {
+public class L1bMetadata {
 
     static Element NULL_ELEM = new Element("null") {
     };
@@ -169,8 +169,8 @@ public class L1cMetadata {
     private List<String> imageList; //todo populate imagelist
     private ProductCharacteristics productCharacteristics;
 
-    public static L1cMetadata parseHeader(File file) throws JDOMException, IOException {
-        return new L1cMetadata(new FileInputStream(file), file, file.getParent());
+    public static L1bMetadata parseHeader(File file) throws JDOMException, IOException {
+        return new L1bMetadata(new FileInputStream(file), file, file.getParent());
     }
 
     public List<Tile> getTileList() {
@@ -186,14 +186,14 @@ public class L1cMetadata {
         return metadataElement;
     }
 
-    private L1cMetadata(InputStream stream, File file, String parent) throws DataConversionException
+    private L1bMetadata(InputStream stream, File file, String parent) throws DataConversionException
     {
         try {
 
-            Level1C_User_Product product = (Level1C_User_Product) L1cMetadataProc.readJaxbFromFilename(stream);
-            productCharacteristics = L1cMetadataProc.getProductOrganization(product);
+            Level1B_User_Product product = (Level1B_User_Product) L1bMetadataProc.readJaxbFromFilename(stream);
+            productCharacteristics = L1bMetadataProc.getProductOrganization(product);
 
-            Collection<String> tileNames = L1cMetadataProc.getTiles(product);
+            Collection<String> tileNames = L1bMetadataProc.getTiles(product);
             List<File> fullTileNamesList = new ArrayList<File>();
 
             tileList = new ArrayList<Tile>();
@@ -202,6 +202,7 @@ public class L1cMetadata {
             {
                 FileInputStream fi = (FileInputStream) stream;
                 File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
+                logger.log(Level.WARNING, "Looking for: " + nestedMetadata.getAbsolutePath());
 
                 S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
                 String theName = aGranuleDir.getMetadataFilename().name;
@@ -217,8 +218,8 @@ public class L1cMetadata {
 
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
-                Level1C_Tile aTile = (Level1C_Tile) L1cMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
-                Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
+                Level1C_Tile aTile = (Level1C_Tile) L1bMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
+                Map<Integer, TileGeometry> geoms = L1bMetadataProc.getTileGeometries(aTile);
 
                 Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
                 t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
@@ -228,14 +229,14 @@ public class L1cMetadata {
                 t.tileGeometry20M = geoms.get(20);
                 t.tileGeometry60M = geoms.get(60);
 
-                t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
-                t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
+                t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aTile);
+                t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aTile);
 
                 tileList.add(t);
             }
 
-            S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
-            S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);
+            S2DatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
+            S2DatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
 
             File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 

@@ -6,7 +6,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 /**
 * @author Norman Fomferra
 */
-public class L1cTileLayout {
+public class L1bTileLayout {
     /** Width of L1C tile  */
     int width;
     /** Height of L1C tile  */
@@ -21,7 +21,7 @@ public class L1cTileLayout {
     int numYTiles;
     int numResolutions;
 
-    public L1cTileLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions) {
+    public L1bTileLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions) {
         this.width = width;
         this.height = height;
         this.tileWidth = tileWidth;
