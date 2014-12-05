@@ -204,15 +204,22 @@ public class L1bMetadata {
                 File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
                 logger.log(Level.WARNING, "Looking for: " + nestedMetadata.getAbsolutePath());
 
-                S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
-                String theName = aGranuleDir.getMetadataFilename().name;
+                if(nestedMetadata.exists())
+                {
+                    S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+                    String theName = aGranuleDir.getMetadataFilename().name;
 
-                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-                if(nestedGranuleMetadata.exists()) {
-                    fullTileNamesList.add(nestedGranuleMetadata);
-                } else {
-                    String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
-                    logger.log(Level.WARNING, errorMessage);
+                    File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
+                    if(nestedGranuleMetadata.exists()) {
+                        fullTileNamesList.add(nestedGranuleMetadata);
+                    } else {
+                        String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
+                        logger.log(Level.WARNING, errorMessage);
+                    }
+                }
+                else
+                {
+                    logger.log(Level.SEVERE, "File not found: " + nestedMetadata.getAbsolutePath());
                 }
             }
 
