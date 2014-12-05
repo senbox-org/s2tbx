@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:filenaming="http://gs2.esa.int/DICO/1.0/PDGS/fileNaming/" xmlns="http://gs2.esa.int/DICO/1.0/GS" targetNamespace="http://gs2.esa.int/DICO/1.0/GS" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/fileNaming/" schemaLocation="..\..\PDGS\fileNaming\fileNaming.xsd"/>
+	<xs:element name="Fixed_Header" type="FixedHeaderType">
+		<xs:annotation>
+			<xs:documentation>The Fixed Header is an XML structure. Many of its fields are redundant with the File Name elements, but are present in more readable form in the Fixed Header, whereas in File Name they are more compact for obvious reasons</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="FixedHeaderType">
+		<xs:annotation>
+			<xs:documentation>Type describing the structure of a Fixed Header</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="File_Name" type="filenaming:FileName">
+				<xs:annotation>
+					<xs:documentation>It is a repetition of the Logical File Name, i.e. the File Names excluding the extension.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="File_Description" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>A 1-line description of the File Type.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Notes" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Multi-lines free text</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Mission" type="MissionHeaderType">
+				<xs:annotation>
+					<xs:documentation>A 1-word description of the Mission, coherent
+with the Mission element in the File Name.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="File_Class" type="filenaming:FileClass">
+				<xs:annotation>
+					<xs:documentation>A 1-line description of the file class, coherent
+with the File Class element in the File Name</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="File_Type" type="filenaming:FileType"/>
+			<xs:element name="Validity_Period" type="ValidityPeriodType"/>
+			<xs:element name="File_Version">
+				<xs:annotation>
+					<xs:documentation>These files will not be revised by version</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:pattern value="\d\d\d\d"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Source" type="SourceType"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ValidityPeriodType">
+		<xs:annotation>
+			<xs:documentation>Period of time</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Validity_Start" type="filenaming:ValidityDate">
+				<xs:annotation>
+					<xs:documentation>This is the UTC Validity Start Time, coherent with
+the Validity Start Time in the File Name, but in
+CCSDS ASCII format with time reference.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Validity_Stop" type="filenaming:ValidityDate">
+				<xs:annotation>
+					<xs:documentation>This is the UTC Validity Stop Time, coherent with
+the Validity Stop Time in the File Name, but in
+CCSDS ASCII format with time reference.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SourceType">
+		<xs:sequence>
+			<xs:element name="System">
+				<xs:annotation>
+					<xs:documentation>Name of the Ground Segment element creating
+the file (e.g. FOS, PDGS, SSALTO...)</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="4"/>
+						<xs:enumeration value="XXXX"/>
+						<xs:enumeration value="PDMC"/>
+						<xs:enumeration value="MPC_"/>
+						<xs:enumeration value="POD_"/>
+						<xs:enumeration value="EDRS"/>
+						<xs:enumeration value="CDS_"/>
+						<xs:enumeration value="SPS_"/>
+						<xs:enumeration value="FOS_"/>
+						<xs:enumeration value="CGS1"/>
+						<xs:enumeration value="CGS2"/>
+						<xs:enumeration value="CGS3"/>
+						<xs:enumeration value="CGS4"/>
+						<xs:enumeration value="PAC1"/>
+						<xs:enumeration value="PAC2"/>
+						<xs:enumeration value="ESL_"/>
+						<xs:enumeration value="MDP_"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Creator" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Name of the facility or tool, within the Ground
+Segment element, creating the file (e.g. MCS,
+DFEP, IPF1...)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Creator_Version">
+				<xs:annotation>
+					<xs:documentation>Version of the tool</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="\d.\d"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Creation_Date" type="filenaming:ValidityDate">
+				<xs:annotation>
+					<xs:documentation>This is the UTC Creation Date, in CCSDS ASCII
+format with time reference.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="MissionHeaderType">
+		<xs:annotation>
+			<xs:documentation>Mission name</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="11"/>
+			<xs:maxLength value="11"/>
+			<xs:enumeration value="Sentinel-2A"/>
+			<xs:enumeration value="Sentinel-2B"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
