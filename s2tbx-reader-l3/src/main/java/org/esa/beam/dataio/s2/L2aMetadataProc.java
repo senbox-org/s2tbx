@@ -267,20 +267,25 @@ public class L2aMetadataProc {
         return dirDatastrip;
     }
 
-    public static Collection<String> getImages(Level2A_User_Product product) {
+    public static Collection<ImageInfo> getImages(Level2A_User_Product product) {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
-        A_L2A_Product_Info.L2A_Product_Organisation.Granule_List granuleList = info.getGranule_List().get(0);
+        List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> theList = info.getGranule_List();
+        List<ImageInfo> aGranuleList = new ArrayList<ImageInfo>();
 
-        List<A_PRODUCT_ORGANIZATION_2A.Granules.IMAGE_ID_2A> images = granuleList.getGranules().getIMAGE_ID_2A();
-
-        List<String> aGranuleList = new ArrayList<String>();
-
-        // todo we shoud keep more info here...
-
-        for(int granuleIndex = 0; granuleIndex < images.size(); granuleIndex++)
+        for(A_L2A_Product_Info.L2A_Product_Organisation.Granule_List currentList: theList)
         {
-            aGranuleList.add(images.get(granuleIndex).getValue());
+            List<A_PRODUCT_ORGANIZATION_2A.Granules.IMAGE_ID_2A> images = currentList.getGranules().getIMAGE_ID_2A();
+
+            // todo we shoud keep more info here...
+
+            for(int granuleIndex = 0; granuleIndex < images.size(); granuleIndex++)
+            {
+                ImageInfo newImage = new ImageInfo(images.get(granuleIndex).getValue());
+                newImage.put("DatastripIdentifier", currentList.getGranules().getDatastripIdentifier());
+                newImage.put("GranuleIdentifier", currentList.getGranules().getGranuleIdentifier());
+                aGranuleList.add(newImage);
+            }
         }
 
         return aGranuleList;

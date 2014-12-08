@@ -166,7 +166,7 @@ public class L2aMetadata {
     }
 
     private List<Tile> tileList;
-    private Collection<String> imageList;
+    private Collection<ImageInfo> imageList;
     private ProductCharacteristics productCharacteristics;
 
     public static L2aMetadata parseHeader(File file) throws JDOMException, IOException {
@@ -177,7 +177,7 @@ public class L2aMetadata {
         return tileList;
     }
 
-    public Collection<String> getImageList()
+    public Collection<ImageInfo> getImageList()
     {
         return imageList;
     }
