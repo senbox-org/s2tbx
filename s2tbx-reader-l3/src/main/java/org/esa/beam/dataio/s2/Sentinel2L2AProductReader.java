@@ -141,7 +141,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
 
         List<L2aMetadata.Tile> tileList = metadataHeader.getTileList();
 
-        Collection<String> imageList = metadataHeader.getImageList();
+        Collection<ImageInfo> imageList = metadataHeader.getImageList();
         if(imageList.isEmpty())
         {
             logger.warning("No images detected !!");
