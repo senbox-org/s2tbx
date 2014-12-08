@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.s2;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -11,6 +12,7 @@ public class ImageInfo {
 
     public ImageInfo(String fileName) {
         this.fileName = fileName;
+        attributes = new HashMap<String, String>();
     }
 
     public String put(String key, String value) {
