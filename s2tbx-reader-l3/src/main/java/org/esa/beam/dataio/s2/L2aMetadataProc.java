@@ -276,6 +276,8 @@ public class L2aMetadataProc {
 
         List<String> aGranuleList = new ArrayList<String>();
 
+        // todo we shoud keep more info here...
+
         for(int granuleIndex = 0; granuleIndex < images.size(); granuleIndex++)
         {
             aGranuleList.add(images.get(granuleIndex).getValue());

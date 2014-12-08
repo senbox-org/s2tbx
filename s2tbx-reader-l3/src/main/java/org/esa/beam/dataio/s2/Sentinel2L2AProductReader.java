@@ -138,7 +138,19 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
         Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
+
         List<L2aMetadata.Tile> tileList = metadataHeader.getTileList();
+
+        Collection<String> imageList = metadataHeader.getImageList();
+        if(imageList.isEmpty())
+        {
+            logger.warning("No images detected !!");
+        }
+
+        if(tileList.isEmpty())
+        {
+            logger.warning("Empty tile list !");
+        }
         for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
             int bandIndex = bandInformation.bandId;
             if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
@@ -146,11 +158,15 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                 HashMap<String, File> tileFileMap = new HashMap<String, File>();
                 for (Tile tile : tileList) {
                     S2GranuleDirFilename gf = S2GranuleDirFilename.create(tile.id);
-                    S2GranuleImageFilename reallyHappy = gf.getImageFilename(bandInformation.physicalBand);
+                    S2GranuleImageFilename granuleImageFileName = gf.getImageFilename(bandInformation.physicalBand);
 
-                    String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + reallyHappy.name;
+                    logger.warning("Processing id: [" + tile.id + "]");
+                    logger.warning("Processing band: [" + bandInformation.physicalBand + "]");
 
-                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
+
+                    String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + granuleImageFileName.name;
+
+                    logger.warning("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
 
                     File file = new File(productDir, imgFilename);
                     if (file.exists()) {

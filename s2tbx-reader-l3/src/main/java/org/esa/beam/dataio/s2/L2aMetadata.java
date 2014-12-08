@@ -166,7 +166,7 @@ public class L2aMetadata {
     }
 
     private List<Tile> tileList;
-    private List<String> imageList; //todo populate imagelist
+    private Collection<String> imageList;
     private ProductCharacteristics productCharacteristics;
 
     public static L2aMetadata parseHeader(File file) throws JDOMException, IOException {
@@ -175,6 +175,11 @@ public class L2aMetadata {
 
     public List<Tile> getTileList() {
         return tileList;
+    }
+
+    public Collection<String> getImageList()
+    {
+        return imageList;
     }
 
     public ProductCharacteristics getProductCharacteristics() {
@@ -193,22 +198,23 @@ public class L2aMetadata {
             productCharacteristics = L2aMetadataProc.getProductOrganization(product);
 
             Collection<String> tileNames = L2aMetadataProc.getTiles(product);
+            imageList = L2aMetadataProc.getImages(product);
             List<File> fullTileNamesList = new ArrayList<File>();
 
             tileList = new ArrayList<Tile>();
 
             for (String granuleName: tileNames)
             {
-                FileInputStream fi = (FileInputStream) stream;
-                File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
-
                 S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
                 String theName = aGranuleDir.getMetadataFilename().name;
 
                 File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-                if(nestedGranuleMetadata.exists()) {
+                if(nestedGranuleMetadata.exists())
+                {
                     fullTileNamesList.add(nestedGranuleMetadata);
-                } else {
+                }
+                else
+                {
                     String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
                     logger.log(Level.WARNING, errorMessage);
                 }
