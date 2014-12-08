@@ -281,12 +281,33 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         };
     }
 
+    /**
+     * Temporary method, to be removed soon
+     * @todo remove this method ASAP
+     */
+    public static float[] convertToFloats(double[] input)
+    {
+        if (input == null)
+        {
+            return null;
+        }
+        float[] output = new float[input.length];
+        for (int i = 0; i < input.length; i++)
+        {
+            output[i] = (float) input[i];
+        }
+        return output;
+    }
+
     private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, double[] values) {
-        final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, values);
+        // todo temporary patch until pom dependencies are updated
+        final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, convertToFloats(values));
         tiePointGrid.setNoDataValue(Double.NaN);
         tiePointGrid.setNoDataValueUsed(true);
         return tiePointGrid;
     }
+
+
 
     private static Map<String, File> createFileMap(String tileId, File imageFile) {
         Map<String, File> tileIdToFileMap = new HashMap<String, File>();
