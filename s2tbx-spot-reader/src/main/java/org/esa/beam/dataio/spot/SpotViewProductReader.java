@@ -143,6 +143,24 @@ public class SpotViewProductReader extends AbstractProductReader {
         }
     }
 
+    /**
+     * Temporary method, to be removed soon
+     * @todo remove this method ASAP
+     */
+    public static float[] convertToFloats(double[] input)
+    {
+        if (input == null)
+        {
+            return null;
+        }
+        float[] output = new float[input.length];
+        for (int i = 0; i < input.length; i++)
+        {
+            output[i] = (float) input[i];
+        }
+        return output;
+    }
+
     private void initTiePointGeoCoding(Product product) {
         TiePoint[] tiePoints = imageMetadata.getTiePoints();
         if (tiePoints != null && tiePoints.length == 4) {
@@ -152,9 +170,9 @@ public class SpotViewProductReader extends AbstractProductReader {
                 latPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = tiePoints[i].getValueAt(4);
                 lonPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = tiePoints[i].getValueAt(3);
             }
-            TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), latPoints);
+            TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), convertToFloats(latPoints));
             product.addTiePointGrid(latGrid);
-            TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), lonPoints);
+            TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), convertToFloats(lonPoints));
             product.addTiePointGrid(lonGrid);
             GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
             product.setGeoCoding(geoCoding);
