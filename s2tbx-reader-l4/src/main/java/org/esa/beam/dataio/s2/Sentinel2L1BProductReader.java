@@ -8,13 +8,14 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleImageFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleMetadataFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2ProductFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleImageFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleMetadataFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bProductFilename;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.datamodel.*;
 import org.esa.beam.jai.ImageManager;
+import org.esa.beam.util.Guardian;
 import org.esa.beam.util.SystemUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
@@ -109,7 +110,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
         //todo do we have to read a standalone granule or jp2 file ?
 
-        if (S2ProductFilename.isProductFilename(inputFile.getName()))
+        if (S2L1bProductFilename.isProductFilename(inputFile.getName()))
         {
             return getL1cMosaicProduct(inputFile);
         }
@@ -128,8 +129,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
-        S2GranuleMetadataFilename mtdFilename = S2GranuleMetadataFilename.create(metadataFile.getName());
-        S2ProductFilename mtdFN = S2ProductFilename.create(metadataFile.getName());
+        S2L1bGranuleMetadataFilename mtdFilename = S2L1bGranuleMetadataFilename.create(metadataFile.getName());
+        S2L1bProductFilename mtdFN = S2L1bProductFilename.create(metadataFile.getName());
 
         L1bSceneDescription sceneDescription = L1bSceneDescription.create(metadataHeader, Tile.idGeom.G10M);
         logger.fine("Scene Description: " + sceneDescription);
@@ -147,8 +148,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
                 HashMap<String, File> tileFileMap = new HashMap<String, File>();
                 for (Tile tile : tileList) {
-                    S2GranuleDirFilename gf = S2GranuleDirFilename.create(tile.id);
-                    S2GranuleImageFilename reallyHappy = gf.getImageFilename(bandInformation.physicalBand);
+                    S2L1bGranuleDirFilename gf = S2L1bGranuleDirFilename.create(tile.id);
+                    Guardian.assertNotNull("Product files don't match regular expressions", gf);
+
+                    S2L1bGranuleImageFilename reallyHappy = gf.getImageFilename(bandInformation.physicalBand);
 
                     String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + reallyHappy.name;
 

@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 /**
  * @author Norman Fomferra
  */
-public class S2GranuleImageFilename {
+public class S2L1bGranuleImageFilename {
 
     final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})(_A[0-9]{6})(_T[A-Z|0-9]{5})(_B[A-B|0-9]{2})(\\.[A-Z|a-z|0-9]{3,4})?";
     final static Pattern PATTERN = Pattern.compile(REGEX);
@@ -22,7 +22,7 @@ public class S2GranuleImageFilename {
     public final String tileNumber;
     public final String bandIndex;
 
-    private S2GranuleImageFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String instanceID, String absoluteOrbit, String tileNumber, String bandIndex) {
+    private S2L1bGranuleImageFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String instanceID, String absoluteOrbit, String tileNumber, String bandIndex) {
         this.name = name;
         this.missionID = missionID;
         this.fileClass = fileClass;
@@ -48,10 +48,10 @@ public class S2GranuleImageFilename {
         return tileNumber;
     }
 
-    public static S2GranuleImageFilename create(String fileName) {
+    public static S2L1bGranuleImageFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
-            return new S2GranuleImageFilename(fileName,
+            return new S2L1bGranuleImageFilename(fileName,
                                      matcher.group(1),
                                      matcher.group(2),
                                      matcher.group(3),

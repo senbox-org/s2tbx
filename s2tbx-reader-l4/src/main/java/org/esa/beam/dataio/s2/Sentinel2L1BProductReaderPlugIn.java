@@ -1,6 +1,6 @@
 package org.esa.beam.dataio.s2;
 
-import org.esa.beam.dataio.s2.filepatterns.S2ProductFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bProductFilename;
 import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
@@ -20,7 +20,7 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
         BeamLogManager.getSystemLogger().fine("Getting decoders...");
 
         File file = new File(input.toString());
-        return S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.INTENDED :
+        return S2L1bProductFilename.isProductFilename(file.getName()) ? DecodeQualification.INTENDED :
                         DecodeQualification.UNABLE;
     }
 

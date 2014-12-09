@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
  * Created by opicas-p on 23/06/2014.
  */
 
-public class S2ProductFilename {
+public class S2L1bProductFilename {
     final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})([A-Z|0-9|_]+)(\\.[A-Z|a-z|0-9]{3,4})?";
     final static String OPTIONALREGEX = "_S[0-9]{8}T[0-9]{6}|_O[0-9]{6}T[0-9]{6}|_V[0-9]{8}[T]?[0-9]{6}_[0-9]{8}[T]?[0-9]{6}|_D[0-9]{2}|_A[0-9]{6}|_R[0-9]{3}|_T[A-Z|0-9]{5}|_N[0-9]{2}\\.[0-9]{2}|_B[A-B|0-9]{2}|_W[F|P]|_L[N|D]";
 
@@ -31,7 +31,7 @@ public class S2ProductFilename {
     public String applicabilityStart;
     public String applicabilityPeriod;
 
-    private S2ProductFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String instanceID) {
+    private S2L1bProductFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String instanceID) {
         this.name = name;
         this.missionID = missionID;
         this.fileClass = fileClass;
@@ -95,10 +95,10 @@ public class S2ProductFilename {
         return name.toLowerCase().endsWith(".xml");
     }
 
-    public static S2ProductFilename create(String fileName) {
+    public static S2L1bProductFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
-            return new S2ProductFilename(fileName,
+            return new S2L1bProductFilename(fileName,
                     matcher.group(1),
                     matcher.group(2),
                     matcher.group(3),

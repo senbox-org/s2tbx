@@ -3,7 +3,7 @@ package org.esa.beam.dataio.s2.filepatterns;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class S2DatastripFilename {
+public class S2L1bDatastripFilename {
     final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(S[0-9]{8}T[0-9]{6})(\\.[A-Z|a-z|0-9]{3,4})?";
     final static Pattern PATTERN = Pattern.compile(REGEX);
 
@@ -17,7 +17,7 @@ public class S2DatastripFilename {
 
     public final String applicabilityStart;
 
-    private S2DatastripFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String applicabilityStart) {
+    private S2L1bDatastripFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String applicabilityStart) {
         this.name = name;
         this.missionID = missionID;
         this.fileClass = fileClass;
@@ -28,10 +28,10 @@ public class S2DatastripFilename {
         this.applicabilityStart = applicabilityStart;
     }
 
-    public static S2DatastripFilename create(String fileName) {
+    public static S2L1bDatastripFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
-            return new S2DatastripFilename(fileName,
+            return new S2L1bDatastripFilename(fileName,
                     matcher.group(1),
                     matcher.group(2),
                     matcher.group(3),

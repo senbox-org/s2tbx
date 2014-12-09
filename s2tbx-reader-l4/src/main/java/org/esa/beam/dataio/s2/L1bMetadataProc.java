@@ -2,15 +2,17 @@ package org.esa.beam.dataio.s2;
 
 
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
+import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
+import org.esa.beam.util.Guardian;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.xml.bind.*;
@@ -249,29 +251,33 @@ public class L1bMetadataProc {
         return col;
     }
 
-    public static S2DatastripFilename getDatastrip(Level1B_User_Product product)
+    public static S2L1bDatastripFilename getDatastrip(Level1B_User_Product product)
     {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2GranuleDirFilename grafile = S2GranuleDirFilename.create(granule);
+        S2L1bGranuleDirFilename grafile = S2L1bGranuleDirFilename.create(granule);
+        Guardian.assertNotNull("Product files don't match regular expressions", grafile);
+
         String fileCategory = grafile.fileCategory;
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
-        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
+        S2L1bDatastripDirFilename dirDatastrip = S2L1bDatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
         return dirDatastrip.getDatastripFilename(null);
     }
 
-    public static S2DatastripDirFilename getDatastripDir(Level1B_User_Product product)
+    public static S2L1bDatastripDirFilename getDatastripDir(Level1B_User_Product product)
     {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2GranuleDirFilename grafile = S2GranuleDirFilename.create(granule);
+        S2L1bGranuleDirFilename grafile = S2L1bGranuleDirFilename.create(granule);
+        Guardian.assertNotNull("Product files don't match regular expressions", grafile);
+
         String fileCategory = grafile.fileCategory;
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
-        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
+        S2L1bDatastripDirFilename dirDatastrip = S2L1bDatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
         return dirDatastrip;
     }
 
@@ -296,36 +302,14 @@ public class L1bMetadataProc {
         return imagesList;
     }
 
-    public static Map<Integer, L1bMetadata.TileGeometry> getTileGeometries(Level1C_Tile product) {
-        String id = product.getGeneral_Info().getTILE_ID().getValue();
+    public static Map<Integer, L1bMetadata.TileGeometry> getTileGeometries(Level1B_Granule product) {
+        String id = product.getGeneral_Info().getGRANULE_ID().getValue();
 
-        A_GEOMETRIC_INFO_TILE info = product.getGeometric_Info();
-        A_GEOMETRIC_INFO_TILE.Tile_Geocoding tgeo = info.getTile_Geocoding();
+        A_GEOMETRIC_INFO info = product.getGeometric_Info();
 
-
-        List<A_TILE_DESCRIPTION.Geoposition> poss = tgeo.getGeoposition();
-        List<A_TILE_DESCRIPTION.Size> sizz = tgeo.getSize();
+        // todo implement this part
 
         Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<Integer, L1bMetadata.TileGeometry>();
-
-        for (A_TILE_DESCRIPTION.Geoposition gpos : poss)
-        {
-            int index = gpos.getResolution();
-            L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
-            tgeox.upperLeftX = gpos.getULX();
-            tgeox.upperLeftY = gpos.getULY();
-            tgeox.xDim = gpos.getXDIM();
-            tgeox.yDim = gpos.getYDIM();
-            resolutions.put(index, tgeox);
-        }
-
-        for(A_TILE_DESCRIPTION.Size asize : sizz)
-        {
-            int index = asize.getResolution();
-            L1bMetadata.TileGeometry tgeox = resolutions.get(index);
-            tgeox.numCols = asize.getNCOLS();
-            tgeox.numRows = asize.getNROWS();
-        }
 
         return resolutions;
     }

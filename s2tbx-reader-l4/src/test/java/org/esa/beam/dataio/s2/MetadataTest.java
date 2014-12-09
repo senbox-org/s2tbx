@@ -4,9 +4,9 @@ package org.esa.beam.dataio.s2;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
+import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import junit.framework.Assert;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
@@ -27,9 +27,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class MetadataTest {
 
-    public Level1C_User_Product getUserProduct() throws Exception
+    public Level1B_User_Product getUserProduct() throws Exception
     {
-        Level1C_User_Product o = null;
+        Level1B_User_Product o = null;
 
         JAXBContext jaxbContext = JAXBContext
                 .newInstance(MetadataType.L1C);
@@ -41,7 +41,7 @@ public class MetadataTest {
 
         Object ob =  unmarshaller.unmarshal(stream);
 
-        o = (Level1C_User_Product) ((JAXBElement)ob).getValue();
+        o = (Level1B_User_Product) ((JAXBElement)ob).getValue();
 
         return o;
     }
@@ -70,7 +70,7 @@ public class MetadataTest {
     @Test
     public void test1() throws Exception
     {
-        Level1C_User_Product o = getUserProduct();
+        Level1B_User_Product o = getUserProduct();
 
         Assert.assertNotNull(o);
 
@@ -84,7 +84,7 @@ public class MetadataTest {
     @Test
     public void test2() throws Exception
     {
-        Level1C_User_Product product = getUserProduct();
+        Level1B_User_Product product = getUserProduct();
 
         Assert.assertNotNull(product);
 
@@ -95,7 +95,7 @@ public class MetadataTest {
 
         assertEquals("S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_N01.01", granuleId);
 
-        S2GranuleDirFilename gdir = S2GranuleDirFilename.create(granuleId);
+        S2L1bGranuleDirFilename gdir = S2L1bGranuleDirFilename.create(granuleId);
 
         Assert.assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", gdir.getMetadataFilename().name);
     }
@@ -103,7 +103,7 @@ public class MetadataTest {
     @Test
     public void test3() throws Exception
     {
-        Level1C_User_Product product = getUserProduct();
+        Level1B_User_Product product = getUserProduct();
 
         Assert.assertNotNull(product);
 
@@ -120,7 +120,7 @@ public class MetadataTest {
     @Test
     public void testTileProductsMetadataExistence() throws Exception
     {
-        Level1C_User_Product product = getUserProduct();
+        Level1B_User_Product product = getUserProduct();
 
         Assert.assertNotNull(product);
 
@@ -143,7 +143,7 @@ public class MetadataTest {
                     assertTrue(nestedMetadata.exists());
                     assertTrue(nestedMetadata.isDirectory());
 
-                    S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+                    S2L1bGranuleDirFilename aGranuleDir = S2L1bGranuleDirFilename.create(granuleName);
                     String theName = aGranuleDir.getMetadataFilename().name;
 
                     File nestedGranuleMetadata = new File(baseDir, "GRANULE\\" + granuleName + "\\" + theName);

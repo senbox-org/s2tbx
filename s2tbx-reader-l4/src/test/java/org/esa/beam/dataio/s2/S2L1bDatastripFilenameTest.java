@@ -1,24 +1,21 @@
 package org.esa.beam.dataio.s2;
 
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleImageFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleMetadataFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 /**
  * @author Norman Fomferra
  */
-public class S2DatastripFilenameTest {
+public class S2L1bDatastripFilenameTest {
 
     @Test
     public void testFileName() throws Exception
     {
-        S2DatastripFilename s2gf = S2DatastripFilename.create("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928");
+        S2L1bDatastripFilename s2gf = S2L1bDatastripFilename.create("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928");
         assertNotNull(s2gf);
         assertEquals("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928", s2gf.name);
         assertEquals("S2A", s2gf.missionID);
@@ -33,7 +30,7 @@ public class S2DatastripFilenameTest {
     @Test
     public void testDirFileName() throws Exception
     {
-        S2DatastripDirFilename s2gf = S2DatastripDirFilename.create("S2A_OPER_MSI_L1C_DS_CGS1_20130621T120000_S20091211T165928_N01.01", null);
+        S2L1bDatastripDirFilename s2gf = S2L1bDatastripDirFilename.create("S2A_OPER_MSI_L1C_DS_CGS1_20130621T120000_S20091211T165928_N01.01", null);
         assertNotNull(s2gf);
         assertEquals("S2A_OPER_MSI_L1C_DS_CGS1_20130621T120000_S20091211T165928_N01.01", s2gf.name);
         assertEquals("S2A", s2gf.missionID);
@@ -44,7 +41,7 @@ public class S2DatastripFilenameTest {
         assertEquals("20130621T120000", s2gf.creationDate);
         assertEquals("S20091211T165928", s2gf.applicabilityStart);
 
-        S2DatastripFilename afin = s2gf.getDatastripFilename(null);
+        S2L1bDatastripFilename afin = s2gf.getDatastripFilename(null);
         assertEquals("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928.xml", afin.name);
 
     }

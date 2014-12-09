@@ -1,15 +1,16 @@
 package org.esa.beam.dataio.s2;
 
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.util.Guardian;
 import org.esa.beam.util.logging.BeamLogManager;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
@@ -206,7 +207,8 @@ public class L1bMetadata {
 
                 if(nestedMetadata.exists())
                 {
-                    S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+                    S2L1bGranuleDirFilename aGranuleDir = S2L1bGranuleDirFilename.create(granuleName);
+                    Guardian.assertNotNull("aGranuleDir", aGranuleDir);
                     String theName = aGranuleDir.getMetadataFilename().name;
 
                     File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
@@ -225,25 +227,22 @@ public class L1bMetadata {
 
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
-                Level1C_Tile aTile = (Level1C_Tile) L1bMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
+                Level1B_Granule aTile = (Level1B_Granule) L1bMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
                 Map<Integer, TileGeometry> geoms = L1bMetadataProc.getTileGeometries(aTile);
 
-                Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
-                t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
-                t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
+                Tile t = new Tile(aTile.getGeneral_Info().getGRANULE_ID().getValue());
+
+                // todo look at geometric info here
 
                 t.tileGeometry10M = geoms.get(10);
                 t.tileGeometry20M = geoms.get(20);
                 t.tileGeometry60M = geoms.get(60);
 
-                t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aTile);
-                t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aTile);
-
                 tileList.add(t);
             }
 
-            S2DatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
-            S2DatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
+            S2L1bDatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
+            S2L1bDatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
 
             File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 

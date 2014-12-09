@@ -3,7 +3,7 @@ package org.esa.beam.dataio.s2.filepatterns;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class S2DatastripDirFilename {
+public class S2L1bDatastripDirFilename {
     final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(S[0-9]{8}T[0-9]{6})(_N[0-9]{2}\\.[0-9]{2})(\\.[A-Z|a-z|0-9]{3,4})?";
     final static Pattern PATTERN = Pattern.compile(REGEX);
 
@@ -18,7 +18,7 @@ public class S2DatastripDirFilename {
     public final String applicabilityStart;
     public final String processingBaseline;
 
-    private S2DatastripDirFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String applicabilityStart, String processingBaseline) {
+    private S2L1bDatastripDirFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String applicabilityStart, String processingBaseline) {
         this.name = name;
         this.missionID = missionID;
         this.fileClass = fileClass;
@@ -30,7 +30,7 @@ public class S2DatastripDirFilename {
         this.processingBaseline = processingBaseline;
     }
 
-    public S2DatastripFilename getDatastripFilename(String fileCategory)
+    public S2L1bDatastripFilename getDatastripFilename(String fileCategory)
     {
         String defaultFileCategory = "MTD_";
         if(fileCategory != null)
@@ -39,16 +39,16 @@ public class S2DatastripDirFilename {
         }
 
         String tmp = String.format("%s_%s_%s%s_%s_%s_%s.xml", missionID, fileClass, defaultFileCategory, fileSemantic, siteCentre, creationDate, applicabilityStart);
-        return S2DatastripFilename.create(tmp);
+        return S2L1bDatastripFilename.create(tmp);
     }
 
-    public static S2DatastripDirFilename create(String fileName, String fileCategory) {
+    public static S2L1bDatastripDirFilename create(String fileName, String fileCategory) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches())
         {
             if(fileCategory == null)
             {
-                return new S2DatastripDirFilename(fileName,
+                return new S2L1bDatastripDirFilename(fileName,
                         matcher.group(1),
                         matcher.group(2),
                         matcher.group(3),
@@ -59,7 +59,7 @@ public class S2DatastripDirFilename {
                         matcher.group(8)
                 );
             }
-            return new S2DatastripDirFilename(fileName.replace(matcher.group(3), fileCategory),
+            return new S2L1bDatastripDirFilename(fileName.replace(matcher.group(3), fileCategory),
                     matcher.group(1),
                     matcher.group(2),
                     fileCategory,

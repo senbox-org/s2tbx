@@ -1,6 +1,6 @@
 package org.esa.beam.dataio.s2;
 
-import org.esa.beam.dataio.s2.filepatterns.S2ProductFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L1bProductFilename;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -9,12 +9,12 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by opicas-p on 24/06/2014.
  */
-public class S2ProductFilenameTest {
+public class S2L1bProductFilenameTest {
 
     @Test
     public void testFileName() throws Exception
     {
-        S2ProductFilename s2gf = S2ProductFilename.create("S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
+        S2L1bProductFilename s2gf = S2L1bProductFilename.create("S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
         assertNotNull(s2gf);
         assertEquals("065", s2gf.relativeOrbitNumber);
         assertEquals("20091211T165928_20091211T170025", s2gf.applicabilityPeriod);
