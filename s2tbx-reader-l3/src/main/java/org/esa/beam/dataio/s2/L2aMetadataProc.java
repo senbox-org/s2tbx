@@ -277,13 +277,12 @@ public class L2aMetadataProc {
         {
             List<A_PRODUCT_ORGANIZATION_2A.Granules.IMAGE_ID_2A> images = currentList.getGranules().getIMAGE_ID_2A();
 
-            // todo we shoud keep more info here...
-
             for(int granuleIndex = 0; granuleIndex < images.size(); granuleIndex++)
             {
                 ImageInfo newImage = new ImageInfo(images.get(granuleIndex).getValue());
                 newImage.put("DatastripIdentifier", currentList.getGranules().getDatastripIdentifier());
                 newImage.put("GranuleIdentifier", currentList.getGranules().getGranuleIdentifier());
+                newImage.put("ImageFormat", currentList.getGranules().getImageFormat());
                 aGranuleList.add(newImage);
             }
         }

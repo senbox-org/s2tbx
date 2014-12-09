@@ -148,9 +148,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 HashMap<String, File> tileFileMap = new HashMap<String, File>();
                 for (Tile tile : tileList) {
                     S2GranuleDirFilename gf = S2GranuleDirFilename.create(tile.id);
-                    S2GranuleImageFilename reallyHappy = gf.getImageFilename(bandInformation.physicalBand);
+                    S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.physicalBand);
 
-                    String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + reallyHappy.name;
+                    String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFilename.name;
 
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
 

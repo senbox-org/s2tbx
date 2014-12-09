@@ -8,7 +8,7 @@ import java.io.File;
 /**
  * @author Norman Fomferra
  */
-public class S2ProductInfo {
+public class S2L2AProductInfo {
         /*
     public final int numBands;
 
