@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class XmlMetadataParserFactory {
 
-    private static Map<Class, XmlMetadataParser> parserMap = new HashMap<Class, XmlMetadataParser>();
+    private static Map<Class, XmlMetadataParser> parserMap = new HashMap<>();
 
     /**
      * Registers a parser instance, attached to the given metadata class, to this factory.

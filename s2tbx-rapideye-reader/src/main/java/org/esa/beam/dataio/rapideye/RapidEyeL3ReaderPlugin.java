@@ -36,8 +36,8 @@ public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
         return RapidEyeConstants.L3_DESCRIPTION;
     }
 
-    @Override
-    protected String[] getProductFilePatterns() { return RapidEyeConstants.L3_FILENAME_PATTERNS; }
+    /*@Override
+    protected String[] getProductFilePatterns() { return RapidEyeConstants.L3_FILENAME_PATTERNS; }*/
 
     @Override
     protected String[] getMinimalPatternList() { return RapidEyeConstants.L3_MINIMAL_PRODUCT_PATTERNS; }

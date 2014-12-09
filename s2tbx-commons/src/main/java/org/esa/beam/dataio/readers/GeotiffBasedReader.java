@@ -49,18 +49,27 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
     protected GeotiffBasedReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
-        Type superclass = getClass().getGenericSuperclass();
-        if (superclass instanceof  ParameterizedType) {
-            this.metadataClass = (Class<M>) ((ParameterizedType) superclass).getActualTypeArguments()[0];
-        } else if ((superclass = getClass().getSuperclass().getGenericSuperclass()) instanceof ParameterizedType) {
-            this.metadataClass = (Class<M>) ((ParameterizedType) superclass).getActualTypeArguments()[0];
-        } else {
-            throw new ClassCastException("Cannot find parameterized type");
-        }
+        this.metadataClass = getTypeArgument();
         registerMetadataParser();
         registerSpi();
         bandMap = new HashMap<>();
         metadata = new ArrayList<>();
+    }
+
+    protected Class<M> getTypeArgument() {
+        Class<M> arg;
+        Type superclass = getClass().getGenericSuperclass();
+        Type type;
+        if (superclass instanceof  ParameterizedType) {
+            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+            arg = (Class<M>) type;
+        } else if ((superclass = getClass().getSuperclass().getGenericSuperclass()) instanceof ParameterizedType) {
+            type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
+            arg = (Class<M>) type;
+        } else {
+            throw new ClassCastException("Cannot find parameterized type");
+        }
+        return arg;
     }
 
     /**
@@ -108,7 +117,7 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
      * Registers a customized XML parser for the metadata type of this reader, in the XML metadata parser factory.
      */
     protected void registerMetadataParser() {
-        XmlMetadataParserFactory.registerParser(this.metadataClass, new XmlMetadataParser<M>(this.metadataClass));
+        XmlMetadataParserFactory.registerParser(this.metadataClass, new XmlMetadataParser<>(this.metadataClass));
     }
 
     /**
@@ -256,17 +265,19 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
         product = new Product((metadataFile != null && metadataFile.getProductName() != null) ? metadataFile.getProductName() : getProductGenericName(),
                               getReaderPlugIn().getFormatNames()[0],
                               width, height);
-        product.getMetadataRoot().addElement(metadataFile.getRootElement());
-        ProductData.UTC centerTime = metadataFile.getCenterTime();
-        if (centerTime != null) {
-            product.setStartTime(centerTime);
-            product.setEndTime(centerTime);
-        } else {
-            product.setStartTime(metadataFile.getProductStartTime());
-            product.setEndTime(metadataFile.getProductEndTime());
+        if (metadataFile != null) {
+            product.getMetadataRoot().addElement(metadataFile.getRootElement());
+            ProductData.UTC centerTime = metadataFile.getCenterTime();
+            if (centerTime != null) {
+                product.setStartTime(centerTime);
+                product.setEndTime(centerTime);
+            } else {
+                product.setStartTime(metadataFile.getProductStartTime());
+                product.setEndTime(metadataFile.getProductEndTime());
+            }
+            product.setProductType(metadataFile.getMetadataProfile());
+            product.setDescription(metadataFile.getProductDescription());
         }
-        product.setProductType(metadataFile.getMetadataProfile());
-        product.setDescription(metadataFile.getProductDescription());
         return product;
     }
 
@@ -280,12 +291,11 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
      */
     protected void addBands(Product product, M componentMetadata, int componentIndex) {
         try {
-            File rasterFile = null;
             rasterFileNames = getRasterFileNames();
             if (componentIndex >= rasterFileNames.size()) {
                 throw new ArrayIndexOutOfBoundsException(String.format("Invalid component index: %d", componentIndex));
             }
-            rasterFile = productDirectory.getFile(rasterFileNames.get(componentIndex));
+            File rasterFile = productDirectory.getFile(rasterFileNames.get(componentIndex));
 
             GeoTiffProductReader reader = new GeoTiffReaderEx(getReaderPlugIn());
             Product tiffProduct = reader.readProductNodes(rasterFile, null);
@@ -363,7 +373,7 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
             }
         }
         if (resultComponent == null) {
-            resultComponent = new TreeNode<File>(componentId, componentFile);
+            resultComponent = new TreeNode<>(componentId, componentFile);
             currentComponents.addChild(resultComponent);
         }
     }
@@ -379,9 +389,7 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
                 for (M metadataComponent : metadata) {
                     String[] partialList = metadataComponent.getRasterFileNames();
                     if (partialList != null) {
-                        for (String item : partialList) {
-                            rasterFileNames.add(item);
-                        }
+                        rasterFileNames.addAll(Arrays.asList(partialList));
                     }
                 }
             }
@@ -389,11 +397,10 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
                 try {
                     String[] allTiffFiles = productDirectory.findAll(".tif");
                     if (allTiffFiles != null) {
-                        for (String item : allTiffFiles) {
-                            rasterFileNames.add(item);
-                        }
+                        rasterFileNames.addAll(Arrays.asList(allTiffFiles));
                     }
                 } catch (IOException e) {
+                    logger.warning(e.getMessage());
                 }
             }
         }

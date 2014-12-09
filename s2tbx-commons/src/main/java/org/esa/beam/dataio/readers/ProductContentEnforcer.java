@@ -1,7 +1,6 @@
 package org.esa.beam.dataio.readers;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -69,21 +68,36 @@ public class ProductContentEnforcer {
     }
 
     /**
-     * Checks if the given file, representing a product (either a folder or an archive file), is a consistent
-     * product according to the current instance rules.
+     * Checks if the given set of files (representing a product) is consistent with respect
+     * to the current instance rules.
      *
-     * @param input The product to be checked. Can be either a folder or an archive file
+     * @param fileNames The files of the product to be checked.
      * @return  <code>true</code> if the product is consistent, <code>false</code> otherwise.
      */
-    public boolean isConsistent(File input) {
-        boolean retFlag = true;
-        if (input == null || input.isFile() ||
-                minimalFilePatternList == null || minimalFilePatternList.length == 0) {
-            retFlag = false;
-        } else {
-            List<String> fileNames = new ArrayList<String>();
-            listFiles(input, fileNames);
-            retFlag &= isConsistent((String[])fileNames.toArray());
+    public boolean isConsistent(String[] fileNames) {
+        boolean retFlag = false;
+        if (fileNames != null) {
+            if (notAcceptedFilePatternList != null) {
+                for (Pattern pattern : notAcceptedFilePatternList) {
+                    if (Arrays.stream(fileNames).anyMatch(f -> pattern.matcher(f.toLowerCase()).matches()))
+                        return false;
+                    /*for (String fileName : fileNames) {
+                        if (pattern.matcher(fileName.toLowerCase()).matches())
+                            return false;
+                    }*/
+                }
+            }
+            if (minimalFilePatternList != null && minimalFilePatternList.length > 0) {
+                for (Pattern pattern : minimalFilePatternList) {
+                    /*for (String fileName : fileNames) {
+                        if ((retFlag = pattern.matcher(fileName.toLowerCase()).matches()))
+                            break;
+                    }*/
+                    retFlag = Arrays.stream(fileNames).anyMatch(f -> pattern.matcher(f.toLowerCase()).matches());
+                    if (!retFlag)
+                        break;
+                }
+            }
         }
         return retFlag;
     }
@@ -95,49 +109,35 @@ public class ProductContentEnforcer {
      * @param fileNames The files of the product to be checked.
      * @return  <code>true</code> if the product is consistent, <code>false</code> otherwise.
      */
-    public boolean isConsistent(String[] fileNames) {
+    public boolean isConsistent(List<String> fileNames) {
         boolean retFlag = false;
-        if (minimalFilePatternList != null || minimalFilePatternList.length > 0) {
+        if (fileNames != null) {
             if (notAcceptedFilePatternList != null) {
                 for (Pattern pattern : notAcceptedFilePatternList) {
-                    for (String fileName : fileNames) {
+                    /*for (String fileName : fileNames) {
                         if (pattern.matcher(fileName.toLowerCase()).matches())
                             return false;
-                    }
+                    }*/
+                    if (fileNames.stream().anyMatch(f -> pattern.matcher(f.toLowerCase()).matches()))
+                        return false;
                 }
             }
-            if (minimalFilePatternList != null) {
-                boolean global = true;
+            if (minimalFilePatternList != null && minimalFilePatternList.length > 0) {
+                boolean global;
                 for (Pattern pattern : minimalFilePatternList) {
-                    for (String fileName : fileNames) {
+                    /*for (String fileName : fileNames) {
                         if ((retFlag = pattern.matcher(fileName.toLowerCase()).matches()))
                             break;
                     }
-                    global &= retFlag;
+                    global = retFlag;
                     if (!global)
+                        break;*/
+                    retFlag = fileNames.stream().anyMatch(f -> pattern.matcher(f.toLowerCase()).matches());
+                    if (!retFlag)
                         break;
                 }
             }
         }
         return retFlag;
     }
-
-    /**
-     * Utility method to recursively get the list of files from a folder.
-     * @param parent    The parent folder
-     * @param outList   The [out] list of files
-     */
-    private void listFiles(File parent, List<String> outList) {
-        if (parent.isFile())
-            return;
-        File[] files = parent.listFiles();
-        for (File file : files) {
-            if (file.isFile())
-                outList.add(file.getName().toLowerCase());
-            else {
-                listFiles(file, outList);
-            }
-        }
-    }
-
 }

@@ -37,8 +37,8 @@ public class SpotViewProductReaderPlugin extends BaseProductReaderPlugIn {
         return SpotConstants.SPOTVIEW_DESCRIPTION;
     }
 
-    @Override
-    protected String[] getProductFilePatterns() { return SpotConstants.SPOTVIEW_FILENAME_PATTERNS; }
+    /*@Override
+    protected String[] getProductFilePatterns() { return SpotConstants.SPOTVIEW_FILENAME_PATTERNS; }*/
 
     @Override
     protected String[] getMinimalPatternList() { return SpotConstants.SPOTVIEW_MINIMAL_PRODUCT_PATTERNS; }

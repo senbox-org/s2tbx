@@ -36,8 +36,8 @@ public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
         return DeimosConstants.DIMAP_DESCRIPTION;
     }
 
-    @Override
-    protected String[] getProductFilePatterns() { return DeimosConstants.FILENAME_PATTERNS; }
+    /*@Override
+    protected String[] getProductFilePatterns() { return DeimosConstants.FILENAME_PATTERNS; }*/
 
     @Override
     protected String[] getMinimalPatternList() { return DeimosConstants.MINIMAL_PRODUCT_PATTERNS; }

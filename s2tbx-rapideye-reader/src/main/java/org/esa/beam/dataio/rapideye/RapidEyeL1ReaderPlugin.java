@@ -30,8 +30,8 @@ public class RapidEyeL1ReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     public String getDescription(Locale locale) { return RapidEyeConstants.L1_DESCRIPTION; }
 
-    @Override
-    protected String[] getProductFilePatterns() { return RapidEyeConstants.L1_FILENAME_PATTERNS; }
+    /*@Override
+    protected String[] getProductFilePatterns() { return RapidEyeConstants.L1_FILENAME_PATTERNS; }*/
 
     @Override
     protected String[] getMinimalPatternList() { return RapidEyeConstants.L1_MINIMAL_PRODUCT_PATTERNS; }

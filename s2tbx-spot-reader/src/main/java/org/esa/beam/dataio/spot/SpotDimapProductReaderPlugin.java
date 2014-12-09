@@ -38,8 +38,8 @@ public class SpotDimapProductReaderPlugin extends BaseProductReaderPlugIn {
         return SpotConstants.DIMAP_DESCRIPTION;
     }
 
-    @Override
-    protected String[] getProductFilePatterns() { return SpotConstants.DIMAP_FILENAME_PATTERNS; }
+    /*@Override
+    protected String[] getProductFilePatterns() { return SpotConstants.DIMAP_FILENAME_PATTERNS; }*/
 
     @Override
     protected String[] getMinimalPatternList() { return SpotConstants.DIMAP_MINIMAL_PRODUCT_PATTERNS; }

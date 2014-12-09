@@ -14,37 +14,36 @@ public class RapidEyeConstants {
     public static final Class[] READER_INPUT_TYPES = new Class[]{String.class, File.class};
     public static final String L1_DESCRIPTION = "RapidEye L1 Data Products";
     public static final String L3_DESCRIPTION = "RapidEye L3 Data Products";
-    public static final String[] DEFAULT_EXTENSIONS = new String[]{".xml", ".XML", ".zip", ".ZIP"};
+    public static final String[] DEFAULT_EXTENSIONS = new String[]{".xml", ".zip"};
     public static final String[] L1_FORMAT_NAMES = new String[]{"RapidEyeNITF"};
     public static final String[] L3_FORMAT_NAMES = new String[]{"RapidEyeGeoTIFF"};
     //public static final String L1_FOLDER_PATTERN = "(?:19[0-9]{2}|2[0-9]{3})-(?:0[1-9]|1[012])-(?:[123]0|[012][1-9]|31)T(?:[01][0-9]|2[0-3])(?:[0-5][0-9])(?:[0-5][0-9])_RE\\d{1}_([1-3][ABC])-NAC_\\d{8}_\\d{6}";
     //public static final String L3_FOLDER_PATTERN = "\\d{7}_(?:19[0-9]{2}|2[0-9]{3})-(?:0[1-9]|1[012])-(?:[123]0|[012][1-9]|31)_RE\\d{1}_(3[ABC])_\\d{6}";
-    public static final String[] L1_FILENAME_PATTERNS = new String[]{
+    /*public static final String[] L1_FILENAME_PATTERNS = new String[]{
             ".*zip",
             ".*_band[1-6]\\.ntf",
             ".*_metadata\\.xml",
-                                                                       /*".*_rpc\\xml",
+                                                                       *//*".*_rpc\\xml",
                                                                        ".*_sci\\.xml",
                                                                        ".*_udm\\.(tif|tiff)",
-                                                                       ".*_browse\\.(tif|tiff)"*/};
+                                                                       ".*_browse\\.(tif|tiff)"*//*};*/
     public static final String[] L1_MINIMAL_PRODUCT_PATTERNS = new String[]{
             ".*_band[1-6]\\.ntf",
             ".*_metadata\\.xml"};
 
-    public static final String[] L3_FILENAME_PATTERNS = new String[]{
+    /*public static final String[] L3_FILENAME_PATTERNS = new String[]{
             ".*zip",
             ".*\\.tif",
             ".*_metadata\\.xml",
-                                                                       /*".*_udm\\.(tif|tiff)",
-                                                                       ".*_browse\\.(tif|tiff)"*/};
+                                                                       *//*".*_udm\\.(tif|tiff)",
+                                                                       ".*_browse\\.(tif|tiff)"*//*};*/
     public static final String[] L3_MINIMAL_PRODUCT_PATTERNS = new String[]{
             ".*\\.tif",
             ".*_metadata\\.xml"};
     public static final String[] NOT_L3_FILENAME_PATTERNS = {".*\\.ntf"};
-    public static final String L1_FILENAME_PATTERNS_ALL = "(.*\\.zip)|(.*_band[1-6]\\.ntf)|(*_metadata\\.xml)";
+    /*public static final String L1_FILENAME_PATTERNS_ALL = "(.*\\.zip)|(.*_band[1-6]\\.ntf)|(*_metadata\\.xml)";*/
     public static final String METADATA_FILE_SUFFIX = "metadata.xml";
     public static final String BROWSE_FILE_SUFFIX = "browse.tif";
-    public static final String METADATA_DISPLAY_NAME = "XML Metadata";
     public static final String PRODUCT_GENERIC_NAME = "RapidEye Product";
 
     public static final String UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
@@ -125,8 +124,8 @@ public class RapidEyeConstants {
     public static final String TAG_SENSOR_INNER = "Sensor";
     public static final String TAG_SENSOR_TYPE = "sensorType";
     public static final String NOT_AVAILABLE = "N/A";
-    public static double[] SCALING_FACTORS = new double[]{510 / 4095 * RADIOMETRIC_SCALE_FACTOR, 590 / 4095 * RADIOMETRIC_SCALE_FACTOR, 685 / 4095 * RADIOMETRIC_SCALE_FACTOR, 730 / 4095 * RADIOMETRIC_SCALE_FACTOR, 850 / 4095 * RADIOMETRIC_SCALE_FACTOR};
-    public static double[] SCALING_OFFSETS = new double[]{440 * RADIOMETRIC_SCALE_FACTOR, 520 * RADIOMETRIC_SCALE_FACTOR, 630 * RADIOMETRIC_SCALE_FACTOR, 690 * RADIOMETRIC_SCALE_FACTOR, 760 * RADIOMETRIC_SCALE_FACTOR};
+    /*public static double[] SCALING_FACTORS = new double[]{510 / 4095 * RADIOMETRIC_SCALE_FACTOR, 590 / 4095 * RADIOMETRIC_SCALE_FACTOR, 685 / 4095 * RADIOMETRIC_SCALE_FACTOR, 730 / 4095 * RADIOMETRIC_SCALE_FACTOR, 850 / 4095 * RADIOMETRIC_SCALE_FACTOR};
+    public static double[] SCALING_OFFSETS = new double[]{440 * RADIOMETRIC_SCALE_FACTOR, 520 * RADIOMETRIC_SCALE_FACTOR, 630 * RADIOMETRIC_SCALE_FACTOR, 690 * RADIOMETRIC_SCALE_FACTOR, 760 * RADIOMETRIC_SCALE_FACTOR};*/
 
     public enum PixelFormat {
 

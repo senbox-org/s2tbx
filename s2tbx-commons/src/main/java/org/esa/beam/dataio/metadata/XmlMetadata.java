@@ -101,7 +101,7 @@ public abstract class XmlMetadata {
         this.name = name;
         this.rootElement = new MetadataElement(this.name);
         this.logger = BeamLogManager.getSystemLogger();
-        this.attributeMap = new HashMap<String, List<MetadataAttribute>>();
+        this.attributeMap = new HashMap<>();
     }
 
     /**
@@ -342,7 +342,7 @@ public abstract class XmlMetadata {
     void indexAttribute(String parentElementPath, MetadataAttribute attribute) {
         String key = (parentElementPath + "@" + attribute.getName()).toLowerCase();
         if (!this.attributeMap.containsKey(key)) {
-            this.attributeMap.put(key, new ArrayList<MetadataAttribute>());
+            this.attributeMap.put(key, new ArrayList<>());
         }
         this.attributeMap.get(key).add(attribute);
     }
