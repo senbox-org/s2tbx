@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  * Base class for all GeoTIFF-based readers for S2TBX.
  * This class has been created from the need of gathering all common code of several similar readers into a single place.
  */
-public abstract class GeotiffBasedReader<M extends XmlMetadata> extends AbstractProductReader {
+public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends AbstractProductReader {
 
     private final Class<M> metadataClass;
     protected List<M> metadata;
@@ -46,7 +46,7 @@ public abstract class GeotiffBasedReader<M extends XmlMetadata> extends Abstract
     protected final Map<Band, Band> bandMap;
     protected List<String> rasterFileNames;
 
-    protected GeotiffBasedReader(ProductReaderPlugIn readerPlugIn) {
+    protected GeoTiffBasedReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
         this.metadataClass = getTypeArgument();

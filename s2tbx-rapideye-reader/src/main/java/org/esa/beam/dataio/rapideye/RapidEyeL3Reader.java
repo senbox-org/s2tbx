@@ -1,7 +1,7 @@
 package org.esa.beam.dataio.rapideye;
 
 import org.esa.beam.dataio.rapideye.metadata.RapidEyeMetadata;
-import org.esa.beam.dataio.readers.GeotiffBasedReader;
+import org.esa.beam.dataio.readers.GeoTiffBasedReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.util.TreeNode;
 
@@ -13,7 +13,7 @@ import java.io.IOException;
  *
  * @author  Cosmin Cara
  */
-public class RapidEyeL3Reader extends GeotiffBasedReader<RapidEyeMetadata> {
+public class RapidEyeL3Reader extends GeoTiffBasedReader<RapidEyeMetadata> {
 
     protected RapidEyeL3Reader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);

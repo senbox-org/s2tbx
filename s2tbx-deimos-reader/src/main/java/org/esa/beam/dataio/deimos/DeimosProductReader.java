@@ -2,7 +2,7 @@ package org.esa.beam.dataio.deimos;
 
 import org.esa.beam.dataio.deimos.dimap.DeimosConstants;
 import org.esa.beam.dataio.deimos.dimap.DeimosMetadata;
-import org.esa.beam.dataio.readers.GeotiffBasedReader;
+import org.esa.beam.dataio.readers.GeoTiffBasedReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.Product;
@@ -10,7 +10,7 @@ import org.esa.beam.framework.datamodel.Product;
 /**
  * Created by kraftek on 9/22/2014.
  */
-public class DeimosProductReader extends GeotiffBasedReader<DeimosMetadata> {
+public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
 
     protected DeimosProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
