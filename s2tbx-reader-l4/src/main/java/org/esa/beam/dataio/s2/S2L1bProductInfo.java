@@ -8,7 +8,7 @@ import java.io.File;
 /**
  * @author Norman Fomferra
  */
-public class S2ProductInfo {
+public class S2L1bProductInfo {
         /*
     public final int numBands;
 
@@ -36,14 +36,14 @@ public class S2ProductInfo {
 
     public class BandInfo {
         public final int index;
-        public final S2SpatialResolution resolution;
+        public final S2L1bSpatialResolution resolution;
         public final double wavelength;
         public final double solarFlux;
         public final double wavelengthMin;
         public final double wavelengthMax;
         public final Jp2ImageInfo jp2ImageLayout;
 
-        public BandInfo(int index, S2SpatialResolution resolution, double wavelength, double wavelengthMin, double wavelengthMax, double solarFlux, Jp2ImageInfo jp2ImageLayout) {
+        public BandInfo(int index, S2L1bSpatialResolution resolution, double wavelength, double wavelengthMin, double wavelengthMax, double solarFlux, Jp2ImageInfo jp2ImageLayout) {
             this.index = index;
             this.resolution = resolution;
             this.wavelength = wavelength;

@@ -38,12 +38,12 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2Config.FORMAT_NAME};
+        return new String[]{S2L1bConfig.FORMAT_NAME};
     }
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[]{S2Config.MTD_EXT};
+        return new String[]{S2L1bConfig.MTD_EXT};
     }
 
     @Override
@@ -53,7 +53,7 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public BeamFileFilter getProductFileFilter() {
-        return new BeamFileFilter(S2Config.FORMAT_NAME,
+        return new BeamFileFilter(S2L1bConfig.FORMAT_NAME,
                                   getDefaultFileExtensions(),
                                   "Sentinel-2 MSI L1C product or tile");
     }

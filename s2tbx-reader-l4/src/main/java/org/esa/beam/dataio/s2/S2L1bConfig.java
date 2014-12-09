@@ -7,7 +7,7 @@ import java.awt.image.DataBuffer;
 /**
  * @author Norman Fomferra
  */
-public interface S2Config {
+public interface S2L1bConfig {
     boolean DEBUG = Boolean.getBoolean("org.esa.beam.dataio.s2.S2Config.DEBUG");
 
     /**
