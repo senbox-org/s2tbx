@@ -170,9 +170,9 @@ public class SpotViewProductReader extends AbstractProductReader {
                 latPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = tiePoints[i].getValueAt(4);
                 lonPoints[(i != 2 ? (i != 3 ? i : 2) : 3)] = tiePoints[i].getValueAt(3);
             }
-            TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), convertToFloats(latPoints));
+            TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), latPoints);
             product.addTiePointGrid(latGrid);
-            TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), convertToFloats(lonPoints));
+            TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), lonPoints);
             product.addTiePointGrid(lonGrid);
             GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
             product.setGeoCoding(geoCoding);

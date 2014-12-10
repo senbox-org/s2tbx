@@ -218,7 +218,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
     }
 
     private TiePointGrid addTiePointGrid(int width, int height, Product product, String gridName, double[] tiePoints) {
-        final TiePointGrid tiePointGrid = createTiePointGrid(gridName, 2, 2, 0, 0, width, height, convertToFloats(tiePoints));
+        final TiePointGrid tiePointGrid = createTiePointGrid(gridName, 2, 2, 0, 0, width, height, tiePoints);
         product.addTiePointGrid(tiePointGrid);
         return tiePointGrid;
     }

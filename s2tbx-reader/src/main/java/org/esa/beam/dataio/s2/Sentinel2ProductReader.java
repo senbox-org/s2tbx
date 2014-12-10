@@ -301,7 +301,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, double[] values) {
         // todo temporary patch until pom dependencies are updated
-        final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, convertToFloats(values));
+        final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, values);
         tiePointGrid.setNoDataValue(Double.NaN);
         tiePointGrid.setNoDataValueUsed(true);
         return tiePointGrid;
