@@ -12,6 +12,7 @@ import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.util.Guardian;
 import org.esa.beam.util.logging.BeamLogManager;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
@@ -94,10 +95,10 @@ public class L1bMetadata {
     static class TileGeometry {
         int numRows;
         int numCols;
-        double upperLeftX;
-        double upperLeftY;
-        double xDim;
-        double yDim;
+        public ReferencedEnvelope envelope;
+        public int position;
+        int xDim;
+        int yDim;
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -225,12 +226,22 @@ public class L1bMetadata {
                 }
             }
 
+            int index = 0;
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
-                Level1B_Granule aTile = (Level1B_Granule) L1bMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
-                Map<Integer, TileGeometry> geoms = L1bMetadataProc.getTileGeometries(aTile);
+                long startTime = System.currentTimeMillis();
+                Level1B_Granule aGranule = (Level1B_Granule) L1bMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
+                long endTime = System.currentTimeMillis();
 
-                Tile t = new Tile(aTile.getGeneral_Info().getGRANULE_ID().getValue());
+                logger.log(Level.SEVERE, "That took " + (endTime - startTime) + " milliseconds");
+
+                startTime = System.currentTimeMillis();
+                Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule);
+                endTime = System.currentTimeMillis();
+                logger.log(Level.SEVERE, "The granule took " + (endTime - startTime) + " milliseconds");
+
+
+                Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue());
 
                 // todo look at geometric info here
 
@@ -239,6 +250,8 @@ public class L1bMetadata {
                 t.tileGeometry60M = geoms.get(60);
 
                 tileList.add(t);
+                index = index + 1;
+                logger.log(Level.WARNING, "Added tile num: " + index);
             }
 
             S2L1bDatastripFilename stripName = L1bMetadataProc.getDatastrip(product);

@@ -75,11 +75,8 @@ public class L1bSceneDescription {
             }
 
             L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
-            Envelope2D envelope = new Envelope2D(crs,
-                    selectedGeometry.upperLeftX,
-                    selectedGeometry.upperLeftY + selectedGeometry.numRows * selectedGeometry.yDim,
-                    selectedGeometry.numCols * selectedGeometry.xDim,
-                    -selectedGeometry.numRows * selectedGeometry.yDim);
+            Envelope2D envelope = new Envelope2D(selectedGeometry.envelope);
+
             tileEnvelopes[i] = envelope;
 
             if (sceneEnvelope == null) {
@@ -96,7 +93,8 @@ public class L1bSceneDescription {
         double imageX = sceneEnvelope.getX();
         double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
         Rectangle sceneBounds = null;
-        for (int i = 0; i < tileEnvelopes.length; i++) {
+        for (int i = 0; i < tileEnvelopes.length; i++)
+        {
             L1bMetadata.Tile tile = tileList.get(i);
             L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
             Envelope2D tileEnvelope = tileEnvelopes[i];

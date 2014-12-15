@@ -1,6 +1,7 @@
 package org.esa.beam.dataio.s2;
 
 
+import com.vividsolutions.jts.geom.Coordinate;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
@@ -14,6 +15,8 @@ import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
 import org.esa.beam.util.Guardian;
 import org.esa.beam.util.logging.BeamLogManager;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 
 import javax.xml.bind.*;
 import java.io.File;
@@ -150,7 +153,7 @@ public class L1bMetadataProc {
 
         //todo get modules classpath
         //todo test new lecture style
-        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
+        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1B, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
@@ -302,14 +305,83 @@ public class L1bMetadataProc {
         return imagesList;
     }
 
-    public static Map<Integer, L1bMetadata.TileGeometry> getTileGeometries(Level1B_Granule product) {
+    /**
+     * todo move this to a utility class
+     * @param in
+     * @param size
+     * @return
+     */
+    public static List<double[]> arraySplitter(List<Double> in, int size)
+    {
+        Guardian.assertTrue("Multiple size" ,(in.size() % size) == 0);
+
+        List<double[]> result = new ArrayList<double[]>();
+        for(int i = 0; i < in.size() / size; i++)
+        {
+            double[] item = new double[]{in.get(i * size), in.get(i * size + 1), in.get(i * size + 2)};
+            result.add(item);
+        }
+
+        return result;
+    }
+
+    public static List<Coordinate> as2DCoordinates(List<Double> in)
+    {
+        List<double[]> tr = arraySplitter(in, 2);
+
+        List<Coordinate> result = new ArrayList<Coordinate>();
+        for(int i = 0; i < tr.size(); i++)
+        {
+            Coordinate c = new Coordinate(tr.get(i)[0], tr.get(i)[1]);
+            result.add(c);
+        }
+
+        return result;
+    }
+
+    public static List<Coordinate> as3DCoordinates(List<Double> in)
+    {
+        List<double[]> tr = arraySplitter(in, 3);
+
+        List<Coordinate> result = new ArrayList<Coordinate>();
+        for(int i = 0; i < tr.size(); i++)
+        {
+            Coordinate c = new Coordinate(tr.get(i)[0], tr.get(i)[1], tr.get(i)[2]);
+            result.add(c);
+        }
+
+        return result;
+    }
+
+    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule product) {
         String id = product.getGeneral_Info().getGRANULE_ID().getValue();
 
-        A_GEOMETRIC_INFO info = product.getGeometric_Info();
+        List<Double> polygon = product.getGeometric_Info().getGranule_Footprint().getGranule_Footprint().getFootprint().getEXT_POS_LIST();
+        List<Coordinate> thePoints = as3DCoordinates(polygon);
 
-        // todo implement this part
+        // todo OPP should we make sure it's a box ?
+        Coordinate[] arr = thePoints.toArray(new Coordinate[thePoints.size()]);
+
+        ReferencedEnvelope re = new ReferencedEnvelope(arr[0].x, arr[2].x, arr[0].y, arr[2].y, DefaultGeographicCRS.WGS84);
 
         Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<Integer, L1bMetadata.TileGeometry>();
+
+        List<A_GRANULE_DIMENSIONS.Size> sizes = product.getGeometric_Info().getGranule_Dimensions().getSize();
+        int pos = product.getGeometric_Info().getGranule_Position().getPOSITION();
+
+        for (A_GRANULE_DIMENSIONS.Size gpos : sizes)
+        {
+            int index = gpos.getResolution();
+            L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
+            tgeox.numCols = gpos.getNCOLS();
+            tgeox.numRows = gpos.getNROWS();
+            tgeox.envelope = re;
+            tgeox.position = pos;
+            // todo OPP check this...
+            tgeox.xDim = index;
+            tgeox.yDim = -index;
+            resolutions.put(index, tgeox);
+        }
 
         return resolutions;
     }
