@@ -56,7 +56,7 @@ public class S2L1bGranuleMetadataFilename {
                     );
         } else {
             // todo add a warning message too
-            BeamLogManager.getSystemLogger().warning(String.format("%s didn't match regexp %s", fileName, PATTERN.toString()));
+            BeamLogManager.getSystemLogger().warning(String.format("%s GranuleMetadata didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

@@ -10,7 +10,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleImageFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleMetadataFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bProductFilename;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.datamodel.*;
@@ -112,14 +111,14 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
         if (S2L1bProductFilename.isProductFilename(inputFile.getName()))
         {
-            return getL1cMosaicProduct(inputFile);
+            return getL1bMosaicProduct(inputFile);
         }
         else {
             throw new IOException("Unhandled file type.");
         }
     }
 
-    private Product getL1cMosaicProduct(File metadataFile) throws IOException {
+    private Product getL1bMosaicProduct(File metadataFile) throws IOException {
         L1bMetadata metadataHeader;
 
         try {
@@ -129,9 +128,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
-        S2L1bGranuleMetadataFilename mtdFilename = S2L1bGranuleMetadataFilename.create(metadataFile.getName());
-        S2L1bProductFilename mtdFN = S2L1bProductFilename.create(metadataFile.getName());
-
         L1bSceneDescription sceneDescription = L1bSceneDescription.create(metadataHeader, Tile.idGeom.G10M);
         logger.fine("Scene Description: " + sceneDescription);
 
@@ -140,40 +136,48 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
         ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
+        // todo OPP what if bandInformations are optional ?
         Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
         List<L1bMetadata.Tile> tileList = metadataHeader.getTileList();
-        for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-            int bandIndex = bandInformation.bandId;
-            if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
+        if(productCharacteristics.bandInformations != null) {
+            for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+                int bandIndex = bandInformation.bandId;
+                if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
 
-                HashMap<String, File> tileFileMap = new HashMap<String, File>();
-                for (Tile tile : tileList) {
-                    S2L1bGranuleDirFilename gf = S2L1bGranuleDirFilename.create(tile.id);
-                    Guardian.assertNotNull("Product files don't match regular expressions", gf);
+                    HashMap<String, File> tileFileMap = new HashMap<String, File>();
+                    for (Tile tile : tileList) {
+                        S2L1bGranuleDirFilename gf = S2L1bGranuleDirFilename.create(tile.id);
+                        Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
-                    S2L1bGranuleImageFilename reallyHappy = gf.getImageFilename(bandInformation.physicalBand);
+                        S2L1bGranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.physicalBand);
 
-                    String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + reallyHappy.name;
+                        String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + granuleFileName.name;
 
-                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
+                        logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
 
-                    File file = new File(productDir, imgFilename);
-                    if (file.exists()) {
-                        tileFileMap.put(tile.id, file);
-                    } else {
-                        logger.warning(String.format("Warning: missing file %s\n", file));
+                        File file = new File(productDir, imgFilename);
+                        if (file.exists()) {
+                            tileFileMap.put(tile.id, file);
+                        } else {
+                            logger.warning(String.format("Warning: missing file %s\n", file));
+                        }
                     }
-                }
 
-                if (!tileFileMap.isEmpty()) {
-                    BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
-                    bandInfoMap.put(bandIndex, bandInfo);
+                    if (!tileFileMap.isEmpty()) {
+                        BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+                        bandInfoMap.put(bandIndex, bandInfo);
+                    } else {
+                        logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.physicalBand));
+                    }
                 } else {
-                    logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.physicalBand));
+                    logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.physicalBand));
                 }
-            } else {
-                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.physicalBand));
             }
+        }
+        else
+        {
+            // todo OPP Look for optional info in schema
+            logger.warning("There are no spectral information here !");
         }
 
         //todo change product filename properties...

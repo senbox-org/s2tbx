@@ -18,7 +18,10 @@ import org.esa.beam.util.logging.BeamLogManager;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -27,7 +30,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * Created by opicas-p on 24/06/2014.
@@ -223,6 +225,7 @@ public class L1bMetadataProc {
 
             List<L1bMetadata.SpectralInformation> aInfo = new ArrayList<L1bMetadata.SpectralInformation>();
 
+            // todo OPP Spectral_Information_List is optional on L1B ??
             for (A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
                 L1bMetadata.SpectralInformation data = new L1bMetadata.SpectralInformation();
                 data.bandId = Integer.parseInt(sin.getBandId());
@@ -241,6 +244,11 @@ public class L1bMetadataProc {
 
             int size = aInfo.size();
             characteristics.bandInformations = aInfo.toArray(new L1bMetadata.SpectralInformation[size]);
+        }
+        else
+        {
+            // todo OPP remove this
+            BeamLogManager.getSystemLogger().severe("Empty spectral info !!!!");
         }
 
         return characteristics;

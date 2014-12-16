@@ -78,7 +78,7 @@ public class S2L1bGranuleDirFilename {
         } else {
             // todo check for null
             // todo add a warning message too
-            BeamLogManager.getSystemLogger().warning(String.format("%s didn't match regexp %s", fileName, PATTERN.toString()));
+            BeamLogManager.getSystemLogger().warning(String.format("%s GranuleDir didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }
