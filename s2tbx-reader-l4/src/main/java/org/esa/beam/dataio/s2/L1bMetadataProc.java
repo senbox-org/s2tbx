@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Created by opicas-p on 24/06/2014.
@@ -156,12 +157,21 @@ public class L1bMetadataProc {
         JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1B, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        Marshaller marshaller = jaxbContext.createMarshaller();
 
         Object ob =  unmarshaller.unmarshal(stream);
         Object casted = ((JAXBElement)ob).getValue();
 
         return casted;
+    }
+
+    public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
+
+        ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
+
+        //todo get modules classpath
+        //todo test new lecture style
+        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1B, s2c);
+        return jaxbContext;
     }
 
     public static L1bMetadata.ProductCharacteristics parseCharacteristics(Level1B_User_Product product)
@@ -354,8 +364,6 @@ public class L1bMetadataProc {
     }
 
     public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule product) {
-        String id = product.getGeneral_Info().getGRANULE_ID().getValue();
-
         List<Double> polygon = product.getGeometric_Info().getGranule_Footprint().getGranule_Footprint().getFootprint().getEXT_POS_LIST();
         List<Coordinate> thePoints = as3DCoordinates(polygon);
 
@@ -380,6 +388,9 @@ public class L1bMetadataProc {
             // todo OPP check this...
             tgeox.xDim = index;
             tgeox.yDim = -index;
+
+            // todo OPP remove this log
+            BeamLogManager.getSystemLogger().warning("Adding: " + tgeox.toString());
             resolutions.put(index, tgeox);
         }
 

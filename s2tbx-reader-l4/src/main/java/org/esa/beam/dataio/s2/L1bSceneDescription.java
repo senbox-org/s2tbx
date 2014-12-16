@@ -5,6 +5,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -65,13 +66,10 @@ public class L1bSceneDescription {
         }
         for (int i = 0; i < tileList.size(); i++) {
             L1bMetadata.Tile tile = tileList.get(i);
+
+            // todo OPP look geometry
             if (crs == null) {
-                try {
-                    crs = CRS.decode(tile.horizontalCsCode);
-                    BeamLogManager.getSystemLogger().fine("crs = " + crs);
-                } catch (FactoryException e) {
-                    BeamLogManager.getSystemLogger().severe("Unknown CRS: " + tile.horizontalCsCode);
-                }
+                crs = DefaultGeographicCRS.WGS84;
             }
 
             L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);

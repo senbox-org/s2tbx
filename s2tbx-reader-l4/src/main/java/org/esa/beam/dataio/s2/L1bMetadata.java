@@ -19,7 +19,10 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -44,7 +47,6 @@ public class L1bMetadata {
 
     static class Tile {
         String id;
-        String horizontalCsName;
         String horizontalCsCode;
         TileGeometry tileGeometry10M;
         TileGeometry tileGeometry20M;
@@ -170,6 +172,8 @@ public class L1bMetadata {
     private List<Tile> tileList;
     private List<String> imageList; //todo populate imagelist
     private ProductCharacteristics productCharacteristics;
+    private JAXBContext context;
+    private Unmarshaller unmarshaller;
 
     public static L1bMetadata parseHeader(File file) throws JDOMException, IOException {
         return new L1bMetadata(new FileInputStream(file), file, file.getParent());
@@ -191,8 +195,13 @@ public class L1bMetadata {
     private L1bMetadata(InputStream stream, File file, String parent) throws DataConversionException
     {
         try {
+            context = L1bMetadataProc.getJaxbContext();
+            unmarshaller = context.createUnmarshaller();
 
-            Level1B_User_Product product = (Level1B_User_Product) L1bMetadataProc.readJaxbFromFilename(stream);
+            Object ob =  unmarshaller.unmarshal(stream);
+            Object casted = ((JAXBElement)ob).getValue();
+
+            Level1B_User_Product product = (Level1B_User_Product) casted;
             productCharacteristics = L1bMetadataProc.getProductOrganization(product);
 
             Collection<String> tileNames = L1bMetadataProc.getTiles(product);
@@ -202,7 +211,6 @@ public class L1bMetadata {
 
             for (String granuleName: tileNames)
             {
-                FileInputStream fi = (FileInputStream) stream;
                 File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
                 logger.log(Level.WARNING, "Looking for: " + nestedMetadata.getAbsolutePath());
 
@@ -230,7 +238,11 @@ public class L1bMetadata {
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
                 long startTime = System.currentTimeMillis();
-                Level1B_Granule aGranule = (Level1B_Granule) L1bMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
+
+                Object aob =  unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
+                Object acasted = ((JAXBElement)aob).getValue();
+
+                Level1B_Granule aGranule = (Level1B_Granule) acasted;
                 long endTime = System.currentTimeMillis();
 
                 logger.log(Level.SEVERE, "That took " + (endTime - startTime) + " milliseconds");
