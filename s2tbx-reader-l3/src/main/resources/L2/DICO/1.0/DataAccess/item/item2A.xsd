@@ -54,18 +54,14 @@
 		<xs:annotation>
 			<xs:documentation>Product Data Item identification</xs:documentation>
 		</xs:annotation>
-		<xs:restriction base="xs:string">
-			<xs:pattern value="S2[AB_]_USER_[\w{Lu}_]{10}_[\w{Lu}_]{4}_\d{8}T\d{6}_V\d{8}T\d{6}_\d{8}T\d{6}"/>
-		</xs:restriction>
+		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
 	<!--DEM-->
 	<xs:simpleType name="DEM_ID_2A">
 		<xs:annotation>
 			<xs:documentation>Product Data Item identification</xs:documentation>
 		</xs:annotation>
-		<xs:restriction base="xs:string">
-			<xs:pattern value="S2[AB_]_USER_[\w{Lu}_]{10}_[\w{Lu}_]{4}_\d{8}T\d{6}_S\d{8}T\d{6}"/>
-		</xs:restriction>
+		<xs:restriction base="xs:string"/>
 	</xs:simpleType>
 	<!--GRI-->
 	<xs:simpleType name="GRI_ID_2A">

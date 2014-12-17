@@ -2,7 +2,7 @@ package org.esa.beam.dataio.s2;
 
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_user_product_level_2a_metadata.Level2A_User_Product;
+import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
@@ -168,8 +168,8 @@ public class L2aMetadataProc {
 
         List<L2aMetadata.SpectralInformation> targetList = new ArrayList<L2aMetadata.SpectralInformation>();
 
-        List<A_PRODUCT_CHARACTERISTICS.Spectral_Information_List.Spectral_Information> aList = product.getProduct_Characteristics().getSpectral_Information_List().getSpectral_Information();
-        for(A_PRODUCT_CHARACTERISTICS.Spectral_Information_List.Spectral_Information si : aList) {
+        List<A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> aList = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
+        for(A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
             L2aMetadata.SpectralInformation newInfo = new L2aMetadata.SpectralInformation();
             newInfo.bandId = Integer.parseInt(si.getBandId());
             newInfo.physicalBand = si.getPhysicalBand().value();

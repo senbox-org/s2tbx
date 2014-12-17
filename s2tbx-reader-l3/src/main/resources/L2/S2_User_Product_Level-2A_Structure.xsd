@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	xmlns="https://psd-12.sentinel2.eo.esa.int/PSD/S2_User_Product_Level-2A_Structure.xsd"
-	targetNamespace="https://psd-12.sentinel2.eo.esa.int/PSD/S2_User_Product_Level-2A_Structure.xsd"
+	xmlns="https://psd-12.sentinel2.eo.esa.int/PSD/User_Product_Level-2A_Structure.xsd"
+	targetNamespace="https://psd-12.sentinel2.eo.esa.int/PSD/User_Product_Level-2A_Structure.xsd"
 	elementFormDefault="qualified"
 	version="12">
 	<xs:element name="Level-2A_User_Product_Structure"

@@ -171,28 +171,13 @@ Examples: EPSG:4326, RAW</xs:documentation>
 						</xs:element>
 						<xs:element name="Image_Display_Order" type="dimap:A_BAND_DISPLAY_ORDER">
 							<xs:annotation>
-								<xs:documentation>Relation between product image channels and on board spectral bands.</xs:documentation>
+								<xs:documentation>Relation between product image channels and on board spectral bands</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+						<xs:element name="L1C_L2A_Quantification_Values_List" type="dimap:A_L1C_L2A_QUANTIFICATION_VALUES_LIST">
 							<xs:annotation>
-								<xs:documentation>Reflectance quantification value (in order to convert digit count into reflectance)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="L2A_BOA_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
-							<xs:annotation>
-								<xs:documentation>Reflectance quantification value (in order to convert digit count into Botton-Of-Atmosphere reflectance)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="L2A_WV_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
-							<xs:annotation>
-								<xs:documentation>Water Vapor Map quantification value (in order to convert digit count into water vapor physical units)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="L2A_AOT_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
-							<xs:annotation>
-								<xs:documentation>Aeorosol Optical Thickness Map quantification value (in order to convert digit count into Aeorosol Opthical Thickness physical units)</xs:documentation>
-							</xs:annotation>
+								<xs:documentation>A list of L1C, L2A quantification values for digital counts on pixel level</xs:documentation>
+							</xs:annotation>						
 						</xs:element>
 						<xs:element name="Reflectance_Conversion">
 							<xs:complexType>
@@ -379,171 +364,11 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:documentation>Quality Indicators information on product level (L2A + L1C Technical assessment info)</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="NODATA_PIX_PERCENTAGE">
+			<xs:element name="Image_Content_QI" type="dimap:A_L2A_IMG_CONTENT_QI">
 				<xs:annotation>
-					<xs:documentation>Percentage of No Data (Missing Data on projected tiles) pixels (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="SATURATED_DEFECTIVE_PIX_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of saturated or defective pixels (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="DARK_FEATURES_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as dark features or shadows (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="CLOUD_SHADOW_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as cloud shadow (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="VEGETATION_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as vegetation (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="BARE_SOILS_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as bare soils (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="WATER_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as water (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="LOW_PROBA_CLOUDS_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as low probability clouds (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="MEDIUM_PROBA_CLOUDS_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as medium probability clouds (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="HIGH_PROBA_CLOUDS_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as high probability clouds (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="THIN_CIRRUS_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as thin cirrus clouds (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="SNOW_ICE_PERCENTAGE">
-				<xs:annotation>
-					<xs:documentation>Percentage of pixels classified as snow or ice (Computed as synthesis from tile data)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="RADIATIVE_TRANSFER_ACCURAY">
-				<xs:annotation>
-					<xs:documentation>Declared accuracy of the radiative transfer model. LibRadtran code achieves a relative accuracy of 5% - 10%. (B.Mayer)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="WATER_VAPOUR_RETRIEVAL_ACCURACY">
-				<xs:annotation>
-					<xs:documentation>APDS (Atmospherically Precorrected Differential Absorption) method achieves a typical relative accuracy of 5% - 10% except over very dark surfaces. (Sch?ler 1998, Chylel et al. 2003, Richter and Sch?ler 2008)</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
-			<xs:element name="AOT_RETRIEVAL_ACCURACY">
-				<xs:annotation>
-					<xs:documentation>Declared accuracy of the Aerosol Optical Thickness</xs:documentation>
-				</xs:annotation>
-				<xs:simpleType>
-					<xs:restriction base="xs:double">
-						<xs:minInclusive value="0"/>
-						<xs:maxInclusive value="100"/>
-					</xs:restriction>
-				</xs:simpleType>
-			</xs:element>
+					<xs:documentation>Image content Quality Indicators (percentages of pixel type), inherited from L1</xs:documentation>
+				</xs:annotation>		
+			</xs:element>		
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="AN_IMAGE_DATA_INFO_DSL1C_DSL2A">
@@ -562,7 +387,7 @@ Examples: EPSG:4326, RAW</xs:documentation>
 								<xs:sequence>
 									<xs:element name="Tile" maxOccurs="unbounded">
 										<xs:complexType>
-											<xs:attribute name="tileId" type="item:TILE_ID" use="required">
+											<xs:attribute name="tileId" type="item:TILE_ID_2A" use="required">
 												<xs:annotation>
 													<xs:documentation>Tile Identifier</xs:documentation>
 												</xs:annotation>
@@ -639,12 +464,12 @@ Examples: EPSG:4326, RAW</xs:documentation>
 					<xs:documentation/>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="Image_Content_QI" type="dimap:A_L2A_IMG_CONTENT_QI">
+			<xs:element name="DEGRADED_ANC_DATA_PERCENTAGE" type="misc:A_PERCENTAGE">
 				<xs:annotation>
-					<xs:documentation>Computed as synthesis from tile data (L2A and L1C QI)</xs:documentation>
+					<xs:documentation>Percentage of degraded ancillary data</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			</xs:sequence>
+		</xs:sequence>
 		<xs:attribute name="metadataLevel" type="dimap:metadataLevel" fixed="Brief"/>
 	</xs:complexType>
 	<xs:complexType name="AN_AUXILIARY_DATA_INFO_DSL1C_DSL2A">
@@ -663,14 +488,9 @@ Examples: EPSG:4326, RAW</xs:documentation>
 					</xs:appinfo>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="L1C_GIPP_List" type="dimap:A_GIPP_LIST">
+			<xs:element name="GIPP_List" type="dimap:A_GIPP_LIST">
 				<xs:annotation>
 					<xs:documentation>Used GIPP files for L1C processing</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="L2A_GIPP_List" type="dimap:A_GIPP_LIST_2A">
-				<xs:annotation>
-					<xs:documentation>Reference to used GIPPs for L2A processing</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="ECMWF_DATA_REF" type="item:ECMWF_ID">
@@ -691,21 +511,6 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:element name="GRI_FILENAME" type="xs:string">
 				<xs:annotation>
 					<xs:documentation>Reference to GRI data </xs:documentation>
-				</xs:annotation>
-			</xs:element>			
-			<xs:element name="L2A_PRODUCTION_DEM_TYPE" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>Reference to used DEM for L2A processing</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="L2A_LIBRADTRAN_LUTS" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>Reference to used LibRadtran LUTs for L2A processing</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="L2A_SNOW_CLIMATOLOGY" type="xs:string">
-				<xs:annotation>
-					<xs:documentation>Reference to used Snow Climatology for L2A processing</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -785,13 +590,14 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:documentation>Quality Indicators information on L2A Tile and Pixel level</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="Image_Content_QI" type="dimap:A_L2A_IMG_CONTENT_QI"/>
+			<xs:element name="L1C_Image_Content_QI" type="dimap:A_GRANULE_COMMON_IMG_CONTENT_QI"/>
+			<xs:element name="L2A_Image_Content_QI" type="dimap:A_L2A_IMG_CONTENT_QI"/>
 			<xs:element name="L1C_Pixel_Level_QI" type="dimap:A_MASK_LIST">
 				<xs:annotation>
 					<xs:documentation>Pointer to the L1C Mask files contained in the QI_DATA folder</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="L2A_Pixel_Level_QI" type="dimap:A_L2A_Pixel_Level_QI_LIST">
+			<xs:element name="L2A_Pixel_Level_QI" type="dimap:A_L2A_PIXEL_LEVEL_QI_LIST">
 				<xs:annotation>
 					<xs:documentation>Pointer to the L2A Pixel Level QI files contained in the QI_DATA folder</xs:documentation>
 				</xs:annotation>
@@ -809,7 +615,7 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			<xs:documentation>Image content Quality Indicators (percentages of pixel type)</xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
-			<xs:element name="NODATA_PIX_PERCENTAGE">
+			<xs:element name="NODATA_PIXEL_PERCENTAGE">
 				<xs:annotation>
 					<xs:documentation>Percentage of No Data (Missing data on projected tiles) pixels</xs:documentation>
 				</xs:annotation>
@@ -820,7 +626,7 @@ Examples: EPSG:4326, RAW</xs:documentation>
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:element>
-			<xs:element name="SATURATED_DEFECTIVE_PIX_PERCENTAGE">
+			<xs:element name="SATURATED_DEFECTIVE_PIXEL_PERCENTAGE">
 				<xs:annotation>
 					<xs:documentation>Percentage of saturated or defective pixels</xs:documentation>
 				</xs:annotation>
@@ -941,14 +747,42 @@ Examples: EPSG:4326, RAW</xs:documentation>
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:element>
-			<xs:element name="DEGRADED_ANC_DATA_PERCENTAGE" type="misc:A_PERCENTAGE">
+			<xs:element name="RADIATIVE_TRANSFER_ACCURAY">
 				<xs:annotation>
-					<xs:documentation>A percentage of degraded ancillary data (L1C inherited)</xs:documentation>
+					<xs:documentation>Declared accuracy of the radiative transfer model. LibRadtran code achieves a relative accuracy of 5% - 10%. (B.Mayer)</xs:documentation>
 				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="WATER_VAPOUR_RETRIEVAL_ACCURACY">
+				<xs:annotation>
+					<xs:documentation>APDS (Atmospherically Precorrected Differential Absorption) method achieves a typical relative accuracy of 5% - 10% except over very dark surfaces. (Sch?ler 1998, Chylel et al. 2003, Richter and Sch?ler 2008)</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="AOT_RETRIEVAL_ACCURACY">
+				<xs:annotation>
+					<xs:documentation>Declared accuracy of the Aerosol Optical Thickness</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:double">
+						<xs:minInclusive value="0"/>
+						<xs:maxInclusive value="100"/>
+					</xs:restriction>
+				</xs:simpleType>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-	<xs:complexType name="A_L2A_Pixel_Level_QI_LIST">
+	<xs:complexType name="A_L2A_PIXEL_LEVEL_QI_LIST">
 		<xs:annotation>
 			<xs:documentation>Filenames of L2A QI Masks (Cloud confidence map, Snow/Ice confidence map)</xs:documentation>
 		</xs:annotation>
@@ -965,4 +799,31 @@ Examples: EPSG:4326, RAW</xs:documentation>
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="A_L1C_L2A_QUANTIFICATION_VALUES_LIST">
+		<xs:annotation>
+			<xs:documentation>A list of L1C, L2A quantification values for digital counts on pixel level</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>					
+			<xs:element name="L1C_TOA_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+				<xs:annotation>
+					<xs:documentation>L1C TOA Reflectance quantification value (in order to convert digit count into Top-Of-Atmosphere reflectance, inherited from L1C)</xs:documentation>
+				</xs:annotation>
+			</xs:element>	
+			<xs:element name="L2A_BOA_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+				<xs:annotation>
+					<xs:documentation>L2A BOA Reflectance quantification value (in order to convert digit count into Bottom-Of-Atmosphere reflectance)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="L2A_AOT_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+				<xs:annotation>
+					<xs:documentation>Aeorosol Optical Thickness Map quantification value (in order to convert digit count into Aeorosol Opthical Thickness physical units)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="L2A_WVP_QUANTIFICATION_VALUE" type="misc:A_DOUBLE_WITH_UNIT_ATTR">
+				<xs:annotation>
+					<xs:documentation>Water Vapor Map quantification value (in order to convert digit count into water vapor physical units)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>	
 </xs:schema>

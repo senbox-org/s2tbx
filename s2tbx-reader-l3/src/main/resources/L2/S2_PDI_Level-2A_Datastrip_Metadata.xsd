@@ -7,9 +7,9 @@
 	version="12">
 	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/dimap/"
 			   schemaLocation="DICO/1.0/PDGS/dimap/dimap2A.xsd"/>
-	<xs:element name="Level-2A_Datastrip_ID" type="Level-2A_Datastrip">
+	<xs:element name="Level-2A_DataStrip_ID" type="Level-2A_Datastrip">
 		<xs:annotation>
-			<xs:documentation>Instance of the DIMAP_Level-2A_Datastrip_ID</xs:documentation>
+			<xs:documentation>Instance of the DIMAP_Level-2A_DataStrip_ID</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:complexType name="Level-2A_Datastrip">
