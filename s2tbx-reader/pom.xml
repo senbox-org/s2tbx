@@ -76,7 +76,10 @@
             <plugin>
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
                 <artifactId>maven-jaxb2-plugin</artifactId>
-                <version>0.9.0</version>
+                <version>0.10.0</version>
+                <configuration>
+                    <locale>en</locale>
+                </configuration>
                 <executions>
                     <execution>
                         <id>schema-generate</id>
@@ -84,7 +87,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/</schemaDirectory>
+                            <schemaDirectory>src/main/resources/L01/</schemaDirectory>
                             <schemaIncludes>
                                 <include>*.xsd</include>
                             </schemaIncludes>
@@ -105,31 +108,6 @@
                     <source>1.6</source>
                     <target>1.6</target>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.3.1</version>
-                <executions>
-                    <execution>
-                        <id>enforce-property</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireProperty>
-                                    <property>user.language</property>
-                                    <message>The user locale must be set to english</message>
-                                    <regex>.*en.*</regex>
-                                    <regexMessage>The user locale must be set to english.</regexMessage>
-                                </requireProperty>
-                            </rules>
-                            <fail>true</fail>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns:header="http://gs2.esa.int/DICO/1.0/DPC/header/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:date="http://gs2.esa.int/DICO/1.0/SY/date_time/" xmlns:spacecraft="http://gs2.esa.int/DICO/1.0/PDGS/spacecraft/" targetNamespace="http://gs2.esa.int/DICO/1.0/DPC/header/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/date_time/" schemaLocation="..\..\SY\date_time\date_time.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/spacecraft/" schemaLocation="..\..\PDGS\spacecraft\spacecraft.xsd"/>
+	<xs:complexType name="DPC_Header">
+		<xs:sequence>
+			<xs:element name="SATELLITE" type="spacecraft:S2_SATELLITE_ID">
+				<xs:annotation>
+					<xs:documentation>Satellite identification</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="INTERFACE_SPECIFICATION">
+				<xs:annotation>
+					<xs:documentation>Interface description and specification</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="SCHEMA_NAME">
+							<xs:annotation>
+								<xs:documentation>name of XML Schema validating this file</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="sup_workplan_report.xsd"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="SCHEMA_VERSION" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>XML Schema version number</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string"/>
+							</xs:simpleType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="PRODUCTION_DATE" type="date:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>UTC Production date-time</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PROVIDER" type="xs:string" fixed="DPC">
+				<xs:annotation>
+					<xs:documentation>SubSystem providing the Interface : DPC</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

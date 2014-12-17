@@ -1,6 +1,5 @@
 package org.esa.beam.dataio.spot.dimap;
 
-import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.datamodel.MetadataElement;

@@ -1,7 +1,9 @@
 package org.esa.beam.dataio.s2;
 
-import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata.Level1CTile;
-import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1CUserProduct;
+import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -48,11 +50,32 @@ public class L1cMetadata {
         AnglesGrid sunAnglesGrid;
         AnglesGrid[] viewingIncidenceAnglesGrids;
 
+        public static enum idGeom{G10M, G20M, G60M};
+
         public Tile(String id) {
             this.id = id;
             tileGeometry10M = new TileGeometry();
             tileGeometry20M = new TileGeometry();
             tileGeometry60M = new TileGeometry();
+        }
+
+        public TileGeometry getGeometry(idGeom index)
+        {
+            switch (index)
+            {
+                case G10M:
+                    return tileGeometry10M;
+                case G20M:
+                    return tileGeometry20M;
+                case G60M:
+                    return tileGeometry60M;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
     }
 
@@ -61,6 +84,10 @@ public class L1cMetadata {
         int detectorId;
         float[][] zenith;
         float[][] azimuth;
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
     }
 
     static class TileGeometry {
@@ -70,6 +97,10 @@ public class L1cMetadata {
         double upperLeftY;
         double xDim;
         double yDim;
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
     }
 
     static class ReflectanceConversion {
@@ -78,6 +109,10 @@ public class L1cMetadata {
          * Unit: W/m²/µm
          */
         double[] solarIrradiances;
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
     }
 
     static class ProductCharacteristics {
@@ -85,6 +120,10 @@ public class L1cMetadata {
         String datasetProductionDate;
         String processingLevel;
         SpectralInformation[] bandInformations;
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
     }
 
     static class SpectralInformation {
@@ -96,12 +135,20 @@ public class L1cMetadata {
         double wavelenghtCentral;
         double spectralResponseStep;
         double[] spectralResponseValues;
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
     }
 
     static class QuicklookDescriptor {
         int imageNCols;
         int imageNRows;
         Histogram[] histogramList;
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
     }
 
     static class Histogram {
@@ -112,6 +159,10 @@ public class L1cMetadata {
         double max;
         double mean;
         double stdDev;
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
     }
 
     private List<Tile> tileList;
@@ -138,7 +189,8 @@ public class L1cMetadata {
     private L1cMetadata(InputStream stream, File file, String parent) throws DataConversionException
     {
         try {
-            Level1CUserProduct product = (Level1CUserProduct) L1cMetadataProc.readJaxbFromFilename(stream);
+
+            Level1C_User_Product product = (Level1C_User_Product) L1cMetadataProc.readJaxbFromFilename(stream);
             productCharacteristics = L1cMetadataProc.getProductOrganization(product);
 
             Collection<String> tileNames = L1cMetadataProc.getTiles(product);
@@ -165,12 +217,12 @@ public class L1cMetadata {
 
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
-                Level1CTile aTile = (Level1CTile) L1cMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
+                Level1C_Tile aTile = (Level1C_Tile) L1cMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
                 Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
-                Tile t = new Tile(aTile.getGeneralInfo().getTILEID().getValue());
-                t.horizontalCsCode = aTile.getGeometricInfo().getTileGeocoding().getHORIZONTALCSCODE();
-                t.horizontalCsName = aTile.getGeometricInfo().getTileGeocoding().getHORIZONTALCSNAME();
+                Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
+                t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
+                t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
 
                 t.tileGeometry10M = geoms.get(10);
                 t.tileGeometry20M = geoms.get(20);
@@ -187,7 +239,6 @@ public class L1cMetadata {
 
             File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 
-            //todo improve exception handling
             metadataElement = new MetadataElement("root");
             MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
             MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
@@ -203,16 +254,14 @@ public class L1cMetadata {
 
             metadataElement.addElement(granulesMetaData);
 
-
-            //todo improve exception handling
         } catch (JAXBException e) {
-            e.printStackTrace();
+            logger.severe(Utils.getStackTrace(e));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.severe(Utils.getStackTrace(e));
         } catch (JDOMException e) {
-            e.printStackTrace();
+            logger.severe(Utils.getStackTrace(e));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.severe(Utils.getStackTrace(e));
         }
     }
 

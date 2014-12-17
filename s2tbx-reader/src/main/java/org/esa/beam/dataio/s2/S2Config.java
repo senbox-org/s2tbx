@@ -14,7 +14,6 @@ public interface S2Config {
      * Path to "opj_decompress" executable from OpenJPEG 2.1.0 package
      */
 
-    //todo fix problems with the path length
     String OPJ_DECOMPRESSOR_EXE = L1cMetadataProc.getExecutable();
 
     //todo add Path to opj_dump

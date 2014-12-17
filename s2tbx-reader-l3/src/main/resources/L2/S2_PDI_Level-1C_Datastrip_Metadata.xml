@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<n1:Level-1C_DataStrip_ID 
+	xsi:schemaLocation="https://psd-12.sentinel2.eo.esa.int/PSD/S2_PDI_Level-1C_Datastrip_Metadata.xsd S2_PDI_Level-1C_Datastrip_Metadata.xsd"
+   	xmlns:n1="https://psd-12.sentinel2.eo.esa.int/PSD/S2_PDI_Level-1C_Datastrip_Metadata.xsd"
+   	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <n1:General_Info>
+    <Datatake_Info datatakeIdentifier="GS2A_20130707T171925_000069_N01.01">
+      <SPACECRAFT_NAME>Sentinel-2A</SPACECRAFT_NAME>
+      <DATATAKE_TYPE>INS-NOBS</DATATAKE_TYPE>
+      <DATATAKE_SENSING_START>2013-07-07T17:19:25Z</DATATAKE_SENSING_START>
+      <SENSING_ORBIT_NUMBER>69</SENSING_ORBIT_NUMBER>
+      <SENSING_ORBIT_DIRECTION>DESCENDING</SENSING_ORBIT_DIRECTION>
+    </Datatake_Info>
+    <Datastrip_Time_Info metadataLevel="Brief">
+      <DATASTRIP_SENSING_START>2013-07-07T17:19:25Z</DATASTRIP_SENSING_START>
+      <DATASTRIP_SENSING_STOP>2013-07-07T17:19:25Z</DATASTRIP_SENSING_STOP>
+    </Datastrip_Time_Info>
+    <Processing_Info metadataLevel="Expertise">
+      <PROCESSING_BASELINE>PROCESSING_BASELINE</PROCESSING_BASELINE>
+      <PROCESSING_CENTER>MTI_</PROCESSING_CENTER>
+      <UTC_DATE_TIME>2013-07-07T17:16:36.856697719Z</UTC_DATE_TIME>
+    </Processing_Info>
+    <Downlink_Info metadataLevel="Standard">
+      <RECEPTION_STATION>SGS_</RECEPTION_STATION>
+      <DOWNLINK_ORBIT_NUMBER>0</DOWNLINK_ORBIT_NUMBER>
+    </Downlink_Info>
+    <Archiving_Info metadataLevel="Expertise">
+      <ARCHIVING_CENTRE>SGS_</ARCHIVING_CENTRE>
+      <ARCHIVING_TIME>2013-07-07T17:19:25Z</ARCHIVING_TIME>
+    </Archiving_Info>
+    <PROCESSING_SPECIFIC_PARAMETERS metadataLevel="Expertise">
+      <PROCESSING_SPECIFIC_PARAMETERS>PROCESSING_SPECIFIC_PARAMETERS</PROCESSING_SPECIFIC_PARAMETERS>
+    </PROCESSING_SPECIFIC_PARAMETERS>
+  </n1:General_Info>
+  <n1:Image_Data_Info>
+    <Tiles_Information metadataLevel="Standard">
+      <Tile_List>
+        <Tile tileId="S2A_OPER_MSI_L1C_TL_MPS__20140915T120000_A000069_T14RMQ_N01.01"/>
+      </Tile_List>
+    </Tiles_Information>
+    <Sensor_Configuration>
+      <Acquisition_Configuration>
+        <COMPRESS_MODE metadataLevel="Expertise">true</COMPRESS_MODE>
+        <EQUALIZATION_MODE metadataLevel="Expertise">true</EQUALIZATION_MODE>
+        <NUC_TABLE_ID metadataLevel="Expertise">NUC_TABLE_ID</NUC_TABLE_ID>
+        <Active_Detectors_List metadataLevel="Expertise">
+          <ACTIVE_DETECTOR>01</ACTIVE_DETECTOR>
+        </Active_Detectors_List>
+        <TDI_Configuration_List metadataLevel="Standard">
+          <TDI_CONFIGURATION bandId="2">APPLIED</TDI_CONFIGURATION>
+        </TDI_Configuration_List>
+        <Spectral_Band_Info>
+          <Spectral_Band_Information bandId="0">
+            <PHYSICAL_GAINS geometry="QL" metadataLevel="Standard">0.0</PHYSICAL_GAINS>
+            <COMPRESSION_RATE metadataLevel="Expertise">0.0</COMPRESSION_RATE>
+            <INTEGRATION_TIME metadataLevel="Expertise" unit="ms">0.0</INTEGRATION_TIME>
+          </Spectral_Band_Information>
+        </Spectral_Band_Info>
+      </Acquisition_Configuration>
+      <Source_Packet_Description>
+        <Source_Packet_Counters_List>
+          <Detector_List>
+            <Detector detectorId="01">
+              <Band_List>
+                <Band bandId="0">
+                  <DATA_STRIP_START>0</DATA_STRIP_START>
+                  <SCENE_POSITION>372</SCENE_POSITION>
+                  <NB_OF_SOURCE_PACKETS>0</NB_OF_SOURCE_PACKETS>
+                </Band>
+              </Band_List>
+            </Detector>
+          </Detector_List>
+        </Source_Packet_Counters_List>
+        <Degradation_Summary degradationPercentage="0.0">
+          <NUMBER_OF_LOST_PACKETS>0</NUMBER_OF_LOST_PACKETS>
+          <NUMBER_OF_TOO_DEGRADED_PACKETS>0</NUMBER_OF_TOO_DEGRADED_PACKETS>
+          <NUMBER_OF_KEPT_DEGRADED_PACKETS>0</NUMBER_OF_KEPT_DEGRADED_PACKETS>
+        </Degradation_Summary>
+      </Source_Packet_Description>
+      <Time_Stamp metadataLevel="Standard" usedModel="INITIAL">
+        <LINE_PERIOD unit="ms">0.0</LINE_PERIOD>
+        <Band_Time_Stamp bandId="0">
+          <Detector detectorId="01">
+            <REFERENCE_LINE>0</REFERENCE_LINE>
+            <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+          </Detector>
+        </Band_Time_Stamp>
+        <GPS_SYNC>true</GPS_SYNC>
+      </Time_Stamp>
+    </Sensor_Configuration>
+    <Radiometric_Info metadataLevel="Standard">
+      <SWIR_REARRANGEMENT_PROC>true</SWIR_REARRANGEMENT_PROC>
+      <SATURATED_PIXELS_PROC>true</SATURATED_PIXELS_PROC>
+      <Image_Display_Order>
+        <RED_CHANNEL>0</RED_CHANNEL>
+        <GREEN_CHANNEL>0</GREEN_CHANNEL>
+        <BLUE_CHANNEL>0</BLUE_CHANNEL>
+      </Image_Display_Order>
+      <QUANTIFICATION_VALUE unit="">0.0</QUANTIFICATION_VALUE>
+      <Reflectance_Conversion>
+        <U>0.0</U>
+        <Solar_Irradiance_List>
+          <SOLAR_IRRADIANCE bandId="0" unit="W/m²/µm">0.0</SOLAR_IRRADIANCE>
+        </Solar_Irradiance_List>
+      </Reflectance_Conversion>
+    </Radiometric_Info>
+    <Geometric_Info metadataLevel="Standard">
+      <RGM>COMPUTED</RGM>
+      <Image_Refining flag="REFINED"/>
+      <VNIR_SWIR_Registration flag="VNIR_SWIR_REGISTERED"/>
+    </Geometric_Info>
+    <Product_Compression metadataLevel="Standard">
+      <COMPRESSION>NONE</COMPRESSION>
+    </Product_Compression>
+  </n1:Image_Data_Info>
+  <n1:Satellite_Ancillary_Data_Info>
+    <Time_Correlation_Data_List metadataLevel="Standard">
+      <Time_Correlation_Data>
+        <NSM>PROPAGATED</NSM>
+        <QUALITY_INDEX unit="ns">0</QUALITY_INDEX>
+        <IMT>0</IMT>
+        <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+        <UTC_TIME>2013-07-07T17:16:27.857530Z</UTC_TIME>
+      </Time_Correlation_Data>
+    </Time_Correlation_Data_List>
+    <Ephemeris metadataLevel="Standard">
+      <GPS_Number_List>
+        <Gps_Number id="GPS-A">
+          <GPS_TIME_START>2013-07-07T17:19:33.106865719</GPS_TIME_START>
+          <GPS_TIME_END>2013-07-07T17:19:33.106865719</GPS_TIME_END>
+        </Gps_Number>
+      </GPS_Number_List>
+      <GPS_Points_List>
+        <GPS_Point>
+          <POSITION_VALUES unit="mm">-379110393 -5386317278 4708158610</POSITION_VALUES>
+          <POSITION_ERRORS unit="mm">0 0 0</POSITION_ERRORS>
+          <VELOCITY_VALUES unit="mm/s">-1802078 -4690847 -5512223</VELOCITY_VALUES>
+          <VELOCITY_ERRORS unit="mm/s">0 0 0</VELOCITY_ERRORS>
+          <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+          <NSM>PROPAGATED</NSM>
+          <QUALITY_INDEX>0.0</QUALITY_INDEX>
+          <GDOP>0.0</GDOP>
+          <PDOP>0.0</PDOP>
+          <TDOP>0.0</TDOP>
+          <NOF_SV>0</NOF_SV>
+          <TIME_ERROR unit="ns">0.0</TIME_ERROR>
+        </GPS_Point>
+      </GPS_Points_List>
+      <AOCS_Ephemeris_List>
+        <AOCS_Ephemeris>
+          <VALID_FLAG>true</VALID_FLAG>
+          <OPSOL_QUALITY>0</OPSOL_QUALITY>
+          <POSITION_VALUES unit="m">-1.0 -1.0 -1.0</POSITION_VALUES>
+          <VELOCITY_VALUES unit="m/s">1.0 1.0 1.0</VELOCITY_VALUES>
+          <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+          <ORBIT_ANGLE unit="rad">0.0</ORBIT_ANGLE>
+        </AOCS_Ephemeris>
+      </AOCS_Ephemeris_List>
+    </Ephemeris>
+    <Attitudes>
+      <Corrected_Attitudes metadataLevel="Standard">
+        <Values>
+          <QUATERNION_VALUES>0 0 0 0</QUATERNION_VALUES>
+          <QUATERNION_VALIDITY>true</QUATERNION_VALIDITY>
+          <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+          <ATTITUDE_QUALITY_INDICATOR>INVALID</ATTITUDE_QUALITY_INDICATOR>
+        </Values>
+      </Corrected_Attitudes>
+      <Raw_Attitudes metadataLevel="Expertise">
+        <STR_List>
+          <STR strId="STR1">
+            <Attitude_Data_List>
+              <Attitude_Data>
+                <QUATERNION_VALUES>0.333952 -0.844012 -0.245684 -0.340236</QUATERNION_VALUES>
+                <ANGULAR_RATE unit="deg/s">0 0 0</ANGULAR_RATE>
+                <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+                <JULIAN_DATE>0</JULIAN_DATE>
+                <ATTITUDE_QUALITY>NOATTITUDE</ATTITUDE_QUALITY>
+                <RATE_QUALITY>NO_RATE</RATE_QUALITY>
+                <VALIDITY_RATE>1</VALIDITY_RATE>
+              </Attitude_Data>
+            </Attitude_Data_List>
+            <Status_And_Health_Data_List>
+              <Status_And_Health_Data>
+                <OP_MODE>BOOT</OP_MODE>
+                <TEC_MODE>COOLER_OFF</TEC_MODE>
+                <TARGET unit="°C">0.0</TARGET>
+                <DETECTOR unit="°C">0.0</DETECTOR>
+                <OPTICS unit="°C">0.0</OPTICS>
+                <HOUSING unit="°C">0.0</HOUSING>
+                <SYNC_SOURCE>NONE</SYNC_SOURCE>
+                <SECONDS_SINCE_TIME_SYNC unit="s">0.0</SECONDS_SINCE_TIME_SYNC>
+                <TRACKABLE_STARS>1</TRACKABLE_STARS>
+                <TRACKED_STARS>1</TRACKED_STARS>
+                <IDENTIFIED_STARS>1</IDENTIFIED_STARS>
+                <USED_STARS>1</USED_STARS>
+                <ATT_RESULT>NOT_ENOUGH_STARS</ATT_RESULT>
+                <ID_RESULT>LDLE</ID_RESULT>
+              </Status_And_Health_Data>
+            </Status_And_Health_Data_List>
+          </STR>
+          <STR strId="STR1">
+            <Attitude_Data_List>
+              <Attitude_Data>
+                <QUATERNION_VALUES>0.333952 -0.844012 -0.245684 -0.340236</QUATERNION_VALUES>
+                <ANGULAR_RATE unit="deg/s">0 0 0</ANGULAR_RATE>
+                <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+                <JULIAN_DATE>0</JULIAN_DATE>
+                <ATTITUDE_QUALITY>NOATTITUDE</ATTITUDE_QUALITY>
+                <RATE_QUALITY>NO_RATE</RATE_QUALITY>
+                <VALIDITY_RATE>1</VALIDITY_RATE>
+              </Attitude_Data>
+            </Attitude_Data_List>
+            <Status_And_Health_Data_List>
+              <Status_And_Health_Data>
+                <OP_MODE>BOOT</OP_MODE>
+                <TEC_MODE>COOLER_OFF</TEC_MODE>
+                <TARGET unit="°C">0.0</TARGET>
+                <DETECTOR unit="°C">0.0</DETECTOR>
+                <OPTICS unit="°C">0.0</OPTICS>
+                <HOUSING unit="°C">0.0</HOUSING>
+                <SYNC_SOURCE>NONE</SYNC_SOURCE>
+                <SECONDS_SINCE_TIME_SYNC unit="s">0.0</SECONDS_SINCE_TIME_SYNC>
+                <TRACKABLE_STARS>1</TRACKABLE_STARS>
+                <TRACKED_STARS>1</TRACKED_STARS>
+                <IDENTIFIED_STARS>1</IDENTIFIED_STARS>
+                <USED_STARS>1</USED_STARS>
+                <ATT_RESULT>NOT_ENOUGH_STARS</ATT_RESULT>
+                <ID_RESULT>LDLE</ID_RESULT>
+              </Status_And_Health_Data>
+            </Status_And_Health_Data_List>
+          </STR>
+        </STR_List>
+        <IMU_List>
+          <IMU imuId="IMU1">
+            <Value>
+              <FILTERED_ANGLE>0</FILTERED_ANGLE>
+              <RAW_ANGLE>0</RAW_ANGLE>
+              <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+              <Temperatures>
+                <ORGANISER unit="mV">0.0</ORGANISER>
+                <SIA unit="mV">0.0</SIA>
+                <OPTICAL_SOURCE unit="mV">0.0</OPTICAL_SOURCE>
+                <BOARD unit="mV">0.0</BOARD>
+                <VOLTAGE_OFFSET unit="mV">0.0</VOLTAGE_OFFSET>
+                <VOLTAGE unit="mV">0.0</VOLTAGE>
+                <ACQUISITION>0</ACQUISITION>
+                <VALIDITY>true</VALIDITY>
+                <TIME>2013-12-11T17:02:26.192Z</TIME>           
+              </Temperatures>
+                <TIME>2013-12-11T17:02:26.192062</TIME>
+              <ACQUISITION>0</ACQUISITION>
+              <VALIDITY>true</VALIDITY>
+              <HEALTH_STATUS_BITS>HEALTH_STATUS_BITS</HEALTH_STATUS_BITS>
+              <HEALTH_STATUS_BITS_VALIDITY>true</HEALTH_STATUS_BITS_VALIDITY>
+            </Value>
+          </IMU>
+        </IMU_List>
+      </Raw_Attitudes>
+    </Attitudes>
+    <Thermal_Data metadataLevel="Expertise">
+      <Mirror_List>
+        <Mirror mirrorId="1">
+          <Value>
+            <T unit="°C">0.0</T>
+            <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+          </Value>
+        </Mirror>
+      </Mirror_List>
+      <ThSensor_List>
+        <ThSensor sensorId="+X-Z">
+          <Value>
+            <T unit="°C">0.0</T>
+            <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+          </Value>
+        </ThSensor>
+      </ThSensor_List>
+      <Splitter_List>
+        <Splitter splitterId="bot+X">
+          <Value>
+            <T unit="°C">0.0</T>
+            <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+          </Value>
+        </Splitter>
+      </Splitter_List>
+      <CSM_Diffuser_List>
+        <CSM_Diffuser diffuserId="0">
+          <Value>
+            <T unit="Ohm">0</T>
+            <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+          </Value>
+        </CSM_Diffuser>
+      </CSM_Diffuser_List>
+      <IMU_Sensorplate_List>
+        <IMU_Sensorplate>
+          <T unit="Ohm">0</T>
+          <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+        </IMU_Sensorplate>
+      </IMU_Sensorplate_List>
+      <STR_Sensorplate_List>
+        <STR_Sensorplate sensorplateId="0">
+          <Value>
+            <T unit="Ohm">0</T>
+            <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+          </Value>
+        </STR_Sensorplate>
+      </STR_Sensorplate_List>
+      <STR_Baseplate_List>
+        <STR_Baseplate>
+          <T unit="Ohm">0</T>
+          <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+        </STR_Baseplate>
+      </STR_Baseplate_List>
+      <STR_Backplate_List>
+        <STR_Backplate>
+          <T unit="Ohm">0</T>
+          <GPS_TIME>2013-07-07T17:19:33.106865719</GPS_TIME>
+        </STR_Backplate>
+      </STR_Backplate_List>
+    </Thermal_Data>
+    <Lost_Source_Packet_List metadataLevel="Standard">
+      <Lost_Source_Packet packetCategory="0" processIdentifier="0" service="0" structurIdentifier="0" subService="0">
+        <DEGRADATION_TYPE>LOST</DEGRADATION_TYPE>
+        <ERROR_BEGINNING_DATE>2013-07-07T17:19:33.106865719</ERROR_BEGINNING_DATE>
+        <ERROR_ENDING_DATE>2013-07-07T17:19:33.106865719</ERROR_ENDING_DATE>
+      </Lost_Source_Packet>
+      <Degradation_Summary degradationPercentage="0.0">
+        <NUMBER_OF_LOST_PACKETS>0</NUMBER_OF_LOST_PACKETS>
+        <NUMBER_OF_DEGRADED_PACKETS>0</NUMBER_OF_DEGRADED_PACKETS>
+      </Degradation_Summary>
+    </Lost_Source_Packet_List>
+    <ANC_DATA_REF metadataLevel="Standard">ANC_DATA_REF</ANC_DATA_REF>
+    <Other_Ancillary_Data metadataLevel="Expertise">
+      <CSM_Flags_List>
+        <Values>
+          <INUSE_FLAG>NOT_USEABLE</INUSE_FLAG>
+        </Values>
+      </CSM_Flags_List>
+    </Other_Ancillary_Data>
+  </n1:Satellite_Ancillary_Data_Info>
+  <n1:Quality_Indicators_Info metadataLevel="Brief">
+    <Geometric_Info>
+      <Geometric_QI>
+        <Absolute_Location>
+          <VALUE unit="m">0.0</VALUE>
+          <MEASUREMENT_DATE>2013-07-07T17:19:33.106865719</MEASUREMENT_DATE>
+        </Absolute_Location>
+        <Planimetric_Stability>
+          <VALUE>0.0</VALUE>
+          <MEASUREMENT_DATE>2013-07-07T17:19:33.106865719</MEASUREMENT_DATE>
+        </Planimetric_Stability>
+        <EPHEMERIS_QUALITY>0.0</EPHEMERIS_QUALITY>
+        <ANCILLARY_QUALITY>0.0</ANCILLARY_QUALITY>
+      </Geometric_QI>
+      <Geometric_Refining_Quality/>
+      <Update_Absolute_Location>
+        <VALUE unit="m">0.0</VALUE>
+        <MEASUREMENT_DATE>2013-07-07T17:19:33.106865719</MEASUREMENT_DATE>
+      </Update_Absolute_Location>
+    </Geometric_Info>
+    <Radiometric_Info>
+      <Radiometric_Quality_List>
+        <Radiometric_Quality bandId="0">
+          <Noise_Model>
+            <ALPHA>0.0</ALPHA>
+            <BETA>0.0</BETA>
+          </Noise_Model>
+          <ABSOLUTE_CALIBRATION_ACCURACY>0.0</ABSOLUTE_CALIBRATION_ACCURACY>
+          <CROSS_BAND_CALIBRATION_ACCURACY>0.0</CROSS_BAND_CALIBRATION_ACCURACY>
+          <MULTI_TEMPORAL_CALIBRATION_ACCURACY>0.0</MULTI_TEMPORAL_CALIBRATION_ACCURACY>
+        </Radiometric_Quality>
+      </Radiometric_Quality_List>
+    </Radiometric_Info>
+    <DEGRADED_ANC_DATA_PERCENTAGE>0.0</DEGRADED_ANC_DATA_PERCENTAGE>
+  </n1:Quality_Indicators_Info>
+  <n1:Auxiliary_Data_Info metadataLevel="Standard">
+    <IERS_Bulletin>
+      <UT1_UTC unit="s">0.0</UT1_UTC>
+      <GPS_TIME_UTC unit="s">0.0</GPS_TIME_UTC>
+      <GPS_TIME_TAI unit="s">0.0</GPS_TIME_TAI>
+      <POLE_U_ANGLE unit="arcsec">0.0</POLE_U_ANGLE>
+      <POLE_V_ANGLE unit="arcsec">0.0</POLE_V_ANGLE>
+    </IERS_Bulletin>
+    <GIPP_List>
+    	<GIPP_FILENAME type="GIP_INVLOC" version="0002">S2A_OPER_GIP_INVLOC_MPC__20140915T120000_V20130101T000000_20200101T000000_B00</GIPP_FILENAME>
+    </GIPP_List>
+    <ECMWF_DATA_REF>S2A_OPER_AUX_ECMWFT_PDMC_20130621T120000_V20130101T000000_20150101T000000</ECMWF_DATA_REF>
+    <PRODUCTION_DEM_TYPE>S2__OPER_DEM_GLOBEF_MPC__20141104T134012_S20141104T134012</PRODUCTION_DEM_TYPE>
+    <IERS_BULLETIN_FILENAME>S2__OPER_AUX_UT1UTC_PDMC_20141104T134012_V20141104T134012_20141104T134012</IERS_BULLETIN_FILENAME>
+    <GRI_FILENAME>S2A_OPER_AUX_GRI065_PDMC_20130621T120000_S20130101T000000</GRI_FILENAME>
+  </n1:Auxiliary_Data_Info>
+</n1:Level-1C_DataStrip_ID>
