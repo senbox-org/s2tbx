@@ -1,6 +1,7 @@
 package org.esa.beam.dataio.rapideye.metadata;
 
 import junit.framework.TestCase;
+import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
@@ -154,7 +155,14 @@ public class RapidEyeMetadataTest extends TestCase {
 
     @Test
     public void testGetPath() throws Exception {
-        assertEquals(TestUtil.ABSOLUTE_PATH + "\\2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml", metadata.getPath());
+        String root = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
+        String partialPath = root + "\\2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml";
+        if(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
+        {
+            partialPath = partialPath.replaceAll("\\\\", "/");
+        }
+
+        assertEquals(partialPath, metadata.getPath());
     }
 
     @Test
