@@ -260,7 +260,7 @@
         </developer>
     </developers>
 
-<<<<<<< HEAD
+
     <profiles>
         <profile>
             <id>withbeam</id>
@@ -276,8 +276,6 @@
         </profile>
     </profiles>
 
-=======
->>>>>>> 6c827ed067ef721263de1a8506845aecee41209f
     <reporting>
         <plugins>
             <plugin>
