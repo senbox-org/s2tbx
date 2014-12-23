@@ -1,7 +1,6 @@
 package org.esa.s2tbx.tooladapter;
 
 import com.bc.ceres.binding.PropertySet;
-import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyPane;
 import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;

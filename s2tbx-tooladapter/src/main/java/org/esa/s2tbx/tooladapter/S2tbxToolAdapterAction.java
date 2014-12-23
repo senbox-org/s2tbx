@@ -1,6 +1,5 @@
 package org.esa.s2tbx.tooladapter;
 
-import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
 import org.esa.beam.framework.ui.command.CommandEvent;
 import org.esa.beam.visat.actions.AbstractVisatAction;
 
@@ -17,9 +16,11 @@ public class S2tbxToolAdapterAction extends AbstractVisatAction {
      */
     @Override
     public void actionPerformed(CommandEvent event) {
-        final OperatorMetadata opMetadata = S2tbxToolAdapterOp.class.getAnnotation(OperatorMetadata.class);
+
+        //TODO: the alias will be selected based on the tool chosen by the user in the UI
+
         final S2tbxToolAdapterDialog operatorDialog = new S2tbxToolAdapterDialog(
-                opMetadata.alias(),
+                "copy",
                 getAppContext(),
                 "Sentinel-2 Tool Adapter",
                 event.getCommand().getHelpId());

@@ -4,8 +4,9 @@ import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorSpi;
-import org.esa.beam.framework.gpf.ui.DefaultSingleTargetProductDialog;
+import org.esa.beam.framework.gpf.ui.OperatorMenu;
 import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
+import org.esa.beam.framework.gpf.ui.SingleTargetProductDialog;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.util.logging.BeamLogManager;
 
@@ -16,12 +17,14 @@ import java.util.logging.Level;
 /**
  * @author Lucian Barbulescu.
  */
-public class S2tbxToolAdapterDialog extends DefaultSingleTargetProductDialog {
+public class S2tbxToolAdapterDialog extends SingleTargetProductDialog {
 
     /** Operator identifier. */
     private String alias;
     /** Parameters related info. */
     private OperatorParameterSupport parameterSupport;
+    /** The form used to get the user's input */
+    private S2tbxToolAdapterForm form;
 
     /** Constructor.
      *
@@ -31,11 +34,44 @@ public class S2tbxToolAdapterDialog extends DefaultSingleTargetProductDialog {
      * @param helpID
      */
     protected S2tbxToolAdapterDialog(String alias, AppContext appContext, String title, String helpID) {
-        super(alias, appContext, title, helpID);
+        super(appContext, title, helpID);
         this.alias = alias;
         final OperatorSpi operatorSpi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(alias);
 
         this.parameterSupport = new OperatorParameterSupport(operatorSpi.getOperatorDescriptor());
+
+        form = new S2tbxToolAdapterForm(appContext, operatorSpi, parameterSupport.getPropertySet(),
+                getTargetProductSelector());
+        OperatorMenu operatorMenu = new OperatorMenu(this.getJDialog(),
+                operatorSpi.getOperatorDescriptor(),
+                parameterSupport,
+                appContext,
+                helpID);
+        getJDialog().setJMenuBar(operatorMenu.createDefaultMenu());
+    }
+
+    @Override
+    protected void onApply() {
+        if (validateUserInput()) {
+            super.onApply();
+        }
+    }
+
+    private boolean validateUserInput() {
+        return true;
+    }
+
+    @Override
+    public int show() {
+        form.prepareShow();
+        setContent(form);
+        return super.show();
+    }
+
+    @Override
+    public void hide() {
+        form.prepareHide();
+        super.hide();
     }
 
 
@@ -52,15 +88,27 @@ public class S2tbxToolAdapterDialog extends DefaultSingleTargetProductDialog {
      */
     @Override
     protected Product createTargetProduct() throws Exception {
-        Product sourceProduct = getAppContext().getSelectedProduct();
+//        Product sourceProduct = getAppContext().getSelectedProduct();
 
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("tool", "D:\\Workspaces\\ESA\\Toolbox\\workingDir\\copyTool.xml");
+        //Get the target product definition
+//        TargetProductSelectorModel targetProductDef = getTargetProductSelector().getModel();
+
+
+//        Map<String, Object> parameters = new HashMap<String, Object>();
+//        parameters.put("toolFile", new File("C:\\Windows\\System32\\cmd.exe"));
+//        parameters.put("toolWorkingDirectory", new File("D:\\Workspaces\\ESA\\Toolbox\\workingDir"));
+//        parameters.put("commandLineTemplate", "copy-cmdLineTemplate.tpl");
+//        parameters.put("command", "COPY");
+
+        //Update the targetProductFile
+        //parameterSupport.getParameterMap().put(S2tbxToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE_ID, getTargetProductSelector().getModel().getProductFile());
+
+        //Get the selected product.
+        final Product sourceProduct = form.getSourceProduct();
         Map<String, Product> sourceProducts = new HashMap<String, Product>();
         sourceProducts.put("sourceProduct", sourceProduct);
 
-
-        Operator op = GPF.getDefaultInstance().createOperator(this.alias,parameters,sourceProducts,null);
+        Operator op = GPF.getDefaultInstance().createOperator(this.alias,parameterSupport.getParameterMap(),sourceProducts, null);
 
         // set the output consumer
         ((S2tbxToolAdapterOp)op).setConsumer(new LogOutputConsumer());
