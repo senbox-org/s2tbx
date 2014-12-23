@@ -1,20 +1,19 @@
 package org.esa.beam.dataio.spot;
 
 import com.bc.ceres.core.Assert;
-import com.bc.ceres.core.ProgressMonitor;
 import org.esa.beam.dataio.geotiff.GeoTiffProductReader;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.spot.dimap.SpotConstants;
 import org.esa.beam.dataio.spot.dimap.SpotDimapMetadata;
-import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.Mask;
+import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.Product;
 import org.geotools.metadata.InvalidMetadataException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This rootProduct reader is intended for reading SPOT-1 to SPOT-5 scene files
@@ -23,64 +22,58 @@ import java.util.Map;
  */
 public class SpotDimapSimpleProductReader extends SpotProductReader {
 
-    private Product rootProduct;
-    private final Map<Band, Band> bandMap;
-
     protected SpotDimapSimpleProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        bandMap = new HashMap<Band, Band>();
+    }
+
+    @Override
+    protected String getMetadataExtension() {
+        return SpotConstants.DIMAP_DEFAULT_EXTENSIONS[0];
+    }
+
+    @Override
+    protected String getMetadataProfile() {
+        if (metadata != null && metadata.size() > 0) {
+            return metadata.get(0).getMetadataProfile();
+        } else {
+            return SpotConstants.PROFILE_VOLUME;
+        }
+    }
+
+    @Override
+    protected String getProductGenericName() {
+        if (metadata != null && metadata.size() > 0) {
+            return metadata.get(0).getProductName();
+        } else {
+            return SpotConstants.DEFAULT_PRODUCT_NAME;
+        }
+    }
+
+    @Override
+    protected String[] getBandNames() {
+        return SpotConstants.DEFAULT_BAND_NAMES;
     }
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        Assert.notNull(metadata, "This reader should be instantiated only by SpotDimapProductReader");
-        Assert.argument(metadata.getComponentsMetadata().size() == 1, "Wrong reader for multiple volume components");
+        Assert.notNull(wrappingMetadata, "This reader should be instantiated only by SpotDimapProductReader");
+        Assert.argument(wrappingMetadata.getComponentsMetadata().size() == 1, "Wrong reader for multiple volume components");
 
-        SpotDimapMetadata dimapMetadata = metadata.getComponentMetadata(0);
+        SpotDimapMetadata dimapMetadata = wrappingMetadata.getComponentMetadata(0);
         if (dimapMetadata.getRasterWidth() > 0 && dimapMetadata.getRasterHeight() > 0) {
-            rootProduct = initProduct(dimapMetadata.getRasterWidth(), dimapMetadata.getRasterHeight(), dimapMetadata);
+            product = createProduct(dimapMetadata.getRasterWidth(), dimapMetadata.getRasterHeight(), dimapMetadata);
         }
-        for (int fileIndex = 0; fileIndex < metadata.getNumComponents(); fileIndex++) {
-            addBands(rootProduct, metadata.getComponentMetadata(fileIndex), fileIndex);
-            addMasks(rootProduct, metadata.getComponentMetadata(fileIndex));
+        for (int fileIndex = 0; fileIndex < wrappingMetadata.getNumComponents(); fileIndex++) {
+            addBands(product, wrappingMetadata.getComponentMetadata(fileIndex), fileIndex);
+            addMetadataMasks(product, wrappingMetadata.getComponentMetadata(fileIndex));
         }
-        rootProduct.setModified(false);
+        product.setModified(false);
 
-        return rootProduct;
+        return product;
     }
 
     @Override
-    protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY,
-                                          int sourceWidth, int sourceHeight,
-                                          int sourceStepX, int sourceStepY,
-                                          Band destBand,
-                                          int destOffsetX, int destOffsetY,
-                                          int destWidth, int destHeight,
-                                          ProductData destBuffer, ProgressMonitor pm) throws IOException {
-        //GeoTiffProductReader reader = readerMap.get(destBand);
-        Band tiffBand = bandMap.get(destBand);
-        ProductReader reader = tiffBand.getProductReader();
-        if (reader == null) {
-            logger.severe("No reader found for band data");
-        } else {
-            reader.readBandRasterData(tiffBand, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer, pm);
-        }
-    }
-
-    Product initProduct(int width, int height, SpotDimapMetadata dimapMetadata) {
-        rootProduct = new Product(dimapMetadata.getProductName(),
-                SpotConstants.DIMAP_FORMAT_NAMES[0],
-                width,
-                height);
-        rootProduct.getMetadataRoot().addElement(dimapMetadata.getRootElement());
-        ProductData.UTC centerTime = dimapMetadata.getCenterTime();
-        rootProduct.setStartTime(centerTime);
-        rootProduct.setEndTime(centerTime);
-        rootProduct.setDescription(dimapMetadata.getProductDescription());
-        return rootProduct;
-    }
-
-    void addBands(Product product, SpotDimapMetadata componentMetadata, int componentIndex) {
+    protected void addBands(Product product, SpotDimapMetadata componentMetadata, int componentIndex) {
         String[] bandNames = componentMetadata.getBandNames();
         String[] bandUnits = componentMetadata.getBandUnits();
         int width, height, currentW, currentH;
@@ -96,12 +89,12 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
                         throw new InvalidMetadataException("No raster file found in metadata");
                     String rasterFileName = componentMetadata.getPath().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(), fileNames[0].toLowerCase());
                     File rasterFile = productDirectory.getFile(rasterFileName);
-                    GeoTiffProductReader tiffReader = new GeoTiffProductReader(getReaderPlugIn());
+                    GeoTiffProductReader tiffReader = new GeoTiffReaderEx(getReaderPlugIn());
                     logger.info("Read product nodes");
                     Product tiffProduct = tiffReader.readProductNodes(rasterFile, null);
                     if (tiffProduct != null) {
                         if (product == null)
-                            product = initProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), metadata.getComponentMetadata(0));
+                            product = createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), wrappingMetadata.getComponentMetadata(0));
                         MetadataElement tiffMetadata = tiffProduct.getMetadataRoot();
                         if (tiffMetadata != null) {
                             XmlMetadata.CopyChildElements(tiffMetadata, product.getMetadataRoot());
@@ -112,10 +105,10 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
                         int numBands = tiffProduct.getNumBands();
                         String bandPrefix = "";
                         logger.info("Read bands");
-                        if (metadata.hasMultipleComponents()) {
+                        if (wrappingMetadata.hasMultipleComponents()) {
                             bandPrefix = "scene_" + String.valueOf(componentIndex) + "_";
                             String groupPattern = "";
-                            for (int idx = 0; idx < metadata.getNumComponents(); idx++) {
+                            for (int idx = 0; idx < wrappingMetadata.getNumComponents(); idx++) {
                                 groupPattern += "scene_" + String.valueOf(idx) + ":";
                             }
                             groupPattern = groupPattern.substring(0, groupPattern.length() - 1);
@@ -153,7 +146,8 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
         }
     }
 
-    void addMasks(Product product, SpotDimapMetadata componentMetadata) {
+    @Override
+    protected void addMetadataMasks(Product product, SpotDimapMetadata componentMetadata) {
         logger.info("Create masks");
         int noDataValue,saturatedValue;
         if ((noDataValue = componentMetadata.getNoDataValue()) >= 0) {

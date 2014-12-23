@@ -30,45 +30,71 @@ import java.util.Map;
  */
 public class SpotDimapVolumeProductReader extends SpotProductReader {
 
-    //private Map<Band, List<GeoTiffProductReader>> readerMap;
     private final Map<Band, BandMatrix> bandMap;
+    protected final Map<int[], ProductData> readLines;
 
-    @SuppressWarnings("WeakerAccess")
     protected SpotDimapVolumeProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        //readerMap = new HashMap<Band, List<GeoTiffProductReader>>();
         bandMap = new HashMap<Band, BandMatrix>();
+        readLines = new HashMap<int[], ProductData>();
+    }
+
+    @Override
+    protected String getMetadataExtension() {
+        return SpotConstants.DIMAP_DEFAULT_EXTENSIONS[0];
+    }
+
+    @Override
+    protected String getMetadataProfile() {
+        if (metadata != null && metadata.size() > 0) {
+            return metadata.get(0).getMetadataProfile();
+        } else {
+            return SpotConstants.PROFILE_MULTI_VOLUME;
+        }
+    }
+
+    @Override
+    protected String getProductGenericName() {
+        if (metadata != null && metadata.size() > 0) {
+            return metadata.get(0).getProductName();
+        } else {
+            return SpotConstants.DEFAULT_PRODUCT_NAME;
+        }
+    }
+
+    @Override
+    protected String[] getBandNames() {
+        return SpotConstants.DEFAULT_BAND_NAMES;
     }
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        SpotDimapMetadata dimapMetadata = metadata.getComponentMetadata(0);
+        SpotDimapMetadata dimapMetadata = wrappingMetadata.getComponentMetadata(0);
 
-        int width = metadata.getExpectedVolumeWidth();
-        int height = metadata.getExpectedVolumeHeight();
+        int width = wrappingMetadata.getExpectedVolumeWidth();
+        int height = wrappingMetadata.getExpectedVolumeHeight();
 
         Product rootProduct = new Product(dimapMetadata.getProductName(),
                 SpotConstants.DIMAP_FORMAT_NAMES[0],
                 width,
                 height);
-        rootProduct.getMetadataRoot().addElement(metadata.getRootElement());
+        rootProduct.getMetadataRoot().addElement(wrappingMetadata.getRootElement());
         ProductData.UTC centerTime = dimapMetadata.getCenterTime();
         rootProduct.setStartTime(centerTime);
         rootProduct.setEndTime(centerTime);
         rootProduct.setDescription(dimapMetadata.getProductDescription());
 
         int numBands = dimapMetadata.getNumBands();
-        String[] bandNames = metadata.getComponentMetadata(0).getBandNames();
+        String[] bandNames = wrappingMetadata.getComponentMetadata(0).getBandNames();
         for (int i = 0; i < numBands; i++) {
             Band virtualBand = new Band(bandNames[i], dimapMetadata.getPixelDataType(), width, height);
             rootProduct.addBand(virtualBand);
-            bandMap.put(virtualBand, new BandMatrix(metadata.getExpectedTileComponentRows(), metadata.getExpectedTileComponentCols()));
-            //readerMap.put(virtualBand, new ArrayList<GeoTiffProductReader>());
+            bandMap.put(virtualBand, new BandMatrix(wrappingMetadata.getExpectedTileComponentRows(), wrappingMetadata.getExpectedTileComponentCols()));
         }
 
-        for (int fileIndex = 0; fileIndex < metadata.getNumComponents(); fileIndex++) {
-            addBands(rootProduct, metadata.getComponentMetadata(fileIndex));
-            addMasks(rootProduct, metadata.getComponentMetadata(fileIndex));
+        for (int fileIndex = 0; fileIndex < wrappingMetadata.getNumComponents(); fileIndex++) {
+            addBands(rootProduct, wrappingMetadata.getComponentMetadata(fileIndex));
+            addMasks(rootProduct, wrappingMetadata.getComponentMetadata(fileIndex));
         }
         rootProduct.setModified(false);
 
@@ -83,6 +109,8 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
                                           int destOffsetX, int destOffsetY,
                                           int destWidth, int destHeight,
                                           ProductData destBuffer, ProgressMonitor pm) throws IOException {
+        int[] key = new int[] { sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY };
+        if (!readLines.containsKey(key)) {
             BandMatrix bandMatrix = bandMap.get(destBand);
             BandMatrix.BandMatrixCell[] cells = bandMatrix.getCells();
             int readWidth = 0;
@@ -120,6 +148,11 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
                     }
                 }
             }
+            readLines.put(key, destBuffer);
+        } else {
+            logger.info("Line already read");
+            destBuffer = readLines.get(key);
+        }
     }
 
     void addBands(Product product, SpotDimapMetadata componentMetadata)

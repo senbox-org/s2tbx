@@ -66,7 +66,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
             logger.warning("No volume metadata found. Will assume single volume product.");
             internalReader = new SpotDimapSimpleProductReader(getReaderPlugIn());
         }
-        internalReader.setLogger(logger);
+        //internalReader.setLogger(logger);
         internalReader.setMetadata(metadata);
         internalReader.setProductDirectory(productDirectory);
         return internalReader.readProductNodes(getInput(), null);

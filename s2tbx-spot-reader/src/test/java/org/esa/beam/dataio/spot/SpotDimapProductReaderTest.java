@@ -13,9 +13,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Ramona Manda
@@ -47,7 +45,7 @@ public class SpotDimapProductReaderTest {
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
             assertEquals(4, finalProduct.getBands().length);
             assertEquals("WGS84(DD)", finalProduct.getGeoCoding().getGeoCRS().getName().toString());
-            assertEquals("SPOTDimap", finalProduct.getProductType());
+            assertEquals("SPOTSCENE_1A", finalProduct.getProductType());
             assertEquals(2, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(3000, finalProduct.getSceneRasterWidth());
             assertEquals(3000, finalProduct.getSceneRasterHeight());

@@ -8,14 +8,29 @@ import org.esa.beam.util.io.BeamFileFilter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by kraftek on 11/26/2014.
+ * Base class for product reader plugins which follow the logic of checking consistency
+ * of products using naming consistency rules.
+ *
+ * @see org.esa.beam.dataio.readers.ProductContentEnforcer
+ * @author Cosmin Cara
  */
 public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
 
+    protected final ProductContentEnforcer enforcer;
+
+    /**
+     * Default constructor
+     */
     public BaseProductReaderPlugIn() {
+        enforcer = ProductContentEnforcer.create(getMinimalPatternList(), getExclusionPatternList());
     }
 
     @Override
@@ -26,7 +41,6 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
             virtualDir = getInput(input);
             if (virtualDir != null) {
                 String[] allFiles = virtualDir.listAll();
-                ProductContentEnforcer enforcer = ProductContentEnforcer.create(getMinimalPatternList(), getExclusionPatternList());
                 if (enforcer.isConsistent(allFiles)) {
                     retVal = DecodeQualification.INTENDED;
                 }
@@ -57,12 +71,34 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         return new BaseProductFileFilter(this);
     }
 
+    /**
+     * Returns the list of possible file patterns of a product.
+     * @return  The list of regular expressions.
+     */
     protected abstract String[] getProductFilePatterns();
 
+    /**
+     * Returns the minimal list of file patterns of a product.
+     * @return  The list of regular expressions.
+     */
     protected abstract String[] getMinimalPatternList();
 
+    /**
+     * Returns the exclusion list (i.e. anti-patterns) of a product.
+     * @return  The list of regular expressions.
+     */
     protected abstract String[] getExclusionPatternList();
 
+    /**
+     * Returns an abstraction of the given input.
+     * If the input is a (not compressed or packed) file, it returns a <code>com.bc.ceres.core.VirtualDir.File</code> object.
+     * If the input is a folder, it returns a <code>com.bc.ceres.core.VirtualDir.Dir</code> object.
+     * If the input is either a tar file or a tgz file, it returns a <code>org.sa.beam.dataio.VirtualDirEx.TarVirtualDir</code> object.
+     * If the input is a compressed file, it returns a wrapper over a <code>com.bc.ceres.core.VirtualDir.Zip</code> object.
+     * @param input The input object
+     * @return  An instance of a VirtualDir or VirtualDirEx implementations.
+     * @throws IOException  If unable to retrieve the parent of the input.
+     */
     public VirtualDirEx getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
         if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
@@ -75,6 +111,11 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         return VirtualDirEx.create(inputFile);
     }
 
+    /**
+     * Returns the input object as a File object.
+     * @param input the plugin input
+     * @return  a File object instance
+     */
     protected File getFileInput(Object input) {
         File outFile = null;
         if (input instanceof String) {
@@ -85,39 +126,54 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         return outFile;
     }
 
+    /**
+     * Default implementation for a file filter using product naming rules.
+     */
     public class BaseProductFileFilter extends BeamFileFilter {
 
         private BaseProductReaderPlugIn parent;
 
-        public BaseProductFileFilter() {
-            super();
-        }
-
         public BaseProductFileFilter(BaseProductReaderPlugIn plugIn) {
-            this();
+            super(plugIn.getFormatNames()[0], plugIn.getDefaultFileExtensions(), plugIn.getDescription(Locale.getDefault()));
             this.parent = plugIn;
-            setFormatName(parent.getFormatNames()[0]);
-            setDescription(parent.getDescription(Locale.getDefault()));
-            setExtensions(parent.getDefaultFileExtensions());
         }
 
         @Override
         public boolean accept(File file) {
             boolean shouldAccept = super.accept(file);
-            if (file.isFile() && !VirtualDirEx.isPackedFile(file)) {
+            if (shouldAccept && file.isFile() && !VirtualDirEx.isPackedFile(file)) {
                 File folder = file.getParentFile();
-                String[] list = folder.list();
-                boolean consistent = true;
-                for (String pattern : getProductFilePatterns()) {
-                    for (String fName : list) {
-                        String lcName = fName.toLowerCase();
-                        if (!pattern.endsWith("zip"))
-                            shouldAccept = lcName.matches(pattern);
-                        if (shouldAccept) break;
-                    }
-                    consistent &= shouldAccept;
+                List<String> files = new ArrayList<>();
+                try {
+                    Files.walkFileTree(Paths.get(folder.getAbsolutePath()),
+                            EnumSet.noneOf(FileVisitOption.class),
+                            2,
+                            new FileVisitor<Path>() {
+                                @Override
+                                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                                    return FileVisitResult.CONTINUE;
+                                }
+
+                                @Override
+                                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                                    files.add(file.toFile().getAbsolutePath().replace(folder.getAbsolutePath(), "").substring(1));
+                                    return FileVisitResult.CONTINUE;
+                                }
+
+                                @Override
+                                public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                                    return FileVisitResult.CONTINUE;
+                                }
+
+                                @Override
+                                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                                    return FileVisitResult.CONTINUE;
+                                }
+                            });
+                } catch (IOException e) {
                 }
-                shouldAccept = consistent;
+                String[] list = files.toArray(new String[files.size()]); //folder.list();
+                shouldAccept &= enforcer.isConsistent(list);
             }
             return shouldAccept;
         }

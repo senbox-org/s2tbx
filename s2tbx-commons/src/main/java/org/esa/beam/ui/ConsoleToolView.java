@@ -29,6 +29,7 @@ public class ConsoleToolView extends AbstractToolView {
     private static final String WARNING = "Warning";
     private static final String INFO = "Informational";
     private static final String ERROR = "Error";
+    private static final String CLEAR = "Clear";
     private static final String ICON_PATH = "org/esa/beam/ui/%s";
     private static final String COLUMNS[] = {"Timestamp","Message Type", "Message"};
     private static final int COLUMN_WIDTHS[] = { 50, 50, 800};
@@ -134,6 +135,7 @@ public class ConsoleToolView extends AbstractToolView {
             final JToggleButton button = createTextlessToolbarButton(filterIcons.get(key), true, key);
             toolbar.add(button);
         }
+        toolbar.add(createToolbarButton(String.format(ICON_PATH, "clear.png"), CLEAR));
         consoleViewPanel.add(toolbar, BorderLayout.WEST);
         consoleViewPanel.add(scrollPane, BorderLayout.CENTER);
         BeamLogManager.getSystemLogger().addHandler(logHandler);
@@ -170,6 +172,20 @@ public class ConsoleToolView extends AbstractToolView {
                 }
                 //noinspection unchecked
                 ((TableRowSorter)logTable.getRowSorter()).setRowFilter(RowFilter.orFilter(filters));
+            }
+        });
+        return button;
+    }
+
+    private JButton createToolbarButton(String iconPath, final String command) {
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        ImageIcon icon = new ImageIcon(classLoader.getResource(iconPath));
+        final JButton button = new JButton(command, icon);
+        button.setActionCommand(command);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                    logTableModel.setNumRows(0);
             }
         });
         return button;
