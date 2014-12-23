@@ -1,30 +1,74 @@
 package org.esa.beam.dataio.deimos;
 
-import com.bc.ceres.core.ProgressMonitor;
-import org.esa.beam.framework.dataio.AbstractProductReader;
+import org.esa.beam.dataio.deimos.dimap.DeimosConstants;
+import org.esa.beam.dataio.deimos.dimap.DeimosMetadata;
+import org.esa.beam.dataio.readers.GeotiffBasedReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.datamodel.ProductData;
-
-import java.io.IOException;
 
 /**
  * Created by kraftek on 9/22/2014.
  */
-public class DeimosProductReader extends AbstractProductReader {
+public class DeimosProductReader extends GeotiffBasedReader<DeimosMetadata> {
 
     protected DeimosProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
     }
 
     @Override
-    protected Product readProductNodesImpl() throws IOException {
-        return null;
+    protected String getMetadataExtension() {
+        return DeimosConstants.METADATA_EXTENSION;
     }
 
     @Override
-    protected void readBandRasterDataImpl(int i, int i2, int i3, int i4, int i5, int i6, Band band, int i7, int i8, int i9, int i10, ProductData productData, ProgressMonitor progressMonitor) throws IOException {
+    protected String getMetadataProfile() {
+        if (metadata != null && metadata.size() > 0) {
+            return metadata.get(0).getMetadataProfile();
+        } else {
+            return DeimosConstants.VALUE_NOT_AVAILABLE;
+        }
+    }
 
+    @Override
+    protected String getProductGenericName() {
+        if (metadata != null && metadata.size() > 0) {
+            return metadata.get(0).getProductName();
+        } else {
+            return DeimosConstants.VALUE_NOT_AVAILABLE;
+        }
+    }
+
+    @Override
+    protected String[] getBandNames() {
+        if (metadata != null && metadata.size() > 0) {
+            return metadata.get(0).getBandNames();
+        } else {
+            return new String[] { };
+        }
+    }
+
+    @Override
+    protected void addMetatdataMasks(Product product, DeimosMetadata componentMetadata) {
+        logger.info("Create masks");
+        int noDataValue,saturatedValue;
+        if ((noDataValue = componentMetadata.getNoDataValue()) >= 0) {
+            product.getMaskGroup().add(Mask.BandMathsType.create(DeimosConstants.NODATA_VALUE,
+                    DeimosConstants.NODATA_VALUE,
+                    product.getSceneRasterWidth(),
+                    product.getSceneRasterHeight(),
+                    String.valueOf(noDataValue),
+                    componentMetadata.getNoDataColor(),
+                    0.5));
+        }
+        if ((saturatedValue = componentMetadata.getSaturatedPixelValue()) >= 0) {
+            product.getMaskGroup().add(Mask.BandMathsType.create(DeimosConstants.SATURATED_VALUE,
+                    DeimosConstants.SATURATED_VALUE,
+                    product.getSceneRasterWidth(),
+                    product.getSceneRasterHeight(),
+                    String.valueOf(saturatedValue),
+                    componentMetadata.getSaturatedColor(),
+                    0.5));
+        }
     }
 }

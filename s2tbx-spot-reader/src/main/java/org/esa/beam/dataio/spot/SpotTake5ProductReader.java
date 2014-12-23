@@ -1,13 +1,12 @@
 package org.esa.beam.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
-import com.bc.ceres.core.VirtualDir;
-import org.esa.beam.dataio.TarVirtualDir;
-import org.esa.beam.dataio.ZipVirtualDir;
+import org.esa.beam.dataio.VirtualDirEx;
 import org.esa.beam.dataio.geotiff.GeoTiffProductReader;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.beam.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.beam.dataio.spot.dimap.SpotConstants;
 import org.esa.beam.dataio.spot.dimap.SpotTake5Metadata;
 import org.esa.beam.framework.dataio.AbstractProductReader;
@@ -37,7 +36,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
 
     private final Logger logger;
     private SpotTake5Metadata imageMetadata;
-    private ZipVirtualDir input;
+    private VirtualDirEx input;
     private final Map<Band, GeoTiffProductReader> readerMap;
     private final Map<Band, Band> bandMap;
 
@@ -55,7 +54,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
     @Override
     public TreeNode<File> getProductComponents() {
         TreeNode<File> result = super.getProductComponents();
-        if (input.isThisZipFile() || input.isThisTarFile()) {
+        if (input.isCompressed()) {
             return result;
         } else {
             for(String inputFile: imageMetadata.getTiffFiles().values()){
@@ -82,10 +81,10 @@ public class SpotTake5ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        input = SpotTake5ProductReaderPlugin.getInput(getInput());
+        input = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
         File imageMetadataFile = null;
         String metaSubFolder = "";
-        if (input.isThisTarFile()) {
+        if (VirtualDirEx.isPackedFile(new File(input.getBasePath()))) {
             //if the input is an archive, check the metadata file as being the name of the archive, followed by ".xml", right under the unpacked archive folder
             String path = input.getBasePath();
             String metaFile = path.substring(path.lastIndexOf("\\") + 1, path.lastIndexOf("."));
@@ -258,7 +257,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                     //targetBand.setSourceImage(srcBand.getSourceImage());
                     targetBand.setValidPixelExpression(srcBand.getValidPixelExpression());
                     targetBand.setNoDataValue(srcBand.getNoDataValue());
-                    targetBand.setNoDataValueUsed(false);
+                    targetBand.setNoDataValueUsed(true);
                     targetBand.setUnit(getNotNullValueOrDefault(srcBand.getUnit()));
                     targetBand.setGeophysicalNoDataValue(srcBand.getGeophysicalNoDataValue());
                     targetBand.setSpectralWavelength(srcBand.getSpectralWavelength());

@@ -1,6 +1,6 @@
 package org.esa.beam.dataio.spot.dimap;
 
-import junit.framework.Assert;
+import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
@@ -160,7 +160,14 @@ public class SpotViewMetadataTest {
 
     @Test
     public void testGetPath() throws Exception {
-        assertEquals("D:\\Sentinel2_PROJECT\\Satellite_Imagery\\TestingJUnitFiles\\SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL\\metadata.xml", metadata.getPath());
+        String root = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
+        String partialPath = root + "\\SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL\\metadata.xml";
+        if(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
+        {
+            partialPath = partialPath.replaceAll("\\\\", "/");
+        }
+        
+        assertEquals(partialPath, metadata.getPath());
     }
 
     @Test

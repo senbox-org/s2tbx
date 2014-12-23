@@ -1,0 +1,4 @@
+#This file contains the list of tools defined for the system.
+#Each line contains the name of the subfolder where the tool descriptor data resides
+#Lines starting with # are comments and are ignored
+copy

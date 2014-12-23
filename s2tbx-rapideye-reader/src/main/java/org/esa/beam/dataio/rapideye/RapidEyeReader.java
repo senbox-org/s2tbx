@@ -1,7 +1,7 @@
 package org.esa.beam.dataio.rapideye;
 
 import org.esa.beam.dataio.FileImageInputStreamSpi;
-import org.esa.beam.dataio.ZipVirtualDir;
+import org.esa.beam.dataio.VirtualDirEx;
 import org.esa.beam.dataio.geotiff.GeoTiffProductReader;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
@@ -10,9 +10,7 @@ import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.*;
 import org.esa.beam.jai.ImageManager;
-import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.TreeNode;
-import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.imageio.spi.IIORegistry;
@@ -38,7 +36,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
     protected RapidEyeMetadata metadata;
     protected Product product;
     protected final Logger logger;
-    protected ZipVirtualDir productDirectory;
+    protected VirtualDirEx productDirectory;
     private ImageInputStreamSpi channelImageInputStreamSpi;
 
     static {
@@ -62,13 +60,13 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         super.close();
     }
 
-    protected void readMasks(ZipVirtualDir folder) {
+    protected void readMasks() {
         File file;
         if (metadata != null) {
             try {
                 String maskFileName = metadata.getMaskFileName();
                 if (maskFileName != null) {
-                    file = folder.getFile(maskFileName);
+                    file = productDirectory.getFile(maskFileName);
                     if (file != null && file.exists()) {
                         GeoTiffProductReader reader = new GeoTiffProductReader(getReaderPlugIn());
                         Product udmProduct = reader.readProductNodes(file, null);
@@ -222,10 +220,10 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         return null;
     }
 
-    static ZipVirtualDir getInput(Object input) throws IOException {
+    static VirtualDirEx getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
 
-        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
+        if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
             final File absoluteFile = inputFile.getAbsoluteFile();
             inputFile = absoluteFile.getParentFile();
             if (inputFile == null) {
@@ -233,6 +231,6 @@ public abstract class RapidEyeReader extends AbstractProductReader {
             }
         }
 
-        return new ZipVirtualDir(inputFile);
+        return VirtualDirEx.create(inputFile);
     }
 }

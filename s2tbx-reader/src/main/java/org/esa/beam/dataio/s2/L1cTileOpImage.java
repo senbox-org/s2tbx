@@ -7,6 +7,7 @@ import org.esa.beam.jai.ResolutionLevel;
 import org.esa.beam.jai.SingleBandedOpImage;
 import org.esa.beam.util.ImageUtils;
 import org.esa.beam.util.io.FileUtils;
+import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import static org.esa.beam.dataio.s2.S2Config.L1C_TILE_LAYOUTS;
 
@@ -43,6 +45,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
         int height;
     }
 
+    protected final Logger logger;
     private final File imageFile;
     private final File cacheDir;
     private final L1cTileLayout l1cTileLayout;
@@ -64,9 +67,18 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
         if (imageFile != null) {
             PlanarImage opImage = new L1cTileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
+
+            BeamLogManager.getSystemLogger().fine("The size before: " + opImage.getWidth() + ", " + opImage.getHeight());
+
+            // todo skipping scale
+
             if (spatialResolution != S2SpatialResolution.R10M) {
-                return createScaledImage(opImage, spatialResolution, level);
+                PlanarImage scaled = createScaledImage(opImage, spatialResolution, level);
+                BeamLogManager.getSystemLogger().fine("The size after: " + scaled.getWidth() + ", " + scaled.getHeight());
+
+                return scaled;
             }
+
             return opImage;
         } else {
             int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
@@ -82,6 +94,8 @@ class L1cTileOpImage extends SingleBandedOpImage {
     }
 
     static PlanarImage createScaledImage(PlanarImage sourceImage, S2SpatialResolution resolution, int level) {
+        BeamLogManager.getSystemLogger().fine("Asking for scaled image: " + resolution.toString());
+
         int sourceWidth = sourceImage.getWidth();
         int sourceHeight = sourceImage.getHeight();
         int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
@@ -147,6 +161,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
         this.l1cTileLayout = l1cTileLayout;
         this.openFiles = new HashMap<File, Jp2File>();
         this.locks = new HashMap<File, Object>();
+        this.logger = BeamLogManager.getSystemLogger();
     }
 
     @Override
@@ -180,6 +195,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
         //  5  -    343   -   128
 
         File outputFile = null;
+
         try {
             outputFile = new File(cacheDir,
                                   FileUtils.exchangeExtension(imageFile.getName(),
@@ -190,30 +206,33 @@ class L1cTileOpImage extends SingleBandedOpImage {
         }
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
 
+
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
-        if (!outputFile0.exists()) {
-            //System.out.printf("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
+        if (!outputFile0.exists())
+        {
+            logger.fine(String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
+
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
             } catch (IOException e) {
-                // {@report "opj_decompress process failed"}
+                logger.severe("opj_decompress process failed: " + e.getMessage());
                 if (outputFile0.exists() && !outputFile0.delete()) {
-                    // {@report "Failed to delete"}
+                    logger.severe("Failed to delete file: " + outputFile0.getAbsolutePath());
                 }
             }
             if (!outputFile0.exists()) {
-                // {@report "No output file generated"}
+                logger.fine("No output file generated");
                 Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
                 return;
             }
         }
 
         try {
-            //System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
+            logger.fine(String.format("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
         } catch (IOException e) {
-            // {@report "Failed to read uncompressed tile data"}
+            logger.severe("Failed to read uncompressed tile data");
         }
     }
 
@@ -228,16 +247,13 @@ class L1cTileOpImage extends SingleBandedOpImage {
         ProcessBuilder builder = null;
         if(SystemUtils.IS_OS_WINDOWS)
         {
-            String inputFileName = Utils.GetShortPathName(imageFile.getPath());
+            String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
             String outputFileName = outputFile.getPath();
 
             if(inputFileName.length() == 0)
             {
                 inputFileName = imageFile.getPath();
             }
-
-            System.err.println(imageFile.getPath());
-            System.err.println(inputFileName);
 
             builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
                     "-i", inputFileName,
@@ -254,27 +270,16 @@ class L1cTileOpImage extends SingleBandedOpImage {
                     "-t", tileIndex + "");
         }
 
-
-        /*
-        ProcessBuilder builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
-                "-i", imageFile.getPath(),
-                "-o", outputFile.getPath(),
-                "-r", getLevel() + "",
-                "-t", tileIndex + "");
-                */
-
-        System.err.println(builder.command());
+        logger.fine(builder.command().toString());
         final Process process = builder.directory(cacheDir).start();
 
         try {
             final int exitCode = process.waitFor();
             if (exitCode != 0) {
-                // {@report "Failed to uncompress tile"}
-                System.err.println("Failed to uncompress tile: exitCode = " + exitCode);
+                logger.severe("Failed to uncompress tile: exitCode = " + exitCode);
             }
         } catch (InterruptedException e) {
-            // {@report "Process was interrupted"}
-            System.err.println("InterruptedException: " + e.getMessage());
+            logger.severe("InterruptedException: " + e.getMessage());
         }
     }
 
@@ -282,7 +287,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     public synchronized void dispose() {
 
         for (Map.Entry<File, Jp2File> entry : openFiles.entrySet()) {
-            System.out.println("closing " + entry.getKey());
+            logger.fine("closing " + entry.getKey());
             try {
                 final Jp2File jp2File = entry.getValue();
                 if (jp2File.stream != null) {
@@ -290,21 +295,21 @@ class L1cTileOpImage extends SingleBandedOpImage {
                     jp2File.stream = null;
                 }
             } catch (IOException e) {
-                // {@report "Failed to close stream"}
+                logger.severe("Failed to close stream: " + e.getMessage());
             }
         }
 
         for (File file : openFiles.keySet()) {
-            System.out.println("deleting " + file);
+            logger.fine("deleting " + file.getAbsolutePath());
             if (!file.delete()) {
-                // {@report "Failed to delete file"}
+                logger.severe("Failed to delete file: " + file.getAbsolutePath());
             }
         }
 
         openFiles.clear();
 
         if (!cacheDir.delete()) {
-            // {@report "Failed to delete cache dir"}
+            logger.severe("Failed to delete cache dir: " + cacheDir.getAbsolutePath() );
         }
     }
 

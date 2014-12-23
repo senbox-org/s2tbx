@@ -3,6 +3,7 @@ package org.esa.beam.dataio.metadata;
 import com.bc.ceres.core.Assert;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
@@ -94,6 +95,29 @@ public abstract class XmlMetadata {
         this.name = name;
         this.rootElement = new MetadataElement(this.name);
         this.logger = BeamLogManager.getSystemLogger();
+    }
+
+    public String getElementValueAsString(String xPath) {
+        String retVal = null;
+        if (rootElement != null && xPath != null) {
+            String[] elementNames = xPath.split("/");
+            int idx = 0;
+            MetadataElement element = rootElement;
+            do {
+                int attrStartIdx = elementNames[idx].indexOf("[");
+                String elementName;
+                if (attrStartIdx > 0) {
+                    elementName = elementNames[idx].substring(0, attrStartIdx - 1);
+                    String[] attributeConditions = elementNames[idx].substring(attrStartIdx + 1).split("and");
+
+                } else {
+                    elementName = elementNames[idx];
+                }
+                element = element.getElement(elementName);
+                idx++;
+            } while (idx < elementNames.length && element != null);
+        }
+        return retVal;
     }
 
     /**
@@ -218,4 +242,12 @@ public abstract class XmlMetadata {
         this.name = value;
         this.rootElement.setName(value);
     }
+
+    public abstract ProductData.UTC getProductStartTime();
+
+    public abstract ProductData.UTC getProductEndTime();
+
+    public abstract ProductData.UTC getCenterTime();
+
+    public abstract String getProductDescription();
 }

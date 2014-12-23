@@ -1,16 +1,15 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-reader</symbolicName>
-    <version>0.5.0-SNAPSHOT</version>
-    <name>BEAM Sentinel-2 Reader</name>
+    <version>2.0.0</version>
+    <name>Sentinel-2 Product Reader</name>
 
-    <description>Enables BEAM to read Sentinel 2 products (MSI L1b and L1c)
-    </description>
+    <description>Enables SNAP to read Sentinel 2 products of type L1C</description>
 
-    <vendor>Brockmann Consult GmbH and Array Inc</vendor>
-    <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
-    <copyright>(C) 2007 by Brockmann Consult GmbH and Array Inc</copyright>
-    <url>https://github.com/CS-SI</url>
+    <vendor>CS</vendor>
+    <contactAddress>ZAC de la Grande Plaine,5 Rue Brindejonc des Moulinais, Toulouse Cedex 5, France </contactAddress>
+    <copyright>(c) Copyright 2012-2014 by Brockmann Consult GmbH&lt;br/&gt;(c) Copyright 2014 by CS and contributors.&lt;br/&gt;All rights reserved.</copyright>
+    <url>https://earth.esa.int/web/sentinel-tbx/home</url>
     <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
     <changelog>

@@ -16,6 +16,12 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>../VERSION.txt</source>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0444</fileMode>
+            <filtered>true</filtered>
+        </file>
+        <file>
             <source>../LICENSE.txt</source>
             <lineEnding>unix</lineEnding>
             <fileMode>0444</fileMode>
@@ -112,7 +118,6 @@
                 <include>org.esa.snap:*</include>
                 <include>org.esa.s2tbx:*</include>
                 <include>org.esa.s3tbx:*</include>
-                <include>org.esa.smostbx:*</include>
                 <include>ncsa.hdf:lib-hdf</include>
                 <include>gov.nasa.gsfc.seadas:seadas-reader</include>
             </includes>

@@ -1,24 +1,19 @@
 package org.esa.beam.dataio.deimos;
 
-import org.esa.beam.framework.dataio.DecodeQualification;
+import org.esa.beam.dataio.deimos.dimap.DeimosConstants;
+import org.esa.beam.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.beam.framework.dataio.ProductReader;
-import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.util.io.BeamFileFilter;
 
 import java.util.Locale;
 
 /**
  * Created by kraftek on 9/22/2014.
  */
-public class DeimosProductReaderPlugin implements ProductReaderPlugIn {
-    @Override
-    public DecodeQualification getDecodeQualification(Object o) {
-        return null;
-    }
+public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public Class[] getInputTypes() {
-        return new Class[0];
+        return DeimosConstants.DIMAP_READER_INPUT_TYPES;
     }
 
     @Override
@@ -28,21 +23,26 @@ public class DeimosProductReaderPlugin implements ProductReaderPlugIn {
 
     @Override
     public String[] getFormatNames() {
-        return new String[0];
+        return DeimosConstants.DIMAP_FORMAT_NAMES;
     }
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[0];
+        return DeimosConstants.DIMAP_DEFAULT_EXTENSIONS;
     }
 
     @Override
     public String getDescription(Locale locale) {
-        return null;
+        return DeimosConstants.DIMAP_DESCRIPTION;
     }
 
     @Override
-    public BeamFileFilter getProductFileFilter() {
-        return null;
-    }
+    protected String[] getProductFilePatterns() { return DeimosConstants.FILENAME_PATTERNS; }
+
+    @Override
+    protected String[] getMinimalPatternList() { return DeimosConstants.MINIMAL_PRODUCT_PATTERNS; }
+
+    @Override
+    protected String[] getExclusionPatternList() { return new String[0]; }
+
 }

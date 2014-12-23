@@ -2,9 +2,10 @@ package org.esa.beam.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.beam.dataio.FileImageInputStreamSpi;
+import org.esa.beam.dataio.VirtualDirEx;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.beam.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.beam.dataio.spot.dimap.*;
-import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Band;
@@ -29,7 +30,7 @@ import java.util.logging.Logger;
 public class SpotDimapProductReader extends AbstractProductReader {
 
     private ImageInputStreamSpi channelImageInputStreamSpi;
-    private SpotVirtualDir productDirectory;
+    private VirtualDirEx productDirectory;
     private SpotSceneMetadata metadata;
     private SpotProductReader internalReader;
     private final Logger logger;
@@ -46,7 +47,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        productDirectory = SpotDimapProductReaderPlugin.getInput(getInput());
+        productDirectory = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
         metadata = SpotSceneMetadata.create(productDirectory, this.logger);
         VolumeMetadata volumeMetadata = metadata.getVolumeMetadata();
         if (volumeMetadata != null) {
@@ -95,7 +96,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     @Override
     public TreeNode<File> getProductComponents() {
-        if (productDirectory.isThisZipFile()) {
+        if (productDirectory.isCompressed()) {
             return super.getProductComponents();
         } else {
             TreeNode<File> result = super.getProductComponents();
