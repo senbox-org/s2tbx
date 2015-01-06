@@ -3,6 +3,7 @@ package org.esa.beam.dataio.s2;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
@@ -249,6 +250,30 @@ public class L1bMetadataProc {
         {
             // todo OPP remove this
             BeamLogManager.getSystemLogger().severe("Empty spectral info !!!!");
+
+            // todo OPP If there is no spectral info, get band names from Query_Options/Band_List
+            List<A_PHYSICAL_BAND_NAME> bandList = product.getGeneral_Info().getProduct_Info().getQuery_Options().getBand_List().getBAND_NAME();
+            // assume 0 based index for bands just retrieved...
+
+            // todo OPP where is resolution info ??
+
+            List<L1bMetadata.SpectralInformation> aInfo = new ArrayList<L1bMetadata.SpectralInformation>();
+            int index = 0;
+            for(A_PHYSICAL_BAND_NAME band_name : bandList)
+            {
+                L1bMetadata.SpectralInformation data = new L1bMetadata.SpectralInformation();
+                data.physicalBand = band_name.value();
+                data.bandId = index;
+
+                data.resolution = 10; // todo OPP remove this
+
+                index = index + 1;
+
+                aInfo.add(data);
+            }
+
+            int size = aInfo.size();
+            characteristics.bandInformations = aInfo.toArray(new L1bMetadata.SpectralInformation[size]);
         }
 
         return characteristics;

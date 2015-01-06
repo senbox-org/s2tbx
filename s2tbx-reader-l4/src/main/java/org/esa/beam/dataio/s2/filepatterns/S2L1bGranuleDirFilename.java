@@ -57,7 +57,7 @@ public class S2L1bGranuleDirFilename {
             newBandId = new String(bandId.charAt(0) + "0" + bandId.charAt(1));
         }
 
-        String tmp = String.format("%s_%s_%s%s_%s_%s%s%s_%s.jp2", missionID, fileClass, fileCategory, fileSemantic, siteCentre, creationDate, startDate, detectorId, newBandId);
+        String tmp = String.format("%s_%s_%s%s_%s_%s_%s%s_%s.jp2", missionID, fileClass, fileCategory, fileSemantic, siteCentre, creationDate, startDate, detectorId, newBandId);
         return S2L1bGranuleImageFilename.create(tmp);
     }
 

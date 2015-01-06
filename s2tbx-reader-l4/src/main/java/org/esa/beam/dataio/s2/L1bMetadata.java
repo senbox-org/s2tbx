@@ -245,6 +245,7 @@ public class L1bMetadata {
                 Level1B_Granule aGranule = (Level1B_Granule) acasted;
                 long endTime = System.currentTimeMillis();
 
+                // todo remove this logs
                 logger.log(Level.SEVERE, "That took " + (endTime - startTime) + " milliseconds");
 
                 startTime = System.currentTimeMillis();

@@ -1,5 +1,7 @@
 package org.esa.beam.dataio.s2.filepatterns;
 
+import org.esa.beam.util.logging.BeamLogManager;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,6 +73,8 @@ public class S2L1bDatastripDirFilename {
             );
 
         } else {
+            // todo add a warning message too
+            BeamLogManager.getSystemLogger().warning(String.format("%s DatastripDirFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

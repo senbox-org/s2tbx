@@ -149,6 +149,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                         S2L1bGranuleDirFilename gf = S2L1bGranuleDirFilename.create(tile.id);
                         Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
+                        // todo change how imagefilename is retrieved...
+
                         S2L1bGranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.physicalBand);
 
                         String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + granuleFileName.name;
