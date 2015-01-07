@@ -1,0 +1,47 @@
+<module>
+    <manifestVersion>2.0.0</manifestVersion>
+    <symbolicName>s2tbx-l3-processor</symbolicName>
+    <version>2.0.0</version>
+    <name>Sentinel 2 Level 3 Processor</name>
+
+    <description>Performs spatio temporal synthesis on Sentinel 2 L2A products, thereby creating L3 products</description>
+
+    <vendor>Telespazio VEGA Deutschland GmbH</vendor>
+    <contactAddress>Europaplatz 5, 64293 Darmstadt (Germany)</contactAddress>
+    <copyright>(C) 2014 Telespazio VEGA Deutschland GmbH</copyright>
+    <url>https://github.com/senbox-org/s2tbx</url>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
+
+    <changelog>
+        <![CDATA[
+                ]]>
+    </changelog>
+
+    <dependency>
+        <module>snap-core</module>
+    </dependency>
+    <dependency>
+        <module>snap-ui</module>
+        <optional>true</optional>
+    </dependency>
+
+    <categories>Application,Processor,Sentinel 2</categories>
+
+    <extension point="snap-ui:actions">
+
+        <action>
+            <parent>processing.thematicLand</parent>
+            <id>levelThreeProcessor</id>
+            <text>SEN2THREE Level 3 Processor...</text>
+            <class>org.esa.beam.dataio.spatiotemp.SpatioTemporalAction</class>
+            <operatorName>SEN2THREE</operatorName>
+            <dialogTitle>Level 3 Processor</dialogTitle>
+            <shortDescr>Performs spatio temporal synthesis on Sentinel 2 L2A products</shortDescr>
+            <description>Performs spatio temporal synthesis on Sentinel 2 L2A products, thereby creating L3 products</description>
+            <context>product</context>
+            <helpId>levelThreeProcessor</helpId>
+        </action>
+
+    </extension>
+
+</module>

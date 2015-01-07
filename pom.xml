@@ -18,11 +18,13 @@
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-rapideye-reader</module>
+        <module>s2tbx-sen2cor-processor</module>
+        <module>s2tbx-sen2three-processor</module>
+        <module>s2tbx-r2r-converter</module>
         <module>s2tbx-bootstrap</module>
         <module>s2tbx-installer</module>
         <module>s2tbx-app</module>
         <module>s2tbx-help</module>
-        <!-- <module>s2tbx-sen2cor-processor</module> -->
     </modules>
 
     <packaging>pom</packaging>
@@ -258,6 +260,16 @@
                 <role>Java Developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>umwilm</id>
+            <name>Uwe Mueller-Wilm</name>
+            <email>uwe.mueller-wilm@telespazio-vega.de</email>
+            <organization>Telespazio-VEGA</organization>
+            <roles>
+                <role>Python Developer</role>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
     </developers>
 
 
@@ -273,6 +285,23 @@
             <modules>
                 <module>../snap-engine</module>
             </modules>
+        </profile>
+        <profile>
+            <id>no-unit-tests</id>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 

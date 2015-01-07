@@ -14,16 +14,16 @@
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.beam.dataio.atmcorr.ui;
+package org.esa.beam.dataio.refl2rad.ui;
 
-import javax.swing.*;
+import javax.swing.JPanel;
 
+import org.esa.beam.dataio.s2.S2Config;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductFilter;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.util.SystemUtils;
-import java.io.File;
 
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
@@ -32,12 +32,12 @@ import com.bc.ceres.swing.selection.SelectionChangeListener;
 /**
  * @author Tonio Fincke
  */
-public class AtmCorrIOParametersPanel extends JPanel {
+public class Refl2RadIOParametersPanel extends JPanel {
 
     private final SourceProductSelector sourceProductSelector;
-    private final AtmCorrTargetProductSelector targetProductSelector;
+    private final Refl2RadTargetProductSelector targetProductSelector;
 
-    public AtmCorrIOParametersPanel(AppContext appContext) {
+    public Refl2RadIOParametersPanel(AppContext appContext) {
         final ProductFilter productFilter = new L1CSourceProductFilter();
         sourceProductSelector = new SourceProductSelector(appContext);
         sourceProductSelector.setProductFilter(productFilter);
@@ -55,12 +55,13 @@ public class AtmCorrIOParametersPanel extends JPanel {
             }
         });
 
-        targetProductSelector = new AtmCorrTargetProductSelector(new AtmCorrTargetProductSelectorModel());
+        targetProductSelector = new Refl2RadTargetProductSelector(new Refl2RadTargetProductSelectorModel());
+
         targetProductSelector.getOpenInAppCheckBox().setText("Open in " + appContext.getApplicationName());
-        targetProductSelector.getProductDirChooserButton().setVisible(false);
-        targetProductSelector.getProductDirTextField().setEditable(false);
-        targetProductSelector.getProductNameTextField().setEditable(false);
+
         updateTargetProductName();
+
+        targetProductSelector.getModel().setProductDir(SystemUtils.getUserHomeDir());
         final TableLayout tableLayout = new TableLayout(1);
         tableLayout.setTableAnchor(TableLayout.Anchor.WEST);
         tableLayout.setTableWeightX(1.0);
@@ -75,18 +76,10 @@ public class AtmCorrIOParametersPanel extends JPanel {
 
     private void updateTargetProductName() {
         if(sourceProductSelector.getSelectedProduct() != null) {
-            String sourceDir = sourceProductSelector.getCurrentDirectory().getPath();
-            String sourceName = sourceProductSelector.getSelectedProduct().getName();
-            String targetDir = sourceDir.replace("1C", "2A");
-            targetDir = targetDir.replace("OPER", "USER");
-            targetProductSelector.getModel().setProductDir(new File(targetDir));
-            targetProductSelector.getProductDirTextField().setToolTipText(targetDir);
-            String targetName = sourceName.replace("1C", "2A");
-            targetName = targetName.replace("OPER", "USER");
-            targetProductSelector.getModel().setProductName(targetName);
-            targetProductSelector.getProductNameTextField().setToolTipText(targetName);
+            final String sourceName = sourceProductSelector.getSelectedProduct().getName();
+            targetProductSelector.getModel().setProductName(sourceName.replace("1C", "2A"));
         } else {
-            targetProductSelector.getModel().setProductName("Please select Source Product...");
+            targetProductSelector.getModel().setProductName("Level-2A_User_Product");
         }
     }
 
@@ -113,7 +106,7 @@ public class AtmCorrIOParametersPanel extends JPanel {
             String productName = product.getName();
             return true;
             // return S2Config.PRODUCT_DIRECTORY_1C_PATTERN.matcher(productName).matches() ||
-            //        S2Config.DIRECTORY_1C_PATTERN_ALT.matcher(productName).matches();
+            //         S2Config.DIRECTORY_1C_PATTERN_ALT.matcher(productName).matches();
         }
     }
 

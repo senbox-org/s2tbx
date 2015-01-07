@@ -1,7 +1,13 @@
-package org.esa.beam.dataio.atmcorr.ui;
+package org.esa.beam.dataio.refl2rad.ui;
 
 import java.awt.Window;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 
 import javax.swing.AbstractButton;
@@ -14,7 +20,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
-import org.esa.beam.dataio.atmcorr.AtmCorrProcessBuilder;
+import org.esa.beam.dataio.refl2rad.Refl2RadProcessBuilder;
+import org.esa.beam.dataio.s2.S2Config;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.ui.AppContext;
@@ -31,28 +38,30 @@ import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 /**
  * @author Tonio Fincke
  */
-public class AtmosphericCorrectionDialog extends ModelessDialog {
+public class Refl2RadDialog extends ModelessDialog {
 
     private JCheckBox scOnlyBox;
     private JComboBox resolutionBox;
     private final JTabbedPane form;
     private static AppContext appContext;
-    private final AtmCorrIOParametersPanel ioParametersPanel;
+    private final Refl2RadIOParametersPanel ioParametersPanel;
     private final Window parentComponent;
     private ProgressDialog progressDialog;
     private String fileLocation;
+    private final static String default_l1c_name = "Level-1C_User_Product";
+    private final static String default_l2a_name = "Level-2A_User_Product";
     private JTextArea area;
 
-    public static AtmosphericCorrectionDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
+    public static Refl2RadDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
         appContext = app;
-        return new AtmosphericCorrectionDialog(parent, title, buttonMask, helpID);
+        return new Refl2RadDialog(parent, title, buttonMask, helpID);
     }
 
-    public AtmosphericCorrectionDialog(Window parent, String title, int buttonMask, String helpID) {
+    public Refl2RadDialog(Window parent, String title, int buttonMask, String helpID) {
         super(parent, title, buttonMask, helpID);
         parentComponent = parent;
         form = new JTabbedPane();
-        ioParametersPanel = new AtmCorrIOParametersPanel(appContext);
+        ioParametersPanel = new Refl2RadIOParametersPanel(appContext);
         form.add("I/O Parameters", ioParametersPanel);
         form.add("Processing Parameters", createParametersPanel());
         AbstractButton button = getButton(ID_APPLY);
@@ -73,9 +82,9 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         fileLocation = ((File) sourceProduct.getProductReader().getInput()).getParent();
         final int resolution = (Integer) resolutionBox.getSelectedItem();
         try {
-            final Process atmCorrProcess =
-                    new AtmCorrProcessBuilder().createProcess(fileLocation, resolution, scOnlyBox.isSelected());
-            executeProcess(atmCorrProcess);
+            final Process Refl2RadProcess =
+                    new Refl2RadProcessBuilder().createProcess(fileLocation, resolution, scOnlyBox.isSelected());
+            executeProcess(Refl2RadProcess);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -98,7 +107,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         panel.setLayout(tableLayout);
         panel.add(createTargetResolutionPanel());
 
-        scOnlyBox = new JCheckBox("Only Scene Classification");
+        scOnlyBox = new JCheckBox("Scene classification at 60m resolution only");
         panel.add(scOnlyBox);
         panel.add(tableLayout.createVerticalSpacer());
 
@@ -132,7 +141,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     }
 
     private void executeProcess(final Process process) {
-        final String processName = "Atmospheric Correction";
+        final String processName = "Reflectance to Radiance";
         ProgressMonitorSwingWorker swingWorker = new ProgressMonitorSwingWorker(parentComponent, processName) {
             @Override
             protected Object doInBackground(ProgressMonitor pm) throws Exception {
@@ -143,7 +152,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 progressDialog.setMaximum(10000);
                 final DialogProgressMonitor monitor = new DialogProgressMonitor(progressDialog);
                 progressDialog.setExtensibleMessageComponent(createMessageComponent(), false);
-                progressDialog.setTitle("Performing Atmospheric Correction...");
+                progressDialog.setTitle("Performing atmospheric correction");
 
                 final ProcessObserver processObserver = new ProcessObserver(process);
                 processObserver.setProgressMonitor(monitor);
@@ -155,11 +164,21 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
             @Override
             protected void done() {
                 if (!progressDialog.isCanceled() && process.exitValue() == 0) {
+                    String defaultPath = new File(fileLocation).getParent() + "/" + default_l2a_name;
                     String targetDir = ioParametersPanel.getTargetDir();
                     String targetName = ioParametersPanel.getTargetName();
-                    String targetPath = targetDir + "/" + targetName + ".xml";
+                    String targetPath = targetDir + "/" + targetName;
                     try {
-                        File targetMetadataFile = new File(targetPath);
+                        File l2File = new File(targetPath);
+                        if (!defaultPath.equals(targetPath)) {
+                            if (l2File.exists()) {
+                                FileUtils.deleteTree(l2File);
+                            }
+                            File defaultFile = new File(defaultPath);
+                            copyDir(defaultFile, l2File);
+                            FileUtils.deleteTree(defaultFile);
+                        }
+                        File targetMetadataFile = l2File;
                         if (ioParametersPanel.shallBeOpenedInApp()) {
                             Product product = ProductIO.readProduct(targetMetadataFile);
                             appContext.getProductManager().addProduct(product);
@@ -175,6 +194,30 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         swingWorker.execute();
     }
 
+    //todo replace this method with Files.move as soon as a build agent for java 7 is available
+    public void copyDir(File source, File dest) throws FileNotFoundException, IOException {
+        File[] files = source.listFiles();
+        dest.mkdirs();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                copyDir(file, new File(dest.getAbsolutePath() + System.getProperty("file.separator") + file.getName()));
+            } else {
+                copyFile(file, new File(dest.getAbsolutePath() + System.getProperty("file.separator") + file.getName()));
+            }
+        }
+    }
+
+    public void copyFile(File file, File ziel) throws FileNotFoundException, IOException {
+        BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(ziel, true));
+        int bytes = 0;
+        while ((bytes = in.read()) != -1) {
+            out.write(bytes);
+        }
+        in.close();
+        out.close();
+    }
+
     private JComponent createMessageComponent() {
         area = new JTextArea();
         area.setEditable(false);
@@ -182,6 +225,46 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         return areaScrollPane;
     }
 
+    /**
+     * Currently, the Refl2RadProcessor does not create metadata files at product level. This method adds an empty dummy
+     * metadata file and will hopefully become redundant in the near future
+    private File addMetadataFileIfNecessary(File l2FileDir) throws IOException {
+        final FilenameFilter filter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return S2Config.METADATA_NAME_2A_PATTERN.matcher(name).matches();
+            }
+        };
+        File[] l2MetadataFiles = l2FileDir.listFiles(filter);
+        if (l2MetadataFiles.length > 0) {
+            return l2MetadataFiles[0];
+        } else {
+            String l2MetadataFilename;
+            String l1cDirPath = new File(fileLocation).getName();
+            final FilenameFilter l1cMetadataFilter = new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String s) {
+                    return S2Config.METADATA_NAME_1C_PATTERN.matcher(s).matches();
+                }
+            };
+            File[] metadataFiles = new File(l1cDirPath).listFiles(l1cMetadataFilter);
+            if (metadataFiles != null && metadataFiles.length > 0) {
+                l2MetadataFilename = metadataFiles[0].getName().replace("1C", "2A");
+            } else if (S2Config.PRODUCT_DIRECTORY_1C_PATTERN.matcher(l1cDirPath).matches()) {
+                String changingName = FileUtils.getFilenameWithoutExtension(l1cDirPath).replace("PRD", "MTD").replace("1C", "2A") + ".xml";
+                if (l1cDirPath.endsWith(".SAFE")) {
+                    l2MetadataFilename = changingName.replace("MSI", "SAF");
+                } else {
+                    l2MetadataFilename = changingName.replace("MSI", "DMP");
+                }
+            } else {
+                l2MetadataFilename = "Product_Metadata_File.xml";
+            }
+            File l2MetadataFile = new File(l2FileDir + "/" + l2MetadataFilename);
+            l2MetadataFile.createNewFile();
+            return l2MetadataFile;
+        }
+    } */
 
     private class ProcessObserverHandler implements ProcessObserver.Handler {
 
@@ -191,7 +274,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         @Override
         public void onObservationStarted(ProcessObserver.ObservedProcess process, ProgressMonitor pm) {
             progressDialog.show();
-            pm.beginTask("Atmospheric Correction", 10000);
+            pm.beginTask("Reflectance to Radiance", 10000);
             lastWork = 0;
         }
 
@@ -199,6 +282,10 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
             if(line.contains("error")) {
                 showErrorDialog(line);
+            } else if (line.contains("%") && line.contains("Procedure") && lastWork < 10000) {
+                String[] splitLine = line.split("P");
+                updateProgressMonitor(splitLine[1].split(":")[1], pm);
+
             } else if (line.contains("%") && lastWork < 10000) {
                 updateProgressMonitor(line.split(":")[1], pm);
             }

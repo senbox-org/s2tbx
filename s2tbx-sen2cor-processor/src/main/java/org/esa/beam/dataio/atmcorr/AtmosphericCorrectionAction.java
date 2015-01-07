@@ -25,7 +25,7 @@ import java.io.IOException;
  */
 public class AtmosphericCorrectionAction extends AbstractVisatAction {
 
-    private String appName = "Atmospheric Correction Processor (Sentinel 2)";
+    private String appName = "Sentinel 2 Level-2A Processor";
 
     @Override
     public void actionPerformed(CommandEvent event) {

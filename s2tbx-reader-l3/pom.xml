@@ -143,6 +143,7 @@
                                     </rules>
                                     <fail>true</fail>
                                 </configuration>
+                                <phase>test</phase>
                             </execution>
                         </executions>
                     </plugin>

@@ -1,4 +1,4 @@
-package org.esa.beam.dataio.atmcorr;
+package org.esa.beam.dataio.refl2rad;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,15 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Uwe Müller-Wilm
+ * @author Tonio Fincke
  */
-public class AtmCorrProcessBuilder {
+public class Refl2RadProcessBuilder {
 
     public Process createProcess(String l1cProductPath, int resolution, boolean scOnly) throws IOException {
         List<String> command = new ArrayList<String>();
         command.add("python");
         command.add("L2A_Process.py");
-
         command.add(l1cProductPath);
         if (resolution > -1) {
             command.add("--resolution");
@@ -26,7 +25,7 @@ public class AtmCorrProcessBuilder {
         if (scOnly) {
             command.add("--sc_only");
         }
-
+        command.add("--profile");
         String apphome = System.getenv("S2L2APPHOME");
         String applicationPath = apphome + "/src";
         ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -47,6 +46,7 @@ public class AtmCorrProcessBuilder {
         if (scOnly) {
             command.add("--sc_only");
         }
+        command.add("--profile");
         String apphome = System.getenv("S2L2APPHOME");
         String applicationPath = apphome + "/src";
         ProcessBuilder processBuilder = new ProcessBuilder(command);

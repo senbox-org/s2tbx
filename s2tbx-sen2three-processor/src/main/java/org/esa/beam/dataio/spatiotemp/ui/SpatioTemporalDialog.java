@@ -1,7 +1,12 @@
-package org.esa.beam.dataio.atmcorr.ui;
+package org.esa.beam.dataio.spatiotemp.ui;
 
 import java.awt.Window;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.swing.AbstractButton;
@@ -14,7 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
-import org.esa.beam.dataio.atmcorr.AtmCorrProcessBuilder;
+import org.esa.beam.dataio.spatiotemp.SpatioTempProcessBuilder;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.ui.AppContext;
@@ -31,28 +36,30 @@ import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 /**
  * @author Tonio Fincke
  */
-public class AtmosphericCorrectionDialog extends ModelessDialog {
+public class SpatioTemporalDialog extends ModelessDialog {
 
     private JCheckBox scOnlyBox;
     private JComboBox resolutionBox;
     private final JTabbedPane form;
     private static AppContext appContext;
-    private final AtmCorrIOParametersPanel ioParametersPanel;
+    private final SpatioTempIOParametersPanel ioParametersPanel;
     private final Window parentComponent;
     private ProgressDialog progressDialog;
     private String fileLocation;
+    private final static String default_l1c_name = "Level-2A_User_Product";
+    private final static String default_l2a_name = "Level-03_User_Product";
     private JTextArea area;
 
-    public static AtmosphericCorrectionDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
+    public static SpatioTemporalDialog createInstance(AppContext app, Window parent, String title, int buttonMask, String helpID) {
         appContext = app;
-        return new AtmosphericCorrectionDialog(parent, title, buttonMask, helpID);
+        return new SpatioTemporalDialog(parent, title, buttonMask, helpID);
     }
 
-    public AtmosphericCorrectionDialog(Window parent, String title, int buttonMask, String helpID) {
+    public SpatioTemporalDialog(Window parent, String title, int buttonMask, String helpID) {
         super(parent, title, buttonMask, helpID);
         parentComponent = parent;
         form = new JTabbedPane();
-        ioParametersPanel = new AtmCorrIOParametersPanel(appContext);
+        ioParametersPanel = new SpatioTempIOParametersPanel(appContext);
         form.add("I/O Parameters", ioParametersPanel);
         form.add("Processing Parameters", createParametersPanel());
         AbstractButton button = getButton(ID_APPLY);
@@ -73,9 +80,9 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         fileLocation = ((File) sourceProduct.getProductReader().getInput()).getParent();
         final int resolution = (Integer) resolutionBox.getSelectedItem();
         try {
-            final Process atmCorrProcess =
-                    new AtmCorrProcessBuilder().createProcess(fileLocation, resolution, scOnlyBox.isSelected());
-            executeProcess(atmCorrProcess);
+            final Process spatioTempProcess =
+                    new SpatioTempProcessBuilder().createProcess(fileLocation, resolution, scOnlyBox.isSelected());
+            executeProcess(spatioTempProcess);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -97,11 +104,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
         panel.setLayout(tableLayout);
         panel.add(createTargetResolutionPanel());
-
-        scOnlyBox = new JCheckBox("Only Scene Classification");
-        panel.add(scOnlyBox);
         panel.add(tableLayout.createVerticalSpacer());
-
         return panel;
     }
 
@@ -132,7 +135,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
     }
 
     private void executeProcess(final Process process) {
-        final String processName = "Atmospheric Correction";
+        final String processName = "Spatio Temporal";
         ProgressMonitorSwingWorker swingWorker = new ProgressMonitorSwingWorker(parentComponent, processName) {
             @Override
             protected Object doInBackground(ProgressMonitor pm) throws Exception {
@@ -143,7 +146,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                 progressDialog.setMaximum(10000);
                 final DialogProgressMonitor monitor = new DialogProgressMonitor(progressDialog);
                 progressDialog.setExtensibleMessageComponent(createMessageComponent(), false);
-                progressDialog.setTitle("Performing Atmospheric Correction...");
+                progressDialog.setTitle("Performing spatio temporal synthesis");
 
                 final ProcessObserver processObserver = new ProcessObserver(process);
                 processObserver.setProgressMonitor(monitor);
@@ -155,11 +158,21 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
             @Override
             protected void done() {
                 if (!progressDialog.isCanceled() && process.exitValue() == 0) {
+                    String defaultPath = new File(fileLocation).getParent() + "/" + default_l2a_name;
                     String targetDir = ioParametersPanel.getTargetDir();
                     String targetName = ioParametersPanel.getTargetName();
-                    String targetPath = targetDir + "/" + targetName + ".xml";
+                    String targetPath = targetDir + "/" + targetName;
                     try {
-                        File targetMetadataFile = new File(targetPath);
+                        File l2File = new File(targetPath);
+                        if (!defaultPath.equals(targetPath)) {
+                            if (l2File.exists()) {
+                                FileUtils.deleteTree(l2File);
+                            }
+                            File defaultFile = new File(defaultPath);
+                            copyDir(defaultFile, l2File);
+                            FileUtils.deleteTree(defaultFile);
+                        }
+                        File targetMetadataFile = l2File; // ToDo
                         if (ioParametersPanel.shallBeOpenedInApp()) {
                             Product product = ProductIO.readProduct(targetMetadataFile);
                             appContext.getProductManager().addProduct(product);
@@ -175,13 +188,36 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         swingWorker.execute();
     }
 
+    //todo replace this method with Files.move as soon as a build agent for java 7 is available
+    public void copyDir(File source, File dest) throws FileNotFoundException, IOException {
+        File[] files = source.listFiles();
+        dest.mkdirs();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                copyDir(file, new File(dest.getAbsolutePath() + System.getProperty("file.separator") + file.getName()));
+            } else {
+                copyFile(file, new File(dest.getAbsolutePath() + System.getProperty("file.separator") + file.getName()));
+            }
+        }
+    }
+
+    public void copyFile(File file, File ziel) throws FileNotFoundException, IOException {
+        BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(ziel, true));
+        int bytes = 0;
+        while ((bytes = in.read()) != -1) {
+            out.write(bytes);
+        }
+        in.close();
+        out.close();
+    }
+
     private JComponent createMessageComponent() {
         area = new JTextArea();
         area.setEditable(false);
         JScrollPane areaScrollPane = new JScrollPane(area);
         return areaScrollPane;
     }
-
 
     private class ProcessObserverHandler implements ProcessObserver.Handler {
 
@@ -191,7 +227,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         @Override
         public void onObservationStarted(ProcessObserver.ObservedProcess process, ProgressMonitor pm) {
             progressDialog.show();
-            pm.beginTask("Atmospheric Correction", 10000);
+            pm.beginTask("Spatio Temporal", 10000);
             lastWork = 0;
         }
 
@@ -199,6 +235,10 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
             if(line.contains("error")) {
                 showErrorDialog(line);
+            } else if (line.contains("%") && line.contains("Procedure") && lastWork < 10000) {
+                String[] splitLine = line.split("P");
+                updateProgressMonitor(splitLine[1].split(":")[1], pm);
+
             } else if (line.contains("%") && lastWork < 10000) {
                 updateProgressMonitor(line.split(":")[1], pm);
             }

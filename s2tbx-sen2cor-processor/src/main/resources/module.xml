@@ -1,15 +1,14 @@
 <module>
-    <manifestVersion>1.0.0</manifestVersion>
-    <symbolicName>atm-corr-processor</symbolicName>
+    <manifestVersion>2.0.0</manifestVersion>
+    <symbolicName>s2tbx-sen2cor-processor</symbolicName>
     <version>2.0.0</version>
-    <name>Atmospheric Correction Processor (Sentinel 2 L2A)</name>
+    <name>Sentinel 2 Level 2A Processor</name>
 
-    <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products
-    </description>
+    <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products</description>
 
-    <vendor>Brockmann Consult GmbH</vendor>
-    <contactAddress>Max Planck Str.2, 21502 Geesthacht (Germany)</contactAddress>
-    <copyright>(C) 2007 by Brockmann Consult GmbH</copyright>
+    <vendor>Telespazio VEGA Deutschland GmbH</vendor>
+    <contactAddress>Europaplatz 5, 64293 Darmstadt (Germany)</contactAddress>
+    <copyright>(C) 2014 Telespazio VEGA Deutschland GmbH</copyright>
     <url>https://github.com/senbox-org/s2tbx</url>
     <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 
@@ -26,18 +25,21 @@
         <optional>true</optional>
     </dependency>
 
-    <categories>Reader,Sentinel</categories>
+    <categories>Application,Processor,Sentinel 2</categories>
 
     <extension point="snap-ui:actions">
 
         <action>
-            <id>performAtmosphericCorrection</id>
-            <parent>processing.preProcessing</parent>
+            <parent>processing.thematicLand</parent>
+            <id>level2AProcessor</id>
+            <text>SEN2COR Level 2A Processor...</text>
             <class>org.esa.beam.dataio.atmcorr.AtmosphericCorrectionAction</class>
-            <text>Atmospheric Correction (Sentinel 2) ...</text>
+            <operatorName>SEN2COR</operatorName>
+            <dialogTitle>Level 2A Processor</dialogTitle>
             <shortDescr>Performs atmospheric correction on Sentinel2 L1C products</shortDescr>
             <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products</description>
             <context>product</context>
+            <helpId>level2AProcessor</helpId>
         </action>
 
     </extension>
