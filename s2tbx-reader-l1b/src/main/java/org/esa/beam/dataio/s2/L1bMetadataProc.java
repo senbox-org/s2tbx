@@ -38,7 +38,7 @@ import java.util.*;
 public class L1bMetadataProc {
 
     public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
-        String subStr = "s2tbx-l4-reader";
+        String subStr = "s2tbx-l1b-reader";
 
         ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
         URLClassLoader s2ClassLoader = (URLClassLoader) s2c;

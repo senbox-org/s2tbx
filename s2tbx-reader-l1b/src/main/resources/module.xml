@@ -1,6 +1,6 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
-    <symbolicName>s2tbx-l4-reader</symbolicName>
+    <symbolicName>s2tbx-l1b-reader</symbolicName>
     <version>2.0.0</version>
     <name>Sentinel-2 Product Reader L1B</name>
 

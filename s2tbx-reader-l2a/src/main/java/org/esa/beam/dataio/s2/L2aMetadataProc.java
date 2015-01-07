@@ -27,7 +27,7 @@ import java.util.*;
 public class L2aMetadataProc {
 
     public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
-        String subStr = "s2tbx-l3-reader";
+        String subStr = "s2tbx-l2a-reader";
 
         ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
         URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
