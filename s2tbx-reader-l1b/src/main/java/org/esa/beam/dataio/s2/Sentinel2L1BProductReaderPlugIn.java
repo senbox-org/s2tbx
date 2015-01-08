@@ -20,8 +20,15 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
         BeamLogManager.getSystemLogger().fine("Getting decoders...");
 
         File file = new File(input.toString());
-        return S2L1bProductFilename.isProductFilename(file.getName()) ? DecodeQualification.INTENDED :
-                        DecodeQualification.UNABLE;
+        DecodeQualification deco = S2L1bProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
+        if(deco.equals(DecodeQualification.SUITABLE)) {
+            if(S2L1bProductFilename.create(file.getName()).fileCategory.contains("L1B"))
+            {
+                deco = DecodeQualification.INTENDED;
+            }
+        }
+
+        return deco;
     }
 
     @Override

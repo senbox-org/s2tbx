@@ -1,6 +1,6 @@
 package org.esa.beam.dataio.s2;
 
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleMetadataFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L2aGranuleMetadataFilename;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -9,12 +9,12 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by opicas-p on 24/06/2014.
  */
-public class S2GranuleMetadataFilenameTest {
+public class S2L2aGranuleMetadataFilenameTest {
 
     @Test
     public void testFileName() throws Exception
     {
-        S2GranuleMetadataFilename s2gf = S2GranuleMetadataFilename.create("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml");
+        S2L2aGranuleMetadataFilename s2gf = S2L2aGranuleMetadataFilename.create("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml");
         assertNotNull(s2gf);
         assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", s2gf.name);
         assertEquals("S2A", s2gf.missionID);

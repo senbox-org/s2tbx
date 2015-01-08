@@ -4,9 +4,9 @@ import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L2aGranuleDirFilename;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
@@ -205,7 +205,7 @@ public class L2aMetadata {
 
             for (String granuleName: tileNames)
             {
-                S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+                S2L2aGranuleDirFilename aGranuleDir = S2L2aGranuleDirFilename.create(granuleName);
                 String theName = aGranuleDir.getMetadataFilename().name;
 
                 File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
@@ -239,8 +239,8 @@ public class L2aMetadata {
                 tileList.add(t);
             }
 
-            S2DatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
-            S2DatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
+            S2L2aDatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
+            S2L2aDatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
 
             File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 

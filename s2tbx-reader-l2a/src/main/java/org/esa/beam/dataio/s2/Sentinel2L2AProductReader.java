@@ -7,8 +7,8 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleMetadataFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2ProductFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L2aGranuleMetadataFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L2aProductFilename;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.datamodel.*;
 import org.esa.beam.jai.ImageManager;
@@ -106,7 +106,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
 
         //todo do we have to read a standalone granule or jp2 file ?
 
-        if (S2ProductFilename.isProductFilename(inputFile.getName()))
+        if (S2L2aProductFilename.isProductFilename(inputFile.getName()))
         {
             return getL1cMosaicProduct(inputFile);
         }
@@ -125,8 +125,8 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
-        S2GranuleMetadataFilename mtdFilename = S2GranuleMetadataFilename.create(metadataFile.getName());
-        S2ProductFilename mtdFN = S2ProductFilename.create(metadataFile.getName());
+        S2L2aGranuleMetadataFilename mtdFilename = S2L2aGranuleMetadataFilename.create(metadataFile.getName());
+        S2L2aProductFilename mtdFN = S2L2aProductFilename.create(metadataFile.getName());
 
         L2aSceneDescription sceneDescription = L2aSceneDescription.create(metadataHeader, Tile.idGeom.G10M);
         logger.fine("Scene Description: " + sceneDescription);

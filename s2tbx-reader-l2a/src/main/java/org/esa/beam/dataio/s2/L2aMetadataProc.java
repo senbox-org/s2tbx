@@ -7,8 +7,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripDirFilename;
+import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripFilename;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.xml.bind.*;
@@ -249,21 +249,21 @@ public class L2aMetadataProc {
         return col;
     }
 
-    public static S2DatastripFilename getDatastrip(Level2A_User_Product product)
+    public static S2L2aDatastripFilename getDatastrip(Level2A_User_Product product)
     {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
-        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
+        S2L2aDatastripDirFilename dirDatastrip = S2L2aDatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
         return dirDatastrip.getDatastripFilename(null);
     }
 
-    public static S2DatastripDirFilename getDatastripDir(Level2A_User_Product product)
+    public static S2L2aDatastripDirFilename getDatastripDir(Level2A_User_Product product)
     {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
 
-        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
+        S2L2aDatastripDirFilename dirDatastrip = S2L2aDatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
         return dirDatastrip;
     }
 
