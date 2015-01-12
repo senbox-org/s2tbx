@@ -19,7 +19,7 @@ import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 
 /**
- * Commodity tool view for echoing and filtering application log messages.
+ * Commodity model view for echoing and filtering application log messages.
  *
  * @author  Cosmin Cara
  */
