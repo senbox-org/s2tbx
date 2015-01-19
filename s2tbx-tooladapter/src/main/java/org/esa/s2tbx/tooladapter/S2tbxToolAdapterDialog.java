@@ -9,6 +9,7 @@ import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.beam.framework.gpf.ui.SingleTargetProductDialog;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.util.logging.BeamLogManager;
+import org.esa.s2tbx.tooladapter.ui.ExternalToolExecutionForm;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class S2tbxToolAdapterDialog extends SingleTargetProductDialog {
     /** Parameters related info. */
     private OperatorParameterSupport parameterSupport;
     /** The form used to get the user's input */
-    private S2tbxToolAdapterForm form;
+    private ExternalToolExecutionForm form;
 
     /** Constructor.
      *
@@ -33,14 +34,14 @@ public class S2tbxToolAdapterDialog extends SingleTargetProductDialog {
      * @param title
      * @param helpID
      */
-    protected S2tbxToolAdapterDialog(String alias, AppContext appContext, String title, String helpID) {
+    public S2tbxToolAdapterDialog(String alias, AppContext appContext, String title, String helpID) {
         super(appContext, title, helpID);
         this.alias = alias;
         final OperatorSpi operatorSpi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(alias);
 
         this.parameterSupport = new OperatorParameterSupport(operatorSpi.getOperatorDescriptor());
 
-        form = new S2tbxToolAdapterForm(appContext, operatorSpi, parameterSupport.getPropertySet(),
+        form = new ExternalToolExecutionForm(appContext, operatorSpi, parameterSupport.getPropertySet(),
                 getTargetProductSelector());
         OperatorMenu operatorMenu = new OperatorMenu(this.getJDialog(),
                 operatorSpi.getOperatorDescriptor(),
@@ -124,7 +125,7 @@ public class S2tbxToolAdapterDialog extends SingleTargetProductDialog {
     /**
      * Add the output of the tool to the log.
      */
-    private class LogOutputConsumer implements ProcessOutputCounsumer {
+    private class LogOutputConsumer implements ProcessOutputConsumer {
 
         /**
          * Consume a line of output obtained from a tool.
@@ -132,7 +133,7 @@ public class S2tbxToolAdapterDialog extends SingleTargetProductDialog {
          * @param line a line of output text.
          */
         @Override
-        public void consumeOutpuLine(String line) {
+        public void consumeOutputLine(String line) {
             BeamLogManager.getSystemLogger().log(Level.INFO, line);
         }
     }

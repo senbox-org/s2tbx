@@ -2,6 +2,7 @@ package org.esa.s2tbx.tooladapter;
 
 import org.esa.beam.framework.ui.command.CommandEvent;
 import org.esa.beam.visat.actions.AbstractVisatAction;
+import org.esa.s2tbx.tooladapter.ui.ExternalOperatorsEditorDialog;
 
 /**
  * Sentinel-2 Tool Adapter action class
@@ -19,14 +20,19 @@ public class S2tbxToolAdapterAction extends AbstractVisatAction {
 
         //TODO: the alias will be selected based on the tool chosen by the user in the UI
 
-        final S2tbxToolAdapterDialog operatorDialog = new S2tbxToolAdapterDialog(
+        /*final S2tbxToolAdapterDialog operatorDialog = new S2tbxToolAdapterDialog(
                 "copy",
                 getAppContext(),
                 "Sentinel-2 Tool Adapter",
                 event.getCommand().getHelpId());
         operatorDialog.getJDialog().pack();
         operatorDialog.show();
+        */
 
+        ExternalOperatorsEditorDialog operatorDialog = new ExternalOperatorsEditorDialog(getAppContext(), "External Tools", event.getCommand().getHelpId());
+
+        //operatorDialog.getJDialog().pack();
+        operatorDialog.show();
     }
 
 }

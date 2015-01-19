@@ -26,8 +26,8 @@
             <placeLast>false</placeLast>
             <class>org.esa.s2tbx.tooladapter.S2tbxToolAdapterAction</class>
             <helpId>toolAdapter</helpId>
-            <text>Run external tools...</text>
-            <shortDescr>Run an external tool.</shortDescr>
+            <text>Manage external tools</text>
+            <shortDescr>Manage external tools.</shortDescr>
             <mnemonic>T</mnemonic>
         </action>
     </extension>

@@ -7,7 +7,6 @@ import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
-import org.esa.s2tbx.tooladapter.model.templates.CommandLineTemplate;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ public class S2tbxToolAdapterOp extends Operator {
 //    private String targetProductPath;
 
     /** Consume the output created by a tool. */
-    private ProcessOutputCounsumer consumer;
+    private ProcessOutputConsumer consumer;
 
     /** Stop the tool's execution. */
     private boolean stop;
@@ -66,8 +65,6 @@ public class S2tbxToolAdapterOp extends Operator {
     /** The tool's working directory. */
     private File toolWorkingDirectory;
 
-    /** The template used for the command line of the tool or null if not used. */
-    private CommandLineTemplate commandLineTemplate;
 
     /**
      * Constructor.
@@ -75,7 +72,6 @@ public class S2tbxToolAdapterOp extends Operator {
     public S2tbxToolAdapterOp() {
         this.consumer = null;
         this.stop = false;
-        this.commandLineTemplate = null;
         this.lock = new Object();
     }
 
@@ -110,7 +106,7 @@ public class S2tbxToolAdapterOp extends Operator {
     /** Set a consumer for the tool's output.
      * @param consumer the output consumer.
      */
-    public void setConsumer(ProcessOutputCounsumer consumer) {
+    public void setConsumer(ProcessOutputConsumer consumer) {
         this.consumer = consumer;
     }
 
@@ -233,7 +229,7 @@ public class S2tbxToolAdapterOp extends Operator {
 
                     //consume the line if possible
                     if (this.consumer != null) {
-                        this.consumer.consumeOutpuLine(line);
+                        this.consumer.consumeOutputLine(line);
                     }
                 }
                 // check if the project finished execution
