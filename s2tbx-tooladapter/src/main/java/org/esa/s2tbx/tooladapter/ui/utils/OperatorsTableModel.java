@@ -1,6 +1,7 @@
 package org.esa.s2tbx.tooladapter.ui.utils;
 
 import org.esa.beam.framework.gpf.OperatorSpi;
+import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -14,9 +15,9 @@ public class OperatorsTableModel extends AbstractTableModel {
 
     private String[] columnNames = {"", "Tool name", "Tool description"};
     private boolean[] toolsChecked = null;
-    private List<OperatorSpi> data = null;
+    private List<S2tbxOperatorDescriptor> data = null;
 
-    public OperatorsTableModel(List<OperatorSpi> operators){
+    public OperatorsTableModel(List<S2tbxOperatorDescriptor> operators){
         this.data = operators;
         this.toolsChecked = new boolean[this.data.size()];
     }
@@ -36,7 +37,7 @@ public class OperatorsTableModel extends AbstractTableModel {
         if(columnIndex == 0){
             return toolsChecked[rowIndex];
         } else {
-            return data.get(rowIndex).getOperatorDescriptor().getName();
+            return data.get(rowIndex).getName();
         }
     }
 
@@ -68,7 +69,7 @@ public class OperatorsTableModel extends AbstractTableModel {
         this.toolsChecked[row] = (boolean)value;
     }
 
-    public OperatorSpi getFirstCheckedOperator(){
+    public S2tbxOperatorDescriptor getFirstCheckedOperator(){
         for (int i=0;i<this.toolsChecked.length;i++){
             if(this.toolsChecked[i]){
                 return this.data.get(i);
@@ -77,8 +78,8 @@ public class OperatorsTableModel extends AbstractTableModel {
         return null;
     }
 
-    public List<OperatorSpi> getCheckedOperators(){
-        List<OperatorSpi> result = new ArrayList<OperatorSpi>();
+    public List<S2tbxOperatorDescriptor> getCheckedOperators(){
+        List<S2tbxOperatorDescriptor> result = new ArrayList<S2tbxOperatorDescriptor>();
         for (int i=0;i<this.toolsChecked.length;i++){
             if(this.toolsChecked[i]){
                 result.add(this.data.get(i));

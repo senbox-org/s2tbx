@@ -6,6 +6,7 @@ import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.OperatorSpi;
+import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.framework.gpf.ui.DefaultIOParametersPanel;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
 import org.esa.beam.framework.gpf.ui.TargetProductSelector;
@@ -23,12 +24,12 @@ import java.util.ArrayList;
  */
 public class ExternalToolExecutionForm extends JTabbedPane {
     private AppContext appContext;
-    private OperatorSpi operatorSpi;
+    private S2tbxOperatorDescriptor operatorSpi;
     private PropertySet propertySet;
     private TargetProductSelector targetProductSelector;
     private DefaultIOParametersPanel ioParamPanel;
 
-    public ExternalToolExecutionForm(AppContext appContext, OperatorSpi operatorSpi, PropertySet propertySet,
+    public ExternalToolExecutionForm(AppContext appContext, S2tbxOperatorDescriptor operatorSpi, PropertySet propertySet,
                                      TargetProductSelector targetProductSelector) {
         this.appContext = appContext;
         this.operatorSpi = operatorSpi;
@@ -63,7 +64,7 @@ public class ExternalToolExecutionForm extends JTabbedPane {
     }
 
     private DefaultIOParametersPanel createIOParamTab() {
-        final DefaultIOParametersPanel ioPanel = new DefaultIOParametersPanel(appContext, operatorSpi.getOperatorDescriptor(),
+        final DefaultIOParametersPanel ioPanel = new DefaultIOParametersPanel(appContext, operatorSpi,
                                                                               targetProductSelector);
         final ArrayList<SourceProductSelector> sourceProductSelectorList = ioPanel.getSourceProductSelectorList();
         if (!sourceProductSelectorList.isEmpty()) {

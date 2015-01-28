@@ -7,6 +7,7 @@ import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.DefaultOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
@@ -34,6 +35,7 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
      */
     public S2tbxToolAdapterOpSpi(OperatorDescriptor operatorDescriptor) {
         super(operatorDescriptor);
+
     }
 
     static {
@@ -84,8 +86,18 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
      * @param toolName the name of the tool
      * @throws OperatorException in case of an error
      */
-    private static void registerModule(String toolName) throws OperatorException {
+    public static void registerModule(String toolName) throws OperatorException {
+        OperatorSpi operatorSpi = readOperatorFromFile(toolName);
 
+        String operatorName = operatorSpi.getOperatorDescriptor().getName() != null ? operatorSpi.getOperatorDescriptor().getName() : operatorSpi.getOperatorDescriptor().getAlias();
+        if(GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operatorName) != null){
+            throw new OperatorException("An operator with the name " + operatorName + " is already registered; replace the name in the folder " + S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO);
+        }
+        GPF.getDefaultInstance().getOperatorSpiRegistry().addOperatorSpi(operatorName, operatorSpi);
+        BeamLogManager.getSystemLogger().info(String.format("Tool operator '%s' registered!", toolName));
+    }
+
+    public static OperatorSpi readOperatorFromFile(String toolName) throws  OperatorException{
         final File toolModuleDir;
         try {
             //Look for the defined tool folder
@@ -105,7 +117,7 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
         }
 
         //Look for the descriptor
-        File toolInfoXmlFile = new File(toolModuleDir, toolName + "-info.xml");
+        File toolInfoXmlFile = new File(toolModuleDir, toolName + S2tbxToolAdapterConstants.OPERATOR_FILE_SUFIX);
         DefaultOperatorDescriptor operatorDescriptor;
         if (toolInfoXmlFile.exists()) {
             operatorDescriptor = DefaultOperatorDescriptor.fromXml(toolInfoXmlFile, S2tbxToolAdapterOpSpi.class.getClassLoader());
@@ -126,10 +138,8 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
                 return toolOperator;
             }
         };
+        return operatorSpi;
 
-        String operatorName = operatorDescriptor.getAlias() != null ? operatorDescriptor.getAlias() : operatorDescriptor.getName();
-        GPF.getDefaultInstance().getOperatorSpiRegistry().addOperatorSpi(operatorName, operatorSpi);
-        BeamLogManager.getSystemLogger().info(String.format("Tool operator '%s' registered!", toolName));
     }
 
 }

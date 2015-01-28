@@ -25,4 +25,12 @@ public interface S2tbxToolAdapterConstants {
 
     /** The id of the tool's command line template as it is used in the descriptor.*/
     public static final String TOOL_CMD_LINE_TMPL_ID = "commandLineTemplate";
+
+    public static final String TOOL_SOURCE_PRODUCT_FILE = "sourceProductFile";
+
+    public static final String OPERATOR_DEFAULT_NAME_PREFIX = "org.esa.s2tbx.tooladapter";
+
+    public static final String OPERATOR_GENERATED_NAME_SEPARATOR = "_";
+
+    public static String OPERATOR_FILE_SUFIX = "-info.xml";
 }

@@ -1,47 +1,78 @@
 package org.esa.s2tbx.tooladapter.ui;
 
-import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.binding.PropertyDescriptor;
-import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
-import com.bc.ceres.swing.binding.PropertyPane;
+import com.bc.ceres.swing.binding.PropertyEditor;
+import com.bc.ceres.swing.binding.PropertyEditorRegistry;
+import com.bc.ceres.swing.binding.internal.CheckBoxEditor;
+import com.bc.ceres.swing.binding.internal.FileEditor;
 import com.bc.ceres.swing.binding.internal.TextFieldEditor;
+import org.esa.beam.framework.dataio.ProductReader;
+import org.esa.beam.framework.dataio.ProductWriter;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.DefaultOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.ModelessDialog;
-import org.esa.s2tbx.tooladapter.ui.utils.OperatorDescriptorTableModel;
+import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
+import org.esa.s2tbx.tooladapter.S2tbxToolAdapterOpSpi;
+import org.esa.s2tbx.tooladapter.ui.utils.OperatorParametersTable;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-
 import java.awt.*;
-
-import static com.bc.ceres.swing.TableLayout.cell;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.io.File;
 
 /**
  * Created by ramonag on 1/13/2015.
  */
-public class ExternalToolEditorDialog extends ModelessDialog {
+public class ExternalToolEditorDialog extends ModelessDialog{
 
-    private OperatorSpi operatorSpi;
+    private S2tbxOperatorDescriptor operatorSpi;
     private boolean operatorIsNew;
+    private int newNameIndex = -1;
+    private JPanel preprocessingPanel;
+    private JPanel writeOnPrePanel;
+    private JPanel writeOnProPanel;
+    private PropertyContainer propertyContainer;
     private BindingContext bindingContext;
 
-    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID){
-        super(appContext.getApplicationWindow(), title, ID_CLOSE, helpID);
+    private ExternalToolEditorDialog(AppContext appContext, String title, String helpID) {
+        super(appContext.getApplicationWindow(), title, ID_APPLY_CLOSE, helpID);
     }
 
-    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, OperatorSpi operatorSpi, BindingContext bindingContext, boolean operatorIsNew){
+    private  ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorSpi){
         this(appContext, title, helpID);
-        this.bindingContext = bindingContext;
         this.operatorSpi = operatorSpi;
+        propertyContainer = PropertyContainer.createObjectBacked(operatorSpi);
+        bindingContext = new BindingContext(propertyContainer);
+    }
+
+    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorSpi, boolean operatorIsNew) {
+        this(appContext, title, helpID, operatorSpi);
         this.operatorIsNew = operatorIsNew;
-        getJDialog().setSize(1000, 150);
-        setContent(createPanel());
+        this.newNameIndex = -1;
+        setContent(createMainPanel());
+        getJDialog().setMinimumSize(new Dimension(1200, 150));
+    }
+
+    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorSpi, int newNameIndex) {
+        this(appContext, title, helpID, operatorSpi);
+        this.newNameIndex = newNameIndex;
+        if(this.newNameIndex >= 1){
+            this.operatorIsNew = true;
+        } else {
+            this.operatorIsNew = false;
+        }
+        setContent(createMainPanel());
+        getJDialog().setMinimumSize(new Dimension(1200, 150));
     }
 
     private JPanel createOperatorDescriptorPanel() {
@@ -53,33 +84,50 @@ public class ExternalToolEditorDialog extends ModelessDialog {
 
         final JPanel descriptorPanel = new JPanel(descriptorLayout);
 
-        descriptorPanel.add(new JLabel("Operator alias:"));
-        //descriptorPanel.add(new JTextField(operatorSpi.getOperatorDescriptor().getAlias()));
-
         TextFieldEditor textEditor = new TextFieldEditor();
-        PropertyContainer propertyContainer = PropertyContainer.createObjectBacked((DefaultOperatorDescriptor)operatorSpi.getOperatorDescriptor());
+        PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(operatorSpi);
         BindingContext bindingContext = new BindingContext(propertyContainer);
+
+        descriptorPanel.add(new JLabel("Operator alias:"));
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("alias");
         JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        if (this.newNameIndex >= 1) {
+            ((JTextField) editorComponent).setText(operatorSpi.getAlias() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
+        }
         descriptorPanel.add(editorComponent);
 
         descriptorPanel.add(new JLabel("Operator unique name:"));
-        descriptorPanel.add(new JTextField(operatorSpi.getOperatorDescriptor().getName()));
+        propertyDescriptor = propertyContainer.getDescriptor("name");
+        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        if (this.newNameIndex >= 1) {
+            ((JTextField) editorComponent).setText(operatorSpi.getName() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
+        }
+        descriptorPanel.add(editorComponent);
 
-        descriptorPanel.add(new JLabel("Operator class:"));
-        descriptorPanel.add(new JTextField(operatorSpi.getOperatorDescriptor().getOperatorClass().getCanonicalName()));
+        descriptorPanel.add(new JLabel("Operator label:"));
+        propertyDescriptor = propertyContainer.getDescriptor("label");
+        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        descriptorPanel.add(editorComponent);
 
         descriptorPanel.add(new JLabel("Operator version:"));
-        descriptorPanel.add(new JTextField(operatorSpi.getOperatorDescriptor().getVersion()));
+        propertyDescriptor = propertyContainer.getDescriptor("version");
+        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        descriptorPanel.add(editorComponent);
 
         descriptorPanel.add(new JLabel("Operator copyright:"));
-        descriptorPanel.add(new JTextField(operatorSpi.getOperatorDescriptor().getCopyright()));
+        propertyDescriptor = propertyContainer.getDescriptor("copyright");
+        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        descriptorPanel.add(editorComponent);
 
         descriptorPanel.add(new JLabel("Operator authors:"));
-        descriptorPanel.add(new JTextField(operatorSpi.getOperatorDescriptor().getAuthors()));
+        propertyDescriptor = propertyContainer.getDescriptor("authors");
+        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        descriptorPanel.add(editorComponent);
 
         descriptorPanel.add(new JLabel("Operator description:"));
-        descriptorPanel.add(new JTextField(operatorSpi.getOperatorDescriptor().getDescription()));
+        propertyDescriptor = propertyContainer.getDescriptor("description");
+        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        descriptorPanel.add(editorComponent);
 
         TitledBorder title = BorderFactory.createTitledBorder("Operator Descriptor");
         descriptorPanel.setBorder(title);
@@ -87,63 +135,98 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         return descriptorPanel;
     }
 
-    public JPanel createPanel() {
+    private JPanel createProcessingPanel(){
+
+        final JPanel processingPanel = new JPanel();
+        processingPanel.setLayout(new BoxLayout(processingPanel, BoxLayout.PAGE_AXIS));
+        processingPanel.setPreferredSize(new Dimension(600, 100));
+        processingPanel.setMaximumSize(new Dimension(600, 100));
+        processingPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+
+        JPanel preprocessingPanel = new JPanel();
+        preprocessingPanel.setLayout(new BoxLayout(preprocessingPanel, BoxLayout.PAGE_AXIS));
+        preprocessingPanel.add(createOperatorMemberPanel("Preprocessing writer", "preprocessingWriter", null));
+        preprocessingPanel.add(createOperatorMemberPanel("Preprocessing tool file location:", "preprocessingToolFileLocation", null));
+        preprocessingPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+
+        processingPanel.add(createOperatorMemberPanel("Preprocessing", "preprocessTool", preprocessingPanel));
+        processingPanel.add(preprocessingPanel);
+
+        JPanel processingWriter = new JPanel();
+        processingWriter.add(createOperatorMemberPanel("Processing writer", "processingWriter", null));
+        processingWriter.setBorder(BorderFactory.createLineBorder(Color.black));
+
+        processingPanel.add(createOperatorMemberPanel("Write before processing", "writeForProcessing", processingWriter));
+        processingPanel.add(processingWriter);
+
+        processingPanel.add(createOperatorMemberPanel("Processing tool location", "mainToolFileLocation", null));
+
+        processingPanel.add(createOperatorMemberPanel("Processing temporary folder", "tempFolder", null));
+
+        TitledBorder title = BorderFactory.createTitledBorder("Operator processing parameters");
+        processingPanel.setBorder(title);
+
+        return processingPanel;
+    }
+
+    private JPanel createOperatorMemberPanel(String label, String memberName, JPanel tooglePanelEnabled){
+        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(memberName);
+        PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
+
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
+
+        if(editorComponent instanceof JCheckBox) {
+            panel.add(editorComponent);
+            panel.add(new JLabel(label));
+        }else{
+            panel.add(new JLabel(label));
+            panel.add(editorComponent);
+        }
+
+        if(editorComponent instanceof JCheckBox && tooglePanelEnabled != null){
+            enableSubComponents(tooglePanelEnabled, ((JCheckBox)editorComponent).isSelected());
+            ((JCheckBox)editorComponent).addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    enableSubComponents(tooglePanelEnabled, ((JCheckBox)editorComponent).isSelected());
+                }
+            });
+        }
+        if(editorComponent instanceof JTextField){
+            editorComponent.setPreferredSize(new Dimension(200, 25));
+            editorComponent.setEnabled(true);
+        }
+        panel.setPreferredSize(new Dimension(600, 25));
+        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+        return panel;
+    }
+
+    public JPanel createMainPanel() {
         JPanel toolDescriptorPanel = new JPanel();
-        toolDescriptorPanel.setLayout(new BoxLayout(toolDescriptorPanel, BoxLayout.Y_AXIS));
+        toolDescriptorPanel.setLayout(new BorderLayout());
 
-        toolDescriptorPanel.add(createOperatorDescriptorPanel(), BorderLayout.WEST);
+        toolDescriptorPanel.add(createOperatorDescriptorPanel(), BorderLayout.LINE_START);
+        toolDescriptorPanel.add(createProcessingPanel(), BorderLayout.LINE_END);
 
-        OperatorDescriptorTableModel tableModel = new OperatorDescriptorTableModel(bindingContext);
-        JScrollPane tableScrollPane = new JScrollPane(new JTable(tableModel));
+        JScrollPane tableScrollPane = new JScrollPane(new OperatorParametersTable(operatorSpi));
         TitledBorder title = BorderFactory.createTitledBorder("Operator Parameters");
         tableScrollPane.setBorder(title);
-        toolDescriptorPanel.add(tableScrollPane);
-/*
+        toolDescriptorPanel.add(tableScrollPane, BorderLayout.PAGE_END);
 
-        TableLayout layout = new TableLayout(3);
-        layout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
-        layout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        layout.setTablePadding(3, 3);
-        final JPanel paramsPanel = new JPanel(layout);
-
-        int rowIndex = 0;
-        final PropertyEditorRegistry registry = PropertyEditorRegistry.getInstance();
-
-
-
-        for (Property property : properties) {
-            PropertyDescriptor descriptor = property.getDescriptor();
-            if (isInvisible(descriptor)) {
-                continue;
-            }
-            PropertyEditor propertyEditor = registry.findPropertyEditor(descriptor);
-            JComponent component = propertyEditor.createEditorComponent(descriptor, getBindingContext());
-                layout.setCellColspan(rowIndex, 0, 2);
-                layout.setCellWeightX(rowIndex, 0, 1.0);
-                paramsPanel.add(component, cell(rowIndex, 0));
-                final JLabel label = new JLabel("");
-                if (descriptor.getUnit() != null) {
-                    label.setText(descriptor.getUnit());
-                }
-                layout.setCellWeightX(rowIndex, 2, 0.0);
-                paramsPanel.add(label, cell(rowIndex, 2));
-            rowIndex++;
-        }
-        layout.setCellColspan(rowIndex, 0, 2);
-        layout.setCellWeightX(rowIndex, 0, 1.0);
-        layout.setCellWeightY(rowIndex, 0, 0.5);
-        paramsPanel.add(new JPanel());
-
-        TitledBorder title;
-        title = BorderFactory.createTitledBorder("Operator Parameters");
-        paramsPanel.setBorder(title);
-
-        toolDescriptorPanel.add(paramsPanel);
-*/
         return toolDescriptorPanel;
     }
 
-    private boolean isInvisible(PropertyDescriptor descriptor) {
-        return Boolean.FALSE.equals(descriptor.getAttribute("visible")) || descriptor.isDeprecated();
+    private void enableSubComponents(Component component, boolean enabled){
+        component.setEnabled(enabled);
+        if(component instanceof Container) {
+            for (int i = 0; i < ((Container) component).getComponents().length; i++) {
+                enableSubComponents(((Container) component).getComponents()[i], enabled);
+            }
+        }
+    }
+
+    protected void onApply(){
+        super.onApply();
     }
 }

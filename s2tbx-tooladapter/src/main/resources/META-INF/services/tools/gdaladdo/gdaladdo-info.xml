@@ -4,9 +4,9 @@
 -->
 <operator>
     <!-- The name uniquely identifies the operator within BEAM -->
-    <name>org.esa.s2tbx.tooladapter.copy</name>
+    <name>org.esa.s2tbx.tooladapter.gdaladdo</name>
     <!-- The alias is a more user-friendly name, e.g. to be used on the command line -->
-    <alias>copy</alias>
+    <alias>gdaladdo</alias>
     <operatorClass>org.esa.s2tbx.tooladapter.S2tbxToolAdapterOp</operatorClass>
 
     <version>1.0</version>
@@ -14,7 +14,7 @@
     <copyright>(C) 2014 CS Romania</copyright>
 
     <description>
-        The copy tool.
+        The gdal addo tool - builds or rebuilds overview images.
     </description>
 
     <namedSourceProducts>
@@ -30,15 +30,14 @@
     <parameters>
         <parameter>
             <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
-            <name>targetProductFile</name>
+            <name>resamplingAlgorithm</name>
             <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
-            <description>The target product file</description>
+            <description>The resampling algorithm</description>
             <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
-            <dataType>java.io.File</dataType>
+            <dataType>java.lang.String</dataType>
             <!-- The default value of the parameter; this is used if no value is specified by the user -->
-            <defaultValue>D:/workingDir/target.N1</defaultValue>
+            <defaultValue>nearest</defaultValue>
         </parameter>
-
         <parameter>
             <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
             <name>toolFile</name>
@@ -47,7 +46,27 @@
             <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
             <dataType>java.io.File</dataType>
             <!-- The default value of the parameter; this is used if no value is specified by the user -->
-            <defaultValue>C:/Windows/System32/cmd.exe</defaultValue>
+            <defaultValue>C:/Program Files/GDAL/gdaladdo.exe</defaultValue>
+        </parameter>
+        <parameter>
+            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
+            <name>levels</name>
+            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
+            <description>A list of integral overview levels to build.</description>
+            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
+            <dataType>java.lang.String</dataType>
+            <!-- The default value of the parameter; this is used if no value is specified by the user -->
+            <defaultValue>2 4 8 16</defaultValue>
+        </parameter>
+        <parameter>
+            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
+            <name>commandLineTemplate</name>
+            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
+            <description>The file that contains the command line.</description>
+            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
+            <dataType>java.lang.String</dataType>
+            <!-- The default value of the parameter; this is used if no value is specified by the user -->
+            <defaultValue>gdaladdo-cmdLineTemplate.tpl</defaultValue>
         </parameter>
         <parameter>
             <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
@@ -61,23 +80,13 @@
         </parameter>
         <parameter>
             <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
-            <name>commandLineTemplate</name>
+            <name>sourceProductFile</name>
             <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
-            <description>The file that contains the command line.</description>
+            <description>The source file on disk without loading it</description>
             <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
-            <dataType>java.lang.String</dataType>
+            <dataType>java.io.File</dataType>
             <!-- The default value of the parameter; this is used if no value is specified by the user -->
-            <defaultValue>copy-cmdLineTemplate.tpl</defaultValue>
-        </parameter>
-        <parameter>
-            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
-            <name>command</name>
-            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
-            <description>The copy command.</description>
-            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
-            <dataType>java.lang.String</dataType>
-            <!-- The default value of the parameter; this is used if no value is specified by the user -->
-            <defaultValue>COPY</defaultValue>
+            <defaultValue>D:/Sentinel2_PROJECT/Satellite_Imagery/SPOT-3/SPOT3-Mul_L1a/30382639609301123571X0_1A_NETWORK/scene01/imagery.tif</defaultValue>
         </parameter>
     </parameters>
 

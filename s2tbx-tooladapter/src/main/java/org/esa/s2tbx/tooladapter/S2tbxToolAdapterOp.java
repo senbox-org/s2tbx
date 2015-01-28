@@ -7,9 +7,11 @@ import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
+import org.geotools.xml.xsi.XSISimpleTypes;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -143,6 +145,7 @@ public class S2tbxToolAdapterOp extends Operator {
      */
     @Override
     public void initialize() throws OperatorException {
+        Date currentTime = new Date();
         //Validate the input
         validateDescriptorInput();
 
@@ -152,8 +155,17 @@ public class S2tbxToolAdapterOp extends Operator {
         //Run tool
         runTool();
 
-        //Load target product
-        loadFinalProduct();
+        if (this.consumer != null) {
+            Date finalDate = new Date();
+            this.consumer.consumeOutputLine("Finished tool execution in " + (finalDate.getTime() - currentTime.getTime())/1000 + " seconds");
+        }
+
+        try {
+            //Load target product
+            loadFinalProduct();
+        }catch (Exception ex){
+            throw new OperatorException("Could not load final product in memory : "+ex.getMessage());
+        }
     }
 //
 //    /** Set a new value for the Tool object.
@@ -431,12 +443,19 @@ public class S2tbxToolAdapterOp extends Operator {
                     //the id of the source is after the '.'
                     id = Integer.parseInt(sourceTag[1]);
                 }
+                String srcFileLocation;
                 if (id < sourceProducts.length) {
-                    String srcFileLocation = sourceProducts[id].getFileLocation().getAbsolutePath();
-                    result = result.replaceAll("\\$\\{" + sourceTag[0] + "\\}", srcFileLocation.replace("\\", "\\\\"));
+                    srcFileLocation = sourceProducts[id].getFileLocation().getAbsolutePath();
+                } else if(sourceProducts.length == 0){
+                    srcFileLocation = ((File)getParameter(S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE, null)).getAbsolutePath();
+                    //TODO check if exists!
+                    if(srcFileLocation.length() <= 0 || !(new File(srcFileLocation)).exists()){
+                        throw new OperatorException("The source product file not existing!");
+                    }
                 } else {
                     throw new OperatorException(String.format("The source id '%d' exceeds the number of existing sources (%d)!", id, sourceProducts.length));
                 }
+                result = result.replaceAll("\\$\\{" + sourceTag[0] + "\\}", srcFileLocation.replace("\\", "\\\\"));
             } else {
                 //This tag is related to a parameter.
                 final Object value = getParameter(tag, null);
