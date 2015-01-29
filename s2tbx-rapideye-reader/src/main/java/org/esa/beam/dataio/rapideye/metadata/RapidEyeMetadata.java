@@ -1,14 +1,9 @@
 package org.esa.beam.dataio.rapideye.metadata;
 
 import org.esa.beam.dataio.metadata.XmlMetadata;
-import org.esa.beam.dataio.rapideye.RapidEyeConstants;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Specialized <code>XmlMetadata</code> for RapidEye.
@@ -18,8 +13,6 @@ import java.util.Date;
  */
 public class RapidEyeMetadata extends XmlMetadata {
 
-    public static final String TAG_MOSAIC_DECOMPOSITION = "mosaicDecomposition";
-    public static final String TAG_MOSAIC_TILE = "mosaicTile";
     private float[] scaleFactors;
 
     public RapidEyeMetadata(String name) {
@@ -157,11 +150,6 @@ public class RapidEyeMetadata extends XmlMetadata {
         return height;
     }
 
-    @Override
-    public String[] getRasterFileNames() {
-        return getRasterFileNames(true);
-    }
-
     public String getBrowseFileName() {
         String fileName = null;
         if (rootElement != null) {
@@ -198,7 +186,8 @@ public class RapidEyeMetadata extends XmlMetadata {
         return fileName;
     }
 
-    public String[] getRasterFileNames(boolean isL1Product) {
+    @Override
+    public String[] getRasterFileNames() {
         String[] fileNames = null;
         if (rootElement != null) {
             MetadataElement currentElement;
@@ -209,7 +198,7 @@ public class RapidEyeMetadata extends XmlMetadata {
                 // other than L3b products
                 if (element != null) {
                     String baseName = element.getAttributeString(RapidEyeConstants.TAG_FILE_NAME);
-                    if (isL1Product) {
+                    if (isL1Product()) {
                         if (baseName != null && !baseName.isEmpty()) {
                             fileNames = new String[getNumBands()];
                             for (int i = 0; i < fileNames.length; i++) {
@@ -222,8 +211,8 @@ public class RapidEyeMetadata extends XmlMetadata {
                         fileNames = new String[] { baseName };
                     }
                 } else {
-                    if (((currentElement = currentElement.getElement(TAG_MOSAIC_DECOMPOSITION)) != null) &&
-                            ((currentElement = currentElement.getElement(TAG_MOSAIC_TILE)) != null)) {
+                    if (((currentElement = currentElement.getElement(RapidEyeConstants.TAG_MOSAIC_DECOMPOSITION)) != null) &&
+                            ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_MOSAIC_TILE)) != null)) {
                         String baseName = currentElement.getAttributeString(RapidEyeConstants.TAG_FILE_NAME);
                         fileNames = new String[] { baseName };
                     }
@@ -256,31 +245,27 @@ public class RapidEyeMetadata extends XmlMetadata {
         ProductData.UTC startTime = null;
         if (rootElement != null) {
             MetadataElement currentElement;
-            if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_RESULT_OF)) != null) &&
-                    ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_EARTH_OBSERVATION_RESULT)) != null)) {
-                MetadataElement[] bandSpecificMetadataElements = currentElement.getElements();
-                for (MetadataElement element : bandSpecificMetadataElements) {
-                    ProductData.UTC currentTime;
-                    if (RapidEyeConstants.TAG_BAND_SPECIFIC_METADATA.equals(element.getName())) {
-                        String stringData = element.getAttributeString(RapidEyeConstants.TAG_START_DATE_TIME, null);
-                        if (stringData != null) {
-                            try {
-                                if (stringData.endsWith("Z")) stringData = stringData.substring(0,stringData.length() - 1);
-                                String microseconds = stringData.substring(stringData.indexOf(".") + 1);
-                                Date date = new SimpleDateFormat(RapidEyeConstants.UTC_DATE_FORMAT).parse(stringData);
-                                currentTime = ProductData.UTC.create(date, Long.parseLong(microseconds));
-                                if (startTime == null) {
-                                    startTime = currentTime;
-                                } else if (startTime.getAsCalendar().after(currentTime.getAsCalendar())) {
-                                    startTime = currentTime;
-                                }
-                            } catch (ParseException e) {
-                                logger.warning(String.format("Product start time not in expected format. Found %s, expected %s",
-                                        stringData,
-                                        RapidEyeConstants.UTC_DATE_FORMAT));
+            if (isL1Product()) {
+                if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_RESULT_OF)) != null) &&
+                        ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_EARTH_OBSERVATION_RESULT)) != null)) {
+                    MetadataElement[] bandSpecificMetadataElements = currentElement.getElements();
+                    for (MetadataElement element : bandSpecificMetadataElements) {
+                        if (RapidEyeConstants.TAG_BAND_SPECIFIC_METADATA.equals(element.getName())) {
+                            ProductData.UTC currentTime = parseDate(element.getAttributeString(RapidEyeConstants.TAG_START_DATE_TIME, null),
+                                                                    RapidEyeConstants.UTC_DATE_FORMAT);
+                            if (startTime == null) {
+                                startTime = currentTime;
+                            } else if (currentTime != null && startTime.getAsCalendar().after(currentTime.getAsCalendar())) {
+                                startTime = currentTime;
                             }
                         }
                     }
+                }
+            } else {
+                if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_VALID_TIME)) != null) &&
+                        ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_TIME_PERIOD)) != null)) {
+                    startTime = parseDate(currentElement.getAttributeString(RapidEyeConstants.TAG_BEGIN_POSITION, null),
+                                          RapidEyeConstants.UTC_DATE_FORMAT);
                 }
             }
         }
@@ -291,31 +276,27 @@ public class RapidEyeMetadata extends XmlMetadata {
         ProductData.UTC endTime = null;
         if (rootElement != null) {
             MetadataElement currentElement;
-            if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_RESULT_OF)) != null) &&
-                    ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_EARTH_OBSERVATION_RESULT)) != null)) {
-                MetadataElement[] bandSpecificMetadataElements = currentElement.getElements();
-                for (MetadataElement element : bandSpecificMetadataElements) {
-                    ProductData.UTC currentTime;
-                    if (RapidEyeConstants.TAG_BAND_SPECIFIC_METADATA.equals(element.getName())) {
-                        String stringData = element.getAttributeString(RapidEyeConstants.TAG_END_DATE_TIME, null);
-                        if (stringData != null) {
-                            try {
-                                if (stringData.endsWith("Z")) stringData = stringData.substring(0,stringData.length() - 1);
-                                String microseconds = stringData.substring(stringData.indexOf(".") + 1);
-                                Date date = new SimpleDateFormat(RapidEyeConstants.UTC_DATE_FORMAT).parse(stringData);
-                                currentTime = ProductData.UTC.create(date, Long.parseLong(microseconds));
-                                if (endTime == null) {
-                                    endTime = currentTime;
-                                } else if (endTime.getAsCalendar().before(currentTime.getAsCalendar())) {
-                                    endTime = currentTime;
-                                }
-                            } catch (ParseException e) {
-                                logger.warning(String.format("Product end time not in expected format. Found %s, expected %s",
-                                                             stringData,
-                                                             RapidEyeConstants.UTC_DATE_FORMAT));
+            if (isL1Product()) {
+                if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_RESULT_OF)) != null) &&
+                        ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_EARTH_OBSERVATION_RESULT)) != null)) {
+                    MetadataElement[] bandSpecificMetadataElements = currentElement.getElements();
+                    for (MetadataElement element : bandSpecificMetadataElements) {
+                        if (RapidEyeConstants.TAG_BAND_SPECIFIC_METADATA.equals(element.getName())) {
+                            ProductData.UTC currentTime = parseDate(element.getAttributeString(RapidEyeConstants.TAG_END_DATE_TIME, null),
+                                                                    RapidEyeConstants.UTC_DATE_FORMAT);
+                            if (endTime == null) {
+                                endTime = currentTime;
+                            } else if (currentTime != null && endTime.getAsCalendar().before(currentTime.getAsCalendar())) {
+                                endTime = currentTime;
                             }
                         }
                     }
+                }
+            } else {
+                if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_VALID_TIME)) != null) &&
+                        ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_TIME_PERIOD)) != null)) {
+                    endTime = parseDate(currentElement.getAttributeString(RapidEyeConstants.TAG_END_POSITION, null),
+                                        RapidEyeConstants.UTC_DATE_FORMAT);
                 }
             }
         }
@@ -459,13 +440,13 @@ public class RapidEyeMetadata extends XmlMetadata {
                     } else if (RapidEyeConstants.TAG_HEIGHTSCALE.equals(attrName)) {
                         coefficients.heightScale = asInt(data);
                     } else if (RapidEyeConstants.TAG_LINENUMCOEFF.equals(attrName)) {
-                        coefficients.lineNumCoefficients = asFloatArray(data);
+                        coefficients.lineNumCoefficients = asFloatArray(data, " ");
                     } else if (RapidEyeConstants.TAG_LINEDENCOEFF.equals(attrName)) {
-                        coefficients.lineDenomCoefficients = asFloatArray(data);
+                        coefficients.lineDenomCoefficients = asFloatArray(data, " ");
                     } else if (RapidEyeConstants.TAG_SAMPLENUMCOEFF.equals(attrName)) {
-                        coefficients.sampleNumCoefficients = asFloatArray(data);
+                        coefficients.sampleNumCoefficients = asFloatArray(data, " ");
                     } else if (RapidEyeConstants.TAG_SAMPLEDENCOEFF.equals(attrName)) {
-                        coefficients.sampleDenomCoefficients = asFloatArray(data);
+                        coefficients.sampleDenomCoefficients = asFloatArray(data, " ");
                     }
                 }
             }
@@ -473,34 +454,9 @@ public class RapidEyeMetadata extends XmlMetadata {
         return coefficients;
     }
 
-    private float[] asFloatArray(String value) {
-        float[] array = null;
-        if (value != null && !value.isEmpty()) {
-            String[] values = value.split(" ");
-            if (values.length > 1) {
-                array = new float[values.length];
-                for (int i = 0; i < values.length; i++) {
-                    array[i] = Float.parseFloat(values[i]);
-                }
-            }
-        }
-        return array;
-    }
-
-    private float asFloat(String value) {
-        float ret = Float.NaN;
-        try {
-            ret = Float.parseFloat(value);
-        } catch (NumberFormatException e) {}
-        return ret;
-    }
-
-    private int asInt(String value) {
-        int ret = 0;
-        try {
-            ret = Integer.parseInt(value);
-        } catch (NumberFormatException e) {}
-        return ret;
+    private boolean isL1Product() {
+        String metadataProfile = getMetadataProfile();
+        return (metadataProfile != null && metadataProfile.startsWith(RapidEyeConstants.PROFILE_L1));
     }
 
     public class SpatialReferenceSystem {

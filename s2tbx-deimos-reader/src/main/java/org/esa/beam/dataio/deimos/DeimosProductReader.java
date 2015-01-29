@@ -43,6 +43,11 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
     }
 
     @Override
+    protected String getMetadataFileSuffix() {
+        return DeimosConstants.METADATA_EXTENSION;
+    }
+
+    @Override
     protected String[] getBandNames() {
         if (metadata != null && metadata.size() > 0) {
             return metadata.get(0).getBandNames();

@@ -28,7 +28,9 @@ public final class CollectionHelper {
         T result = null;
         if (collection != null) {
             if (condition != null) {
-                result = collection.stream().findFirst().get();
+                List<T> subset = where(collection, condition);
+                if (subset != null && subset.size() > 0)
+                    result = subset.get(0);
             } else {
                 result = collection.iterator().next();
             }
@@ -49,7 +51,9 @@ public final class CollectionHelper {
         T result = null;
         if (array != null) {
             if (condition != null) {
-                result = Arrays.stream(array).findFirst().get();
+                List<T> subset = where(array, condition);
+                if (subset != null && subset.size() > 0)
+                    result = subset.get(0);
             } else {
                 result = array[0];
             }

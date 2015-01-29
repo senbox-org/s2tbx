@@ -9,10 +9,15 @@ import org.esa.beam.util.logging.BeamLogManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.Logger;
 
 /**
@@ -337,6 +342,84 @@ public abstract class XmlMetadata {
                 logger.warning(String.format(message, argument));
             }
         }
+    }
+
+    /**
+     * Converts the value to a float array.
+     * @param value The string list of values
+     * @param separator The items separator
+     * @return  An array of float values
+     */
+    protected float[] asFloatArray(String value, String separator) {
+        float[] array = null;
+        if (value != null && !value.isEmpty()) {
+            String[] values = value.split(separator);
+            if (values.length > 1) {
+                array = new float[values.length];
+                for (int i = 0; i < values.length; i++) {
+                    array[i] = Float.parseFloat(values[i]);
+                }
+            }
+        }
+        return array;
+    }
+
+    /**
+     * Silently converts a string to a float (i.e. without throwing exception for unconvertible values)
+     * @param value The value to be converted
+     * @return  The float value or <code>Float.NaN</code> if the conversion cannot be performed.
+     */
+    protected float asFloat(String value) {
+        float ret = Float.NaN;
+        try {
+            ret = Float.parseFloat(value);
+        } catch (NumberFormatException e) {}
+        return ret;
+    }
+
+    /**
+     * Silently converts a string to a int (i.e. without throwing exception for unconvertible values)
+     * @param value The value to be converted
+     * @return  The int value or <code>0</code> if the conversion cannot be performed.
+     */
+    protected int asInt(String value) {
+        int ret = 0;
+        try {
+            ret = Integer.parseInt(value);
+        } catch (NumberFormatException e) {}
+        return ret;
+    }
+
+    /**
+     * Utility method for returning a <code>ProductData.UTC</code> date from a string
+     * using the given date format.
+     * Why not using <code>ProductData.UTC.parse(text, pattern)</code> method?
+     * Because it errors in the case of a format like dd-MM-yyyy'T'HH:mm:ss.SSSSSS (which should be
+     * perfectly fine).
+     * @param stringData    The string to be converted into a date
+     * @param dateFormat    The format of the string date
+     * @return  The UTC date representation.
+     */
+    protected ProductData.UTC parseDate(String stringData, String dateFormat) {
+        ProductData.UTC parsedDate = null;
+        if (stringData != null) {
+            try {
+                if (stringData.endsWith("Z"))
+                    stringData = stringData.substring(0,stringData.length() - 1);
+                if (stringData.contains("."))
+                    stringData = stringData + ".000000";
+                String microseconds = stringData.substring(stringData.indexOf(".") + 1);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
+                simpleDateFormat.setCalendar(Calendar.getInstance(TimeZone.getTimeZone("UTC")));
+                Date date = simpleDateFormat.parse(stringData);
+                parsedDate = ProductData.UTC.create(date, Long.parseLong(microseconds));
+            } catch (ParseException e) {
+                logger.warning(String.format("Product start time not in expected format. Found %s, expected %s",
+                                             stringData,
+                                             dateFormat));
+            }
+        }
+        return parsedDate;
     }
 
     void indexAttribute(String parentElementPath, MetadataAttribute attribute) {

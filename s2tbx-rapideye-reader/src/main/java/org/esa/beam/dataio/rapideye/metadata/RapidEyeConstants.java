@@ -1,4 +1,4 @@
-package org.esa.beam.dataio.rapideye;
+package org.esa.beam.dataio.rapideye.metadata;
 
 import org.esa.beam.framework.datamodel.ProductData;
 
@@ -107,7 +107,8 @@ public class RapidEyeConstants {
     public static final String TAG_LINEDENCOEFF = "lineDenCoeff";
     public static final String TAG_SAMPLENUMCOEFF = "sampleNumCoeff";
     public static final String TAG_SAMPLEDENCOEFF = "sampleDenCoeff";
-
+    public static final String TAG_MOSAIC_DECOMPOSITION = "mosaicDecomposition";
+    public static final String TAG_MOSAIC_TILE = "mosaicTile";
     public static final String[] BAND_NAMES = new String[]{"blue", "green", "red", "red_edge", "near_infrared"};
     public static final float[] WAVELENGTHS = new float[]{440, 520, 630, 690, 760};
     public static final float[] BANDWIDTHS = new float[]{70, 70, 55, 40, 90};
@@ -124,6 +125,10 @@ public class RapidEyeConstants {
     public static final String TAG_SENSOR_INNER = "Sensor";
     public static final String TAG_SENSOR_TYPE = "sensorType";
     public static final String NOT_AVAILABLE = "N/A";
+    public static final String TAG_VALID_TIME = "validTime";
+    public static final String TAG_BEGIN_POSITION = "beginPosition";
+    public static final String TAG_END_POSITION = "endPosition";
+    public static final String TAG_TIME_PERIOD = "TimePeriod";
     /*public static double[] SCALING_FACTORS = new double[]{510 / 4095 * RADIOMETRIC_SCALE_FACTOR, 590 / 4095 * RADIOMETRIC_SCALE_FACTOR, 685 / 4095 * RADIOMETRIC_SCALE_FACTOR, 730 / 4095 * RADIOMETRIC_SCALE_FACTOR, 850 / 4095 * RADIOMETRIC_SCALE_FACTOR};
     public static double[] SCALING_OFFSETS = new double[]{440 * RADIOMETRIC_SCALE_FACTOR, 520 * RADIOMETRIC_SCALE_FACTOR, 630 * RADIOMETRIC_SCALE_FACTOR, 690 * RADIOMETRIC_SCALE_FACTOR, 760 * RADIOMETRIC_SCALE_FACTOR};*/
 

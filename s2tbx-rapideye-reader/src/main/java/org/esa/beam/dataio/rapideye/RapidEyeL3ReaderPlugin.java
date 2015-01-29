@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.rapideye;
 
+import org.esa.beam.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.beam.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.beam.framework.dataio.ProductReader;
 

@@ -50,6 +50,11 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
     }
 
     @Override
+    protected String getMetadataFileSuffix() {
+        return SpotConstants.SPOTSCENE_METADATA_FILE;
+    }
+
+    @Override
     protected String[] getBandNames() {
         return SpotConstants.DEFAULT_BAND_NAMES;
     }

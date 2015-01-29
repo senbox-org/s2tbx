@@ -9,7 +9,11 @@ import org.esa.beam.dataio.spot.dimap.SpotConstants;
 import org.esa.beam.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.Mask;
+import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
 import org.geotools.metadata.InvalidMetadataException;
 
 import javax.imageio.stream.ImageInputStream;
@@ -60,6 +64,11 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
         } else {
             return SpotConstants.DEFAULT_PRODUCT_NAME;
         }
+    }
+
+    @Override
+    protected String getMetadataFileSuffix() {
+        return SpotConstants.SPOTSCENE_METADATA_FILE;
     }
 
     @Override

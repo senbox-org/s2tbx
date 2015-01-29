@@ -18,6 +18,7 @@ import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.TreeNode;
 import org.esa.beam.util.logging.BeamLogManager;
+import org.esa.beam.utils.CollectionHelper;
 
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
@@ -26,8 +27,12 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,6 +97,8 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
      * @return  the generic product name
      */
     protected abstract String getProductGenericName();
+
+    protected abstract String getMetadataFileSuffix();
 
     /**
      * Gets the names of the bands.
@@ -218,9 +225,13 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
             logger.info("No metadata file found");
         }
         if (metadata != null && metadata.size() > 0) {
-            M firstMetadata = metadata.get(0);
-            String metadataProfile = firstMetadata.getMetadataProfile();
-            if (metadataProfile == null || !metadataProfile.startsWith(getMetadataProfile())) {
+            List<M> rasterMetadataList = CollectionHelper.where(metadata, m -> {
+                return m.getFileName().endsWith(getMetadataFileSuffix());
+            });
+
+            M firstMetadata;
+            String metadataProfile;
+            if (rasterMetadataList == null || (firstMetadata = rasterMetadataList.get(0)) == null || ((metadataProfile = firstMetadata.getMetadataProfile()) == null || !metadataProfile.startsWith(getMetadataProfile()))) {
                 IOException ex = new IOException("The selected product is not readable by this reader. Please use the appropriate filter");
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
                 throw ex;
@@ -228,8 +239,8 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
             if (firstMetadata.getRasterWidth() > 0 && firstMetadata.getRasterHeight() > 0) {
                 createProduct(firstMetadata.getRasterWidth(), firstMetadata.getRasterHeight(), firstMetadata);
             }
-            for (int i = 0; i < metadata.size(); i++) {
-                M currentMetadata = metadata.get(i);
+            for (int i = 0; i < rasterMetadataList.size(); i++) {
+                M currentMetadata = rasterMetadataList.get(i);
                 addBands(product, currentMetadata, i);
             }
             addMetadataMasks(product, firstMetadata);

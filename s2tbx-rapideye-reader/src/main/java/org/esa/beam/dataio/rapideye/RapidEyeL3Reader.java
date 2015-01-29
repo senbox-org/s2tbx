@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.rapideye;
 
+import org.esa.beam.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.beam.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.beam.dataio.readers.GeoTiffBasedReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
@@ -35,6 +36,11 @@ public class RapidEyeL3Reader extends GeoTiffBasedReader<RapidEyeMetadata> {
     }
 
     @Override
+    protected String getMetadataFileSuffix() {
+        return RapidEyeConstants.METADATA_FILE_SUFFIX;
+    }
+
+    @Override
     protected String[] getBandNames() {
         return RapidEyeConstants.BAND_NAMES;
     }
@@ -52,8 +58,8 @@ public class RapidEyeL3Reader extends GeoTiffBasedReader<RapidEyeMetadata> {
             } catch (IOException e) {
                 logger.warning(String.format("Error encountered while searching file %s", metaFileName));
             }
-            String[] nitfFiles = firstMetadata.getRasterFileNames(false);
-            for(String fileName : nitfFiles){
+            String[] rasterFiles = firstMetadata.getRasterFileNames();
+            for(String fileName : rasterFiles){
                 try{
                     addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
                 } catch (IOException e) {

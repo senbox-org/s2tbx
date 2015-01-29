@@ -3,11 +3,18 @@ package org.esa.beam.dataio.rapideye;
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.beam.dataio.metadata.XmlMetadata;
+import org.esa.beam.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.beam.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.beam.dataio.rapideye.nitf.NITFMetadata;
 import org.esa.beam.dataio.rapideye.nitf.NITFReaderWrapper;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.GeoCoding;
+import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.framework.datamodel.TiePointGeoCoding;
+import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.util.TreeNode;
 
 import javax.imageio.IIOException;
@@ -120,7 +127,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
     private String[] getRasterFileNames() {
         String[] fileNames;
         if (metadata != null) {
-            fileNames = metadata.getRasterFileNames(true);
+            fileNames = metadata.getRasterFileNames();
         } else {
             try {
                 List<String> files = new ArrayList<String>();
