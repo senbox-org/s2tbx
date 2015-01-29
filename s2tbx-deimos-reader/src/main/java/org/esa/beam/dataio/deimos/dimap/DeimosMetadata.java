@@ -10,14 +10,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by kraftek on 9/22/2014.
+ * Holder for DIMAP metadata file.
+ *
+ * @author Cosmin Cara
  */
 public class DeimosMetadata extends XmlMetadata {
 
     private float[] bandGains;
     private float[] bandBiases;
 
-    public static class DeimosMetadataParser extends XmlMetadataParser<DeimosMetadata> {
+    private static class DeimosMetadataParser extends XmlMetadataParser<DeimosMetadata> {
 
         public DeimosMetadataParser(Class metadataFileClass) {
             super(metadataFileClass);
@@ -152,7 +154,7 @@ public class DeimosMetadata extends XmlMetadata {
     }
 
     public Color getNoDataColor() {
-        Color color = null;
+        Color color;
         try {
             int red = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.NODATA_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, DeimosConstants.STRING_ZERO)));
             int green = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.NODATA_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, DeimosConstants.STRING_ZERO)));
@@ -175,7 +177,7 @@ public class DeimosMetadata extends XmlMetadata {
     }
 
     public Color getSaturatedColor() {
-        Color color = null;
+        Color color;
         try {
             int red = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.SATURATED_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, DeimosConstants.STRING_ZERO)));
             int green = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.SATURATED_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, DeimosConstants.STRING_ZERO)));
@@ -203,7 +205,7 @@ public class DeimosMetadata extends XmlMetadata {
     }
 
     public InsertionPoint getInsertPoint() {
-        InsertionPoint point = null;
+        InsertionPoint point;
         try {
             point = new InsertionPoint();
             point.x = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_ULXMAP, DeimosConstants.STRING_ZERO));
@@ -225,17 +227,19 @@ public class DeimosMetadata extends XmlMetadata {
     }
 
     private void extractGainsAndBiases() {
-        int nBands = getNumBands();
-        bandGains = new float[nBands];
-        // we extract both, because they are used in conjunction
-        bandBiases = new float[nBands];
-        try {
-            for (int i = 0; i < nBands; i++) {
-                bandBiases[i] = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_PHYSICAL_BIAS, i, DeimosConstants.STRING_ZERO)) * DeimosConstants.UNIT_MULTIPLIER;
-                bandGains[i] = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_PHYSICAL_GAIN, i, DeimosConstants.STRING_ZERO)) * DeimosConstants.UNIT_MULTIPLIER;
+        if (bandGains == null || bandBiases == null) {
+            int nBands = getNumBands();
+            bandGains = new float[nBands];
+            // we extract both, because they are used in conjunction
+            bandBiases = new float[nBands];
+            try {
+                for (int i = 0; i < nBands; i++) {
+                    bandBiases[i] = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_PHYSICAL_BIAS, i, DeimosConstants.STRING_ZERO)) * DeimosConstants.UNIT_MULTIPLIER;
+                    bandGains[i] = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_PHYSICAL_GAIN, i, DeimosConstants.STRING_ZERO)) * DeimosConstants.UNIT_MULTIPLIER;
+                }
+            } catch (NumberFormatException e) {
+                warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_SPECTRAL_BAND_INFO);
             }
-        } catch (NumberFormatException e) {
-            warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_SPECTRAL_BAND_INFO);
         }
     }
 

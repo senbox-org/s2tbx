@@ -8,7 +8,10 @@ import org.esa.beam.framework.datamodel.Mask;
 import org.esa.beam.framework.datamodel.Product;
 
 /**
- * Created by kraftek on 9/22/2014.
+ * This product reader is intended for reading DEIMOS-1 files
+ * from compressed archive files, from tar files or from (uncompressed) file system.
+ *
+ * @author  Cosmin Cara
  */
 public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
 

@@ -3,7 +3,9 @@ package org.esa.beam.dataio.deimos.dimap;
 import java.io.File;
 
 /**
- * Created by kraftek on 9/22/2014.
+ * Holder class for string constants.
+ *
+ * @author Cosmin Cara
  */
 public class DeimosConstants {
     public static final String METADATA_EXTENSION = ".dim";
