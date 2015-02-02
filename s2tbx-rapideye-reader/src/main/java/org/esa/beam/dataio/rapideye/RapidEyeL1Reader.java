@@ -37,7 +37,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
 
     public RapidEyeL1Reader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        readerMap = new HashMap<Band, NITFReaderWrapper>();
+        readerMap = new HashMap<>();
     }
 
     @Override
@@ -98,6 +98,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         } catch (IIOException e) {
             logger.severe("Product is not a valid RapidEye L1 data product!");
         }
+        product.setFileLocation(new File(productDirectory.getBasePath()));
         return product;
     }
 
@@ -116,9 +117,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
     @Override
     public void close() throws IOException {
         if (readerMap != null) {
-            for (NITFReaderWrapper wrapper : readerMap.values()) {
-                wrapper.close();
-            }
+            readerMap.values().forEach(org.esa.beam.dataio.rapideye.nitf.NITFReaderWrapper::close);
             readerMap.clear();
         }
         super.close();
@@ -130,7 +129,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
             fileNames = metadata.getRasterFileNames();
         } else {
             try {
-                List<String> files = new ArrayList<String>();
+                List<String> files = new ArrayList<>();
                 String[] productFiles = productDirectory.list(".");
                 for (String file : productFiles) {
                     if (file.toLowerCase().endsWith(RapidEyeConstants.NTF_EXTENSION))
@@ -149,7 +148,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
     private String[] getMetadataFileNames(String exclusion) {
         String[] fileNames;
         try {
-            List<String> files = new ArrayList<String>();
+            List<String> files = new ArrayList<>();
             String[] productFiles = productDirectory.list(".");
             for (String file : productFiles) {
                 String lCase = file.toLowerCase();

@@ -4,15 +4,33 @@ import com.bc.ceres.core.VirtualDir;
 import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
-import org.esa.beam.utils.CollectionHelper;
 import org.xeustechnologies.jtar.TarEntry;
 import org.xeustechnologies.jtar.TarHeader;
 import org.xeustechnologies.jtar.TarInputStream;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,6 +40,8 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import static org.esa.beam.utils.CollectionHelper.firstOrDefault;
 
 /**
  * This class extends or alters the features of com.bc.ceres.core.VirtualDir class with a Tar/Tgz implementation
@@ -128,9 +148,9 @@ public abstract class VirtualDirEx extends VirtualDir {
     public String[] listAll() {
         String path = getBasePath();
         if (TarVirtualDir.isTar(path) || TarVirtualDir.isTgz(path)) {
-            return ((TarVirtualDir) this).listAll();
+            return this.listAll();
         } else {
-            List<String> fileNames = new ArrayList<String>();
+            List<String> fileNames = new ArrayList<>();
             if (this.isArchive()) {
                 try {
                     ZipFile zipFile = new ZipFile(path);
@@ -146,10 +166,8 @@ public abstract class VirtualDirEx extends VirtualDir {
                                 }
                             };
                             innerTar.ensureUnpacked(getTempDir());
-                            String[] tarFiles = innerTar.listAll();
-//                            for (String tarFile : tarFiles)
-//                                fileNames.add(tarFile);
-                            fileNames.addAll(Arrays.asList(tarFiles));
+                            fileNames.addAll(Arrays.asList(innerTar.listAll()));
+                            //noinspection ResultOfMethodCallIgnored
                             file.delete();
                         } else {
                             fileNames.add(fileName);
@@ -235,7 +253,7 @@ public abstract class VirtualDirEx extends VirtualDir {
 
         public VirtualDirWrapper(VirtualDir dir) {
             wrapped = dir;
-            files = new HashMap<String, String>();
+            files = new HashMap<>();
         }
 
         @Override
@@ -250,7 +268,7 @@ public abstract class VirtualDirEx extends VirtualDir {
 
         @Override
         public File getFile(String relativePath) throws IOException {
-            File file = null;
+            File file;
             try {
                 file = wrapped.getFile(relativePath);
             } catch (IOException e) {
@@ -286,7 +304,7 @@ public abstract class VirtualDirEx extends VirtualDir {
                 if (result != null) {
                     return result;
                 }
-            } catch (IOException ex) {
+            } catch (IOException ignored) {
             }
             String[] relativePathArray = s.split(pathSeparator);
             String newRelativePath = "";
@@ -368,12 +386,12 @@ public abstract class VirtualDirEx extends VirtualDir {
             if (ret == null) {
                 String namePart = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(key));
                 String extPart = FileUtils.getExtension(key);
-                ret = CollectionHelper.firstOrDefault(files.keySet(),
-                        k -> {
-                            String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
-                            name = name.substring(name.lastIndexOf("/") + 1);
-                            return extPart.equalsIgnoreCase(FileUtils.getExtension(k)) && namePart.startsWith(name);
-                        });
+                ret = firstOrDefault(files.keySet(),
+                                     k -> {
+                                         String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
+                                         name = name.substring(name.lastIndexOf("/") + 1);
+                                         return extPart.equalsIgnoreCase(FileUtils.getExtension(k)) && namePart.startsWith(name);
+                                     });
             }
             return ret;
         }
@@ -407,7 +425,7 @@ public abstract class VirtualDirEx extends VirtualDir {
             }
             archiveFile = tgz;
             extractDir = null;
-            unpackTask = new FutureTask<Void>(new UnpackProcess());
+            unpackTask = new FutureTask<>(new UnpackProcess());
             executor = Executors.newSingleThreadExecutor();
             //executor.execute(unpackTask);
         }
@@ -602,8 +620,8 @@ public abstract class VirtualDirEx extends VirtualDir {
         }
 
         public String[] listAll() {
-            List<String> fileNames = new ArrayList<String>();
-            TarInputStream tis = null;
+            List<String> fileNames = new ArrayList<>();
+            TarInputStream tis;
             try {
                 if (isTgz(archiveFile.getName())) {
                     tis = new TarInputStream(
@@ -639,7 +657,7 @@ public abstract class VirtualDirEx extends VirtualDir {
                 }
             } catch (IOException e) {
                 // cannot open/read tar, list will be empty
-                fileNames = new ArrayList<String>();
+                fileNames = new ArrayList<>();
             }
             return fileNames.toArray(new String[fileNames.size()]);
         }

@@ -76,7 +76,7 @@ public final class CollectionHelper {
             if (filter != null) {
                 result = where(collection.stream(), filter);
             } else {
-                result = (collection instanceof List ? (List<T>) collection : new ArrayList<T>(collection));
+                result = (collection instanceof List ? (List<T>) collection : new ArrayList<>(collection));
             }
         }
         return result;

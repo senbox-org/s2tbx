@@ -3,7 +3,13 @@ package org.esa.beam.dataio;
 import org.esa.beam.util.logging.BeamLogManager;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URLDecoder;
 
 /**
@@ -83,14 +89,12 @@ public class NativeLibraryLoader {
             byte[] buffer = new byte[1024];
             int readBytes;
             // Open output stream and copy data between source file in JAR and the temporary file
-            OutputStream os = new FileOutputStream(temp);
-            try {
+            try (OutputStream os = new FileOutputStream(temp)) {
                 while ((readBytes = is.read(buffer)) != -1) {
                     os.write(buffer, 0, readBytes);
                 }
             } finally {
                 // If read/write fails, close streams safely before throwing an exception
-                os.close();
                 is.close();
             }
             // Finally, load the library
@@ -99,14 +103,11 @@ public class NativeLibraryLoader {
             final String lockSuffix = ".lock";
             // create lock file
             final File lock = new File(temp.getAbsolutePath() + lockSuffix);
+            //noinspection ResultOfMethodCallIgnored
             lock.createNewFile();
             lock.deleteOnExit();
             // file filter for library file (without .lock files)
-            FileFilter tmpDirFilter = new FileFilter() {
-                public boolean accept(File pathname) {
-                    return pathname.getName().startsWith(libraryPrefix) && !pathname.getName().endsWith(lockSuffix);
-                }
-            };
+            FileFilter tmpDirFilter = pathname -> pathname.getName().startsWith(libraryPrefix) && !pathname.getName().endsWith(lockSuffix);
 
             // get all library files from temp folder
             String tmpDirName = System.getProperty("java.io.tmpdir");
@@ -117,6 +118,7 @@ public class NativeLibraryLoader {
                 // Create a file to represent the lock and test.
                 File lockFile = new File(tmpFile.getAbsolutePath() + lockSuffix);
                 if (!lockFile.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
                     tmpFile.delete();
                 }
             }

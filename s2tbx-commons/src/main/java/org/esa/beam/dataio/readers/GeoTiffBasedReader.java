@@ -276,6 +276,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         product = new Product((metadataFile != null && metadataFile.getProductName() != null) ? metadataFile.getProductName() : getProductGenericName(),
                               getReaderPlugIn().getFormatNames()[0],
                               width, height);
+        product.setFileLocation(new File(productDirectory.getBasePath()));
         if (metadataFile != null) {
             product.getMetadataRoot().addElement(metadataFile.getRootElement());
             ProductData.UTC centerTime = metadataFile.getCenterTime();

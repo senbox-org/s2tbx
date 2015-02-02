@@ -11,15 +11,24 @@ import org.esa.beam.dataio.spot.dimap.SpotConstants;
 import org.esa.beam.dataio.spot.dimap.SpotTake5Metadata;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.FlagCoding;
+import org.esa.beam.framework.datamodel.Mask;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
+import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.util.TreeNode;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -119,7 +128,8 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                     imageMetadata.getRasterWidth(),
                     imageMetadata.getRasterHeight());
             product.setProductReader(this);
-            product.setFileLocation(imageMetadataFile);
+            //product.setFileLocation(imageMetadataFile);
+            product.setFileLocation(new File(input.getBasePath()));
             product.getMetadataRoot().addElement(imageMetadata.getRootElement());
             ProductData.UTC startTime = imageMetadata.getDatePdv();
             product.setStartTime(startTime);
