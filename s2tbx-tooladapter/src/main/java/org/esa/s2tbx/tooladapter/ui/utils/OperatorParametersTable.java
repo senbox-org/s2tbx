@@ -1,5 +1,7 @@
 package org.esa.s2tbx.tooladapter.ui.utils;
 
+import org.esa.beam.framework.gpf.descriptor.DefaultParameterDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxParameterDescriptor;
 import org.esa.beam.framework.ui.UIUtils;
@@ -44,10 +46,13 @@ public class OperatorParametersTable extends JPanel{
                 false);
         newButton.addActionListener(new NewPropertyActionListener(this));
 
-        List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
-        for (S2tbxParameterDescriptor property : data) {
-            PropertyUIDescriptor descriptor = PropertyUIDescriptor.buildUIDescriptor(property, columnsMembers, operator, new DeleteActionListener(property, this), callback);
-            propertiesUIDescriptorMap.put(property, descriptor);
+        //List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
+        ParameterDescriptor[] data = operator.getParameterDescriptors();
+        for (ParameterDescriptor property : data) {
+            S2tbxParameterDescriptor newParamDescriptor = new S2tbxParameterDescriptor((DefaultParameterDescriptor)property);
+            operator.addParamDescriptor(newParamDescriptor);
+            PropertyUIDescriptor descriptor = PropertyUIDescriptor.buildUIDescriptor(newParamDescriptor, columnsMembers, operator, new DeleteActionListener(newParamDescriptor, this), callback);
+            propertiesUIDescriptorMap.put(newParamDescriptor, descriptor);
         }
         errorLabel.setForeground(Color.RED);
 

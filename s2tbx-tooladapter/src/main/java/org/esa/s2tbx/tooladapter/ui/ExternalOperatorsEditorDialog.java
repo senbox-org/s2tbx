@@ -1,10 +1,7 @@
 package org.esa.s2tbx.tooladapter.ui;
 
 import com.bc.ceres.binding.PropertySet;
-import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.beam.framework.gpf.GPF;
-import org.esa.beam.framework.gpf.Operator;
-import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.DefaultOperatorDescriptor;
@@ -24,7 +21,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -42,8 +38,10 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
 
         //compute content and other buttons
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(getButtonsPanel(), BorderLayout.WEST);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+        JPanel buttonsPanel = getButtonsPanel();
+        buttonsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(buttonsPanel);
         panel.add(new JScrollPane(getOperatorsTable()));
         setContent(panel);
     }

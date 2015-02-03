@@ -7,6 +7,9 @@ import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
+import org.esa.s2tbx.tooladapter.ProcessOutputConsumer;
+import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 import org.geotools.xml.xsi.XSISimpleTypes;
 
 import java.io.*;
@@ -314,7 +317,11 @@ public class S2tbxToolAdapterOp extends Operator {
      * @throws OperatorException in case of an error
      */
     private void loadFinalProduct() throws OperatorException {
-        final File input = (File)getParameter(S2tbxToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE_ID);
+        File input = (File)getParameter(S2tbxToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE_ID);
+        if(input == null){
+            //no target product, means the source product was changed
+            input = (File)getParameter(S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE);
+        }
         try {
             final ProductReader productReader = ProductIO.getProductReaderForInput(input);
             if (productReader == null) {
@@ -336,7 +343,7 @@ public class S2tbxToolAdapterOp extends Operator {
     private void validateDescriptorInput() throws OperatorException {
 
         //Get the tool file
-        this.toolFile = (File)getParameter(S2tbxToolAdapterConstants.TOOL_FILE_NAME_ID, null);
+        this.toolFile = ((S2tbxOperatorDescriptor)(getSpi().getOperatorDescriptor())).getMainToolFileLocation();
         if (this.toolFile == null) {
             throw new OperatorException("Tool file not defined!");
         }
@@ -346,7 +353,7 @@ public class S2tbxToolAdapterOp extends Operator {
         }
 
         //Get the tool's working directory
-        this.toolWorkingDirectory = (File)getParameter(S2tbxToolAdapterConstants.TOOL_WORKING_DIR_ID, null);
+        this.toolWorkingDirectory = ((S2tbxOperatorDescriptor)(getSpi().getOperatorDescriptor())).getTemporaryFolder();
         if (this.toolWorkingDirectory == null) {
             throw new OperatorException("Tool working directory not defined!");
         }
@@ -371,7 +378,7 @@ public class S2tbxToolAdapterOp extends Operator {
         ret.add(this.toolFile.getAbsolutePath());
 
         //get the command line parameter
-        final String cmdLineFileName = (String)getParameter(S2tbxToolAdapterConstants.TOOL_CMD_LINE_TMPL_ID, null);
+        final String cmdLineFileName = ((S2tbxOperatorDescriptor)(getSpi().getOperatorDescriptor())).getCommandLineTemplate();
         if (cmdLineFileName != null) {
             ret.addAll(getCommandLineParameters(cmdLineFileName));
         }

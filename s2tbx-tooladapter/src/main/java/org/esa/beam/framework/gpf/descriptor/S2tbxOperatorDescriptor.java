@@ -46,6 +46,7 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
     String processingWriter;
     File mainToolFileLocation;
     File temporaryFolder;
+    String commandLineTemplate;
 
     public static final Class<?> readerSuperClass = ProductReader.class;
     public static final Class<?> writerSuperClass = ProductWriter.class;
@@ -128,12 +129,12 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
     }
 
     public List<S2tbxParameterDescriptor> getS2tbxParameterDescriptors(){
-        /*ParameterDescriptor[] operators = super.getParameterDescriptors();
-        S2tbxParameterDescriptor[] retOperators = new S2tbxParameterDescriptor[operators.length];
-        for(int i=0;i<operators.length;i++){
-            retOperators[i] = (S2tbxParameterDescriptor)operators[i];
-        }
-        return retOperators;*/
+        /*if(this.parameterDescriptors.length != this.tbxParameterDescriptors.size()) {
+            this.tbxParameterDescriptors.clear();
+            for (int i = 0; i < operators.length; i++) {
+                retOperators[i] = (S2tbxParameterDescriptor) operators[i];
+            }
+        }*/
         return this.tbxParameterDescriptors;
     }
 
@@ -308,7 +309,13 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.temporaryFolder = temporaryFolder;
     }
 
+    public String getCommandLineTemplate() {
+        return commandLineTemplate;
+    }
 
+    public void setCommandLineTemplate(String commandLineTemplate) {
+        this.commandLineTemplate = commandLineTemplate;
+    }
 
     /**
      * Loads an operator descriptor from an XML document.

@@ -27,9 +27,11 @@
         </sourceProduct>
     </namedSourceProducts>
 
-    <mainToolFileLocation>C:/Windows/System32/cmd.exe</mainToolFileLocation>
+    <mainToolFileLocation>C:/Program Files/GDAL/gdaladdo.exe</mainToolFileLocation>
 
     <temporaryFolder>D:/temp</temporaryFolder>
+
+    <commandLineTemplate>gdaladdo-cmdLineTemplate.tpl</commandLineTemplate>
 
     <parameters>
         <parameter>

@@ -49,7 +49,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         this.operatorIsNew = operatorIsNew;
         this.newNameIndex = -1;
         setContent(createMainPanel());
-        getJDialog().setMinimumSize(new Dimension(1200, 250));
+        getJDialog().setMaximumSize(new Dimension(600, 400));
     }
 
     public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorSpi, int newNameIndex) {
@@ -61,7 +61,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
             this.operatorIsNew = false;
         }
         setContent(createMainPanel());
-        getJDialog().setMinimumSize(new Dimension(1200, 250));
+        getJDialog().setMaximumSize(new Dimension(600, 400));
     }
 
     private JPanel createOperatorDescriptorPanel() {
@@ -128,8 +128,8 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
         final JPanel processingPanel = new JPanel();
         processingPanel.setLayout(new BoxLayout(processingPanel, BoxLayout.PAGE_AXIS));
-        processingPanel.setPreferredSize(new Dimension(600, 230));
-        processingPanel.setMaximumSize(new Dimension(600, 230));
+        //processingPanel.setPreferredSize(new Dimension(600, 230));
+        //processingPanel.setMaximumSize(new Dimension(600, 230));
         processingPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
         JPanel preprocessingPanel = new JPanel();
@@ -186,7 +186,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
             editorComponent.setPreferredSize(new Dimension(200, 30));
             editorComponent.setEnabled(true);
         }
-        panel.setPreferredSize(new Dimension(600, 30));
+        //panel.setPreferredSize(new Dimension(600, 30));
         //panel.setBorder(BorderFactory.createLineBorder(Color.black));
         return panel;
     }
@@ -199,6 +199,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         toolDescriptorPanel.add(createProcessingPanel(), BorderLayout.LINE_END);
 
         JScrollPane tableScrollPane = new JScrollPane(new OperatorParametersTable(operatorSpi));
+        tableScrollPane.setMaximumSize(new Dimension(600, 200));
         TitledBorder title = BorderFactory.createTitledBorder("Operator Parameters");
         tableScrollPane.setBorder(title);
         toolDescriptorPanel.add(tableScrollPane, BorderLayout.PAGE_END);

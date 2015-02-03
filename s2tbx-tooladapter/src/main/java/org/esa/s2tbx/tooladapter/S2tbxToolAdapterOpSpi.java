@@ -1,11 +1,7 @@
 package org.esa.s2tbx.tooladapter;
 
 import com.bc.ceres.core.runtime.RuntimeContext;
-import org.esa.beam.framework.gpf.GPF;
-import org.esa.beam.framework.gpf.Operator;
-import org.esa.beam.framework.gpf.OperatorException;
-import org.esa.beam.framework.gpf.OperatorSpi;
-import org.esa.beam.framework.gpf.descriptor.DefaultOperatorDescriptor;
+import org.esa.beam.framework.gpf.*;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.util.logging.BeamLogManager;

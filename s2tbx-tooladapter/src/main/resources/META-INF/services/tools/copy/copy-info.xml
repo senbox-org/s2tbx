@@ -31,14 +31,10 @@
 
     <temporaryFolder>D:/temp</temporaryFolder>
 
-    <parameters>
-        <!--<parameter>
-            <name>targetProductFile</name>
-            <description>The target product file</description>
-            <dataType>java.io.File</dataType>
-            <defaultValue>D:/workingDir/target.N1</defaultValue>
-        </parameter>
+    <commandLineTemplate>copy-cmdLineTemplate.tpl</commandLineTemplate>
 
+    <parameters>
+        <!--
         <parameter>
             <name>toolFile</name>
             <description>The tool file</description>
@@ -57,6 +53,12 @@
             <dataType>java.lang.String</dataType>
             <defaultValue>copy-cmdLineTemplate.tpl</defaultValue>
         </parameter>-->
+        <parameter>
+        <name>targetProductFile</name>
+        <description>The target product file</description>
+        <dataType>java.io.File</dataType>
+        <defaultValue>D:/workingDir/target.N1</defaultValue>
+    </parameter>
         <parameter>
             <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
             <name>command</name>
