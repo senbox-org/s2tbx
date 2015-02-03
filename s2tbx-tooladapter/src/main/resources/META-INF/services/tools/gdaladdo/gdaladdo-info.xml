@@ -40,16 +40,6 @@
         </parameter>
         <parameter>
             <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
-            <name>toolFile</name>
-            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
-            <description>The tool file</description>
-            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
-            <dataType>java.io.File</dataType>
-            <!-- The default value of the parameter; this is used if no value is specified by the user -->
-            <defaultValue>C:/Program Files/GDAL/gdaladdo.exe</defaultValue>
-        </parameter>
-        <parameter>
-            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
             <name>levels</name>
             <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
             <description>A list of integral overview levels to build.</description>
@@ -58,36 +48,24 @@
             <!-- The default value of the parameter; this is used if no value is specified by the user -->
             <defaultValue>2 4 8 16</defaultValue>
         </parameter>
+        <!--<parameter>
+            <name>toolFile</name>
+            <description>The tool file</description>
+            <dataType>java.io.File</dataType>
+            <defaultValue>C:/Program Files/GDAL/gdaladdo.exe</defaultValue>
+        </parameter>
         <parameter>
-            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
             <name>commandLineTemplate</name>
-            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
             <description>The file that contains the command line.</description>
-            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
             <dataType>java.lang.String</dataType>
-            <!-- The default value of the parameter; this is used if no value is specified by the user -->
             <defaultValue>gdaladdo-cmdLineTemplate.tpl</defaultValue>
         </parameter>
         <parameter>
-            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
             <name>toolWorkingDirectory</name>
-            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
             <description>The tool working directory</description>
-            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
             <dataType>java.io.File</dataType>
-            <!-- The default value of the parameter; this is used if no value is specified by the user -->
             <defaultValue>D:/temp</defaultValue>
-        </parameter>
-        <parameter>
-            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
-            <name>sourceProductFile</name>
-            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
-            <description>The source file on disk without loading it</description>
-            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
-            <dataType>java.io.File</dataType>
-            <!-- The default value of the parameter; this is used if no value is specified by the user -->
-            <defaultValue>D:/Sentinel2_PROJECT/Satellite_Imagery/SPOT-3/SPOT3-Mul_L1a/30382639609301123571X0_1A_NETWORK/scene01/imagery.tif</defaultValue>
-        </parameter>
+        </parameter>-->
     </parameters>
 
 </operator>

@@ -22,7 +22,7 @@ public class OperatorParametersTable extends JPanel{
     private static String[] columnsMembers = {"del", "name", "description", "alias", "dataType", "defaultValue", "unit", "valueSet", "pattern", "format", "notNull", "notEmpty"};
     private static int[] columnWeights = {30, 150, 200, 70, 200, 250, 50, 50, 80, 80, 70, 70};
     private S2tbxOperatorDescriptor operator = null;
-    private JLabel errorLabel = new JLabel("error");
+    private JLabel errorLabel = new JLabel("");
     private Map<S2tbxParameterDescriptor, PropertyUIDescriptor> propertiesUIDescriptorMap;
     private AbstractButton newButton;
     private TableCallBackAfterComponentEdit callback = new TableCallBackAfterComponentEdit(this);

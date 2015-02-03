@@ -34,11 +34,12 @@ public class OperatorsTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        if(columnIndex == 0){
-            return toolsChecked[rowIndex];
-        } else {
-            return data.get(rowIndex).getName();
+        switch (columnIndex){
+        case 0: return toolsChecked[rowIndex];
+        case 1: return data.get(rowIndex).getAlias();
+        case 2: return data.get(rowIndex).getName();
         }
+        return "";
     }
 
     @Override

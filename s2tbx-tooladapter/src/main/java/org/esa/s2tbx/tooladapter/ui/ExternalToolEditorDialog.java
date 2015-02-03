@@ -6,19 +6,11 @@ import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyEditor;
 import com.bc.ceres.swing.binding.PropertyEditorRegistry;
-import com.bc.ceres.swing.binding.internal.CheckBoxEditor;
-import com.bc.ceres.swing.binding.internal.FileEditor;
 import com.bc.ceres.swing.binding.internal.TextFieldEditor;
-import org.esa.beam.framework.dataio.ProductReader;
-import org.esa.beam.framework.dataio.ProductWriter;
-import org.esa.beam.framework.gpf.OperatorSpi;
-import org.esa.beam.framework.gpf.descriptor.DefaultOperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
-import org.esa.s2tbx.tooladapter.S2tbxToolAdapterOpSpi;
 import org.esa.s2tbx.tooladapter.ui.utils.OperatorParametersTable;
 
 import javax.swing.*;
@@ -26,9 +18,6 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.io.File;
 
 /**
  * Created by ramonag on 1/13/2015.
@@ -60,7 +49,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         this.operatorIsNew = operatorIsNew;
         this.newNameIndex = -1;
         setContent(createMainPanel());
-        getJDialog().setMinimumSize(new Dimension(1200, 150));
+        getJDialog().setMinimumSize(new Dimension(1200, 250));
     }
 
     public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorSpi, int newNameIndex) {
@@ -72,7 +61,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
             this.operatorIsNew = false;
         }
         setContent(createMainPanel());
-        getJDialog().setMinimumSize(new Dimension(1200, 150));
+        getJDialog().setMinimumSize(new Dimension(1200, 250));
     }
 
     private JPanel createOperatorDescriptorPanel() {
@@ -139,8 +128,8 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
         final JPanel processingPanel = new JPanel();
         processingPanel.setLayout(new BoxLayout(processingPanel, BoxLayout.PAGE_AXIS));
-        processingPanel.setPreferredSize(new Dimension(600, 100));
-        processingPanel.setMaximumSize(new Dimension(600, 100));
+        processingPanel.setPreferredSize(new Dimension(600, 230));
+        processingPanel.setMaximumSize(new Dimension(600, 230));
         processingPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
         JPanel preprocessingPanel = new JPanel();
@@ -173,15 +162,15 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(memberName);
         PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
 
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel panel = new JPanel(new BorderLayout());
         JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
         if(editorComponent instanceof JCheckBox) {
-            panel.add(editorComponent);
-            panel.add(new JLabel(label));
+            panel.add(editorComponent, BorderLayout.LINE_START);
+            panel.add(new JLabel(label), BorderLayout.CENTER);
         }else{
-            panel.add(new JLabel(label));
-            panel.add(editorComponent);
+            panel.add(new JLabel(label), BorderLayout.LINE_START);
+            panel.add(editorComponent, BorderLayout.CENTER);
         }
 
         if(editorComponent instanceof JCheckBox && tooglePanelEnabled != null){
@@ -194,11 +183,11 @@ public class ExternalToolEditorDialog extends ModelessDialog{
             });
         }
         if(editorComponent instanceof JTextField){
-            editorComponent.setPreferredSize(new Dimension(200, 25));
+            editorComponent.setPreferredSize(new Dimension(200, 30));
             editorComponent.setEnabled(true);
         }
-        panel.setPreferredSize(new Dimension(600, 25));
-        panel.setBorder(BorderFactory.createLineBorder(Color.black));
+        panel.setPreferredSize(new Dimension(600, 30));
+        //panel.setBorder(BorderFactory.createLineBorder(Color.black));
         return panel;
     }
 

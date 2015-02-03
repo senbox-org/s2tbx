@@ -28,47 +28,31 @@
     </namedSourceProducts>
 
     <parameters>
-        <parameter>
-            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
+        <!--<parameter>
             <name>targetProductFile</name>
-            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
             <description>The target product file</description>
-            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
             <dataType>java.io.File</dataType>
-            <!-- The default value of the parameter; this is used if no value is specified by the user -->
             <defaultValue>D:/workingDir/target.N1</defaultValue>
         </parameter>
 
         <parameter>
-            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
             <name>toolFile</name>
-            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
             <description>The tool file</description>
-            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
             <dataType>java.io.File</dataType>
-            <!-- The default value of the parameter; this is used if no value is specified by the user -->
             <defaultValue>C:/Windows/System32/cmd.exe</defaultValue>
         </parameter>
         <parameter>
-            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
             <name>toolWorkingDirectory</name>
-            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
             <description>The tool working directory</description>
-            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
             <dataType>java.io.File</dataType>
-            <!-- The default value of the parameter; this is used if no value is specified by the user -->
             <defaultValue>D:/temp</defaultValue>
         </parameter>
         <parameter>
-            <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
             <name>commandLineTemplate</name>
-            <!-- The description is shown in the help on the command line and also as tooltip in the GUI -->
             <description>The file that contains the command line.</description>
-            <!-- The type of the parameter; can be boolean, byte, short, int, long, float, double, java.lang.String -->
             <dataType>java.lang.String</dataType>
-            <!-- The default value of the parameter; this is used if no value is specified by the user -->
             <defaultValue>copy-cmdLineTemplate.tpl</defaultValue>
-        </parameter>
+        </parameter>-->
         <parameter>
             <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->
             <name>command</name>
