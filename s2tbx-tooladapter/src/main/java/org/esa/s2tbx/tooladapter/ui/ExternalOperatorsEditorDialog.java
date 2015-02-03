@@ -52,7 +52,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-        AbstractButton newButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/New16.gif"),
+        AbstractButton newButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/New24.gif"),
                 false);
         newButton.setToolTipText("Define new operator");
         newButton.addActionListener(new ActionListener() {
@@ -66,7 +66,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
         });
         panel.add(newButton);
 
-        AbstractButton copyButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/Copy16.gif"),
+        AbstractButton copyButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/Copy24.gif"),
                 false);
         copyButton.setToolTipText("Duplicate selected operator");
         copyButton.addActionListener(new ActionListener() {
@@ -91,7 +91,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
         });
         panel.add(copyButton);
 
-        AbstractButton editButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/Edit16.gif"),
+        AbstractButton editButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/Edit24.gif"),
                 false);
         editButton.setToolTipText("Edit selected operator");
         editButton.addActionListener(new ActionListener() {
@@ -137,7 +137,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
         java.util.List<S2tbxOperatorDescriptor> tollboxSpis = new ArrayList<S2tbxOperatorDescriptor>();
         spis.stream().filter(p -> p instanceof S2tbxToolAdapterOpSpi && ((S2tbxToolAdapterOpSpi) p).getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
-                forEach(operator -> tollboxSpis.add(new S2tbxOperatorDescriptor((DefaultOperatorDescriptor)operator.getOperatorDescriptor())));
+                forEach(operator -> tollboxSpis.add((S2tbxOperatorDescriptor)operator.getOperatorDescriptor()));
 
         OperatorsTableModel model = new OperatorsTableModel(tollboxSpis);
         operatorsTable = new JTable(model);

@@ -5,7 +5,6 @@ import com.bc.ceres.swing.binding.PropertyPane;
 import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
 import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.framework.gpf.ui.DefaultIOParametersPanel;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
@@ -13,7 +12,6 @@ import org.esa.beam.framework.gpf.ui.TargetProductSelector;
 import org.esa.beam.framework.gpf.ui.TargetProductSelectorModel;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.util.io.FileUtils;
-import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -38,13 +36,10 @@ public class ExternalToolExecutionForm extends JTabbedPane {
 
         //initialise the target product's directory to the working directory
         final TargetProductSelectorModel targetProductSelectorModel = targetProductSelector.getModel();
-        targetProductSelectorModel.setProductDir(this.propertySet.getProperty(S2tbxToolAdapterConstants.TOOL_WORKING_DIR_ID).getValue());
+        targetProductSelectorModel.setProductDir(this.operatorSpi.getTemporaryFolder());
 
         //hide the targetProductFile from UI as its value is set differently
         //this.propertySet.getDescriptor("targetProductFile").setAttribute("visible", false);
-
-        //set the workingDir property as directory and not file
-        this.propertySet.getDescriptor("toolWorkingDirectory").setAttribute("directory", true);
 
         ioParamPanel = createIOParamTab();
         addTab("I/O Parameters", ioParamPanel);

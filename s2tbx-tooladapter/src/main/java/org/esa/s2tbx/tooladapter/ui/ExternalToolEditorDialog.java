@@ -150,7 +150,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
         processingPanel.add(createOperatorMemberPanel("Processing tool location", "mainToolFileLocation", null));
 
-        processingPanel.add(createOperatorMemberPanel("Processing temporary folder", "tempFolder", null));
+        processingPanel.add(createOperatorMemberPanel("Processing temporary folder", "temporaryFolder", null));
 
         TitledBorder title = BorderFactory.createTitledBorder("Operator processing parameters");
         processingPanel.setBorder(title);

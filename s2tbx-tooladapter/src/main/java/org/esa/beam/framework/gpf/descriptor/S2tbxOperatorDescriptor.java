@@ -1,7 +1,6 @@
 package org.esa.beam.framework.gpf.descriptor;
 
 import com.bc.ceres.core.Assert;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.StreamException;
 import org.esa.beam.framework.dataio.ProductReader;
@@ -46,14 +45,14 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
     Boolean writeForProcessing;
     String processingWriter;
     File mainToolFileLocation;
-    File tempFolder;
+    File temporaryFolder;
 
     public static final Class<?> readerSuperClass = ProductReader.class;
     public static final Class<?> writerSuperClass = ProductWriter.class;
 
     private List<S2tbxParameterDescriptor> tbxParameterDescriptors = new ArrayList<S2tbxParameterDescriptor>();
 
-    S2tbxOperatorDescriptor(){}
+    S2tbxOperatorDescriptor(){super(null, null);}
 
     public S2tbxOperatorDescriptor(DefaultOperatorDescriptor obj){
         super(obj.getName(), obj.getOperatorClass());
@@ -89,6 +88,10 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         for(int i=0; i<obj.getTargetPropertyDescriptors().length;i++){
             this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor)(obj.getTargetPropertyDescriptors()[i]));
         }
+    }
+
+    public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass){
+        super(name, operatorClass);
     }
 
     public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright){
@@ -297,12 +300,12 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.writeForProcessing = writeForProcessing;
     }
 
-    public File getTempFolder() {
-        return tempFolder;
+    public File getTemporaryFolder() {
+        return temporaryFolder;
     }
 
-    public void setTempFolder(File tempFolder) {
-        this.tempFolder = tempFolder;
+    public void setTemporaryFolder(File temporaryFolder) {
+        this.temporaryFolder = temporaryFolder;
     }
 
 
@@ -397,7 +400,7 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
 
         xStream.alias("operator", S2tbxOperatorDescriptor.class);
 
-        xStream.alias("sourceProduct", S2tbxOperatorDescriptor.class);
+        xStream.alias("sourceProduct", DefaultSourceProductDescriptor.class);
         xStream.aliasField("namedSourceProducts", S2tbxOperatorDescriptor.class, "sourceProductDescriptors");
 
         xStream.alias("sourceProducts", DefaultSourceProductsDescriptor.class);

@@ -27,6 +27,10 @@
         </sourceProduct>
     </namedSourceProducts>
 
+    <mainToolFileLocation>C:/Windows/System32/cmd.exe</mainToolFileLocation>
+
+    <temporaryFolder>D:/temp</temporaryFolder>
+
     <parameters>
         <!--<parameter>
             <name>targetProductFile</name>

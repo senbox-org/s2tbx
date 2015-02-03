@@ -118,11 +118,11 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
 
         //Look for the descriptor
         File toolInfoXmlFile = new File(toolModuleDir, toolName + S2tbxToolAdapterConstants.OPERATOR_FILE_SUFIX);
-        DefaultOperatorDescriptor operatorDescriptor;
+        S2tbxOperatorDescriptor operatorDescriptor;
         if (toolInfoXmlFile.exists()) {
-            operatorDescriptor = DefaultOperatorDescriptor.fromXml(toolInfoXmlFile, S2tbxToolAdapterOpSpi.class.getClassLoader());
+            operatorDescriptor = S2tbxOperatorDescriptor.fromXml(toolInfoXmlFile, S2tbxToolAdapterOpSpi.class.getClassLoader());
         } else {
-            operatorDescriptor = new DefaultOperatorDescriptor(toolName, S2tbxToolAdapterOp.class);
+            operatorDescriptor = new S2tbxOperatorDescriptor(toolName, S2tbxToolAdapterOp.class);
             BeamLogManager.getSystemLogger().warning(String.format("Missing operator metadata file '%s'", toolInfoXmlFile));
         }
 
