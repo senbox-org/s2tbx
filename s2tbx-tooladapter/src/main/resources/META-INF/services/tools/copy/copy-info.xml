@@ -29,7 +29,7 @@
 
     <mainToolFileLocation>C:/Windows/System32/cmd.exe</mainToolFileLocation>
 
-    <temporaryFolder>D:/temp</temporaryFolder>
+    <temporaryFolder>D:/Sentinel2_PROJECT/tmp</temporaryFolder>
 
     <commandLineTemplate>copy-cmdLineTemplate.tpl</commandLineTemplate>
 
@@ -57,7 +57,7 @@
         <name>targetProductFile</name>
         <description>The target product file</description>
         <dataType>java.io.File</dataType>
-        <defaultValue>D:/workingDir/target.N1</defaultValue>
+        <defaultValue>D:/Sentinel2_PROJECT/tmp/SPOT4_HRVIR1_XS_20130608_N1_TUILE_EArgentinaD0000B0000_COPY.tif</defaultValue>
     </parameter>
         <parameter>
             <!-- The name of the parameter; by this name the specified value can be retrieved in the python implementation -->

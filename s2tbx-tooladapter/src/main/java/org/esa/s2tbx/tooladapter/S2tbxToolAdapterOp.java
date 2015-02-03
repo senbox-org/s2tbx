@@ -320,7 +320,8 @@ public class S2tbxToolAdapterOp extends Operator {
         File input = (File)getParameter(S2tbxToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE_ID);
         if(input == null){
             //no target product, means the source product was changed
-            input = (File)getParameter(S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE);
+            //TODO all input files should be loaded since we do not know which one was changed
+            input = getSourceProducts()[0].getFileLocation();
         }
         try {
             final ProductReader productReader = ProductIO.getProductReaderForInput(input);

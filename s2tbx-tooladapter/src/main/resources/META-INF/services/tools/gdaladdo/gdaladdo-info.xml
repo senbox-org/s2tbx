@@ -29,7 +29,7 @@
 
     <mainToolFileLocation>C:/Program Files/GDAL/gdaladdo.exe</mainToolFileLocation>
 
-    <temporaryFolder>D:/temp</temporaryFolder>
+    <temporaryFolder>D:/Sentinel2_PROJECT/tmp</temporaryFolder>
 
     <commandLineTemplate>gdaladdo-cmdLineTemplate.tpl</commandLineTemplate>
 
