@@ -20,7 +20,7 @@ public class BoxReader {
 
         if(listener == null)
         {
-            this.listener = new EmptyListener();
+            this.listener = new AEmptyListener();
         }
         else
         {
@@ -84,16 +84,3 @@ public class BoxReader {
     }
 }
 
-class EmptyListener implements BoxReader.Listener
-{
-
-    @Override
-    public void knownBoxSeen(Box box) {
-        // do nothing
-    }
-
-    @Override
-    public void unknownBoxSeen(Box box) {
-        // do nothing
-    }
-}

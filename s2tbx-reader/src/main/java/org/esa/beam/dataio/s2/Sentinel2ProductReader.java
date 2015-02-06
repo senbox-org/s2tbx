@@ -6,6 +6,7 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
+import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -73,9 +74,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         final Map<String, File> tileIdToFileMap;
         final int bandIndex;
         final S2WavebandInfo wavebandInfo;
-        final L1cTileLayout imageLayout;
+        final TileLayout imageLayout;
 
-        BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo, L1cTileLayout imageLayout) {
+        BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo, TileLayout imageLayout) {
             this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
             this.bandIndex = bandIndex;
             this.wavebandInfo = wavebandInfo;
@@ -204,6 +205,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
+
         product.setAutoGrouping("reflec:radiance:sun:view");
 
         ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
@@ -317,7 +319,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private BandInfo createBandInfoFromDefaults(int bandIndex, S2WavebandInfo wavebandInfo, String tileId, File imageFile) {
-        // L1cTileLayout aLayout = CodeStreamUtils.getL1cTileLayout(imageFile.toURI().toString(), null);
+        // TileLayout aLayout = CodeStreamUtils.getTileLayout(imageFile.toURI().toString(), null);
         return new BandInfo(createFileMap(tileId, imageFile),
                             bandIndex,
                             wavebandInfo,

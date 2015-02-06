@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.s2;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -37,6 +38,12 @@ import java.util.logging.Logger;
  */
 public class L1bMetadata {
 
+    public String getCrs() {
+        return crs;
+    }
+
+    private String crs;
+
     static Element NULL_ELEM = new Element("null") {
     };
 
@@ -47,17 +54,17 @@ public class L1bMetadata {
 
     static class Tile {
         String id;
+        String detectorId;
         String horizontalCsCode;
         TileGeometry tileGeometry10M;
         TileGeometry tileGeometry20M;
         TileGeometry tileGeometry60M;
-        AnglesGrid sunAnglesGrid;
-        AnglesGrid[] viewingIncidenceAnglesGrids;
 
         public static enum idGeom{G10M, G20M, G60M};
 
-        public Tile(String id) {
+        public Tile(String id, String detectorId) {
             this.id = id;
+            this.detectorId = detectorId;
             tileGeometry10M = new TileGeometry();
             tileGeometry20M = new TileGeometry();
             tileGeometry60M = new TileGeometry();
@@ -83,17 +90,6 @@ public class L1bMetadata {
         }
     }
 
-    static class AnglesGrid {
-        int bandId;
-        int detectorId;
-        float[][] zenith;
-        float[][] azimuth;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
     static class TileGeometry {
         int numRows;
         int numCols;
@@ -101,18 +97,11 @@ public class L1bMetadata {
         public int position;
         int xDim;
         int yDim;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
-    static class ReflectanceConversion {
-        double u;
-        /**
-         * Unit: W/m²/µm
-         */
-        double[] solarIrradiances;
+        public Coordinate corner;
+        public int resolution;
+        public int numRowsDetector;
+        public Coordinate llcorner;
+        public String detector;
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -139,30 +128,6 @@ public class L1bMetadata {
         double wavelenghtCentral;
         double spectralResponseStep;
         double[] spectralResponseValues;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
-    static class QuicklookDescriptor {
-        int imageNCols;
-        int imageNRows;
-        Histogram[] histogramList;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
-    static class Histogram {
-        public int bandId;
-        int[] values;
-        int step;
-        double min;
-        double max;
-        double mean;
-        double stdDev;
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -203,6 +168,8 @@ public class L1bMetadata {
 
             Level1B_User_Product product = (Level1B_User_Product) casted;
             productCharacteristics = L1bMetadataProc.getProductOrganization(product);
+
+            crs = L1bMetadataProc.getCrs(product);
 
             Collection<String> tileNames = L1bMetadataProc.getTiles(product);
             List<File> fullTileNamesList = new ArrayList<File>();
@@ -253,8 +220,7 @@ public class L1bMetadata {
                 endTime = System.currentTimeMillis();
                 logger.log(Level.SEVERE, "The granule took " + (endTime - startTime) + " milliseconds");
 
-
-                Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue());
+                Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
 
                 // todo look at geometric info here
 
@@ -337,9 +303,6 @@ public class L1bMetadata {
 
         return mdElement;
     }
-
-
-
 
     private static Element getChild(Element parent, String... path) {
         Element child = parent;

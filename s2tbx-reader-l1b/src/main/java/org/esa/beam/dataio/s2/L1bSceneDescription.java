@@ -1,19 +1,15 @@
 package org.esa.beam.dataio.s2;
 
+import com.jcabi.aspects.Loggable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.beam.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Norman Fomferra
@@ -21,7 +17,7 @@ import java.util.Map;
 public class L1bSceneDescription {
 
     private static final double PIXEL_RESOLUTION_10M = S2L1bSpatialResolution.R10M.resolution;
-    private static final int TILE_SIZE_10M = S2L1bConfig.L1C_TILE_LAYOUTS[0].width;
+    private static final int TILE_SIZE_10M = S2L1bConfig.L1B_TILE_LAYOUTS[0].width;
     private static final double TILE_RESOLUTION_10M = PIXEL_RESOLUTION_10M * TILE_SIZE_10M;
 
     private final TileInfo[] tileInfos;
@@ -52,28 +48,46 @@ public class L1bSceneDescription {
         }
     }
 
+    @Loggable
     public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index)
     {
+        // todo OPP look if Scenedescription object has to be redefined (add a range) or use multiple Scenedescription objects
+
         List<L1bMetadata.Tile> tileList = header.getTileList();
-        CoordinateReferenceSystem crs = null;
+        CoordinateReferenceSystem crs = GeometryFactory.getDefaultCrs();
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
         TileInfo[] tileInfos = new TileInfo[tileList.size()];
         Envelope2D sceneEnvelope = null;
 
         if(tileList.isEmpty())
         {
+            // todo OPP Add help text
             throw new IllegalStateException();
         }
         for (int i = 0; i < tileList.size(); i++) {
             L1bMetadata.Tile tile = tileList.get(i);
 
-            // todo OPP look geometry
-            if (crs == null) {
-                crs = DefaultGeographicCRS.WGS84;
-            }
-
             L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
-            Envelope2D envelope = new Envelope2D(selectedGeometry.envelope);
+            // Envelope2D envelope = new Envelope2D(selectedGeometry.envelope);
+
+            Envelope2D envelope = null;
+
+            // todo OPP The position x is now is absolute, detector-dependant and based on a hardcoded parameter
+            int detectorId = Integer.valueOf(selectedGeometry.detector);
+
+            // data is referenced through 1 based indexes
+            int xOffset = (detectorId - 1) * S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].width * selectedGeometry.resolution;
+            int yOffsetIndex = (selectedGeometry.position - 1) / S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(10)].height;
+            int yWidth = yOffsetIndex * selectedGeometry.yDim * S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].height;
+
+            // todo OPP check memory usage when xOffset is 0...
+            xOffset = 0;
+
+            envelope = new Envelope2D(crs,
+                    xOffset,
+                    yWidth + selectedGeometry.numRows * selectedGeometry.yDim,
+                    selectedGeometry.numCols * selectedGeometry.xDim,
+                    -selectedGeometry.numRows * selectedGeometry.yDim);
 
             tileEnvelopes[i] = envelope;
 
@@ -88,6 +102,8 @@ public class L1bSceneDescription {
         if (sceneEnvelope == null) {
             throw new IllegalStateException();
         }
+
+        // get back to upperLeft info in scene
         double imageX = sceneEnvelope.getX();
         double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
         Rectangle sceneBounds = null;
@@ -96,8 +112,12 @@ public class L1bSceneDescription {
             L1bMetadata.Tile tile = tileList.get(i);
             L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
             Envelope2D tileEnvelope = tileEnvelopes[i];
+
+            // upperLeft again
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
+
+            // todo OPP Look at relative positions
             Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.xDim),
                     (int) ((imageY - tileY) / -selectedGeometry.yDim),
                     selectedGeometry.numCols,
@@ -136,12 +156,14 @@ public class L1bSceneDescription {
         return tileInfos.length;
     }
 
-    public String[] getTileIds() {
+    public List<String> getTileIds() {
         final String[] tileIds = new String[tileInfos.length];
         for (int i = 0; i < tileInfos.length; i++) {
             tileIds[i] = tileInfos[i].id;
         }
-        return tileIds;
+
+        List<String> myList = new ArrayList<String>(Arrays.asList(tileIds));
+        return myList;
     }
 
     public int getTileIndex(String tileId) {

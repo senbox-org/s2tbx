@@ -61,6 +61,26 @@ public class S2L1bGranuleDirFilename {
         return S2L1bGranuleImageFilename.create(tmp);
     }
 
+    public S2L1bGranuleImageFilename getImageFilenameByDetector(String detectorId, String bandId)
+    {
+        String newDetectorId = detectorId;
+
+        if(newDetectorId.length() == 2)
+        {
+            newDetectorId = new String(detectorId.charAt(0) + "0" + detectorId.charAt(1));
+        }
+
+        String newBandId = bandId;
+
+        if(newBandId.length() == 2)
+        {
+            newBandId = new String(bandId.charAt(0) + "0" + bandId.charAt(1));
+        }
+
+        String tmp = String.format("%s_%s_%s%s_%s_%s_%s%s_%s.jp2", missionID, fileClass, fileCategory, fileSemantic, siteCentre, creationDate, startDate, newDetectorId, newBandId);
+        return S2L1bGranuleImageFilename.create(tmp);
+    }
+
     public static S2L1bGranuleDirFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
@@ -76,10 +96,12 @@ public class S2L1bGranuleDirFilename {
                                      matcher.group(9)
                     );
         } else {
-            // todo check for null
-            // todo add a warning message too
             BeamLogManager.getSystemLogger().warning(String.format("%s GranuleDir didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
+    }
+
+    public String getDetectorId() {
+        return this.detectorId.substring(1);
     }
 }

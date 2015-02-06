@@ -2,6 +2,7 @@ package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
+import jp2.TileLayout;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.jai.ResolutionLevel;
 import org.esa.beam.jai.SingleBandedOpImage;
@@ -49,14 +50,14 @@ class L1cTileOpImage extends SingleBandedOpImage {
     protected final Logger logger;
     private final File imageFile;
     private final File cacheDir;
-    private final L1cTileLayout l1cTileLayout;
+    private final TileLayout l1cTileLayout;
     private Map<File, Jp2File> openFiles;
     private Map<File, Object> locks;
 
     static PlanarImage create(File imageFile,
                               File cacheDir,
                               Point imagePos,
-                              L1cTileLayout l1cTileLayout,
+                              TileLayout l1cTileLayout,
                               MultiLevelModel imageModel,
                               S2SpatialResolution spatialResolution,
                               int level) {
@@ -139,7 +140,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     L1cTileOpImage(File imageFile,
                    File cacheDir,
                    Point imagePos,
-                   L1cTileLayout l1cTileLayout,
+                   TileLayout l1cTileLayout,
                    MultiLevelModel imageModel,
                    int level) {
         super(S2Config.SAMPLE_DATA_BUFFER_TYPE,

@@ -1,14 +1,6 @@
 package jp2;
 
-import jp2.boxes.BitsPerComponentBox;
-import jp2.boxes.ColorSpecificationBox;
-import jp2.boxes.ContiguousCodestreamBox;
-import jp2.boxes.FileTypeBox;
-import jp2.boxes.IgnoredBox;
-import jp2.boxes.ImageHeaderBox;
-import jp2.boxes.Jp2HeaderBox;
-import jp2.boxes.Jpeg2000SignatureBox;
-import jp2.boxes.UuidBox;
+import jp2.boxes.*;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;

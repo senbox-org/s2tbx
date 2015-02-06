@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.s2;
 
+import jp2.TileLayout;
 import org.esa.beam.framework.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
@@ -35,10 +36,10 @@ public interface S2L2AConfig {
     //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
     //todo use classes from jp2 package to read the data
     //todo future improvement: use opj_dump.exe to retrieve the data
-    L2aTileLayout[] L2A_TILE_LAYOUTS = new L2aTileLayout[]{
-            new L2aTileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
-            new L2aTileLayout(5490, 5490, 2048, 2048, 3, 3, 6),
-            new L2aTileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
+    TileLayout[] L2A_TILE_LAYOUTS = new TileLayout[]{
+            new TileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
+            new TileLayout(5490, 5490, 2048, 2048, 3, 3, 6),
+            new TileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
     };
 
     String FORMAT_NAME = "SENTINEL-2-MSI-L2A";

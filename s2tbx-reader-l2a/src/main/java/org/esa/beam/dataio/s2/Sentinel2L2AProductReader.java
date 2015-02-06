@@ -5,6 +5,7 @@ import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
+import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aGranuleMetadataFilename;
@@ -70,9 +71,9 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         final Map<String, File> tileIdToFileMap;
         final int bandIndex;
         final S2L2AWavebandInfo wavebandInfo;
-        final L2aTileLayout imageLayout;
+        final TileLayout imageLayout;
 
-        BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2L2AWavebandInfo wavebandInfo, L2aTileLayout imageLayout) {
+        BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2L2AWavebandInfo wavebandInfo, TileLayout imageLayout) {
             this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
             this.bandIndex = bandIndex;
             this.wavebandInfo = wavebandInfo;
@@ -353,7 +354,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
     }
 
     private BandInfo createBandInfoFromDefaults(int bandIndex, S2L2AWavebandInfo wavebandInfo, String tileId, File imageFile) {
-        // L1cTileLayout aLayout = CodeStreamUtils.getL1cTileLayout(imageFile.toURI().toString(), null);
+        // TileLayout aLayout = CodeStreamUtils.getTileLayout(imageFile.toURI().toString(), null);
         return new BandInfo(createFileMap(tileId, imageFile),
                             bandIndex,
                             wavebandInfo,

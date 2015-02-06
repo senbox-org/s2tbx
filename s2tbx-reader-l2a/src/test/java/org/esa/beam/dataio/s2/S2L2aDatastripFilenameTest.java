@@ -1,6 +1,5 @@
 package org.esa.beam.dataio.s2;
 
-import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripFilename;
 import org.junit.Test;

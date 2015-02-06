@@ -151,7 +151,6 @@ public class L1cMetadataProc {
         JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        Marshaller marshaller = jaxbContext.createMarshaller();
 
         Object ob =  unmarshaller.unmarshal(stream);
         Object casted = ((JAXBElement)ob).getValue();
@@ -250,9 +249,6 @@ public class L1cMetadataProc {
     {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
-        String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2GranuleDirFilename grafile = S2GranuleDirFilename.create(granule);
-        String fileCategory = grafile.fileCategory;
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);

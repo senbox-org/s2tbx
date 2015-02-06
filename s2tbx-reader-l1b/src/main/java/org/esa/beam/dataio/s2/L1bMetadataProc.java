@@ -2,22 +2,24 @@ package org.esa.beam.dataio.s2;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Polygon;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
 import org.esa.beam.util.Guardian;
 import org.esa.beam.util.logging.BeamLogManager;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -154,9 +156,6 @@ public class L1bMetadataProc {
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
 
         ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
-
-        //todo get modules classpath
-        //todo test new lecture style
         JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1B, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -170,9 +169,6 @@ public class L1bMetadataProc {
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
 
         ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
-
-        //todo get modules classpath
-        //todo test new lecture style
         JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1B, s2c);
         return jaxbContext;
     }
@@ -208,6 +204,11 @@ public class L1bMetadataProc {
         characteristics.bandInformations = targetList.toArray(new L1bMetadata.SpectralInformation[size]);
 
         return characteristics;
+    }
+
+    public static String getCrs(Level1B_User_Product product)
+    {
+        return product.getGeometric_Info().getCoordinate_Reference_System().getHorizontal_CS().getHORIZONTAL_CS_CODE();
     }
 
     public static L1bMetadata.ProductCharacteristics getProductOrganization(Level1B_User_Product product)
@@ -248,16 +249,20 @@ public class L1bMetadataProc {
         }
         else
         {
-            // todo OPP remove this
-            BeamLogManager.getSystemLogger().severe("Empty spectral info !!!!");
+            BeamLogManager.getSystemLogger().warning("Empty spectral info !");
 
             // todo OPP If there is no spectral info, get band names from Query_Options/Band_List
             List<A_PHYSICAL_BAND_NAME> bandList = product.getGeneral_Info().getProduct_Info().getQuery_Options().getBand_List().getBAND_NAME();
             // assume 0 based index for bands just retrieved...
 
-            // todo OPP where is resolution info ??
-
             List<L1bMetadata.SpectralInformation> aInfo = new ArrayList<L1bMetadata.SpectralInformation>();
+            aInfo.sort(new Comparator<L1bMetadata.SpectralInformation>() {
+                @Override
+                public int compare(L1bMetadata.SpectralInformation o1, L1bMetadata.SpectralInformation o2) {
+                    return o1.physicalBand.compareTo(o2.physicalBand);
+                }
+            });
+
             int index = 0;
             for(A_PHYSICAL_BAND_NAME band_name : bandList)
             {
@@ -265,7 +270,16 @@ public class L1bMetadataProc {
                 data.physicalBand = band_name.value();
                 data.bandId = index;
 
-                data.resolution = 10; // todo OPP remove this
+                // todo OPP hardcoded resolutions...
+                data.resolution = 10;
+                if(data.physicalBand.equals("B1") || data.physicalBand.equals("B9") || data.physicalBand.equals("B10"))
+                {
+                    data.resolution = 60;
+                }
+                else if(data.physicalBand.equals("B5") || data.physicalBand.equals("B6") || data.physicalBand.equals("B7") || data.physicalBand.equals("B8A") || data.physicalBand.equals("B11") || data.physicalBand.equals("B12"))
+                {
+                    data.resolution = 20;
+                }
 
                 index = index + 1;
 
@@ -304,8 +318,6 @@ public class L1bMetadataProc {
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
         S2L1bGranuleDirFilename grafile = S2L1bGranuleDirFilename.create(granule);
         Guardian.assertNotNull("Product files don't match regular expressions", grafile);
-
-        String fileCategory = grafile.fileCategory;
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
         S2L1bDatastripDirFilename dirDatastrip = S2L1bDatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
@@ -396,120 +408,73 @@ public class L1bMetadataProc {
         return result;
     }
 
-    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule product) {
-        List<Double> polygon = product.getGeometric_Info().getGranule_Footprint().getGranule_Footprint().getFootprint().getEXT_POS_LIST();
+    // todo OPP test this function
+    public static double distanceToSegment(Vector3D v, Vector3D w, Vector3D  p)
+    {
+        // Return minimum distance between line segment vw and point p
+        final double l2 = Vector3D.distanceSq(v, w);  // i.e. |w-v|^2 -  avoid a sqrt
+        if (l2 == 0.0) return Vector3D.distance(p, v);   // v == w case
+        // Consider the line extending the segment, parameterized as v + t (w - v).
+        // We find projection of point p onto the line.
+        // It falls where t = [(p-v) . (w-v)] / |w-v|^2
+        double t = Vector3D.dotProduct(p.subtract(v), w.subtract(v)) / l2;
+        if (t < 0.0) return Vector3D.distance(p, v);       // Beyond the 'v' end of the segment
+        else if (t > 1.0) return Vector3D.distance(p, w);  // Beyond the 'w' end of the segment
+        Vector3D projection = v.add(w.subtract(v).scalarMultiply(t));  // Projection falls on the segment
+        return Vector3D.distance(p, projection);
+    }
+
+    // todo OPP create verticaldistance function (unnecessary if we use previous function with upper corners ? )
+    // todo OPP it will require iterate by detector and select the first tile of each granule (access its position info)
+    // todo OPP test it
+
+
+    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule) {
+        List<Double> polygon = granule.getGeometric_Info().getGranule_Footprint().getGranule_Footprint().getFootprint().getEXT_POS_LIST();
         List<Coordinate> thePoints = as3DCoordinates(polygon);
 
-        // todo OPP should we make sure it's a box ?
         Coordinate[] arr = thePoints.toArray(new Coordinate[thePoints.size()]);
+        CoordinateReferenceSystem sourceCRS = null;
 
-        ReferencedEnvelope re = new ReferencedEnvelope(arr[0].x, arr[2].x, arr[0].y, arr[2].y, DefaultGeographicCRS.WGS84);
+        Polygon pol = new GeometryFactory().createPolygon(arr);
+
+        // todo OPP check ReferencedEnvelope construction
+        ReferencedEnvelope re = new ReferencedEnvelope(pol.getEnvelopeInternal(), sourceCRS);
+
+        Coordinate corner = arr[0];
+        Coordinate llcorner = arr[1];
 
         Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<Integer, L1bMetadata.TileGeometry>();
 
-        List<A_GRANULE_DIMENSIONS.Size> sizes = product.getGeometric_Info().getGranule_Dimensions().getSize();
-        int pos = product.getGeometric_Info().getGranule_Position().getPOSITION();
+        List<A_GRANULE_DIMENSIONS.Size> sizes = granule.getGeometric_Info().getGranule_Dimensions().getSize();
+        int pos = granule.getGeometric_Info().getGranule_Position().getPOSITION();
+        String detector = granule.getGeneral_Info().getDETECTOR_ID().getValue();
 
         for (A_GRANULE_DIMENSIONS.Size gpos : sizes)
         {
-            int index = gpos.getResolution();
+            int resolution = gpos.getResolution();
             L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.numCols = gpos.getNCOLS();
-            tgeox.numRows = gpos.getNROWS();
+
+            tgeox.numRows = Math.min(gpos.getNROWS() - pos, S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
+
+            tgeox.numRowsDetector = gpos.getNROWS();
+
+            // todo OPP Maybe a third corner is needed
             tgeox.envelope = re;
             tgeox.position = pos;
-            // todo OPP check this...
-            tgeox.xDim = index;
-            tgeox.yDim = -index;
+            tgeox.resolution = resolution;
+            tgeox.corner = corner;
+            tgeox.llcorner = llcorner;
+            tgeox.xDim = resolution;
+            tgeox.yDim = -resolution;
+            tgeox.detector = detector;
 
             // todo OPP remove this log
             BeamLogManager.getSystemLogger().warning("Adding: " + tgeox.toString());
-            resolutions.put(index, tgeox);
+            resolutions.put(resolution, tgeox);
         }
 
         return resolutions;
-    }
-
-    public static L1bMetadata.AnglesGrid getSunGrid(Level1C_Tile product) {
-        String id = product.getGeneral_Info().getTILE_ID().getValue();
-
-        A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
-        A_SUN_INCIDENCE_ANGLE_GRID sun = ang.getSun_Angles_Grid();
-
-        int azrows = sun.getAzimuth().getValues_List().getVALUES().size();
-        int azcolumns = sun.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
-
-        int zenrows = sun.getZenith().getValues_List().getVALUES().size();
-        int zencolumns = sun.getZenith().getValues_List().getVALUES().size();
-
-        L1bMetadata.AnglesGrid ag = new L1bMetadata.AnglesGrid();
-        ag.azimuth = new float[azrows][azcolumns];
-        ag.zenith = new float[zenrows][zencolumns];
-
-        for(int rowindex = 0; rowindex < azrows; rowindex++)
-        {
-            List<Float> azimuths = sun.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
-            for(int colindex = 0; colindex < azcolumns; colindex++)
-            {
-                ag.azimuth[rowindex][colindex] = azimuths.get(colindex);
-            }
-        }
-
-        for(int rowindex = 0; rowindex < zenrows; rowindex++)
-        {
-            List<Float> zeniths = sun.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
-            for(int colindex = 0; colindex < zencolumns; colindex++)
-            {
-                ag.zenith[rowindex][colindex] = zeniths.get(colindex);
-            }
-        }
-
-        return ag;
-    }
-
-    public static L1bMetadata.AnglesGrid[] getAnglesGrid(Level1C_Tile product) {
-        A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
-        List<AN_INCIDENCE_ANGLE_GRID> incilist = ang.getViewing_Incidence_Angles_Grids();
-
-        L1bMetadata.AnglesGrid[] darr = new L1bMetadata.AnglesGrid[incilist.size()];
-        for(int index = 0; index < incilist.size() ; index++)
-        {
-            AN_INCIDENCE_ANGLE_GRID angleGrid = incilist.get(index);
-
-            int azrows2 = angleGrid.getAzimuth().getValues_List().getVALUES().size();
-            int azcolumns2 = angleGrid.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
-
-            int zenrows2 = angleGrid.getZenith().getValues_List().getVALUES().size();
-            int zencolumns2 = angleGrid.getZenith().getValues_List().getVALUES().size();
-
-
-            L1bMetadata.AnglesGrid ag2 = new L1bMetadata.AnglesGrid();
-            ag2.azimuth = new float[azrows2][azcolumns2];
-            ag2.zenith = new float[zenrows2][zencolumns2];
-
-            for(int rowindex = 0; rowindex < azrows2; rowindex++)
-            {
-                List<Float> azimuths = angleGrid.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
-                for(int colindex = 0; colindex < azcolumns2; colindex++)
-                {
-                    ag2.azimuth[rowindex][colindex] = azimuths.get(colindex);
-                }
-            }
-
-            for(int rowindex = 0; rowindex < zenrows2; rowindex++)
-            {
-                List<Float> zeniths = angleGrid.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
-                for(int colindex = 0; colindex < zencolumns2; colindex++)
-                {
-                    ag2.zenith[rowindex][colindex] = zeniths.get(colindex);
-                }
-            }
-
-            ag2.bandId = Integer.parseInt(angleGrid.getBandId());
-            ag2.detectorId = Integer.parseInt(angleGrid.getDetectorId());
-            darr[index] = ag2;
-        }
-
-        return darr;
     }
 }
