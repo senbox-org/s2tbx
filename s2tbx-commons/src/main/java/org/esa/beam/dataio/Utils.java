@@ -1,4 +1,4 @@
-package org.esa.beam.dataio.s2;
+package org.esa.beam.dataio;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;

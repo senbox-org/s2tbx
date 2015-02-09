@@ -4,6 +4,7 @@ import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aGranuleDirFilename;

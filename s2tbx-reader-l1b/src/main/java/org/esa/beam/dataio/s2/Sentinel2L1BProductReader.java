@@ -11,6 +11,7 @@ import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
+import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleImageFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bProductFilename;
@@ -22,7 +23,6 @@ import org.esa.beam.util.SystemUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
-// import org.github.jamm.MemoryMeter;
 import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -45,6 +45,8 @@ import java.util.stream.Collectors;
 
 import static org.esa.beam.dataio.s2.L1bMetadata.*;
 import static org.esa.beam.dataio.s2.S2L1bConfig.*;
+
+// import org.github.jamm.MemoryMeter;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)

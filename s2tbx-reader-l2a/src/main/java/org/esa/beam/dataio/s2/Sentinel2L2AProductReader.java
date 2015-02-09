@@ -8,6 +8,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aGranuleMetadataFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aProductFilename;
 import org.esa.beam.framework.dataio.AbstractProductReader;

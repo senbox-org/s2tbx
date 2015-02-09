@@ -6,6 +6,7 @@ import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Le
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;

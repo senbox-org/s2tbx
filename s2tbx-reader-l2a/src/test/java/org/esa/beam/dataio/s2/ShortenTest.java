@@ -2,6 +2,7 @@ package org.esa.beam.dataio.s2;
 
 import junit.framework.Assert;
 import org.apache.commons.lang.SystemUtils;
+import org.esa.beam.dataio.Utils;
 import org.junit.Test;
 
 import java.io.File;

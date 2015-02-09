@@ -4,6 +4,7 @@ import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
 import jp2.TileLayout;
 import org.apache.commons.lang.SystemUtils;
+import org.esa.beam.dataio.Utils;
 import org.esa.beam.jai.ResolutionLevel;
 import org.esa.beam.jai.SingleBandedOpImage;
 import org.esa.beam.util.ImageUtils;

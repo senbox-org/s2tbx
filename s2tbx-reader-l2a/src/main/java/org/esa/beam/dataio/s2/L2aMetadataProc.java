@@ -7,6 +7,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.SystemUtils;
+import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aDatastripFilename;
 import org.esa.beam.util.logging.BeamLogManager;

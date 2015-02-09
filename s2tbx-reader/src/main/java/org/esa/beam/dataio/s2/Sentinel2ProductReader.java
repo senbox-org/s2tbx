@@ -9,6 +9,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleMetadataFilename;

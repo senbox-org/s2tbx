@@ -11,6 +11,7 @@ import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
