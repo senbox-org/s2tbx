@@ -2,8 +2,6 @@ package org.esa.beam.dataio.s2;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Polygon;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
@@ -18,8 +16,6 @@ import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
 import org.esa.beam.util.Guardian;
 import org.esa.beam.util.logging.BeamLogManager;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -450,16 +446,12 @@ public class L1bMetadataProc {
             L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.numCols = gpos.getNCOLS();
 
-            tgeox.numRows = Math.min(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
-            int first = gpos.getNROWS() - (pos / ratio);
-            int second = S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height;
-
-            if (first < second)
+            tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
+            if ((gpos.getNROWS() - (pos / ratio)) < S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height)
             {
-                BeamLogManager.getSystemLogger().fine("Good news !!");
+                BeamLogManager.getSystemLogger().warning("TODO: Test if we need extra processing here");
             }
 
-            tgeox.numRows = second;
             tgeox.numRowsDetector = gpos.getNROWS();
             tgeox.position = pos;
             tgeox.resolution = resolution;
@@ -473,5 +465,23 @@ public class L1bMetadataProc {
         }
 
         return resolutions;
+    }
+
+    public static L1bMetadata.AnglesGrid getSunGrid(Level1B_Granule aGranule) {
+        // todo OPP implement this...
+        A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
+        L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
+        grid.zenith = geoHeader.getSolar_Angles().getZENITH_ANGLE().getValue();
+        grid.azimuth = geoHeader.getSolar_Angles().getAZIMUTH_ANGLE().getValue();
+        return grid;
+    }
+
+    public static L1bMetadata.AnglesGrid getAnglesGrid(Level1B_Granule aGranule) {
+        // todo OPP implement this...
+        A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
+        L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
+        grid.zenith = geoHeader.getIncidence_Angles().getZENITH_ANGLE().getValue();
+        grid.azimuth = geoHeader.getIncidence_Angles().getAZIMUTH_ANGLE().getValue();
+        return grid;
     }
 }

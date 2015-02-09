@@ -143,11 +143,7 @@ public class L1cMetadataProc {
     }
 
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
-
         ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
-
-        //todo get modules classpath
-        //todo test new lecture style
         JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -193,8 +189,6 @@ public class L1cMetadataProc {
 
     public static L1cMetadata.ProductCharacteristics getProductOrganization(Level1C_User_Product product)
     {
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
-
         L1cMetadata.ProductCharacteristics characteristics= new L1cMetadata.ProductCharacteristics();
         characteristics.spacecraft = product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME();
         characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString();
@@ -290,8 +284,6 @@ public class L1cMetadataProc {
     }
 
     public static Map<Integer, L1cMetadata.TileGeometry> getTileGeometries(Level1C_Tile product) {
-        String id = product.getGeneral_Info().getTILE_ID().getValue();
-
         A_GEOMETRIC_INFO_TILE info = product.getGeometric_Info();
         A_GEOMETRIC_INFO_TILE.Tile_Geocoding tgeo = info.getTile_Geocoding();
 
@@ -324,8 +316,6 @@ public class L1cMetadataProc {
     }
 
     public static L1cMetadata.AnglesGrid getSunGrid(Level1C_Tile product) {
-        String id = product.getGeneral_Info().getTILE_ID().getValue();
-
         A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
         A_SUN_INCIDENCE_ANGLE_GRID sun = ang.getSun_Angles_Grid();
 

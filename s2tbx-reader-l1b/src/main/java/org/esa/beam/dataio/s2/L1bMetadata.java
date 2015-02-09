@@ -1,6 +1,7 @@
 package org.esa.beam.dataio.s2;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_datastrip_metadata.Level1B_DataStrip;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -13,7 +14,6 @@ import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.util.Guardian;
 import org.esa.beam.util.logging.BeamLogManager;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
@@ -55,10 +55,12 @@ public class L1bMetadata {
     static class Tile {
         String id;
         String detectorId;
-        String horizontalCsCode;
         TileGeometry tileGeometry10M;
         TileGeometry tileGeometry20M;
         TileGeometry tileGeometry60M;
+
+        AnglesGrid sunAnglesGrid;
+        AnglesGrid viewingIncidenceAnglesGrids;
 
         public static enum idGeom{G10M, G20M, G60M};
 
@@ -101,6 +103,17 @@ public class L1bMetadata {
         public int numRowsDetector;
         public Coordinate llcorner;
         public String detector;
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+    }
+
+    static class AnglesGrid {
+        int bandId;
+        int detectorId;
+        double zenith;
+        double azimuth;
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -178,10 +191,10 @@ public class L1bMetadata {
             for (String granuleName: tileNames)
             {
                 File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
-                logger.log(Level.WARNING, "Looking for: " + nestedMetadata.getAbsolutePath());
 
                 if(nestedMetadata.exists())
                 {
+                    logger.log(Level.FINE, "File found: " + nestedMetadata.getAbsolutePath());
                     S2L1bGranuleDirFilename aGranuleDir = S2L1bGranuleDirFilename.create(granuleName);
                     Guardian.assertNotNull("aGranuleDir", aGranuleDir);
                     String theName = aGranuleDir.getMetadataFilename().name;
@@ -200,37 +213,28 @@ public class L1bMetadata {
                 }
             }
 
-            int index = 0;
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
-                long startTime = System.currentTimeMillis();
-
                 Object aob =  unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
                 Object acasted = ((JAXBElement)aob).getValue();
 
                 Level1B_Granule aGranule = (Level1B_Granule) acasted;
-                long endTime = System.currentTimeMillis();
-
-                // todo remove this logs
-                logger.log(Level.SEVERE, "That took " + (endTime - startTime) + " milliseconds");
-
-                startTime = System.currentTimeMillis();
                 Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule);
-                endTime = System.currentTimeMillis();
-                logger.log(Level.SEVERE, "The granule took " + (endTime - startTime) + " milliseconds");
 
                 Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
-
-                // todo look at geometric info here
 
                 t.tileGeometry10M = geoms.get(10);
                 t.tileGeometry20M = geoms.get(20);
                 t.tileGeometry60M = geoms.get(60);
 
+                // todo OPP get solar and incidence info
+                t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
+                t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
+
                 tileList.add(t);
-                index = index + 1;
-                logger.log(Level.WARNING, "Added tile num: " + index);
             }
+
+            // todo OPP get solar and incidence angles from DATASTRIP
 
             S2L1bDatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
             S2L1bDatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
@@ -243,6 +247,15 @@ public class L1bMetadata {
             metadataElement.addElement(userProduct);
             metadataElement.addElement(dataStrip);
             MetadataElement granulesMetaData = new MetadataElement("Granules");
+
+            // get datastrip...
+            Object dStrip =  unmarshaller.unmarshal(dataStripMetadata);
+            Object castedStrip = ((JAXBElement)dStrip).getValue();
+
+            Level1B_DataStrip theDataStrip = (Level1B_DataStrip) castedStrip;
+            int numheaders = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header().size();
+
+            logger.warning(String.format("TODO: Recovered %d geometric headers.", numheaders));
 
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
