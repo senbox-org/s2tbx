@@ -199,25 +199,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         readerMap.put(band, reader);
     }
 
-    /**
-     * Temporary method, to be removed soon
-     * @todo remove this method ASAP
-     */
-    public static float[] convertToFloats(double[] input)
-    {
-        if (input == null)
-        {
-            return null;
-        }
-        float[] output = new float[input.length];
-        for (int i = 0; i < input.length; i++)
-        {
-            output[i] = (float) input[i];
-        }
-        return output;
-    }
-
-    private TiePointGrid addTiePointGrid(int width, int height, Product product, String gridName, double[] tiePoints) {
+    private TiePointGrid addTiePointGrid(int width, int height, Product product, String gridName, float[] tiePoints) {
         final TiePointGrid tiePointGrid = createTiePointGrid(gridName, 2, 2, 0, 0, width, height, tiePoints);
         product.addTiePointGrid(tiePointGrid);
         return tiePointGrid;

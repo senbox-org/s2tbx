@@ -250,10 +250,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         Tile tile = metadataHeader.getTileList().get(tileIndex);
         int gridHeight = tile.sunAnglesGrid.zenith.length;
         int gridWidth = tile.sunAnglesGrid.zenith[0].length;
-        double[] sunZeniths = new double[gridWidth * gridHeight];
-        double[] sunAzimuths = new double[gridWidth * gridHeight];
-        double[] viewingZeniths = new double[gridWidth * gridHeight];
-        double[] viewingAzimuths = new double[gridWidth * gridHeight];
+        float[] sunZeniths = new float[gridWidth * gridHeight];
+        float[] sunAzimuths = new float[gridWidth * gridHeight];
+        float[] viewingZeniths = new float[gridWidth * gridHeight];
+        float[] viewingAzimuths = new float[gridWidth * gridHeight];
         Arrays.fill(viewingZeniths, Float.NaN);
         Arrays.fill(viewingAzimuths, Float.NaN);
         L1cMetadata.AnglesGrid sunAnglesGrid = tile.sunAnglesGrid;
@@ -281,33 +281,12 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         };
     }
 
-    /**
-     * Temporary method, to be removed soon
-     * @todo remove this method ASAP
-     */
-    public static float[] convertToFloats(double[] input)
-    {
-        if (input == null)
-        {
-            return null;
-        }
-        float[] output = new float[input.length];
-        for (int i = 0; i < input.length; i++)
-        {
-            output[i] = (float) input[i];
-        }
-        return output;
-    }
-
-    private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, double[] values) {
-        // todo temporary patch until pom dependencies are updated
+    private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, float[] values) {
         final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, values);
         tiePointGrid.setNoDataValue(Double.NaN);
         tiePointGrid.setNoDataValueUsed(true);
         return tiePointGrid;
     }
-
-
 
     private static Map<String, File> createFileMap(String tileId, File imageFile) {
         Map<String, File> tileIdToFileMap = new HashMap<String, File>();

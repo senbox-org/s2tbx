@@ -340,15 +340,15 @@ public class RapidEyeMetadata extends XmlMetadata {
         return dataType.getDataType();
     }
 
-    public double[] getCornersLatitudes() {
-        double[] lats = null;
+    public float[] getCornersLatitudes() {
+        float[] lats = null;
         if (rootElement != null) {
             MetadataElement currentElement;
             if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_TARGET)) != null) &&
                     ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_FOOTPRINT)) != null) &&
                     ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_GEOGRAPHIC_LOCATION)) != null)) {
                 MetadataElement[] pointElements = currentElement.getElements();
-                lats = new double[4];
+                lats = new float[4];
                 for (MetadataElement element : pointElements) {
                     try {
                         if (RapidEyeConstants.TAG_TOP_LEFT.equals(element.getName())) {
@@ -369,15 +369,15 @@ public class RapidEyeMetadata extends XmlMetadata {
         return lats;
     }
 
-    public double[] getCornersLongitudes() {
-        double[] longs = null;
+    public float[] getCornersLongitudes() {
+        float[] longs = null;
         if (rootElement != null) {
             MetadataElement currentElement;
             if (((currentElement = rootElement.getElement(RapidEyeConstants.TAG_TARGET)) != null) &&
                     ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_FOOTPRINT)) != null) &&
                     ((currentElement = currentElement.getElement(RapidEyeConstants.TAG_GEOGRAPHIC_LOCATION)) != null)) {
                 MetadataElement[] pointElements = currentElement.getElements();
-                longs = new double[4];
+                longs = new float[4];
                 for (MetadataElement element : pointElements) {
                     try {
                         if (RapidEyeConstants.TAG_TOP_LEFT.equals(element.getName())) {
