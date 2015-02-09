@@ -5,7 +5,9 @@ import org.esa.beam.framework.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Norman Fomferra
@@ -39,12 +41,13 @@ public interface S2L1bConfig {
     //todo use classes from jp2 package to read the data
     //todo future improvement: use opj_dump.exe to retrieve the data
 
-    //todo OPP The layout is no longer constant in L1B...
     TileLayout[] L1B_TILE_LAYOUTS = new TileLayout[]{
             new TileLayout(2548, 2304, 1024, 1024, 3, 3, 6), // 10
             new TileLayout(1274, 1152, 1024, 1024, 2, 2, 6), // 20
             new TileLayout(424, 384, 424, 384, 1, 1, 6), // 60
     };
+
+    Set<TileLayout> REAL_TILE_LAYOUT = new HashSet<>();
 
     Map<Integer, Integer> LAYOUTMAP = new HashMap<Integer, Integer>() {
         {

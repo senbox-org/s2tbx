@@ -270,7 +270,7 @@ public class L1bMetadataProc {
                 data.physicalBand = band_name.value();
                 data.bandId = index;
 
-                // todo OPP hardcoded resolutions...
+                // todo OPP remove hardcoded resolutions...
                 data.resolution = 10;
                 if(data.physicalBand.equals("B1") || data.physicalBand.equals("B9") || data.physicalBand.equals("B10"))
                 {
@@ -408,7 +408,7 @@ public class L1bMetadataProc {
         return result;
     }
 
-    // todo OPP test this function
+    // todo OPP Move this function to a utility class
     public static double distanceToSegment(Vector3D v, Vector3D w, Vector3D  p)
     {
         // Return minimum distance between line segment vw and point p
@@ -424,22 +424,11 @@ public class L1bMetadataProc {
         return Vector3D.distance(p, projection);
     }
 
-    // todo OPP create verticaldistance function (unnecessary if we use previous function with upper corners ? )
-    // todo OPP it will require iterate by detector and select the first tile of each granule (access its position info)
-    // todo OPP test it
-
-
     public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule) {
         List<Double> polygon = granule.getGeometric_Info().getGranule_Footprint().getGranule_Footprint().getFootprint().getEXT_POS_LIST();
         List<Coordinate> thePoints = as3DCoordinates(polygon);
 
         Coordinate[] arr = thePoints.toArray(new Coordinate[thePoints.size()]);
-        CoordinateReferenceSystem sourceCRS = null;
-
-        Polygon pol = new GeometryFactory().createPolygon(arr);
-
-        // todo OPP check ReferencedEnvelope construction
-        ReferencedEnvelope re = new ReferencedEnvelope(pol.getEnvelopeInternal(), sourceCRS);
 
         Coordinate corner = arr[0];
         Coordinate llcorner = arr[1];
@@ -453,15 +442,25 @@ public class L1bMetadataProc {
         for (A_GRANULE_DIMENSIONS.Size gpos : sizes)
         {
             int resolution = gpos.getResolution();
+
+            // todo OPP retrieve tile layout per granule..
+            // todo OPP remove hardcoded resolution
+
+            int ratio = resolution / 10;
             L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.numCols = gpos.getNCOLS();
 
-            tgeox.numRows = Math.min(gpos.getNROWS() - pos, S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
+            tgeox.numRows = Math.min(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
+            int first = gpos.getNROWS() - (pos / ratio);
+            int second = S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height;
 
+            if (first < second)
+            {
+                BeamLogManager.getSystemLogger().fine("Good news !!");
+            }
+
+            tgeox.numRows = second;
             tgeox.numRowsDetector = gpos.getNROWS();
-
-            // todo OPP Maybe a third corner is needed
-            tgeox.envelope = re;
             tgeox.position = pos;
             tgeox.resolution = resolution;
             tgeox.corner = corner;
@@ -470,8 +469,6 @@ public class L1bMetadataProc {
             tgeox.yDim = -resolution;
             tgeox.detector = detector;
 
-            // todo OPP remove this log
-            BeamLogManager.getSystemLogger().warning("Adding: " + tgeox.toString());
             resolutions.put(resolution, tgeox);
         }
 

@@ -72,7 +72,7 @@ public class L1bSceneDescription {
 
             Envelope2D envelope = null;
 
-            // todo OPP The position x is now is absolute, detector-dependant and based on a hardcoded parameter
+            // todo OPP Change the position using tiepointgrids
             int detectorId = Integer.valueOf(selectedGeometry.detector);
 
             // data is referenced through 1 based indexes
@@ -117,7 +117,6 @@ public class L1bSceneDescription {
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
 
-            // todo OPP Look at relative positions
             Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.xDim),
                     (int) ((imageY - tileY) / -selectedGeometry.yDim),
                     selectedGeometry.numCols,

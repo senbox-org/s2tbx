@@ -188,7 +188,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
         else
         {
-            // todo OPP Look for optional info in schema
             logger.warning("There are no spectral information here !");
         }
 

@@ -93,7 +93,6 @@ public class L1bMetadata {
     static class TileGeometry {
         int numRows;
         int numCols;
-        public ReferencedEnvelope envelope;
         public int position;
         int xDim;
         int yDim;

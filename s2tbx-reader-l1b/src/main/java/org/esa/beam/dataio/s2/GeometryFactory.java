@@ -14,9 +14,6 @@ import org.opengis.referencing.operation.TransformException;
 
 import java.awt.geom.AffineTransform;
 
-/**
- * Created by opicas-p on 30/01/2015.
- */
 public class GeometryFactory {
 
     public static CoordinateReferenceSystem getFallbackCrs(String sourceCrsText) throws FactoryException {
@@ -56,6 +53,7 @@ public class GeometryFactory {
     public static Coordinate rotate(Coordinate[] arr, Coordinate p, CoordinateReferenceSystem sourceCRS)
     {
         // todo OPP rotation test
+        // todo OPP Add UT
 
         CoordinateReferenceSystem intermediateCRS = null;
         try {

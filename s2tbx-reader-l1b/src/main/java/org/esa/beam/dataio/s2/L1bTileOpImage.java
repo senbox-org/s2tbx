@@ -283,15 +283,16 @@ class L1bTileOpImage extends SingleBandedOpImage {
         final Process process = builder.inheritIO().directory(cacheDir).start();
 
         // todo OPP Get REAL jpeg signature, and log "unexpected" tiles...
-        Set<TileLayout> prefieroElTrapecio = new HashSet<TileLayout>();
-        Collections.addAll(prefieroElTrapecio, S2L1bConfig.L1B_TILE_LAYOUTS);
+        Set<TileLayout> typeTiles = new HashSet<TileLayout>();
+        Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
+        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
 
-        // todo OPP Share modifications between different plugin versions...
         TileLayout myLayout = CodeStreamUtils.getTileLayout(imageFile.toURI(), new AEmptyListener());
 
-        if(!prefieroElTrapecio.contains(myLayout))
+        if(!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout))
         {
             logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getPath(), myLayout.toString()));
+            S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
         }
 
         try {
