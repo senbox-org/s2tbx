@@ -1,6 +1,7 @@
 package org.esa.beam.dataio.s2;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_HEADER_LIST_EXPERTISE;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_datastrip_metadata.Level1B_DataStrip;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
@@ -257,6 +258,31 @@ public class L1bMetadata {
             int numheaders = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header().size();
 
             logger.warning(String.format("TODO: Recovered %d geometric headers.", numheaders));
+
+            List<AnglesGrid> sunGrid = new ArrayList<AnglesGrid>();
+            List<AnglesGrid> incidenceGrid = new ArrayList<AnglesGrid>();
+
+            List<A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header> headers = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header();
+            for (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header header : headers)
+            {
+                Iterator it = header.getLocated_Geometric_Header().iterator();
+                while(it.hasNext())
+                {
+                    A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header o = (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header) it.next();
+                    AnglesGrid tmpGrid = new AnglesGrid();
+                    tmpGrid.azimuth = o.getSolar_Angles().getAZIMUTH_ANGLE().getValue();
+                    tmpGrid.zenith = o.getSolar_Angles().getZENITH_ANGLE().getValue();
+                    sunGrid.add(tmpGrid);
+
+                    AnglesGrid tmpIncidenceGrid = new AnglesGrid();
+                    tmpIncidenceGrid.azimuth = o.getIncidence_Angles().getAZIMUTH_ANGLE().getValue();
+                    tmpIncidenceGrid.zenith = o.getIncidence_Angles().getZENITH_ANGLE().getValue();
+                    incidenceGrid.add(tmpIncidenceGrid);
+                }
+            }
+
+            // todo OPP sunGrid and incidenceGrid are now available in sunGrid and incidenceGrid
+            // look at RapidEyeL1Reader:initGeoCoding for lon/lat tiepointgridss
 
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
