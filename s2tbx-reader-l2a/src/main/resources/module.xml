@@ -24,6 +24,9 @@
         <module>snap-visat-rcp</module>
         <optional>true</optional>
     </dependency>
+    <dependency>
+        <module>s2tbx-commons</module>
+    </dependency>
 
     <categories>Reader,Sentinel</categories>
 
