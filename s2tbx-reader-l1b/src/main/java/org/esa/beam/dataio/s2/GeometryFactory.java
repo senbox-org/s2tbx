@@ -52,8 +52,8 @@ public class GeometryFactory {
 
     public static Coordinate rotate(Coordinate[] arr, Coordinate p, CoordinateReferenceSystem sourceCRS)
     {
-        // todo OPP rotation test
-        // todo OPP Add UT
+        // fixme rotation test
+        // fixme Add UT
 
         CoordinateReferenceSystem intermediateCRS = null;
         try {

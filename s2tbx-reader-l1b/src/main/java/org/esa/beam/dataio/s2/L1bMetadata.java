@@ -64,6 +64,8 @@ public class L1bMetadata {
         AnglesGrid sunAnglesGrid;
         AnglesGrid viewingIncidenceAnglesGrids;
 
+        public List<Coordinate> corners;
+
         public static enum idGeom{G10M, G20M, G60M};
 
         public Tile(String id, String detectorId) {
@@ -97,13 +99,11 @@ public class L1bMetadata {
     static class TileGeometry {
         int numRows;
         int numCols;
-        public int position;
+        public Integer position;
         int xDim;
         int yDim;
-        public Coordinate corner;
         public int resolution;
         public int numRowsDetector;
-        public Coordinate llcorner;
         public String detector;
 
         public String toString() {
@@ -229,14 +229,17 @@ public class L1bMetadata {
                 t.tileGeometry20M = geoms.get(20);
                 t.tileGeometry60M = geoms.get(60);
 
-                // todo OPP get solar and incidence info
+                // fixme get solar and incidence info
                 t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
                 t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
+
+                // critical use corner infos
+                t.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
 
                 tileList.add(t);
             }
 
-            // todo OPP get solar and incidence angles from DATASTRIP
+            // fixme get solar and incidence angles from DATASTRIP
 
             S2L1bDatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
             S2L1bDatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
@@ -281,7 +284,7 @@ public class L1bMetadata {
                 }
             }
 
-            // todo OPP sunGrid and incidenceGrid are now available in sunGrid and incidenceGrid
+            // fixme sunGrid and incidenceGrid are now available in sunGrid and incidenceGrid
             // look at RapidEyeL1Reader:initGeoCoding for lon/lat tiepointgridss
 
             for(File aGranuleMetadataFile: fullTileNamesList)

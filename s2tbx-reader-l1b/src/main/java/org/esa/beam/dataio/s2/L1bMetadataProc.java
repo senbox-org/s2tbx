@@ -10,7 +10,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
@@ -30,6 +29,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+
+import static org.esa.beam.dataio.s2.CoordinateUtils.as3DCoordinates;
 
 /**
  * Created by opicas-p on 24/06/2014.
@@ -224,7 +225,7 @@ public class L1bMetadataProc {
 
             List<L1bMetadata.SpectralInformation> aInfo = new ArrayList<L1bMetadata.SpectralInformation>();
 
-            // todo OPP Spectral_Information_List is optional on L1B ??
+            // fixme Spectral_Information_List is optional on L1B ??
             for (A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
                 L1bMetadata.SpectralInformation data = new L1bMetadata.SpectralInformation();
                 data.bandId = Integer.parseInt(sin.getBandId());
@@ -248,7 +249,7 @@ public class L1bMetadataProc {
         {
             BeamLogManager.getSystemLogger().warning("Empty spectral info !");
 
-            // todo OPP If there is no spectral info, get band names from Query_Options/Band_List
+            // fixme If there is no spectral info, get band names from Query_Options/Band_List
             List<A_PHYSICAL_BAND_NAME> bandList = product.getGeneral_Info().getProduct_Info().getQuery_Options().getBand_List().getBAND_NAME();
             // assume 0 based index for bands just retrieved...
 
@@ -267,7 +268,7 @@ public class L1bMetadataProc {
                 data.physicalBand = band_name.value();
                 data.bandId = index;
 
-                // todo OPP remove hardcoded resolutions...
+                // fixme remove hardcoded resolutions...
                 data.resolution = 10;
                 if(data.physicalBand.equals("B1") || data.physicalBand.equals("B9") || data.physicalBand.equals("B10"))
                 {
@@ -357,79 +358,16 @@ public class L1bMetadataProc {
         return imagesList;
     }
 
-    /**
-     * todo move this to a utility class
-     * @param in
-     * @param size
-     * @return
-     */
-    public static List<double[]> arraySplitter(List<Double> in, int size)
+
+    public static List<Coordinate> getGranuleCorners(Level1B_Granule granule)
     {
-        Guardian.assertTrue("Multiple size" ,(in.size() % size) == 0);
-
-        List<double[]> result = new ArrayList<double[]>();
-        for(int i = 0; i < in.size() / size; i++)
-        {
-            double[] item = new double[]{in.get(i * size), in.get(i * size + 1), in.get(i * size + 2)};
-            result.add(item);
-        }
-
-        return result;
-    }
-
-    public static List<Coordinate> as2DCoordinates(List<Double> in)
-    {
-        List<double[]> tr = arraySplitter(in, 2);
-
-        List<Coordinate> result = new ArrayList<Coordinate>();
-        for(int i = 0; i < tr.size(); i++)
-        {
-            Coordinate c = new Coordinate(tr.get(i)[0], tr.get(i)[1]);
-            result.add(c);
-        }
-
-        return result;
-    }
-
-    public static List<Coordinate> as3DCoordinates(List<Double> in)
-    {
-        List<double[]> tr = arraySplitter(in, 3);
-
-        List<Coordinate> result = new ArrayList<Coordinate>();
-        for(int i = 0; i < tr.size(); i++)
-        {
-            Coordinate c = new Coordinate(tr.get(i)[0], tr.get(i)[1], tr.get(i)[2]);
-            result.add(c);
-        }
-
-        return result;
-    }
-
-    // todo OPP Move this function to a utility class
-    public static double distanceToSegment(Vector3D v, Vector3D w, Vector3D  p)
-    {
-        // Return minimum distance between line segment vw and point p
-        final double l2 = Vector3D.distanceSq(v, w);  // i.e. |w-v|^2 -  avoid a sqrt
-        if (l2 == 0.0) return Vector3D.distance(p, v);   // v == w case
-        // Consider the line extending the segment, parameterized as v + t (w - v).
-        // We find projection of point p onto the line.
-        // It falls where t = [(p-v) . (w-v)] / |w-v|^2
-        double t = Vector3D.dotProduct(p.subtract(v), w.subtract(v)) / l2;
-        if (t < 0.0) return Vector3D.distance(p, v);       // Beyond the 'v' end of the segment
-        else if (t > 1.0) return Vector3D.distance(p, w);  // Beyond the 'w' end of the segment
-        Vector3D projection = v.add(w.subtract(v).scalarMultiply(t));  // Projection falls on the segment
-        return Vector3D.distance(p, projection);
-    }
-
-    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule) {
         List<Double> polygon = granule.getGeometric_Info().getGranule_Footprint().getGranule_Footprint().getFootprint().getEXT_POS_LIST();
         List<Coordinate> thePoints = as3DCoordinates(polygon);
 
-        Coordinate[] arr = thePoints.toArray(new Coordinate[thePoints.size()]);
+        return thePoints;
+    }
 
-        Coordinate corner = arr[0];
-        Coordinate llcorner = arr[1];
-
+    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule) {
         Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<Integer, L1bMetadata.TileGeometry>();
 
         List<A_GRANULE_DIMENSIONS.Size> sizes = granule.getGeometric_Info().getGranule_Dimensions().getSize();
@@ -440,8 +378,7 @@ public class L1bMetadataProc {
         {
             int resolution = gpos.getResolution();
 
-            // todo OPP retrieve tile layout per granule..
-            // todo OPP remove hardcoded resolution
+            // fixme retrieve tile layout per granule..
 
             int ratio = resolution / 10;
             L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
@@ -456,8 +393,6 @@ public class L1bMetadataProc {
             tgeox.numRowsDetector = gpos.getNROWS();
             tgeox.position = pos;
             tgeox.resolution = resolution;
-            tgeox.corner = corner;
-            tgeox.llcorner = llcorner;
             tgeox.xDim = resolution;
             tgeox.yDim = -resolution;
             tgeox.detector = detector;
@@ -469,7 +404,7 @@ public class L1bMetadataProc {
     }
 
     public static L1bMetadata.AnglesGrid getSunGrid(Level1B_Granule aGranule) {
-        // todo OPP implement this...
+        // fixme implement this...
         A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
         L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
         grid.zenith = geoHeader.getSolar_Angles().getZENITH_ANGLE().getValue();
@@ -478,7 +413,7 @@ public class L1bMetadataProc {
     }
 
     public static L1bMetadata.AnglesGrid getAnglesGrid(Level1B_Granule aGranule) {
-        // todo OPP implement this...
+        // fixme implement this...
         A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
         L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
         grid.zenith = geoHeader.getIncidence_Angles().getZENITH_ANGLE().getValue();

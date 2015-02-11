@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.s2;
 
+import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
@@ -101,6 +102,8 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         logger.fine("readProductNodeImpl, " + getInput().toString());
 
+        Product p = null;
+
         final File inputFile = new File(getInput().toString());
         if (!inputFile.exists()) {
             throw new FileNotFoundException(inputFile.getPath());
@@ -110,11 +113,29 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
 
         if (S2L2aProductFilename.isProductFilename(inputFile.getName()))
         {
-            return getL1cMosaicProduct(inputFile);
+            p = getL1cMosaicProduct(inputFile);
+
+            if (p != null) {
+                readMasks(p);
+                initGeoCoding(p);
+                p.setModified(false);
+            }
         }
         else {
             throw new IOException("Unhandled file type.");
         }
+
+        return p;
+    }
+
+    private void initGeoCoding(Product p) {
+        Assert.notNull(p);
+        // fixme Implement this
+    }
+
+    private void readMasks(Product p) {
+        Assert.notNull(p);
+        // fixme Implement this
     }
 
     private Product getL1cMosaicProduct(File metadataFile) throws IOException {

@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.s2;
 
+import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
@@ -12,7 +13,6 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleImageFilename;
-import org.esa.beam.dataio.s2.filepatterns.S2GranuleMetadataFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.datamodel.*;
@@ -104,6 +104,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         logger.fine("readProductNodeImpl, " + getInput().toString());
 
+        Product p = null;
+
         final File inputFile = new File(getInput().toString());
         if (!inputFile.exists()) {
             throw new FileNotFoundException(inputFile.getPath());
@@ -113,11 +115,29 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         if (S2ProductFilename.isProductFilename(inputFile.getName()))
         {
-            return getL1cMosaicProduct(inputFile);
+            p = getL1cMosaicProduct(inputFile);
+
+            if (p != null) {
+                readMasks(p);
+                initGeoCoding(p);
+                p.setModified(false);
+            }
         }
         else {
             throw new IOException("Unhandled file type.");
         }
+
+        return p;
+    }
+
+    private void initGeoCoding(Product p) {
+        Assert.notNull(p);
+        // fixme Implement this method
+    }
+
+    private void readMasks(Product p) {
+        Assert.notNull(p);
+        // fixme Implement this method
     }
 
     private Product getL1cMosaicProduct(File metadataFile) throws IOException {
@@ -129,9 +149,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
-
-        S2GranuleMetadataFilename mtdFilename = S2GranuleMetadataFilename.create(metadataFile.getName());
-        S2ProductFilename mtdFN = S2ProductFilename.create(metadataFile.getName());
 
         L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader, Tile.idGeom.G10M);
         logger.fine("Scene Description: " + sceneDescription);

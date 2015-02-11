@@ -29,6 +29,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.esa.beam.dataio.s2.S2L1bConfig.L1B_TILE_LAYOUTS;
@@ -212,7 +213,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
         if (!outputFile0.exists()) {
-            logger.severe(String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
+            logger.log(Level.parse(S2L1bConfig.LOG_JPEG) ,String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
             } catch (IOException e)
@@ -280,10 +281,10 @@ class L1bTileOpImage extends SingleBandedOpImage {
 
         logger.fine(builder.command().toString());
 
-        // todo OPP Add redirectors...
+        // fixme Add redirectors...
         final Process process = builder.inheritIO().directory(cacheDir).start();
 
-        // todo OPP Get REAL jpeg signature, and log "unexpected" tiles...
+        // fixme Get REAL jpeg signature, and log "unexpected" tiles...
         Set<TileLayout> typeTiles = new HashSet<TileLayout>();
         Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
         Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
@@ -405,7 +406,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
                         }
                     }
 
-                    // todo OPP this part throws an exception
+                    // fixme this part throws an exception
                     for (int y = intersection.height; y < tileHeight; y++) {
                         for (int x = 0; x < tileWidth; x++) {
                             tileData[y * tileWidth + x] = S2L1bConfig.FILL_CODE_OUT_OF_Y_BOUNDS;

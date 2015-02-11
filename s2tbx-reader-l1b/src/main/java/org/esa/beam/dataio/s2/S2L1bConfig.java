@@ -19,9 +19,12 @@ public interface S2L1bConfig {
      * Path to "opj_decompress" executable from OpenJPEG 2.1.0 package
      */
 
+    // fixme paramatrize log levels
+    String LOG_JPEG = DEBUG ? "INFO" : "FINEST";
+
     String OPJ_DECOMPRESSOR_EXE = L1bMetadataProc.getExecutable();
 
-    //todo add Path to opj_dump
+    // fixme add Path to opj_dump
 
     int DEFAULT_JAI_TILE_SIZE = 512;
 

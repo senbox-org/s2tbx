@@ -51,7 +51,7 @@ public class L1bSceneDescription {
     @Loggable
     public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index)
     {
-        // todo OPP look if Scenedescription object has to be redefined (add a range) or use multiple Scenedescription objects
+        // fixme look if Scenedescription object has to be redefined (add a range) or use multiple Scenedescription objects
 
         List<L1bMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = GeometryFactory.getDefaultCrs();
@@ -61,7 +61,7 @@ public class L1bSceneDescription {
 
         if(tileList.isEmpty())
         {
-            // todo OPP Add help text
+            // fixme Add help text
             throw new IllegalStateException();
         }
         for (int i = 0; i < tileList.size(); i++) {
@@ -72,7 +72,7 @@ public class L1bSceneDescription {
 
             Envelope2D envelope = null;
 
-            // todo OPP Change the position using tiepointgrids
+            // fixme Change the position using tiepointgrids
             int detectorId = Integer.valueOf(selectedGeometry.detector);
 
             // data is referenced through 1 based indexes
@@ -80,7 +80,7 @@ public class L1bSceneDescription {
             int yOffsetIndex = (selectedGeometry.position - 1) / S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(10)].height;
             int yWidth = yOffsetIndex * selectedGeometry.yDim * S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].height;
 
-            // todo OPP check memory usage when xOffset is 0...
+            // fixme check memory usage when xOffset is 0...
             xOffset = 0;
 
             envelope = new Envelope2D(crs,
