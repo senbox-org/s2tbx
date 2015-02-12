@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -529,7 +530,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
 
         public MultiLevelImage createSourceImage(TileBandInfo tileBandInfo) {
-            return new DefaultMultiLevelImage(new L1cTileMultiLevelSource(tileBandInfo, imageToModelTransform));
+            return new DefaultMultiLevelImage(new L1bTileMultiLevelSource(tileBandInfo, imageToModelTransform));
         }
     }
 
@@ -549,8 +550,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         @Loggable
         public MultiLevelImage createSourceImage(TileBandInfo tileBandInfo)
         {
-            BandL1cSceneMultiLevelSource bandScene = new BandL1cSceneMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
-            BeamLogManager.getSystemLogger().warning("BandScene: " + bandScene);
+            BandL1bSceneMultiLevelSource bandScene = new BandL1bSceneMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
+            BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_SCENE), "BandScene: " + bandScene);
             return new DefaultMultiLevelImage(bandScene);
         }
     }
@@ -558,10 +559,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     /**
      * A MultiLevelSource for single L1C tiles.
      */
-    private class L1cTileMultiLevelSource extends AbstractMultiLevelSource {
+    private class L1bTileMultiLevelSource extends AbstractMultiLevelSource {
         final TileBandInfo tileBandInfo;
 
-        public L1cTileMultiLevelSource(TileBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
+        public L1bTileMultiLevelSource(TileBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(tileBandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
                                              L1B_TILE_LAYOUTS[0].width, //todo we must use data from jp2 files to update this
@@ -586,10 +587,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     /**
      * A MultiLevelSource for a scene made of multiple L1C tiles.
      */
-    private abstract class AbstractL1cSceneMultiLevelSource extends AbstractMultiLevelSource {
+    private abstract class AbstractL1bSceneMultiLevelSource extends AbstractMultiLevelSource {
         protected final L1bSceneDescription sceneDescription;
 
-        AbstractL1cSceneMultiLevelSource(L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
+        AbstractL1bSceneMultiLevelSource(L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
             super(new DefaultMultiLevelModel(numResolutions,
                                              imageToModelTransform,
                                              sceneDescription.getSceneRectangle().width,
@@ -605,11 +606,11 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     /**
      * A MultiLevelSource used by bands for a scene made of multiple L1C tiles.
      */
-    private final class BandL1cSceneMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
+    private final class BandL1bSceneMultiLevelSource extends AbstractL1bSceneMultiLevelSource {
         private final TileBandInfo tileBandInfo;
         // private MemoryMeter meter;
 
-        public BandL1cSceneMultiLevelSource(L1bSceneDescription sceneDescription, TileBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
+        public BandL1bSceneMultiLevelSource(L1bSceneDescription sceneDescription, TileBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
             super(sceneDescription, imageToModelTransform, tileBandInfo.imageLayout.numResolutions);
             this.tileBandInfo = tileBandInfo;
             // this.meter = new MemoryMeter();

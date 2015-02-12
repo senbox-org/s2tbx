@@ -21,6 +21,7 @@ public interface S2L1bConfig {
 
     // fixme paramatrize log levels
     String LOG_JPEG = DEBUG ? "INFO" : "FINEST";
+    String LOG_SCENE = DEBUG ? "INFO" : "FINEST";
 
     String OPJ_DECOMPRESSOR_EXE = L1bMetadataProc.getExecutable();
 
