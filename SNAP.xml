@@ -1,0 +1,11 @@
+<code_scheme name="SNAP">
+  <option name="LINE_SEPARATOR" value="&#10;" />
+  <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+  <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+  <XML>
+    <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
+  </XML>
+  <codeStyleSettings language="JAVA">
+    <option name="ALIGN_MULTILINE_PARAMETERS_IN_CALLS" value="true" />
+  </codeStyleSettings>
+</code_scheme>
