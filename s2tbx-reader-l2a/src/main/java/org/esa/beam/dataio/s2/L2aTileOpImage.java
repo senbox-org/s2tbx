@@ -2,6 +2,9 @@ package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
+import jp2.Box;
+import jp2.BoxReader;
+import jp2.CodeStreamUtils;
 import jp2.TileLayout;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.dataio.Utils;
@@ -14,7 +17,12 @@ import org.geotools.geometry.Envelope2D;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
@@ -28,6 +36,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.esa.beam.dataio.s2.S2L2AConfig.L2A_TILE_LAYOUTS;
@@ -205,9 +214,54 @@ class L2aTileOpImage extends SingleBandedOpImage {
         } catch (Exception e) {
             logger.severe(Utils.getStackTrace(e));
         }
+
+        logger.warning("Processing file: " + imageFile.getName());
+
+        // critical here goes the real analysis of jpeg2k file
+
+        // critical log real JPEG signature...
+
+        TileLayout myLayout = null;
+        boolean decodingProblemSuspscted = false;
+
+        try {
+            myLayout = CodeStreamUtils.getTileLayout(imageFile.toURI(), new BoxListener());
+            if((myLayout.numResolutions < 1) || (myLayout.numResolutions > 6))
+            {
+                decodingProblemSuspscted = true;
+            }
+            else
+            {
+                logger.log(Level.parse(S2L2AConfig.LOG_JPEG), myLayout.toString());
+            }
+        }
+        catch (IllegalArgumentException iae)
+        {
+            decodingProblemSuspscted = true;
+        } catch (IOException e) {
+            decodingProblemSuspscted = true;
+        }
+
+        if(decodingProblemSuspscted)
+        {
+            // critical run builder
+            ProcessBuilder builder = new ProcessBuilder(S2L2AConfig.OPJ_INFO_EXE,
+                                                        "-i", imageFile.getPath());
+
+            try {
+                final Process process = builder.inheritIO().start();
+                final int exitCode = process.waitFor();
+                if (exitCode != 0) {
+                    logger.severe("Failed to get info from tile: exitCode = " + exitCode);
+                }
+            } catch (InterruptedException e) {
+                logger.severe("Process was interrupted, InterruptedException: " + e.getMessage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
-
-
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
         if (!outputFile0.exists()) {
@@ -458,5 +512,19 @@ class L2aTileOpImage extends SingleBandedOpImage {
     static Dimension getTileDim(int width, int height) {
         return new Dimension(width < S2L2AConfig.DEFAULT_JAI_TILE_SIZE ? width : S2L2AConfig.DEFAULT_JAI_TILE_SIZE,
                              height < S2L2AConfig.DEFAULT_JAI_TILE_SIZE ? height : S2L2AConfig.DEFAULT_JAI_TILE_SIZE);
+    }
+}
+
+class BoxListener implements BoxReader.Listener
+{
+
+    @Override
+    public void knownBoxSeen(Box box) {
+        BeamLogManager.getSystemLogger().warning("KNOWN: " + box.toString());
+    }
+
+    @Override
+    public void unknownBoxSeen(Box box) {
+        BeamLogManager.getSystemLogger().warning("UNKNOWN: " + box.toString());
     }
 }

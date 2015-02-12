@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.esa.beam.dataio.s2.ImageInfoPredicates.*;
@@ -474,7 +475,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         public MultiLevelImage createSourceImage(BandInfo bandInfo)
         {
             BandL2aSceneMultiLevelSource bandScene = new BandL2aSceneMultiLevelSource(sceneDescription, bandInfo, imageToModelTransform);
-            BeamLogManager.getSystemLogger().warning("BandScene: " + bandScene);
+            BeamLogManager.getSystemLogger().log(Level.parse(S2L2AConfig.LOG_SCENE), "BandScene: " + bandScene);
             return new DefaultMultiLevelImage(bandScene);
         }
     }

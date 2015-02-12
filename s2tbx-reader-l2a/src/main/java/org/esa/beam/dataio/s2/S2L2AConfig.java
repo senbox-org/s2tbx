@@ -16,6 +16,11 @@ public interface S2L2AConfig {
      */
 
     String OPJ_DECOMPRESSOR_EXE = L2aMetadataProc.getExecutable();
+    String OPJ_INFO_EXE = L2aMetadataProc.getInfoExecutable();
+
+    // fixme parametrize log levels
+    String LOG_JPEG = DEBUG ? "INFO" : "FINEST";
+    String LOG_SCENE = DEBUG ? "FINE" : "FINEST";
 
     //todo add Path to opj_dump
 

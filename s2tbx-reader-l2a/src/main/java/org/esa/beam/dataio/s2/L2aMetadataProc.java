@@ -141,6 +141,66 @@ public class L2aMetadataProc {
         return target;
     }
 
+    public static String getInfoExecutable()
+    {
+        String winPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-win32-x86/bin/opj_dump.exe";
+        String linuxPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-i386/bin/opj_dump";
+        String linux64Path = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-x64/bin/opj_dump";
+        String macPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Darwin-i386/bin/opj_dump";
+
+        String target = "opj_decompress";
+
+        if(SystemUtils.IS_OS_LINUX)
+        {
+            try {
+                Process p = Runtime.getRuntime().exec("uname -m");
+                p.waitFor();
+                String output = convertStreamToString(p.getInputStream());
+                String errorOutput = convertStreamToString(p.getErrorStream());
+
+                BeamLogManager.getSystemLogger().fine(output);
+                BeamLogManager.getSystemLogger().severe(errorOutput);
+
+                if(output.startsWith("i686"))
+                {
+                    target = getModulesDir() + linuxPath;
+                }
+                else
+                {
+                    target = getModulesDir() + linux64Path;
+                }
+            } catch (Exception e) {
+                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+            }
+        }
+        else if(SystemUtils.IS_OS_MAC)
+        {
+            try {
+                target = getModulesDir() + macPath;
+                setExecutable(new File(target), true);
+            } catch (Exception e) {
+                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+            }
+        }
+        else
+        {
+            try {
+                target = getModulesDir() + winPath;
+            } catch (Exception e) {
+                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+                target = target + ".exe";
+            }
+        }
+
+        File fileTarget = new File(target);
+        if(fileTarget.exists())
+        {
+            fileTarget.setExecutable(true);
+        }
+
+        return target;
+    }
+
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
 
         ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
