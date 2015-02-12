@@ -17,6 +17,11 @@ public class IgnoredSegment extends MarkerSegment {
         this.code = code;
     }
 
+    public IgnoredSegment(MarkerType markerType) {
+        super(markerType);
+        this.code = 0; // critical what about the code ?
+    }
+
     public int getCode() {
         return code;
     }

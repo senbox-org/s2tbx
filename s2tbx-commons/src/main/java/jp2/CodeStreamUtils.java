@@ -88,7 +88,12 @@ public class CodeStreamUtils {
         final MarkerSegment seg2 = reader.readSegment();
 
         final ImageAndTileSizeSegment is = (ImageAndTileSizeSegment) seg2;
-        final MarkerSegment seg3 = reader.readSegment();
+        MarkerSegment seg3 = null;
+
+        do {
+            seg3 = reader.readSegment();
+        }
+        while (!(seg3 instanceof  CodingStyleDefaultSegment));
 
         CodingStyleDefaultSegment roar = (CodingStyleDefaultSegment) seg3;
 

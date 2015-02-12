@@ -1,6 +1,8 @@
 package jp2;
 
 import jp2.boxes.*;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -84,5 +86,7 @@ public enum BoxType {
                 (byte) ((v & 0x000000ff))});
     }
 
-
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
 }

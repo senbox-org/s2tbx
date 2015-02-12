@@ -1,5 +1,8 @@
 package jp2;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 import java.io.IOException;
 
 /**
@@ -43,4 +46,8 @@ public abstract class Box {
     }
 
     public abstract void readFrom(BoxReader reader) throws IOException;
+
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
 }
