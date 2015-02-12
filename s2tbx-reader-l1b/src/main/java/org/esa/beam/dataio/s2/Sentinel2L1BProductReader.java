@@ -8,6 +8,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.jcabi.aspects.Loggable;
+import com.vividsolutions.jts.geom.Coordinate;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -306,39 +307,61 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         return product;
     }
 
+    // critical add complete TiePointGrid
     private void addTiePointGridToTileBandInfo(TileBandInfo tileBandInfo, Map<String, Tile> tileList) {
 
         Set<String> ourTileIds = tileBandInfo.tileIdToFileMap.keySet();
         List<Tile> aList = new ArrayList<Tile>(ourTileIds.size());
+        List<Coordinate> coords = new ArrayList<>();
         for(String tileId : ourTileIds)
         {
             Tile currentTile = tileList.get(tileId);
-            double[] lats = getLatitudes(currentTile.corners);
-            double[] lons = getLongitudes(currentTile.corners);
             aList.add(currentTile);
         }
 
         // critical, are tiles ordered by position ?
         Collections.sort(aList, (Tile u1, Tile u2) -> u1.tileGeometry10M.position.compareTo(u2.tileGeometry10M.position));
 
+        for(Tile currentTile: aList)
+        {
+            coords.add(currentTile.corners.get(0));
+            coords.add(currentTile.corners.get(3));
+        }
+        coords.add(aList.get(aList.size()-1).corners.get(1));
+        coords.add(aList.get(aList.size()-1).corners.get(2));
+
         // critical, look at TiePointGrid construction, clockwise, counterclockwise ?
+        double[] lats = getLatitudes(coords);
+        double[] lons = getLongitudes(coords);
 
     }
 
     // critical add only corners
     private void addPartialTiePointGridToTileBandInfo(TileBandInfo tileBandInfo, Map<String, Tile> tileList) {
-        List<Tile> aList = new ArrayList<Tile>();
         Set<String> ourTileIds = tileBandInfo.tileIdToFileMap.keySet();
+        List<Tile> aList = new ArrayList<Tile>(ourTileIds.size());
+        List<Coordinate> coords = new ArrayList<>();
         for(String tileId : ourTileIds)
         {
             Tile currentTile = tileList.get(tileId);
-            double[] lats = getLatitudes(currentTile.corners);
-            double[] lons = getLongitudes(currentTile.corners);
             aList.add(currentTile);
         }
 
         // critical, are tiles ordered by position ?
         Collections.sort(aList, (Tile u1, Tile u2) -> u1.tileGeometry10M.position.compareTo(u2.tileGeometry10M.position));
+
+        coords.add(aList.get(0).corners.get(0));
+        coords.add(aList.get(0).corners.get(3));
+        coords.add(aList.get(aList.size()-1).corners.get(1));
+        coords.add(aList.get(aList.size()-1).corners.get(2));
+
+        // critical, look at TiePointGrid construction, clockwise, counterclockwise ?
+        double[] lats = getLatitudes(coords);
+        double[] lons = getLongitudes(coords);
+
+        // critical, get raster size, pass product as a parameter
+        // TiePointGrid latGrid = addTiePointGrid(product.getSceneRasterWidth(), product.getSceneRasterHeight(), product, "latitude", lats);
+        // TiePointGrid lonGrid = addTiePointGrid(product.getSceneRasterWidth(), product.getSceneRasterHeight(), product, "longitude", lons);
     }
 
     private void addDetectorBands(Product product, Map<String, TileBandInfo> stringBandInfoMap, MultiLevelImageFactory mlif) throws IOException
@@ -346,8 +369,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L1B_TILE_LAYOUTS[0].numResolutions);
 
-        // fixme test Invert grouping
-        // product.setAutoGrouping("B1:B2:B3:B4:B5:B6:B7:B8:B8A:B9:B10:B11:B12");
         product.setAutoGrouping("D01:D02:D03:D04:D05:D06:D07:D08:D09:D10:D11:D12");
 
         ArrayList<String> bandIndexes = new ArrayList<String>(stringBandInfoMap.keySet());

@@ -244,7 +244,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
         //todo look at affine tranformation geocoding info...
-        addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+        addBands(product, bandInfoMap, new L2aSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
         addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
         addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
         addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
@@ -257,7 +257,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
 
     private void addTiePointGridBand(Product product, L2aMetadata metadataHeader, L2aSceneDescription sceneDescription, String name, int tiePointGridIndex) {
         final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
-        band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
+        band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL2aSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
@@ -458,11 +458,11 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         }
     }
 
-    private class L1cSceneMultiLevelImageFactory extends MultiLevelImageFactory {
+    private class L2aSceneMultiLevelImageFactory extends MultiLevelImageFactory {
 
         private final L2aSceneDescription sceneDescription;
 
-        public L1cSceneMultiLevelImageFactory(L2aSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
+        public L2aSceneMultiLevelImageFactory(L2aSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
             super(imageToModelTransform);
 
             BeamLogManager.getSystemLogger().fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
@@ -473,7 +473,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         @Override
         public MultiLevelImage createSourceImage(BandInfo bandInfo)
         {
-            BandL1cSceneMultiLevelSource bandScene = new BandL1cSceneMultiLevelSource(sceneDescription, bandInfo, imageToModelTransform);
+            BandL2aSceneMultiLevelSource bandScene = new BandL2aSceneMultiLevelSource(sceneDescription, bandInfo, imageToModelTransform);
             BeamLogManager.getSystemLogger().warning("BandScene: " + bandScene);
             return new DefaultMultiLevelImage(bandScene);
         }
@@ -510,10 +510,10 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
     /**
      * A MultiLevelSource for a scene made of multiple L1C tiles.
      */
-    private abstract class AbstractL1cSceneMultiLevelSource extends AbstractMultiLevelSource {
+    private abstract class AbstractL2aSceneMultiLevelSource extends AbstractMultiLevelSource {
         protected final L2aSceneDescription sceneDescription;
 
-        AbstractL1cSceneMultiLevelSource(L2aSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
+        AbstractL2aSceneMultiLevelSource(L2aSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
             super(new DefaultMultiLevelModel(numResolutions,
                                              imageToModelTransform,
                                              sceneDescription.getSceneRectangle().width,
@@ -523,22 +523,22 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
 
 
 
-        protected abstract PlanarImage createL1cTileImage(String tileId, int level);
+        protected abstract PlanarImage createL2aTileImage(String tileId, int level);
     }
 
     /**
      * A MultiLevelSource used by bands for a scene made of multiple L1C tiles.
      */
-    private final class BandL1cSceneMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
+    private final class BandL2aSceneMultiLevelSource extends AbstractL2aSceneMultiLevelSource {
         private final BandInfo bandInfo;
 
-        public BandL1cSceneMultiLevelSource(L2aSceneDescription sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
+        public BandL2aSceneMultiLevelSource(L2aSceneDescription sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(sceneDescription, imageToModelTransform, bandInfo.imageLayout.numResolutions);
             this.bandInfo = bandInfo;
         }
 
         @Override
-        protected PlanarImage createL1cTileImage(String tileId, int level)
+        protected PlanarImage createL2aTileImage(String tileId, int level)
         {
             File imageFile = bandInfo.tileIdToFileMap.get(tileId);
             PlanarImage planarImage = L2aTileOpImage.create(imageFile,
@@ -568,7 +568,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
                 Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
 
-                PlanarImage opImage = createL1cTileImage(tileId, level);
+                PlanarImage opImage = createL2aTileImage(tileId, level);
 
                 {
                     double factorX = 1.0 / (Math.pow(2, level) * (this.bandInfo.wavebandInfo.resolution.resolution / S2SpatialResolution.R10M.resolution));
@@ -628,13 +628,13 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
     /**
      * A MultiLevelSource used by bands for a scene made of multiple L1C tiles.
      */
-    private final class TiePointGridL1cSceneMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
+    private final class TiePointGridL2aSceneMultiLevelSource extends AbstractL2aSceneMultiLevelSource {
 
         private final L2aMetadata metadata;
         private final int tiePointGridIndex;
         private HashMap<String, TiePointGrid[]> tiePointGridsMap;
 
-        public TiePointGridL1cSceneMultiLevelSource(L2aSceneDescription sceneDescription, L2aMetadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
+        public TiePointGridL2aSceneMultiLevelSource(L2aSceneDescription sceneDescription, L2aMetadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
             super(sceneDescription, imageToModelTransform, numResolutions);
             this.metadata = metadata;
             this.tiePointGridIndex = tiePointGridIndex;
@@ -642,7 +642,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         }
 
         @Override
-        protected PlanarImage createL1cTileImage(String tileId, int level) {
+        protected PlanarImage createL2aTileImage(String tileId, int level) {
             TiePointGrid[] tiePointGrids = tiePointGridsMap.get(tileId);
             if (tiePointGrids == null) {
                 final int tileIndex = sceneDescription.getTileIndex(tileId);
@@ -662,7 +662,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
                 Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
 
-                PlanarImage opImage = createL1cTileImage(tileId, level);
+                PlanarImage opImage = createL2aTileImage(tileId, level);
 
                 // todo - This translation step is actually not required because we can create L1cTileOpImages
                 // with minX, minY set as it is required by the MosaicDescriptor and indicated by its API doc.
