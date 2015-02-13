@@ -2,6 +2,7 @@ package org.esa.beam.dataio.s2;
 
 import jp2.TileLayout;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.openjpeg.JpegUtils;
 
 import java.awt.image.DataBuffer;
 
@@ -15,9 +16,7 @@ public interface S2Config {
      * Path to "opj_decompress" executable from OpenJPEG 2.1.0 package
      */
 
-    String OPJ_DECOMPRESSOR_EXE = L1cMetadataProc.getExecutable();
-
-    //todo add Path to opj_dump
+    String OPJ_DECOMPRESSOR_EXE = JpegUtils.getExecutable(L1cMetadataProc.tryGetModulesDir());
 
     int DEFAULT_JAI_TILE_SIZE = 512;
 

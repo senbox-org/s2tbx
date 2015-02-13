@@ -279,7 +279,8 @@ class L1bTileOpImage extends SingleBandedOpImage {
                     "-t", tileIndex + "");
         }
 
-        logger.fine(builder.command().toString());
+        // fixme change log level
+        logger.warning(builder.command().toString());
 
         // fixme Add redirectors...
         final Process process = builder.inheritIO().directory(cacheDir).start();
@@ -293,7 +294,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
 
         if(!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout))
         {
-            logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getPath(), myLayout.toString()));
+            logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
             S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
         }
 

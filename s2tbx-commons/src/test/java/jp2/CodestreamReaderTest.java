@@ -56,7 +56,7 @@ public class CodestreamReaderTest {
         assertEquals(18, roar.getLcod());
         assertEquals(1, roar.getOrder());
         assertEquals(12, roar.getLayers());
-        assertEquals(5, roar.getLevels());
+        assertEquals(6, roar.getLevels());
 
 
 

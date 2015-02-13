@@ -1,14 +1,19 @@
 package org.esa.beam.dataio.s2;
 
 
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_DATATAKE_IDENTIFICATION;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1C;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_TILE_DESCRIPTION;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.SystemUtils;
-import org.esa.beam.dataio.Utils;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -25,7 +30,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by opicas-p on 24/06/2014.
@@ -62,88 +72,16 @@ public class L1cMetadataProc {
         throw new FileNotFoundException("Module " + subStr + " not found !");
     }
 
-    public static String convertStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
-    }
-
-    public static void setExecutable(File file, boolean executable)
+    public static String tryGetModulesDir()
     {
-        try
-        {
-            Process p = Runtime.getRuntime().exec(new String[] {
-            "chmod",
-            "u"+(executable?'+':'-')+"x",
-            file.getAbsolutePath(),
-            });
-            p.waitFor();
-            String output = convertStreamToString(p.getInputStream());
-            String errorOutput = convertStreamToString(p.getErrorStream());
+        String theDir = "./";
+        try {
+            theDir = getModulesDir();
+        } catch (Exception e) {
+            // fixme change messsage, add stacktrace info
+            BeamLogManager.getSystemLogger().severe(e.getMessage());
         }
-        catch(Exception e)
-        {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
-        }
-    }
-
-    public static String getExecutable()
-    {
-        String winPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
-        String linuxPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
-        String linux64Path = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
-        String macPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
-
-        String target = "opj_decompress";
-
-        if(SystemUtils.IS_OS_LINUX)
-        {
-            try {
-		        Process p = Runtime.getRuntime().exec("uname -m");
-                p.waitFor();
-                String output = convertStreamToString(p.getInputStream());
-                String errorOutput = convertStreamToString(p.getErrorStream());
-
-                BeamLogManager.getSystemLogger().fine(output);
-                BeamLogManager.getSystemLogger().severe(errorOutput);
-
-                if(output.startsWith("i686"))
-                {
-                    target = getModulesDir() + linuxPath;
-                }
-                else
-                {
-                    target = getModulesDir() + linux64Path;
-                }
-            } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
-            }
-        }
-        else if(SystemUtils.IS_OS_MAC)
-        {
-            try {
-                target = getModulesDir() + macPath;
-                setExecutable(new File(target), true);
-            } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
-            }
-        }
-        else
-        {
-            try {
-                target = getModulesDir() + winPath;
-            } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
-                target = target + ".exe";
-            }
-        }
-
-        File fileTarget = new File(target);
-        if(fileTarget.exists())
-        {
-            fileTarget.setExecutable(true);
-        }
-
-        return target;
+        return theDir;
     }
 
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {

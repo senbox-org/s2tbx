@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static org.esa.beam.dataio.s2.CoordinateUtils.convertDoublesToFloats;
 import static org.esa.beam.dataio.s2.CoordinateUtils.getLatitudes;
 import static org.esa.beam.dataio.s2.CoordinateUtils.getLongitudes;
 import static org.esa.beam.dataio.s2.L1bMetadata.*;
@@ -144,9 +145,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         return p;
     }
 
-    private TiePointGrid addTiePointGrid(int width, int height, Product product, String gridName, float[] tiePoints) {
+    private TiePointGrid addTiePointGrid(int width, int height, String gridName, float[] tiePoints) {
         final TiePointGrid tiePointGrid = createTiePointGrid(gridName, 2, 2, 0, 0, width, height, tiePoints);
-        product.addTiePointGrid(tiePointGrid);
         return tiePointGrid;
     }
 
@@ -278,12 +278,9 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                 for(Pair<String, String> key :detectorBandInfoMap.keySet())
                 {
                     // critical BandInfo needs its associated TiePointgrid
-
                     TileBandInfo tileBandInfo = createBandInfoFromHeaderInfo(key.getSecond(), sin.get(key.getFirst()), detectorBandInfoMap.get(key));
 
-                    addTiePointGridToTileBandInfo(tileBandInfo, tilesById);
-
-                    // fixme test detector first, band second
+                    // composite band name : detector + band
                     String keyMix = key.getSecond() + key.getFirst();
                     bandInfoByKey.put(keyMix, tileBandInfo);
                 }
@@ -300,6 +297,15 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                                       sceneDescription.getSceneRectangle().width,
                                       sceneDescription.getSceneRectangle().height);
 
+        // fixme Iterate over detectorBandInfoMap and add TiePointGrids to product
+        if(!bandInfoByKey.isEmpty())
+        {
+            for(TileBandInfo tbi : bandInfoByKey.values())
+            {
+                addPartialTiePointGridToTileBandInfo(tbi, tilesById, product);
+            }
+        }
+
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
@@ -309,7 +315,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     }
 
     // critical add complete TiePointGrid
-    private void addTiePointGridToTileBandInfo(TileBandInfo tileBandInfo, Map<String, Tile> tileList) {
+    private void addTiePointGridToTileBandInfo(TileBandInfo tileBandInfo, Map<String, Tile> tileList, Product product) {
+        Objects.requireNonNull(tileBandInfo);
+        Objects.requireNonNull(tileList);
+        Objects.requireNonNull(product);
 
         Set<String> ourTileIds = tileBandInfo.tileIdToFileMap.keySet();
         List<Tile> aList = new ArrayList<Tile>(ourTileIds.size());
@@ -320,7 +329,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             aList.add(currentTile);
         }
 
-        // critical, are tiles ordered by position ?
+        // sort tiles by position
         Collections.sort(aList, (Tile u1, Tile u2) -> u1.tileGeometry10M.position.compareTo(u2.tileGeometry10M.position));
 
         for(Tile currentTile: aList)
@@ -335,10 +344,12 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         double[] lats = getLatitudes(coords);
         double[] lons = getLongitudes(coords);
 
+        // todo create Tiepointgrid add add to product
+
     }
 
     // critical add only corners
-    private void addPartialTiePointGridToTileBandInfo(TileBandInfo tileBandInfo, Map<String, Tile> tileList) {
+    private void addPartialTiePointGridToTileBandInfo(TileBandInfo tileBandInfo, Map<String, Tile> tileList, Product product) {
         Set<String> ourTileIds = tileBandInfo.tileIdToFileMap.keySet();
         List<Tile> aList = new ArrayList<Tile>(ourTileIds.size());
         List<Coordinate> coords = new ArrayList<>();
@@ -348,7 +359,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             aList.add(currentTile);
         }
 
-        // critical, are tiles ordered by position ?
+        // sort tiles by position
         Collections.sort(aList, (Tile u1, Tile u2) -> u1.tileGeometry10M.position.compareTo(u2.tileGeometry10M.position));
 
         coords.add(aList.get(0).corners.get(0));
@@ -357,12 +368,18 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         coords.add(aList.get(aList.size()-1).corners.get(2));
 
         // critical, look at TiePointGrid construction, clockwise, counterclockwise ?
-        double[] lats = getLatitudes(coords);
-        double[] lons = getLongitudes(coords);
+        float[] lats = convertDoublesToFloats(getLatitudes(coords));
+        float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
-        // critical, get raster size, pass product as a parameter
-        // TiePointGrid latGrid = addTiePointGrid(product.getSceneRasterWidth(), product.getSceneRasterHeight(), product, "latitude", lats);
-        // TiePointGrid lonGrid = addTiePointGrid(product.getSceneRasterWidth(), product.getSceneRasterHeight(), product, "longitude", lons);
+        // fixme we should change of each band
+        TiePointGrid latGrid = addTiePointGrid(aList.get(0).tileGeometry10M.numCols, aList.get(0).tileGeometry10M.numRowsDetector, tileBandInfo.wavebandInfo.bandName + ",latitude", lats);
+        product.addTiePointGrid(latGrid);
+        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).tileGeometry10M.numCols, aList.get(0).tileGeometry10M.numRowsDetector, tileBandInfo.wavebandInfo.bandName + ",longitude", lons);
+        product.addTiePointGrid(lonGrid);
+
+        // fixme this will fail, only one geocoding per product ?
+        GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
+        product.setGeoCoding(geoCoding);
     }
 
     private void addDetectorBands(Product product, Map<String, TileBandInfo> stringBandInfoMap, MultiLevelImageFactory mlif) throws IOException
