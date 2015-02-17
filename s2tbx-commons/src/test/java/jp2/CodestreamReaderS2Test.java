@@ -64,11 +64,7 @@ public class CodestreamReaderS2Test {
         assertEquals(12, roar.getLcod());
         assertEquals(1, roar.getLayers());
         assertEquals(0, roar.getOrder());
-        assertEquals(5, roar.getLevels());
-
-
-//        assertEquals(MarkerType.EOC, reader.readMarker());
-
+        assertEquals(6, roar.getLevels());
     }
 
 }

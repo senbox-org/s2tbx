@@ -10,9 +10,6 @@ import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertTrue;
 
-/**
- * @author Norman Fomferra
- */
 public class OpjDumpTest {
     @Test
     public void testRun1() throws URISyntaxException, IOException {

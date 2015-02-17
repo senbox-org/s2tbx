@@ -35,6 +35,7 @@ public class CodingStyleDefaultSegment extends MarkerSegment {
         layers = raw & 0x00ffff00 ;
         layers = layers >> 8;
         levels = stream.readByte();
+        levels = (short) (levels + 1);
     }
 
     public short getLcod() {

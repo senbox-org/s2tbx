@@ -12,9 +12,6 @@ import static jp2.BoxType.decode4b;
 import static jp2.BoxType.encode4b;
 import static org.junit.Assert.*;
 
-/**
- * @author Norman Fomferra
- */
 public class BoxReaderS2Test {
 
     @Test

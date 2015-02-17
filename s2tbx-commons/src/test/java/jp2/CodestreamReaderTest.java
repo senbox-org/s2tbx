@@ -12,9 +12,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-/**
- * @author Norman Fomferra
- */
 public class CodestreamReaderTest {
     @Test
     public void testMarkerStructure() throws URISyntaxException, IOException {
@@ -57,11 +54,6 @@ public class CodestreamReaderTest {
         assertEquals(1, roar.getOrder());
         assertEquals(12, roar.getLayers());
         assertEquals(6, roar.getLevels());
-
-
-
-//        assertEquals(MarkerType.EOC, reader.readMarker());
-
     }
 
 }

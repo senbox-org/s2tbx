@@ -11,9 +11,6 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * @author Norman Fomferra
- */
 public class ParseOpjDumpTest {
 
     @Test

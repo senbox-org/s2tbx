@@ -70,10 +70,10 @@ public class CodestreamReaderS2BrokenTest {
         }
 
         CodingStyleDefaultSegment roar = (CodingStyleDefaultSegment) seg3;
-        assertEquals(12, roar.getLcod());
-        assertEquals(1, roar.getLayers());
-        assertEquals(0, roar.getOrder());
-        assertEquals(6, roar.getLevels());
+        assertNotEquals(12, roar.getLcod());
+        assertNotEquals(1, roar.getLayers());
+        assertNotEquals(0, roar.getOrder());
+        assertNotEquals(6, roar.getLevels());
 
 
 //        assertEquals(MarkerType.EOC, reader.readMarker());
