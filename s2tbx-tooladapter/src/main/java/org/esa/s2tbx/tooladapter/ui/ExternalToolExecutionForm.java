@@ -36,7 +36,7 @@ public class ExternalToolExecutionForm extends JTabbedPane {
 
         //initialise the target product's directory to the working directory
         final TargetProductSelectorModel targetProductSelectorModel = targetProductSelector.getModel();
-        targetProductSelectorModel.setProductDir(this.operatorSpi.getTemporaryFolder());
+        targetProductSelectorModel.setProductDir(this.operatorSpi.getWorkingDir());
 
         //hide the targetProductFile from UI as its value is set differently
         //this.propertySet.getDescriptor("targetProductFile").setAttribute("visible", false);

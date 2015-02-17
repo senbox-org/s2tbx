@@ -13,7 +13,7 @@ import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterDialog;
-import org.esa.s2tbx.tooladapter.S2tbxToolAdapterOp;
+import org.esa.beam.framework.gpf.S2tbxToolAdapterOp;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterOpSpi;
 import org.esa.s2tbx.tooladapter.ui.utils.OperatorsTableModel;
 
@@ -79,10 +79,10 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
                     newNameIndex++;
                     opName = operatorDesc.getName() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
                 }
-
+                String opAlias = operatorDesc.getAlias() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
                 //String descriptorString = ((DefaultOperatorDescriptor) operatorDesc).toXml(ExternalOperatorsEditorDialog.class.getClassLoader());
                 //DefaultOperatorDescriptor dod = DefaultOperatorDescriptor.fromXml(new StringReader(descriptorString), "New duplicate operator", ExternalOperatorsEditorDialog.class.getClassLoader());
-                S2tbxOperatorDescriptor duplicatedOperatorSpi = new S2tbxOperatorDescriptor((DefaultOperatorDescriptor)operatorDesc);
+                S2tbxOperatorDescriptor duplicatedOperatorSpi = new S2tbxOperatorDescriptor(operatorDesc, opName, opAlias);
                 ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Edit Tool", getHelpID(), duplicatedOperatorSpi, newNameIndex);
                 dialog.show();
             }
@@ -112,7 +112,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
             public void actionPerformed(ActionEvent e) {
                 close();
                 S2tbxOperatorDescriptor operatorSpi = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-                PropertySet propertySet = new OperatorParameterSupport(operatorSpi).getPropertySet();
+                //PropertySet propertySet = new OperatorParameterSupport(operatorSpi).getPropertySet();
                 final S2tbxToolAdapterDialog operatorDialog = new S2tbxToolAdapterDialog(
                         operatorSpi,
                         appContext,

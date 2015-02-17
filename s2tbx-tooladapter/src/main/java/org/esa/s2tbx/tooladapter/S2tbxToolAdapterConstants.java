@@ -33,4 +33,6 @@ public interface S2tbxToolAdapterConstants {
     public static final String OPERATOR_GENERATED_NAME_SEPARATOR = "_";
 
     public static String OPERATOR_FILE_SUFIX = "-info.xml";
+
+    public static String TOOL_VELO_TEMPLATE_SUFIX = "-template.vm";
 }

@@ -38,15 +38,15 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
     DefaultTargetProductDescriptor targetProductDescriptor;
     DefaultTargetPropertyDescriptor[] targetPropertyDescriptors;
 
-    Boolean preprocessTool;
-    Boolean writeForPreprocessing;
-    String preprocessingWriter;
-    File preprocessingToolFileLocation;
-    Boolean writeForProcessing;
+    Boolean preprocessTool = false;
+    String preprocessingExternalTool;
+    Boolean writeForProcessing = false;
     String processingWriter;
     File mainToolFileLocation;
-    File temporaryFolder;
-    String commandLineTemplate;
+    File workingDir;
+    String templateFileLocation;
+
+    S2tbxSystemVariable[] variables;
 
     public static final Class<?> readerSuperClass = ProductReader.class;
     public static final Class<?> writerSuperClass = ProductWriter.class;
@@ -89,6 +89,47 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         for(int i=0; i<obj.getTargetPropertyDescriptors().length;i++){
             this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor)(obj.getTargetPropertyDescriptors()[i]));
         }
+
+        this.variables = new S2tbxSystemVariable[0];
+    }
+
+    public S2tbxOperatorDescriptor(S2tbxOperatorDescriptor obj, String newName, String newAlias){
+        super(newName, obj.getOperatorClass());
+
+        this.name = newName;
+        this.alias = newAlias;
+        this.operatorClass = obj.getOperatorClass();
+        this.label = obj.getLabel();
+        this.version = obj.getVersion();
+        this.description = obj.getDescription();
+        this.authors = obj.getAuthors();
+        this.copyright = obj.getCopyright();
+        this.internal = obj.isInternal();
+        this.autoWriteSuppressed = obj.isAutoWriteDisabled();
+
+        this.sourceProductDescriptors = new DefaultSourceProductDescriptor[obj.getSourceProductDescriptors().length];
+        for(int i=0; i<obj.getSourceProductDescriptors().length;i++){
+            this.sourceProductDescriptors[i] = ((DefaultSourceProductDescriptor)(obj.getSourceProductDescriptors()[i]));
+        }
+
+        this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor)obj.getSourceProductsDescriptor();
+
+        this.parameterDescriptors = new DefaultParameterDescriptor[obj.getParameterDescriptors().length];
+        for(int i=0; i<obj.getParameterDescriptors().length;i++){
+            this.parameterDescriptors[i] = ((DefaultParameterDescriptor)(obj.getParameterDescriptors()[i]));
+        }
+        for(int i=0; i<obj.getS2tbxParameterDescriptors().size();i++){
+            this.tbxParameterDescriptors.add(new S2tbxParameterDescriptor(obj.getS2tbxParameterDescriptors().get(i)));
+        }
+
+        this.targetProductDescriptor = (DefaultTargetProductDescriptor)obj.getTargetProductDescriptor();
+
+        this.targetPropertyDescriptors = new DefaultTargetPropertyDescriptor[obj.getTargetPropertyDescriptors().length];
+        for(int i=0; i<obj.getTargetPropertyDescriptors().length;i++){
+            this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor)(obj.getTargetPropertyDescriptors()[i]));
+        }
+
+        this.variables = new S2tbxSystemVariable[0];
     }
 
     public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass){
@@ -106,9 +147,9 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
     }
 
     public void removeParamDescriptor(S2tbxParameterDescriptor descriptor){
-        List<DefaultParameterDescriptor> list = new ArrayList<DefaultParameterDescriptor>(Arrays.asList(parameterDescriptors));
-        list.removeAll(Arrays.asList((DefaultParameterDescriptor)descriptor));
-        parameterDescriptors = list.toArray(new DefaultParameterDescriptor[list.size()]);
+        //List<DefaultParameterDescriptor> list = new ArrayList<DefaultParameterDescriptor>(Arrays.asList(parameterDescriptors));
+        //list.removeAll(Arrays.asList((DefaultParameterDescriptor)descriptor));
+        //parameterDescriptors = list.toArray(new DefaultParameterDescriptor[list.size()]);
 
         this.tbxParameterDescriptors.remove(descriptor);
     }
@@ -124,7 +165,6 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         List<DefaultParameterDescriptor> list = new ArrayList<DefaultParameterDescriptor>(Arrays.asList(parameterDescriptors));
         list.add((DefaultParameterDescriptor)descriptor);
         parameterDescriptors = list.toArray(new DefaultParameterDescriptor[list.size()]);
-
         this.tbxParameterDescriptors.add(descriptor);
     }
 
@@ -232,7 +272,9 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
 
     @Override
     public ParameterDescriptor[] getParameterDescriptors() {
-        return parameterDescriptors != null ? parameterDescriptors : new ParameterDescriptor[0];
+        //return parameterDescriptors != null ? parameterDescriptors : new ParameterDescriptor[0];
+        ParameterDescriptor[] result = new ParameterDescriptor[0];
+        return getS2tbxParameterDescriptors().toArray(result);
     }
 
     @Override
@@ -245,52 +287,36 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         return targetProductDescriptor;
     }
 
+    public String getTemplateFileLocation() {
+        return templateFileLocation;
+    }
+
+    public void setTemplateFileLocation(String templateFileLocation) {
+        this.templateFileLocation = templateFileLocation;
+    }
+
+    public File getWorkingDir() {
+        return workingDir;
+    }
+
+    public void setWorkingDir(File workingDir) {
+        this.workingDir = workingDir;
+    }
+
     public File getMainToolFileLocation() {
         return mainToolFileLocation;
-    }
-
-    public String getProcessingWriter() {
-        return processingWriter;
-    }
-
-    public File getPreprocessingToolFileLocation() {
-        return preprocessingToolFileLocation;
-    }
-
-    public String getPreprocessingWriter() {
-        return preprocessingWriter;
     }
 
     public void setMainToolFileLocation(File mainToolFileLocation) {
         this.mainToolFileLocation = mainToolFileLocation;
     }
 
+    public String getProcessingWriter() {
+        return processingWriter;
+    }
+
     public void setProcessingWriter(String processingWriter) {
         this.processingWriter = processingWriter;
-    }
-
-    public void setPreprocessingToolFileLocation(File preprocessingToolFileLocation) {
-        this.preprocessingToolFileLocation = preprocessingToolFileLocation;
-    }
-
-    public void setPreprocessingWriter(String preprocessingWriter) {
-        this.preprocessingWriter = preprocessingWriter;
-    }
-
-    public Boolean getPreprocessTool() {
-        return preprocessTool;
-    }
-
-    public void setPreprocessTool(Boolean preprocessTool) {
-        this.preprocessTool = preprocessTool;
-    }
-
-    public Boolean getWriteForPreprocessing() {
-        return writeForPreprocessing;
-    }
-
-    public void setWriteForPreprocessing(Boolean writeForPreprocessing) {
-        this.writeForPreprocessing = writeForPreprocessing;
     }
 
     public Boolean getWriteForProcessing() {
@@ -301,20 +327,28 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.writeForProcessing = writeForProcessing;
     }
 
-    public File getTemporaryFolder() {
-        return temporaryFolder;
+    public String getPreprocessingExternalTool() {
+        return preprocessingExternalTool;
     }
 
-    public void setTemporaryFolder(File temporaryFolder) {
-        this.temporaryFolder = temporaryFolder;
+    public void setPreprocessingExternalTool(String preprocessingExternalTool) {
+        this.preprocessingExternalTool = preprocessingExternalTool;
     }
 
-    public String getCommandLineTemplate() {
-        return commandLineTemplate;
+    public Boolean getPreprocessTool() {
+        return preprocessTool;
     }
 
-    public void setCommandLineTemplate(String commandLineTemplate) {
-        this.commandLineTemplate = commandLineTemplate;
+    public void setPreprocessTool(Boolean preprocessTool) {
+        this.preprocessTool = preprocessTool;
+    }
+
+    public S2tbxSystemVariable[] getVariables() {
+        return variables;
+    }
+
+    public void setVariables(S2tbxSystemVariable[] variables) {
+        this.variables = variables;
     }
 
     /**
@@ -413,8 +447,8 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         xStream.alias("sourceProducts", DefaultSourceProductsDescriptor.class);
         xStream.aliasField("sourceProducts", S2tbxOperatorDescriptor.class, "sourceProductsDescriptor");
 
-        xStream.alias("parameter", DefaultParameterDescriptor.class);
-        xStream.aliasField("parameters", S2tbxOperatorDescriptor.class, "parameterDescriptors");
+        xStream.alias("parameter", S2tbxParameterDescriptor.class);
+        xStream.aliasField("parameters", S2tbxOperatorDescriptor.class, "tbxParameterDescriptors");
 
         xStream.alias("targetProduct", DefaultTargetProductDescriptor.class);
         xStream.aliasField("targetProduct", S2tbxOperatorDescriptor.class, "targetProductDescriptor");
@@ -422,8 +456,8 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         xStream.alias("targetProperty", DefaultTargetPropertyDescriptor.class);
         xStream.aliasField("targetProperties", S2tbxOperatorDescriptor.class, "targetPropertyDescriptors");
 
-        xStream.alias("targetProperty", DefaultTargetPropertyDescriptor.class);
-        xStream.aliasField("targetProperties", S2tbxOperatorDescriptor.class, "targetPropertyDescriptors");
+        xStream.alias("variable", S2tbxSystemVariable.class);
+        xStream.aliasField("variables", S2tbxOperatorDescriptor.class, "variables");
 
         return xStream;
     }

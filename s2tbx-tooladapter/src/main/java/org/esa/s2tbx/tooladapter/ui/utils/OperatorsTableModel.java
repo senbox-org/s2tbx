@@ -67,6 +67,8 @@ public class OperatorsTableModel extends AbstractTableModel {
 
     @Override
     public void setValueAt(Object value, int row, int col) {
+
+        //TODO
         this.toolsChecked[row] = (boolean)value;
     }
 
