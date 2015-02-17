@@ -217,9 +217,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
 
         logger.warning("Processing file: " + imageFile.getName());
 
-        // critical here goes the real analysis of jpeg2k file
-
-        // critical log real JPEG signature...
+        // critical here goes the real analysis of jpeg2k file, move jpeg handling code to s2tbx-commons
 
         TileLayout myLayout = null;
         boolean decodingProblemSuspscted = false;
@@ -244,7 +242,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
 
         if(decodingProblemSuspscted)
         {
-            // critical run builder
+            // critical use builders from JpegUtils.java
             ProcessBuilder builder = new ProcessBuilder(S2L2AConfig.OPJ_INFO_EXE,
                                                         "-i", imageFile.getPath());
 
