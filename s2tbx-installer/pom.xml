@@ -93,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-binio</artifactId>
+            <artifactId>ceres-binio</artifactId>
             <version>${snap.version}</version>
         </dependency>
         <dependency>
