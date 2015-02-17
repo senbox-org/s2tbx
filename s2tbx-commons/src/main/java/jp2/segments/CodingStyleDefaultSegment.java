@@ -14,7 +14,9 @@ public class CodingStyleDefaultSegment extends MarkerSegment {
     private short lcod;
     private int layers;
     private int order;
-    private int SGcod;
+    private int SGcodA;
+    private int SGcodB;
+    private int SGcodC;
     private short levels;
 
     public short getLevels() {
@@ -33,9 +35,6 @@ public class CodingStyleDefaultSegment extends MarkerSegment {
         layers = raw & 0x00ffff00 ;
         layers = layers >> 8;
         levels = stream.readByte();
-
-        // levels is a 1 based index
-        levels = (short) (levels + 1);
     }
 
     public short getLcod() {
@@ -48,9 +47,5 @@ public class CodingStyleDefaultSegment extends MarkerSegment {
 
     public int getOrder() {
         return order;
-    }
-
-    public int getSGcod() {
-        return SGcod;
     }
 }

@@ -2,12 +2,19 @@ package jp2;
 
 import jp2.segments.CodingStyleDefaultSegment;
 import jp2.segments.ImageAndTileSizeSegment;
+import org.openjpeg.JpegUtils;
 
 import javax.imageio.stream.FileImageInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by opicas-p on 03/07/2014.
@@ -98,6 +105,33 @@ public class CodeStreamUtils {
         CodingStyleDefaultSegment roar = (CodingStyleDefaultSegment) seg3;
 
         return new TileLayout((int) is.getXsiz(), (int) is.getYsiz(), (int) is.getXtsiz(), (int) is.getYtsiz(), getXNumTiles(is), getYNumTiles(is), roar.getLevels());
+    }
+
+    public static TileLayout getTileLayoutWithOpenJPEG(String opjdumpPath, URI uri, BoxReader.Listener listener) throws IOException, InterruptedException {
+        Objects.requireNonNull(opjdumpPath);
+        // critical test builder redirecting output
+
+        String thePath = opjdumpPath;
+        ProcessBuilder builder = new ProcessBuilder(thePath, "-i", uri.getPath().substring(1));
+        builder.redirectErrorStream(true);
+        final Process process = builder.start();
+        final int exitCode = process.waitFor();
+
+        // fixme what about exitCode ??
+
+        InputStream is = process.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+
+        List<String> capturedOutput = new ArrayList<>();
+
+        String line;
+        while ((line = br.readLine()) != null)
+        {
+            capturedOutput.add(line);
+        }
+
+        return JpegUtils.parseOpjDump(capturedOutput);
     }
 
     public static TileLayout getTileLayout(String uri, BoxReader.Listener listener) throws URISyntaxException, IOException {
