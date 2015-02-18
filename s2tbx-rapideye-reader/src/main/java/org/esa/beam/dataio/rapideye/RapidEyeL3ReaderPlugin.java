@@ -1,5 +1,6 @@
 package org.esa.beam.dataio.rapideye;
 
+import org.esa.beam.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.beam.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.beam.framework.dataio.ProductReader;
 
@@ -35,9 +36,6 @@ public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
     public String getDescription(Locale locale) {
         return RapidEyeConstants.L3_DESCRIPTION;
     }
-
-    @Override
-    protected String[] getProductFilePatterns() { return RapidEyeConstants.L3_FILENAME_PATTERNS; }
 
     @Override
     protected String[] getMinimalPatternList() { return RapidEyeConstants.L3_MINIMAL_PRODUCT_PATTERNS; }

@@ -5,7 +5,11 @@ import org.esa.beam.dataio.FileImageInputStreamSpi;
 import org.esa.beam.dataio.VirtualDirEx;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.beam.dataio.readers.BaseProductReaderPlugIn;
-import org.esa.beam.dataio.spot.dimap.*;
+import org.esa.beam.dataio.spot.dimap.SpotConstants;
+import org.esa.beam.dataio.spot.dimap.SpotDimapMetadata;
+import org.esa.beam.dataio.spot.dimap.SpotSceneMetadata;
+import org.esa.beam.dataio.spot.dimap.VolumeComponent;
+import org.esa.beam.dataio.spot.dimap.VolumeMetadata;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Band;
@@ -23,7 +27,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 /**
- * This rootProduct reader is intended for reading SPOT-1 to SPOT-5 scene files
+ * This product reader is intended for reading SPOT-1 to SPOT-5 scene files
  * from compressed archive files or from file system.
  * @author Cosmin Cara
  */

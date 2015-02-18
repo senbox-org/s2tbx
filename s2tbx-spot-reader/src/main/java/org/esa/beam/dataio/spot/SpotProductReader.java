@@ -1,7 +1,7 @@
 package org.esa.beam.dataio.spot;
 
 import org.esa.beam.dataio.VirtualDirEx;
-import org.esa.beam.dataio.readers.GeotiffBasedReader;
+import org.esa.beam.dataio.readers.GeoTiffBasedReader;
 import org.esa.beam.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.beam.dataio.spot.dimap.SpotSceneMetadata;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
@@ -14,7 +14,7 @@ import org.esa.beam.framework.datamodel.ProductData;
  *
  * @author  Cosmin Cara
  */
-public abstract class SpotProductReader extends GeotiffBasedReader<SpotDimapMetadata> {
+public abstract class SpotProductReader extends GeoTiffBasedReader<SpotDimapMetadata> {
 
     protected SpotSceneMetadata wrappingMetadata;
 

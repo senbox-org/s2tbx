@@ -2,12 +2,12 @@ package org.esa.beam.ui;
 
 import org.esa.beam.framework.ui.application.support.AbstractToolView;
 import org.esa.beam.util.logging.BeamLogManager;
+import org.esa.beam.utils.CollectionHelper;
 
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.stream.Collectors;
 
 /**
  * Commodity model view for echoing and filtering application log messages.
@@ -135,6 +136,7 @@ public class ConsoleToolView extends AbstractToolView {
             final JToggleButton button = createTextlessToolbarButton(filterIcons.get(key), true, key);
             toolbar.add(button);
         }
+        toolbar.addSeparator();
         toolbar.add(createToolbarButton(String.format(ICON_PATH, "clear.png"), CLEAR));
         consoleViewPanel.add(toolbar, BorderLayout.WEST);
         consoleViewPanel.add(scrollPane, BorderLayout.CENTER);
@@ -153,26 +155,18 @@ public class ConsoleToolView extends AbstractToolView {
         ImageIcon icon = new ImageIcon(classLoader.getResource(iconPath));
         final JToggleButton button = new JToggleButton(icon, pressed);
         button.setActionCommand(messageLevel);
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Container parent = button.getParent();
-                List<String> filterKeys = new ArrayList<String>();
-                for (Component component : parent.getComponents()) {
-                    if (JToggleButton.class.isInstance(component)) {
-                        JToggleButton buttonComponent = (JToggleButton)component;
-                        if (buttonComponent.getModel().isSelected()) {
-                            filterKeys.add(buttonComponent.getActionCommand());
-                        }
-                    }
+        button.addActionListener((ActionEvent e) -> {
+            Container parent = button.getParent();
+            List<String> filterKeys = new ArrayList<String>();
+            for (Component component : CollectionHelper.where(parent.getComponents(), JToggleButton.class::isInstance)) {
+                JToggleButton buttonComponent = (JToggleButton) component;
+                if (buttonComponent.getModel().isSelected()) {
+                    filterKeys.add(buttonComponent.getActionCommand());
                 }
-                List<RowFilter<DefaultTableModel, Object>> filters = new ArrayList<RowFilter<DefaultTableModel, Object>>();
-                for (String key : filterKeys) {
-                    filters.add(rowFilterMap.get(key));
-                }
-                //noinspection unchecked
-                ((TableRowSorter)logTable.getRowSorter()).setRowFilter(RowFilter.orFilter(filters));
             }
+            List<RowFilter<DefaultTableModel, Object>> filters = filterKeys.stream().map(rowFilterMap::get).collect(Collectors.toList());
+            //noinspection unchecked
+            ((TableRowSorter) logTable.getRowSorter()).setRowFilter(RowFilter.orFilter(filters));
         });
         return button;
     }
@@ -182,12 +176,7 @@ public class ConsoleToolView extends AbstractToolView {
         ImageIcon icon = new ImageIcon(classLoader.getResource(iconPath));
         final JButton button = new JButton(command, icon);
         button.setActionCommand(command);
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                    logTableModel.setNumRows(0);
-            }
-        });
+        button.addActionListener((ActionEvent e) -> logTableModel.setNumRows(0));
         return button;
     }
 
@@ -220,7 +209,7 @@ public class ConsoleToolView extends AbstractToolView {
 
     class MultiRenderer implements TableCellRenderer {
         private TableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
-        private Map<Class, TableCellRenderer> registeredRenderers = new HashMap<Class, TableCellRenderer>();
+        private Map<Class, TableCellRenderer> registeredRenderers = new HashMap<>();
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             TableCellRenderer delegate = null;
@@ -258,6 +247,7 @@ public class ConsoleToolView extends AbstractToolView {
                 Throwable exception = (Throwable) value;
                 StringWriter stringWriter = new StringWriter();
                 exception.printStackTrace(new PrintWriter(stringWriter));
+                ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
                 c.setToolTipText("<html>" + stringWriter.getBuffer().toString().replace("\r\n", "<br>") + "</html>");
                 c.setText(exception.getMessage());
                 c.setForeground(Color.RED);

@@ -7,7 +7,10 @@ import org.esa.beam.framework.dataio.ProductReader;
 import java.util.Locale;
 
 /**
- * Created by kraftek on 9/22/2014.
+ * Visat plugin for reading DEIMOS-1 files.
+ * The files are GeoTIFF with DIMAP metadata.
+ *
+ * @author  Cosmin Cara
  */
 public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
 
@@ -36,8 +39,8 @@ public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
         return DeimosConstants.DIMAP_DESCRIPTION;
     }
 
-    @Override
-    protected String[] getProductFilePatterns() { return DeimosConstants.FILENAME_PATTERNS; }
+    /*@Override
+    protected String[] getProductFilePatterns() { return DeimosConstants.FILENAME_PATTERNS; }*/
 
     @Override
     protected String[] getMinimalPatternList() { return DeimosConstants.MINIMAL_PRODUCT_PATTERNS; }

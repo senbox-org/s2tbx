@@ -68,7 +68,7 @@ public class XmlMetadataParser<T extends XmlMetadata> {
         if (schemaLocations != null && shouldValidateSchema()) {
             SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             ClassLoader classLoader = this.getClass().getClassLoader();
-            List<StreamSource> streamSourceList = new Vector<StreamSource>();
+            List<StreamSource> streamSourceList = new Vector<>();
             for (String schemaLocation : schemaLocations) {
                 InputStream is = classLoader.getResourceAsStream(schemaLocation);
                 StreamSource streamSource = new StreamSource(is);
@@ -125,7 +125,7 @@ public class XmlMetadataParser<T extends XmlMetadata> {
         @Override
         public void startDocument() throws SAXException {
             systemLogger = BeamLogManager.getSystemLogger();
-            elementStack = new Stack<MetadataElement>();
+            elementStack = new Stack<>();
             try {
                 @SuppressWarnings("unchecked") Constructor<T> ctor = fileClass.getConstructor(String.class);
                 result = ctor.newInstance("Metadata");

@@ -101,7 +101,7 @@ public abstract class XmlMetadata {
         this.name = name;
         this.rootElement = new MetadataElement(this.name);
         this.logger = BeamLogManager.getSystemLogger();
-        this.attributeMap = new HashMap<String, List<MetadataAttribute>>();
+        this.attributeMap = new HashMap<>();
     }
 
     /**
@@ -261,6 +261,26 @@ public abstract class XmlMetadata {
         return value;
     }
 
+    public String[] getAttributeValues(String attributePath) {
+        String[] values = null;
+        if (attributePath != null) {
+            attributePath = ensureAttributeTagPresent(attributePath);
+            List<MetadataAttribute> attributes;
+            if (attributeMap.containsKey(attributePath) && (attributes = attributeMap.get(attributePath)) != null && attributes.size() > 0) {
+                values = new String[attributes.size()];
+                for (int i = 0; i < attributes.size(); i++) {
+                    values[i] = attributes.get(i).getData().getElemString();
+                    if (values[i] == null) {
+                        warn(MISSING_ELEMENT_WARNING, attributes.get(i).getName());
+                    }
+                }
+            } else {
+                warn(NO_SUCH_PATH_WARNING, attributePath);
+            }
+        }
+        return values;
+    }
+
     /**
      * Returns the value of the attribute (or the default value) specified by its XPath expression, and whose sibling value is equal to a certain value.
      * @param attributePath The path of the attribute to be tested
@@ -339,10 +359,56 @@ public abstract class XmlMetadata {
         }
     }
 
+    /**
+     * Converts the value to a float array.
+     * @param value The string list of values
+     * @param separator The items separator
+     * @return  An array of float values
+     */
+    protected float[] asFloatArray(String value, String separator) {
+        float[] array = null;
+        if (value != null && !value.isEmpty()) {
+            String[] values = value.split(separator);
+            if (values.length > 1) {
+                array = new float[values.length];
+                for (int i = 0; i < values.length; i++) {
+                    array[i] = Float.parseFloat(values[i]);
+                }
+            }
+        }
+        return array;
+    }
+
+    /**
+     * Silently converts a string to a float (i.e. without throwing exception for unconvertible values)
+     * @param value The value to be converted
+     * @return  The float value or <code>Float.NaN</code> if the conversion cannot be performed.
+     */
+    protected float asFloat(String value) {
+        float ret = Float.NaN;
+        try {
+            ret = Float.parseFloat(value);
+        } catch (NumberFormatException ignored) {}
+        return ret;
+    }
+
+    /**
+     * Silently converts a string to a int (i.e. without throwing exception for unconvertible values)
+     * @param value The value to be converted
+     * @return  The int value or <code>0</code> if the conversion cannot be performed.
+     */
+    protected int asInt(String value) {
+        int ret = 0;
+        try {
+            ret = Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {}
+        return ret;
+    }
+
     void indexAttribute(String parentElementPath, MetadataAttribute attribute) {
         String key = (parentElementPath + "@" + attribute.getName()).toLowerCase();
         if (!this.attributeMap.containsKey(key)) {
-            this.attributeMap.put(key, new ArrayList<MetadataAttribute>());
+            this.attributeMap.put(key, new ArrayList<>());
         }
         this.attributeMap.get(key).add(attribute);
     }

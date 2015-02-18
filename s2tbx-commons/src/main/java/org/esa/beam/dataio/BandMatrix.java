@@ -198,7 +198,7 @@ public class BandMatrix {
     public BandMatrixCell[] getCells() {
         if (cachedCells == null || cachedCells.length != numRows * numCols) {
             synchronized (internal) {
-                List<BandMatrixCell> cells = new ArrayList<BandMatrixCell>();
+                List<BandMatrixCell> cells = new ArrayList<>();
                 for (int col = 0; col < numCols; col++) {
                     for (int row = 0; row < numRows; row++) {
                         cells.add(internal[row][col]);
@@ -342,7 +342,7 @@ public class BandMatrix {
         if (!isConsistent()) {
             throw new UnsupportedOperationException("Current matrix is not consistent!");
         }
-        List<BandMatrixCell> cells = new ArrayList<BandMatrixCell>();
+        List<BandMatrixCell> cells = new ArrayList<>();
         if (rectangle != null && rectangle.width > 0 && rectangle.height > 0) {
             for (int col = 0; col < numCols; col++) {
                 for (int row = 0; row < numRows; row++) {

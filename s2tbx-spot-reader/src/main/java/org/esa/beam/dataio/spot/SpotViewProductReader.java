@@ -11,7 +11,13 @@ import org.esa.beam.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.beam.dataio.spot.dimap.SpotViewMetadata;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.CrsGeoCoding;
+import org.esa.beam.framework.datamodel.GeoCoding;
+import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.framework.datamodel.TiePointGeoCoding;
+import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.TreeNode;
 import org.esa.beam.util.logging.BeamLogManager;
@@ -82,7 +88,8 @@ public class SpotViewProductReader extends AbstractProductReader {
                     metadata.getRasterWidth(),
                     metadata.getRasterHeight());
             product.setProductReader(this);
-            product.setFileLocation(metadataFile);
+            //product.setFileLocation(metadataFile);
+            product.setFileLocation(new File(zipDir.getBasePath()));
             product.getMetadataRoot().addElement(metadata.getRootElement());
 
             logger.info("Trying to attach tiepoint geocoding");

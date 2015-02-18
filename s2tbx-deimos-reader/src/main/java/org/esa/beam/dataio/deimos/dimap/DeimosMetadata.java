@@ -5,19 +5,20 @@ import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.framework.datamodel.ProductData;
 
 import java.awt.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+
+import static org.esa.beam.utils.DateHelper.parseDate;
 
 /**
- * Created by kraftek on 9/22/2014.
+ * Holder for DIMAP metadata file.
+ *
+ * @author Cosmin Cara
  */
 public class DeimosMetadata extends XmlMetadata {
 
     private float[] bandGains;
     private float[] bandBiases;
 
-    public static class DeimosMetadataParser extends XmlMetadataParser<DeimosMetadata> {
+    private static class DeimosMetadataParser extends XmlMetadataParser<DeimosMetadata> {
 
         public DeimosMetadataParser(Class metadataFileClass) {
             super(metadataFileClass);
@@ -152,11 +153,11 @@ public class DeimosMetadata extends XmlMetadata {
     }
 
     public Color getNoDataColor() {
-        Color color = null;
+        Color color;
         try {
-            int red = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.NODATA_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, DeimosConstants.STRING_ZERO)));
-            int green = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.NODATA_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, DeimosConstants.STRING_ZERO)));
-            int blue = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.NODATA_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_BLUE_LEVEL, DeimosConstants.STRING_ZERO)));
+            int red = (int) (DeimosConstants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.NODATA_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, DeimosConstants.STRING_ZERO)));
+            int green = (int) (DeimosConstants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.NODATA_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, DeimosConstants.STRING_ZERO)));
+            int blue = (int) (DeimosConstants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.NODATA_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_BLUE_LEVEL, DeimosConstants.STRING_ZERO)));
             color = new Color(red, green, blue);
         } catch (NumberFormatException e) {
             color = Color.BLACK;
@@ -175,11 +176,11 @@ public class DeimosMetadata extends XmlMetadata {
     }
 
     public Color getSaturatedColor() {
-        Color color = null;
+        Color color;
         try {
-            int red = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.SATURATED_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, DeimosConstants.STRING_ZERO)));
-            int green = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.SATURATED_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, DeimosConstants.STRING_ZERO)));
-            int blue = (int) (255.0 * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.SATURATED_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_BLUE_LEVEL, DeimosConstants.STRING_ZERO)));
+            int red = (int) (DeimosConstants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.SATURATED_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_RED_LEVEL, DeimosConstants.STRING_ZERO)));
+            int green = (int) (DeimosConstants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.SATURATED_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_GREEN_LEVEL, DeimosConstants.STRING_ZERO)));
+            int blue = (int) (DeimosConstants.MAX_LEVEL * Double.parseDouble(getAttributeSiblingValue(DeimosConstants.PATH_SPECIAL_VALUE_TEXT, DeimosConstants.SATURATED_VALUE, DeimosConstants.PATH_SPECIAL_VALUE_COLOR_BLUE_LEVEL, DeimosConstants.STRING_ZERO)));
             color = new Color(red, green, blue);
         } catch (NumberFormatException e) {
             color = Color.WHITE;
@@ -192,18 +193,19 @@ public class DeimosMetadata extends XmlMetadata {
         String stringDate = getAttributeValue(DeimosConstants.PATH_SCENE_CENTER_DATE, null);
         if (stringDate != null) {
             String stringTime = getAttributeValue(DeimosConstants.PATH_SCENE_CENTER_TIME, null);
-            try {
-                Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(stringDate + " " + stringTime);
-                centerTime = ProductData.UTC.create(date, 0);
-            } catch (ParseException pEx) {
-                warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_SCENE_CENTER_DATE);
+            if (stringTime == null) {
+                warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_SCENE_CENTER_TIME);
+                stringTime = "00:00:00";
             }
+            centerTime = parseDate(stringDate + " " + stringTime, DeimosConstants.DEIMOS_DATE_FORMAT);
+        } else {
+            warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_SCENE_CENTER_DATE);
         }
         return centerTime;
     }
 
     public InsertionPoint getInsertPoint() {
-        InsertionPoint point = null;
+        InsertionPoint point;
         try {
             point = new InsertionPoint();
             point.x = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_ULXMAP, DeimosConstants.STRING_ZERO));
@@ -225,18 +227,55 @@ public class DeimosMetadata extends XmlMetadata {
     }
 
     private void extractGainsAndBiases() {
-        int nBands = getNumBands();
-        bandGains = new float[nBands];
-        // we extract both, because they are used in conjunction
-        bandBiases = new float[nBands];
-        try {
-            for (int i = 0; i < nBands; i++) {
-                bandBiases[i] = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_PHYSICAL_BIAS, i, DeimosConstants.STRING_ZERO)) * DeimosConstants.UNIT_MULTIPLIER;
-                bandGains[i] = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_PHYSICAL_GAIN, i, DeimosConstants.STRING_ZERO)) * DeimosConstants.UNIT_MULTIPLIER;
+        if (bandGains == null || bandBiases == null) {
+            int nBands = getNumBands();
+            bandGains = new float[nBands];
+            // we extract both, because they are used in conjunction
+            bandBiases = new float[nBands];
+            try {
+                for (int i = 0; i < nBands; i++) {
+                    bandBiases[i] = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_PHYSICAL_BIAS, i, DeimosConstants.STRING_ZERO)) * DeimosConstants.UNIT_MULTIPLIER;
+                    bandGains[i] = Float.parseFloat(getAttributeValue(DeimosConstants.PATH_PHYSICAL_GAIN, i, DeimosConstants.STRING_ZERO)) * DeimosConstants.UNIT_MULTIPLIER;
+                }
+            } catch (NumberFormatException e) {
+                warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_SPECTRAL_BAND_INFO);
             }
-        } catch (NumberFormatException e) {
-            warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_SPECTRAL_BAND_INFO);
         }
+    }
+
+    public String getProcessingLevel() {
+        String value = null;
+        try {
+            value = getAttributeValue(DeimosConstants.PATH_GEOMETRIC_PROCESSING, null);
+        } catch (Exception e) {
+            warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_GEOMETRIC_PROCESSING);
+        }
+        if (value == null)
+            value = DeimosConstants.PROCESSING_2T;
+        return value;
+    }
+
+    public InsertionPoint[] getGeopositionPoints() {
+        InsertionPoint[] points = null;
+        try {
+            String[] dataX = getAttributeValues(DeimosConstants.PATH_TIE_POINT_DATA_X);
+            if (dataX != null) {
+                String[] dataY = getAttributeValues(DeimosConstants.PATH_TIE_POINT_DATA_Y);
+                String[] crsX = getAttributeValues(DeimosConstants.PATH_TIE_POINT_CRS_X);
+                String[] crsY = getAttributeValues(DeimosConstants.PATH_TIE_POINT_CRS_Y);
+                points = new InsertionPoint[dataX.length];
+                for (int i = 0; i < points.length; i++) {
+                    points[i] = new InsertionPoint();
+                    points[i].x = Float.parseFloat(crsX[i]);
+                    points[i].y = Float.parseFloat(crsY[i]);
+                    points[i].stepX = Float.parseFloat(dataX[i]);
+                    points[i].stepY = Float.parseFloat(dataY[i]);
+                }
+            }
+        } catch (Exception e) {
+            warn(MISSING_ELEMENT_WARNING, DeimosConstants.PATH_GEOMETRIC_PROCESSING);
+        }
+        return points;
     }
 
     public class InsertionPoint {
