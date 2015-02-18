@@ -154,7 +154,14 @@ public class JpegUtils {
         else
         {
             try {
-                target = modulesDir + winPath;
+                if(modulesDir.startsWith("/"))
+                {
+                    target = modulesDir.substring(1) + winPath;
+                }
+                else
+                {
+                    target = modulesDir + winPath;
+                }
             } catch (Exception e) {
                 BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
                 target = target + ".exe";

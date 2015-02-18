@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.esa.beam.dataio.s2.S2L2AConfig.L2A_TILE_LAYOUTS;
@@ -223,41 +222,13 @@ class L2aTileOpImage extends SingleBandedOpImage {
         boolean decodingProblemSuspscted = false;
 
         try {
-            myLayout = CodeStreamUtils.getTileLayout(imageFile.toURI(), new BoxListener());
-            if((myLayout.numResolutions < 1) || (myLayout.numResolutions > 6))
-            {
-                decodingProblemSuspscted = true;
-            }
-            else
-            {
-                logger.log(Level.parse(S2L2AConfig.LOG_JPEG), myLayout.toString());
-            }
+            myLayout = CodeStreamUtils.getTileLayout(S2L2AConfig.OPJ_INFO_EXE, imageFile.toURI(), new BoxListener());
         }
-        catch (IllegalArgumentException iae)
+        catch (Exception iae)
         {
-            decodingProblemSuspscted = true;
-        } catch (IOException e) {
             decodingProblemSuspscted = true;
         }
 
-        if(decodingProblemSuspscted)
-        {
-            // critical use builders from JpegUtils.java
-            ProcessBuilder builder = new ProcessBuilder(S2L2AConfig.OPJ_INFO_EXE,
-                                                        "-i", imageFile.getPath());
-
-            try {
-                final Process process = builder.inheritIO().start();
-                final int exitCode = process.waitFor();
-                if (exitCode != 0) {
-                    logger.severe("Failed to get info from tile: exitCode = " + exitCode);
-                }
-            } catch (InterruptedException e) {
-                logger.severe("Process was interrupted, InterruptedException: " + e.getMessage());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
 
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.

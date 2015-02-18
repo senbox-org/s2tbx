@@ -185,7 +185,15 @@ public class L2aMetadataProc {
         else
         {
             try {
-                target = getModulesDir() + winPath;
+                String modulesDir = getModulesDir();
+                if(modulesDir.startsWith("/"))
+                {
+                    target = modulesDir.substring(1) + winPath;
+                }
+                else
+                {
+                    target = getModulesDir() + winPath;
+                }
             } catch (Exception e) {
                 BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
                 target = target + ".exe";

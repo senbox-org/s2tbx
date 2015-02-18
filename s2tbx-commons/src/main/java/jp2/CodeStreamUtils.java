@@ -2,18 +2,14 @@ package jp2;
 
 import jp2.segments.CodingStyleDefaultSegment;
 import jp2.segments.ImageAndTileSizeSegment;
+import org.openjpeg.CommandOutput;
 import org.openjpeg.JpegUtils;
 
 import javax.imageio.stream.FileImageInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -109,29 +105,51 @@ public class CodeStreamUtils {
 
     public static TileLayout getTileLayoutWithOpenJPEG(String opjdumpPath, URI uri, BoxReader.Listener listener) throws IOException, InterruptedException {
         Objects.requireNonNull(opjdumpPath);
-        // critical test builder redirecting output
 
         String thePath = opjdumpPath;
         ProcessBuilder builder = new ProcessBuilder(thePath, "-i", uri.getPath().substring(1));
         builder.redirectErrorStream(true);
-        final Process process = builder.start();
-        final int exitCode = process.waitFor();
 
-        // fixme what about exitCode ??
+        CommandOutput exit = JpegUtils.runProcess(builder);
 
-        InputStream is = process.getInputStream();
-        InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr);
-
-        List<String> capturedOutput = new ArrayList<>();
-
-        String line;
-        while ((line = br.readLine()) != null)
+        if(exit.getErrorCode() != 0)
         {
-            capturedOutput.add(line);
+            StringBuffer sbu = new StringBuffer();
+            for(String fragment: builder.command())
+            {
+                sbu.append(fragment);
+                sbu.append(' ');
+            }
+
+            throw new IOException(String.format("Command [%s] failed with error code [%d], stdoutput [%s] and stderror [%s]", sbu.toString(), exit.getErrorCode(), exit.getTextOutput(), exit.getErrorOutput()));
+        }
+        return JpegUtils.parseOpjDump(exit.getTextOutput());
+    }
+
+    public static TileLayout getTileLayout(String opjdumpPath, URI imageFile, BoxReader.Listener listener) throws IOException, InterruptedException {
+        TileLayout myLayout = null;
+        boolean decodingProblemSuspscted = false;
+
+        try {
+            myLayout = CodeStreamUtils.getTileLayout(imageFile, listener);
+            if((myLayout.numResolutions < 1) || (myLayout.numResolutions > 6))
+            {
+                decodingProblemSuspscted = true;
+            }
+        }
+        catch (IllegalArgumentException iae)
+        {
+            decodingProblemSuspscted = true;
+        } catch (IOException e) {
+            decodingProblemSuspscted = true;
         }
 
-        return JpegUtils.parseOpjDump(capturedOutput);
+        if(decodingProblemSuspscted)
+        {
+            myLayout = CodeStreamUtils.getTileLayoutWithOpenJPEG(opjdumpPath, imageFile, listener);
+        }
+
+        return myLayout;
     }
 
     public static TileLayout getTileLayout(String uri, BoxReader.Listener listener) throws URISyntaxException, IOException {
