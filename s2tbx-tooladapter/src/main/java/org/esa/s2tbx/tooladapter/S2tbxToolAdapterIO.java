@@ -69,7 +69,7 @@ public class S2tbxToolAdapterIO {
     public static String readOperatorTemplate(String toolName) throws IOException{
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(toolName);
         String templateFile = ((S2tbxOperatorDescriptor)spi.getOperatorDescriptor()).getTemplateFileLocation();
-        File file = new File(S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + spi.getOperatorAlias() + File.pathSeparator + templateFile);
+        File file = new File(S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + spi.getOperatorAlias() + File.separator + templateFile);
         byte[] encoded = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
         return new String(encoded, Charset.defaultCharset());
     }
@@ -77,7 +77,7 @@ public class S2tbxToolAdapterIO {
     public static void writeOperatorTemplate(String toolName, String content) throws IOException{
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(toolName);
         String templateFile = ((S2tbxOperatorDescriptor)spi.getOperatorDescriptor()).getTemplateFileLocation();
-        File file = new File(S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + spi.getOperatorAlias() + File.pathSeparator + templateFile);
+        File file = new File(S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + spi.getOperatorAlias() + File.separator + templateFile);
         FileWriter writer = new FileWriter(file);
         writer.write(content);
         writer.flush();
@@ -86,7 +86,7 @@ public class S2tbxToolAdapterIO {
 
     public static void saveAndRegisterOperator(S2tbxOperatorDescriptor operator, String templateContent) throws IOException{
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operator.getName());
-        String toolModuleDir = S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + operator.getAlias() + File.pathSeparator;
+        String toolModuleDir = S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + operator.getAlias() + File.separator;
         if(spi == null){
             S2tbxToolAdapterOpSpi operatorSpi = new S2tbxToolAdapterOpSpi(operator) {
 

@@ -380,7 +380,7 @@ public class S2tbxToolAdapterOp extends Operator {
     private List<String> getToolCommandLine() throws OperatorException {
         String cmdLineFileName = ((S2tbxOperatorDescriptor) (getSpi().getOperatorDescriptor())).getTemplateFileLocation();
         if (cmdLineFileName.endsWith(S2tbxToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX)) {
-            String result = transformVelocityTemplate(this.toolDescFolder + File.pathSeparator + cmdLineFileName);
+            String result = transformVelocityTemplate(this.toolDescFolder + File.separator + cmdLineFileName);
             return Arrays.asList(result.split("\n"));
         } else {
             final List<String> ret = new ArrayList<String>();
