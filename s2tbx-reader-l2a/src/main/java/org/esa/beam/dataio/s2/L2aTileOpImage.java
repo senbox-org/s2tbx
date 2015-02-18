@@ -315,7 +315,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
     public synchronized void dispose() {
 
         for (Map.Entry<File, Jp2File> entry : openFiles.entrySet()) {
-            System.out.println("closing " + entry.getKey());
+            logger.finest("closing " + entry.getKey());
             try {
                 final Jp2File jp2File = entry.getValue();
                 if (jp2File.stream != null) {
@@ -395,7 +395,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
                                                          jp2Y,
                                                          tileWidth, tileHeight);
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
-                //System.out.printf("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection);
+                logger.fine(String.format("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection));
                 if (!intersection.isEmpty()) {
                     long seekPos = jp2File.dataPos + S2L2AConfig.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;

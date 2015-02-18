@@ -27,8 +27,6 @@ public interface S2L1bConfig {
     String OPJ_DECOMPRESSOR_EXE = JpegUtils.getExecutable(L1bMetadataProc.tryGetModulesDir());
     String OPJ_INFO_EXE = JpegUtils.getInfoExecutable(L1bMetadataProc.tryGetModulesDir());
 
-    // fixme add Path to opj_dump
-
     int DEFAULT_JAI_TILE_SIZE = 512;
 
     int SAMPLE_PRODUCT_DATA_TYPE = ProductData.TYPE_UINT16;

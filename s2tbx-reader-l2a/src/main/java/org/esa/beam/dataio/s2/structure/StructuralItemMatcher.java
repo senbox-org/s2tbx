@@ -14,7 +14,6 @@ public class StructuralItemMatcher {
             {
                 if(result.length == 0)
                 {
-                    System.err.println("This failed: " + aStructuralItem.getPattern());
                     return false;
                 }
             }
