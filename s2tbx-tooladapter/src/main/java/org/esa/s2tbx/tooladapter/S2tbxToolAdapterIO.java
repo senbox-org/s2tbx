@@ -1,7 +1,6 @@
 package org.esa.s2tbx.tooladapter;
 
 import com.bc.ceres.core.runtime.RuntimeContext;
-import org.apache.tools.ant.util.FileUtils;
 import org.esa.beam.framework.gpf.*;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.util.logging.BeamLogManager;
@@ -9,7 +8,6 @@ import org.esa.beam.util.logging.BeamLogManager;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -21,6 +19,16 @@ import java.util.Enumeration;
  * Created by ramonag on 2/14/2015.
  */
 public class S2tbxToolAdapterIO {
+
+    static String basePath;
+
+    static {
+        try {
+            basePath = S2tbxToolAdapterIO.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        } catch (Exception e) {
+            BeamLogManager.getSystemLogger().severe(e.getMessage());
+        }
+    }
 
     public static OperatorSpi readOperatorFromFile(String toolName) throws OperatorException {
         final File toolModuleDir;
@@ -67,17 +75,13 @@ public class S2tbxToolAdapterIO {
     }
 
     public static String readOperatorTemplate(String toolName) throws IOException{
-        OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(toolName);
-        String templateFile = ((S2tbxOperatorDescriptor)spi.getOperatorDescriptor()).getTemplateFileLocation();
-        File file = new File(S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + spi.getOperatorAlias() + File.pathSeparator + templateFile);
+        File file = getTemplateFile(toolName);
         byte[] encoded = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
         return new String(encoded, Charset.defaultCharset());
     }
 
     public static void writeOperatorTemplate(String toolName, String content) throws IOException{
-        OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(toolName);
-        String templateFile = ((S2tbxOperatorDescriptor)spi.getOperatorDescriptor()).getTemplateFileLocation();
-        File file = new File(S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + spi.getOperatorAlias() + File.pathSeparator + templateFile);
+        File file = getTemplateFile(toolName);
         FileWriter writer = new FileWriter(file);
         writer.write(content);
         writer.flush();
@@ -86,7 +90,7 @@ public class S2tbxToolAdapterIO {
 
     public static void saveAndRegisterOperator(S2tbxOperatorDescriptor operator, String templateContent) throws IOException{
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operator.getName());
-        String toolModuleDir = S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + operator.getAlias() + File.pathSeparator;
+        String toolModuleDir = S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + operator.getAlias() + File.separator;
         if(spi == null){
             S2tbxToolAdapterOpSpi operatorSpi = new S2tbxToolAdapterOpSpi(operator) {
 
@@ -104,7 +108,7 @@ public class S2tbxToolAdapterIO {
         } else {
             //TODO SHOULD BE REMOVED, and added again, or the refrence get completly changed?
         }
-        File toolInfoXmlFile = new File(toolModuleDir + operator.getAlias() + S2tbxToolAdapterConstants.OPERATOR_FILE_SUFIX);
+        File toolInfoXmlFile = new File(basePath, toolModuleDir + operator.getAlias() + S2tbxToolAdapterConstants.OPERATOR_FILE_SUFIX);
         if (!toolInfoXmlFile.exists()) {
             toolInfoXmlFile.createNewFile();
         }
@@ -116,4 +120,9 @@ public class S2tbxToolAdapterIO {
         writeOperatorTemplate(operator.getName(), templateContent);
     }
 
+    private static File getTemplateFile(String toolName) {
+        OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(toolName);
+        String templateFile = ((S2tbxOperatorDescriptor)spi.getOperatorDescriptor()).getTemplateFileLocation();
+        return new File(basePath, S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + spi.getOperatorAlias() + File.separator + templateFile);
+    }
 }

@@ -3,13 +3,11 @@ package org.esa.s2tbx.tooladapter.ui;
 import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.ValueSet;
-import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyEditor;
 import com.bc.ceres.swing.binding.PropertyEditorRegistry;
 import com.bc.ceres.swing.binding.internal.TextFieldEditor;
 import org.esa.beam.framework.dataio.ProductIOPlugInManager;
-import org.esa.beam.framework.dataio.ProductWriterPlugIn;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
@@ -19,18 +17,17 @@ import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterIO;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterOpSpi;
-import org.esa.s2tbx.tooladapter.ui.utils.OperatorParametersTable;
 import org.esa.s2tbx.tooladapter.ui.utils.OperatorParametersTableNewModel;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Set;
 
 /**
@@ -38,7 +35,7 @@ import java.util.Set;
  */
 public class ExternalToolEditorDialog extends ModelessDialog{
 
-    private S2tbxOperatorDescriptor operatorSpi;
+    private S2tbxOperatorDescriptor operatorDescriptor;
     private boolean operatorIsNew;
     private int newNameIndex = -1;
     private JPanel preprocessingPanel;
@@ -52,32 +49,36 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         super(appContext.getApplicationWindow(), title, ID_APPLY_CLOSE, helpID);
     }
 
-    private  ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorSpi){
+    private  ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorDescriptor){
         this(appContext, title, helpID);
-        this.operatorSpi = operatorSpi;
+        this.operatorDescriptor = operatorDescriptor;
 
-        propertyContainer = PropertyContainer.createObjectBacked(operatorSpi);
+        propertyContainer = PropertyContainer.createObjectBacked(operatorDescriptor);
         ProductIOPlugInManager registry = ProductIOPlugInManager.getInstance();
-        propertyContainer.getDescriptor("processingWriter").setValueSet(new ValueSet(registry.getAllProductWriterFormatStrings()));
+        String[] writers = registry.getAllProductWriterFormatStrings();
+        Arrays.sort(writers);
+        propertyContainer.getDescriptor("processingWriter").setValueSet(new ValueSet(writers));
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
-        java.util.List<String> tollboxSpis = new ArrayList<String>();
+        java.util.List<String> toolboxSpis = new ArrayList<String>();
         spis.stream().filter(p -> p instanceof S2tbxToolAdapterOpSpi && ((S2tbxToolAdapterOpSpi) p).getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
-                forEach(operator -> tollboxSpis.add(operator.getOperatorDescriptor().getName()));
-        propertyContainer.getDescriptor("preprocessingExternalTool").setValueSet(new ValueSet(tollboxSpis.toArray(new String[tollboxSpis.size()])));
+                forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getName()));
+        toolboxSpis.sort(Comparator.<String>naturalOrder());
+        propertyContainer.getDescriptor("preprocessingExternalTool").setValueSet(new ValueSet(toolboxSpis.toArray(new String[toolboxSpis.size()])));
 
         bindingContext = new BindingContext(propertyContainer);
     }
 
-    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorSpi, boolean operatorIsNew) {
-        this(appContext, title, helpID, operatorSpi);
+    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
+        this(appContext, title, helpID, operatorDescriptor);
         this.operatorIsNew = operatorIsNew;
         this.newNameIndex = -1;
         setContent(createMainPanel());
         //getJDialog().setMaximumSize(new Dimension(400, 400));
+        getJDialog().setResizable(false);
     }
 
-    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorSpi, int newNameIndex) {
-        this(appContext, title, helpID, operatorSpi);
+    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorDescriptor, int newNameIndex) {
+        this(appContext, title, helpID, operatorDescriptor);
         this.newNameIndex = newNameIndex;
         if(this.newNameIndex >= 1){
             this.operatorIsNew = true;
@@ -86,6 +87,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         }
         setContent(createMainPanel());
         //getJDialog().setMaximumSize(new Dimension(400, 400));
+        getJDialog().setResizable(false);
     }
 
     private JPanel createSystemPropertiesPanel(){
@@ -97,19 +99,19 @@ public class ExternalToolEditorDialog extends ModelessDialog{
     private JPanel createOperatorDescriptorPanel() {
 
         GridBagLayout layout = new GridBagLayout();
-        layout.columnWidths = new int[]{100, 300};
+        layout.columnWidths = new int[]{100, 340};
 
         final JPanel descriptorPanel = new JPanel(layout);
 
         TextFieldEditor textEditor = new TextFieldEditor();
-        PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(operatorSpi);
+        PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(operatorDescriptor);
         BindingContext bindingContext = new BindingContext(propertyContainer);
 
         descriptorPanel.add(new JLabel("Alias:"), getConstraints(0, 0));
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("alias");
         JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         if (this.newNameIndex >= 1) {
-            ((JTextField) editorComponent).setText(operatorSpi.getAlias() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
+            ((JTextField) editorComponent).setText(operatorDescriptor.getAlias() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
         }
         descriptorPanel.add(editorComponent, getConstraints(0, 1));
 
@@ -117,7 +119,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         propertyDescriptor = propertyContainer.getDescriptor("name");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         if (this.newNameIndex >= 1) {
-            ((JTextField) editorComponent).setText(operatorSpi.getName() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
+            ((JTextField) editorComponent).setText(operatorDescriptor.getName() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
         }
         descriptorPanel.add(editorComponent, getConstraints(1, 1));
 
@@ -148,7 +150,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
         TitledBorder title = BorderFactory.createTitledBorder("Operator Descriptor");
         descriptorPanel.setBorder(title);
-        descriptorPanel.setPreferredSize(new Dimension(350, 200));
+        descriptorPanel.setPreferredSize(new Dimension(440, 200));
 
         return descriptorPanel;
     }
@@ -171,7 +173,6 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         processingPanel.setLayout(new BorderLayout());
         //processingPanel.setPreferredSize(new Dimension(600, 230));
         //processingPanel.setMaximumSize(new Dimension(600, 230));
-        processingPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
         JPanel preprocessingPanel = new JPanel();
         preprocessingPanel.setLayout(new GridLayout(2, 1, 5, 5));
@@ -182,7 +183,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
         JPanel panelLeft = new JPanel(new FlowLayout());
-        panelLeft.add(createCheckboxComponent("preprocessTool", editorComponent));
+        panelLeft.add(createCheckboxComponent("preprocessTool", editorComponent, operatorDescriptor.getPreprocessTool()));
         panelLeft.add(new JLabel("Preprocessing tool:"));
 
         JPanel panelPreprocessingTool = new JPanel(new BorderLayout());
@@ -195,7 +196,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
         panelLeft = new JPanel(new FlowLayout());
-        panelLeft.add(createCheckboxComponent("writeForProcessing", editorComponent));
+        panelLeft.add(createCheckboxComponent("writeForProcessing", editorComponent, operatorDescriptor.getWriteForProcessing()));
         panelLeft.add(new JLabel("Write before processing using:"));
 
         JPanel panelProcessingWriter = new JPanel(new BorderLayout());
@@ -236,7 +237,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
         templateContent = new JTextArea("err in log", 15, 20);
         try {
-            templateContent.setText(S2tbxToolAdapterIO.readOperatorTemplate(operatorSpi.getName()));
+            templateContent.setText(S2tbxToolAdapterIO.readOperatorTemplate(operatorDescriptor.getName()));
         } catch (IOException e) {
             e.printStackTrace();
             //TODO log error
@@ -267,13 +268,14 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         return processingPanel;
     }
 
-    private JComponent createCheckboxComponent(String memberName, JComponent toogleComponentEnabled){
+    private JComponent createCheckboxComponent(String memberName, JComponent toogleComponentEnabled, Boolean value){
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(memberName);
         PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
         if(editorComponent instanceof JCheckBox && toogleComponentEnabled != null){
-            ((JCheckBox) editorComponent).setSelected(true);
+            ((JCheckBox) editorComponent).setSelected(value);
+            toogleComponentEnabled.setEnabled(value);
             ((JCheckBox) editorComponent).addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -293,8 +295,8 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         toolDescriptorPanel.add(createProcessingPanel(), BorderLayout.CENTER);
         //toolDescriptorPanel.add(topPanel, BorderLayout.PAGE_START);
 
-        JScrollPane tableScrollPane = new JScrollPane(new OperatorParametersTableNewModel(operatorSpi));
-        //JTable table = new JTable(new OperatorParametersTableNewModel(operatorSpi));
+        JScrollPane tableScrollPane = new JScrollPane(new OperatorParametersTableNewModel(operatorDescriptor));
+        //JTable table = new JTable(new OperatorParametersTableNewModel(operatorDescriptor));
         //JScrollPane tableScrollPane = new JScrollPane(table);
         tableScrollPane.setPreferredSize(new Dimension(500, 200));
         TitledBorder title = BorderFactory.createTitledBorder("Operator Parameters");
@@ -307,7 +309,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
     protected void onApply(){
         super.onApply();
         try {
-            S2tbxToolAdapterIO.saveAndRegisterOperator(operatorSpi,
+            S2tbxToolAdapterIO.saveAndRegisterOperator(operatorDescriptor,
                     templateContent.getText());
         } catch (IOException e) {
             e.printStackTrace();

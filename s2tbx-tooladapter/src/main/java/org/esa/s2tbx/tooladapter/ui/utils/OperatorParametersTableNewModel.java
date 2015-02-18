@@ -1,6 +1,5 @@
 package org.esa.s2tbx.tooladapter.ui.utils;
 
-import com.bc.ceres.swing.actions.DeleteAction;
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxParameterDescriptor;
@@ -13,9 +12,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.Console;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,7 +135,7 @@ public class OperatorParametersTableNewModel extends JTable {
                     break;
                 default:
                     try {
-                        descriptor.setAttribute(columnsMembers[columnIndex], aValue.toString());
+                        descriptor.setAttribute(columnsMembers[columnIndex], aValue == null? null : aValue.toString());
                     } catch (PropertyAttributeException e) {
                         e.printStackTrace();
                         //TODO

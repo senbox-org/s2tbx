@@ -3,8 +3,8 @@ package org.esa.s2tbx.tooladapter.ui;
 import com.bc.ceres.binding.PropertySet;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.OperatorSpi;
+import org.esa.beam.framework.gpf.S2tbxToolAdapterOp;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.DefaultOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.beam.framework.ui.AppContext;
@@ -13,7 +13,6 @@ import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterDialog;
-import org.esa.beam.framework.gpf.S2tbxToolAdapterOp;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterOpSpi;
 import org.esa.s2tbx.tooladapter.ui.utils.OperatorsTableModel;
 
@@ -133,11 +132,10 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
 
     private JTable getOperatorsTable() {
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
-        java.util.List<S2tbxOperatorDescriptor> tollboxSpis = new ArrayList<S2tbxOperatorDescriptor>();
+        java.util.List<S2tbxOperatorDescriptor> toolboxSpis = new ArrayList<S2tbxOperatorDescriptor>();
         spis.stream().filter(p -> p instanceof S2tbxToolAdapterOpSpi && ((S2tbxToolAdapterOpSpi) p).getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
-                forEach(operator -> tollboxSpis.add((S2tbxOperatorDescriptor)operator.getOperatorDescriptor()));
-
-        OperatorsTableModel model = new OperatorsTableModel(tollboxSpis);
+                forEach(operator -> toolboxSpis.add((S2tbxOperatorDescriptor)operator.getOperatorDescriptor()));
+        OperatorsTableModel model = new OperatorsTableModel(toolboxSpis);
         operatorsTable = new JTable(model);
         operatorsTable.getColumnModel().getColumn(0).setPreferredWidth(5);
         return operatorsTable;
