@@ -47,12 +47,12 @@ public class OperatorParametersTable extends JPanel{
         newButton.addActionListener(new NewPropertyActionListener(this));
 
         //List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
-        ParameterDescriptor[] data = operator.getParameterDescriptors();
-        for (ParameterDescriptor property : data) {
-            S2tbxParameterDescriptor newParamDescriptor = new S2tbxParameterDescriptor((DefaultParameterDescriptor)property);
-            operator.addParamDescriptor(newParamDescriptor);
-            PropertyUIDescriptor descriptor = PropertyUIDescriptor.buildUIDescriptor(newParamDescriptor, columnsMembers, operator, new DeleteActionListener(newParamDescriptor, this), callback);
-            propertiesUIDescriptorMap.put(newParamDescriptor, descriptor);
+        List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
+        for (S2tbxParameterDescriptor property : data) {
+            //S2tbxParameterDescriptor newParamDescriptor = new S2tbxParameterDescriptor((DefaultParameterDescriptor)property);
+            //operator.addParamDescriptor(newParamDescriptor);
+            PropertyUIDescriptor descriptor = PropertyUIDescriptor.buildUIDescriptor(property, columnsMembers, operator, new DeleteActionListener(property, this), null, callback);
+            propertiesUIDescriptorMap.put(property, descriptor);
         }
         errorLabel.setForeground(Color.RED);
 
@@ -353,7 +353,7 @@ public class OperatorParametersTable extends JPanel{
         //contextParam.getPropertySet().addProperty(property);
         operator.addParamDescriptor(descriptor);
 
-        PropertyUIDescriptor UIdescriptor = PropertyUIDescriptor.buildUIDescriptor((S2tbxParameterDescriptor) descriptor, OperatorParametersTable.columnsMembers, operator, new DeleteActionListener(descriptor, this), callback);
+        PropertyUIDescriptor UIdescriptor = PropertyUIDescriptor.buildUIDescriptor((S2tbxParameterDescriptor) descriptor, OperatorParametersTable.columnsMembers, operator, new DeleteActionListener(descriptor, this), null, callback);
         propertiesUIDescriptorMap.put(descriptor, UIdescriptor);
         if(this.isVisible()){
             rearrangeComponents();
@@ -403,14 +403,14 @@ public class OperatorParametersTable extends JPanel{
                     }
                     if (wrapper.propertyUIComponentsNeedsRevalidation()) {
                         //do something with table line corresponding to property!
-                        PropertyUIDescriptor descriptor = PropertyUIDescriptor.buildUIDescriptor(oldProp, columnsMembers, table.operator, new DeleteActionListener(oldProp, table), table.callback);
+                        PropertyUIDescriptor descriptor = PropertyUIDescriptor.buildUIDescriptor(oldProp, columnsMembers, table.operator, new DeleteActionListener(oldProp, table), null, table.callback);
                         table.propertiesUIDescriptorMap.put(oldProp, descriptor);
                         table.rearrangeComponents();
                     }
                     if (wrapper.contextUIComponentsNeedsRevalidation()) {
                         //do something with table line corresponding to property!
                         for (S2tbxParameterDescriptor property : table.operator.getS2tbxParameterDescriptors()) {
-                            PropertyUIDescriptor descriptor = PropertyUIDescriptor.buildUIDescriptor(property, columnsMembers, table.operator, new DeleteActionListener(property, table), table.callback);
+                            PropertyUIDescriptor descriptor = PropertyUIDescriptor.buildUIDescriptor(property, columnsMembers, table.operator, new DeleteActionListener(property, table), null, table.callback);
                             table.propertiesUIDescriptorMap.put(property, descriptor);
                             table.rearrangeComponents();
                         }

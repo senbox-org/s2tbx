@@ -4,9 +4,9 @@
 -->
 <operator>
     <!-- The name uniquely identifies the operator within BEAM -->
-    <name>org.esa.s2tbx.tooladapter.gdaladdo</name>
+    <name>org.esa.s2tbx.tooladapter.gdaladdo_velo</name>
     <!-- The alias is a more user-friendly name, e.g. to be used on the command line -->
-    <alias>gdaladdo</alias>
+    <alias>gdaladdo_velo</alias>
     <operatorClass>org.esa.beam.framework.gpf.S2tbxToolAdapterOp</operatorClass>
 
     <version>1.0</version>
@@ -31,7 +31,7 @@
 
     <workingDir>D:/Sentinel2_PROJECT/tmp</workingDir>
 
-    <templateFileLocation>gdaladdo-cmdLineTemplate.tpl</templateFileLocation>
+    <templateFileLocation>gdaladdo_velo-template.vm</templateFileLocation>
 
     <parameters>
         <parameter>

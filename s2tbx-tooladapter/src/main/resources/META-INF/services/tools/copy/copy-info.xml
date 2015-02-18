@@ -7,7 +7,7 @@
     <name>org.esa.s2tbx.tooladapter.copy</name>
     <!-- The alias is a more user-friendly name, e.g. to be used on the command line -->
     <alias>copy</alias>
-    <operatorClass>org.esa.s2tbx.tooladapter.S2tbxToolAdapterOp</operatorClass>
+    <operatorClass>org.esa.beam.framework.gpf.S2tbxToolAdapterOp</operatorClass>
 
     <version>1.0</version>
     <authors>CS Romania</authors>
@@ -29,9 +29,9 @@
 
     <mainToolFileLocation>C:/Windows/System32/cmd.exe</mainToolFileLocation>
 
-    <temporaryFolder>D:/Sentinel2_PROJECT/tmp</temporaryFolder>
+    <workingDir>D:/Sentinel2_PROJECT/tmp</workingDir>
 
-    <commandLineTemplate>copy-cmdLineTemplate.tpl</commandLineTemplate>
+    <templateFileLocation>copy-cmdLineTemplate.tpl</templateFileLocation>
 
     <parameters>
         <!--

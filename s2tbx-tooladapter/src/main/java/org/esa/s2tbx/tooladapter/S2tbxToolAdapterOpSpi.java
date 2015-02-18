@@ -83,7 +83,7 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
      * @throws OperatorException in case of an error
      */
     public static void registerModule(String toolName) throws OperatorException {
-        OperatorSpi operatorSpi = readOperatorFromFile(toolName);
+        OperatorSpi operatorSpi = S2tbxToolAdapterIO.readOperatorFromFile(toolName);
 
         String operatorName = operatorSpi.getOperatorDescriptor().getName() != null ? operatorSpi.getOperatorDescriptor().getName() : operatorSpi.getOperatorDescriptor().getAlias();
         if(GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operatorName) != null){
@@ -93,49 +93,5 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
         BeamLogManager.getSystemLogger().info(String.format("Tool operator '%s' registered!", toolName));
     }
 
-    public static OperatorSpi readOperatorFromFile(String toolName) throws  OperatorException{
-        final File toolModuleDir;
-        try {
-            //Look for the defined tool folder
-            Enumeration<URL> resources = RuntimeContext.getResources(S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + toolName);
-            if (!resources.hasMoreElements()) {
-                throw new OperatorException("No configuration data for tool: " + toolName);
-            }
-            toolModuleDir = new File(resources.nextElement().toURI());
-        } catch (IOException e) {
-            throw new OperatorException(e.getMessage());
-        } catch (URISyntaxException e) {
-            throw new OperatorException(e.getMessage());
-        }
-
-        if (!toolModuleDir.exists()) {
-            throw new OperatorException("Tool folder not found: " + toolModuleDir);
-        }
-
-        //Look for the descriptor
-        File toolInfoXmlFile = new File(toolModuleDir, toolName + S2tbxToolAdapterConstants.OPERATOR_FILE_SUFIX);
-        S2tbxOperatorDescriptor operatorDescriptor;
-        if (toolInfoXmlFile.exists()) {
-            operatorDescriptor = S2tbxOperatorDescriptor.fromXml(toolInfoXmlFile, S2tbxToolAdapterOpSpi.class.getClassLoader());
-        } else {
-            operatorDescriptor = new S2tbxOperatorDescriptor(toolName, S2tbxToolAdapterOp.class);
-            BeamLogManager.getSystemLogger().warning(String.format("Missing operator metadata file '%s'", toolInfoXmlFile));
-        }
-
-        S2tbxToolAdapterOpSpi operatorSpi = new S2tbxToolAdapterOpSpi(operatorDescriptor) {
-
-            @Override
-            public Operator createOperator() throws OperatorException {
-                S2tbxToolAdapterOp toolOperator = (S2tbxToolAdapterOp) super.createOperator();
-
-                toolOperator.setParameterDefaultValues();
-                toolOperator.setToolDescFolder(toolModuleDir.getPath());
-                toolOperator.setToolName(toolName);
-                return toolOperator;
-            }
-        };
-        return operatorSpi;
-
-    }
 
 }

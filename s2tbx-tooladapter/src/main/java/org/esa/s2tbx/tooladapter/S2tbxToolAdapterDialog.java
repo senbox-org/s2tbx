@@ -3,6 +3,7 @@ package org.esa.s2tbx.tooladapter;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.Operator;
+import org.esa.beam.framework.gpf.S2tbxToolAdapterOp;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.framework.gpf.ui.OperatorMenu;
 import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;

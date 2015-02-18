@@ -1,19 +1,21 @@
-package org.esa.s2tbx.tooladapter;
+package org.esa.beam.framework.gpf;
 
+import com.bc.ceres.binding.Property;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.gpf.Operator;
-import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.s2tbx.tooladapter.ProcessOutputConsumer;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
-import org.geotools.xml.xsi.XSISimpleTypes;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -219,6 +221,9 @@ public class S2tbxToolAdapterOp extends Operator {
                 this.stop = false;
             }
 
+            //transform velocity template
+
+
             //create the process builder object
             //ProcessBuilder pb = new ProcessBuilder(S2tbxToolAdapterOp.this.tool.getToolWithCommandLine());
             List<String> cmdLine = getToolCommandLine();
@@ -354,7 +359,7 @@ public class S2tbxToolAdapterOp extends Operator {
         }
 
         //Get the tool's working directory
-        this.toolWorkingDirectory = ((S2tbxOperatorDescriptor)(getSpi().getOperatorDescriptor())).getTemporaryFolder();
+        this.toolWorkingDirectory = ((S2tbxOperatorDescriptor)(getSpi().getOperatorDescriptor())).getWorkingDir();
         if (this.toolWorkingDirectory == null) {
             throw new OperatorException("Tool working directory not defined!");
         }
@@ -373,19 +378,24 @@ public class S2tbxToolAdapterOp extends Operator {
      * @throws org.esa.beam.framework.gpf.OperatorException in case of an error.
      */
     private List<String> getToolCommandLine() throws OperatorException {
-        final List<String> ret = new ArrayList<String>();
+        String cmdLineFileName = ((S2tbxOperatorDescriptor) (getSpi().getOperatorDescriptor())).getTemplateFileLocation();
+        if (cmdLineFileName.endsWith(S2tbxToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX)) {
+            String result = transformVelocityTemplate(this.toolDescFolder + File.pathSeparator + cmdLineFileName);
+            return Arrays.asList(result.split("\n"));
+        } else {
+            final List<String> ret = new ArrayList<String>();
 
-        //the first element is always the tool file
-        ret.add(this.toolFile.getAbsolutePath());
+            //the first element is always the tool file
+            ret.add(this.toolFile.getAbsolutePath());
 
-        //get the command line parameter
-        final String cmdLineFileName = ((S2tbxOperatorDescriptor)(getSpi().getOperatorDescriptor())).getCommandLineTemplate();
-        if (cmdLineFileName != null) {
-            ret.addAll(getCommandLineParameters(cmdLineFileName));
+            //get the command line parameter
+            if (cmdLineFileName != null) {
+                ret.addAll(getCommandLineParameters(cmdLineFileName));
+            }
+
+            //return the list
+            return ret;
         }
-
-        //return the list
-        return ret;
     }
 
     /** Get the list of command line parameters.
@@ -476,5 +486,24 @@ public class S2tbxToolAdapterOp extends Operator {
         }
 
         return result;
+    }
+
+    public String transformVelocityTemplate(String templateFile){
+        /*  first, get and initialize an engine  */
+        VelocityEngine ve = new VelocityEngine();
+        ve.init();
+        /*  next, get the Template  */
+        Template t = ve.getTemplate( "helloworld.vm" );
+        /*  create a context and add data */
+        VelocityContext velContext = new VelocityContext();
+        Property[] params = context.getParameterSet().getProperties();
+        for(int i = 0; i < params.length; i++ ) {
+            velContext.put(params[i].getName(), params[i].getValue().toString());
+        }
+               /* now render the template into a StringWriter */
+        StringWriter writer = new StringWriter();
+        t.merge( velContext, writer );
+        /* show the World */
+        return writer.toString();
     }
 }
