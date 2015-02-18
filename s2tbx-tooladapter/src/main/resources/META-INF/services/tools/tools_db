@@ -3,3 +3,4 @@
 #Lines starting with # are comments and are ignored
 copy
 gdaladdo
+gdaladdo_velo

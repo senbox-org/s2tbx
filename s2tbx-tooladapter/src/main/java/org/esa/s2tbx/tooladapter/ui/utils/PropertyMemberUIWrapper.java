@@ -1,17 +1,11 @@
 package org.esa.s2tbx.tooladapter.ui.utils;
 
-import com.bc.ceres.binding.Property;
-import com.bc.ceres.binding.PropertyDescriptor;
-import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxParameterDescriptor;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.beans.Introspector;
-import java.lang.reflect.Method;
 
 /**
  * Created by ramonag on 1/22/2015.

@@ -1,11 +1,13 @@
 package org.esa.s2tbx.tooladapter.ui.utils;
 
-import com.bc.ceres.binding.*;
+import com.bc.ceres.binding.PropertyDescriptor;
+import com.bc.ceres.binding.PropertySet;
+import com.bc.ceres.binding.ValueRange;
+import com.bc.ceres.binding.ValueSet;
 import com.bc.ceres.binding.converters.ArrayConverter;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyEditor;
 import com.bc.ceres.swing.binding.PropertyEditorRegistry;
-import com.sun.javaws.jnl.PropertyDesc;
 import org.apache.commons.lang.StringUtils;
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
@@ -14,8 +16,6 @@ import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.FocusListener;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.regex.Pattern;
 
