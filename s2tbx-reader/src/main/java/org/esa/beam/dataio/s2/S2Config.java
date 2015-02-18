@@ -17,6 +17,7 @@ public interface S2Config {
      */
 
     String OPJ_DECOMPRESSOR_EXE = JpegUtils.getExecutable(L1cMetadataProc.tryGetModulesDir());
+    String OPJ_INFO_EXE = JpegUtils.getInfoExecutable(L1cMetadataProc.tryGetModulesDir());
 
     int DEFAULT_JAI_TILE_SIZE = 512;
 

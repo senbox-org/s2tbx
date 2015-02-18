@@ -2,6 +2,8 @@ package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
+import jp2.AEmptyListener;
+import jp2.CodeStreamUtils;
 import jp2.TileLayout;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.dataio.Utils;
@@ -14,7 +16,12 @@ import org.geotools.geometry.Envelope2D;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
@@ -205,9 +212,21 @@ class L1cTileOpImage extends SingleBandedOpImage {
         } catch (Exception e) {
             logger.severe(Utils.getStackTrace(e));
         }
+
+        TileLayout myLayout = null;
+
+        try {
+            myLayout = CodeStreamUtils.getTileLayout(S2Config.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
+        }
+        catch (Exception iae)
+        {
+            // critical fill with another kind of black (create a new S2L2AConfig constant)
+            logger.severe("No output file generated");
+            Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
+            return;
+        }
+
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
-
-
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
         if (!outputFile0.exists()) {

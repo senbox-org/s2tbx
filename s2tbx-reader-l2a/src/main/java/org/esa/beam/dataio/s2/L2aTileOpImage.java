@@ -216,17 +216,19 @@ class L2aTileOpImage extends SingleBandedOpImage {
 
         logger.warning("Processing file: " + imageFile.getName());
 
-        // critical here goes the real analysis of jpeg2k file, move jpeg handling code to s2tbx-commons
+        // critical change other OpImage implementations
 
         TileLayout myLayout = null;
-        boolean decodingProblemSuspscted = false;
 
         try {
             myLayout = CodeStreamUtils.getTileLayout(S2L2AConfig.OPJ_INFO_EXE, imageFile.toURI(), new BoxListener());
         }
         catch (Exception iae)
         {
-            decodingProblemSuspscted = true;
+            // critical fill with another kind of black (create a new S2L2AConfig constant)
+            logger.severe("No output file generated");
+            Arrays.fill(tileData, S2L2AConfig.FILL_CODE_NO_FILE);
+            return;
         }
 
 
@@ -406,7 +408,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
                             tileData[y * tileWidth + x] = S2L2AConfig.FILL_CODE_OUT_OF_X_BOUNDS;
                         }
                     }
-                    for (int y = intersection.height; y < tileWidth; y++) {
+                    for (int y = intersection.height; y < tileHeight; y++) {
                         for (int x = 0; x < tileWidth; x++) {
                             tileData[y * tileWidth + x] = S2L2AConfig.FILL_CODE_OUT_OF_Y_BOUNDS;
                         }

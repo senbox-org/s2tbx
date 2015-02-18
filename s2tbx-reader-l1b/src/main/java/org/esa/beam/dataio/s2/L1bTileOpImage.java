@@ -91,9 +91,9 @@ class L1bTileOpImage extends SingleBandedOpImage {
     }
 
     static PlanarImage createGenericScaledImage(PlanarImage sourceImage, Envelope2D sceneEnvelope, S2L1bSpatialResolution resolution, int level) {
-        BeamLogManager.getSystemLogger().warning("Asking for scaled mosaic image: " + resolution.toString());
-        BeamLogManager.getSystemLogger().warning("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
-        BeamLogManager.getSystemLogger().warning("TargetImage:" + sceneEnvelope.getWidth() + ", " + sceneEnvelope.getHeight());
+        BeamLogManager.getSystemLogger().fine("Asking for scaled mosaic image: " + resolution.toString());
+        BeamLogManager.getSystemLogger().fine("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
+        BeamLogManager.getSystemLogger().fine("TargetImage:" + sceneEnvelope.getWidth() + ", " + sceneEnvelope.getHeight());
 
         int targetWidth = L1bTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getWidth() / (S2L1bSpatialResolution.R10M.resolution)), level);
         int targetHeight = L1bTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getHeight() / (S2L1bSpatialResolution.R10M.resolution)), level);
@@ -207,9 +207,23 @@ class L1bTileOpImage extends SingleBandedOpImage {
         } catch (Exception e) {
             logger.severe(Utils.getStackTrace(e));
         }
+
+
+        TileLayout myLayout = null;
+
+        try {
+            myLayout = CodeStreamUtils.getTileLayout(S2L1bConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
+        }
+        catch (Exception iae)
+        {
+            // critical fill with another kind of black (create a new S2L2AConfig constant)
+            logger.severe("No output file generated");
+            Arrays.fill(tileData, S2L1bConfig.FILL_CODE_NO_FILE);
+            return;
+        }
+
+
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
-
-
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
         if (!outputFile0.exists()) {
@@ -285,7 +299,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         // fixme Add redirectors...
         final Process process = builder.inheritIO().directory(cacheDir).start();
 
-        // fixme Get REAL jpeg signature, and log "unexpected" tiles...
+        // critical Get REAL jpeg signature, and log "unexpected" tiles...
         Set<TileLayout> typeTiles = new HashSet<TileLayout>();
         Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
         Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);

@@ -2,6 +2,7 @@ package org.esa.beam.dataio.s2;
 
 import jp2.TileLayout;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.openjpeg.JpegUtils;
 
 import java.awt.image.DataBuffer;
 import java.util.HashMap;
@@ -23,7 +24,8 @@ public interface S2L1bConfig {
     String LOG_JPEG = DEBUG ? "INFO" : "FINEST";
     String LOG_SCENE = DEBUG ? "INFO" : "FINEST";
 
-    String OPJ_DECOMPRESSOR_EXE = L1bMetadataProc.getExecutable();
+    String OPJ_DECOMPRESSOR_EXE = JpegUtils.getExecutable(L1bMetadataProc.tryGetModulesDir());
+    String OPJ_INFO_EXE = JpegUtils.getInfoExecutable(L1bMetadataProc.tryGetModulesDir());
 
     // fixme add Path to opj_dump
 
