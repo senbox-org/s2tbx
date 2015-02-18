@@ -3,11 +3,13 @@ package org.esa.s2tbx.tooladapter.ui;
 import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.ValueSet;
+import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyEditor;
 import com.bc.ceres.swing.binding.PropertyEditorRegistry;
 import com.bc.ceres.swing.binding.internal.TextFieldEditor;
 import org.esa.beam.framework.dataio.ProductIOPlugInManager;
+import org.esa.beam.framework.dataio.ProductWriterPlugIn;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
@@ -17,17 +19,18 @@ import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterIO;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterOpSpi;
+import org.esa.s2tbx.tooladapter.ui.utils.OperatorParametersTable;
 import org.esa.s2tbx.tooladapter.ui.utils.OperatorParametersTableNewModel;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -55,15 +58,12 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
         propertyContainer = PropertyContainer.createObjectBacked(operatorSpi);
         ProductIOPlugInManager registry = ProductIOPlugInManager.getInstance();
-        String[] writers = registry.getAllProductWriterFormatStrings();
-        Arrays.sort(writers);
-        propertyContainer.getDescriptor("processingWriter").setValueSet(new ValueSet(writers));
+        propertyContainer.getDescriptor("processingWriter").setValueSet(new ValueSet(registry.getAllProductWriterFormatStrings()));
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
-        java.util.List<String> toolboxSpis = new ArrayList<String>();
+        java.util.List<String> tollboxSpis = new ArrayList<String>();
         spis.stream().filter(p -> p instanceof S2tbxToolAdapterOpSpi && ((S2tbxToolAdapterOpSpi) p).getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
-                forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getName()));
-        toolboxSpis.sort(Comparator.<String>naturalOrder());
-        propertyContainer.getDescriptor("preprocessingExternalTool").setValueSet(new ValueSet(toolboxSpis.toArray(new String[toolboxSpis.size()])));
+                forEach(operator -> tollboxSpis.add(operator.getOperatorDescriptor().getName()));
+        propertyContainer.getDescriptor("preprocessingExternalTool").setValueSet(new ValueSet(tollboxSpis.toArray(new String[tollboxSpis.size()])));
 
         bindingContext = new BindingContext(propertyContainer);
     }
