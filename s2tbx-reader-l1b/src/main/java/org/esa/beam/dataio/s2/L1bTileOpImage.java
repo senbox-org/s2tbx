@@ -168,7 +168,10 @@ class L1bTileOpImage extends SingleBandedOpImage {
     }
 
     @Override
-    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
+    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect)
+    {
+        // critical debug this part only for the last tile of each detector...
+
         final DataBufferUShort dataBuffer = (DataBufferUShort) dest.getDataBuffer();
         final short[] tileData = dataBuffer.getData();
 
@@ -222,6 +225,16 @@ class L1bTileOpImage extends SingleBandedOpImage {
             return;
         }
 
+        // critical fix for last tile of each detector
+        Set<TileLayout> typeTiles = new HashSet<TileLayout>();
+        Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
+        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
+
+        if(!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout))
+        {
+            logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
+            S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
+        }
 
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
@@ -246,7 +259,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         }
 
         try {
-            //System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
+            logger.finer(String.format("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
         } catch (IOException e) {
             logger.severe("Failed to read uncompressed file data: " + Utils.getStackTrace(e));
@@ -293,24 +306,8 @@ class L1bTileOpImage extends SingleBandedOpImage {
                     "-t", tileIndex + "");
         }
 
-        // fixme change log level
-        logger.warning(builder.command().toString());
-
-        // fixme Add redirectors...
+        // critical Remove direct call to process, and capture output for futher analysis if necessary
         final Process process = builder.inheritIO().directory(cacheDir).start();
-
-        // critical Get REAL jpeg signature, and log "unexpected" tiles...
-        Set<TileLayout> typeTiles = new HashSet<TileLayout>();
-        Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
-        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
-
-        TileLayout myLayout = CodeStreamUtils.getTileLayout(imageFile.toURI(), new AEmptyListener());
-
-        if(!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout))
-        {
-            logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
-            S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
-        }
 
         try {
             final int exitCode = process.waitFor();

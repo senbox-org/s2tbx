@@ -230,7 +230,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
         if (!outputFile0.exists()) {
-            //System.out.printf("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
+            logger.finest(String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
             } catch (IOException e)
@@ -249,7 +249,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
         }
 
         try {
-            //System.out.printf("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY);
+            logger.finest(String.format("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
         } catch (IOException e) {
             logger.severe("Failed to read uncompressed file data: " + Utils.getStackTrace(e));
