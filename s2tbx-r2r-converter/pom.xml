@@ -9,6 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <version>1.0.3</version>
     <artifactId>s2tbx-r2r-converter</artifactId>
 
     <dependencies>
