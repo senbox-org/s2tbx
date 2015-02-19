@@ -223,6 +223,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         topConfigPanel.add(panelToolLocation);
 
         propertyDescriptor = propertyContainer.getDescriptor("workingDir");
+        propertyDescriptor.setAttribute("directory", true);
         editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
