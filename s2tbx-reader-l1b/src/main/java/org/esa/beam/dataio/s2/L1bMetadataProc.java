@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import static org.esa.beam.dataio.s2.CoordinateUtils.as3DCoordinates;
 
@@ -349,8 +350,8 @@ public class L1bMetadataProc {
             tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
             if ((gpos.getNROWS() - (pos / ratio)) < S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height)
             {
-                // fixme remove log
-                BeamLogManager.getSystemLogger().warning("TODO: Test if we need extra processing here");
+                // critical remove log
+                BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_DEBUG), "Test if we need extra processing here");
             }
 
             tgeox.numRowsDetector = gpos.getNROWS();

@@ -563,8 +563,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         public abstract MultiLevelImage createSourceImage(TileBandInfo tileBandInfo);
     }
 
-    private class L1cTileMultiLevelImageFactory extends MultiLevelImageFactory {
-        private L1cTileMultiLevelImageFactory(AffineTransform imageToModelTransform) {
+    private class L1bTileMultiLevelImageFactory extends MultiLevelImageFactory {
+        private L1bTileMultiLevelImageFactory(AffineTransform imageToModelTransform) {
             super(imageToModelTransform);
         }
 
@@ -604,8 +604,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         public L1bTileMultiLevelSource(TileBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(tileBandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
-                                             L1B_TILE_LAYOUTS[0].width, //todo we must use data from jp2 files to update this
-                                             L1B_TILE_LAYOUTS[0].height)); //todo we must use data from jp2 files to update this
+                                             L1B_TILE_LAYOUTS[0].width, //fixme we must use data from jp2 files to update this
+                                             L1B_TILE_LAYOUTS[0].height)); //fixme we must use data from jp2 files to update this
             this.tileBandInfo = tileBandInfo;
         }
 
@@ -647,6 +647,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
      */
     private final class BandL1bSceneMultiLevelSource extends AbstractL1bSceneMultiLevelSource {
         private final TileBandInfo tileBandInfo;
+
+        // critical remove Memory profilers
         // private MemoryMeter meter;
 
         public BandL1bSceneMultiLevelSource(L1bSceneDescription sceneDescription, TileBandInfo tileBandInfo, AffineTransform imageToModelTransform) {

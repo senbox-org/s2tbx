@@ -14,10 +14,17 @@ import org.esa.beam.util.ImageUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
+import org.openjpeg.CommandOutput;
+import org.openjpeg.JpegUtils;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
@@ -28,7 +35,12 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -307,13 +319,18 @@ class L1bTileOpImage extends SingleBandedOpImage {
         }
 
         // critical Remove direct call to process, and capture output for futher analysis if necessary
-        final Process process = builder.inheritIO().directory(cacheDir).start();
+        builder = builder.directory(cacheDir);
 
         try {
-            final int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                logger.severe("Failed to uncompress tile: " + imageFile.getPath() + ", exitCode = " + exitCode);
-                logger.severe("Failed command was: " + builder.command().toString() );
+
+            CommandOutput result = JpegUtils.runProcess(builder);
+
+            final int exitCode = result.getErrorCode();
+            if (exitCode != 0)
+            {
+                logger.severe(String.format("Failed to uncompress tile: %s, exitCode = %d, command = [%s], command stdoutput = [%s], command stderr = [%s]", imageFile.getPath(), exitCode, builder.command().toString(), result.getTextOutput(), result.getErrorOutput() ));
+                // logger.severe("Failed to uncompress tile: " + imageFile.getPath() + ", exitCode = " + exitCode);
+                // logger.severe("Failed command was: " + builder.command().toString() );
             }
         } catch (InterruptedException e) {
             logger.severe("Process was interrupted, InterruptedException: " + e.getMessage());
