@@ -1,12 +1,14 @@
 package org.esa.s2tbx.tooladapter;
 
+import java.io.File;
+
 /**
  * @author Lucian Barbulescu.
  */
 public interface S2tbxToolAdapterConstants {
 
     /** The root folder for the tool adapter descriptors. */
-    public static final String TOOL_ADAPTER_REPO = "META-INF/services/tools/";
+    public static final String TOOL_ADAPTER_REPO = "META-INF" + File.separator + "services" + File.separator + "tools" + File.separator;
 
     /** The name of the file that contains the list of registered tools. */
     public static final String TOOL_ADAPTER_DB = "tools_db";

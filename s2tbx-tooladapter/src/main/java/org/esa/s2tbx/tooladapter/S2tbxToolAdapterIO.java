@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 
@@ -124,5 +125,9 @@ public class S2tbxToolAdapterIO {
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(toolName);
         String templateFile = ((S2tbxOperatorDescriptor)spi.getOperatorDescriptor()).getTemplateFileLocation();
         return new File(basePath, S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + spi.getOperatorAlias() + File.separator + templateFile);
+    }
+
+    public static String getAbsolutePath(String relativeToolFileLocation){
+        return new File(basePath + File.separator + S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO, relativeToolFileLocation).getAbsolutePath();
     }
 }

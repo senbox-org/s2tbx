@@ -137,7 +137,9 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
                 forEach(operator -> toolboxSpis.add((S2tbxOperatorDescriptor)operator.getOperatorDescriptor()));
         OperatorsTableModel model = new OperatorsTableModel(toolboxSpis);
         operatorsTable = new JTable(model);
-        operatorsTable.getColumnModel().getColumn(0).setPreferredWidth(5);
+        operatorsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        operatorsTable.getColumnModel().getColumn(0).setPreferredWidth(2);
+        operatorsTable.getColumnModel().getColumn(0).setPreferredWidth(10);
         return operatorsTable;
     }
 

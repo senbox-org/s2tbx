@@ -71,6 +71,7 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
                 try {
                     registerModule(line);
                 } catch (OperatorException e) {
+                    e.printStackTrace();
                     BeamLogManager.getSystemLogger().warning(String.format("Invalid Tool name entry in %s (line %d): %s", url, reader.getLineNumber(), line));
                     BeamLogManager.getSystemLogger().warning(String.format("Caused by an I/O problem: %s", e.getMessage()));
                 }

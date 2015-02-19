@@ -17,16 +17,6 @@
         The copy tool.
     </description>
 
-    <namedSourceProducts>
-        <!-- One or more source products can be specified.
-             In the GUI only one is currently supported. On the command line multiple source products
-             can be specified by referencing them with the here defined names.
-         -->
-        <sourceProduct>
-            <name>sourceProduct</name>
-        </sourceProduct>
-    </namedSourceProducts>
-
     <mainToolFileLocation>C:/Windows/System32/cmd.exe</mainToolFileLocation>
 
     <workingDir>D:/Sentinel2_PROJECT/tmp</workingDir>

@@ -17,15 +17,6 @@
         The gdal addo tool - builds or rebuilds overview images.
     </description>
 
-    <namedSourceProducts>
-        <!-- One or more source products can be specified.
-             In the GUI only one is currently supported. On the command line multiple source products
-             can be specified by referencing them with the here defined names.
-         -->
-        <sourceProduct>
-            <name>sourceProduct</name>
-        </sourceProduct>
-    </namedSourceProducts>
 
     <mainToolFileLocation>C:/Program Files/GDAL/gdaladdo.exe</mainToolFileLocation>
 

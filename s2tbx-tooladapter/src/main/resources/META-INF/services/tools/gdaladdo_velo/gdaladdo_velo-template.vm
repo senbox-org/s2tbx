@@ -1,4 +1,4 @@
 -r
 $resamplingAlgorithm
-$sourceProduct
+$sourceProduct.getFileLocation().getAbsolutePath()
 $levels

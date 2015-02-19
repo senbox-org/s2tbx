@@ -3,6 +3,7 @@ package org.esa.beam.framework.gpf;
 import com.bc.ceres.binding.Property;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.dataio.ProductReader;
@@ -12,12 +13,10 @@ import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.s2tbx.tooladapter.ProcessOutputConsumer;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
+import org.esa.s2tbx.tooladapter.S2tbxToolAdapterIO;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -325,7 +324,7 @@ public class S2tbxToolAdapterOp extends Operator {
         File input = (File)getParameter(S2tbxToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE_ID);
         if(input == null){
             //no target product, means the source product was changed
-            //TODO all input files should be loaded since we do not know which one was changed
+            //TODO all input files should be (re)-loaded since we do not know which one was changed
             input = getSourceProducts()[0].getFileLocation();
         }
         try {
@@ -378,24 +377,18 @@ public class S2tbxToolAdapterOp extends Operator {
      * @throws org.esa.beam.framework.gpf.OperatorException in case of an error.
      */
     private List<String> getToolCommandLine() throws OperatorException {
+        final List<String> ret = new ArrayList<String>();
+        ret.add(this.toolFile.getAbsolutePath());
         String cmdLineFileName = ((S2tbxOperatorDescriptor) (getSpi().getOperatorDescriptor())).getTemplateFileLocation();
         if (cmdLineFileName.endsWith(S2tbxToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX)) {
             String result = transformVelocityTemplate(this.toolDescFolder + File.separator + cmdLineFileName);
-            return Arrays.asList(result.split("\n"));
+            ret.addAll(Arrays.asList(result.split("\r\n")));
         } else {
-            final List<String> ret = new ArrayList<String>();
-
-            //the first element is always the tool file
-            ret.add(this.toolFile.getAbsolutePath());
-
-            //get the command line parameter
             if (cmdLineFileName != null) {
                 ret.addAll(getCommandLineParameters(cmdLineFileName));
             }
-
-            //return the list
-            return ret;
         }
+        return ret;
     }
 
     /** Get the list of command line parameters.
@@ -489,21 +482,24 @@ public class S2tbxToolAdapterOp extends Operator {
     }
 
     public String transformVelocityTemplate(String templateFile){
-        /*  first, get and initialize an engine  */
+        Properties p = new Properties() ;
+        p.setProperty("file.resource.loader.path", new File(templateFile).getParent());
+        Velocity.init(p);
         VelocityEngine ve = new VelocityEngine();
         ve.init();
-        /*  next, get the Template  */
-        Template t = ve.getTemplate( "helloworld.vm" );
-        /*  create a context and add data */
+        Template t = Velocity.getTemplate(new File(templateFile).getName());
         VelocityContext velContext = new VelocityContext();
         Property[] params = context.getParameterSet().getProperties();
         for(int i = 0; i < params.length; i++ ) {
             velContext.put(params[i].getName(), params[i].getValue().toString());
         }
-               /* now render the template into a StringWriter */
+        Product[] sourceProducts = getSourceProducts();
+        velContext.put(S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, sourceProducts[0]);
+        for(int i=0;i<sourceProducts.length;i++){
+            velContext.put(S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + (i+1), sourceProducts[i]);
+        }
         StringWriter writer = new StringWriter();
         t.merge( velContext, writer );
-        /* show the World */
         return writer.toString();
     }
 }

@@ -8,6 +8,7 @@ import org.esa.beam.framework.dataio.ProductWriter;
 import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.util.StringUtils;
+import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 
 import java.io.*;
 import java.net.URL;
@@ -53,7 +54,12 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
 
     private List<S2tbxParameterDescriptor> tbxParameterDescriptors = new ArrayList<S2tbxParameterDescriptor>();
 
-    S2tbxOperatorDescriptor(){super(null, null);}
+    S2tbxOperatorDescriptor(){
+        super(null, null);
+        this.sourceProductDescriptors = new DefaultSourceProductDescriptor[1];
+        this.sourceProductDescriptors[0] = new DefaultSourceProductDescriptor();
+        this.sourceProductDescriptors[0].name = S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID;
+    }
 
     public S2tbxOperatorDescriptor(DefaultOperatorDescriptor obj){
         super(obj.getName(), obj.getOperatorClass());
@@ -441,20 +447,20 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
 
         xStream.alias("operator", S2tbxOperatorDescriptor.class);
 
-        xStream.alias("sourceProduct", DefaultSourceProductDescriptor.class);
-        xStream.aliasField("namedSourceProducts", S2tbxOperatorDescriptor.class, "sourceProductDescriptors");
+        //xStream.alias("sourceProduct", DefaultSourceProductDescriptor.class);
+        //xStream.aliasField("namedSourceProducts", S2tbxOperatorDescriptor.class, "sourceProductDescriptors");
 
-        xStream.alias("sourceProducts", DefaultSourceProductsDescriptor.class);
-        xStream.aliasField("sourceProducts", S2tbxOperatorDescriptor.class, "sourceProductsDescriptor");
+        //xStream.alias("sourceProducts", DefaultSourceProductsDescriptor.class);
+        //xStream.aliasField("sourceProducts", S2tbxOperatorDescriptor.class, "sourceProductsDescriptor");
 
         xStream.alias("parameter", S2tbxParameterDescriptor.class);
         xStream.aliasField("parameters", S2tbxOperatorDescriptor.class, "tbxParameterDescriptors");
 
-        xStream.alias("targetProduct", DefaultTargetProductDescriptor.class);
-        xStream.aliasField("targetProduct", S2tbxOperatorDescriptor.class, "targetProductDescriptor");
+        //xStream.alias("targetProduct", DefaultTargetProductDescriptor.class);
+        //xStream.aliasField("targetProduct", S2tbxOperatorDescriptor.class, "targetProductDescriptor");
 
-        xStream.alias("targetProperty", DefaultTargetPropertyDescriptor.class);
-        xStream.aliasField("targetProperties", S2tbxOperatorDescriptor.class, "targetPropertyDescriptors");
+        //xStream.alias("targetProperty", DefaultTargetPropertyDescriptor.class);
+        //xStream.aliasField("targetProperties", S2tbxOperatorDescriptor.class, "targetPropertyDescriptors");
 
         xStream.alias("variable", S2tbxSystemVariable.class);
         xStream.aliasField("variables", S2tbxOperatorDescriptor.class, "variables");

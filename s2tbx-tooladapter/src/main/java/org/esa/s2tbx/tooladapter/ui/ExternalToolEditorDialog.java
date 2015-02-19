@@ -99,7 +99,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
     private JPanel createOperatorDescriptorPanel() {
 
         GridBagLayout layout = new GridBagLayout();
-        layout.columnWidths = new int[]{100, 340};
+        layout.columnWidths = new int[]{100, 315};
 
         final JPanel descriptorPanel = new JPanel(layout);
 
@@ -150,7 +150,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
         TitledBorder title = BorderFactory.createTitledBorder("Operator Descriptor");
         descriptorPanel.setBorder(title);
-        descriptorPanel.setPreferredSize(new Dimension(440, 200));
+        descriptorPanel.setPreferredSize(new Dimension(415, 200));
 
         return descriptorPanel;
     }
@@ -235,7 +235,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
         configPanel.add(topConfigPanel, BorderLayout.PAGE_START);
 
-        templateContent = new JTextArea("err in log", 15, 20);
+        templateContent = new JTextArea("err in log", 15, 15);
         try {
             templateContent.setText(S2tbxToolAdapterIO.readOperatorTemplate(operatorDescriptor.getName()));
         } catch (IOException e) {
