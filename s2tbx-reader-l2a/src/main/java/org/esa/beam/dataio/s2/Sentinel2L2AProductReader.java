@@ -203,10 +203,10 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                         String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + dependantFilePath + imageFound.getFileName() + ".jp2";
                         String fallbackImgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFound.getFileName() + ".jp2";
 
-                        logger.warning("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
 
                         File file = new File(productDir, imgFilename);
                         if (file.exists()) {
+                            logger.fine("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
                             tileFileMap.put(tile.id, file);
                         } else {
                             File fallback = new File(productDir, fallbackImgFilename);
@@ -583,7 +583,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                     logger.fine(String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
                 }
 
-                logger.fine(String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight() ));
+                logger.log(Level.parse(S2L2AConfig.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
                 tileImages.add(opImage);
             }
 
@@ -674,7 +674,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                         Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
 
-                logger.fine(String.format("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY()));
+                logger.log(Level.parse(S2L2AConfig.LOG_SCENE), String.format("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY()));
                 tileImages.add(opImage);
             }
 

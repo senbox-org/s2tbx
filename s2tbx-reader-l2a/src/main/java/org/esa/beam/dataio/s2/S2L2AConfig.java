@@ -22,6 +22,7 @@ public interface S2L2AConfig {
     // fixme parametrize log levels
     String LOG_JPEG = DEBUG ? "INFO" : "FINEST";
     String LOG_SCENE = DEBUG ? "FINE" : "FINEST";
+    String LOG_OPS = DEBUG ? "FINE" : "FINEST";
 
     //todo add Path to opj_dump
 

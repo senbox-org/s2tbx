@@ -214,7 +214,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
             logger.severe(Utils.getStackTrace(e));
         }
 
-        logger.warning("Processing file: " + imageFile.getName());
+        logger.fine("Processing file: " + imageFile.getName());
 
         // critical change other OpImage implementations
 
@@ -289,7 +289,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
         }
         else
         {
-            logger.warning("Writing to " + outputFile.getPath());
+            logger.fine("Writing to " + outputFile.getPath());
 
             builder = new ProcessBuilder(S2L2AConfig.OPJ_DECOMPRESSOR_EXE,
                     "-i", imageFile.getPath(),

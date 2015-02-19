@@ -260,7 +260,8 @@ public class L1bMetadata {
             Level1B_DataStrip theDataStrip = (Level1B_DataStrip) castedStrip;
             int numheaders = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header().size();
 
-            logger.warning(String.format("TODO: Recovered %d geometric headers.", numheaders));
+            // fixme remove log
+            logger.fine(String.format("Recovered %d geometric headers.", numheaders));
 
             List<AnglesGrid> sunGrid = new ArrayList<AnglesGrid>();
             List<AnglesGrid> incidenceGrid = new ArrayList<AnglesGrid>();

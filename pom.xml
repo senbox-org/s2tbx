@@ -34,6 +34,9 @@
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <outputdir>../../output</outputdir>
+        <netbeans.version>RELEASE802</netbeans.version>
+        <javahelp.version>2.0.05</javahelp.version>
+        <brandingToken>s2tbx</brandingToken>
     </properties>
 
     <repositories>

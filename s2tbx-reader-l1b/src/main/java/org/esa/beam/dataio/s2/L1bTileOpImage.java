@@ -295,7 +295,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         }
         else
         {
-            logger.warning("Writing to " + outputFile.getPath());
+            logger.fine("Writing to " + outputFile.getPath());
 
             Guardian.assertTrue("Image file exists", imageFile.exists());
 

@@ -708,12 +708,12 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                             (float) Math.floor((tileRectangle.y * factorY)),
                             Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
-                    logger.warning(String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
+                    logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
 
                     // postImage = meter.measureDeep(opImage);
                 }
 
-                logger.warning(String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight() ));
+                logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
                 tileImages.add(opImage);
             }
 
@@ -746,7 +746,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
                 int rightPad = destBounds.width - mosaicOp.getWidth();
                 int bottomPad = destBounds.height - mosaicOp.getHeight();
-                BeamLogManager.getSystemLogger().warning(String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
+                BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
 
                 mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
             }
@@ -755,13 +755,13 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             {
                 PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.wavebandInfo.resolution, level);
 
-                logger.warning(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
+                logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 
                 return scaled;
             }
             // todo add crop ?
 
-            logger.warning(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY(), mosaicOp.getWidth(), mosaicOp.getHeight()));
+            logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY(), mosaicOp.getWidth(), mosaicOp.getHeight()));
 
             return mosaicOp;
         }

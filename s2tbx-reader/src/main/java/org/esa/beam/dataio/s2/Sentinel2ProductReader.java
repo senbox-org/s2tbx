@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.esa.beam.dataio.s2.L1cMetadata.*;
@@ -435,7 +436,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         public MultiLevelImage createSourceImage(BandInfo bandInfo)
         {
             BandL1cSceneMultiLevelSource bandScene = new BandL1cSceneMultiLevelSource(sceneDescription, bandInfo, imageToModelTransform);
-            BeamLogManager.getSystemLogger().warning("BandScene: " + bandScene);
+            BeamLogManager.getSystemLogger().fine("BandScene: " + bandScene);
             return new DefaultMultiLevelImage(bandScene);
         }
     }
@@ -543,7 +544,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     logger.fine(String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
                 }
 
-                logger.fine(String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight() ));
+                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
                 tileImages.add(opImage);
             }
 
@@ -648,7 +649,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                         Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
 
-                logger.fine(String.format("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY()));
+                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY()));
                 tileImages.add(opImage);
             }
 
