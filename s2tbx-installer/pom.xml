@@ -45,14 +45,20 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-reader</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-l1b-reader</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.3</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-l2a-reader</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.3</version>
         </dependency>
 
         <dependency>
