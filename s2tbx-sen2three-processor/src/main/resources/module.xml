@@ -24,6 +24,10 @@
         <module>snap-ui</module>
         <optional>true</optional>
     </dependency>
+    <dependency>
+        <module>snap-visat-rcp</module>
+        <optional>true</optional>
+    </dependency>
 
     <categories>Application,Processor,Sentinel 2</categories>
 
