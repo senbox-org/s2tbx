@@ -18,7 +18,13 @@ import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleImageFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bProductFilename;
 import org.esa.beam.framework.dataio.AbstractProductReader;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.CrsGeoCoding;
+import org.esa.beam.framework.datamodel.GeoCoding;
+import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.framework.datamodel.TiePointGeoCoding;
+import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.Guardian;
 import org.esa.beam.util.SystemUtils;
@@ -29,7 +35,12 @@ import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
@@ -40,8 +51,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -49,8 +65,14 @@ import java.util.stream.Collectors;
 import static org.esa.beam.dataio.s2.CoordinateUtils.convertDoublesToFloats;
 import static org.esa.beam.dataio.s2.CoordinateUtils.getLatitudes;
 import static org.esa.beam.dataio.s2.CoordinateUtils.getLongitudes;
-import static org.esa.beam.dataio.s2.L1bMetadata.*;
-import static org.esa.beam.dataio.s2.S2L1bConfig.*;
+import static org.esa.beam.dataio.s2.L1bMetadata.ProductCharacteristics;
+import static org.esa.beam.dataio.s2.L1bMetadata.SpectralInformation;
+import static org.esa.beam.dataio.s2.L1bMetadata.Tile;
+import static org.esa.beam.dataio.s2.L1bMetadata.parseHeader;
+import static org.esa.beam.dataio.s2.S2L1bConfig.DEFAULT_JAI_TILE_SIZE;
+import static org.esa.beam.dataio.s2.S2L1bConfig.FILL_CODE_MOSAIC_BG;
+import static org.esa.beam.dataio.s2.S2L1bConfig.L1B_TILE_LAYOUTS;
+import static org.esa.beam.dataio.s2.S2L1bConfig.SAMPLE_PRODUCT_DATA_TYPE;
 
 // import org.github.jamm.MemoryMeter;
 
@@ -151,7 +173,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
     private void readMasks(Product p) {
         Assert.notNull(p);
-        // fixme Implement this method
+        // critical Implement this method
     }
 
     private Product getL1bMosaicProduct(File metadataFile) throws IOException {

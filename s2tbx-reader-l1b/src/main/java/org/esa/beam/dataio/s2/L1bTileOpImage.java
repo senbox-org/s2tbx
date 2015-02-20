@@ -292,7 +292,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = l1bTileLayout.numXTiles * jp2TileY + jp2TileX;
 
-
+        // critical replace waitFor
         ProcessBuilder builder = null;
         if(SystemUtils.IS_OS_WINDOWS)
         {
@@ -325,7 +325,6 @@ class L1bTileOpImage extends SingleBandedOpImage {
                     "-t", tileIndex + "");
         }
 
-        // critical Remove direct call to process, and capture output for futher analysis if necessary
         builder = builder.directory(cacheDir);
 
         try {

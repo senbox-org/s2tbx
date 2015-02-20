@@ -220,9 +220,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
         }
         catch (Exception iae)
         {
-            // critical fill with another kind of black (create a new S2L2AConfig constant)
-            logger.severe("No output file generated");
-            Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
+            Arrays.fill(tileData, S2Config.FILL_CODE_MOSAIC_BG);
             return;
         }
 
@@ -242,7 +240,6 @@ class L1cTileOpImage extends SingleBandedOpImage {
                 }
             }
             if (!outputFile0.exists()) {
-                logger.severe("No output file generated");
                 Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
                 return;
             }
@@ -263,7 +260,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = l1cTileLayout.numXTiles * jp2TileY + jp2TileX;
 
-
+        // critical replace waitFor
         ProcessBuilder builder = null;
         if(SystemUtils.IS_OS_WINDOWS)
         {
