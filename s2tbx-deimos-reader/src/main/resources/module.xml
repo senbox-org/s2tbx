@@ -36,15 +36,15 @@
         </action>
     </extension>
 
-<!--    <extension point="snap-core:rgbProfiles">
+    <extension point="snap-core:rgbProfiles">
         <rgbProfile>
-            <name>SPOT</name>
-            <red>XS1</red>
-            <green>XS2</green>
-            <blue>XS3</blue>
+            <name>DEIMOS-1</name>
+            <red>NIR</red>
+            <green>Red</green>
+            <blue>Green</blue>
         </rgbProfile>
     </extension>
-
+<!--
     <extension point="snap-ui:helpSets">
         <helpSet>
             <parent>snap-beam-help</parent>

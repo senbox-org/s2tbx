@@ -14,7 +14,7 @@ public class DeimosConstants {
     public static final String NODATA_VALUE = "nodata";
     public static final String SATURATED_VALUE = "SATURATED";
     public static final int UNIT_MULTIPLIER = 1000000000;
-    public static final String DEFAULT_BAND_NAME_PREFIX = "band_";
+    public static final String[] DEFAULT_BAND_NAMES = { "NIR", "Red", "Green" };
     public static final String DEFAULT_UNIT = "W/(m^2*sr*µm)";
     public static final String VALUE_NOT_AVAILABLE = "N/A";
     public static final String STRING_ZERO = "0";

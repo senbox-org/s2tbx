@@ -1,8 +1,8 @@
 package org.esa.beam.dataio.rapideye.nitf;
 
 import junit.framework.TestCase;
-import org.esa.beam.dataio.rapideye.TestUtil;
 import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 

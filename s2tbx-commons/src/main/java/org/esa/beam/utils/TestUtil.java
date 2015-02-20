@@ -1,4 +1,4 @@
-package org.esa.beam.dataio.rapideye;
+package org.esa.beam.utils;
 
 import org.apache.commons.lang.SystemUtils;
 
