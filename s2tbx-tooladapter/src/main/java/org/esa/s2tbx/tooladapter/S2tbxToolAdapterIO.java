@@ -7,9 +7,7 @@ import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.util.logging.BeamLogManager;
 import org.geotools.io.LineWriter;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -140,18 +138,22 @@ public class S2tbxToolAdapterIO {
             throw new IOException("No config file for external tools!");
         }
         File configFile = new File(resources.nextElement().toURI());
+
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
         java.util.List<String> toolboxSpis = new ArrayList<String>();
         spis.stream().filter(p -> p instanceof S2tbxToolAdapterOpSpi && ((S2tbxToolAdapterOpSpi) p).getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
                 forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getAlias()));
         toolboxSpis.sort(Comparator.<String>naturalOrder());
-        LineWriter writer = new LineWriter(new FileWriter(configFile));
-        for(int i=0;i<toolboxSpis.size();i++){
-            writer.write(toolboxSpis.get(i));
-            writer.write("\n");
+
+        try (
+        FileOutputStream fos = new FileOutputStream(configFile);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+        ){
+            for(int i=0;i<toolboxSpis.size();i++){
+                bw.write(toolboxSpis.get(i));
+                bw.newLine();
+            }
         }
-        writer.flush();
-        writer.close();
     }
 
     private static File getTemplateFile(String toolName) {

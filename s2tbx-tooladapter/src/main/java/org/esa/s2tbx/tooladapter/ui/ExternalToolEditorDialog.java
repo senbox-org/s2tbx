@@ -304,6 +304,16 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
     protected void onApply(){
         super.onApply();
+        if(operatorIsNew){
+            if(operatorDescriptor.getTemplateFileLocation() == null){
+                //TODO this is a dirty check, it should be a user option
+                if(templateContent.getText().contains("${")){
+                    operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + S2tbxToolAdapterConstants.TOOL_CMD_TEMPLATE_SUFIX);
+                } else {
+                    operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + S2tbxToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
+                }
+            }
+        }
         try {
             S2tbxToolAdapterIO.saveAndRegisterOperator(operatorDescriptor,
                     templateContent.getText());

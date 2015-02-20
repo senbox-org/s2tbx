@@ -37,4 +37,6 @@ public interface S2tbxToolAdapterConstants {
     public static String OPERATOR_FILE_SUFIX = "-info.xml";
 
     public static String TOOL_VELO_TEMPLATE_SUFIX = "-template.vm";
+
+    public static String TOOL_CMD_TEMPLATE_SUFIX = "-cmdLineTemplate.tpl";
 }

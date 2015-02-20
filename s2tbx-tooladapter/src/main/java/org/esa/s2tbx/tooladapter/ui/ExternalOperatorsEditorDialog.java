@@ -97,7 +97,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
                 close();
                 S2tbxOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
                 PropertySet propertySet = new OperatorParameterSupport(operatorDesc).getPropertySet();
-                ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Edit Tool", getHelpID(), operatorDesc, true);
+                ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Edit Tool", getHelpID(), operatorDesc, false);
                 dialog.show();
             }
         });
