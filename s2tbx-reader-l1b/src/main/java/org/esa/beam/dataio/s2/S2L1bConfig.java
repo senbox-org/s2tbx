@@ -40,6 +40,7 @@ public interface S2L1bConfig {
     short FILL_CODE_OUT_OF_X_BOUNDS = DEBUG ? (short) 2 : 0;
     short FILL_CODE_OUT_OF_Y_BOUNDS = DEBUG ? (short) 3 : 0;
     short FILL_CODE_MOSAIC_BG = DEBUG ? (short) 4 : 0;
+    short FILL_CODE_DEBUG = DEBUG ? (short) 1000 : 1000;
 
     short RAW_NO_DATA_THRESHOLD = DEBUG ? (short) 4 : (short) 1;
 

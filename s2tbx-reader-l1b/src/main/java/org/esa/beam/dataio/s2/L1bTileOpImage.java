@@ -192,9 +192,34 @@ class L1bTileOpImage extends SingleBandedOpImage {
         final int tileX = destRect.x / tileWidth;
         final int tileY = destRect.y / tileHeight;
 
+        int realInternalJpegIndex = l1bTileLayout.numXTiles * l1bTileLayout.numYTiles;
+
         if (tileWidth * tileHeight != tileData.length) {
             throw new IllegalStateException(String.format("tileWidth (=%d) * tileHeight (=%d) != tileData.length (=%d)",
                                                           tileWidth, tileHeight, tileData.length));
+        }
+
+        TileLayout myLayout = null;
+
+        try {
+            myLayout = CodeStreamUtils.getTileLayout(S2L1bConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
+            realInternalJpegIndex = myLayout.numXTiles * myLayout.numYTiles;
+        }
+        catch (Exception iae)
+        {
+            Arrays.fill(tileData, S2L1bConfig.FILL_CODE_MOSAIC_BG);
+            return;
+        }
+
+        // critical fix for last tile of each detector
+        Set<TileLayout> typeTiles = new HashSet<TileLayout>();
+        Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
+        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
+
+        if(!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout))
+        {
+            logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
+            S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
         }
 
         final Dimension jp2TileDim = getDimAtResolutionLevel(l1bTileLayout.tileWidth, l1bTileLayout.tileHeight, getLevel());
@@ -223,35 +248,18 @@ class L1bTileOpImage extends SingleBandedOpImage {
             logger.severe(Utils.getStackTrace(e));
         }
 
-
-        TileLayout myLayout = null;
-
-        try {
-            myLayout = CodeStreamUtils.getTileLayout(S2L1bConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
-        }
-        catch (Exception iae)
-        {
-            // critical fill with another kind of black (create a new S2L2AConfig constant)
-            logger.severe("No output file generated");
-            Arrays.fill(tileData, S2L1bConfig.FILL_CODE_NO_FILE);
-            return;
-        }
-
-        // critical fix for last tile of each detector
-        Set<TileLayout> typeTiles = new HashSet<TileLayout>();
-        Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
-        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
-
-        if(!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout))
-        {
-            logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
-            S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
-        }
-
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
-        if (!outputFile0.exists()) {
+        if (!outputFile0.exists())
+        {
+            int tileIndex = l1bTileLayout.numXTiles * jp2TileY + jp2TileX;
+            if(tileIndex >= realInternalJpegIndex)
+            {
+                Arrays.fill(tileData, S2L1bConfig.FILL_CODE_MOSAIC_BG);
+                return;
+            }
+
             logger.log(Level.parse(S2L1bConfig.LOG_JPEG) ,String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
@@ -264,7 +272,6 @@ class L1bTileOpImage extends SingleBandedOpImage {
                 }
             }
             if (!outputFile0.exists()) {
-                logger.severe("No output file generated");
                 Arrays.fill(tileData, S2L1bConfig.FILL_CODE_NO_FILE);
                 return;
             }
@@ -322,15 +329,12 @@ class L1bTileOpImage extends SingleBandedOpImage {
         builder = builder.directory(cacheDir);
 
         try {
-
             CommandOutput result = JpegUtils.runProcess(builder);
 
             final int exitCode = result.getErrorCode();
             if (exitCode != 0)
             {
                 logger.severe(String.format("Failed to uncompress tile: %s, exitCode = %d, command = [%s], command stdoutput = [%s], command stderr = [%s]", imageFile.getPath(), exitCode, builder.command().toString(), result.getTextOutput(), result.getErrorOutput() ));
-                // logger.severe("Failed to uncompress tile: " + imageFile.getPath() + ", exitCode = " + exitCode);
-                // logger.severe("Failed command was: " + builder.command().toString() );
             }
         } catch (InterruptedException e) {
             logger.severe("Process was interrupted, InterruptedException: " + e.getMessage());
