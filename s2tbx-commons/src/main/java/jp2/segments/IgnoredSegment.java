@@ -19,7 +19,7 @@ public class IgnoredSegment extends MarkerSegment {
 
     public IgnoredSegment(MarkerType markerType) {
         super(markerType);
-        this.code = 0; // critical what about the code ?
+        this.code = 0; // fixme put meaningful code later
     }
 
     public int getCode() {

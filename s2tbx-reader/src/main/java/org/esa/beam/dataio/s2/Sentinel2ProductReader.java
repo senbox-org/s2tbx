@@ -138,7 +138,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     private void readMasks(Product p) {
         Assert.notNull(p);
-        // fixme Implement this method
+        // critical Implement mask reading
     }
 
     private Product getL1cMosaicProduct(File metadataFile) throws IOException {
