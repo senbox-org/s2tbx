@@ -182,8 +182,6 @@ class L1bTileOpImage extends SingleBandedOpImage {
     @Override
     protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect)
     {
-        // critical debug this part only for the last tile of each detector...
-
         final DataBufferUShort dataBuffer = (DataBufferUShort) dest.getDataBuffer();
         final short[] tileData = dataBuffer.getData();
 
@@ -292,7 +290,6 @@ class L1bTileOpImage extends SingleBandedOpImage {
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = l1bTileLayout.numXTiles * jp2TileY + jp2TileX;
 
-        // critical replace waitFor
         ProcessBuilder builder = null;
         if(SystemUtils.IS_OS_WINDOWS)
         {

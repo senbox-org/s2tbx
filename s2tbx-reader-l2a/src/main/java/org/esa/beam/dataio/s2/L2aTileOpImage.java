@@ -2,6 +2,7 @@ package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
+import jp2.AEmptyListener;
 import jp2.Box;
 import jp2.BoxReader;
 import jp2.CodeStreamUtils;
@@ -14,6 +15,8 @@ import org.esa.beam.util.ImageUtils;
 import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
+import org.openjpeg.CommandOutput;
+import org.openjpeg.JpegUtils;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -216,19 +219,15 @@ class L2aTileOpImage extends SingleBandedOpImage {
 
         logger.fine("Processing file: " + imageFile.getName());
 
-        // critical change other OpImage implementations
-
         TileLayout myLayout = null;
-
         try {
-            myLayout = CodeStreamUtils.getTileLayout(S2L2AConfig.OPJ_INFO_EXE, imageFile.toURI(), new BoxListener());
+            myLayout = CodeStreamUtils.getTileLayout(S2L2AConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
         }
         catch (Exception iae)
         {
             Arrays.fill(tileData, S2L2AConfig.FILL_CODE_MOSAIC_BG);
             return;
         }
-
 
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
@@ -266,7 +265,6 @@ class L2aTileOpImage extends SingleBandedOpImage {
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = l2aTileLayout.numXTiles * jp2TileY + jp2TileX;
 
-        // critical replace waitFor
         ProcessBuilder builder = null;
         if(SystemUtils.IS_OS_WINDOWS)
         {
@@ -295,13 +293,15 @@ class L2aTileOpImage extends SingleBandedOpImage {
                     "-t", tileIndex + "");
         }
 
-        logger.fine(builder.command().toString());
-        final Process process = builder.directory(cacheDir).start();
+        builder = builder.directory(cacheDir);
 
         try {
-            final int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                logger.severe("Failed to uncompress tile: exitCode = " + exitCode);
+            CommandOutput result = JpegUtils.runProcess(builder);
+
+            final int exitCode = result.getErrorCode();
+            if (exitCode != 0)
+            {
+                logger.severe(String.format("Failed to uncompress tile: %s, exitCode = %d, command = [%s], command stdoutput = [%s], command stderr = [%s]", imageFile.getPath(), exitCode, builder.command().toString(), result.getTextOutput(), result.getErrorOutput() ));
             }
         } catch (InterruptedException e) {
             logger.severe("Process was interrupted, InterruptedException: " + e.getMessage());
