@@ -2,8 +2,10 @@ package org.esa.s2tbx.tooladapter;
 
 import com.bc.ceres.core.runtime.RuntimeContext;
 import org.esa.beam.framework.gpf.*;
+import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.util.logging.BeamLogManager;
+import org.geotools.io.LineWriter;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -14,7 +16,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.Set;
 
 /**
  * Created by ramonag on 2/14/2015.
@@ -89,9 +94,13 @@ public class S2tbxToolAdapterIO {
         writer.close();
     }
 
-    public static void saveAndRegisterOperator(S2tbxOperatorDescriptor operator, String templateContent) throws IOException{
+    public static void saveAndRegisterOperator(S2tbxOperatorDescriptor operator, String templateContent) throws IOException, URISyntaxException{
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operator.getName());
         String toolModuleDir = S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + operator.getAlias() + File.separator;
+        File toolFolder = new File(basePath, toolModuleDir);
+        if(!toolFolder.exists()){
+            toolFolder.mkdir();
+        }
         if(spi == null){
             S2tbxToolAdapterOpSpi operatorSpi = new S2tbxToolAdapterOpSpi(operator) {
 
@@ -119,6 +128,30 @@ public class S2tbxToolAdapterIO {
         writer.flush();
         writer.close();
         writeOperatorTemplate(operator.getName(), templateContent);
+
+        //since the alias of an operator can be changed, resave the aliases in the db file
+        writeRegisteredModules();
+    }
+
+    private static void writeRegisteredModules() throws IOException, URISyntaxException{
+        BeamLogManager.getSystemLogger().fine("Scanning for registered tools.");
+        Enumeration<URL> resources = RuntimeContext.getResources(S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO + S2tbxToolAdapterConstants.TOOL_ADAPTER_DB);
+        if (!resources.hasMoreElements()) {
+            throw new IOException("No config file for external tools!");
+        }
+        File configFile = new File(resources.nextElement().toURI());
+        Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
+        java.util.List<String> toolboxSpis = new ArrayList<String>();
+        spis.stream().filter(p -> p instanceof S2tbxToolAdapterOpSpi && ((S2tbxToolAdapterOpSpi) p).getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
+                forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getAlias()));
+        toolboxSpis.sort(Comparator.<String>naturalOrder());
+        LineWriter writer = new LineWriter(new FileWriter(configFile));
+        for(int i=0;i<toolboxSpis.size();i++){
+            writer.write(toolboxSpis.get(i));
+            writer.write("\n");
+        }
+        writer.flush();
+        writer.close();
     }
 
     private static File getTemplateFile(String toolName) {
