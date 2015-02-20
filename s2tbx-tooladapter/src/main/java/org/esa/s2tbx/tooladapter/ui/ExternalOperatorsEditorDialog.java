@@ -56,7 +56,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 close();
-                S2tbxOperatorDescriptor newOperatorSpi = new S2tbxOperatorDescriptor("DefaulsOperatorName", S2tbxToolAdapterOp.class, null, null, null, null, null, null);
+                S2tbxOperatorDescriptor newOperatorSpi = new S2tbxOperatorDescriptor("DefaultOperatorName", S2tbxToolAdapterOp.class, null, null, null, null, null, null);
                 ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Define new Tool", getHelpID(), newOperatorSpi, true);
                 dialog.show();
             }

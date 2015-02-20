@@ -47,7 +47,7 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
     File workingDir;
     String templateFileLocation;
 
-    S2tbxSystemVariable[] variables;
+    private List<S2tbxSystemVariable> variables;
 
     public static final Class<?> readerSuperClass = ProductReader.class;
     public static final Class<?> writerSuperClass = ProductWriter.class;
@@ -59,6 +59,8 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.sourceProductDescriptors = new DefaultSourceProductDescriptor[1];
         this.sourceProductDescriptors[0] = new DefaultSourceProductDescriptor();
         this.sourceProductDescriptors[0].name = S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID;
+        this.variables = new ArrayList<>();
+        this.variables.add(new S2tbxSystemVariable("key", "value"));
     }
 
     public S2tbxOperatorDescriptor(DefaultOperatorDescriptor obj){
@@ -96,7 +98,7 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
             this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor)(obj.getTargetPropertyDescriptors()[i]));
         }
 
-        this.variables = new S2tbxSystemVariable[0];
+        this.variables = new ArrayList<>();
     }
 
     public S2tbxOperatorDescriptor(S2tbxOperatorDescriptor obj, String newName, String newAlias){
@@ -135,21 +137,24 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
             this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor)(obj.getTargetPropertyDescriptors()[i]));
         }
 
-        this.variables = new S2tbxSystemVariable[0];
+        this.variables = new ArrayList<>();
     }
 
     public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass){
         super(name, operatorClass);
+        this.variables = new ArrayList<>();
     }
 
     public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright){
      super(name, operatorClass);
+        this.name = name;
         this.alias = alias;
         this.label = label;
         this.version = version;
         this.description = description;
         this.authors = authors;
         this.copyright = copyright;
+        this.variables = new ArrayList<>();
     }
 
     public void removeParamDescriptor(S2tbxParameterDescriptor descriptor){
@@ -349,12 +354,12 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.preprocessTool = preprocessTool;
     }
 
-    public S2tbxSystemVariable[] getVariables() {
+    public List<S2tbxSystemVariable> getVariables() {
         return variables;
     }
 
-    public void setVariables(S2tbxSystemVariable[] variables) {
-        this.variables = variables;
+    public void addVariable(S2tbxSystemVariable variable) {
+        this.variables.add(variable);
     }
 
     /**

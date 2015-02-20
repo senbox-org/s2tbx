@@ -34,9 +34,6 @@ public class OperatorParametersTableNewModel extends JTable {
         //List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
         List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
         for (S2tbxParameterDescriptor property : data) {
-            //S2tbxParameterDescriptor newParamDescriptor = new S2tbxParameterDescriptor((DefaultParameterDescriptor)property);
-            //operator.addParamDescriptor(newParamDescriptor);
-            //TODO add del and edit action
             propertiesValueUIDescriptorMap.put(property, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", property, operator, null));
         }
         tableRenderer = new MultiRenderer();
@@ -108,17 +105,6 @@ public class OperatorParametersTableNewModel extends JTable {
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return true;
         }
-
-        /*@Override
-        public Class<?> getColumnClass(int columnIndex) {
-            switch (columnIndex) {
-                case 0:
-                    return JButton.class;
-                default:
-                    return super.getColumnClass(columnIndex);
-            }
-
-        }*/
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {

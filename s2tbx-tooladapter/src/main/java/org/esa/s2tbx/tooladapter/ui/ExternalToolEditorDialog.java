@@ -18,6 +18,7 @@ import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterIO;
 import org.esa.s2tbx.tooladapter.S2tbxToolAdapterOpSpi;
 import org.esa.s2tbx.tooladapter.ui.utils.OperatorParametersTableNewModel;
+import org.esa.s2tbx.tooladapter.ui.utils.VariablesTable;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -236,36 +237,19 @@ public class ExternalToolEditorDialog extends ModelessDialog{
 
         configPanel.add(topConfigPanel, BorderLayout.PAGE_START);
 
-        templateContent = new JTextArea("err in log", 15, 15);
-        try {
-            templateContent.setText(S2tbxToolAdapterIO.readOperatorTemplate(operatorDescriptor.getName()));
-        } catch (IOException e) {
-            e.printStackTrace();
-            //TODO log error
+        templateContent = new JTextArea("", 15, 10);
+        if(!operatorIsNew) {
+            try {
+                templateContent.setText(S2tbxToolAdapterIO.readOperatorTemplate(operatorDescriptor.getName()));
+            } catch (IOException e) {
+                e.printStackTrace();
+                //TODO log error
+            }
         }
         configPanel.add(templateContent, BorderLayout.CENTER);
 
         processingPanel.add(configPanel, BorderLayout.CENTER);
 
-
-
-        /*processingPanel.add(createOperatorMemberPanel("Preprocessing", "preprocessTool", preprocessingPanel));
-        processingPanel.add(preprocessingPanel);
-
-        JPanel processingWriter = new JPanel();
-        processingWriter.add(createOperatorMemberPanel("Processing writer", "processingWriter", null));
-        processingWriter.setBorder(BorderFactory.createLineBorder(Color.black));
-
-        processingPanel.add(createOperatorMemberPanel("Write before processing", "writeForProcessing", processingWriter));
-        processingPanel.add(processingWriter);
-
-        processingPanel.add(createOperatorMemberPanel("Processing tool location", "mainToolFileLocation", null));
-
-        processingPanel.add(createOperatorMemberPanel("Processing temporary folder", "temporaryFolder", null));
-
-        TitledBorder title = BorderFactory.createTitledBorder("Operator processing parameters");
-        processingPanel.setBorder(title);
-*/
         return processingPanel;
     }
 
@@ -292,14 +276,25 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         JPanel toolDescriptorPanel = new JPanel();
         toolDescriptorPanel.setLayout(new BorderLayout());
 
-        toolDescriptorPanel.add(createOperatorDescriptorPanel(), BorderLayout.LINE_START);
+        JPanel descriptorAndVariablesPanel = new JPanel();
+        BoxLayout layout = new BoxLayout(descriptorAndVariablesPanel, BoxLayout.PAGE_AXIS);
+        descriptorAndVariablesPanel.setLayout(layout);
+        descriptorAndVariablesPanel.add(createOperatorDescriptorPanel());
+        JPanel variablesBorderPanel = new JPanel();
+        variablesBorderPanel.setBorder(BorderFactory.createTitledBorder("System variables"));
+        JScrollPane scrollPane = new JScrollPane(new VariablesTable(operatorDescriptor.getVariables()));
+        scrollPane.setPreferredSize(new Dimension(300, 100));
+        variablesBorderPanel.add(scrollPane);
+        descriptorAndVariablesPanel.add(variablesBorderPanel);
+
+        toolDescriptorPanel.add(descriptorAndVariablesPanel, BorderLayout.LINE_START);
         toolDescriptorPanel.add(createProcessingPanel(), BorderLayout.CENTER);
         //toolDescriptorPanel.add(topPanel, BorderLayout.PAGE_START);
 
         JScrollPane tableScrollPane = new JScrollPane(new OperatorParametersTableNewModel(operatorDescriptor));
         //JTable table = new JTable(new OperatorParametersTableNewModel(operatorDescriptor));
         //JScrollPane tableScrollPane = new JScrollPane(table);
-        tableScrollPane.setPreferredSize(new Dimension(500, 200));
+        tableScrollPane.setPreferredSize(new Dimension(500, 130));
         TitledBorder title = BorderFactory.createTitledBorder("Operator Parameters");
         tableScrollPane.setBorder(title);
         toolDescriptorPanel.add(tableScrollPane, BorderLayout.PAGE_END);
@@ -312,7 +307,7 @@ public class ExternalToolEditorDialog extends ModelessDialog{
         try {
             S2tbxToolAdapterIO.saveAndRegisterOperator(operatorDescriptor,
                     templateContent.getText());
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             //TODO show error on screeen
         }
