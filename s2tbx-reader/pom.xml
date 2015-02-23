@@ -66,28 +66,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- Begin test GML -->
-
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-data</artifactId>
-            <version>2.7.4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-api</artifactId>
-            <version>2.7.4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.geotools.xsd</groupId>
-            <artifactId>gt-xsd-gml2</artifactId>
-            <version>12-SNAPSHOT</version>
-        </dependency>
-
-        <!-- End test GML -->
-
     </dependencies>
 
 
