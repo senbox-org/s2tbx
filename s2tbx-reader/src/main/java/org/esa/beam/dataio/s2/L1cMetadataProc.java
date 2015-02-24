@@ -78,7 +78,7 @@ public class L1cMetadataProc {
         try {
             theDir = getModulesDir();
         } catch (Exception e) {
-            // fixme change messsage, add stacktrace info
+            // critical change messsage, add stacktrace info
             BeamLogManager.getSystemLogger().severe(e.getMessage());
         }
         return theDir;
@@ -88,6 +88,7 @@ public class L1cMetadataProc {
         ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
         JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
 
+        // critical reuse unmarshaller
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         Object ob =  unmarshaller.unmarshal(stream);
