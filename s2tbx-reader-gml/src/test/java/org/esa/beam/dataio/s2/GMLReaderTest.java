@@ -15,9 +15,8 @@ import java.io.InputStream;
  */
 public class GMLReaderTest {
 
-    public String GML = "net.opengis.gml:_int.esa.earth.atm:_int.esa.earth.hma:_int.esa.earth.ohr:_int.esa.earth.sar";
-
     public Object readJaxbFromStreamResource(String streamResource) throws JAXBException {
+        String GML = "net.opengis.gml:_int.esa.earth.atm:_int.esa.earth.hma:_int.esa.earth.ohr:_int.esa.earth.sar";
         JAXBContext jaxbContext = JAXBContext
                 .newInstance(GML);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -30,21 +29,10 @@ public class GMLReaderTest {
         return casted;
     }
 
-    public InputStream getStream() throws Exception
-    {
-        InputStream stream = getClass().getResourceAsStream("l1c/gml/S2A_OPER_MSK_DEFECT_MPS__20140915T120000_A000069_T14RNV_B01_MSIL1C.gml");
-        return stream;
-    }
-
-    public MaskType getMask() throws Exception
-    {
-        MaskType o = (MaskType) readJaxbFromStreamResource("l1c/gml/S2A_OPER_MSK_DEFECT_MPS__20140915T120000_A000069_T14RNV_B01_MSIL1C.gml");
-        return o;
-    }
-
     public MaskType getMask(String uri) throws Exception
     {
-        MaskType o = (MaskType) readJaxbFromStreamResource(uri);
+        GMLReader gr = new GMLReader();
+        MaskType o = (MaskType) gr.readJaxbFromStreamResource(uri);
         return o;
     }
 

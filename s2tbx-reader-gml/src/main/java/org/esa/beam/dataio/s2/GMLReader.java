@@ -1,12 +1,9 @@
 package org.esa.beam.dataio.s2;
 
-import org.geotools.GML;
-import org.geotools.data.simple.SimpleFeatureIterator;
-import org.opengis.feature.simple.SimpleFeature;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
 
 /**
@@ -14,14 +11,22 @@ import java.io.InputStream;
  */
 public class GMLReader
 {
-    public void parseGMLReader(InputStream in) throws IOException, ParserConfigurationException, SAXException {
-        GML gml = new GML(GML.Version.GML2);
-        SimpleFeatureIterator iter = gml.decodeFeatureIterator(in);
+    public String GML = "net.opengis.gml:_int.esa.earth.atm:_int.esa.earth.hma:_int.esa.earth.ohr:_int.esa.earth.sar";
 
-        int count = 0;
-        while (iter.hasNext()) {
-            SimpleFeature feature = iter.next();
-            count++;
-        }
+    private JAXBContext context;
+    private Unmarshaller unmarshaller;
+
+    public GMLReader() throws JAXBException {
+        context = JAXBContext.newInstance(GML);
+        unmarshaller = context.createUnmarshaller();
+    }
+
+    public Object readJaxbFromStreamResource(String streamResource) throws JAXBException {
+        InputStream stream = getClass().getResourceAsStream(streamResource);
+
+        Object ob =  unmarshaller.unmarshal(stream);
+        Object casted = ((JAXBElement)ob).getValue();
+
+        return casted;
     }
 }
