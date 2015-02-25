@@ -1,25 +1,23 @@
 package org.esa.beam.framework.gpf.descriptor;
 
-import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-import org.esa.beam.util.StringUtils;
 
 /**
- * Created by Ramona Manda on 2/13/2015.
+ * @author Ramona Manda
  */
 public class S2tbxSystemVariable {
     String key;
     String value;
 
-    S2tbxSystemVariable(){
+    S2tbxSystemVariable() {
         this.key = "";
         this.value = "";
     }
 
-    S2tbxSystemVariable(String key, String value){
+    public S2tbxSystemVariable(String key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -40,6 +38,14 @@ public class S2tbxSystemVariable {
         this.value = value;
     }
 
+    public S2tbxSystemVariable createCopy() {
+        S2tbxSystemVariable newVariable = new S2tbxSystemVariable();
+        newVariable.setKey(this.key);
+        newVariable.setValue(this.value);
+        return newVariable;
+    }
+
+    //TODO delete this if not necessary!
     public static class XStreamConverter implements com.thoughtworks.xstream.converters.Converter {
 
         public boolean canConvert(Class aClass) {

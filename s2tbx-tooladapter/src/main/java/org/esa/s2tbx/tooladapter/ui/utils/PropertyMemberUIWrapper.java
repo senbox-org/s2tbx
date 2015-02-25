@@ -8,9 +8,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
 /**
- * Created by ramonag on 1/22/2015.
+ * @author Ramona Manda
  */
-public abstract class PropertyMemberUIWrapper implements FocusListener{
+public abstract class PropertyMemberUIWrapper implements FocusListener {
 
     protected String attributeName;
     protected Component UIComponent;
@@ -19,52 +19,62 @@ public abstract class PropertyMemberUIWrapper implements FocusListener{
     protected S2tbxOperatorDescriptor context;
     private CallBackAfterEdit callback;
 
-    public PropertyMemberUIWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context){
+    public PropertyMemberUIWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context) {
         this.attributeName = attributeName;
         this.property = property;
         this.context = context;
     }
 
-    public PropertyMemberUIWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, int width, CallBackAfterEdit callback){
+    public PropertyMemberUIWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, int width, CallBackAfterEdit callback) {
         this(attributeName, property, context);
         this.width = width;
         this.callback = callback;
     }
 
-    public String getErrorValueMessage(Object value){return null;}
+    public String getErrorValueMessage(Object value) {
+        return null;
+    }
 
     protected abstract void setMemberValue(Object value) throws PropertyAttributeException;
 
     public abstract Object getMemberValue() throws PropertyAttributeException;
 
-    public Component getUIComponent()throws Exception{
-        if(UIComponent == null){
+    public Component getUIComponent() throws Exception {
+        if (UIComponent == null) {
             buildAndLinkUIComponent();
         }
         return UIComponent;
     }
 
-    public void buildAndLinkUIComponent()throws Exception{
+    public void buildAndLinkUIComponent() throws Exception {
         UIComponent = buildUIComponent();
-        if(width != -1){UIComponent.setPreferredSize(new Dimension(width, 20));}
+        if (width != -1) {
+            UIComponent.setPreferredSize(new Dimension(width, 20));
+        }
         UIComponent.addFocusListener(this);
     }
 
     protected abstract Component buildUIComponent() throws Exception;
 
-    public void setMemberValueWithCheck(Object value) throws PropertyAttributeException{
+    public void setMemberValueWithCheck(Object value) throws PropertyAttributeException {
         String msg = getErrorValueMessage(value);
-        if(msg != null){
+        if (msg != null) {
             throw new PropertyAttributeException(msg);
         }
         setMemberValue(value);
     }
 
-    public boolean memberUIComponentNeedsRevalidation(){return false;}
+    public boolean memberUIComponentNeedsRevalidation() {
+        return false;
+    }
 
-    public boolean propertyUIComponentsNeedsRevalidation(){return false;}
+    public boolean propertyUIComponentsNeedsRevalidation() {
+        return false;
+    }
 
-    public boolean contextUIComponentsNeedsRevalidation(){return false;}
+    public boolean contextUIComponentsNeedsRevalidation() {
+        return false;
+    }
 
     @Override
     public void focusGained(FocusEvent e) {
@@ -76,15 +86,15 @@ public abstract class PropertyMemberUIWrapper implements FocusListener{
         //save the value
         if (!e.isTemporary()) {
             try {
-                if(getValueFromUIComponent().equals(getMemberValue())){
+                if (getValueFromUIComponent().equals(getMemberValue())) {
                     return;
                 }
                 setMemberValueWithCheck(getValueFromUIComponent());
-                if(callback != null) {
+                if (callback != null) {
                     callback.doCallBack(null, property, null, attributeName);
                 }
-            }catch (PropertyAttributeException ex){
-                if(callback != null) {
+            } catch (PropertyAttributeException ex) {
+                if (callback != null) {
                     callback.doCallBack(ex, property, null, attributeName);
                 }
                 UIComponent.requestFocusInWindow();
@@ -92,13 +102,13 @@ public abstract class PropertyMemberUIWrapper implements FocusListener{
         }
     }
 
-    public void setCallback(CallBackAfterEdit callback){
+    public void setCallback(CallBackAfterEdit callback) {
         this.callback = callback;
     }
 
     protected abstract Object getValueFromUIComponent() throws PropertyAttributeException;
 
-    public interface CallBackAfterEdit{
+    public interface CallBackAfterEdit {
         public void doCallBack(PropertyAttributeException exception, S2tbxParameterDescriptor oldProperty, S2tbxParameterDescriptor newProperty, String attributeName);
     }
 }

@@ -13,25 +13,12 @@ public class S2tbxToolAdapterAction extends AbstractVisatAction {
 
     /**
      * Open the external tools selection window
+     *
      * @param event the command event
      */
     @Override
     public void actionPerformed(CommandEvent event) {
-
-        //TODO: the alias will be selected based on the tool chosen by the user in the UI
-
-        /*final S2tbxToolAdapterDialog operatorDialog = new S2tbxToolAdapterDialog(
-                "copy",
-                getAppContext(),
-                "Sentinel-2 Tool Adapter",
-                event.getCommand().getHelpId());
-        operatorDialog.getJDialog().pack();
-        operatorDialog.show();
-        */
-
         ExternalOperatorsEditorDialog operatorDialog = new ExternalOperatorsEditorDialog(getAppContext(), "External Tools", event.getCommand().getHelpId());
-
-        //operatorDialog.getJDialog().pack();
         operatorDialog.show();
     }
 

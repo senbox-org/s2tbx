@@ -1,21 +1,16 @@
 package org.esa.beam.framework.gpf.descriptor;
 
-import com.bc.ceres.binding.Converter;
-import com.bc.ceres.binding.Validator;
-import com.bc.ceres.binding.dom.DomConverter;
-import org.esa.beam.framework.datamodel.RasterDataNode;
 import org.esa.s2tbx.tooladapter.ui.utils.PropertyAttributeException;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Created by ramonag on 1/25/2015.
+ * @author Ramona Manda
  */
 public class S2tbxParameterDescriptor extends DefaultParameterDescriptor {
 
 
-    public S2tbxParameterDescriptor(DefaultParameterDescriptor object){
+    public S2tbxParameterDescriptor(DefaultParameterDescriptor object) {
         super(object.getName(), object.getDataType());
         super.setAlias(object.getAlias());
         super.setDefaultValue(object.getDefaultValue());
@@ -36,43 +31,31 @@ public class S2tbxParameterDescriptor extends DefaultParameterDescriptor {
         super.setItemAlias(object.getItemAlias());
     }
 
-
-    public S2tbxParameterDescriptor(String name, Class<?> dataType){
-        super(name, dataType);
-    }
-
     //TODO throws specific exception, also in the calling methods!
-    public Object getAttribute(String propertyName) throws PropertyAttributeException{
-        Method getter = null;
+    public Object getAttribute(String propertyName) throws PropertyAttributeException {
+        Method getter;
         try {
             //TODO
             getter = DefaultParameterDescriptor.class.getDeclaredMethod("is" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1));
             return getter.invoke(this);
-        }catch (Exception ex){}
+        } catch (Exception ex) {
+        }
         //the "is..." getter could not be called
         try {
             getter = DefaultParameterDescriptor.class.getDeclaredMethod("get" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1));
             return getter.invoke(this);
-        }catch (InvocationTargetException e) {
-           throw new PropertyAttributeException("Exception on getting the value of the attribute '"+propertyName+"' message: "+e.getMessage());
-        } catch (NoSuchMethodException e) {
-            throw new PropertyAttributeException("Exception on getting the value of the attribute '"+propertyName+"' message: "+e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new PropertyAttributeException("Exception on getting the value of the attribute '"+propertyName+"' message: "+e.getMessage());
+        } catch (Exception e) {
+            throw new PropertyAttributeException("Exception on getting the value of the attribute '" + propertyName + "' message: " + e.getMessage());
         }
     }
 
-    public void setAttribute(String propertyName, Object obj) throws PropertyAttributeException{
-        Method setter = null;
+    public void setAttribute(String propertyName, Object obj) throws PropertyAttributeException {
+        Method setter;
         try {
             setter = DefaultParameterDescriptor.class.getDeclaredMethod("set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1), obj.getClass());
             setter.invoke(this, obj);
-        } catch (IllegalAccessException e) {
-            throw new PropertyAttributeException("Exception on setting the value '"+obj.toString()+"' to the attribute '"+propertyName+"' message: "+e.getMessage());
-        } catch (InvocationTargetException e) {
-            throw new PropertyAttributeException("Exception on setting the value '"+obj.toString()+"' to the attribute '"+propertyName+"' message: "+e.getMessage());
-        } catch (NoSuchMethodException e) {
-            throw new PropertyAttributeException("Exception on setting the value '"+obj.toString()+"' to the attribute '"+propertyName+"' message: "+e.getMessage());
+        } catch (Exception e) {
+            throw new PropertyAttributeException("Exception on setting the value '" + obj.toString() + "' to the attribute '" + propertyName + "' message: " + e.getMessage());
         }
     }
 }

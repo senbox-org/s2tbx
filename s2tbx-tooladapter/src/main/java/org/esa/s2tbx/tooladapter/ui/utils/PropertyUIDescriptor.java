@@ -14,17 +14,16 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 
 /**
- * Created by ramonag on 1/24/2015.
+ * @author Ramona Manda
  */
 public class PropertyUIDescriptor {
 
     private AbstractButton delButton;
     private AbstractButton editButton;
-    private Component editorComponent;
 
     private HashMap<String, PropertyMemberUIWrapper> UIcomponentsMap;
 
-    public static PropertyUIDescriptor buildUIMinimalDescriptor(S2tbxParameterDescriptor parameter, String property, S2tbxOperatorDescriptor operator, ActionListener deleteActionListener, ActionListener editActionListener,PropertyMemberUIWrapper.CallBackAfterEdit callback){
+    public static PropertyUIDescriptor buildUIMinimalDescriptor(S2tbxParameterDescriptor parameter, String property, S2tbxOperatorDescriptor operator, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         PropertyUIDescriptor descriptor = new PropertyUIDescriptor();
 
         AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/DeleteShapeTool16.gif"),
@@ -42,7 +41,7 @@ public class PropertyUIDescriptor {
         return descriptor;
     }
 
-    public static PropertyUIDescriptor buildUIDescriptor(S2tbxParameterDescriptor prop, String[] columnsMembers, S2tbxOperatorDescriptor context, ActionListener deleteActionListener, ActionListener editActionListener,PropertyMemberUIWrapper.CallBackAfterEdit callback){
+    public static PropertyUIDescriptor buildUIDescriptor(S2tbxParameterDescriptor prop, String[] columnsMembers, S2tbxOperatorDescriptor context, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         PropertyUIDescriptor descriptor = new PropertyUIDescriptor();
 
         AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/DeleteShapeTool16.gif"),
@@ -54,30 +53,30 @@ public class PropertyUIDescriptor {
         descriptor.setEditButton(editButton);
 
         HashMap<String, PropertyMemberUIWrapper> UIcomponentsMap = new HashMap<>();
-        for(String col : columnsMembers){
-            if(!col.equals("del")){
+        for (String col : columnsMembers) {
+            if (!col.equals("del")) {
                 UIcomponentsMap.put(col, PropertyMemberUIWrapperFactory.buildPropertyWrapper(col, prop, context, callback));
             }
         }
         descriptor.setUIcomponentsMap(UIcomponentsMap);
 
-        return  descriptor;
+        return descriptor;
     }
 
-    public void fillDescriptor(String[] columnsMembers){
-        for(String col : columnsMembers){
-            if(!col.equals("del")){
+    public void fillDescriptor(String[] columnsMembers) {
+        for (String col : columnsMembers) {
+            if (!col.equals("del")) {
                 //UIcomponentsMap.put(col, PropertyMemberUIWrapperFactory.buildPropertyWrapper(col, prop, context, callback));
             }
         }
     }
 
-    public void setAttributeEditCallback(String attributeName, PropertyMemberUIWrapper.CallBackAfterEdit callback){
+    public void setAttributeEditCallback(String attributeName, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         UIcomponentsMap.get(attributeName).setCallback(callback);
     }
 
-    public void setEditCallback(PropertyMemberUIWrapper.CallBackAfterEdit callback){
-        while(UIcomponentsMap.keySet().iterator().hasNext()) {
+    public void setEditCallback(PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+        while (UIcomponentsMap.keySet().iterator().hasNext()) {
             UIcomponentsMap.get(UIcomponentsMap.keySet().iterator().next()).setCallback(callback);
         }
     }

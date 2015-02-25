@@ -1,12 +1,10 @@
 package org.esa.s2tbx.tooladapter.ui;
 
-import com.bc.ceres.binding.PropertySet;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.S2tbxToolAdapterOp;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
-import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.beam.framework.ui.UIUtils;
@@ -18,13 +16,11 @@ import org.esa.s2tbx.tooladapter.ui.utils.OperatorsTableModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Set;
 
 /**
- * Created by ramonag on 1/16/2015.
+ * @author Ramona Manda
  */
 public class ExternalOperatorsEditorDialog extends ModelessDialog {
 
@@ -52,73 +48,60 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
         AbstractButton newButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/New24.gif"),
                 false);
         newButton.setToolTipText("Define new operator");
-        newButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
-                S2tbxOperatorDescriptor newOperatorSpi = new S2tbxOperatorDescriptor("DefaultOperatorName", S2tbxToolAdapterOp.class, null, null, null, null, null, null);
-                ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Define new Tool", getHelpID(), newOperatorSpi, true);
-                dialog.show();
-            }
+        newButton.addActionListener(e -> {
+            close();
+            S2tbxOperatorDescriptor newOperatorSpi = new S2tbxOperatorDescriptor("DefaultOperatorName", S2tbxToolAdapterOp.class, S2tbxToolAdapterConstants.OPERATOR_DEFAULT_NAME_PREFIX + ".DefaultOperatorName", null, null, null, null, null);
+            ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Define new Tool", getHelpID(), newOperatorSpi, true);
+            dialog.show();
         });
         panel.add(newButton);
 
         AbstractButton copyButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/Copy24.gif"),
                 false);
         copyButton.setToolTipText("Duplicate selected operator");
-        copyButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
+        copyButton.addActionListener(e -> {
+            close();
 
-                S2tbxOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-                String opName = operatorDesc.getName();
-                int newNameIndex = 0;
-                while (GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(opName) != null) {
-                    newNameIndex++;
-                    opName = operatorDesc.getName() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
-                }
-                String opAlias = operatorDesc.getAlias() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
-                //String descriptorString = ((DefaultOperatorDescriptor) operatorDesc).toXml(ExternalOperatorsEditorDialog.class.getClassLoader());
-                //DefaultOperatorDescriptor dod = DefaultOperatorDescriptor.fromXml(new StringReader(descriptorString), "New duplicate operator", ExternalOperatorsEditorDialog.class.getClassLoader());
-                S2tbxOperatorDescriptor duplicatedOperatorSpi = new S2tbxOperatorDescriptor(operatorDesc, opName, opAlias);
-                ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Edit Tool", getHelpID(), duplicatedOperatorSpi, newNameIndex);
-                dialog.show();
+            S2tbxOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
+            String opName = operatorDesc.getName();
+            int newNameIndex = 0;
+            while (GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(opName) != null) {
+                newNameIndex++;
+                opName = operatorDesc.getName() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
             }
+            String opAlias = operatorDesc.getAlias() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
+            //String descriptorString = ((DefaultOperatorDescriptor) operatorDesc).toXml(ExternalOperatorsEditorDialog.class.getClassLoader());
+            //DefaultOperatorDescriptor dod = DefaultOperatorDescriptor.fromXml(new StringReader(descriptorString), "New duplicate operator", ExternalOperatorsEditorDialog.class.getClassLoader());
+            S2tbxOperatorDescriptor duplicatedOperatorSpi = new S2tbxOperatorDescriptor(operatorDesc, opName, opAlias);
+            ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Edit Tool", getHelpID(), duplicatedOperatorSpi, newNameIndex);
+            dialog.show();
         });
         panel.add(copyButton);
 
         AbstractButton editButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/Edit24.gif"),
                 false);
         editButton.setToolTipText("Edit selected operator");
-        editButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
-                S2tbxOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-                PropertySet propertySet = new OperatorParameterSupport(operatorDesc).getPropertySet();
-                ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Edit Tool", getHelpID(), operatorDesc, true);
-                dialog.show();
-            }
+        editButton.addActionListener(e -> {
+            close();
+            S2tbxOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
+            ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Edit Tool", getHelpID(), operatorDesc, false);
+            dialog.show();
         });
         panel.add(editButton);
 
         AbstractButton runButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/Update24.gif"),
                 false);
         runButton.setToolTipText("Execute selected operator");
-        runButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
-                S2tbxOperatorDescriptor operatorSpi = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-                //PropertySet propertySet = new OperatorParameterSupport(operatorSpi).getPropertySet();
-                final S2tbxToolAdapterDialog operatorDialog = new S2tbxToolAdapterDialog(
-                        operatorSpi,
-                        appContext,
-                        "Sentinel-2 Tool Adapter",
-                        getHelpID());
-                operatorDialog.show();
-            }
+        runButton.addActionListener(e -> {
+            close();
+            S2tbxOperatorDescriptor operatorSpi = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
+            //PropertySet propertySet = new OperatorParameterSupport(operatorSpi).getPropertySet();
+            final S2tbxToolAdapterDialog operatorDialog = new S2tbxToolAdapterDialog(
+                    operatorSpi,
+                    appContext,
+                    "Sentinel-2 Tool Adapter",
+                    getHelpID());
+            operatorDialog.show();
         });
         panel.add(runButton);
 
@@ -132,9 +115,9 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
 
     private JTable getOperatorsTable() {
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
-        java.util.List<S2tbxOperatorDescriptor> toolboxSpis = new ArrayList<S2tbxOperatorDescriptor>();
-        spis.stream().filter(p -> p instanceof S2tbxToolAdapterOpSpi && ((S2tbxToolAdapterOpSpi) p).getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
-                forEach(operator -> toolboxSpis.add((S2tbxOperatorDescriptor)operator.getOperatorDescriptor()));
+        java.util.List<S2tbxOperatorDescriptor> toolboxSpis = new ArrayList<>();
+        spis.stream().filter(p -> p instanceof S2tbxToolAdapterOpSpi && p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
+                forEach(operator -> toolboxSpis.add((S2tbxOperatorDescriptor) operator.getOperatorDescriptor()));
         OperatorsTableModel model = new OperatorsTableModel(toolboxSpis);
         operatorsTable = new JTable(model);
         operatorsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);

@@ -13,49 +13,43 @@ import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * Created by ramonag on 1/24/2015.
+ * @author Ramona Manda
  */
-public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
+public class S2tbxOperatorDescriptor implements OperatorDescriptor {
 
-    String name;
-    Class<? extends Operator> operatorClass;
-    String alias;
-    String label;
-    String version;
-    String description;
-    String authors;
-    String copyright;
-    Boolean internal;
-    Boolean autoWriteSuppressed;
+    private String name;
+    private Class<? extends Operator> operatorClass;
+    private String alias;
+    private String label;
+    private String version;
+    private String description;
+    private String authors;
+    private String copyright;
+    private Boolean internal;
+    private Boolean autoWriteSuppressed;
 
-    DefaultSourceProductDescriptor[] sourceProductDescriptors;
-    DefaultSourceProductsDescriptor sourceProductsDescriptor;
-    DefaultParameterDescriptor[] parameterDescriptors;
-    DefaultTargetProductDescriptor targetProductDescriptor;
-    DefaultTargetPropertyDescriptor[] targetPropertyDescriptors;
+    private DefaultSourceProductDescriptor[] sourceProductDescriptors;
+    private DefaultSourceProductsDescriptor sourceProductsDescriptor;
+    private DefaultTargetProductDescriptor targetProductDescriptor;
+    private DefaultTargetPropertyDescriptor[] targetPropertyDescriptors;
 
-    Boolean preprocessTool = false;
-    String preprocessingExternalTool;
-    Boolean writeForProcessing = false;
-    String processingWriter;
-    File mainToolFileLocation;
-    File workingDir;
-    String templateFileLocation;
+    private Boolean preprocessTool = false;
+    private String preprocessorExternalTool;
+    private Boolean writeForProcessing = false;
+    private String processingWriter;
+    private File mainToolFileLocation;
+    private File workingDir;
+    private String templateFileLocation;
 
-    private List<S2tbxSystemVariable> variables;
+    private List<S2tbxSystemVariable> variables = new ArrayList<>();
 
-    public static final Class<?> readerSuperClass = ProductReader.class;
-    public static final Class<?> writerSuperClass = ProductWriter.class;
+    private List<S2tbxParameterDescriptor> tbxParameterDescriptors = new ArrayList<>();
 
-    private List<S2tbxParameterDescriptor> tbxParameterDescriptors = new ArrayList<S2tbxParameterDescriptor>();
-
-    S2tbxOperatorDescriptor(){
-        super(null, null);
+    S2tbxOperatorDescriptor() {
         this.sourceProductDescriptors = new DefaultSourceProductDescriptor[1];
         this.sourceProductDescriptors[0] = new DefaultSourceProductDescriptor();
         this.sourceProductDescriptors[0].name = S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID;
@@ -63,8 +57,7 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.variables.add(new S2tbxSystemVariable("key", "value"));
     }
 
-    public S2tbxOperatorDescriptor(DefaultOperatorDescriptor obj){
-        super(obj.getName(), obj.getOperatorClass());
+    public S2tbxOperatorDescriptor(DefaultOperatorDescriptor obj) {
 
         this.name = obj.getName();
         this.operatorClass = obj.getOperatorClass();
@@ -78,31 +71,28 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.autoWriteSuppressed = obj.isAutoWriteDisabled();
 
         this.sourceProductDescriptors = new DefaultSourceProductDescriptor[obj.getSourceProductDescriptors().length];
-        for(int i=0; i<obj.getSourceProductDescriptors().length;i++){
-            this.sourceProductDescriptors[i] = ((DefaultSourceProductDescriptor)(obj.getSourceProductDescriptors()[i]));
+        for (int i = 0; i < obj.getSourceProductDescriptors().length; i++) {
+            this.sourceProductDescriptors[i] = ((DefaultSourceProductDescriptor) (obj.getSourceProductDescriptors()[i]));
         }
 
-        this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor)obj.getSourceProductsDescriptor();
+        this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor) obj.getSourceProductsDescriptor();
 
-        this.parameterDescriptors = new DefaultParameterDescriptor[obj.getParameterDescriptors().length];
         this.tbxParameterDescriptors = new ArrayList<S2tbxParameterDescriptor>();
-        for(int i=0; i<obj.getParameterDescriptors().length;i++){
-            this.parameterDescriptors[i] = ((DefaultParameterDescriptor)(obj.getParameterDescriptors()[i]));
-            this.tbxParameterDescriptors.add(new S2tbxParameterDescriptor(this.parameterDescriptors[i]));
+        for (int i = 0; i < obj.getParameterDescriptors().length; i++) {
+            this.tbxParameterDescriptors.add(new S2tbxParameterDescriptor(obj.parameterDescriptors[i]));
         }
 
-        this.targetProductDescriptor = (DefaultTargetProductDescriptor)obj.getTargetProductDescriptor();
+        this.targetProductDescriptor = (DefaultTargetProductDescriptor) obj.getTargetProductDescriptor();
 
         this.targetPropertyDescriptors = new DefaultTargetPropertyDescriptor[obj.getTargetPropertyDescriptors().length];
-        for(int i=0; i<obj.getTargetPropertyDescriptors().length;i++){
-            this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor)(obj.getTargetPropertyDescriptors()[i]));
+        for (int i = 0; i < obj.getTargetPropertyDescriptors().length; i++) {
+            this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor) (obj.getTargetPropertyDescriptors()[i]));
         }
 
         this.variables = new ArrayList<>();
     }
 
-    public S2tbxOperatorDescriptor(S2tbxOperatorDescriptor obj, String newName, String newAlias){
-        super(newName, obj.getOperatorClass());
+    public S2tbxOperatorDescriptor(S2tbxOperatorDescriptor obj, String newName, String newAlias) {
 
         this.name = newName;
         this.alias = newAlias;
@@ -116,38 +106,39 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.autoWriteSuppressed = obj.isAutoWriteDisabled();
 
         this.sourceProductDescriptors = new DefaultSourceProductDescriptor[obj.getSourceProductDescriptors().length];
-        for(int i=0; i<obj.getSourceProductDescriptors().length;i++){
-            this.sourceProductDescriptors[i] = ((DefaultSourceProductDescriptor)(obj.getSourceProductDescriptors()[i]));
+        for (int i = 0; i < obj.getSourceProductDescriptors().length; i++) {
+            this.sourceProductDescriptors[i] = ((DefaultSourceProductDescriptor) (obj.getSourceProductDescriptors()[i]));
         }
 
-        this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor)obj.getSourceProductsDescriptor();
+        this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor) obj.getSourceProductsDescriptor();
 
-        this.parameterDescriptors = new DefaultParameterDescriptor[obj.getParameterDescriptors().length];
-        for(int i=0; i<obj.getParameterDescriptors().length;i++){
-            this.parameterDescriptors[i] = ((DefaultParameterDescriptor)(obj.getParameterDescriptors()[i]));
-        }
-        for(int i=0; i<obj.getS2tbxParameterDescriptors().size();i++){
+        this.tbxParameterDescriptors = new ArrayList<>();
+        for (int i = 0; i < obj.getS2tbxParameterDescriptors().size(); i++) {
             this.tbxParameterDescriptors.add(new S2tbxParameterDescriptor(obj.getS2tbxParameterDescriptors().get(i)));
         }
 
-        this.targetProductDescriptor = (DefaultTargetProductDescriptor)obj.getTargetProductDescriptor();
+        this.targetProductDescriptor = (DefaultTargetProductDescriptor) obj.getTargetProductDescriptor();
 
         this.targetPropertyDescriptors = new DefaultTargetPropertyDescriptor[obj.getTargetPropertyDescriptors().length];
-        for(int i=0; i<obj.getTargetPropertyDescriptors().length;i++){
-            this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor)(obj.getTargetPropertyDescriptors()[i]));
+        for (int i = 0; i < obj.getTargetPropertyDescriptors().length; i++) {
+            this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor) (obj.getTargetPropertyDescriptors()[i]));
         }
 
         this.variables = new ArrayList<>();
+        for (int i = 0; i < obj.getVariables().size(); i++) {
+            this.variables.add(obj.getVariables().get(i).createCopy());
+        }
     }
 
-    public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass){
-        super(name, operatorClass);
+    public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass) {
+        this.name = name;
+        this.operatorClass = operatorClass;
         this.variables = new ArrayList<>();
     }
 
-    public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright){
-     super(name, operatorClass);
+    public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright) {
         this.name = name;
+        this.operatorClass = operatorClass;
         this.alias = alias;
         this.label = label;
         this.version = version;
@@ -157,29 +148,11 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.variables = new ArrayList<>();
     }
 
-    public void removeParamDescriptor(S2tbxParameterDescriptor descriptor){
-        //List<DefaultParameterDescriptor> list = new ArrayList<DefaultParameterDescriptor>(Arrays.asList(parameterDescriptors));
-        //list.removeAll(Arrays.asList((DefaultParameterDescriptor)descriptor));
-        //parameterDescriptors = list.toArray(new DefaultParameterDescriptor[list.size()]);
-
+    public void removeParamDescriptor(S2tbxParameterDescriptor descriptor) {
         this.tbxParameterDescriptors.remove(descriptor);
     }
 
-    public S2tbxParameterDescriptor getFirstParamDescriptorByName(String name){
-        try {
-            S2tbxParameterDescriptor filtered = tbxParameterDescriptors.stream().filter(p -> p.getName().equals(name)).findFirst().get();
-            return filtered;
-        }catch (NoSuchElementException ex) {return null;}
-    }
-
-    public void addParamDescriptor(S2tbxParameterDescriptor descriptor){
-        List<DefaultParameterDescriptor> list = new ArrayList<DefaultParameterDescriptor>(Arrays.asList(parameterDescriptors));
-        list.add((DefaultParameterDescriptor)descriptor);
-        parameterDescriptors = list.toArray(new DefaultParameterDescriptor[list.size()]);
-        this.tbxParameterDescriptors.add(descriptor);
-    }
-
-    public List<S2tbxParameterDescriptor> getS2tbxParameterDescriptors(){
+    public List<S2tbxParameterDescriptor> getS2tbxParameterDescriptors() {
         /*if(this.parameterDescriptors.length != this.tbxParameterDescriptors.size()) {
             this.tbxParameterDescriptors.clear();
             for (int i = 0; i < operators.length; i++) {
@@ -189,35 +162,35 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         return this.tbxParameterDescriptors;
     }
 
-    public void setAlias(String alias){
+    public void setAlias(String alias) {
         this.alias = alias;
     }
 
-    public void setLabel(String label){
+    public void setLabel(String label) {
         this.label = label;
     }
 
-    public void seVersion(String version){
+    public void seVersion(String version) {
         this.version = version;
     }
 
-    public void setDescription(String description){
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public void setAuthors(String authors){
+    public void setAuthors(String authors) {
         this.authors = authors;
     }
 
-    public void setCopyright(String copyright){
+    public void setCopyright(String copyright) {
         this.copyright = copyright;
     }
 
-    public void setName(String name){
+    public void setName(String name) {
         this.name = name;
     }
 
-    public void setOperatorClass(Class<? extends Operator> operatorClass){
+    public void setOperatorClass(Class<? extends Operator> operatorClass) {
         this.operatorClass = operatorClass;
     }
 
@@ -338,12 +311,12 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.writeForProcessing = writeForProcessing;
     }
 
-    public String getPreprocessingExternalTool() {
-        return preprocessingExternalTool;
+    public String getPreprocessorExternalTool() {
+        return preprocessorExternalTool;
     }
 
-    public void setPreprocessingExternalTool(String preprocessingExternalTool) {
-        this.preprocessingExternalTool = preprocessingExternalTool;
+    public void setPreprocessorExternalTool(String preprocessorExternalTool) {
+        this.preprocessorExternalTool = preprocessorExternalTool;
     }
 
     public Boolean getPreprocessTool() {
@@ -362,13 +335,16 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
         this.variables.add(variable);
     }
 
+    public S2tbxOperatorDescriptor createCopy() {
+        return new S2tbxOperatorDescriptor(this, this.name, this.alias);
+    }
+
     /**
      * Loads an operator descriptor from an XML document.
      *
      * @param url         The URL pointing to a valid operator descriptor XML document.
      * @param classLoader The class loader is used to load classed specified in the xml. For example the
      *                    class defined by the {@code operatorClass} tag.
-     *
      * @return A new operator descriptor.
      */
     public static S2tbxOperatorDescriptor fromXml(URL url, ClassLoader classLoader) {
@@ -390,7 +366,6 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
      * @param file        The file containing a valid operator descriptor XML document.
      * @param classLoader The class loader is used to load classed specified in the xml. For example the
      *                    class defined by the {@code operatorClass} tag.
-     *
      * @return A new operator descriptor.
      */
     public static S2tbxOperatorDescriptor fromXml(File file, ClassLoader classLoader) throws OperatorException {
@@ -411,7 +386,6 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
      * @param resourceName Used in error messages
      * @param classLoader  The class loader is used to load classed specified in the xml. For example the
      *                     class defined by the {@code operatorClass} tag.
-     *
      * @return A new operator descriptor.
      */
     public static S2tbxOperatorDescriptor fromXml(Reader reader, String resourceName, ClassLoader classLoader) throws OperatorException {
@@ -437,7 +411,6 @@ public class S2tbxOperatorDescriptor extends DefaultOperatorDescriptor {
      *
      * @param classLoader The class loader is used to load classed specified in the xml. For example the
      *                    class defined by the {@code operatorClass} tag.
-     *
      * @return A string containing valid operator descriptor XML.
      */
     public String toXml(ClassLoader classLoader) {
