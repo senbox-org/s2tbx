@@ -120,7 +120,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
             if (p != null) {
                 readMasks(p);
-                initGeoCoding(p);
                 p.setModified(false);
             }
         }
@@ -131,14 +130,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         return p;
     }
 
-    private void initGeoCoding(Product p) {
-        Assert.notNull(p);
-        // fixme Implement this method
-    }
-
     private void readMasks(Product p) {
+        // critical read geocoding using gml module
         Assert.notNull(p);
-        // critical Implement mask reading
     }
 
     private Product getL1cMosaicProduct(File metadataFile) throws IOException {

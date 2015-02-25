@@ -19,10 +19,23 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import javax.xml.bind.JAXBException;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
@@ -216,6 +229,9 @@ public class L1cMetadata {
                 }
             }
 
+            // critical add stats of <HORIZONTAL_CS_CODE>EPSG:32614</HORIZONTAL_CS_CODE>
+            Map<String, Counter> counters = new HashMap<String, Counter>();
+
             for(File aGranuleMetadataFile: fullTileNamesList)
             {
                 Level1C_Tile aTile = (Level1C_Tile) L1cMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
@@ -224,6 +240,17 @@ public class L1cMetadata {
                 Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
                 t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
                 t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
+
+                String key = t.horizontalCsCode;
+                if(counters.containsKey(key))
+                {
+                    counters.get(key).increment();
+                }
+                else
+                {
+                    counters.put(key, new Counter(key));
+                    counters.get(key).increment();
+                }
 
                 t.tileGeometry10M = geoms.get(10);
                 t.tileGeometry20M = geoms.get(20);
@@ -234,6 +261,12 @@ public class L1cMetadata {
 
                 tileList.add(t);
             }
+
+            Counter maximus = Collections.max(counters.values());
+            logger.severe(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
+
+            // and here is the trick, filter by name...
+            tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
 
             S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
             S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);
