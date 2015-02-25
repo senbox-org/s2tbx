@@ -38,8 +38,6 @@ public class ExternalToolExecutionForm extends JTabbedPane {
         final TargetProductSelectorModel targetProductSelectorModel = targetProductSelector.getModel();
         targetProductSelectorModel.setProductDir(this.operatorSpi.getWorkingDir());
 
-        //hide the targetProductFile from UI as its value is set differently
-        //this.propertySet.getDescriptor("targetProductFile").setAttribute("visible", false);
 
         ioParamPanel = createIOParamTab();
         addTab("I/O Parameters", ioParamPanel);
@@ -60,7 +58,7 @@ public class ExternalToolExecutionForm extends JTabbedPane {
 
     private DefaultIOParametersPanel createIOParamTab() {
         final DefaultIOParametersPanel ioPanel = new DefaultIOParametersPanel(appContext, operatorSpi,
-                                                                              targetProductSelector);
+                targetProductSelector);
         final ArrayList<SourceProductSelector> sourceProductSelectorList = ioPanel.getSourceProductSelectorList();
         if (!sourceProductSelectorList.isEmpty()) {
             final SourceProductSelector sourceProductSelector = sourceProductSelectorList.get(0);
@@ -72,11 +70,7 @@ public class ExternalToolExecutionForm extends JTabbedPane {
     private JScrollPane createProcessingParamTab() {
 
         PropertyPane parametersPane = new PropertyPane(propertySet);
-//        BindingContext bindingContext = parametersPane.getBindingContext();
-//        bindingContext.bindEnabledState("inputFactor", true, "includeInputFactor", true);
-
-        //ExternalToolEditorDialog editor = new ExternalToolEditorDialog(operatorSpi, propertySet, false);
-        final JPanel parametersPanel = parametersPane.createPanel();//editor.createPanel();
+        final JPanel parametersPanel = parametersPane.createPanel();
         parametersPanel.setBorder(new EmptyBorder(4, 4, 4, 4));
         return new JScrollPane(parametersPanel);
     }

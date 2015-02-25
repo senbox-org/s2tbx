@@ -3,14 +3,11 @@ package org.esa.s2tbx.tooladapter;
 import com.bc.ceres.core.runtime.RuntimeContext;
 import org.esa.beam.framework.gpf.*;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
 import org.esa.beam.util.logging.BeamLogManager;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 
@@ -26,12 +23,13 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
         super(S2tbxToolAdapterOp.class);
     }
 
-    /** Constructor.
+    /**
+     * Constructor.
+     *
      * @param operatorDescriptor the operator descriptor to be used.
      */
     public S2tbxToolAdapterOpSpi(OperatorDescriptor operatorDescriptor) {
         super(operatorDescriptor);
-
     }
 
     static {
@@ -52,12 +50,13 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
         }
     }
 
-    /** Read the tools list file and try to load anything that is described there.
+    /**
+     * Read the tools list file and try to load anything that is described there.
+     *
      * @param url the url of the tools list file
      * @throws IOException if the file cannot be read or interpreted
      */
     private static void registerToolsModule(URL url) throws IOException {
-
         //Create a file reader
         LineNumberReader reader = new LineNumberReader(new InputStreamReader(url.openStream()));
         while (true) {
@@ -79,7 +78,9 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
         }
     }
 
-    /** Register a tool as an operator.
+    /**
+     * Register a tool as an operator.
+     *
      * @param toolName the name of the tool
      * @throws OperatorException in case of an error
      */
@@ -87,7 +88,7 @@ public class S2tbxToolAdapterOpSpi extends OperatorSpi {
         OperatorSpi operatorSpi = S2tbxToolAdapterIO.readOperatorFromFile(toolName);
 
         String operatorName = operatorSpi.getOperatorDescriptor().getName() != null ? operatorSpi.getOperatorDescriptor().getName() : operatorSpi.getOperatorDescriptor().getAlias();
-        if(GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operatorName) != null){
+        if (GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operatorName) != null) {
             throw new OperatorException("An operator with the name " + operatorName + " is already registered; replace the name in the folder " + S2tbxToolAdapterConstants.TOOL_ADAPTER_REPO);
         }
         GPF.getDefaultInstance().getOperatorSpiRegistry().addOperatorSpi(operatorName, operatorSpi);

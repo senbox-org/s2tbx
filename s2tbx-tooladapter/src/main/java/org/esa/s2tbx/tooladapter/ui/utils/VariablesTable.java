@@ -1,7 +1,5 @@
 package org.esa.s2tbx.tooladapter.ui.utils;
 
-import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.S2tbxSystemVariable;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
@@ -15,7 +13,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * Created by ramonag on 2/20/2015.
+ * @author Ramona Manda
  */
 public class VariablesTable extends JTable {
     private static String[] columnNames = {"", "Key", "Value"};
@@ -26,20 +24,22 @@ public class VariablesTable extends JTable {
         this.variables = variables;
         tableRenderer = new MultiRenderer();
         setModel(new VariablesTableModel());
-        setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        getColumnModel().getColumn(0).setPreferredWidth(27);
-        getColumnModel().getColumn(1).setPreferredWidth(150);
-        getColumnModel().getColumn(2).setPreferredWidth(250);
     }
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        return tableRenderer;
+        if (column == 0) {
+            return tableRenderer;
+        }
+        return super.getCellRenderer(row, column);
     }
 
     @Override
-    public TableCellEditor getCellEditor() {
-        return tableRenderer;
+    public TableCellEditor getCellEditor(int row, int column) {
+        if (column == 0) {
+            return tableRenderer;
+        }
+        return getDefaultEditor(String.class);
     }
 
     class VariablesTableModel extends AbstractTableModel {
@@ -47,6 +47,11 @@ public class VariablesTable extends JTable {
         @Override
         public String getColumnName(int column) {
             return columnNames[column];
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return String.class;
         }
 
         @Override
@@ -79,16 +84,19 @@ public class VariablesTable extends JTable {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            switch (columnIndex) {
-                case 0:
-                    variables.remove(variables.get(rowIndex));
-                    break;
-                case 1:
-                    variables.get(rowIndex).setKey(aValue.toString());
-                    break;
-                case 2:
-                    variables.get(rowIndex).setValue(aValue.toString());
-                    break;
+            if (aValue != null) {
+                switch (columnIndex) {
+                    case 0:
+                        variables.remove(variables.get(rowIndex));
+                        fireTableDataChanged();
+                        break;
+                    case 1:
+                        variables.get(rowIndex).setKey(aValue.toString());
+                        break;
+                    case 2:
+                        variables.get(rowIndex).setValue(aValue.toString());
+                        break;
+                }
             }
         }
     }
@@ -98,24 +106,32 @@ public class VariablesTable extends JTable {
         private AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/DeleteShapeTool16.gif"),
                 false);
 
+        public MultiRenderer() {
+            delButton.addActionListener(e -> fireEditingStopped());
+        }
+
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            switch (column){
-                case 0: return delButton;
-                default: return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            switch (column) {
+                case 0:
+                    return delButton;
+                default:
+                    return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
         }
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            switch (column){
-                case 0: return delButton;
-                default: return getDefaultEditor(String.class).getTableCellEditorComponent(table, value, isSelected, row, column);
+            switch (column) {
+                case 0:
+                    return delButton;
+                default:
+                    return getDefaultEditor(String.class).getTableCellEditorComponent(table, value, isSelected, row, column);
             }
         }
 
         @Override
         public Object getCellEditorValue() {
-            return null;
+            return delButton;
         }
     }
 }
