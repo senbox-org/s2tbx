@@ -295,6 +295,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                                       sceneDescription.getSceneRectangle().width,
                                       sceneDescription.getSceneRectangle().height);
 
+        product.setFileLocation(metadataFile.getParentFile());
 
         Map<String, GeoCoding> geoCodingsByDetector = new HashMap<>();
 

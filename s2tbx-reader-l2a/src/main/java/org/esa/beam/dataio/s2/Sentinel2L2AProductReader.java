@@ -228,6 +228,8 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                                       sceneDescription.getSceneRectangle().height);
 
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
+        product.setFileLocation(metadataFile.getParentFile());
+
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
