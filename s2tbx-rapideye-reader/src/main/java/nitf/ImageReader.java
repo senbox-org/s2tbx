@@ -25,27 +25,25 @@ package nitf;
 /**
  * Class that has the functionality of reading an image
  */
-public final class ImageReader extends DestructibleObject
-{
+public final class ImageReader extends DestructibleObject {
 
     /**
      * @see DestructibleObject#DestructibleObject(long)
      */
-    ImageReader(long address)
-    {
+    ImageReader(long address) {
         super(address);
     }
 
     /**
      * Returns the IOInterface associated with this ImageReader
-     * 
+     *
      * @return the IOInterface associated with this ImageReader
      */
     public native IOInterface getInput();
 
     /**
      * Returns the BlockingInfo used by this ImageReader
-     * 
+     *
      * @return the BlockingInfo used by this ImageReader
      * @throws NITFException
      */
@@ -53,11 +51,9 @@ public final class ImageReader extends DestructibleObject
 
     /**
      * Reads the data specified by the SubWindow into the byte[][] buffer
-     * 
-     * @param subWindow
-     *            the window that defines data about the impending read
-     * @param userBuf
-     *            buffer to store the data
+     *
+     * @param subWindow the window that defines data about the impending read
+     * @param userBuf   buffer to store the data
      * @return true if the the data was padded
      * @throws NITFException
      */
@@ -65,13 +61,11 @@ public final class ImageReader extends DestructibleObject
             throws NITFException;
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 }

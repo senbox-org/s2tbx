@@ -4,20 +4,32 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
-* @author Norman Fomferra
-*/
+ * @author Norman Fomferra
+ */
 public class TileLayout {
-    /** Width of L1C tile  */
+    /**
+     * Width of L1C tile
+     */
     public final int width;
-    /** Height of L1C tile  */
+    /**
+     * Height of L1C tile
+     */
     public final int height;
-    /** Width of internal JP2 tiles  */
+    /**
+     * Width of internal JP2 tiles
+     */
     public final int tileWidth;
-    /** Height of internal JP2 tiles  */
+    /**
+     * Height of internal JP2 tiles
+     */
     public final int tileHeight;
-    /** Width of internal JP2 X-tiles  */
+    /**
+     * Width of internal JP2 X-tiles
+     */
     public final int numXTiles;
-    /** Number of internal JP2 Y-tiles  */
+    /**
+     * Number of internal JP2 Y-tiles
+     */
     public final int numYTiles;
     public final int numResolutions;
 

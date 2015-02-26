@@ -11,7 +11,7 @@ import java.io.IOException;
  * The reason of creating this class is the possibility of encountering
  * different capitalisation of files inside zip archives.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class SpotVirtualDir extends ZipVirtualDir {
     /**

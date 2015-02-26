@@ -21,7 +21,6 @@ import java.util.logging.Logger;
  * Wrapper class over the nitro-nitf reader.
  *
  * @author Cosmin Cara
- *
  */
 public class NITFReaderWrapper {
 
@@ -117,7 +116,7 @@ public class NITFReaderWrapper {
                     if (pm.isCanceled()) {
                         break;
                     }
-                    destBuffer.setElemUIntAt(i, swapBytes((short)dataBuffer.getElem(i)));
+                    destBuffer.setElemUIntAt(i, swapBytes((short) dataBuffer.getElem(i)));
                 }
             }
             pm.worked(1);

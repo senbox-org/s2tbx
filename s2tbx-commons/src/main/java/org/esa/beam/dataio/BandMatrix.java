@@ -13,7 +13,7 @@ import java.util.List;
  * a single product scene. Normally, these images are already orhtorectified, so that
  * pixels align to the projected coordinates.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class BandMatrix {
 
@@ -91,10 +91,10 @@ public class BandMatrix {
          * The only (package protected) constructor of the cell.
          * A cell is not intended to be created but only by a <code>BandMatrix</code> object.
          *
-         * @param band      The associated band
-         * @param origin    The origin point (coordinates expressed in meters) of the image
-         * @param stepX     The horizontal pixel size (in meters)
-         * @param stepY     The vertical pixel size (in meters)
+         * @param band   The associated band
+         * @param origin The origin point (coordinates expressed in meters) of the image
+         * @param stepX  The horizontal pixel size (in meters)
+         * @param stepY  The vertical pixel size (in meters)
          */
         BandMatrixCell(Band band, Point2D origin, double stepX, double stepY) {
             this.band = band;
@@ -105,18 +105,19 @@ public class BandMatrix {
                 this.cellPixelWidth = band.getRasterWidth();
                 this.cellPixelHeight = band.getRasterHeight();
             }
-            this.cellWidth = (double)cellPixelWidth * dX;
-            this.cellHeight = (double)cellPixelHeight * dY;
+            this.cellWidth = (double) cellPixelWidth * dX;
+            this.cellHeight = (double) cellPixelHeight * dY;
         }
 
         /**
          * Gets the intersection area for the rectangle specified by the given top-left point and dimensions and this cell.
-         * @param x         The ordinate of the top-left point of the test area
-         * @param y         The abscissa of the top-left point of the test area
-         * @param width     The width of the test area
-         * @param height    The height of the test area
-         * @return  A <code>java.awt.Rectangle</code> if the intersection area between this cell and the constructed rectangle
-         *          has positive width and height, <code>null</code> otherwise.
+         *
+         * @param x      The ordinate of the top-left point of the test area
+         * @param y      The abscissa of the top-left point of the test area
+         * @param width  The width of the test area
+         * @param height The height of the test area
+         * @return A <code>java.awt.Rectangle</code> if the intersection area between this cell and the constructed rectangle
+         * has positive width and height, <code>null</code> otherwise.
          */
         public Rectangle intersection(int x, int y, int width, int height) {
             return intersection(new Rectangle(x, y, width, height));
@@ -126,8 +127,8 @@ public class BandMatrix {
          * Gets the intersection area for the given rectangle and this cell.
          *
          * @param rectangle The rectangle to test
-         * @return  A <code>java.awt.Rectangle</code> if the intersection area between this cell and the given rectangle
-         *          has positive width and height, <code>null</code> otherwise.
+         * @return A <code>java.awt.Rectangle</code> if the intersection area between this cell and the given rectangle
+         * has positive width and height, <code>null</code> otherwise.
          */
         public Rectangle intersection(Rectangle rectangle) {
             Rectangle result = new Rectangle();
@@ -139,18 +140,19 @@ public class BandMatrix {
 
         /**
          * Returns the overlapping area (i.e. common area) between two cells.
-         * @param otherCell    The second cell to test for overlapping with.
-         * @return      A rectangle with integer bounds representing pixels.
+         *
+         * @param otherCell The second cell to test for overlapping with.
+         * @return A rectangle with integer bounds representing pixels.
          */
         public Rectangle overlapping(BandMatrixCell otherCell) {
             Rectangle2D otherCellArea = new Rectangle2D.Double(otherCell.origin.getX(), otherCell.origin.getY(), otherCell.cellWidth, otherCell.cellHeight);
             Rectangle2D cellArea = new Rectangle2D.Double(origin.getX(), origin.getY(), cellWidth, cellHeight);
             Rectangle2D overlap2D = cellArea.createIntersection(otherCellArea);
             Rectangle overlap = overlap2D.getBounds();
-            return new Rectangle((int)(overlap.getX() - origin.getX()),
-                                 (int)(overlap.getY() - origin.getY()),
-                                 (int)(overlap.getWidth() - 1),         // subtract 1 because for cells continuing each other width is 1
-                                 (int)(overlap.getHeight() - 1));
+            return new Rectangle((int) (overlap.getX() - origin.getX()),
+                                 (int) (overlap.getY() - origin.getY()),
+                                 (int) (overlap.getWidth() - 1),         // subtract 1 because for cells continuing each other width is 1
+                                 (int) (overlap.getHeight() - 1));
         }
     }
 
@@ -158,8 +160,9 @@ public class BandMatrix {
 
     /**
      * Creates a band matrix having <code>rows</code> rows and <code>cols</code> columns
-     * @param rows  Number of matrix rows
-     * @param cols  Number of matrix columns
+     *
+     * @param rows Number of matrix rows
+     * @param cols Number of matrix columns
      */
     public BandMatrix(int rows, int cols) {
         this.numRows = rows;
@@ -171,7 +174,7 @@ public class BandMatrix {
      * Gets all the cells of this matrix, ordered from top-left cell to bottom-right cell,
      * row by row.
      *
-     * @return  An array of matrix cells
+     * @return An array of matrix cells
      */
     public BandMatrixCell[] getCells() {
         if (cachedCells == null || cachedCells.length != numRows * numCols) {
@@ -192,26 +195,30 @@ public class BandMatrix {
     /**
      * Gets the number of rows of this matrix.
      *
-     * @return  Integer representing the number of rows
+     * @return Integer representing the number of rows
      */
-    public int getNumRows() { return numRows; }
+    public int getNumRows() {
+        return numRows;
+    }
 
     /**
      * Gets the number of columns of this matrix.
      *
-     * @return  Integer representing the number of columns
+     * @return Integer representing the number of columns
      */
-    public int getNumCols() { return numCols; }
+    public int getNumCols() {
+        return numCols;
+    }
 
     /**
      * Adds (creates) a new cell to this instance, at the next available position.
      * If the current (last) position is already at the bottom-right cell, an exception
      * is thrown.
      *
-     * @param band          The associated band
-     * @param cellOrigin    The origin of the image (in meters)
-     * @param stepX         The horizontal pixel size (in meters)
-     * @param stepY         The vertical pixel size (in meters)
+     * @param band       The associated band
+     * @param cellOrigin The origin of the image (in meters)
+     * @param stepX      The horizontal pixel size (in meters)
+     * @param stepY      The vertical pixel size (in meters)
      */
     public void addCell(Band band, Point2D cellOrigin, double stepX, double stepY) {
         if (currentRow == numRows && currentCol == numCols)
@@ -228,12 +235,12 @@ public class BandMatrix {
      * Adds (creates) a new cell to this instance, at the specified row and column (0-based).
      * If any of the row/column numbers exceed the respective matrix size, an exception is thrown.
      *
-     * @param row           The row at which to insert the new cell
-     * @param col           The column at which to insert the new cell
-     * @param band          The associated band
-     * @param cellOrigin    The origin of the image (in meters)
-     * @param stepX         The horizontal pixel size (in meters)
-     * @param stepY         The vertical pixel size (in meters)
+     * @param row        The row at which to insert the new cell
+     * @param col        The column at which to insert the new cell
+     * @param band       The associated band
+     * @param cellOrigin The origin of the image (in meters)
+     * @param stepX      The horizontal pixel size (in meters)
+     * @param stepY      The vertical pixel size (in meters)
      */
     public void addCellAt(int row, int col, Band band, Point2D cellOrigin, double stepX, double stepY) {
         if (row < 0 || row > numRows - 1)
@@ -269,7 +276,7 @@ public class BandMatrix {
      * This is the sum of all cell widths from any row.
      * If this matrix contains at least one unassigned cell, an exception is thrown.
      *
-     * @return  Integer representing the total width (in pixels) of the matrix.
+     * @return Integer representing the total width (in pixels) of the matrix.
      */
     public int getTotalWidth() {
         if (!isConsistent()) {
@@ -287,7 +294,7 @@ public class BandMatrix {
      * This is the sum of all cell heights from any column.
      * If this matrix contains at least one unassigned cell, an exception is thrown.
      *
-     * @return  Integer representing the total height (in pixels) of the matrix.
+     * @return Integer representing the total height (in pixels) of the matrix.
      */
     public int getTotalHeight() {
         if (!isConsistent()) {
@@ -303,18 +310,18 @@ public class BandMatrix {
     /**
      * Given the input rectangle, it returns all cells which are intersected by this rectangle.
      * For example:
-     *      Given a matrix 3 x 3 cells like:
-     *          [   (0,0,100,100)   (100,0,100,100)     (200,0,100,100)
-     *              (0,100,100,100) (100,100,100,100)   (200,100,100,100)
-     *              (0,200,100,100) (100,200,100,100)   (200,200,100,100)   ]
-     *      and the rectangle (75,75,50,50),
-     *      the intersecting cells returned would be (in this order):
-     *      { (0,0,100,100), (100,0,100,100), (0,100,100,100), (100,100,100,100) }
-     *
+     * Given a matrix 3 x 3 cells like:
+     * [   (0,0,100,100)   (100,0,100,100)     (200,0,100,100)
+     * (0,100,100,100) (100,100,100,100)   (200,100,100,100)
+     * (0,200,100,100) (100,200,100,100)   (200,200,100,100)   ]
+     * and the rectangle (75,75,50,50),
+     * the intersecting cells returned would be (in this order):
+     * { (0,0,100,100), (100,0,100,100), (0,100,100,100), (100,100,100,100) }
+     * <p>
      * If this matrix contains at least one unassigned cell, an exception is thrown.
      *
-     * @param rectangle     The rectangle for which to compute the list of intersecting cells.
-     * @return  Array of matrix cells
+     * @param rectangle The rectangle for which to compute the list of intersecting cells.
+     * @return Array of matrix cells
      */
     public BandMatrixCell[] findIntersectingCells(Rectangle rectangle) {
         if (!isConsistent()) {

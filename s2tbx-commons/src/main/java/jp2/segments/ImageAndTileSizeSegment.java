@@ -13,48 +13,48 @@ public class ImageAndTileSizeSegment extends MarkerSegment {
     /**
      * Length of marker segment in bytes (not including the marker). The value of this parameter is determined by the following equation: Lsiz = 38 + 3 * Csiz
      */
-     int lsiz;
+    int lsiz;
     /**
      * Denotes capabilities that a decoder needs to properly decode the codestream.
      */
-     int rsiz;
+    int rsiz;
     /*
      * Width of the reference grid.
      */
-     long xsiz;
+    long xsiz;
     /*
      * Height of the reference grid.
      */
-     long ysiz;
+    long ysiz;
     /*
      *   Horizontal offset from the origin of the reference grid to the left side of the image area.
      */
-     long xosiz;
+    long xosiz;
     /*
      * Vertical offset from the origin of the reference grid to the top side of the image area.
      */
-     long yosiz;
+    long yosiz;
     /*
     *  Width of one reference tile with respect to the reference grid.
     */
-     long xtsiz;
+    long xtsiz;
     /*
      * Height of one reference tile with respect to the reference grid.
      */
-     long ytsiz;
+    long ytsiz;
 
     /*
      * Horizontal offset from the origin of the reference grid to the left side of the first tile.
      */
-     long xtosiz;
+    long xtosiz;
     /*
      * Vertical offset from the origin of the reference grid to the top side of the first tile.
      */
-     long ytosiz;
+    long ytosiz;
     /*
      * Number of components in the image.
      */
-     int csiz;
+    int csiz;
     /*
      *  Precision (depth) in bits and sign of the ith component samples.
       *  The precision is the precision of the component samples before DC level shifting is performed
@@ -62,17 +62,17 @@ public class ImageAndTileSizeSegment extends MarkerSegment {
        *   There is one occurrence of this parameter for each component.
        *   The order corresponds to the component's index, starting with zero.
      */
-     int[] ssiz;
+    int[] ssiz;
     /*
      *  Horizontal separation of a sample of ith component with respect to the reference grid.
       *  There is one occurrence of this parameter for each component.
      */
-     int[] xrsiz;
+    int[] xrsiz;
     /*
      * Vertical separation of a sample of ith component with respect to the reference grid.
      * There is one occurrence of this parameter for each component.
      */
-     int[] yrsiz;
+    int[] yrsiz;
 
     public ImageAndTileSizeSegment(MarkerType markerType) {
         super(markerType);

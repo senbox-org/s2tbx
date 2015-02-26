@@ -21,7 +21,7 @@ public class ImageHeaderBox extends Box {
     private int ipr;
 
     public ImageHeaderBox(BoxType type, long position, long length, int dataOffset) {
-        super(type, position, length,dataOffset);
+        super(type, position, length, dataOffset);
     }
 
     public long getHeight() {

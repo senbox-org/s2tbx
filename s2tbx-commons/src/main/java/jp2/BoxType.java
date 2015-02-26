@@ -19,10 +19,8 @@ public enum BoxType {
     ihdr("ihdr", ImageHeaderBox.class),
     bpcc("bpcc", BitsPerComponentBox.class),
     colr("colr", ColorSpecificationBox.class),
-    jp2c("jp2c", ContiguousCodestreamBox.class) ,
-    uuid("uuid", UuidBox.class) ,
-    ;
-
+    jp2c("jp2c", ContiguousCodestreamBox.class),
+    uuid("uuid", UuidBox.class),;
 
 
     private final static Map<Integer, BoxType> codeMap;

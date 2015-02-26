@@ -7,8 +7,8 @@ package org.esa.beam.dataio;
  * This can lead, if called very frequently, to unnecessary memory allocations.
  * In this class, a reference to the internal buffer is returned.
  *
+ * @author Cosmin Cara
  * @see java.io.ByteArrayOutputStream
- * @author  Cosmin Cara
  */
 public class ByteArrayOutputStream extends java.io.ByteArrayOutputStream {
     @Override

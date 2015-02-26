@@ -26,6 +26,7 @@ import java.util.Map;
 /**
  * This reader is intended for reading SPOT-4 and SPOT-5 View files composed
  * of several products (for instance, large products that are split into several smaller ones.
+ *
  * @author Cosmin Cara
  */
 public class SpotDimapVolumeProductReader extends SpotProductReader {
@@ -48,9 +49,9 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
         int height = metadata.getExpectedVolumeHeight();
 
         Product rootProduct = new Product(dimapMetadata.getProductName(),
-                SpotConstants.DIMAP_FORMAT_NAMES[0],
-                width,
-                height);
+                                          SpotConstants.DIMAP_FORMAT_NAMES[0],
+                                          width,
+                                          height);
         rootProduct.getMetadataRoot().addElement(metadata.getRootElement());
         ProductData.UTC centerTime = dimapMetadata.getCenterTime();
         rootProduct.setStartTime(centerTime);
@@ -83,47 +84,46 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
                                           int destOffsetX, int destOffsetY,
                                           int destWidth, int destHeight,
                                           ProductData destBuffer, ProgressMonitor pm) throws IOException {
-            BandMatrix bandMatrix = bandMap.get(destBand);
-            BandMatrix.BandMatrixCell[] cells = bandMatrix.getCells();
-            int readWidth = 0;
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            for (BandMatrix.BandMatrixCell cell : cells) {
-                Rectangle readArea = cell.intersection(destOffsetX, destOffsetY, destWidth, destHeight);
-                if (readArea != null) {
-                    ProductReader reader = cell.band.getProductReader();
-                    if (reader == null) {
-                        logger.severe("No reader found for band data");
-                    } else {
-                        int bandDestOffsetX = readArea.x - cell.cellStartPixelX;
-                        int bandDestOffsetY = readArea.y - cell.cellStartPixelY;
-                        int bandDestWidth = readArea.width;
-                        int bandDestHeight = readArea.height;
-                        ProductData bandBuffer = createProductData(destBuffer.getType(), bandDestWidth * bandDestHeight);
-                        reader.readBandRasterData(cell.band, bandDestOffsetX, bandDestOffsetY, bandDestWidth, bandDestHeight, bandBuffer, pm);
-                        MemoryCacheImageOutputStream writeStream = null;
-                        ImageInputStream readStream = null;
-                        try {
-                            byteArrayOutputStream.reset();
-                            writeStream = new MemoryCacheImageOutputStream(byteArrayOutputStream);
-                            bandBuffer.writeTo(writeStream);
-                            writeStream.flush();
-                            readStream = new MemoryCacheImageInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+        BandMatrix bandMatrix = bandMap.get(destBand);
+        BandMatrix.BandMatrixCell[] cells = bandMatrix.getCells();
+        int readWidth = 0;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        for (BandMatrix.BandMatrixCell cell : cells) {
+            Rectangle readArea = cell.intersection(destOffsetX, destOffsetY, destWidth, destHeight);
+            if (readArea != null) {
+                ProductReader reader = cell.band.getProductReader();
+                if (reader == null) {
+                    logger.severe("No reader found for band data");
+                } else {
+                    int bandDestOffsetX = readArea.x - cell.cellStartPixelX;
+                    int bandDestOffsetY = readArea.y - cell.cellStartPixelY;
+                    int bandDestWidth = readArea.width;
+                    int bandDestHeight = readArea.height;
+                    ProductData bandBuffer = createProductData(destBuffer.getType(), bandDestWidth * bandDestHeight);
+                    reader.readBandRasterData(cell.band, bandDestOffsetX, bandDestOffsetY, bandDestWidth, bandDestHeight, bandBuffer, pm);
+                    MemoryCacheImageOutputStream writeStream = null;
+                    ImageInputStream readStream = null;
+                    try {
+                        byteArrayOutputStream.reset();
+                        writeStream = new MemoryCacheImageOutputStream(byteArrayOutputStream);
+                        bandBuffer.writeTo(writeStream);
+                        writeStream.flush();
+                        readStream = new MemoryCacheImageInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
 
-                            for (int y = 0; y < destHeight; y++) {
-                                destBuffer.readFrom(y * destWidth + readWidth, bandDestWidth, readStream);
-                            }
-                            readWidth += bandDestWidth;
-                        } finally {
-                            if (writeStream != null) writeStream.close();
-                            if (readStream != null) readStream.close();
+                        for (int y = 0; y < destHeight; y++) {
+                            destBuffer.readFrom(y * destWidth + readWidth, bandDestWidth, readStream);
                         }
+                        readWidth += bandDestWidth;
+                    } finally {
+                        if (writeStream != null) writeStream.close();
+                        if (readStream != null) readStream.close();
                     }
                 }
             }
+        }
     }
 
-    void addBands(Product product, SpotDimapMetadata componentMetadata)
-    {
+    void addBands(Product product, SpotDimapMetadata componentMetadata) {
         String[] bandUnits = componentMetadata.getBandUnits();
         try {
             if (SpotConstants.DIMAP.equals(componentMetadata.getFormatName())) {
@@ -184,24 +184,24 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
 
     void addMasks(Product product, SpotDimapMetadata componentMetadata) {
         logger.info("Create masks");
-        int noDataValue,saturatedValue;
+        int noDataValue, saturatedValue;
         if ((noDataValue = componentMetadata.getNoDataValue()) >= 0 && !product.getMaskGroup().contains(SpotConstants.NODATA_VALUE)) {
             product.getMaskGroup().add(Mask.BandMathsType.create(SpotConstants.NODATA_VALUE,
-                    SpotConstants.NODATA_VALUE,
-                    product.getSceneRasterWidth(),
-                    product.getSceneRasterHeight(),
-                    String.valueOf(noDataValue),
-                    componentMetadata.getNoDataColor(),
-                    0.5));
+                                                                 SpotConstants.NODATA_VALUE,
+                                                                 product.getSceneRasterWidth(),
+                                                                 product.getSceneRasterHeight(),
+                                                                 String.valueOf(noDataValue),
+                                                                 componentMetadata.getNoDataColor(),
+                                                                 0.5));
         }
         if ((saturatedValue = componentMetadata.getSaturatedPixelValue()) >= 0 && !product.getMaskGroup().contains(SpotConstants.SATURATED_VALUE)) {
             product.getMaskGroup().add(Mask.BandMathsType.create(SpotConstants.SATURATED_VALUE,
-                    SpotConstants.SATURATED_VALUE,
-                    product.getSceneRasterWidth(),
-                    product.getSceneRasterHeight(),
-                    String.valueOf(saturatedValue),
-                    componentMetadata.getSaturatedColor(),
-                    0.5));
+                                                                 SpotConstants.SATURATED_VALUE,
+                                                                 product.getSceneRasterWidth(),
+                                                                 product.getSceneRasterHeight(),
+                                                                 String.valueOf(saturatedValue),
+                                                                 componentMetadata.getSaturatedColor(),
+                                                                 0.5));
         }
     }
 }

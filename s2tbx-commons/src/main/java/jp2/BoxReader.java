@@ -18,12 +18,9 @@ public class BoxReader {
         this.stream = stream;
         this.fileLength = fileLength;
 
-        if(listener == null)
-        {
+        if (listener == null) {
             this.listener = new AEmptyListener();
-        }
-        else
-        {
+        } else {
             this.listener = listener;
         }
     }

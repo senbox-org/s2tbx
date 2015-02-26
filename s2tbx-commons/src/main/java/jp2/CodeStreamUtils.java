@@ -24,7 +24,7 @@ public class CodeStreamUtils {
 
         Box box;
         do {
-            box =  boxReader.readBox();
+            box = boxReader.readBox();
             if (box == null) {
                 //todo change error messages
                 throw new IllegalArgumentException("Wrong jpeg2000 format ?");
@@ -33,8 +33,8 @@ public class CodeStreamUtils {
 
         boxReader.getStream().seek(box.getPosition() + box.getDataOffset());
         final CodestreamReader reader = new CodestreamReader(boxReader.getStream(),
-                box.getPosition() + box.getDataOffset(),
-                box.getLength() - box.getDataOffset());
+                                                             box.getPosition() + box.getDataOffset(),
+                                                             box.getLength() - box.getDataOffset());
         final MarkerSegment seg1 = reader.readSegment();
 
         final MarkerSegment seg2 = reader.readSegment();
@@ -50,7 +50,7 @@ public class CodeStreamUtils {
 
         Box box;
         do {
-            box =  boxReader.readBox();
+            box = boxReader.readBox();
             if (box == null) {
                 //todo change error messages
                 throw new IllegalArgumentException("Wrong jpeg2000 format ?");
@@ -59,8 +59,8 @@ public class CodeStreamUtils {
 
         boxReader.getStream().seek(box.getPosition() + box.getDataOffset());
         final CodestreamReader reader = new CodestreamReader(boxReader.getStream(),
-                box.getPosition() + box.getDataOffset(),
-                box.getLength() - box.getDataOffset());
+                                                             box.getPosition() + box.getDataOffset(),
+                                                             box.getLength() - box.getDataOffset());
         final MarkerSegment seg1 = reader.readSegment();
         final MarkerSegment seg2 = reader.readSegment();
         final MarkerSegment seg3 = reader.readSegment();
@@ -76,7 +76,7 @@ public class CodeStreamUtils {
 
         Box box;
         do {
-            box =  boxReader.readBox();
+            box = boxReader.readBox();
             if (box == null) {
                 //todo change error messages
                 throw new IllegalArgumentException("Wrong jpeg2000 format ?");
@@ -85,8 +85,8 @@ public class CodeStreamUtils {
 
         boxReader.getStream().seek(box.getPosition() + box.getDataOffset());
         final CodestreamReader reader = new CodestreamReader(boxReader.getStream(),
-                box.getPosition() + box.getDataOffset(),
-                box.getLength() - box.getDataOffset());
+                                                             box.getPosition() + box.getDataOffset(),
+                                                             box.getLength() - box.getDataOffset());
         final MarkerSegment seg1 = reader.readSegment();
         final MarkerSegment seg2 = reader.readSegment();
 
@@ -96,7 +96,7 @@ public class CodeStreamUtils {
         do {
             seg3 = reader.readSegment();
         }
-        while (!(seg3 instanceof  CodingStyleDefaultSegment));
+        while (!(seg3 instanceof CodingStyleDefaultSegment));
 
         CodingStyleDefaultSegment roar = (CodingStyleDefaultSegment) seg3;
 
@@ -112,11 +112,9 @@ public class CodeStreamUtils {
 
         CommandOutput exit = JpegUtils.runProcess(builder);
 
-        if(exit.getErrorCode() != 0)
-        {
+        if (exit.getErrorCode() != 0) {
             StringBuffer sbu = new StringBuffer();
-            for(String fragment: builder.command())
-            {
+            for (String fragment : builder.command()) {
                 sbu.append(fragment);
                 sbu.append(' ');
             }
@@ -132,20 +130,16 @@ public class CodeStreamUtils {
 
         try {
             myLayout = CodeStreamUtils.getTileLayout(imageFile, listener);
-            if((myLayout.numResolutions < 1) || (myLayout.numResolutions > 6))
-            {
+            if ((myLayout.numResolutions < 1) || (myLayout.numResolutions > 6)) {
                 decodingProblemSuspscted = true;
             }
-        }
-        catch (IllegalArgumentException iae)
-        {
+        } catch (IllegalArgumentException iae) {
             decodingProblemSuspscted = true;
         } catch (IOException e) {
             decodingProblemSuspscted = true;
         }
 
-        if(decodingProblemSuspscted)
-        {
+        if (decodingProblemSuspscted) {
             myLayout = CodeStreamUtils.getTileLayoutWithOpenJPEG(opjdumpPath, imageFile, listener);
         }
 
@@ -157,8 +151,7 @@ public class CodeStreamUtils {
         return getTileLayout(partial, listener);
     }
 
-    public static int getNumTiles(ImageAndTileSizeSegment imageAndTileSizeSegment)
-    {
+    public static int getNumTiles(ImageAndTileSizeSegment imageAndTileSizeSegment) {
         double xTiles = Math.ceil((imageAndTileSizeSegment.getXsiz() - imageAndTileSizeSegment.getXosiz()) / (float) imageAndTileSizeSegment.getXtsiz());
         double yTiles = Math.ceil((imageAndTileSizeSegment.getYsiz() - imageAndTileSizeSegment.getYosiz()) / (float) imageAndTileSizeSegment.getYtsiz());
 
@@ -167,15 +160,13 @@ public class CodeStreamUtils {
         return numTiles;
     }
 
-    public static int getYNumTiles(ImageAndTileSizeSegment imageAndTileSizeSegment)
-    {
+    public static int getYNumTiles(ImageAndTileSizeSegment imageAndTileSizeSegment) {
         double yTiles = Math.ceil((imageAndTileSizeSegment.getYsiz() - imageAndTileSizeSegment.getYosiz()) / (float) imageAndTileSizeSegment.getYtsiz());
 
         return (int) yTiles;
     }
 
-    public static int getXNumTiles(ImageAndTileSizeSegment imageAndTileSizeSegment)
-    {
+    public static int getXNumTiles(ImageAndTileSizeSegment imageAndTileSizeSegment) {
         double xTiles = Math.ceil((imageAndTileSizeSegment.getXsiz() - imageAndTileSizeSegment.getXosiz()) / (float) imageAndTileSizeSegment.getXtsiz());
 
         return (int) xTiles;

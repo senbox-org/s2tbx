@@ -10,17 +10,14 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
-    public static String getStackTrace(Throwable tr)
-    {
+    public static String getStackTrace(Throwable tr) {
         StringWriter sw = new StringWriter();
         tr.printStackTrace(new PrintWriter(sw));
         return sw.toString();
     }
 
-    public static String GetShortPathName(String path)
-    {
-        if(!(new File(path).exists()))
-        {
+    public static String GetShortPathName(String path) {
+        if (!(new File(path).exists())) {
             return "";
         }
 
@@ -33,23 +30,19 @@ public class Utils {
         return shortPath;
     }
 
-    public static String GetIterativeShortPathName(String path)
-    {
-        if(!(new File(path).exists()))
-        {
+    public static String GetIterativeShortPathName(String path) {
+        if (!(new File(path).exists())) {
             return "";
         }
 
         String firstTry = GetShortPathName(path);
-        if(firstTry.length() != 0)
-        {
+        if (firstTry.length() != 0) {
             return firstTry;
         }
 
         int lenght = 0;
         String workingPath = path;
-        while (lenght == 0)
-        {
+        while (lenght == 0) {
             workingPath = new File(workingPath).getParent();
             lenght = GetShortPathName(workingPath).length();
         }
@@ -57,16 +50,14 @@ public class Utils {
         String[] shortenedFragments = GetShortPathName(workingPath).split(Pattern.quote(File.separator));
         String[] fragments = path.split(Pattern.quote(File.separator));
 
-        for(int index=0; index < shortenedFragments.length; index++)
-        {
+        for (int index = 0; index < shortenedFragments.length; index++) {
             fragments[index] = shortenedFragments[index];
         }
 
         String complete = String.join(File.separator, fragments);
         String shortComplete = GetShortPathName(complete);
 
-        if(shortComplete.length() != 0)
-        {
+        if (shortComplete.length() != 0) {
             return shortComplete;
         }
 

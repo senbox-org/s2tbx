@@ -227,7 +227,7 @@ public class TarVirtualDir extends VirtualDir {
         }
     }
 
-    public String[] listAll(){
+    public String[] listAll() {
         List<String> fileNames = new ArrayList<String>();
         TarInputStream tis = null;
         try {
@@ -270,8 +270,8 @@ public class TarVirtualDir extends VirtualDir {
         return fileNames.toArray(new String[fileNames.size()]);
     }
 
-    public void ensureUnpackedStarted(){
-        if(!unpackStarted){
+    public void ensureUnpackedStarted() {
+        if (!unpackStarted) {
             unpackStarted = true;
             executor.execute(unpackTask);
         }

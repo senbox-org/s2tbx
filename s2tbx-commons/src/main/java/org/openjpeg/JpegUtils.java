@@ -22,8 +22,7 @@ public class JpegUtils {
         return s.hasNext() ? s.next() : "";
     }
 
-    public static CommandOutput runProcess(ProcessBuilder builder) throws InterruptedException, IOException
-    {
+    public static CommandOutput runProcess(ProcessBuilder builder) throws InterruptedException, IOException {
         final Process process = builder.start();
         final int exitCode = process.waitFor();
         String output = convertStreamToString(process.getInputStream());
@@ -31,27 +30,22 @@ public class JpegUtils {
         return new CommandOutput(exitCode, output, errorOutput);
     }
 
-    public static void setExecutable(File file, boolean executable)
-    {
-        try
-        {
-            Process p = Runtime.getRuntime().exec(new String[] {
+    public static void setExecutable(File file, boolean executable) {
+        try {
+            Process p = Runtime.getRuntime().exec(new String[]{
                     "chmod",
-                    "u"+(executable?'+':'-')+"x",
+                    "u" + (executable ? '+' : '-') + "x",
                     file.getAbsolutePath(),
             });
             p.waitFor();
             String output = convertStreamToString(p.getInputStream());
             String errorOutput = convertStreamToString(p.getErrorStream());
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
         }
     }
 
-    public static String getExecutable(String modulesDir)
-    {
+    public static String getExecutable(String modulesDir) {
         String winPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
         String linuxPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
         String linux64Path = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
@@ -59,8 +53,7 @@ public class JpegUtils {
 
         String target = "opj_decompress";
 
-        if(SystemUtils.IS_OS_LINUX)
-        {
+        if (SystemUtils.IS_OS_LINUX) {
             try {
                 Process p = Runtime.getRuntime().exec("uname -m");
                 p.waitFor();
@@ -70,36 +63,26 @@ public class JpegUtils {
                 BeamLogManager.getSystemLogger().fine(output);
                 BeamLogManager.getSystemLogger().severe(errorOutput);
 
-                if(output.startsWith("i686"))
-                {
+                if (output.startsWith("i686")) {
                     target = modulesDir + linuxPath;
-                }
-                else
-                {
+                } else {
                     target = modulesDir + linux64Path;
                 }
             } catch (Exception e) {
                 BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
             }
-        }
-        else if(SystemUtils.IS_OS_MAC)
-        {
+        } else if (SystemUtils.IS_OS_MAC) {
             try {
                 target = modulesDir + macPath;
                 setExecutable(new File(target), true);
             } catch (Exception e) {
                 BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
             }
-        }
-        else
-        {
+        } else {
             try {
-                if(modulesDir.startsWith("/"))
-                {
+                if (modulesDir.startsWith("/")) {
                     target = modulesDir.substring(1) + winPath;
-                }
-                else
-                {
+                } else {
                     target = modulesDir + winPath;
                 }
 
@@ -110,16 +93,14 @@ public class JpegUtils {
         }
 
         File fileTarget = new File(target);
-        if(fileTarget.exists())
-        {
+        if (fileTarget.exists()) {
             fileTarget.setExecutable(true);
         }
 
         return target;
     }
 
-    public static String getInfoExecutable(String modulesDir)
-    {
+    public static String getInfoExecutable(String modulesDir) {
         String winPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-win32-x86/bin/opj_dump.exe";
         String linuxPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-i386/bin/opj_dump";
         String linux64Path = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-x64/bin/opj_dump";
@@ -127,8 +108,7 @@ public class JpegUtils {
 
         String target = "opj_decompress";
 
-        if(SystemUtils.IS_OS_LINUX)
-        {
+        if (SystemUtils.IS_OS_LINUX) {
             try {
                 Process p = Runtime.getRuntime().exec("uname -m");
                 p.waitFor();
@@ -138,36 +118,26 @@ public class JpegUtils {
                 BeamLogManager.getSystemLogger().fine(output);
                 BeamLogManager.getSystemLogger().severe(errorOutput);
 
-                if(output.startsWith("i686"))
-                {
+                if (output.startsWith("i686")) {
                     target = modulesDir + linuxPath;
-                }
-                else
-                {
+                } else {
                     target = modulesDir + linux64Path;
                 }
             } catch (Exception e) {
                 BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
             }
-        }
-        else if(SystemUtils.IS_OS_MAC)
-        {
+        } else if (SystemUtils.IS_OS_MAC) {
             try {
                 target = modulesDir + macPath;
                 setExecutable(new File(target), true);
             } catch (Exception e) {
                 BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
             }
-        }
-        else
-        {
+        } else {
             try {
-                if(modulesDir.startsWith("/"))
-                {
+                if (modulesDir.startsWith("/")) {
                     target = modulesDir.substring(1) + winPath;
-                }
-                else
-                {
+                } else {
                     target = modulesDir + winPath;
                 }
             } catch (Exception e) {
@@ -177,23 +147,20 @@ public class JpegUtils {
         }
 
         File fileTarget = new File(target);
-        if(fileTarget.exists())
-        {
+        if (fileTarget.exists()) {
             fileTarget.setExecutable(true);
         }
 
         return target;
     }
 
-    public static TileLayout parseOpjDump(String content)
-    {
+    public static TileLayout parseOpjDump(String content) {
         List<String> splittedContent = new ArrayList<>();
         Collections.addAll(splittedContent, content.split("\n"));
         return parseOpjDump(splittedContent);
     }
 
-    public static TileLayout parseOpjDump(List<String> content)
-    {
+    public static TileLayout parseOpjDump(List<String> content) {
         int Width = 0;
         int Height = 0;
         int tileWidth = 0;
@@ -202,28 +169,23 @@ public class JpegUtils {
         int yTiles = 0;
         int resolutions = 0;
 
-        for(String line: content)
-        {
-            if(line.contains("x1") && line.contains("y1"))
-            {
+        for (String line : content) {
+            if (line.contains("x1") && line.contains("y1")) {
                 String[] segments = line.trim().split(",");
                 Width = Integer.parseInt(segments[0].split("\\=")[1]);
                 Height = Integer.parseInt(segments[1].split("\\=")[1]);
             }
-            if(line.contains("tdx") && line.contains("tdy"))
-            {
+            if (line.contains("tdx") && line.contains("tdy")) {
                 String[] segments = line.trim().split(",");
                 tileWidth = Integer.parseInt(segments[0].split("\\=")[1]);
                 tileHeight = Integer.parseInt(segments[1].split("\\=")[1]);
             }
-            if(line.contains("tw") && line.contains("th"))
-            {
+            if (line.contains("tw") && line.contains("th")) {
                 String[] segments = line.trim().split(",");
                 xTiles = Integer.parseInt(segments[0].split("\\=")[1]);
                 yTiles = Integer.parseInt(segments[1].split("\\=")[1]);
             }
-            if(line.contains("numresolutions"))
-            {
+            if (line.contains("numresolutions")) {
                 resolutions = Integer.parseInt(line.trim().split("\\=")[1]);
             }
         }

@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  * This is the base class for SPOT DIMAP readers, which regroups common
  * methods in order to avoid code duplication.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public abstract class SpotProductReader extends AbstractProductReader {
 

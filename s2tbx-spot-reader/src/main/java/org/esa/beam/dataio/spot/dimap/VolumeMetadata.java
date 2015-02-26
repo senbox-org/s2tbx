@@ -13,6 +13,7 @@ import java.util.List;
 /**
  * Represents a DIMAP volume metadata file, which points to individual components (products).
  * As of now, SPOT scene products have only one component.
+ *
  * @author Cosmin Cara
  */
 public class VolumeMetadata {
@@ -63,7 +64,9 @@ public class VolumeMetadata {
         return productionDate;
     }
 
-    public String getProfileName() { return profileName; }
+    public String getProfileName() {
+        return profileName;
+    }
 
     public int[][] getTileComponentIndices() {
         if (tileComponentIndices == null) {

@@ -26,8 +26,8 @@ public abstract class Box {
     }
 
     public String getSymbol() {
-            return type.getSymbol();
-        }
+        return type.getSymbol();
+    }
 
     public int getCode() {
         return type.getCode();

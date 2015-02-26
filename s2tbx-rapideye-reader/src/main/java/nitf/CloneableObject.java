@@ -38,35 +38,32 @@ package nitf;
  * before calling the super.destruct(). Thus, for some objects, it is a good
  * idea to override the DestructibleObject.destruct() method. Keep that in mind.
  */
-public abstract class CloneableObject extends DestructibleObject
-{
+public abstract class CloneableObject extends DestructibleObject {
 
     /* keeps track of the clone status */
     private boolean clone = false;
 
     /**
      * Returns true if it is a clone, false otherwise
-     * 
+     *
      * @return
      */
-    final boolean isClone()
-    {
+    final boolean isClone() {
         return clone;
     }
 
     /**
      * Sets the clone status
-     * 
+     *
      * @param clone
      */
-    final void setClone(boolean clone)
-    {
+    final void setClone(boolean clone) {
         this.clone = clone;
     }
 
     /**
      * Returns a clone of this NITFObject
-     * 
+     *
      * @return
      * @throws NITFException
      */
@@ -75,16 +72,14 @@ public abstract class CloneableObject extends DestructibleObject
     /**
      * @see DestructibleObject
      */
-    protected CloneableObject()
-    {
+    protected CloneableObject() {
         super();
     }
 
     /**
      * @see DestructibleObject#DestructibleObject(long)
      */
-    protected CloneableObject(long address)
-    {
+    protected CloneableObject(long address) {
         super(address);
     }
 

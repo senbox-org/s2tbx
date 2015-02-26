@@ -7,8 +7,7 @@ import java.io.Writer;
 /**
  * Created by opicas-p on 26/02/2015.
  */
-public class StackTraceUtils
-{
+public class StackTraceUtils {
     public static String getStackTrace(Throwable aThrowable) {
         final Writer result = new StringWriter();
         final PrintWriter printWriter = new PrintWriter(result);

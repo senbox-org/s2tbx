@@ -32,12 +32,10 @@ import java.util.Map;
 /**
  * This class provides the functionality to manage the underlying memory
  */
-public final class NITFResourceManager
-{
+public final class NITFResourceManager {
 
     // this makes sure that the jni library gets loaded by NITFObject
-    static
-    {
+    static {
         NITFObject.class.getName();
     }
 
@@ -49,13 +47,11 @@ public final class NITFResourceManager
     /**
      * @return the singleton instance of the NITFResourceManager
      */
-    public static NITFResourceManager getInstance()
-    {
+    public static NITFResourceManager getInstance() {
         return singleton;
     }
 
-    private static class TrackedObject
-    {
+    private static class TrackedObject {
         private Long address = NITFObject.INVALID_ADDRESS;
 
         private Integer javaRefCount = 0;
@@ -66,43 +62,37 @@ public final class NITFResourceManager
 
         private String className = null;
 
-        public TrackedObject(DestructibleObject object)
-        {
+        public TrackedObject(DestructibleObject object) {
             address = object.getAddress();
             className = object.getClass().getCanonicalName();
             destructor = object.getDestructor();
             javaRefCount = 1;
         }
 
-        public void reference(boolean nativeRef)
-        {
+        public void reference(boolean nativeRef) {
             if (nativeRef)
                 nativeRefCount += 1;
             else
                 javaRefCount += 1;
         }
 
-        public void unReference(boolean nativeRef)
-        {
+        public void unReference(boolean nativeRef) {
             if (nativeRef)
                 nativeRefCount -= 1;
             else
                 javaRefCount -= 1;
         }
 
-        boolean canDestroy()
-        {
+        boolean canDestroy() {
             return javaRefCount <= 0 && nativeRefCount <= 0;
         }
 
-        boolean destroy()
-        {
+        boolean destroy() {
             return canDestroy() && destructor != null && destructor.destructMemory(address);
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "[" + className + ", address=" + address + ", javaRefs="
                     + javaRefCount + ", nativeRefs=" + nativeRefCount + "]";
         }
@@ -112,56 +102,42 @@ public final class NITFResourceManager
 
     /**
      * Increments the java reference count of an object
-     * 
+     *
      * @param object
      */
-    protected void incrementRefCount(DestructibleObject object)
-    {
-        if (object != null && object.isValid())
-        {
+    protected void incrementRefCount(DestructibleObject object) {
+        if (object != null && object.isValid()) {
             long address = object.getAddress();
-            if (trackedObjects.containsKey(address))
-            {
+            if (trackedObjects.containsKey(address)) {
                 TrackedObject trackedObject = trackedObjects.get(address);
                 trackedObject.reference(false);
                 log.debug("Incremented ref count: " + trackedObject.toString());
-            }
-            else
-            {
+            } else {
                 TrackedObject trackedObject = new TrackedObject(object);
                 trackedObjects.put(address, trackedObject);
                 log.debug("Tracking new object: " + trackedObject.toString());
             }
-        }
-        else
-        {
+        } else {
             log.error("Cannot reference invalid object");
         }
     }
 
     /**
      * Increments either the java or native reference count
-     * 
+     *
      * @param address
      * @param nativeRef
      */
-    protected void incrementRefCount(long address, boolean nativeRef)
-    {
-        if (address != NITFObject.INVALID_ADDRESS)
-        {
-            if (trackedObjects.containsKey(address))
-            {
+    protected void incrementRefCount(long address, boolean nativeRef) {
+        if (address != NITFObject.INVALID_ADDRESS) {
+            if (trackedObjects.containsKey(address)) {
                 TrackedObject trackedObject = trackedObjects.get(address);
                 trackedObject.reference(nativeRef);
                 log.debug("Incremented ref count: " + trackedObject.toString());
-            }
-            else
-            {
+            } else {
                 log.error("Unable to track unkown object: " + address);
             }
-        }
-        else
-        {
+        } else {
             log.error("Cannot reference invalid address");
         }
     }
@@ -169,68 +145,53 @@ public final class NITFResourceManager
     /**
      * Decrements the reference count of an object, and destructs the object if
      * the count is now < 1
-     * 
+     *
      * @param object
      */
-    protected void decrementRefCount(long address, boolean nativeRef)
-    {
-        if (address != NITFObject.INVALID_ADDRESS)
-        {
+    protected void decrementRefCount(long address, boolean nativeRef) {
+        if (address != NITFObject.INVALID_ADDRESS) {
             // if its in here, update its count, if not, forget about it
-            if (trackedObjects.containsKey(address))
-            {
+            if (trackedObjects.containsKey(address)) {
                 TrackedObject trackedObject = trackedObjects.get(address);
                 trackedObject.unReference(nativeRef);
                 log.debug("Decremented ref count: " + trackedObject.toString());
-                if (trackedObject.canDestroy())
-                {
-                    if (trackedObject.destroy())
-                    {
+                if (trackedObject.canDestroy()) {
+                    if (trackedObject.destroy()) {
                         trackedObjects.remove(address);
                         log.debug("Destroyed object: "
-                                + trackedObject.toString());
-                    }
-                    else
-                    {
+                                          + trackedObject.toString());
+                    } else {
                         log.error("Unable to destroy object: "
-                                + trackedObject.toString());
+                                          + trackedObject.toString());
                     }
                 }
-            }
-            else
-            {
+            } else {
                 log
                         .warn("Unable to decrement reference count for untracked address: "
-                                + address);
+                                      + address);
             }
-        }
-        else
-        {
+        } else {
             log.error("Cannot reference invalid address");
         }
     }
 
-    protected String getObjectInfo(long address)
-    {
+    protected String getObjectInfo(long address) {
         TrackedObject trackedObject = trackedObjects.get(address);
         return trackedObject != null ? trackedObject.toString() : null;
     }
 
     /**
      * This attempts to load plugins from the directory given
-     * 
-     * @param dirName
-     *            plugin directory to load
+     *
+     * @param dirName plugin directory to load
      * @throws NITFException
      */
-    public static void loadPluginDir(String dirName) throws NITFException
-    {
+    public static void loadPluginDir(String dirName) throws NITFException {
         PluginRegistry.loadPluginDir(dirName);
     }
 
     // private constructor
-    private NITFResourceManager()
-    {
+    private NITFResourceManager() {
         trackedObjects = Collections
                 .synchronizedMap(new LinkedHashMap<Long, TrackedObject>());
     }

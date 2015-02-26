@@ -23,6 +23,6 @@ public class Jpeg2000SignatureBox extends Box {
 
     @Override
     public void readFrom(BoxReader reader) throws IOException {
-          signature = reader.getStream().readInt();
+        signature = reader.getStream().readInt();
     }
 }

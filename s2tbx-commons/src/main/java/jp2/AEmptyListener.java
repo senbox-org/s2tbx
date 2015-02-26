@@ -1,7 +1,6 @@
 package jp2;
 
-public class AEmptyListener implements BoxReader.Listener
-{
+public class AEmptyListener implements BoxReader.Listener {
 
     @Override
     public void knownBoxSeen(Box box) {

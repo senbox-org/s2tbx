@@ -27,8 +27,8 @@ public class IgnoredSegment extends MarkerSegment {
     }
 
     public String toHexString() {
-            return "0x" + Integer.toHexString(code).toUpperCase();
-        }
+        return "0x" + Integer.toHexString(code).toUpperCase();
+    }
 
     @Override
     public void readFrom(ImageInputStream stream) throws IOException {

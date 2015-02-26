@@ -24,68 +24,59 @@ package nitf;
 
 /**
  * <code>FileSource</code>
- * 
- * 
+ * <p>
+ * <p>
  * The FileSource class extends the BandSource class, allowing you to provide
  * data from an IOHandle.
- * 
+ * <p>
  * This class is final because the BandSource class uses special logic when it
  * gets constructed from a subclass. This can however be used as a delegate
  * member inside another specialized BandSource.
- * 
  */
-public final class FileSource extends BandSource
-{
+public final class FileSource extends BandSource {
 
-    protected FileSource()
-    {
+    protected FileSource() {
         super();
     }
 
     /**
      * @param address
      */
-    protected FileSource(long address)
-    {
+    protected FileSource(long address) {
         super(address);
     }
 
     /**
      * Constructs and returns a BandSource from a File
-     * 
+     * <p>
      * This is one of the two BandSources the library provides for free. If you
      * want something more detailed to your needs, feel free to extend the
      * BandInfo abstract class.
-     * 
-     * @param handle
-     *            the source IOHandle
-     * @param start
-     *            the starting offset in the file where data for this band
-     *            begins
-     * @param numBytesPerPixel
-     *            the number of bytes per pixel this is ignored if pixelSkip ==
-     *            0
-     * @param pixelSkip
-     *            the number of pixels to skip, that are between pixels of this
-     *            band. i.e. the number of bands in the data buffer - 1 If this
-     *            is 0, it signifies a contiguous read.
+     *
+     * @param handle           the source IOHandle
+     * @param start            the starting offset in the file where data for this band
+     *                         begins
+     * @param numBytesPerPixel the number of bytes per pixel this is ignored if pixelSkip ==
+     *                         0
+     * @param pixelSkip        the number of pixels to skip, that are between pixels of this
+     *                         band. i.e. the number of bands in the data buffer - 1 If this
+     *                         is 0, it signifies a contiguous read.
      * @throws NITFException
      */
     public FileSource(IOInterface io, long start, int numBytesPerPixel,
-            int pixelSkip) throws NITFException
-    {
+                      int pixelSkip) throws NITFException {
         construct(io, start, numBytesPerPixel, pixelSkip);
     }
 
     /**
      * Constructs the underlying memory
-     * 
+     *
      * @param handle
      * @param start
      * @param pixelSkip
      */
     private native void construct(IOInterface handle, long start,
-            int numBytesPerPixel, int pixelSkip);
+                                  int numBytesPerPixel, int pixelSkip);
 
     /*
      * (non-Javadoc)
@@ -93,11 +84,11 @@ public final class FileSource extends BandSource
      * @see nitf.BandSource#read(byte[], int)
      */
     public native void read(byte[] buf, int size) throws NITFException;
-    
+
     @Override
     public native long getSize() throws NITFException;
-    
+
     @Override
     public native void setSize(long size) throws NITFException;
-    
+
 }

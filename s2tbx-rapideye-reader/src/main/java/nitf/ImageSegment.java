@@ -27,34 +27,32 @@ package nitf;
  * to each image plus its subheader which exists in the NITF file. The segment
  * also contains some book-keeping information regarding its offsets.
  */
-public final class ImageSegment extends NITFObject
-{
+public final class ImageSegment extends NITFObject {
 
     /**
      * @see NITFObject#NITFObject(long)
      */
-    ImageSegment(long address)
-    {
+    ImageSegment(long address) {
         super(address);
     }
 
     /**
      * Retrieve the subheader corresponding to this image segment
-     * 
+     *
      * @return The associated image subheader
      */
     public native ImageSubheader getSubheader();
 
     /**
      * Retrieve the offset into the file for an image
-     * 
+     *
      * @return An integer offset
      */
     public native long getImageOffset();
 
     /**
      * Retrieve the ending offset for the image
-     * 
+     *
      * @return An integer offset
      */
     public native long getImageEnd();

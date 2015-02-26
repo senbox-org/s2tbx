@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 /**
  * This rootProduct reader is intended for reading SPOT-1 to SPOT-5 scene files
  * from compressed archive files or from file system.
+ *
  * @author Cosmin Cara
  */
 public class SpotDimapProductReader extends AbstractProductReader {
@@ -126,7 +127,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 logger.warning(ex.getMessage());
             }
             //add components of the metadatas
-            for (SpotDimapMetadata componentMetadata: metadata.getComponentsMetadata()) {
+            for (SpotDimapMetadata componentMetadata : metadata.getComponentsMetadata()) {
                 try {
                     String[] fileNames = componentMetadata.getRasterFileNames();
                     if (fileNames == null || fileNames.length == 0)

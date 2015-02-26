@@ -19,6 +19,7 @@ import java.util.Map;
 /**
  * This rootProduct reader is intended for reading SPOT-1 to SPOT-5 scene files
  * from compressed archive files or from file system.
+ *
  * @author Cosmin Cara
  */
 public class SpotDimapSimpleProductReader extends SpotProductReader {
@@ -69,9 +70,9 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
 
     Product initProduct(int width, int height, SpotDimapMetadata dimapMetadata) {
         rootProduct = new Product(dimapMetadata.getProductName(),
-                SpotConstants.DIMAP_FORMAT_NAMES[0],
-                width,
-                height);
+                                  SpotConstants.DIMAP_FORMAT_NAMES[0],
+                                  width,
+                                  height);
         rootProduct.getMetadataRoot().addElement(dimapMetadata.getRootElement());
         ProductData.UTC centerTime = dimapMetadata.getCenterTime();
         rootProduct.setStartTime(centerTime);
@@ -149,30 +150,30 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
             }
         } else {
             logger.warning(String.format("Cannot add component product %s due to raster size [Found: %d x %d pixels, Expected: %d x %d pixels]",
-                    componentMetadata.getProductName(), currentW, currentH, width, height));
+                                         componentMetadata.getProductName(), currentW, currentH, width, height));
         }
     }
 
     void addMasks(Product product, SpotDimapMetadata componentMetadata) {
         logger.info("Create masks");
-        int noDataValue,saturatedValue;
+        int noDataValue, saturatedValue;
         if ((noDataValue = componentMetadata.getNoDataValue()) >= 0) {
             product.getMaskGroup().add(Mask.BandMathsType.create(SpotConstants.NODATA_VALUE,
-                    SpotConstants.NODATA_VALUE,
-                    product.getSceneRasterWidth(),
-                    product.getSceneRasterHeight(),
-                    String.valueOf(noDataValue),
-                    componentMetadata.getNoDataColor(),
-                    0.5));
+                                                                 SpotConstants.NODATA_VALUE,
+                                                                 product.getSceneRasterWidth(),
+                                                                 product.getSceneRasterHeight(),
+                                                                 String.valueOf(noDataValue),
+                                                                 componentMetadata.getNoDataColor(),
+                                                                 0.5));
         }
         if ((saturatedValue = componentMetadata.getSaturatedPixelValue()) >= 0) {
             product.getMaskGroup().add(Mask.BandMathsType.create(SpotConstants.SATURATED_VALUE,
-                    SpotConstants.SATURATED_VALUE,
-                    product.getSceneRasterWidth(),
-                    product.getSceneRasterHeight(),
-                    String.valueOf(saturatedValue),
-                    componentMetadata.getSaturatedColor(),
-                    0.5));
+                                                                 SpotConstants.SATURATED_VALUE,
+                                                                 product.getSceneRasterWidth(),
+                                                                 product.getSceneRasterHeight(),
+                                                                 String.valueOf(saturatedValue),
+                                                                 componentMetadata.getSaturatedColor(),
+                                                                 0.5));
         }
     }
 }

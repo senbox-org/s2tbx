@@ -3,8 +3,7 @@ package org.openjpeg;
 /**
  * Created by Oscar on 16/02/2015.
  */
-public class CommandOutput
-{
+public class CommandOutput {
     private int errorCode;
     private String textOutput;
     private String errorOutput;

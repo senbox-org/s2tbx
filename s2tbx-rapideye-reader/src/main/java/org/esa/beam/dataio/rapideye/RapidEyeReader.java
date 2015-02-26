@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 /**
  * Base class for RapidEye readers.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public abstract class RapidEyeReader extends AbstractProductReader {
     public static final int WIDTH_THRESHOLD = 8192;
@@ -115,11 +115,11 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         for (String flagName : flagCoding.getFlagNames()) {
             MetadataAttribute flag = flagCoding.getFlag(flagName);
             masks.add(Mask.BandMathsType.create(flagName,
-                    flag.getDescription(),
-                    width, height,
-                    flagCodingName + "." + flagName,
-                    ColorIterator.next(),
-                    0.5));
+                                                flag.getDescription(),
+                                                width, height,
+                                                flagCodingName + "." + flagName,
+                                                ColorIterator.next(),
+                                                0.5));
         }
         return masks;
     }
@@ -130,7 +130,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
             tileSize = product.getPreferredTileSize();
             if (tileSize == null) {
                 Dimension suggestedTileSize = ImageManager.getPreferredTileSize(product);
-                tileSize = new Dimension((int)suggestedTileSize.getWidth(), (int)suggestedTileSize.getHeight());
+                tileSize = new Dimension((int) suggestedTileSize.getWidth(), (int) suggestedTileSize.getHeight());
             }
         }
         return tileSize;

@@ -32,7 +32,7 @@ public class CodingStyleDefaultSegment extends MarkerSegment {
         lcod = stream.readShort();
         order = stream.readByte();
         int raw = stream.readInt();
-        layers = raw & 0x00ffff00 ;
+        layers = raw & 0x00ffff00;
         layers = layers >> 8;
         levels = stream.readByte();
         levels = (short) (levels + 1);

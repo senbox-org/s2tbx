@@ -25,34 +25,32 @@ package nitf;
 /**
  * A representation of the NITF Graphic (Symobl) Segment
  */
-public final class GraphicSegment extends NITFObject
-{
+public final class GraphicSegment extends NITFObject {
 
     /**
      * @see NITFObject#NITFObject(long)
      */
-    GraphicSegment(long address)
-    {
+    GraphicSegment(long address) {
         super(address);
     }
 
     /**
      * Returns the GraphicSubheader from this segment
-     * 
+     *
      * @return the GraphicSubheader from this segment
      */
     public native GraphicSubheader getSubheader();
 
     /**
      * Returns the file offset where this graphic segment starts
-     * 
+     *
      * @return the file offset where this graphic segment starts
      */
     public native long getOffset();
 
     /**
      * Returns the end offset
-     * 
+     *
      * @return the end offset
      */
     public native long getEnd();

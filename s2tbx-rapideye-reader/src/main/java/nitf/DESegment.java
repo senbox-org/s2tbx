@@ -25,34 +25,32 @@ package nitf;
 /**
  * A representation of the NITF Data Extension Segment.
  */
-public final class DESegment extends NITFObject
-{
+public final class DESegment extends NITFObject {
 
     /**
      * @see NITFObject#NITFObject(long)
      */
-    DESegment(long address)
-    {
+    DESegment(long address) {
         super(address);
     }
 
     /**
      * Returns the DESubheader from this segment
-     * 
+     *
      * @return the DESubheader from this segment
      */
     public native DESubheader getSubheader();
 
     /**
      * Returns the file offset where this DES segment starts
-     * 
+     *
      * @return the file offset where this DES segment starts
      */
     public native long getOffset();
 
     /**
      * Return the end marker
-     * 
+     *
      * @return the end marker
      */
     public native long getEnd();

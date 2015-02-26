@@ -25,16 +25,13 @@ package nitf;
 /**
  * Represents an Exception that occurs in the underlying native NITF library
  */
-public class NITFException extends Exception
-{
+public class NITFException extends Exception {
 
-    public NITFException(String message)
-    {
+    public NITFException(String message) {
         super("NITF Exception: " + message);
     }
 
-    public NITFException(Throwable cause)
-    {
+    public NITFException(Throwable cause) {
         super("NITF Exception", cause);
     }
 

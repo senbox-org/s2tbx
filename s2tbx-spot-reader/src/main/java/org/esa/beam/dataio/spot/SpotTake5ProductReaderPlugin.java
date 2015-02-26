@@ -19,6 +19,7 @@ import java.util.Locale;
 /**
  * Visat plugin for reading SPOT4 TAKE5 scene files.
  * The scene files are GeoTIFF with XML metadata.
+ *
  * @author Ramona Manda
  */
 public class SpotTake5ProductReaderPlugin implements ProductReaderPlugIn {
@@ -99,8 +100,8 @@ public class SpotTake5ProductReaderPlugin implements ProductReaderPlugIn {
     @Override
     public BeamFileFilter getProductFileFilter() {
         return new BeamFileFilter(SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0],
-                SpotConstants.SPOT4_TAKE5_DEFAULT_EXTENSION,
-                SpotConstants.SPOT4_TAKE5_DESCRIPTION);
+                                  SpotConstants.SPOT4_TAKE5_DEFAULT_EXTENSION,
+                                  SpotConstants.SPOT4_TAKE5_DESCRIPTION);
     }
 
     @Override
