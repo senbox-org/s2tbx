@@ -16,18 +16,16 @@
 
 package org.esa.beam.dataio.atmcorr.ui;
 
-import javax.swing.*;
-
+import com.bc.ceres.swing.TableLayout;
+import com.bc.ceres.swing.selection.SelectionChangeEvent;
+import com.bc.ceres.swing.selection.SelectionChangeListener;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductFilter;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
 import org.esa.beam.framework.ui.AppContext;
-import org.esa.beam.util.SystemUtils;
-import java.io.File;
 
-import com.bc.ceres.swing.TableLayout;
-import com.bc.ceres.swing.selection.SelectionChangeEvent;
-import com.bc.ceres.swing.selection.SelectionChangeListener;
+import javax.swing.*;
+import java.io.File;
 
 /**
  * @author Tonio Fincke
@@ -75,8 +73,8 @@ public class AtmCorrIOParametersPanel extends JPanel {
 
     private void updateTargetProductName() {
         if(sourceProductSelector.getSelectedProduct() != null) {
-            String sourceDir = sourceProductSelector.getCurrentDirectory().getPath();
             String sourceName = sourceProductSelector.getSelectedProduct().getName();
+            String sourceDir = sourceProductSelector.getSelectedProduct().getFileLocation().getPath();
             String targetDir = sourceDir.replace("1C", "2A");
             targetDir = targetDir.replace("OPER", "USER");
             targetProductSelector.getModel().setProductDir(new File(targetDir));
