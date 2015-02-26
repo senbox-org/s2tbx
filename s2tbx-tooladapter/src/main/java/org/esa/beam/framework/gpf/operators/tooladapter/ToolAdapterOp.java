@@ -1,4 +1,4 @@
-package org.esa.beam.framework.gpf;
+package org.esa.beam.framework.gpf.operators.tooladapter;
 
 import com.bc.ceres.binding.Property;
 import org.apache.velocity.Template;
@@ -8,26 +8,27 @@ import org.apache.velocity.app.VelocityEngine;
 import org.esa.beam.framework.dataio.ProductIO;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.gpf.Operator;
+import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
-import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
-import org.esa.s2tbx.tooladapter.ProcessOutputConsumer;
-import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
+import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.internal.OperatorContext;
+import org.esa.beam.utils.PrivilegedAccessor;
 
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 
 /**
- * Sentinel-2 Tool Adapter operator
+ * Tool Adapter operator
  *
  * @author Lucian Barbulescu
  */
 @OperatorMetadata(alias = "ToolAdapterOp",
         category = "Tools",
         version = "1.0",
-        description = "Sentinel-2 Tool Adapter Operator")
-public class S2tbxToolAdapterOp extends Operator {
+        description = "Tool Adapter Operator")
+public class ToolAdapterOp extends Operator {
 
     /**
      * Consume the output created by a tool.
@@ -44,22 +45,29 @@ public class S2tbxToolAdapterOp extends Operator {
      */
     private final Object lock;
 
-    private S2tbxOperatorDescriptor descriptor;
+    private ToolAdapterOperatorDescriptor descriptor;
 
     /**
      * The folder where the tool descriptors reside.
      */
-    private String toolDescFolder;
+    private File adapterFolder;
+
+    private OperatorContext accessibleContext;
 
     /**
      * Constructor.
      */
-    public S2tbxToolAdapterOp() {
+    public ToolAdapterOp() {
         super();
         this.consumer = null;
         this.stop = false;
         this.lock = new Object();
-        this.descriptor = ((S2tbxOperatorDescriptor) context.getOperatorSpi().getOperatorDescriptor());
+        try {
+            accessibleContext = (OperatorContext) PrivilegedAccessor.getValue(this, "context");
+        } catch (Exception e) {
+            getLogger().severe(e.getMessage());
+        }
+        //this.descriptor = ((ToolAdapterOperatorDescriptor) accessibleContext.getOperatorSpi().getOperatorDescriptor());
     }
 
     /**
@@ -97,8 +105,8 @@ public class S2tbxToolAdapterOp extends Operator {
         }
     }
 
-    public void setToolDescFolder(String toolDescFolder) {
-        this.toolDescFolder = toolDescFolder;
+    public void setAdapterFolder(File folder) {
+        this.adapterFolder = folder;
     }
 
     /**
@@ -107,11 +115,16 @@ public class S2tbxToolAdapterOp extends Operator {
      * This method will block until the tool finishes its execution.
      * </p>
      *
-     * @throws OperatorException
+     * @throws org.esa.beam.framework.gpf.OperatorException
      */
     @Override
     public void initialize() throws OperatorException {
         Date currentTime = new Date();
+
+        if (descriptor == null) {
+            descriptor = ((ToolAdapterOperatorDescriptor) accessibleContext.getOperatorSpi().getOperatorDescriptor());
+        }
+
         //Validate the input
         validateDescriptorInput();
 
@@ -260,7 +273,7 @@ public class S2tbxToolAdapterOp extends Operator {
      * @throws OperatorException in case of an error
      */
     private void loadFinalProduct() throws OperatorException {
-        File input = (File) getParameter(S2tbxToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE_ID);
+        File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE_ID);
         if (input == null) {
             //no target product, means the source product was changed
             //TODO all input files should be (re)-loaded since we do not know which one was changed
@@ -322,11 +335,11 @@ public class S2tbxToolAdapterOp extends Operator {
     private List<String> getToolCommandLine() throws OperatorException {
         final List<String> ret = new ArrayList<>();
         ret.add(descriptor.getMainToolFileLocation().getAbsolutePath());
-        String cmdLineFileName = ((S2tbxOperatorDescriptor) (getSpi().getOperatorDescriptor())).getTemplateFileLocation();
+        String cmdLineFileName = ((ToolAdapterOperatorDescriptor) (getSpi().getOperatorDescriptor())).getTemplateFileLocation();
 
         if (cmdLineFileName != null) {
-            if (cmdLineFileName.endsWith(S2tbxToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX)) {
-                String result = transformVelocityTemplate(this.toolDescFolder + File.separator + cmdLineFileName);
+            if (cmdLineFileName.endsWith(ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX)) {
+                String result = transformVelocityTemplate(new File(this.adapterFolder, cmdLineFileName));
                 ret.addAll(Arrays.asList(result.split("\r\n")));
             } else {
                 ret.addAll(getCommandLineParameters(cmdLineFileName));
@@ -346,7 +359,7 @@ public class S2tbxToolAdapterOp extends Operator {
         final List<String> ret = new ArrayList<>();
 
         //open the command line template file
-        final File cmdLineTemplate = new File(this.toolDescFolder, cmdLineFileName);
+        final File cmdLineTemplate = new File(this.adapterFolder, cmdLineFileName);
         try {
             //read the file line by line
             final LineNumberReader reader = new LineNumberReader(new FileReader(cmdLineTemplate));
@@ -392,7 +405,7 @@ public class S2tbxToolAdapterOp extends Operator {
             final String tag = result.substring(startTagIndex + 2, endTagIndex);
 
             //Check if the tag is referring to a sourceProduct
-            if (tag.startsWith(S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)) {
+            if (tag.startsWith(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)) {
                 Product[] sourceProducts = getSourceProducts();
                 //This tag is related to a source product.
                 String[] sourceTag = tag.split("\\.");
@@ -405,7 +418,7 @@ public class S2tbxToolAdapterOp extends Operator {
                 if (id < sourceProducts.length) {
                     srcFileLocation = sourceProducts[id].getFileLocation().getAbsolutePath();
                 } else if (sourceProducts.length == 0) {
-                    srcFileLocation = ((File) getParameter(S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE, null)).getAbsolutePath();
+                    srcFileLocation = ((File) getParameter(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE, null)).getAbsolutePath();
                     //TODO check if exists!
                     if (srcFileLocation.length() <= 0 || !(new File(srcFileLocation)).exists()) {
                         throw new OperatorException("The source product file not existing!");
@@ -428,22 +441,22 @@ public class S2tbxToolAdapterOp extends Operator {
         return result;
     }
 
-    public String transformVelocityTemplate(String templateFile) {
+    public String transformVelocityTemplate(File templateFile) {
         Properties p = new Properties();
-        p.setProperty("file.resource.loader.path", new File(templateFile).getParent());
+        p.setProperty("file.resource.loader.path", templateFile.getParent());
         Velocity.init(p);
         VelocityEngine ve = new VelocityEngine();
         ve.init();
-        Template t = Velocity.getTemplate(new File(templateFile).getName());
+        Template t = Velocity.getTemplate(templateFile.getName());
         VelocityContext velContext = new VelocityContext();
-        Property[] params = context.getParameterSet().getProperties();
+        Property[] params = accessibleContext.getParameterSet().getProperties();
         for (Property param : params) {
             velContext.put(param.getName(), param.getValue().toString());
         }
         Product[] sourceProducts = getSourceProducts();
-        velContext.put(S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, sourceProducts[0]);
+        velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, sourceProducts[0]);
         for (int i = 0; i < sourceProducts.length; i++) {
-            velContext.put(S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + (i + 1), sourceProducts[i]);
+            velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + (i + 1), sourceProducts[i]);
         }
         StringWriter writer = new StringWriter();
         t.merge(velContext, writer);

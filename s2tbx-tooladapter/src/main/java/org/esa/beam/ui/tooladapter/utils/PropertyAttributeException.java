@@ -1,4 +1,4 @@
-package org.esa.s2tbx.tooladapter.ui.utils;
+package org.esa.beam.ui.tooladapter.utils;
 
 /**
  * @author Ramona Manda

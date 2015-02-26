@@ -1,8 +1,8 @@
-package org.esa.s2tbx.tooladapter.ui.utils;
+package org.esa.beam.ui.tooladapter.utils;
 
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxParameterDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
 
@@ -23,17 +23,17 @@ public class OperatorParametersTable extends JTable {
 
     private static String[] columnNames = {"", "Name", "Description", "Label", "Data type", "Default value", ""};
     private static String[] columnsMembers = {"del", "name", "description", "alias", "dataType", "defaultValue", "edit"};
-    private S2tbxOperatorDescriptor operator = null;
-    private Map<S2tbxParameterDescriptor, PropertyMemberUIWrapper> propertiesValueUIDescriptorMap;
+    private ToolAdapterOperatorDescriptor operator = null;
+    private Map<ToolParameterDescriptor, PropertyMemberUIWrapper> propertiesValueUIDescriptorMap;
     private MultiRenderer tableRenderer;
 
-    public OperatorParametersTable(S2tbxOperatorDescriptor operator) {
+    public OperatorParametersTable(ToolAdapterOperatorDescriptor operator) {
         this.operator = operator;
         propertiesValueUIDescriptorMap = new HashMap<>();
 
-        //List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
-        List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
-        for (S2tbxParameterDescriptor property : data) {
+        //List<ToolParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
+        List<ToolParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
+        for (ToolParameterDescriptor property : data) {
             propertiesValueUIDescriptorMap.put(property, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", property, operator, null));
         }
         tableRenderer = new MultiRenderer();
@@ -82,7 +82,7 @@ public class OperatorParametersTable extends JTable {
 
         @Override
         public Object getValueAt(int row, int column) {
-            S2tbxParameterDescriptor descriptor = operator.getS2tbxParameterDescriptors().get(row);
+            ToolParameterDescriptor descriptor = operator.getS2tbxParameterDescriptors().get(row);
             switch (column) {
                 case 0:
                     return false;
@@ -106,7 +106,7 @@ public class OperatorParametersTable extends JTable {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            S2tbxParameterDescriptor descriptor = operator.getS2tbxParameterDescriptors().get(rowIndex);
+            ToolParameterDescriptor descriptor = operator.getS2tbxParameterDescriptors().get(rowIndex);
             switch (columnIndex) {
                 case 0:
                     operator.removeParamDescriptor(descriptor);

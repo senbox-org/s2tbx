@@ -1,7 +1,7 @@
-package org.esa.s2tbx.tooladapter.ui.utils;
+package org.esa.beam.ui.tooladapter.utils;
 
-import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxParameterDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 
 import java.awt.*;
 import java.awt.event.FocusEvent;
@@ -15,17 +15,17 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
     protected String attributeName;
     protected Component UIComponent;
     protected int width = 0;
-    protected S2tbxParameterDescriptor property;
-    protected S2tbxOperatorDescriptor context;
+    protected ToolParameterDescriptor property;
+    protected ToolAdapterOperatorDescriptor context;
     private CallBackAfterEdit callback;
 
-    public PropertyMemberUIWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context) {
+    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context) {
         this.attributeName = attributeName;
         this.property = property;
         this.context = context;
     }
 
-    public PropertyMemberUIWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, int width, CallBackAfterEdit callback) {
+    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, CallBackAfterEdit callback) {
         this(attributeName, property, context);
         this.width = width;
         this.callback = callback;
@@ -109,6 +109,6 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
     protected abstract Object getValueFromUIComponent() throws PropertyAttributeException;
 
     public interface CallBackAfterEdit {
-        public void doCallBack(PropertyAttributeException exception, S2tbxParameterDescriptor oldProperty, S2tbxParameterDescriptor newProperty, String attributeName);
+        public void doCallBack(PropertyAttributeException exception, ToolParameterDescriptor oldProperty, ToolParameterDescriptor newProperty, String attributeName);
     }
 }

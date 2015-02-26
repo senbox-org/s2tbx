@@ -1,6 +1,6 @@
-package org.esa.s2tbx.tooladapter.ui.utils;
+package org.esa.beam.ui.tooladapter.utils;
 
-import org.esa.beam.framework.gpf.descriptor.S2tbxSystemVariable;
+import org.esa.beam.framework.gpf.descriptor.SystemVariable;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
 
@@ -17,10 +17,10 @@ import java.util.List;
  */
 public class VariablesTable extends JTable {
     private static String[] columnNames = {"", "Key", "Value"};
-    private List<S2tbxSystemVariable> variables;
+    private List<SystemVariable> variables;
     private MultiRenderer tableRenderer;
 
-    public VariablesTable(List<S2tbxSystemVariable> variables) {
+    public VariablesTable(List<SystemVariable> variables) {
         this.variables = variables;
         tableRenderer = new MultiRenderer();
         setModel(new VariablesTableModel());

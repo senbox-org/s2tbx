@@ -8,16 +8,16 @@ import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 /**
  * @author Ramona Manda
  */
-public class S2tbxSystemVariable {
+public class SystemVariable {
     String key;
     String value;
 
-    S2tbxSystemVariable() {
+    SystemVariable() {
         this.key = "";
         this.value = "";
     }
 
-    public S2tbxSystemVariable(String key, String value) {
+    public SystemVariable(String key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -38,8 +38,8 @@ public class S2tbxSystemVariable {
         this.value = value;
     }
 
-    public S2tbxSystemVariable createCopy() {
-        S2tbxSystemVariable newVariable = new S2tbxSystemVariable();
+    public SystemVariable createCopy() {
+        SystemVariable newVariable = new SystemVariable();
         newVariable.setKey(this.key);
         newVariable.setValue(this.value);
         return newVariable;
@@ -49,19 +49,19 @@ public class S2tbxSystemVariable {
     public static class XStreamConverter implements com.thoughtworks.xstream.converters.Converter {
 
         public boolean canConvert(Class aClass) {
-            return S2tbxSystemVariable.class.equals(aClass);
+            return SystemVariable.class.equals(aClass);
         }
 
         @Override
         public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            S2tbxSystemVariable headerParameter = (S2tbxSystemVariable) source;
+            SystemVariable headerParameter = (SystemVariable) source;
             writer.addAttribute("key", headerParameter.getKey());
             writer.addAttribute("value", headerParameter.getValue());
         }
 
         @Override
         public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            S2tbxSystemVariable headerParameter = new S2tbxSystemVariable();
+            SystemVariable headerParameter = new SystemVariable();
 
             headerParameter.setKey(reader.getAttribute("key"));
             headerParameter.setValue(reader.getAttribute("value"));

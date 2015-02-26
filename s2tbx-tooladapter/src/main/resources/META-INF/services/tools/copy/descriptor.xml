@@ -7,7 +7,7 @@
     <name>org.esa.s2tbx.tooladapter.copy</name>
     <!-- The alias is a more user-friendly name, e.g. to be used on the command line -->
     <alias>copy</alias>
-    <operatorClass>org.esa.beam.framework.gpf.S2tbxToolAdapterOp</operatorClass>
+    <operatorClass>org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
 
     <version>1.0</version>
     <authors>CS Romania</authors>

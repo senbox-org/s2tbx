@@ -1,11 +1,11 @@
-package org.esa.s2tbx.tooladapter.ui;
+package org.esa.beam.ui.tooladapter;
 
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.swing.binding.PropertyPane;
 import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
 import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.ui.DefaultIOParametersPanel;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
 import org.esa.beam.framework.gpf.ui.TargetProductSelector;
@@ -22,12 +22,12 @@ import java.util.ArrayList;
  */
 public class ExternalToolExecutionForm extends JTabbedPane {
     private AppContext appContext;
-    private S2tbxOperatorDescriptor operatorSpi;
+    private ToolAdapterOperatorDescriptor operatorSpi;
     private PropertySet propertySet;
     private TargetProductSelector targetProductSelector;
     private DefaultIOParametersPanel ioParamPanel;
 
-    public ExternalToolExecutionForm(AppContext appContext, S2tbxOperatorDescriptor operatorSpi, PropertySet propertySet,
+    public ExternalToolExecutionForm(AppContext appContext, ToolAdapterOperatorDescriptor operatorSpi, PropertySet propertySet,
                                      TargetProductSelector targetProductSelector) {
         this.appContext = appContext;
         this.operatorSpi = operatorSpi;

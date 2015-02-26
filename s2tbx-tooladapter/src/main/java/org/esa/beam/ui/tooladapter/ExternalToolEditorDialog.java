@@ -1,4 +1,4 @@
-package org.esa.s2tbx.tooladapter.ui;
+package org.esa.beam.ui.tooladapter;
 
 import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.binding.PropertyDescriptor;
@@ -11,17 +11,17 @@ import org.esa.beam.framework.dataio.ProductIOPlugInManager;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxSystemVariable;
+import org.esa.beam.framework.gpf.descriptor.SystemVariable;
+import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterIO;
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
-import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
-import org.esa.s2tbx.tooladapter.S2tbxToolAdapterIO;
-import org.esa.s2tbx.tooladapter.S2tbxToolAdapterOpSpi;
-import org.esa.s2tbx.tooladapter.ui.utils.OperatorParametersTable;
-import org.esa.s2tbx.tooladapter.ui.utils.VariablesTable;
+import org.esa.beam.ui.tooladapter.utils.OperatorParametersTable;
+import org.esa.beam.ui.tooladapter.utils.VariablesTable;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public class ExternalToolEditorDialog extends ModelessDialog {
 
-    private S2tbxOperatorDescriptor operatorDescriptor;
+    private ToolAdapterOperatorDescriptor operatorDescriptor;
     private boolean operatorIsNew;
     private int newNameIndex = -1;
     private PropertyContainer propertyContainer;
@@ -48,7 +48,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         super(appContext.getApplicationWindow(), title, ID_APPLY_CLOSE, helpID);
     }
 
-    private ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorDescriptor) {
+    private ExternalToolEditorDialog(AppContext appContext, String title, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor) {
         this(appContext, title, helpID);
         this.operatorDescriptor = operatorDescriptor;
 
@@ -59,7 +59,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         propertyContainer.getDescriptor("processingWriter").setValueSet(new ValueSet(writers));
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
         java.util.List<String> toolboxSpis = new ArrayList<>();
-        spis.stream().filter(p -> p instanceof S2tbxToolAdapterOpSpi && p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
+        spis.stream().filter(p -> p instanceof ToolAdapterOpSpi && p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
                 forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getName()));
         toolboxSpis.sort(Comparator.<String>naturalOrder());
         propertyContainer.getDescriptor("preprocessorExternalTool").setValueSet(new ValueSet(toolboxSpis.toArray(new String[toolboxSpis.size()])));
@@ -67,7 +67,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         bindingContext = new BindingContext(propertyContainer);
     }
 
-    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
+    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
         this(appContext, title, helpID, operatorDescriptor);
         this.operatorIsNew = operatorIsNew;
         this.newNameIndex = -1;
@@ -76,7 +76,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         getJDialog().setResizable(false);
     }
 
-    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, S2tbxOperatorDescriptor operatorDescriptor, int newNameIndex) {
+    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, int newNameIndex) {
         this(appContext, title, helpID, operatorDescriptor);
         this.newNameIndex = newNameIndex;
         this.operatorIsNew = this.newNameIndex >= 1;
@@ -99,7 +99,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("alias");
         JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         if (this.newNameIndex >= 1) {
-            ((JTextField) editorComponent).setText(operatorDescriptor.getAlias() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
+            ((JTextField) editorComponent).setText(operatorDescriptor.getAlias() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
         }
         descriptorPanel.add(editorComponent, getConstraints(0, 1));
 
@@ -107,7 +107,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         propertyDescriptor = propertyContainer.getDescriptor("name");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         if (this.newNameIndex >= 1) {
-            ((JTextField) editorComponent).setText(operatorDescriptor.getName() + S2tbxToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
+            ((JTextField) editorComponent).setText(operatorDescriptor.getName() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
         }
         descriptorPanel.add(editorComponent, getConstraints(1, 1));
 
@@ -227,7 +227,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         templateContent = new JTextArea("", 15, 10);
         if (!operatorIsNew) {
             try {
-                templateContent.setText(S2tbxToolAdapterIO.readOperatorTemplate(operatorDescriptor.getName()));
+                templateContent.setText(ToolAdapterIO.readOperatorTemplate(operatorDescriptor.getName()));
             } catch (IOException e) {
                 e.printStackTrace();
                 //TODO log error
@@ -282,7 +282,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         descriptorAndVariablesPanel.add(variablesBorderPanel);
 
         addVariableBut.addActionListener(e -> {
-            operatorDescriptor.getVariables().add(new S2tbxSystemVariable("key", ""));
+            operatorDescriptor.getVariables().add(new SystemVariable("key", ""));
             varTable.revalidate();
         });
 
@@ -312,14 +312,14 @@ public class ExternalToolEditorDialog extends ModelessDialog {
             if (operatorDescriptor.getTemplateFileLocation() == null) {
                 //TODO this is a dirty check, it should be a user option
                 if (templateContent.getText().contains("${")) {
-                    operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + S2tbxToolAdapterConstants.TOOL_CMD_TEMPLATE_SUFIX);
+                    operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_CMD_TEMPLATE_SUFIX);
                 } else {
-                    operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + S2tbxToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
+                    operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
                 }
             }
         }
         try {
-            S2tbxToolAdapterIO.saveAndRegisterOperator(operatorDescriptor,
+            ToolAdapterIO.saveAndRegisterOperator(operatorDescriptor,
                     templateContent.getText());
         } catch (Exception e) {
             e.printStackTrace();

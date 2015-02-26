@@ -1,4 +1,4 @@
-package org.esa.s2tbx.tooladapter.ui.utils;
+package org.esa.beam.ui.tooladapter.utils;
 
 import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.PropertySet;
@@ -10,8 +10,8 @@ import com.bc.ceres.swing.binding.PropertyEditor;
 import com.bc.ceres.swing.binding.PropertyEditorRegistry;
 import org.apache.commons.lang.StringUtils;
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxParameterDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 
 import javax.swing.*;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  */
 public class PropertyMemberUIWrapperFactory {
 
-    public static PropertyMemberUIWrapper buildPropertyWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    public static PropertyMemberUIWrapper buildPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         if (attributeName.equals("name")) {
             return buildNamePropertyWrapper(attributeName, property, context, 100, callback);
         }
@@ -61,7 +61,7 @@ public class PropertyMemberUIWrapperFactory {
         return buildEmptyWrapper(attributeName, property, context, 100, callback);
     }
 
-    private static Object parseAttributeValue(String attributeName, String value, S2tbxParameterDescriptor property) throws PropertyAttributeException {
+    private static Object parseAttributeValue(String attributeName, String value, ToolParameterDescriptor property) throws PropertyAttributeException {
         if (value == null || value.length() == 0) {
             return null;
         }
@@ -91,7 +91,7 @@ public class PropertyMemberUIWrapperFactory {
         return value;
     }
 
-    private static PropertyMemberUIWrapper buildStringPropertyWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    private static PropertyMemberUIWrapper buildStringPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
             public String getErrorValueMessage(Object value) {
                 return null;
@@ -127,7 +127,7 @@ public class PropertyMemberUIWrapperFactory {
         };
     }
 
-    private static PropertyMemberUIWrapper buildBooleanPropertyWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    private static PropertyMemberUIWrapper buildBooleanPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
 
             @Override
@@ -158,7 +158,7 @@ public class PropertyMemberUIWrapperFactory {
         };
     }
 
-    private static PropertyMemberUIWrapper buildNamePropertyWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    private static PropertyMemberUIWrapper buildNamePropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
             public String getErrorValueMessage(Object value) {
                 if (value == null || !(value instanceof String) || ((String) value).length() == 0) {
@@ -199,7 +199,7 @@ public class PropertyMemberUIWrapperFactory {
         };
     }
 
-    private static PropertyMemberUIWrapper buildTypePropertyWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    private static PropertyMemberUIWrapper buildTypePropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
             public String getErrorValueMessage(Object value) {
                 if (value == null) {
@@ -240,7 +240,7 @@ public class PropertyMemberUIWrapperFactory {
         };
     }
 
-    private static PropertyMemberUIWrapper buildValuePropertyEditorWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    private static PropertyMemberUIWrapper buildValuePropertyEditorWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
             public String getErrorValueMessage(Object value) {
                 return null;
@@ -273,7 +273,7 @@ public class PropertyMemberUIWrapperFactory {
         };
     }
 
-    public static PropertyMemberUIWrapper buildEmptyWrapper(String attributeName, S2tbxParameterDescriptor property, S2tbxOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    public static PropertyMemberUIWrapper buildEmptyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
             @Override
             public String getErrorValueMessage(Object value) {

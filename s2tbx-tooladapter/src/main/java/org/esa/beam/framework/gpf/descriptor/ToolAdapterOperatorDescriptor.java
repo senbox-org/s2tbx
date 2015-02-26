@@ -3,23 +3,20 @@ package org.esa.beam.framework.gpf.descriptor;
 import com.bc.ceres.core.Assert;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.StreamException;
-import org.esa.beam.framework.dataio.ProductReader;
-import org.esa.beam.framework.dataio.ProductWriter;
 import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.util.StringUtils;
-import org.esa.s2tbx.tooladapter.S2tbxToolAdapterConstants;
 
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
  * @author Ramona Manda
  */
-public class S2tbxOperatorDescriptor implements OperatorDescriptor {
+public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
 
     private String name;
     private Class<? extends Operator> operatorClass;
@@ -45,19 +42,19 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
     private File workingDir;
     private String templateFileLocation;
 
-    private List<S2tbxSystemVariable> variables = new ArrayList<>();
+    private List<SystemVariable> variables = new ArrayList<>();
 
-    private List<S2tbxParameterDescriptor> tbxParameterDescriptors = new ArrayList<>();
+    private List<ToolParameterDescriptor> tbxParameterDescriptors = new ArrayList<>();
 
-    S2tbxOperatorDescriptor() {
+    ToolAdapterOperatorDescriptor() {
         this.sourceProductDescriptors = new DefaultSourceProductDescriptor[1];
         this.sourceProductDescriptors[0] = new DefaultSourceProductDescriptor();
-        this.sourceProductDescriptors[0].name = S2tbxToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID;
+        this.sourceProductDescriptors[0].name = ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID;
         this.variables = new ArrayList<>();
-        this.variables.add(new S2tbxSystemVariable("key", "value"));
+        this.variables.add(new SystemVariable("key", "value"));
     }
 
-    public S2tbxOperatorDescriptor(DefaultOperatorDescriptor obj) {
+    public ToolAdapterOperatorDescriptor(DefaultOperatorDescriptor obj) {
 
         this.name = obj.getName();
         this.operatorClass = obj.getOperatorClass();
@@ -77,9 +74,9 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
 
         this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor) obj.getSourceProductsDescriptor();
 
-        this.tbxParameterDescriptors = new ArrayList<S2tbxParameterDescriptor>();
+        this.tbxParameterDescriptors = new ArrayList<ToolParameterDescriptor>();
         for (int i = 0; i < obj.getParameterDescriptors().length; i++) {
-            this.tbxParameterDescriptors.add(new S2tbxParameterDescriptor(obj.parameterDescriptors[i]));
+            this.tbxParameterDescriptors.add(new ToolParameterDescriptor(obj.parameterDescriptors[i]));
         }
 
         this.targetProductDescriptor = (DefaultTargetProductDescriptor) obj.getTargetProductDescriptor();
@@ -92,7 +89,7 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
         this.variables = new ArrayList<>();
     }
 
-    public S2tbxOperatorDescriptor(S2tbxOperatorDescriptor obj, String newName, String newAlias) {
+    public ToolAdapterOperatorDescriptor(ToolAdapterOperatorDescriptor obj, String newName, String newAlias) {
 
         this.name = newName;
         this.alias = newAlias;
@@ -114,7 +111,7 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
 
         this.tbxParameterDescriptors = new ArrayList<>();
         for (int i = 0; i < obj.getS2tbxParameterDescriptors().size(); i++) {
-            this.tbxParameterDescriptors.add(new S2tbxParameterDescriptor(obj.getS2tbxParameterDescriptors().get(i)));
+            this.tbxParameterDescriptors.add(new ToolParameterDescriptor(obj.getS2tbxParameterDescriptors().get(i)));
         }
 
         this.targetProductDescriptor = (DefaultTargetProductDescriptor) obj.getTargetProductDescriptor();
@@ -130,13 +127,13 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
         }
     }
 
-    public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass) {
+    public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass) {
         this.name = name;
         this.operatorClass = operatorClass;
         this.variables = new ArrayList<>();
     }
 
-    public S2tbxOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright) {
+    public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright) {
         this.name = name;
         this.operatorClass = operatorClass;
         this.alias = alias;
@@ -148,15 +145,15 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
         this.variables = new ArrayList<>();
     }
 
-    public void removeParamDescriptor(S2tbxParameterDescriptor descriptor) {
+    public void removeParamDescriptor(ToolParameterDescriptor descriptor) {
         this.tbxParameterDescriptors.remove(descriptor);
     }
 
-    public List<S2tbxParameterDescriptor> getS2tbxParameterDescriptors() {
+    public List<ToolParameterDescriptor> getS2tbxParameterDescriptors() {
         /*if(this.parameterDescriptors.length != this.tbxParameterDescriptors.size()) {
             this.tbxParameterDescriptors.clear();
             for (int i = 0; i < operators.length; i++) {
-                retOperators[i] = (S2tbxParameterDescriptor) operators[i];
+                retOperators[i] = (ToolParameterDescriptor) operators[i];
             }
         }*/
         return this.tbxParameterDescriptors;
@@ -327,16 +324,16 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
         this.preprocessTool = preprocessTool;
     }
 
-    public List<S2tbxSystemVariable> getVariables() {
+    public List<SystemVariable> getVariables() {
         return variables;
     }
 
-    public void addVariable(S2tbxSystemVariable variable) {
+    public void addVariable(SystemVariable variable) {
         this.variables.add(variable);
     }
 
-    public S2tbxOperatorDescriptor createCopy() {
-        return new S2tbxOperatorDescriptor(this, this.name, this.alias);
+    public ToolAdapterOperatorDescriptor createCopy() {
+        return new ToolAdapterOperatorDescriptor(this, this.name, this.alias);
     }
 
     /**
@@ -347,11 +344,11 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
      *                    class defined by the {@code operatorClass} tag.
      * @return A new operator descriptor.
      */
-    public static S2tbxOperatorDescriptor fromXml(URL url, ClassLoader classLoader) {
+    public static ToolAdapterOperatorDescriptor fromXml(URL url, ClassLoader classLoader) {
         String resourceName = url.toExternalForm();
         try {
             try (InputStreamReader streamReader = new InputStreamReader(url.openStream())) {
-                S2tbxOperatorDescriptor operatorDescriptor;
+                ToolAdapterOperatorDescriptor operatorDescriptor;
                 operatorDescriptor = fromXml(streamReader, resourceName, classLoader);
                 return operatorDescriptor;
             }
@@ -368,11 +365,11 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
      *                    class defined by the {@code operatorClass} tag.
      * @return A new operator descriptor.
      */
-    public static S2tbxOperatorDescriptor fromXml(File file, ClassLoader classLoader) throws OperatorException {
+    public static ToolAdapterOperatorDescriptor fromXml(File file, ClassLoader classLoader) throws OperatorException {
         String resourceName = file.getPath();
         try {
             try (FileReader reader = new FileReader(file)) {
-                return S2tbxOperatorDescriptor.fromXml(reader, resourceName, classLoader);
+                return ToolAdapterOperatorDescriptor.fromXml(reader, resourceName, classLoader);
             }
         } catch (IOException e) {
             throw new OperatorException(formatReadExceptionText(resourceName, e), e);
@@ -388,10 +385,10 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
      *                     class defined by the {@code operatorClass} tag.
      * @return A new operator descriptor.
      */
-    public static S2tbxOperatorDescriptor fromXml(Reader reader, String resourceName, ClassLoader classLoader) throws OperatorException {
+    public static ToolAdapterOperatorDescriptor fromXml(Reader reader, String resourceName, ClassLoader classLoader) throws OperatorException {
         Assert.notNull(reader, "reader");
         Assert.notNull(resourceName, "resourceName");
-        S2tbxOperatorDescriptor descriptor = new S2tbxOperatorDescriptor();
+        ToolAdapterOperatorDescriptor descriptor = new ToolAdapterOperatorDescriptor();
         try {
             createXStream(classLoader).fromXML(reader, descriptor);
             if (StringUtils.isNullOrEmpty(descriptor.getName())) {
@@ -423,25 +420,25 @@ public class S2tbxOperatorDescriptor implements OperatorDescriptor {
 
         xStream.setClassLoader(classLoader);
 
-        xStream.alias("operator", S2tbxOperatorDescriptor.class);
+        xStream.alias("operator", ToolAdapterOperatorDescriptor.class);
 
         //xStream.alias("sourceProduct", DefaultSourceProductDescriptor.class);
-        //xStream.aliasField("namedSourceProducts", S2tbxOperatorDescriptor.class, "sourceProductDescriptors");
+        //xStream.aliasField("namedSourceProducts", ToolAdapterOperatorDescriptor.class, "sourceProductDescriptors");
 
         //xStream.alias("sourceProducts", DefaultSourceProductsDescriptor.class);
-        //xStream.aliasField("sourceProducts", S2tbxOperatorDescriptor.class, "sourceProductsDescriptor");
+        //xStream.aliasField("sourceProducts", ToolAdapterOperatorDescriptor.class, "sourceProductsDescriptor");
 
-        xStream.alias("parameter", S2tbxParameterDescriptor.class);
-        xStream.aliasField("parameters", S2tbxOperatorDescriptor.class, "tbxParameterDescriptors");
+        xStream.alias("parameter", ToolParameterDescriptor.class);
+        xStream.aliasField("parameters", ToolAdapterOperatorDescriptor.class, "tbxParameterDescriptors");
 
         //xStream.alias("targetProduct", DefaultTargetProductDescriptor.class);
-        //xStream.aliasField("targetProduct", S2tbxOperatorDescriptor.class, "targetProductDescriptor");
+        //xStream.aliasField("targetProduct", ToolAdapterOperatorDescriptor.class, "targetProductDescriptor");
 
         //xStream.alias("targetProperty", DefaultTargetPropertyDescriptor.class);
-        //xStream.aliasField("targetProperties", S2tbxOperatorDescriptor.class, "targetPropertyDescriptors");
+        //xStream.aliasField("targetProperties", ToolAdapterOperatorDescriptor.class, "targetPropertyDescriptors");
 
-        xStream.alias("variable", S2tbxSystemVariable.class);
-        xStream.aliasField("variables", S2tbxOperatorDescriptor.class, "variables");
+        xStream.alias("variable", SystemVariable.class);
+        xStream.aliasField("variables", ToolAdapterOperatorDescriptor.class, "variables");
 
         return xStream;
     }

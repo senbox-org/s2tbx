@@ -1,16 +1,16 @@
 package org.esa.beam.framework.gpf.descriptor;
 
-import org.esa.s2tbx.tooladapter.ui.utils.PropertyAttributeException;
+import org.esa.beam.ui.tooladapter.utils.PropertyAttributeException;
 
 import java.lang.reflect.Method;
 
 /**
  * @author Ramona Manda
  */
-public class S2tbxParameterDescriptor extends DefaultParameterDescriptor {
+public class ToolParameterDescriptor extends DefaultParameterDescriptor {
 
 
-    public S2tbxParameterDescriptor(DefaultParameterDescriptor object) {
+    public ToolParameterDescriptor(DefaultParameterDescriptor object) {
         super(object.getName(), object.getDataType());
         super.setAlias(object.getAlias());
         super.setDefaultValue(object.getDefaultValue());

@@ -1,15 +1,11 @@
-package org.esa.s2tbx.tooladapter.ui.utils;
+package org.esa.beam.ui.tooladapter.utils;
 
-import com.bc.ceres.binding.Property;
-import com.bc.ceres.swing.binding.BindingContext;
-import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.S2tbxParameterDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 
@@ -23,7 +19,7 @@ public class PropertyUIDescriptor {
 
     private HashMap<String, PropertyMemberUIWrapper> UIcomponentsMap;
 
-    public static PropertyUIDescriptor buildUIMinimalDescriptor(S2tbxParameterDescriptor parameter, String property, S2tbxOperatorDescriptor operator, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    public static PropertyUIDescriptor buildUIMinimalDescriptor(ToolParameterDescriptor parameter, String property, ToolAdapterOperatorDescriptor operator, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         PropertyUIDescriptor descriptor = new PropertyUIDescriptor();
 
         AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/DeleteShapeTool16.gif"),
@@ -41,7 +37,7 @@ public class PropertyUIDescriptor {
         return descriptor;
     }
 
-    public static PropertyUIDescriptor buildUIDescriptor(S2tbxParameterDescriptor prop, String[] columnsMembers, S2tbxOperatorDescriptor context, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    public static PropertyUIDescriptor buildUIDescriptor(ToolParameterDescriptor prop, String[] columnsMembers, ToolAdapterOperatorDescriptor context, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         PropertyUIDescriptor descriptor = new PropertyUIDescriptor();
 
         AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/DeleteShapeTool16.gif"),

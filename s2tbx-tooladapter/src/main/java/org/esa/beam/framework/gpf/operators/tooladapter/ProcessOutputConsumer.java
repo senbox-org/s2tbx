@@ -1,4 +1,4 @@
-package org.esa.s2tbx.tooladapter;
+package org.esa.beam.framework.gpf.operators.tooladapter;
 
 /**
  * This interface is used to consume the output of a tool, line by line

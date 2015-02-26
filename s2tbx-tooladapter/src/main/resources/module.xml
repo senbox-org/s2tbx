@@ -24,7 +24,7 @@
             <parent>processing</parent>
             <id>S2tbxToolAdapterOp</id>
             <placeLast>false</placeLast>
-            <class>org.esa.s2tbx.tooladapter.S2tbxToolAdapterAction</class>
+            <class>org.esa.beam.ui.tooladapter.interfaces.ToolAdapterAction</class>
             <helpId>toolAdapter</helpId>
             <text>Manage external tools</text>
             <shortDescr>Manage external tools.</shortDescr>

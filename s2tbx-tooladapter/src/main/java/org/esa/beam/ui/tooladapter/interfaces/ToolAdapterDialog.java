@@ -1,16 +1,17 @@
-package org.esa.s2tbx.tooladapter;
+package org.esa.beam.ui.tooladapter.interfaces;
 
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.Operator;
-import org.esa.beam.framework.gpf.S2tbxToolAdapterOp;
-import org.esa.beam.framework.gpf.descriptor.S2tbxOperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.operators.tooladapter.ProcessOutputConsumer;
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOp;
 import org.esa.beam.framework.gpf.ui.OperatorMenu;
 import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.beam.framework.gpf.ui.SingleTargetProductDialog;
 import org.esa.beam.framework.ui.AppContext;
+import org.esa.beam.ui.tooladapter.ExternalToolExecutionForm;
 import org.esa.beam.util.logging.BeamLogManager;
-import org.esa.s2tbx.tooladapter.ui.ExternalToolExecutionForm;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,12 +20,12 @@ import java.util.logging.Level;
 /**
  * @author Lucian Barbulescu.
  */
-public class S2tbxToolAdapterDialog extends SingleTargetProductDialog {
+public class ToolAdapterDialog extends SingleTargetProductDialog {
 
     /**
      * Operator identifier.
      */
-    private S2tbxOperatorDescriptor operatorDescriptor;
+    private ToolAdapterOperatorDescriptor operatorDescriptor;
     /**
      * Parameters related info.
      */
@@ -42,7 +43,7 @@ public class S2tbxToolAdapterDialog extends SingleTargetProductDialog {
      * @param title
      * @param helpID
      */
-    public S2tbxToolAdapterDialog(S2tbxOperatorDescriptor operatorSpi, AppContext appContext, String title, String helpID) {
+    public ToolAdapterDialog(ToolAdapterOperatorDescriptor operatorSpi, AppContext appContext, String title, String helpID) {
         super(appContext, title, helpID);
         this.operatorDescriptor = operatorSpi;
 
@@ -104,7 +105,7 @@ public class S2tbxToolAdapterDialog extends SingleTargetProductDialog {
         Operator op = GPF.getDefaultInstance().createOperator(this.operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
 
         // set the output consumer
-        ((S2tbxToolAdapterOp) op).setConsumer(new LogOutputConsumer());
+        ((ToolAdapterOp) op).setConsumer(new LogOutputConsumer());
 
         return op.getTargetProduct();
     }

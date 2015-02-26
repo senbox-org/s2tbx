@@ -1,15 +1,15 @@
-package org.esa.s2tbx.tooladapter;
+package org.esa.beam.ui.tooladapter.interfaces;
 
 import org.esa.beam.framework.ui.command.CommandEvent;
+import org.esa.beam.ui.tooladapter.ExternalOperatorsEditorDialog;
 import org.esa.beam.visat.actions.AbstractVisatAction;
-import org.esa.s2tbx.tooladapter.ui.ExternalOperatorsEditorDialog;
 
 /**
  * Sentinel-2 Tool Adapter action class
  *
  * @author Lucian Barbulescu
  */
-public class S2tbxToolAdapterAction extends AbstractVisatAction {
+public class ToolAdapterAction extends AbstractVisatAction {
 
     /**
      * Open the external tools selection window
