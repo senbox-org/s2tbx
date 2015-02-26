@@ -229,7 +229,6 @@ public class L1cMetadata {
                 }
             }
 
-            // critical add stats of <HORIZONTAL_CS_CODE>EPSG:32614</HORIZONTAL_CS_CODE>
             Map<String, Counter> counters = new HashMap<String, Counter>();
 
             for(File aGranuleMetadataFile: fullTileNamesList)
@@ -262,11 +261,13 @@ public class L1cMetadata {
                 tileList.add(t);
             }
 
-            Counter maximus = Collections.max(counters.values());
-            logger.severe(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
-
-            // and here is the trick, filter by name...
-            tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
+            // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
+            if(counters.values().size() > 1)
+            {
+                Counter maximus = Collections.max(counters.values());
+                logger.severe(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
+                tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
+            }
 
             S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
             S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);
