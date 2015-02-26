@@ -50,7 +50,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
         newButton.setToolTipText("Define new operator");
         newButton.addActionListener(e -> {
             close();
-            ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor("DefaultOperatorName", ToolAdapterOp.class, ToolAdapterConstants.OPERATOR_DEFAULT_NAME_PREFIX + ".DefaultOperatorName", null, null, null, null, null);
+            ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor("DefaultOperatorName", ToolAdapterOp.class, ToolAdapterConstants.OPERATOR_NAMESPACE + ".DefaultOperatorName", null, null, null, null, null);
             ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Define new Tool", getHelpID(), newOperatorSpi, true);
             dialog.show();
         });

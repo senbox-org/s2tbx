@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Ramona Manda
@@ -44,26 +45,33 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
 
     private List<SystemVariable> variables = new ArrayList<>();
 
-    private List<ToolParameterDescriptor> tbxParameterDescriptors = new ArrayList<>();
+    private List<ToolParameterDescriptor> toolParameterDescriptors = new ArrayList<>();
 
     ToolAdapterOperatorDescriptor() {
-        this.sourceProductDescriptors = new DefaultSourceProductDescriptor[1];
-        this.sourceProductDescriptors[0] = new DefaultSourceProductDescriptor();
+        this.sourceProductDescriptors = new DefaultSourceProductDescriptor[] { new DefaultSourceProductDescriptor() };
         this.sourceProductDescriptors[0].name = ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID;
         this.variables = new ArrayList<>();
         this.variables.add(new SystemVariable("key", "value"));
     }
 
-    public ToolAdapterOperatorDescriptor(DefaultOperatorDescriptor obj) {
+    public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass) {
+        this.name = name;
+        this.operatorClass = operatorClass;
+        this.variables = new ArrayList<>();
+    }
 
-        this.name = obj.getName();
-        this.operatorClass = obj.getOperatorClass();
-        this.alias = obj.getAlias();
-        this.label = obj.getLabel();
-        this.version = obj.getVersion();
-        this.description = obj.getDescription();
-        this.authors = obj.getAuthors();
-        this.copyright = obj.getCopyright();
+    public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright) {
+        this(name, operatorClass);
+        this.alias = alias;
+        this.label = label;
+        this.version = version;
+        this.description = description;
+        this.authors = authors;
+        this.copyright = copyright;
+    }
+
+    public ToolAdapterOperatorDescriptor(DefaultOperatorDescriptor obj) {
+        this(obj.getName(), obj.getOperatorClass(), obj.getAlias(), obj.getLabel(), obj.getVersion(), obj.getDescription(), obj.getAuthors(), obj.getCopyright());
         this.internal = obj.isInternal();
         this.autoWriteSuppressed = obj.isAutoWriteDisabled();
 
@@ -74,9 +82,9 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
 
         this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor) obj.getSourceProductsDescriptor();
 
-        this.tbxParameterDescriptors = new ArrayList<ToolParameterDescriptor>();
+        this.toolParameterDescriptors = new ArrayList<>();
         for (int i = 0; i < obj.getParameterDescriptors().length; i++) {
-            this.tbxParameterDescriptors.add(new ToolParameterDescriptor(obj.parameterDescriptors[i]));
+            this.toolParameterDescriptors.add(new ToolParameterDescriptor(obj.parameterDescriptors[i]));
         }
 
         this.targetProductDescriptor = (DefaultTargetProductDescriptor) obj.getTargetProductDescriptor();
@@ -90,73 +98,23 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
     }
 
     public ToolAdapterOperatorDescriptor(ToolAdapterOperatorDescriptor obj, String newName, String newAlias) {
-
+        this(obj);
         this.name = newName;
         this.alias = newAlias;
-        this.operatorClass = obj.getOperatorClass();
-        this.label = obj.getLabel();
-        this.version = obj.getVersion();
-        this.description = obj.getDescription();
-        this.authors = obj.getAuthors();
-        this.copyright = obj.getCopyright();
-        this.internal = obj.isInternal();
-        this.autoWriteSuppressed = obj.isAutoWriteDisabled();
-
-        this.sourceProductDescriptors = new DefaultSourceProductDescriptor[obj.getSourceProductDescriptors().length];
-        for (int i = 0; i < obj.getSourceProductDescriptors().length; i++) {
-            this.sourceProductDescriptors[i] = ((DefaultSourceProductDescriptor) (obj.getSourceProductDescriptors()[i]));
+        List<SystemVariable> variableList = obj.getVariables();
+        if (variableList != null) {
+            this.variables.addAll(variableList.stream()
+                    .filter(systemVariable -> systemVariable != null)
+                    .map(SystemVariable::createCopy).collect(Collectors.toList()));
         }
-
-        this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor) obj.getSourceProductsDescriptor();
-
-        this.tbxParameterDescriptors = new ArrayList<>();
-        for (int i = 0; i < obj.getS2tbxParameterDescriptors().size(); i++) {
-            this.tbxParameterDescriptors.add(new ToolParameterDescriptor(obj.getS2tbxParameterDescriptors().get(i)));
-        }
-
-        this.targetProductDescriptor = (DefaultTargetProductDescriptor) obj.getTargetProductDescriptor();
-
-        this.targetPropertyDescriptors = new DefaultTargetPropertyDescriptor[obj.getTargetPropertyDescriptors().length];
-        for (int i = 0; i < obj.getTargetPropertyDescriptors().length; i++) {
-            this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor) (obj.getTargetPropertyDescriptors()[i]));
-        }
-
-        this.variables = new ArrayList<>();
-        for (int i = 0; i < obj.getVariables().size(); i++) {
-            this.variables.add(obj.getVariables().get(i).createCopy());
-        }
-    }
-
-    public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass) {
-        this.name = name;
-        this.operatorClass = operatorClass;
-        this.variables = new ArrayList<>();
-    }
-
-    public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright) {
-        this.name = name;
-        this.operatorClass = operatorClass;
-        this.alias = alias;
-        this.label = label;
-        this.version = version;
-        this.description = description;
-        this.authors = authors;
-        this.copyright = copyright;
-        this.variables = new ArrayList<>();
     }
 
     public void removeParamDescriptor(ToolParameterDescriptor descriptor) {
-        this.tbxParameterDescriptors.remove(descriptor);
+        this.toolParameterDescriptors.remove(descriptor);
     }
 
-    public List<ToolParameterDescriptor> getS2tbxParameterDescriptors() {
-        /*if(this.parameterDescriptors.length != this.tbxParameterDescriptors.size()) {
-            this.tbxParameterDescriptors.clear();
-            for (int i = 0; i < operators.length; i++) {
-                retOperators[i] = (ToolParameterDescriptor) operators[i];
-            }
-        }*/
-        return this.tbxParameterDescriptors;
+    public List<ToolParameterDescriptor> getToolParameterDescriptors() {
+        return this.toolParameterDescriptors;
     }
 
     public void setAlias(String alias) {
@@ -213,7 +171,7 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
 
     @Override
     public boolean isAutoWriteDisabled() {
-        return autoWriteSuppressed != null ? autoWriteSuppressed : false;
+        return (autoWriteSuppressed != null && autoWriteSuppressed);
     }
 
     @Override
@@ -255,7 +213,7 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
     public ParameterDescriptor[] getParameterDescriptors() {
         //return parameterDescriptors != null ? parameterDescriptors : new ParameterDescriptor[0];
         ParameterDescriptor[] result = new ParameterDescriptor[0];
-        return getS2tbxParameterDescriptors().toArray(result);
+        return getToolParameterDescriptors().toArray(result);
     }
 
     @Override
@@ -417,25 +375,11 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
 
     private static XStream createXStream(ClassLoader classLoader) {
         XStream xStream = new XStream();
-
         xStream.setClassLoader(classLoader);
-
         xStream.alias("operator", ToolAdapterOperatorDescriptor.class);
 
-        //xStream.alias("sourceProduct", DefaultSourceProductDescriptor.class);
-        //xStream.aliasField("namedSourceProducts", ToolAdapterOperatorDescriptor.class, "sourceProductDescriptors");
-
-        //xStream.alias("sourceProducts", DefaultSourceProductsDescriptor.class);
-        //xStream.aliasField("sourceProducts", ToolAdapterOperatorDescriptor.class, "sourceProductsDescriptor");
-
         xStream.alias("parameter", ToolParameterDescriptor.class);
-        xStream.aliasField("parameters", ToolAdapterOperatorDescriptor.class, "tbxParameterDescriptors");
-
-        //xStream.alias("targetProduct", DefaultTargetProductDescriptor.class);
-        //xStream.aliasField("targetProduct", ToolAdapterOperatorDescriptor.class, "targetProductDescriptor");
-
-        //xStream.alias("targetProperty", DefaultTargetPropertyDescriptor.class);
-        //xStream.aliasField("targetProperties", ToolAdapterOperatorDescriptor.class, "targetPropertyDescriptors");
+        xStream.aliasField("parameters", ToolAdapterOperatorDescriptor.class, "toolParameterDescriptors");
 
         xStream.alias("variable", SystemVariable.class);
         xStream.aliasField("variables", ToolAdapterOperatorDescriptor.class, "variables");

@@ -31,8 +31,8 @@ public class OperatorParametersTable extends JTable {
         this.operator = operator;
         propertiesValueUIDescriptorMap = new HashMap<>();
 
-        //List<ToolParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
-        List<ToolParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
+        //List<ToolParameterDescriptor> data = operator.getToolParameterDescriptors();
+        List<ToolParameterDescriptor> data = operator.getToolParameterDescriptors();
         for (ToolParameterDescriptor property : data) {
             propertiesValueUIDescriptorMap.put(property, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", property, operator, null));
         }
@@ -77,12 +77,12 @@ public class OperatorParametersTable extends JTable {
 
         @Override
         public int getRowCount() {
-            return operator.getS2tbxParameterDescriptors().size();
+            return operator.getToolParameterDescriptors().size();
         }
 
         @Override
         public Object getValueAt(int row, int column) {
-            ToolParameterDescriptor descriptor = operator.getS2tbxParameterDescriptors().get(row);
+            ToolParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(row);
             switch (column) {
                 case 0:
                     return false;
@@ -106,7 +106,7 @@ public class OperatorParametersTable extends JTable {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            ToolParameterDescriptor descriptor = operator.getS2tbxParameterDescriptors().get(rowIndex);
+            ToolParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(rowIndex);
             switch (columnIndex) {
                 case 0:
                     operator.removeParamDescriptor(descriptor);
@@ -135,7 +135,7 @@ public class OperatorParametersTable extends JTable {
         private AbstractButton editButton = new JButton("...");
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            ParameterDescriptor descriptor = operator.getS2tbxParameterDescriptors().get(row);
+            ParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(row);
             switch (column) {
                 case 0:
                     return delButton;
@@ -163,7 +163,7 @@ public class OperatorParametersTable extends JTable {
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            ParameterDescriptor descriptor = operator.getS2tbxParameterDescriptors().get(row);
+            ParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(row);
             switch (column) {
                 case 0:
                     return delButton;

@@ -23,20 +23,8 @@ import java.util.logging.Logger;
  */
 public class ToolAdapterIO {
 
-    static String basePath;
-    static Logger logger;
-
-    static {
-        logger = BeamLogManager.getSystemLogger();
-        try {
-            // TODO: This code will be removed when the location will be read from snap.properties
-            basePath = ToolAdapterIO.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-            if (!basePath.endsWith(File.separator))
-                basePath += File.separator;
-        } catch (Exception e) {
-            logger.severe(e.getMessage());
-        }
-    }
+    private static File modulePath;
+    private static Logger logger = BeamLogManager.getSystemLogger();
 
     public static OperatorSpi readOperator(File operatorFolder) throws OperatorException {
         //Look for the descriptor
@@ -69,7 +57,7 @@ public class ToolAdapterIO {
 
     public static void saveAndRegisterOperator(ToolAdapterOperatorDescriptor operator, String templateContent) throws IOException, URISyntaxException {
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(operator.getName());
-        File rootFolder = new File(getModulesPath());
+        File rootFolder = getModulesPath();
         File moduleFolder = new File(rootFolder, operator.getAlias());
         if (!moduleFolder.exists()) {
             if (!moduleFolder.mkdir()) {
@@ -84,6 +72,7 @@ public class ToolAdapterIO {
         }
         File descriptorFile = new File(moduleFolder, ToolAdapterConstants.DESCRIPTOR_FILE);
         if (!descriptorFile.exists()) {
+            descriptorFile.getParentFile().mkdirs();
             if (!descriptorFile.createNewFile()) {
                 throw new OperatorException("Operator file " + descriptorFile + " could not be created!");
             }
@@ -107,10 +96,10 @@ public class ToolAdapterIO {
         return new File(getModulesPath(), relativeToolFileLocation).getAbsolutePath();
     }
 
-    public static List<File> scanForModules(String path) throws IOException {
-        File root = new File(path);
+    public static List<File> scanForModules() throws IOException {
+        File root = getModulesPath();
         if (!root.exists() || !root.isDirectory()) {
-            throw new FileNotFoundException(path);
+            throw new FileNotFoundException(root.getAbsolutePath());
         }
         File[] moduleFolders = root.listFiles();
         List<File> modules = new ArrayList<>();
@@ -134,11 +123,20 @@ public class ToolAdapterIO {
         return modules;
     }
 
-    /**
-     * TODO: remove when reading the path from snap.properties
-     * @return
-     */
-    private static String getModulesPath() {
-        return basePath + ToolAdapterConstants.TOOL_ADAPTER_REPO;
+    private static File getModulesPath() {
+        if (modulePath == null) {
+            String moduleFolder = System.getProperty("snap.tooladapter.moduleFolder");
+            if (moduleFolder == null) {
+                moduleFolder = ToolAdapterIO.class.getProtectionDomain().getCodeSource().getLocation().getPath() + ToolAdapterConstants.FAILSAFE_MODULE_FOLDER;
+            } else {
+                if (moduleFolder.startsWith("${snap.home}")) {
+                    String homeFolder = System.getProperty("snap.home");
+                    moduleFolder = homeFolder + moduleFolder.substring(12);
+                }
+            }
+            modulePath = new File(moduleFolder);
+            modulePath.mkdirs();
+        }
+        return modulePath;
     }
 }

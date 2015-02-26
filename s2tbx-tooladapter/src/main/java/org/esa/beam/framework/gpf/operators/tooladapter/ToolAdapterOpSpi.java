@@ -20,8 +20,7 @@ public class ToolAdapterOpSpi extends OperatorSpi {
     static {
         logger = BeamLogManager.getSystemLogger();
         try {
-            logger.fine("Scanning for registered tools.");
-            List<File> moduleFolders = ToolAdapterIO.scanForModules(ToolAdapterIO.basePath + ToolAdapterConstants.TOOL_ADAPTER_REPO);
+            List<File> moduleFolders = ToolAdapterIO.scanForModules();
             moduleFolders.forEach(ToolAdapterOpSpi::registerModule);
         } catch (IOException e) {
             logger.severe("Failed scan for Tools descriptors: I/O problem: " + e.getMessage());
@@ -36,7 +35,8 @@ public class ToolAdapterOpSpi extends OperatorSpi {
      */
     public static void registerModule(File moduleFolder) throws OperatorException {
         OperatorSpi operatorSpi = ToolAdapterIO.readOperator(moduleFolder);
-        String operatorName = operatorSpi.getOperatorDescriptor().getName() != null ? operatorSpi.getOperatorDescriptor().getName() : operatorSpi.getOperatorDescriptor().getAlias();
+        OperatorDescriptor operatorDescriptor = operatorSpi.getOperatorDescriptor();
+        String operatorName = operatorDescriptor.getName() != null ? operatorDescriptor.getName() : operatorDescriptor.getAlias();
         OperatorSpiRegistry operatorSpiRegistry = GPF.getDefaultInstance().getOperatorSpiRegistry();
         if (operatorSpiRegistry.getOperatorSpi(operatorName) != null) {
             throw new OperatorException("Operator already registered");
