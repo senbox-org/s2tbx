@@ -20,6 +20,7 @@ import org.esa.beam.dataio.s2.filepatterns.S2L1bDatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L1bGranuleDirFilename;
 import org.esa.beam.util.Guardian;
 import org.esa.beam.util.logging.BeamLogManager;
+import org.openjpeg.StackTraceUtils;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -84,8 +85,7 @@ public class L1bMetadataProc {
         try {
             theDir = getModulesDir();
         } catch (Exception e) {
-            // fixme change messsage, add stacktrace info
-            BeamLogManager.getSystemLogger().severe(e.getMessage());
+            BeamLogManager.getSystemLogger().severe(StackTraceUtils.getStackTrace(e));
         }
         return theDir;
     }
