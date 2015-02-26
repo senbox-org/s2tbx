@@ -2,18 +2,15 @@ package org.esa.beam.dataio.s2.structure;
 
 import java.io.File;
 import java.util.List;
+
 public class StructuralItemMatcher {
 
-    public static boolean matches(List<StructuralItem> aList, File our_dir)
-    {
+    public static boolean matches(List<StructuralItem> aList, File our_dir) {
         assert our_dir.exists();
-        for (StructuralItem aStructuralItem : aList)
-        {
+        for (StructuralItem aStructuralItem : aList) {
             String[] result = our_dir.list(aStructuralItem);
-            if (!aStructuralItem.isOptional())
-            {
-                if(result.length == 0)
-                {
+            if (!aStructuralItem.isOptional()) {
+                if (result.length == 0) {
                     return false;
                 }
             }

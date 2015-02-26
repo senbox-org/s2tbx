@@ -14,17 +14,16 @@ public class CoordinateUtils {
 
     /**
      * todo move this to a utility class
+     *
      * @param in
      * @param size
      * @return
      */
-    public static List<double[]> arraySplitter(List<Double> in, int size)
-    {
+    public static List<double[]> arraySplitter(List<Double> in, int size) {
         Guardian.assertTrue("Multiple size", (in.size() % size) == 0);
 
         List<double[]> result = new ArrayList<double[]>();
-        for(int i = 0; i < in.size() / size; i++)
-        {
+        for (int i = 0; i < in.size() / size; i++) {
             double[] item = new double[]{in.get(i * size), in.get(i * size + 1), in.get(i * size + 2)};
             result.add(item);
         }
@@ -32,13 +31,11 @@ public class CoordinateUtils {
         return result;
     }
 
-    public static List<Coordinate> as2DCoordinates(List<Double> in)
-    {
+    public static List<Coordinate> as2DCoordinates(List<Double> in) {
         List<double[]> tr = arraySplitter(in, 2);
 
         List<Coordinate> result = new ArrayList<Coordinate>();
-        for(int i = 0; i < tr.size(); i++)
-        {
+        for (int i = 0; i < tr.size(); i++) {
             Coordinate c = new Coordinate(tr.get(i)[0], tr.get(i)[1]);
             result.add(c);
         }
@@ -46,13 +43,11 @@ public class CoordinateUtils {
         return result;
     }
 
-    public static List<Coordinate> as3DCoordinates(List<Double> in)
-    {
+    public static List<Coordinate> as3DCoordinates(List<Double> in) {
         List<double[]> tr = arraySplitter(in, 3);
 
         List<Coordinate> result = new ArrayList<Coordinate>();
-        for(int i = 0; i < tr.size(); i++)
-        {
+        for (int i = 0; i < tr.size(); i++) {
             Coordinate c = new Coordinate(tr.get(i)[0], tr.get(i)[1], tr.get(i)[2]);
             result.add(c);
         }
@@ -61,8 +56,7 @@ public class CoordinateUtils {
     }
 
     // fixme Add unit test
-    public static double distanceToSegment(Vector3D v, Vector3D w, Vector3D  p)
-    {
+    public static double distanceToSegment(Vector3D v, Vector3D w, Vector3D p) {
         // Return minimum distance between line segment vw and point p
         final double l2 = Vector3D.distanceSq(v, w);  // i.e. |w-v|^2 -  avoid a sqrt
         if (l2 == 0.0) return Vector3D.distance(p, v);   // v == w case
@@ -76,13 +70,11 @@ public class CoordinateUtils {
         return Vector3D.distance(p, projection);
     }
 
-    public static double[] getOrdinate(List<Coordinate> coordinates, int index)
-    {
+    public static double[] getOrdinate(List<Coordinate> coordinates, int index) {
         double[] result = new double[coordinates.size()];
 
         int i = 0;
-        for(Coordinate c : coordinates)
-        {
+        for (Coordinate c : coordinates) {
             result[i] = c.getOrdinate(index);
             i = i + 1;
         }
@@ -90,41 +82,33 @@ public class CoordinateUtils {
         return result;
     }
 
-    public static double[] convertFloatsToDoubles(float[] input)
-    {
-        if (input == null)
-        {
+    public static double[] convertFloatsToDoubles(float[] input) {
+        if (input == null) {
             return null;
         }
         double[] output = new double[input.length];
-        for (int i = 0; i < input.length; i++)
-        {
+        for (int i = 0; i < input.length; i++) {
             output[i] = input[i];
         }
         return output;
     }
 
-    public static float[] convertDoublesToFloats(double[] input)
-    {
-        if (input == null)
-        {
+    public static float[] convertDoublesToFloats(double[] input) {
+        if (input == null) {
             return null;
         }
         float[] output = new float[input.length];
-        for (int i = 0; i < input.length; i++)
-        {
+        for (int i = 0; i < input.length; i++) {
             output[i] = (float) input[i];
         }
         return output;
     }
 
-    public static double[] getLatitudes(List<Coordinate> coordinates)
-    {
+    public static double[] getLatitudes(List<Coordinate> coordinates) {
         return getOrdinate(coordinates, 0);
     }
 
-    public static double[] getLongitudes(List<Coordinate> coordinates)
-    {
+    public static double[] getLongitudes(List<Coordinate> coordinates) {
         return getOrdinate(coordinates, 1);
     }
 }

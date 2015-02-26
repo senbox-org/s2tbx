@@ -63,6 +63,7 @@ public interface S2L1bConfig {
             put(20, 1);
             put(60, 2);
         }
+
         ;
     };
 

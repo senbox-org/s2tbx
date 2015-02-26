@@ -114,16 +114,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         //todo do we have to read a standalone granule or jp2 file ?
 
-        if (S2ProductFilename.isProductFilename(inputFile.getName()))
-        {
+        if (S2ProductFilename.isProductFilename(inputFile.getName())) {
             p = getL1cMosaicProduct(inputFile);
 
             if (p != null) {
                 readMasks(p);
                 p.setModified(false);
             }
-        }
-        else {
+        } else {
             throw new IOException("Unhandled file type.");
         }
 
@@ -427,8 +425,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         @Override
-        public MultiLevelImage createSourceImage(BandInfo bandInfo)
-        {
+        public MultiLevelImage createSourceImage(BandInfo bandInfo) {
             BandL1cSceneMultiLevelSource bandScene = new BandL1cSceneMultiLevelSource(sceneDescription, bandInfo, imageToModelTransform);
             BeamLogManager.getSystemLogger().fine("BandScene: " + bandScene);
             return new DefaultMultiLevelImage(bandScene);
@@ -478,7 +475,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
 
 
-
         protected abstract PlanarImage createL1cTileImage(String tileId, int level);
     }
 
@@ -494,8 +490,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         @Override
-        protected PlanarImage createL1cTileImage(String tileId, int level)
-        {
+        protected PlanarImage createL1cTileImage(String tileId, int level) {
             File imageFile = bandInfo.tileIdToFileMap.get(tileId);
             PlanarImage planarImage = L1cTileOpImage.create(imageFile,
                                                             cacheDir,
@@ -508,16 +503,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
             logger.fine(String.format("Planar image created: %s %s: minX=%d, minY=%d, width=%d, height=%d\n",
-                    bandInfo.wavebandInfo.bandName, tileId,
-                    planarImage.getMinX(), planarImage.getMinY(),
-                    planarImage.getWidth(), planarImage.getHeight()));
+                                      bandInfo.wavebandInfo.bandName, tileId,
+                                      planarImage.getMinX(), planarImage.getMinY(),
+                                      planarImage.getWidth(), planarImage.getHeight()));
 
             return planarImage;
         }
 
         @Override
-        protected RenderedImage createImage(int level)
-        {
+        protected RenderedImage createImage(int level) {
             ArrayList<RenderedImage> tileImages = new ArrayList<RenderedImage>();
 
             for (String tileId : sceneDescription.getTileIds()) {
@@ -531,9 +525,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     double factorY = 1.0 / (Math.pow(2, level) * (this.bandInfo.wavebandInfo.resolution.resolution / S2SpatialResolution.R10M.resolution));
 
                     opImage = TranslateDescriptor.create(opImage,
-                            (float) Math.floor((tileRectangle.x * factorX)),
-                            (float) Math.floor((tileRectangle.y * factorY)),
-                            Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                                                         (float) Math.floor((tileRectangle.x * factorX)),
+                                                         (float) Math.floor((tileRectangle.y * factorY)),
+                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
                     logger.fine(String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
                 }
@@ -556,9 +550,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             imageLayout.setTileGridYOffset(0);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                    MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                    null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
-                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                                          MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                          null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
+                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             // todo add crop or extend here to ensure "right" size...
             Rectangle fitrect = new Rectangle(0, 0, (int) sceneDescription.getSceneEnvelope().getWidth() / bandInfo.wavebandInfo.resolution.resolution, (int) sceneDescription.getSceneEnvelope().getHeight() / bandInfo.wavebandInfo.resolution.resolution);
@@ -574,8 +568,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
             }
 
-            if (this.bandInfo.wavebandInfo.resolution != S2SpatialResolution.R10M)
-            {
+            if (this.bandInfo.wavebandInfo.resolution != S2SpatialResolution.R10M) {
                 PlanarImage scaled = L1cTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level);
 
                 logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
@@ -623,8 +616,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         @Override
-        protected RenderedImage createImage(int level)
-        {
+        protected RenderedImage createImage(int level) {
             ArrayList<RenderedImage> tileImages = new ArrayList<RenderedImage>();
 
             for (String tileId : sceneDescription.getTileIds()) {
@@ -638,9 +630,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 // with minX, minY set as it is required by the MosaicDescriptor and indicated by its API doc.
                 // But if we do it like that, we get lots of weird visual artifacts in the resulting mosaic.
                 opImage = TranslateDescriptor.create(opImage,
-                        (float) (tileRectangle.x >> level),
-                        (float) (tileRectangle.y >> level),
-                        Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                                                     (float) (tileRectangle.x >> level),
+                                                     (float) (tileRectangle.y >> level),
+                                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
 
                 logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY()));
@@ -661,9 +653,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             imageLayout.setTileGridYOffset(0);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                    MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                    null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
-                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                                          MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                          null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
+                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             logger.fine(String.format("mosaicOp created for level %d at (%d,%d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY()));
             logger.fine(String.format("mosaicOp size: (%d,%d)%n", mosaicOp.getWidth(), mosaicOp.getHeight()));

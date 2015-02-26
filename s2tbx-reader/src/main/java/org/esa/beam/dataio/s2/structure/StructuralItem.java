@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.regex.Pattern;
 
-public class StructuralItem implements FilenameFilter
-{
+public class StructuralItem implements FilenameFilter {
     /**
      * Tests if a specified file should be included in a file list.
      *
@@ -16,19 +15,18 @@ public class StructuralItem implements FilenameFilter
      */
     @Override
     public boolean accept(File dir, String name) {
-        if (!isRegExpr())
-        {
+        if (!isRegExpr()) {
             boolean result = name.equals(pattern);
             return result;
-        }
-        else
-        {
+        } else {
             boolean result = regexpr.matcher(name).matches();
             return result;
         }
     }
 
-    public enum Type { FILE, DIRECTORY};
+    public enum Type {FILE, DIRECTORY}
+
+    ;
     final private boolean optional;
     final private Type type;
     final private boolean isRegExpr;
@@ -41,12 +39,9 @@ public class StructuralItem implements FilenameFilter
         this.isRegExpr = isRegExpr;
         this.pattern = pattern;
 
-        if(isRegExpr)
-        {
+        if (isRegExpr) {
             regexpr = Pattern.compile(pattern);
-        }
-        else
-        {
+        } else {
             regexpr = null;
         }
     }

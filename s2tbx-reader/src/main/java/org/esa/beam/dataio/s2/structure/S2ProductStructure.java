@@ -3,8 +3,7 @@ package org.esa.beam.dataio.s2.structure;
 import java.util.ArrayList;
 import java.util.List;
 
-public class S2ProductStructure
-{
+public class S2ProductStructure {
     final private List<StructuralItem> thePattern;
 
     public S2ProductStructure() {
@@ -15,8 +14,7 @@ public class S2ProductStructure
         this.thePattern = thePattern;
     }
 
-    public void addItem(StructuralItem item)
-    {
+    public void addItem(StructuralItem item) {
         thePattern.add(item);
     }
 

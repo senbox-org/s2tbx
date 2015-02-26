@@ -42,39 +42,23 @@ public class S2L2aProductFilename {
         this.instanceID = instanceID;
 
         Matcher m2 = OPTIONALPATTERN.matcher(instanceID);
-        while(m2.find())
-        {
+        while (m2.find()) {
             String captured = m2.group();
-            if(captured.startsWith("_S"))
-            {
+            if (captured.startsWith("_S")) {
                 this.applicabilityStart = captured.substring(2);
-            }
-            else if (captured.startsWith("_R"))
-            {
+            } else if (captured.startsWith("_R")) {
                 this.relativeOrbitNumber = captured.substring(2);
-            }
-            else if (captured.startsWith("_V"))
-            {
+            } else if (captured.startsWith("_V")) {
                 this.applicabilityPeriod = captured.substring(2);
-            }
-            else if (captured.startsWith("_O"))
-            {
+            } else if (captured.startsWith("_O")) {
                 this.orbitalPeriod = captured.substring(2);
-            }
-            else if (captured.startsWith("_D"))
-            {
+            } else if (captured.startsWith("_D")) {
                 this.detectorID = captured.substring(2);
-            }
-            else if (captured.startsWith("_A"))
-            {
+            } else if (captured.startsWith("_A")) {
                 this.absoluteOrbitNumber = captured.substring(2);
-            }
-            else if (captured.startsWith("_T"))
-            {
+            } else if (captured.startsWith("_T")) {
                 this.tileNumber = captured.substring(2);
-            }
-            else if (captured.startsWith("_N"))
-            {
+            } else if (captured.startsWith("_N")) {
                 this.processingBaseline = captured.substring(2);
             }
         }
@@ -84,11 +68,9 @@ public class S2L2aProductFilename {
         return PATTERN.matcher(name).matches();
     }
 
-    public static boolean isMetadataFilename(String name)
-    {
+    public static boolean isMetadataFilename(String name) {
         boolean isProduct = isProductFilename(name);
-        if(!isProduct)
-        {
+        if (!isProduct) {
             return isProduct;
         }
 
@@ -99,13 +81,13 @@ public class S2L2aProductFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2L2aProductFilename(fileName,
-                    matcher.group(1),
-                    matcher.group(2),
-                    matcher.group(3),
-                    matcher.group(4),
-                    matcher.group(5),
-                    matcher.group(6),
-                    matcher.group(7));
+                                            matcher.group(1),
+                                            matcher.group(2),
+                                            matcher.group(3),
+                                            matcher.group(4),
+                                            matcher.group(5),
+                                            matcher.group(6),
+                                            matcher.group(7));
         } else {
             return null;
         }

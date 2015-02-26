@@ -18,8 +18,7 @@ public class GeometryFactory {
 
     public static CoordinateReferenceSystem getFallbackCrs(String sourceCrsText) throws FactoryException {
         String aTargetCrsText = sourceCrsText;
-        if(sourceCrsText.equals("EPSG:4326"))
-        {
+        if (sourceCrsText.equals("EPSG:4326")) {
             // we need an alternative crs
             aTargetCrsText = "EPSG:3857";
         }
@@ -28,13 +27,11 @@ public class GeometryFactory {
         return targetCRS;
     }
 
-    public static CoordinateReferenceSystem getDefaultCrs()
-    {
+    public static CoordinateReferenceSystem getDefaultCrs() {
         return DefaultGeographicCRS.WGS84;
     }
 
-    public static MathTransform findMathTransform(final String sourceCrsText, final String targetCrsText) throws FactoryException
-    {
+    public static MathTransform findMathTransform(final String sourceCrsText, final String targetCrsText) throws FactoryException {
         CoordinateReferenceSystem sourceCRS = CRS.decode(sourceCrsText, true);
         CoordinateReferenceSystem targetCRS = getFallbackCrs(targetCrsText);
         MathTransform tr = CRS.findMathTransform(sourceCRS, targetCRS);
@@ -42,16 +39,14 @@ public class GeometryFactory {
         return tr;
     }
 
-    public static MathTransform findMathTransform(final CoordinateReferenceSystem sourceCRS, final String targetCrsText) throws FactoryException
-    {
+    public static MathTransform findMathTransform(final CoordinateReferenceSystem sourceCRS, final String targetCrsText) throws FactoryException {
         CoordinateReferenceSystem targetCRS = getFallbackCrs(targetCrsText);
         MathTransform tr = CRS.findMathTransform(sourceCRS, targetCRS);
 
         return tr;
     }
 
-    public static Coordinate rotate(Coordinate[] arr, Coordinate p, CoordinateReferenceSystem sourceCRS)
-    {
+    public static Coordinate rotate(Coordinate[] arr, Coordinate p, CoordinateReferenceSystem sourceCRS) {
         // fixme rotation test
         // fixme Add UT
 
@@ -62,7 +57,7 @@ public class GeometryFactory {
             e.printStackTrace();
         }
 
-        double radAng = Math.atan( (arr[1].getOrdinate(1) - arr[0].getOrdinate(1)) / (arr[1].getOrdinate(0) - arr[0].getOrdinate(0)) );
+        double radAng = Math.atan((arr[1].getOrdinate(1) - arr[0].getOrdinate(1)) / (arr[1].getOrdinate(0) - arr[0].getOrdinate(0)));
 
         AffineTransform affineTransform = new
                 AffineTransform();
@@ -73,7 +68,7 @@ public class GeometryFactory {
         DefaultCartesianCS cartesianCS =
                 DefaultCartesianCS.GENERIC_2D;
         DefaultDerivedCRS derivedCRS = new
-                DefaultDerivedCRS("Test",sourceCRS,transform,cartesianCS);
+                DefaultDerivedCRS("Test", sourceCRS, transform, cartesianCS);
 
         Coordinate targetCoordinate = null;
 

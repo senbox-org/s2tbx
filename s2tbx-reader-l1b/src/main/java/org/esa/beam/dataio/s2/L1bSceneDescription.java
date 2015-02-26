@@ -49,8 +49,7 @@ public class L1bSceneDescription {
     }
 
     @Loggable
-    public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index)
-    {
+    public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index) {
         // fixme look if Scenedescription object has to be redefined (add a range) or use multiple Scenedescription objects
 
         List<L1bMetadata.Tile> tileList = header.getTileList();
@@ -59,8 +58,7 @@ public class L1bSceneDescription {
         TileInfo[] tileInfos = new TileInfo[tileList.size()];
         Envelope2D sceneEnvelope = null;
 
-        if(tileList.isEmpty())
-        {
+        if (tileList.isEmpty()) {
             // fixme Add help text
             throw new IllegalStateException();
         }
@@ -84,10 +82,10 @@ public class L1bSceneDescription {
             xOffset = 0;
 
             envelope = new Envelope2D(crs,
-                    xOffset,
-                    yWidth + selectedGeometry.numRows * selectedGeometry.yDim,
-                    selectedGeometry.numCols * selectedGeometry.xDim,
-                    -selectedGeometry.numRows * selectedGeometry.yDim);
+                                      xOffset,
+                                      yWidth + selectedGeometry.numRows * selectedGeometry.yDim,
+                                      selectedGeometry.numCols * selectedGeometry.xDim,
+                                      -selectedGeometry.numRows * selectedGeometry.yDim);
 
             tileEnvelopes[i] = envelope;
 
@@ -107,8 +105,7 @@ public class L1bSceneDescription {
         double imageX = sceneEnvelope.getX();
         double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
         Rectangle sceneBounds = null;
-        for (int i = 0; i < tileEnvelopes.length; i++)
-        {
+        for (int i = 0; i < tileEnvelopes.length; i++) {
             L1bMetadata.Tile tile = tileList.get(i);
             L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
             Envelope2D tileEnvelope = tileEnvelopes[i];
@@ -118,9 +115,9 @@ public class L1bSceneDescription {
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
 
             Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.xDim),
-                    (int) ((imageY - tileY) / -selectedGeometry.yDim),
-                    selectedGeometry.numCols,
-                    selectedGeometry.numRows);
+                                                (int) ((imageY - tileY) / -selectedGeometry.yDim),
+                                                selectedGeometry.numCols,
+                                                selectedGeometry.numRows);
             if (sceneBounds == null) {
                 sceneBounds = new Rectangle(rectangle);
             } else {

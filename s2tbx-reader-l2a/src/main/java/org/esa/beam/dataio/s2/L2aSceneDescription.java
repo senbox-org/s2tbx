@@ -51,16 +51,14 @@ public class L2aSceneDescription {
         }
     }
 
-    public static L2aSceneDescription create(L2aMetadata header, L2aMetadata.Tile.idGeom index)
-    {
+    public static L2aSceneDescription create(L2aMetadata header, L2aMetadata.Tile.idGeom index) {
         List<L2aMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
         TileInfo[] tileInfos = new TileInfo[tileList.size()];
         Envelope2D sceneEnvelope = null;
 
-        if(tileList.isEmpty())
-        {
+        if (tileList.isEmpty()) {
             throw new IllegalStateException();
         }
         for (int i = 0; i < tileList.size(); i++) {
@@ -76,10 +74,10 @@ public class L2aSceneDescription {
 
             L2aMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
             Envelope2D envelope = new Envelope2D(crs,
-                    selectedGeometry.upperLeftX,
-                    selectedGeometry.upperLeftY + selectedGeometry.numRows * selectedGeometry.yDim,
-                    selectedGeometry.numCols * selectedGeometry.xDim,
-                    -selectedGeometry.numRows * selectedGeometry.yDim);
+                                                 selectedGeometry.upperLeftX,
+                                                 selectedGeometry.upperLeftY + selectedGeometry.numRows * selectedGeometry.yDim,
+                                                 selectedGeometry.numCols * selectedGeometry.xDim,
+                                                 -selectedGeometry.numRows * selectedGeometry.yDim);
             tileEnvelopes[i] = envelope;
 
             if (sceneEnvelope == null) {
@@ -103,9 +101,9 @@ public class L2aSceneDescription {
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
             Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.xDim),
-                    (int) ((imageY - tileY) / -selectedGeometry.yDim),
-                    selectedGeometry.numCols,
-                    selectedGeometry.numRows);
+                                                (int) ((imageY - tileY) / -selectedGeometry.yDim),
+                                                selectedGeometry.numCols,
+                                                selectedGeometry.numRows);
             if (sceneBounds == null) {
                 sceneBounds = new Rectangle(rectangle);
             } else {

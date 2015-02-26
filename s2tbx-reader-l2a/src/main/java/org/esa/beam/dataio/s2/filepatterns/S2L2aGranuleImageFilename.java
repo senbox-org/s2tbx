@@ -43,8 +43,7 @@ public class S2L2aGranuleImageFilename {
         return Integer.parseInt(bandIndex);
     }
 
-    public String getTileNumber()
-    {
+    public String getTileNumber() {
         return tileNumber;
     }
 
@@ -52,16 +51,16 @@ public class S2L2aGranuleImageFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2L2aGranuleImageFilename(fileName,
-                                     matcher.group(1),
-                                     matcher.group(2),
-                                     matcher.group(3),
-                                     matcher.group(4),
-                                     matcher.group(5),
-                                     matcher.group(6),
-                                     matcher.group(7),
-                                     matcher.group(8),
-                                     matcher.group(9),
-                                     matcher.group(10));
+                                                 matcher.group(1),
+                                                 matcher.group(2),
+                                                 matcher.group(3),
+                                                 matcher.group(4),
+                                                 matcher.group(5),
+                                                 matcher.group(6),
+                                                 matcher.group(7),
+                                                 matcher.group(8),
+                                                 matcher.group(9),
+                                                 matcher.group(10));
         } else {
             return null;
         }

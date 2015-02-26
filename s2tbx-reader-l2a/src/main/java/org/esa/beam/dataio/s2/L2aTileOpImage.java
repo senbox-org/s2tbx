@@ -113,32 +113,30 @@ class L2aTileOpImage extends SingleBandedOpImage {
 
         BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
         RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                borderExtender);
+                                                           borderExtender);
 
         RenderedOp scaledImage = ScaleDescriptor.create(sourceImage,
-                scaleX,
-                scaleY,
-                sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
-                sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
-                Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                renderingHints);
+                                                        scaleX,
+                                                        scaleY,
+                                                        sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
+                                                        sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
+                                                        Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                                        renderingHints);
 
         BeamLogManager.getSystemLogger().fine(String.format("After scaling: (%d, %d)", scaledImage.getWidth(), scaledImage.getHeight()));
 
         if (scaledImage.getWidth() == targetWidth && scaledImage.getHeight() == targetHeight) {
             return scaledImage;
-        }
-        else if (scaledImage.getWidth() >= targetWidth || scaledImage.getHeight() >= targetHeight) {
+        } else if (scaledImage.getWidth() >= targetWidth || scaledImage.getHeight() >= targetHeight) {
             BeamLogManager.getSystemLogger().fine(String.format("Cropping: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
 
             return CropDescriptor.create(scaledImage,
-                    (float) sourceImage.getMinX(),
-                    (float) sourceImage.getMinY(),
-                    (float) targetWidth,
-                    (float) targetHeight,
-                    null);
-        }
-        else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
+                                         (float) sourceImage.getMinX(),
+                                         (float) sourceImage.getMinY(),
+                                         (float) targetWidth,
+                                         (float) targetHeight,
+                                         null);
+        } else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
             int rightPad = targetWidth - scaledImage.getWidth();
             int bottomPad = targetHeight - scaledImage.getHeight();
             BeamLogManager.getSystemLogger().fine(String.format("Border: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
@@ -222,9 +220,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
         TileLayout myLayout = null;
         try {
             myLayout = CodeStreamUtils.getTileLayout(S2L2AConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
-        }
-        catch (Exception iae)
-        {
+        } catch (Exception iae) {
             Arrays.fill(tileData, S2L2AConfig.FILL_CODE_MOSAIC_BG);
             return;
         }
@@ -236,11 +232,9 @@ class L2aTileOpImage extends SingleBandedOpImage {
             logger.finest(String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
-            } catch (IOException e)
-            {
+            } catch (IOException e) {
                 logger.severe("opj_decompress process failed! :" + Utils.getStackTrace(e));
-                if (outputFile0.exists() && !outputFile0.delete())
-                {
+                if (outputFile0.exists() && !outputFile0.delete()) {
                     logger.severe("Failed to delete file: " + outputFile0.getAbsolutePath());
                 }
             }
@@ -266,31 +260,27 @@ class L2aTileOpImage extends SingleBandedOpImage {
         final int tileIndex = l2aTileLayout.numXTiles * jp2TileY + jp2TileX;
 
         ProcessBuilder builder = null;
-        if(SystemUtils.IS_OS_WINDOWS)
-        {
+        if (SystemUtils.IS_OS_WINDOWS) {
             String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
             String outputFileName = outputFile.getPath();
 
-            if(inputFileName.length() == 0)
-            {
+            if (inputFileName.length() == 0) {
                 inputFileName = imageFile.getPath();
             }
 
             builder = new ProcessBuilder(S2L2AConfig.OPJ_DECOMPRESSOR_EXE,
-                    "-i", inputFileName,
-                    "-o", outputFileName,
-                    "-r", getLevel() + "",
-                    "-t", tileIndex + "");
-        }
-        else
-        {
+                                         "-i", inputFileName,
+                                         "-o", outputFileName,
+                                         "-r", getLevel() + "",
+                                         "-t", tileIndex + "");
+        } else {
             logger.fine("Writing to " + outputFile.getPath());
 
             builder = new ProcessBuilder(S2L2AConfig.OPJ_DECOMPRESSOR_EXE,
-                    "-i", imageFile.getPath(),
-                    "-o", outputFile.getPath(),
-                    "-r", getLevel() + "",
-                    "-t", tileIndex + "");
+                                         "-i", imageFile.getPath(),
+                                         "-o", outputFile.getPath(),
+                                         "-r", getLevel() + "",
+                                         "-t", tileIndex + "");
         }
 
         builder = builder.directory(cacheDir);
@@ -299,9 +289,8 @@ class L2aTileOpImage extends SingleBandedOpImage {
             CommandOutput result = JpegUtils.runProcess(builder);
 
             final int exitCode = result.getErrorCode();
-            if (exitCode != 0)
-            {
-                logger.severe(String.format("Failed to uncompress tile: %s, exitCode = %d, command = [%s], command stdoutput = [%s], command stderr = [%s]", imageFile.getPath(), exitCode, builder.command().toString(), result.getTextOutput(), result.getErrorOutput() ));
+            if (exitCode != 0) {
+                logger.severe(String.format("Failed to uncompress tile: %s, exitCode = %d, command = [%s], command stdoutput = [%s], command stderr = [%s]", imageFile.getPath(), exitCode, builder.command().toString(), result.getTextOutput(), result.getErrorOutput()));
             }
         } catch (InterruptedException e) {
             logger.severe("Process was interrupted, InterruptedException: " + e.getMessage());
@@ -483,8 +472,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
     }
 }
 
-class BoxListener implements BoxReader.Listener
-{
+class BoxListener implements BoxReader.Listener {
 
     @Override
     public void knownBoxSeen(Box box) {

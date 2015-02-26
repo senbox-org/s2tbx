@@ -39,18 +39,15 @@ public class S2L2aGranuleDirFilename {
         return PATTERN.matcher(name).matches();
     }
 
-    public S2L2aGranuleMetadataFilename getMetadataFilename()
-    {
+    public S2L2aGranuleMetadataFilename getMetadataFilename() {
         String tmp = String.format("%s_%s_%s%s_%s_%s%s%s.xml", missionID, fileClass, "MTD_", fileSemantic, siteCentre, creationDate, absoluteOrbit, tileNumber);
         return S2L2aGranuleMetadataFilename.create(tmp);
     }
 
-    public S2L2aGranuleImageFilename getImageFilename(String bandId)
-    {
+    public S2L2aGranuleImageFilename getImageFilename(String bandId) {
         String newBandId = bandId;
 
-        if(newBandId.length() == 2)
-        {
+        if (newBandId.length() == 2) {
             newBandId = new String(bandId.charAt(0) + "0" + bandId.charAt(1));
         }
 
@@ -62,16 +59,16 @@ public class S2L2aGranuleDirFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2L2aGranuleDirFilename(fileName,
-                                     matcher.group(1),
-                                     matcher.group(2),
-                                     matcher.group(3),
-                                     matcher.group(4),
-                                     matcher.group(5),
-                                     matcher.group(6),
-                                     matcher.group(7),
-                                     matcher.group(8),
-                                     matcher.group(9)
-                    );
+                                               matcher.group(1),
+                                               matcher.group(2),
+                                               matcher.group(3),
+                                               matcher.group(4),
+                                               matcher.group(5),
+                                               matcher.group(6),
+                                               matcher.group(7),
+                                               matcher.group(8),
+                                               matcher.group(9)
+            );
         } else {
             return null;
         }

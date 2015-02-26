@@ -116,32 +116,30 @@ class L1bTileOpImage extends SingleBandedOpImage {
 
         BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
         RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                borderExtender);
+                                                           borderExtender);
 
         RenderedOp scaledImage = ScaleDescriptor.create(sourceImage,
-                scaleX,
-                scaleY,
-                sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
-                sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
-                Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                renderingHints);
+                                                        scaleX,
+                                                        scaleY,
+                                                        sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
+                                                        sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
+                                                        Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                                                        renderingHints);
 
         BeamLogManager.getSystemLogger().fine(String.format("After scaling: (%d, %d)", scaledImage.getWidth(), scaledImage.getHeight()));
 
         if (scaledImage.getWidth() == targetWidth && scaledImage.getHeight() == targetHeight) {
             return scaledImage;
-        }
-        else if (scaledImage.getWidth() >= targetWidth || scaledImage.getHeight() >= targetHeight) {
+        } else if (scaledImage.getWidth() >= targetWidth || scaledImage.getHeight() >= targetHeight) {
             BeamLogManager.getSystemLogger().fine(String.format("Cropping: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
 
             return CropDescriptor.create(scaledImage,
-                    (float) sourceImage.getMinX(),
-                    (float) sourceImage.getMinY(),
-                    (float) targetWidth,
-                    (float) targetHeight,
-                    null);
-        }
-        else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
+                                         (float) sourceImage.getMinX(),
+                                         (float) sourceImage.getMinY(),
+                                         (float) targetWidth,
+                                         (float) targetHeight,
+                                         null);
+        } else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
             int rightPad = targetWidth - scaledImage.getWidth();
             int bottomPad = targetHeight - scaledImage.getHeight();
             BeamLogManager.getSystemLogger().fine(String.format("Border: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
@@ -180,8 +178,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
     }
 
     @Override
-    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect)
-    {
+    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
         final DataBufferUShort dataBuffer = (DataBufferUShort) dest.getDataBuffer();
         final short[] tileData = dataBuffer.getData();
 
@@ -202,9 +199,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         try {
             myLayout = CodeStreamUtils.getTileLayout(S2L1bConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
             realInternalJpegIndex = myLayout.numXTiles * myLayout.numYTiles;
-        }
-        catch (Exception iae)
-        {
+        } catch (Exception iae) {
             Arrays.fill(tileData, S2L1bConfig.FILL_CODE_MOSAIC_BG);
             return;
         }
@@ -214,8 +209,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
         Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
 
-        if(!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout))
-        {
+        if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
             logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
             S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
         }
@@ -249,23 +243,19 @@ class L1bTileOpImage extends SingleBandedOpImage {
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
-        if (!outputFile0.exists())
-        {
+        if (!outputFile0.exists()) {
             int tileIndex = l1bTileLayout.numXTiles * jp2TileY + jp2TileX;
-            if(tileIndex >= realInternalJpegIndex)
-            {
+            if (tileIndex >= realInternalJpegIndex) {
                 Arrays.fill(tileData, S2L1bConfig.FILL_CODE_MOSAIC_BG);
                 return;
             }
 
-            logger.log(Level.parse(S2L1bConfig.LOG_JPEG) ,String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
+            logger.log(Level.parse(S2L1bConfig.LOG_JPEG), String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
-            } catch (IOException e)
-            {
+            } catch (IOException e) {
                 logger.severe("opj_decompress process failed! :" + Utils.getStackTrace(e));
-                if (outputFile0.exists() && !outputFile0.delete())
-                {
+                if (outputFile0.exists() && !outputFile0.delete()) {
                     logger.severe("Failed to delete file: " + outputFile0.getAbsolutePath());
                 }
             }
@@ -291,35 +281,31 @@ class L1bTileOpImage extends SingleBandedOpImage {
         final int tileIndex = l1bTileLayout.numXTiles * jp2TileY + jp2TileX;
 
         ProcessBuilder builder = null;
-        if(SystemUtils.IS_OS_WINDOWS)
-        {
+        if (SystemUtils.IS_OS_WINDOWS) {
             String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
             String outputFileName = outputFile.getPath();
 
-            if(inputFileName.length() == 0)
-            {
+            if (inputFileName.length() == 0) {
                 inputFileName = imageFile.getPath();
             }
 
             Guardian.assertTrue("Image file exists", new File(inputFileName).exists());
 
             builder = new ProcessBuilder(S2L1bConfig.OPJ_DECOMPRESSOR_EXE,
-                    "-i", inputFileName,
-                    "-o", outputFileName,
-                    "-r", getLevel() + "",
-                    "-t", tileIndex + "");
-        }
-        else
-        {
+                                         "-i", inputFileName,
+                                         "-o", outputFileName,
+                                         "-r", getLevel() + "",
+                                         "-t", tileIndex + "");
+        } else {
             logger.fine("Writing to " + outputFile.getPath());
 
             Guardian.assertTrue("Image file exists", imageFile.exists());
 
             builder = new ProcessBuilder(S2L1bConfig.OPJ_DECOMPRESSOR_EXE,
-                    "-i", imageFile.getPath(),
-                    "-o", outputFile.getPath(),
-                    "-r", getLevel() + "",
-                    "-t", tileIndex + "");
+                                         "-i", imageFile.getPath(),
+                                         "-o", outputFile.getPath(),
+                                         "-r", getLevel() + "",
+                                         "-t", tileIndex + "");
         }
 
         builder = builder.directory(cacheDir);
@@ -328,9 +314,8 @@ class L1bTileOpImage extends SingleBandedOpImage {
             CommandOutput result = JpegUtils.runProcess(builder);
 
             final int exitCode = result.getErrorCode();
-            if (exitCode != 0)
-            {
-                logger.severe(String.format("Failed to uncompress tile: %s, exitCode = %d, command = [%s], command stdoutput = [%s], command stderr = [%s]", imageFile.getPath(), exitCode, builder.command().toString(), result.getTextOutput(), result.getErrorOutput() ));
+            if (exitCode != 0) {
+                logger.severe(String.format("Failed to uncompress tile: %s, exitCode = %d, command = [%s], command stdoutput = [%s], command stderr = [%s]", imageFile.getPath(), exitCode, builder.command().toString(), result.getTextOutput(), result.getErrorOutput()));
             }
         } catch (InterruptedException e) {
             logger.severe("Process was interrupted, InterruptedException: " + e.getMessage());
@@ -421,8 +406,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
                                                          jp2Y,
                                                          tileWidth, tileHeight);
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
-                if (!intersection.isEmpty())
-                {
+                if (!intersection.isEmpty()) {
                     logger.fine(String.format("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection));
                     long seekPos = jp2File.dataPos + S2L1bConfig.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;

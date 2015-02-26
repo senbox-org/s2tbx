@@ -48,19 +48,14 @@ public class L2aMetadataProc {
         URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
 
         URL[] theURLs = s2ClassLoader.getURLs();
-        for (URL url : theURLs)
-        {
-            if(url.getPath().contains(subStr) && url.getPath().contains(".jar"))
-            {
+        for (URL url : theURLs) {
+            if (url.getPath().contains(subStr) && url.getPath().contains(".jar")) {
                 URI uri = url.toURI();
                 URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
                 return parent.getPath();
-            }
-            else
-            {
+            } else {
                 //todo please note that in dev, all the module jar files are unzipped in modules folder, so SNAP only reaches this code in dev environments
-                if(url.getPath().contains(subStr))
-                {
+                if (url.getPath().contains(subStr)) {
                     URI uri = url.toURI();
                     URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
                     return parent.getPath();
@@ -71,8 +66,7 @@ public class L2aMetadataProc {
         throw new FileNotFoundException("Module " + subStr + " not found !");
     }
 
-    public static String tryGetModulesDir()
-    {
+    public static String tryGetModulesDir() {
         String theDir = "./";
         try {
             theDir = getModulesDir();
@@ -87,21 +81,17 @@ public class L2aMetadataProc {
         return s.hasNext() ? s.next() : "";
     }
 
-    public static void setExecutable(File file, boolean executable)
-    {
-        try
-        {
-            Process p = Runtime.getRuntime().exec(new String[] {
-            "chmod",
-            "u"+(executable?'+':'-')+"x",
-            file.getAbsolutePath(),
+    public static void setExecutable(File file, boolean executable) {
+        try {
+            Process p = Runtime.getRuntime().exec(new String[]{
+                    "chmod",
+                    "u" + (executable ? '+' : '-') + "x",
+                    file.getAbsolutePath(),
             });
             p.waitFor();
             String output = convertStreamToString(p.getInputStream());
             String errorOutput = convertStreamToString(p.getErrorStream());
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
         }
     }
@@ -113,14 +103,13 @@ public class L2aMetadataProc {
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
-        Object ob =  unmarshaller.unmarshal(stream);
-        Object casted = ((JAXBElement)ob).getValue();
+        Object ob = unmarshaller.unmarshal(stream);
+        Object casted = ((JAXBElement) ob).getValue();
 
         return casted;
     }
 
-    public static L2aMetadata.ProductCharacteristics parseCharacteristics(Level2A_User_Product product)
-    {
+    public static L2aMetadata.ProductCharacteristics parseCharacteristics(Level2A_User_Product product) {
         A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getL2A_Product_Info().getDatatake();
 
         L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
@@ -131,7 +120,7 @@ public class L2aMetadataProc {
         List<L2aMetadata.SpectralInformation> targetList = new ArrayList<L2aMetadata.SpectralInformation>();
 
         List<A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> aList = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
-        for(A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
+        for (A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
             L2aMetadata.SpectralInformation newInfo = new L2aMetadata.SpectralInformation();
             newInfo.bandId = Integer.parseInt(si.getBandId());
             newInfo.physicalBand = si.getPhysicalBand().value();
@@ -152,25 +141,22 @@ public class L2aMetadataProc {
         return characteristics;
     }
 
-    public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product)
-    {
+    public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product) {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
-        L2aMetadata.ProductCharacteristics characteristics= new L2aMetadata.ProductCharacteristics();
+        L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
         characteristics.spacecraft = product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME();
         characteristics.datasetProductionDate = product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString();
         characteristics.processingLevel = product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value();
 
         A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List spectralInformationList = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getSpectral_Information_List();
 
-        if(spectralInformationList != null)
-        {
+        if (spectralInformationList != null) {
             List<A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = spectralInformationList.getSpectral_Information();
 
             List<L2aMetadata.SpectralInformation> aInfo = new ArrayList<L2aMetadata.SpectralInformation>();
 
-            for(A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList)
-            {
+            for (A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
                 L2aMetadata.SpectralInformation data = new L2aMetadata.SpectralInformation();
                 data.bandId = Integer.parseInt(sin.getBandId());
                 data.physicalBand = sin.getPhysicalBand().value();
@@ -211,8 +197,7 @@ public class L2aMetadataProc {
         return col;
     }
 
-    public static S2L2aDatastripFilename getDatastrip(Level2A_User_Product product)
-    {
+    public static S2L2aDatastripFilename getDatastrip(Level2A_User_Product product) {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
@@ -220,8 +205,7 @@ public class L2aMetadataProc {
         return dirDatastrip.getDatastripFilename(null);
     }
 
-    public static S2L2aDatastripDirFilename getDatastripDir(Level2A_User_Product product)
-    {
+    public static S2L2aDatastripDirFilename getDatastripDir(Level2A_User_Product product) {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
 
@@ -235,12 +219,10 @@ public class L2aMetadataProc {
         List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> theList = info.getGranule_List();
         List<ImageInfo> aGranuleList = new ArrayList<ImageInfo>();
 
-        for(A_L2A_Product_Info.L2A_Product_Organisation.Granule_List currentList: theList)
-        {
+        for (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List currentList : theList) {
             List<A_PRODUCT_ORGANIZATION_2A.Granules.IMAGE_ID_2A> images = currentList.getGranules().getIMAGE_ID_2A();
 
-            for(int granuleIndex = 0; granuleIndex < images.size(); granuleIndex++)
-            {
+            for (int granuleIndex = 0; granuleIndex < images.size(); granuleIndex++) {
                 ImageInfo newImage = new ImageInfo(images.get(granuleIndex).getValue());
                 newImage.put("DatastripIdentifier", currentList.getGranules().getDatastripIdentifier());
                 newImage.put("GranuleIdentifier", currentList.getGranules().getGranuleIdentifier());
@@ -264,8 +246,7 @@ public class L2aMetadataProc {
 
         Map<Integer, L2aMetadata.TileGeometry> resolutions = new HashMap<Integer, L2aMetadata.TileGeometry>();
 
-        for (A_TILE_DESCRIPTION.Geoposition gpos : poss)
-        {
+        for (A_TILE_DESCRIPTION.Geoposition gpos : poss) {
             int index = gpos.getResolution();
             L2aMetadata.TileGeometry tgeox = new L2aMetadata.TileGeometry();
             tgeox.upperLeftX = gpos.getULX();
@@ -275,8 +256,7 @@ public class L2aMetadataProc {
             resolutions.put(index, tgeox);
         }
 
-        for(A_TILE_DESCRIPTION.Size asize : sizz)
-        {
+        for (A_TILE_DESCRIPTION.Size asize : sizz) {
             int index = asize.getResolution();
             L2aMetadata.TileGeometry tgeox = resolutions.get(index);
             tgeox.numCols = asize.getNCOLS();
@@ -302,20 +282,16 @@ public class L2aMetadataProc {
         ag.azimuth = new float[azrows][azcolumns];
         ag.zenith = new float[zenrows][zencolumns];
 
-        for(int rowindex = 0; rowindex < azrows; rowindex++)
-        {
+        for (int rowindex = 0; rowindex < azrows; rowindex++) {
             List<Float> azimuths = sun.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
-            for(int colindex = 0; colindex < azcolumns; colindex++)
-            {
+            for (int colindex = 0; colindex < azcolumns; colindex++) {
                 ag.azimuth[rowindex][colindex] = azimuths.get(colindex);
             }
         }
 
-        for(int rowindex = 0; rowindex < zenrows; rowindex++)
-        {
+        for (int rowindex = 0; rowindex < zenrows; rowindex++) {
             List<Float> zeniths = sun.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
-            for(int colindex = 0; colindex < zencolumns; colindex++)
-            {
+            for (int colindex = 0; colindex < zencolumns; colindex++) {
                 ag.zenith[rowindex][colindex] = zeniths.get(colindex);
             }
         }
@@ -328,8 +304,7 @@ public class L2aMetadataProc {
         List<AN_INCIDENCE_ANGLE_GRID> incilist = ang.getViewing_Incidence_Angles_Grids();
 
         L2aMetadata.AnglesGrid[] darr = new L2aMetadata.AnglesGrid[incilist.size()];
-        for(int index = 0; index < incilist.size() ; index++)
-        {
+        for (int index = 0; index < incilist.size(); index++) {
             AN_INCIDENCE_ANGLE_GRID angleGrid = incilist.get(index);
 
             int azrows2 = angleGrid.getAzimuth().getValues_List().getVALUES().size();
@@ -343,20 +318,16 @@ public class L2aMetadataProc {
             ag2.azimuth = new float[azrows2][azcolumns2];
             ag2.zenith = new float[zenrows2][zencolumns2];
 
-            for(int rowindex = 0; rowindex < azrows2; rowindex++)
-            {
+            for (int rowindex = 0; rowindex < azrows2; rowindex++) {
                 List<Float> azimuths = angleGrid.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
-                for(int colindex = 0; colindex < azcolumns2; colindex++)
-                {
+                for (int colindex = 0; colindex < azcolumns2; colindex++) {
                     ag2.azimuth[rowindex][colindex] = azimuths.get(colindex);
                 }
             }
 
-            for(int rowindex = 0; rowindex < zenrows2; rowindex++)
-            {
+            for (int rowindex = 0; rowindex < zenrows2; rowindex++) {
                 List<Float> zeniths = angleGrid.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
-                for(int colindex = 0; colindex < zencolumns2; colindex++)
-                {
+                for (int colindex = 0; colindex < zencolumns2; colindex++) {
                     ag2.zenith[rowindex][colindex] = zeniths.get(colindex);
                 }
             }

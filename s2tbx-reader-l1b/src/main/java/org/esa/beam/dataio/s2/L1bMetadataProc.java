@@ -56,19 +56,14 @@ public class L1bMetadataProc {
         URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
 
         URL[] theURLs = s2ClassLoader.getURLs();
-        for (URL url : theURLs)
-        {
-            if(url.getPath().contains(subStr) && url.getPath().contains(".jar"))
-            {
+        for (URL url : theURLs) {
+            if (url.getPath().contains(subStr) && url.getPath().contains(".jar")) {
                 URI uri = url.toURI();
                 URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
                 return parent.getPath();
-            }
-            else
-            {
+            } else {
                 //todo please note that in dev, all the module jar files are unzipped in modules folder, so SNAP only reaches this code in dev environments
-                if(url.getPath().contains(subStr))
-                {
+                if (url.getPath().contains(subStr)) {
                     URI uri = url.toURI();
                     URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
                     return parent.getPath();
@@ -79,8 +74,7 @@ public class L1bMetadataProc {
         throw new FileNotFoundException("Module " + subStr + " not found !");
     }
 
-    public static String tryGetModulesDir()
-    {
+    public static String tryGetModulesDir() {
         String theDir = "./";
         try {
             theDir = getModulesDir();
@@ -95,21 +89,17 @@ public class L1bMetadataProc {
         return s.hasNext() ? s.next() : "";
     }
 
-    public static void setExecutable(File file, boolean executable)
-    {
-        try
-        {
-            Process p = Runtime.getRuntime().exec(new String[] {
-            "chmod",
-            "u"+(executable?'+':'-')+"x",
-            file.getAbsolutePath(),
+    public static void setExecutable(File file, boolean executable) {
+        try {
+            Process p = Runtime.getRuntime().exec(new String[]{
+                    "chmod",
+                    "u" + (executable ? '+' : '-') + "x",
+                    file.getAbsolutePath(),
             });
             p.waitFor();
             String output = convertStreamToString(p.getInputStream());
             String errorOutput = convertStreamToString(p.getErrorStream());
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
         }
     }
@@ -121,8 +111,8 @@ public class L1bMetadataProc {
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
-        Object ob =  unmarshaller.unmarshal(stream);
-        Object casted = ((JAXBElement)ob).getValue();
+        Object ob = unmarshaller.unmarshal(stream);
+        Object casted = ((JAXBElement) ob).getValue();
 
         return casted;
     }
@@ -134,8 +124,7 @@ public class L1bMetadataProc {
         return jaxbContext;
     }
 
-    public static L1bMetadata.ProductCharacteristics parseCharacteristics(Level1B_User_Product product)
-    {
+    public static L1bMetadata.ProductCharacteristics parseCharacteristics(Level1B_User_Product product) {
         A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getProduct_Info().getDatatake();
 
         L1bMetadata.ProductCharacteristics characteristics = new L1bMetadata.ProductCharacteristics();
@@ -146,7 +135,7 @@ public class L1bMetadataProc {
         List<L1bMetadata.SpectralInformation> targetList = new ArrayList<L1bMetadata.SpectralInformation>();
 
         List<A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> aList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
-        for(A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
+        for (A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
             L1bMetadata.SpectralInformation newInfo = new L1bMetadata.SpectralInformation();
             newInfo.bandId = Integer.parseInt(si.getBandId());
             newInfo.physicalBand = si.getPhysicalBand().value();
@@ -167,22 +156,20 @@ public class L1bMetadataProc {
         return characteristics;
     }
 
-    public static String getCrs(Level1B_User_Product product)
-    {
+    public static String getCrs(Level1B_User_Product product) {
         return product.getGeometric_Info().getCoordinate_Reference_System().getHorizontal_CS().getHORIZONTAL_CS_CODE();
     }
 
-    public static L1bMetadata.ProductCharacteristics getProductOrganization(Level1B_User_Product product)
-    {
+    public static L1bMetadata.ProductCharacteristics getProductOrganization(Level1B_User_Product product) {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
 
-        L1bMetadata.ProductCharacteristics characteristics= new L1bMetadata.ProductCharacteristics();
+        L1bMetadata.ProductCharacteristics characteristics = new L1bMetadata.ProductCharacteristics();
         characteristics.spacecraft = product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME();
         characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString();
         characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value();
 
         Object spectral_list = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List();
-        if(spectral_list != null) {
+        if (spectral_list != null) {
 
             List<A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
 
@@ -207,9 +194,7 @@ public class L1bMetadataProc {
 
             int size = aInfo.size();
             characteristics.bandInformations = aInfo.toArray(new L1bMetadata.SpectralInformation[size]);
-        }
-        else
-        {
+        } else {
             BeamLogManager.getSystemLogger().warning("Empty spectral info !");
 
             // fixme If there is no spectral info, get band names from Query_Options/Band_List
@@ -225,20 +210,16 @@ public class L1bMetadataProc {
             });
 
             int index = 0;
-            for(A_PHYSICAL_BAND_NAME band_name : bandList)
-            {
+            for (A_PHYSICAL_BAND_NAME band_name : bandList) {
                 L1bMetadata.SpectralInformation data = new L1bMetadata.SpectralInformation();
                 data.physicalBand = band_name.value();
                 data.bandId = index;
 
                 // fixme remove hardcoded resolutions...
                 data.resolution = 10;
-                if(data.physicalBand.equals("B1") || data.physicalBand.equals("B9") || data.physicalBand.equals("B10"))
-                {
+                if (data.physicalBand.equals("B1") || data.physicalBand.equals("B9") || data.physicalBand.equals("B10")) {
                     data.resolution = 60;
-                }
-                else if(data.physicalBand.equals("B5") || data.physicalBand.equals("B6") || data.physicalBand.equals("B7") || data.physicalBand.equals("B8A") || data.physicalBand.equals("B11") || data.physicalBand.equals("B12"))
-                {
+                } else if (data.physicalBand.equals("B5") || data.physicalBand.equals("B6") || data.physicalBand.equals("B7") || data.physicalBand.equals("B8A") || data.physicalBand.equals("B11") || data.physicalBand.equals("B12")) {
                     data.resolution = 20;
                 }
 
@@ -272,8 +253,7 @@ public class L1bMetadataProc {
         return col;
     }
 
-    public static S2L1bDatastripFilename getDatastrip(Level1B_User_Product product)
-    {
+    public static S2L1bDatastripFilename getDatastrip(Level1B_User_Product product) {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
@@ -285,8 +265,7 @@ public class L1bMetadataProc {
         return dirDatastrip.getDatastripFilename(null);
     }
 
-    public static S2L1bDatastripDirFilename getDatastripDir(Level1B_User_Product product)
-    {
+    public static S2L1bDatastripDirFilename getDatastripDir(Level1B_User_Product product) {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
@@ -306,13 +285,11 @@ public class L1bMetadataProc {
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> granulesList = info.getGranule_List();
         List<String> imagesList = new ArrayList<String>();
 
-        for(A_PRODUCT_INFO.Product_Organisation.Granule_List aGranule: granulesList)
-        {
+        for (A_PRODUCT_INFO.Product_Organisation.Granule_List aGranule : granulesList) {
             A_PRODUCT_ORGANIZATION.Granules gr = aGranule.getGranules();
             String dir_id = gr.getGranuleIdentifier();
             List<A_PRODUCT_ORGANIZATION.Granules.IMAGE_ID> imageid = gr.getIMAGE_ID();
-            for(A_PRODUCT_ORGANIZATION.Granules.IMAGE_ID aImageName : imageid)
-            {
+            for (A_PRODUCT_ORGANIZATION.Granules.IMAGE_ID aImageName : imageid) {
                 imagesList.add(dir_id + File.separator + aImageName.getValue() + ".jp2");
             }
         }
@@ -322,8 +299,7 @@ public class L1bMetadataProc {
     }
 
 
-    public static List<Coordinate> getGranuleCorners(Level1B_Granule granule)
-    {
+    public static List<Coordinate> getGranuleCorners(Level1B_Granule granule) {
         List<Double> polygon = granule.getGeometric_Info().getGranule_Footprint().getGranule_Footprint().getFootprint().getEXT_POS_LIST();
         List<Coordinate> thePoints = as3DCoordinates(polygon);
 
@@ -337,8 +313,7 @@ public class L1bMetadataProc {
         int pos = granule.getGeometric_Info().getGranule_Position().getPOSITION();
         String detector = granule.getGeneral_Info().getDETECTOR_ID().getValue();
 
-        for (A_GRANULE_DIMENSIONS.Size gpos : sizes)
-        {
+        for (A_GRANULE_DIMENSIONS.Size gpos : sizes) {
             int resolution = gpos.getResolution();
 
             // fixme retrieve tile layout per granule..
@@ -348,8 +323,7 @@ public class L1bMetadataProc {
             tgeox.numCols = gpos.getNCOLS();
 
             tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
-            if ((gpos.getNROWS() - (pos / ratio)) < S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height)
-            {
+            if ((gpos.getNROWS() - (pos / ratio)) < S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height) {
                 // critical remove log
                 BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_DEBUG), "Test if we need extra processing here");
             }

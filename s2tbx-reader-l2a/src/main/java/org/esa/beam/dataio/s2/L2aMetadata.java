@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
- * <p/>
+ * <p>
  * Note: No data interpretation is done in this class, it is intended to serve the pure metadata content only.
  *
  * @author Norman Fomferra
@@ -51,7 +51,9 @@ public class L2aMetadata {
         AnglesGrid sunAnglesGrid;
         AnglesGrid[] viewingIncidenceAnglesGrids;
 
-        public static enum idGeom{G10M, G20M, G60M};
+        public static enum idGeom {G10M, G20M, G60M}
+
+        ;
 
         public Tile(String id) {
             this.id = id;
@@ -60,10 +62,8 @@ public class L2aMetadata {
             tileGeometry60M = new TileGeometry();
         }
 
-        public TileGeometry getGeometry(idGeom index)
-        {
-            switch (index)
-            {
+        public TileGeometry getGeometry(idGeom index) {
+            switch (index) {
                 case G10M:
                     return tileGeometry10M;
                 case G20M:
@@ -178,8 +178,7 @@ public class L2aMetadata {
         return tileList;
     }
 
-    public Collection<ImageInfo> getImageList()
-    {
+    public Collection<ImageInfo> getImageList() {
         return imageList;
     }
 
@@ -192,8 +191,7 @@ public class L2aMetadata {
         return metadataElement;
     }
 
-    private L2aMetadata(InputStream stream, File file, String parent) throws DataConversionException
-    {
+    private L2aMetadata(InputStream stream, File file, String parent) throws DataConversionException {
         try {
             Level2A_User_Product product = (Level2A_User_Product) L2aMetadataProc.readJaxbFromFilename(stream);
             productCharacteristics = L2aMetadataProc.getProductOrganization(product);
@@ -204,25 +202,20 @@ public class L2aMetadata {
 
             tileList = new ArrayList<Tile>();
 
-            for (String granuleName: tileNames)
-            {
+            for (String granuleName : tileNames) {
                 S2L2aGranuleDirFilename aGranuleDir = S2L2aGranuleDirFilename.create(granuleName);
                 String theName = aGranuleDir.getMetadataFilename().name;
 
                 File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-                if(nestedGranuleMetadata.exists())
-                {
+                if (nestedGranuleMetadata.exists()) {
                     fullTileNamesList.add(nestedGranuleMetadata);
-                }
-                else
-                {
+                } else {
                     String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
                     logger.log(Level.WARNING, errorMessage);
                 }
             }
 
-            for(File aGranuleMetadataFile: fullTileNamesList)
-            {
+            for (File aGranuleMetadataFile : fullTileNamesList) {
                 Level2A_Tile aTile = (Level2A_Tile) L2aMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
                 Map<Integer, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
 
@@ -252,8 +245,7 @@ public class L2aMetadata {
             metadataElement.addElement(dataStrip);
             MetadataElement granulesMetaData = new MetadataElement("Granules");
 
-            for(File aGranuleMetadataFile: fullTileNamesList)
-            {
+            for (File aGranuleMetadataFile : fullTileNamesList) {
                 MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
                 granulesMetaData.addElement(aGranule);
             }
@@ -312,8 +304,6 @@ public class L2aMetadata {
     }
 
 
-
-
     private static Element getChild(Element parent, String... path) {
         Element child = parent;
         if (child == null) {
@@ -321,8 +311,7 @@ public class L2aMetadata {
         }
         for (String name : path) {
             child = child.getChild(name);
-            if (child == null)
-            {
+            if (child == null) {
                 return NULL_ELEM;
             }
         }

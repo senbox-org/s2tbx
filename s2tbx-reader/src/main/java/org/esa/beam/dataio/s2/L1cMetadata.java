@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
- * <p/>
+ * <p>
  * Note: No data interpretation is done in this class, it is intended to serve the pure metadata content only.
  *
  * @author Norman Fomferra
@@ -64,7 +64,9 @@ public class L1cMetadata {
         AnglesGrid sunAnglesGrid;
         AnglesGrid[] viewingIncidenceAnglesGrids;
 
-        public static enum idGeom{G10M, G20M, G60M};
+        public static enum idGeom {G10M, G20M, G60M}
+
+        ;
 
         public Tile(String id) {
             this.id = id;
@@ -73,10 +75,8 @@ public class L1cMetadata {
             tileGeometry60M = new TileGeometry();
         }
 
-        public TileGeometry getGeometry(idGeom index)
-        {
-            switch (index)
-            {
+        public TileGeometry getGeometry(idGeom index) {
+            switch (index) {
                 case G10M:
                     return tileGeometry10M;
                 case G20M:
@@ -200,8 +200,7 @@ public class L1cMetadata {
         return metadataElement;
     }
 
-    private L1cMetadata(InputStream stream, File file, String parent) throws DataConversionException
-    {
+    private L1cMetadata(InputStream stream, File file, String parent) throws DataConversionException {
         try {
 
             Level1C_User_Product product = (Level1C_User_Product) L1cMetadataProc.readJaxbFromFilename(stream);
@@ -212,8 +211,7 @@ public class L1cMetadata {
 
             tileList = new ArrayList<Tile>();
 
-            for (String granuleName: tileNames)
-            {
+            for (String granuleName : tileNames) {
                 FileInputStream fi = (FileInputStream) stream;
                 File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
 
@@ -221,7 +219,7 @@ public class L1cMetadata {
                 String theName = aGranuleDir.getMetadataFilename().name;
 
                 File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-                if(nestedGranuleMetadata.exists()) {
+                if (nestedGranuleMetadata.exists()) {
                     fullTileNamesList.add(nestedGranuleMetadata);
                 } else {
                     String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
@@ -231,8 +229,7 @@ public class L1cMetadata {
 
             Map<String, Counter> counters = new HashMap<String, Counter>();
 
-            for(File aGranuleMetadataFile: fullTileNamesList)
-            {
+            for (File aGranuleMetadataFile : fullTileNamesList) {
                 Level1C_Tile aTile = (Level1C_Tile) L1cMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
                 Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
@@ -241,12 +238,9 @@ public class L1cMetadata {
                 t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
 
                 String key = t.horizontalCsCode;
-                if(counters.containsKey(key))
-                {
+                if (counters.containsKey(key)) {
                     counters.get(key).increment();
-                }
-                else
-                {
+                } else {
                     counters.put(key, new Counter(key));
                     counters.get(key).increment();
                 }
@@ -262,8 +256,7 @@ public class L1cMetadata {
             }
 
             // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
-            if(counters.values().size() > 1)
-            {
+            if (counters.values().size() > 1) {
                 Counter maximus = Collections.max(counters.values());
                 logger.severe(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
                 tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
@@ -281,8 +274,7 @@ public class L1cMetadata {
             metadataElement.addElement(dataStrip);
             MetadataElement granulesMetaData = new MetadataElement("Granules");
 
-            for(File aGranuleMetadataFile: fullTileNamesList)
-            {
+            for (File aGranuleMetadataFile : fullTileNamesList) {
                 MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
                 granulesMetaData.addElement(aGranule);
             }
@@ -341,8 +333,6 @@ public class L1cMetadata {
     }
 
 
-
-
     private static Element getChild(Element parent, String... path) {
         Element child = parent;
         if (child == null) {
@@ -350,8 +340,7 @@ public class L1cMetadata {
         }
         for (String name : path) {
             child = child.getChild(name);
-            if (child == null)
-            {
+            if (child == null) {
                 return NULL_ELEM;
             }
         }

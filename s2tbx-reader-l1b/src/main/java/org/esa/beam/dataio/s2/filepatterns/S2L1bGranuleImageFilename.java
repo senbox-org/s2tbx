@@ -45,8 +45,7 @@ public class S2L1bGranuleImageFilename {
         return Integer.parseInt(bandIndex);
     }
 
-    public String getTileNumber()
-    {
+    public String getTileNumber() {
         return tileNumber;
     }
 
@@ -54,16 +53,16 @@ public class S2L1bGranuleImageFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2L1bGranuleImageFilename(fileName,
-                                     matcher.group(1),
-                                     matcher.group(2),
-                                     matcher.group(3),
-                                     matcher.group(4),
-                                     matcher.group(5),
-                                     matcher.group(6),
-                                     matcher.group(7),
-                                     matcher.group(8),
-                                     matcher.group(9),
-                                     matcher.group(10));
+                                                 matcher.group(1),
+                                                 matcher.group(2),
+                                                 matcher.group(3),
+                                                 matcher.group(4),
+                                                 matcher.group(5),
+                                                 matcher.group(6),
+                                                 matcher.group(7),
+                                                 matcher.group(8),
+                                                 matcher.group(9),
+                                                 matcher.group(10));
         } else {
             // todo add a warning message too
             BeamLogManager.getSystemLogger().warning(String.format("%s GranuleImageFilename didn't match regexp %s", fileName, PATTERN.toString()));

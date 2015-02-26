@@ -15,32 +15,27 @@ public class ImageInfoPredicates {
         return p -> p.getFileName().contains(band);
     }
 
-    public static Predicate<ImageInfo> isGranule(String granuleId)
-    {
+    public static Predicate<ImageInfo> isGranule(String granuleId) {
         // todo get rid of hardcoded strings...
         return p -> p.get("GranuleIdentifier").equals(granuleId);
     }
 
-    public static Predicate<ImageInfo> isJPEG2000()
-    {
+    public static Predicate<ImageInfo> isJPEG2000() {
         return p -> p.get("ImageFormat").equals("JPEG2000");
     }
 
-    public static List<ImageInfo> filterImageInfo (Collection<ImageInfo> images, Predicate<ImageInfo> predicate)
-    {
-        return images.stream().filter( predicate ).collect(Collectors.<ImageInfo>toList());
+    public static List<ImageInfo> filterImageInfo(Collection<ImageInfo> images, Predicate<ImageInfo> predicate) {
+        return images.stream().filter(predicate).collect(Collectors.<ImageInfo>toList());
     }
 
-    public static List<ImageInfo> filterImageInfo (Collection<ImageInfo> images, Predicate<ImageInfo> predicate, Predicate<ImageInfo> otherPredicate)
-    {
+    public static List<ImageInfo> filterImageInfo(Collection<ImageInfo> images, Predicate<ImageInfo> predicate, Predicate<ImageInfo> otherPredicate) {
         List<Predicate<ImageInfo>> predicates = new ArrayList<>();
         predicates.add(predicate);
         predicates.add(otherPredicate);
         return filterImageInfo(images, predicates);
     }
 
-    public static List<ImageInfo> filterImageInfo (Collection<ImageInfo> images, Predicate<ImageInfo> predicate, Predicate<ImageInfo> otherPredicate, Predicate<ImageInfo> thirdPredicate)
-    {
+    public static List<ImageInfo> filterImageInfo(Collection<ImageInfo> images, Predicate<ImageInfo> predicate, Predicate<ImageInfo> otherPredicate, Predicate<ImageInfo> thirdPredicate) {
         List<Predicate<ImageInfo>> predicates = new ArrayList<>();
         predicates.add(predicate);
         predicates.add(otherPredicate);
@@ -48,12 +43,10 @@ public class ImageInfoPredicates {
         return filterImageInfo(images, predicates);
     }
 
-    public static List<ImageInfo> filterImageInfo (Collection<ImageInfo> images, List<Predicate<ImageInfo>> predicates)
-    {
+    public static List<ImageInfo> filterImageInfo(Collection<ImageInfo> images, List<Predicate<ImageInfo>> predicates) {
         Collection<ImageInfo> intermediate = images;
-        for (Predicate<ImageInfo> aPredicate: predicates)
-        {
-            intermediate = intermediate.stream().filter( aPredicate ).collect(Collectors.<ImageInfo>toList());
+        for (Predicate<ImageInfo> aPredicate : predicates) {
+            intermediate = intermediate.stream().filter(aPredicate).collect(Collectors.<ImageInfo>toList());
         }
         return intermediate.stream().collect(Collectors.<ImageInfo>toList());
     }

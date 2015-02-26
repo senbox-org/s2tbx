@@ -32,13 +32,13 @@ public class S2L2aDatastripFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2L2aDatastripFilename(fileName,
-                    matcher.group(1),
-                    matcher.group(2),
-                    matcher.group(3),
-                    matcher.group(4),
-                    matcher.group(5),
-                    matcher.group(6),
-                    matcher.group(7)
+                                              matcher.group(1),
+                                              matcher.group(2),
+                                              matcher.group(3),
+                                              matcher.group(4),
+                                              matcher.group(5),
+                                              matcher.group(6),
+                                              matcher.group(7)
             );
         } else {
             return null;

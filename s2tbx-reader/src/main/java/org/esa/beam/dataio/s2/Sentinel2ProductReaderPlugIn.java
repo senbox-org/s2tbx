@@ -21,9 +21,8 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
         File file = new File(input.toString());
         DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
-        if(deco.equals(DecodeQualification.SUITABLE)) {
-            if(S2ProductFilename.create(file.getName()).fileSemantic.contains("L1C"))
-            {
+        if (deco.equals(DecodeQualification.SUITABLE)) {
+            if (S2ProductFilename.create(file.getName()).fileSemantic.contains("L1C")) {
                 deco = DecodeQualification.INTENDED;
             }
         }

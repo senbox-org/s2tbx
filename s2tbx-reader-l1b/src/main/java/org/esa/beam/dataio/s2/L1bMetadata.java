@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
- * <p/>
+ * <p>
  * Note: No data interpretation is done in this class, it is intended to serve the pure metadata content only.
  *
  * @author Norman Fomferra
@@ -66,7 +66,9 @@ public class L1bMetadata {
 
         public List<Coordinate> corners;
 
-        public static enum idGeom{G10M, G20M, G60M};
+        public static enum idGeom {G10M, G20M, G60M}
+
+        ;
 
         public Tile(String id, String detectorId) {
             this.id = id;
@@ -76,10 +78,8 @@ public class L1bMetadata {
             tileGeometry60M = new TileGeometry();
         }
 
-        public TileGeometry getGeometry(idGeom index)
-        {
-            switch (index)
-            {
+        public TileGeometry getGeometry(idGeom index) {
+            switch (index) {
                 case G10M:
                     return tileGeometry10M;
                 case G20M:
@@ -171,14 +171,13 @@ public class L1bMetadata {
         return metadataElement;
     }
 
-    private L1bMetadata(InputStream stream, File file, String parent) throws DataConversionException
-    {
+    private L1bMetadata(InputStream stream, File file, String parent) throws DataConversionException {
         try {
             context = L1bMetadataProc.getJaxbContext();
             unmarshaller = context.createUnmarshaller();
 
-            Object ob =  unmarshaller.unmarshal(stream);
-            Object casted = ((JAXBElement)ob).getValue();
+            Object ob = unmarshaller.unmarshal(stream);
+            Object casted = ((JAXBElement) ob).getValue();
 
             Level1B_User_Product product = (Level1B_User_Product) casted;
             productCharacteristics = L1bMetadataProc.getProductOrganization(product);
@@ -190,35 +189,30 @@ public class L1bMetadata {
 
             tileList = new ArrayList<Tile>();
 
-            for (String granuleName: tileNames)
-            {
+            for (String granuleName : tileNames) {
                 File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
 
-                if(nestedMetadata.exists())
-                {
+                if (nestedMetadata.exists()) {
                     logger.log(Level.FINE, "File found: " + nestedMetadata.getAbsolutePath());
                     S2L1bGranuleDirFilename aGranuleDir = S2L1bGranuleDirFilename.create(granuleName);
                     Guardian.assertNotNull("aGranuleDir", aGranuleDir);
                     String theName = aGranuleDir.getMetadataFilename().name;
 
                     File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-                    if(nestedGranuleMetadata.exists()) {
+                    if (nestedGranuleMetadata.exists()) {
                         fullTileNamesList.add(nestedGranuleMetadata);
                     } else {
                         String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
                         logger.log(Level.WARNING, errorMessage);
                     }
-                }
-                else
-                {
+                } else {
                     logger.log(Level.SEVERE, "File not found: " + nestedMetadata.getAbsolutePath());
                 }
             }
 
-            for(File aGranuleMetadataFile: fullTileNamesList)
-            {
-                Object aob =  unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
-                Object acasted = ((JAXBElement)aob).getValue();
+            for (File aGranuleMetadataFile : fullTileNamesList) {
+                Object aob = unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
+                Object acasted = ((JAXBElement) aob).getValue();
 
                 Level1B_Granule aGranule = (Level1B_Granule) acasted;
                 Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule);
@@ -254,8 +248,8 @@ public class L1bMetadata {
             MetadataElement granulesMetaData = new MetadataElement("Granules");
 
             // get datastrip...
-            Object dStrip =  unmarshaller.unmarshal(dataStripMetadata);
-            Object castedStrip = ((JAXBElement)dStrip).getValue();
+            Object dStrip = unmarshaller.unmarshal(dataStripMetadata);
+            Object castedStrip = ((JAXBElement) dStrip).getValue();
 
             Level1B_DataStrip theDataStrip = (Level1B_DataStrip) castedStrip;
             int numheaders = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header().size();
@@ -267,11 +261,9 @@ public class L1bMetadata {
             List<AnglesGrid> incidenceGrid = new ArrayList<AnglesGrid>();
 
             List<A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header> headers = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header();
-            for (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header header : headers)
-            {
+            for (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header header : headers) {
                 Iterator it = header.getLocated_Geometric_Header().iterator();
-                while(it.hasNext())
-                {
+                while (it.hasNext()) {
                     A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header o = (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header) it.next();
                     AnglesGrid tmpGrid = new AnglesGrid();
                     tmpGrid.azimuth = o.getSolar_Angles().getAZIMUTH_ANGLE().getValue();
@@ -288,8 +280,7 @@ public class L1bMetadata {
             // fixme sunGrid and incidenceGrid are now available in sunGrid and incidenceGrid
             // look at RapidEyeL1Reader:initGeoCoding for lon/lat tiepointgridss
 
-            for(File aGranuleMetadataFile: fullTileNamesList)
-            {
+            for (File aGranuleMetadataFile : fullTileNamesList) {
                 MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
                 granulesMetaData.addElement(aGranule);
             }
@@ -354,8 +345,7 @@ public class L1bMetadata {
         }
         for (String name : path) {
             child = child.getChild(name);
-            if (child == null)
-            {
+            if (child == null) {
                 return NULL_ELEM;
             }
         }

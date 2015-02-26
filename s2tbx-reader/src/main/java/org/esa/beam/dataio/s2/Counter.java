@@ -7,6 +7,7 @@ public class Counter implements Comparable<Counter> {
 
     /**
      * Initializes a new counter starting at 0, with the given id.
+     *
      * @param id the name of the counter
      */
     public Counter(String id) {
@@ -27,8 +28,7 @@ public class Counter implements Comparable<Counter> {
         return count;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
@@ -40,8 +40,8 @@ public class Counter implements Comparable<Counter> {
      * Compares this counter to that counter.
      */
     public int compareTo(Counter that) {
-        if      (this.count < that.count) return -1;
+        if (this.count < that.count) return -1;
         else if (this.count > that.count) return +1;
-        else                              return  0;
+        else return 0;
     }
 }
