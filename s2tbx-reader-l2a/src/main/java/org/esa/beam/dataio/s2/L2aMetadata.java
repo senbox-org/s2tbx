@@ -193,6 +193,7 @@ public class L2aMetadata {
 
     private L2aMetadata(InputStream stream, File file, String parent) throws DataConversionException {
         try {
+            // critical change product reading in order to process individual L1B tiles
             Level2A_User_Product product = (Level2A_User_Product) L2aMetadataProc.readJaxbFromFilename(stream);
             productCharacteristics = L2aMetadataProc.getProductOrganization(product);
 
