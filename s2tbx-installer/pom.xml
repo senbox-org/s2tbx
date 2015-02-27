@@ -129,11 +129,6 @@
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-binio</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
             <artifactId>snap-core</artifactId>
             <version>${snap.version}</version>
         </dependency>
@@ -209,11 +204,6 @@
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-getasse30-reader</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
             <artifactId>snap-graph-builder</artifactId>
             <version>${snap.version}</version>
         </dependency>
@@ -265,11 +255,6 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-scripting</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-statistics-op</artifactId>
             <version>${snap.version}</version>
         </dependency>
         <dependency>
@@ -355,7 +340,7 @@
             <version>2.7</version>
         </dependency>
         <dependency>
-            <groupId>gov.nasa.gsfc.seadas</groupId>
+            <groupId>org.esa.snap.seadas</groupId>
             <artifactId>seadas-reader</artifactId>
             <version>1.5.6</version>
         </dependency>
@@ -390,6 +375,61 @@
         </dependency>
 
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>OneSeries</id>
+            <activation>
+                <property>
+                    <name>snap.version</name>
+                    <value>1.0.1</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>snap-binio</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>snap-getasse30-reader</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>snap-statistics-op</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>TwoSeries</id>
+            <activation>
+                <property>
+                    <name>snap.version</name>
+                    <value>2.0.0-SNAPSHOT</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>ceres-binio</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>snap-getasse30-dem</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>snap-statistics</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
     <!--
     <profiles>
