@@ -17,7 +17,7 @@ public interface S2Config {
      * Path to "opj_decompress" executable from OpenJPEG 2.1.0 package
      */
 
-    // fixme paramatrize log levels
+    // fixme parametrize log levels
     String LOG_JPEG = DEBUG ? "INFO" : "FINEST";
     String LOG_SCENE = DEBUG ? "INFO" : "FINEST";
     String LOG_OPS = DEBUG ? "FINE" : "FINEST";

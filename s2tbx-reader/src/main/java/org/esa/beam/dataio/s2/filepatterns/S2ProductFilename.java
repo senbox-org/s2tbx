@@ -72,7 +72,6 @@ public class S2ProductFilename {
 
     static public boolean isGranuleFilename(String name)
     {
-        // critical test this method;
         return S2GranuleMetadataFilename.isGranuleFilename(name);
     }
 

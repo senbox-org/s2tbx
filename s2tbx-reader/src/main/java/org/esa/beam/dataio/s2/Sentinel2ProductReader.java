@@ -131,14 +131,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             throw new FileNotFoundException(inputFile.getPath());
         }
 
-        // critical do we have to read a standalone granule or jp2 file ?
-
         if (S2ProductFilename.isProductFilename(inputFile.getName())) {
 
             boolean isAGranule = S2ProductFilename.isGranuleFilename(inputFile.getName());
             if(isAGranule)
             {
-                logger.warning("Is a granule filename too !!");
+                // critical merge getL1cTileProduct and getL1cMosaicProduct
+                // all we need is the function to accept more parameters
+                logger.fine("Reading a granule");
                 p = getL1cTileProduct(inputFile);
             }
             else

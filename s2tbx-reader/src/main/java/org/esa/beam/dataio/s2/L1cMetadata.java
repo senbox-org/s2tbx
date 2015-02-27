@@ -300,7 +300,7 @@ public class L1cMetadata {
         // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
         if (counters.values().size() > 1) {
             Counter maximus = Collections.max(counters.values());
-            logger.severe(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
+            logger.info(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
             tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
         }
 
