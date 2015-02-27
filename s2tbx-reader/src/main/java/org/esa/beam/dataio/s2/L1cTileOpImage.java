@@ -83,7 +83,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
             return opImage;
         } else {
-            BeamLogManager.getSystemLogger().warning("Using empty image !");
+            BeamLogManager.getSystemLogger().fine("Using empty image !");
 
             int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
             int targetHeight = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].height, level);
@@ -215,7 +215,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
         TileLayout myLayout = null;
         try {
-            myLayout = CodeStreamUtils.getTileLayout(S2Config.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
+            myLayout = CodeStreamUtils.getTileLayout(S2Config.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener(), S2Config.NODUMP);
         } catch (Exception iae) {
             Arrays.fill(tileData, S2Config.FILL_CODE_MOSAIC_BG);
             return;

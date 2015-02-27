@@ -219,7 +219,7 @@ class L2aTileOpImage extends SingleBandedOpImage {
 
         TileLayout myLayout = null;
         try {
-            myLayout = CodeStreamUtils.getTileLayout(S2L2AConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
+            myLayout = CodeStreamUtils.getTileLayout(S2L2AConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener(), S2L2AConfig.NODUMP);
         } catch (Exception iae) {
             Arrays.fill(tileData, S2L2AConfig.FILL_CODE_MOSAIC_BG);
             return;

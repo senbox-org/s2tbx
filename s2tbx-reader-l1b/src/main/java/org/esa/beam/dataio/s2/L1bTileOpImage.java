@@ -197,7 +197,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         TileLayout myLayout = null;
 
         try {
-            myLayout = CodeStreamUtils.getTileLayout(S2L1bConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener());
+            myLayout = CodeStreamUtils.getTileLayout(S2L1bConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener(), S2L1bConfig.NODUMP);
             realInternalJpegIndex = myLayout.numXTiles * myLayout.numYTiles;
         } catch (Exception iae) {
             Arrays.fill(tileData, S2L1bConfig.FILL_CODE_MOSAIC_BG);

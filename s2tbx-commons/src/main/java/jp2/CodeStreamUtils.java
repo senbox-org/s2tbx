@@ -124,7 +124,7 @@ public class CodeStreamUtils {
         return JpegUtils.parseOpjDump(exit.getTextOutput());
     }
 
-    public static TileLayout getTileLayout(String opjdumpPath, URI imageFile, BoxReader.Listener listener) throws IOException, InterruptedException {
+    public static TileLayout getTileLayout(String opjdumpPath, URI imageFile, BoxReader.Listener listener, boolean nodump) throws IOException, InterruptedException {
         TileLayout myLayout = null;
         boolean decodingProblemSuspscted = false;
 
@@ -139,7 +139,7 @@ public class CodeStreamUtils {
             decodingProblemSuspscted = true;
         }
 
-        if (decodingProblemSuspscted) {
+        if (decodingProblemSuspscted && !nodump) {
             myLayout = CodeStreamUtils.getTileLayoutWithOpenJPEG(opjdumpPath, imageFile, listener);
         }
 
