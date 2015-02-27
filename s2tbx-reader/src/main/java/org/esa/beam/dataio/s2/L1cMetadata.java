@@ -18,7 +18,10 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -129,11 +132,16 @@ public class L1cMetadata {
         }
     }
 
-    static class ProductCharacteristics {
+    static class ProductCharacteristics
+    {
         String spacecraft;
         String datasetProductionDate;
         String processingLevel;
         SpectralInformation[] bandInformations;
+
+        public ProductCharacteristics() {
+            bandInformations = new SpectralInformation[]{};
+        }
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -149,6 +157,10 @@ public class L1cMetadata {
         double wavelenghtCentral;
         double spectralResponseStep;
         double[] spectralResponseValues;
+
+        public SpectralInformation() {
+            spectralResponseValues = new double[]{};
+        }
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -182,6 +194,8 @@ public class L1cMetadata {
     private List<Tile> tileList;
     private List<String> imageList; //todo populate imagelist
     private ProductCharacteristics productCharacteristics;
+    private JAXBContext context;
+    private Unmarshaller unmarshaller;
 
     public static L1cMetadata parseHeader(File file) throws JDOMException, IOException {
         return new L1cMetadata(new FileInputStream(file), file, file.getParent());
@@ -202,85 +216,20 @@ public class L1cMetadata {
 
     private L1cMetadata(InputStream stream, File file, String parent) throws DataConversionException {
         try {
+            context = L1cMetadataProc.getJaxbContext();
+            unmarshaller = context.createUnmarshaller();
 
-            Level1C_User_Product product = (Level1C_User_Product) L1cMetadataProc.readJaxbFromFilename(stream);
-            productCharacteristics = L1cMetadataProc.getProductOrganization(product);
+            Object ob = unmarshaller.unmarshal(stream);
+            Object casted = ((JAXBElement) ob).getValue();
 
-            Collection<String> tileNames = L1cMetadataProc.getTiles(product);
-            List<File> fullTileNamesList = new ArrayList<File>();
-
-            tileList = new ArrayList<Tile>();
-
-            for (String granuleName : tileNames) {
-                FileInputStream fi = (FileInputStream) stream;
-                File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
-
-                S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
-                String theName = aGranuleDir.getMetadataFilename().name;
-
-                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-                if (nestedGranuleMetadata.exists()) {
-                    fullTileNamesList.add(nestedGranuleMetadata);
-                } else {
-                    String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
-                    logger.log(Level.WARNING, errorMessage);
-                }
+            if(casted instanceof Level1C_User_Product)
+            {
+                initProduct(stream, file, parent, casted);
             }
-
-            Map<String, Counter> counters = new HashMap<String, Counter>();
-
-            for (File aGranuleMetadataFile : fullTileNamesList) {
-                Level1C_Tile aTile = (Level1C_Tile) L1cMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
-                Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
-
-                Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
-                t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
-                t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
-
-                String key = t.horizontalCsCode;
-                if (counters.containsKey(key)) {
-                    counters.get(key).increment();
-                } else {
-                    counters.put(key, new Counter(key));
-                    counters.get(key).increment();
-                }
-
-                t.tileGeometry10M = geoms.get(10);
-                t.tileGeometry20M = geoms.get(20);
-                t.tileGeometry60M = geoms.get(60);
-
-                t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
-                t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
-
-                tileList.add(t);
+            else
+            {
+                initTile(stream, file, parent, casted);
             }
-
-            // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
-            if (counters.values().size() > 1) {
-                Counter maximus = Collections.max(counters.values());
-                logger.severe(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
-                tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
-            }
-
-            S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
-            S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);
-
-            File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
-
-            metadataElement = new MetadataElement("root");
-            MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
-            MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
-            metadataElement.addElement(userProduct);
-            metadataElement.addElement(dataStrip);
-            MetadataElement granulesMetaData = new MetadataElement("Granules");
-
-            for (File aGranuleMetadataFile : fullTileNamesList) {
-                MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
-                granulesMetaData.addElement(aGranule);
-            }
-
-            metadataElement.addElement(granulesMetaData);
-
         } catch (JAXBException e) {
             logger.severe(Utils.getStackTrace(e));
         } catch (FileNotFoundException e) {
@@ -289,6 +238,118 @@ public class L1cMetadata {
             logger.severe(Utils.getStackTrace(e));
         } catch (IOException e) {
             logger.severe(Utils.getStackTrace(e));
+        }
+    }
+
+    private void initProduct(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+        Level1C_User_Product product = (Level1C_User_Product) casted;
+        productCharacteristics = L1cMetadataProc.getProductOrganization(product);
+
+        Collection<String> tileNames = L1cMetadataProc.getTiles(product);
+        List<File> fullTileNamesList = new ArrayList<File>();
+
+        tileList = new ArrayList<Tile>();
+
+        for (String granuleName : tileNames) {
+            FileInputStream fi = (FileInputStream) stream;
+            File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
+
+            S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+            String theName = aGranuleDir.getMetadataFilename().name;
+
+            File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
+            if (nestedGranuleMetadata.exists()) {
+                fullTileNamesList.add(nestedGranuleMetadata);
+            } else {
+                String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
+                logger.log(Level.WARNING, errorMessage);
+            }
+        }
+
+        Map<String, Counter> counters = new HashMap<String, Counter>();
+
+        for (File aGranuleMetadataFile : fullTileNamesList) {
+
+            Object ob = unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
+            Object tmp = ((JAXBElement) ob).getValue();
+            Level1C_Tile aTile = (Level1C_Tile) tmp;
+            Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
+
+            Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
+            t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
+            t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
+
+            String key = t.horizontalCsCode;
+            if (counters.containsKey(key)) {
+                counters.get(key).increment();
+            } else {
+                counters.put(key, new Counter(key));
+                counters.get(key).increment();
+            }
+
+            t.tileGeometry10M = geoms.get(10);
+            t.tileGeometry20M = geoms.get(20);
+            t.tileGeometry60M = geoms.get(60);
+
+            t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
+            t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
+
+            tileList.add(t);
+        }
+
+        // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
+        if (counters.values().size() > 1) {
+            Counter maximus = Collections.max(counters.values());
+            logger.severe(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
+            tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
+        }
+
+        S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
+        S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);
+
+        File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
+
+        metadataElement = new MetadataElement("root");
+        MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
+        MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
+        metadataElement.addElement(userProduct);
+        metadataElement.addElement(dataStrip);
+        MetadataElement granulesMetaData = new MetadataElement("Granules");
+
+        for (File aGranuleMetadataFile : fullTileNamesList) {
+            MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
+            granulesMetaData.addElement(aGranule);
+        }
+
+        metadataElement.addElement(granulesMetaData);
+    }
+
+    private void initTile(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+        Level1C_Tile product = (Level1C_Tile) casted;
+        productCharacteristics = new L1cMetadata.ProductCharacteristics();
+
+
+        List<File> fullTileNamesList = new ArrayList<File>();
+
+        tileList = new ArrayList<Tile>();
+
+        {
+            Level1C_Tile aTile = product;
+            Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
+
+            Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
+            t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
+            t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
+            String key = t.horizontalCsCode;
+
+            t.tileGeometry10M = geoms.get(10);
+            t.tileGeometry20M = geoms.get(20);
+            t.tileGeometry60M = geoms.get(60);
+
+            t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
+            t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
+
+            tileList.add(t);
         }
     }
 

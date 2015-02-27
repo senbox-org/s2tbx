@@ -78,17 +78,22 @@ public class L1cMetadataProc {
         return theDir;
     }
 
+    @Deprecated
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
         JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
-
-        // critical reuse unmarshaller
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         Object ob = unmarshaller.unmarshal(stream);
         Object casted = ((JAXBElement) ob).getValue();
 
         return casted;
+    }
+
+    public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
+        ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
+        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
+        return jaxbContext;
     }
 
     public static L1cMetadata.ProductCharacteristics parseCharacteristics(Level1C_User_Product product) {

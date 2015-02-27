@@ -103,8 +103,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        logger.fine("readProductNodeImpl, " + getInput().toString());
-
         Product p = null;
 
         final File inputFile = new File(getInput().toString());
@@ -112,7 +110,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             throw new FileNotFoundException(inputFile.getPath());
         }
 
-        //todo do we have to read a standalone granule or jp2 file ?
+        // critical do we have to read a standalone granule or jp2 file ?
 
         if (S2ProductFilename.isProductFilename(inputFile.getName())) {
             p = getL1cMosaicProduct(inputFile);
@@ -153,6 +151,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
         List<L1cMetadata.Tile> tileList = metadataHeader.getTileList();
+
         for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
             int bandIndex = bandInformation.bandId;
             if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
@@ -199,13 +198,16 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
         //todo look at affine tranformation geocoding info...
-        addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
-        addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
-        addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
-        addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
-        addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
+        if(!bandInfoMap.isEmpty())
+        {
+            addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
 
-        //todo there is more data in product metadata file, should we preload it ?
+            //todo there is more data in product metadata file, should we preload it ?
+        }
 
         return product;
     }
