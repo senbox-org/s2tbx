@@ -340,7 +340,7 @@ public class ToolAdapterOp extends Operator {
         if (cmdLineFileName != null) {
             if (cmdLineFileName.endsWith(ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX)) {
                 String result = transformVelocityTemplate(new File(this.adapterFolder, cmdLineFileName));
-                ret.addAll(Arrays.asList(result.split("\r\n")));
+                ret.addAll(Arrays.asList(result.split("\r\n|\n")));
             } else {
                 ret.addAll(getCommandLineParameters(cmdLineFileName));
             }
@@ -458,6 +458,7 @@ public class ToolAdapterOp extends Operator {
         for (int i = 0; i < sourceProducts.length; i++) {
             velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + (i + 1), sourceProducts[i]);
         }
+        //velContext.put(ToolAdapterConstants.TOOL_TARGET_PRODUCT_ID, getTargetProduct());
         StringWriter writer = new StringWriter();
         t.merge(velContext, writer);
         return writer.toString();

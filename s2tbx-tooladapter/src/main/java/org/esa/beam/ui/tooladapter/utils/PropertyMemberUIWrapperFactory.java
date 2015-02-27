@@ -16,6 +16,7 @@ import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.FocusEvent;
 import java.lang.reflect.Method;
 import java.util.regex.Pattern;
 
@@ -24,15 +25,15 @@ import java.util.regex.Pattern;
  */
 public class PropertyMemberUIWrapperFactory {
 
-    public static PropertyMemberUIWrapper buildPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    public static PropertyMemberUIWrapper buildPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         if (attributeName.equals("name")) {
-            return buildNamePropertyWrapper(attributeName, property, context, 100, callback);
+            return buildNamePropertyWrapper(attributeName, property, opDescriptor, context, 100, callback);
         }
         if (attributeName.equals("dataType")) {
-            return buildTypePropertyWrapper(attributeName, property, context, 150, callback);
+            return buildTypePropertyWrapper(attributeName, property, opDescriptor, context, 150, callback);
         }
         if (attributeName.equals("defaultValue")) {
-            return buildValuePropertyEditorWrapper(attributeName, property, context, 250, callback);
+            return buildValuePropertyEditorWrapper(attributeName, property, opDescriptor, context, 250, callback);
         }
         Method getter = null;
         try {
@@ -46,19 +47,19 @@ public class PropertyMemberUIWrapperFactory {
         }
         //TODO class/superclass!
         if (getter != null || (value != null && value.getClass().getSuperclass().equals(Boolean.class))) {
-            return buildBooleanPropertyWrapper(attributeName, property, context, 30, callback);
+            return buildBooleanPropertyWrapper(attributeName, property, opDescriptor, context, 30, callback);
         }
         try {
             getter = property.getClass().getSuperclass().getDeclaredMethod("get" + attributeName.substring(0, 1).toUpperCase() + attributeName.substring(1));
         } catch (NoSuchMethodException ex) {
         }
         if (getter != null && getter.getReturnType().equals(String.class)) {
-            return buildStringPropertyWrapper(attributeName, property, context, 100, callback);
+            return buildStringPropertyWrapper(attributeName, property, opDescriptor, context, 100, callback);
         }
         if (attributeName.equals("valueRange") || attributeName.equals("pattern") || attributeName.equals("valueSet")) {
-            return buildStringPropertyWrapper(attributeName, property, context, 150, callback);
+            return buildStringPropertyWrapper(attributeName, property, opDescriptor, context, 150, callback);
         }
-        return buildEmptyWrapper(attributeName, property, context, 100, callback);
+        return buildEmptyWrapper(attributeName, property, opDescriptor, context, 100, callback);
     }
 
     private static Object parseAttributeValue(String attributeName, String value, ToolParameterDescriptor property) throws PropertyAttributeException {
@@ -91,8 +92,8 @@ public class PropertyMemberUIWrapperFactory {
         return value;
     }
 
-    private static PropertyMemberUIWrapper buildStringPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
-        return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
+    private static PropertyMemberUIWrapper buildStringPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+        return new PropertyMemberUIWrapper(attributeName, property, opDescriptor, context, width, callback) {
             public String getErrorValueMessage(Object value) {
                 return null;
             }
@@ -127,8 +128,8 @@ public class PropertyMemberUIWrapperFactory {
         };
     }
 
-    private static PropertyMemberUIWrapper buildBooleanPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
-        return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
+    private static PropertyMemberUIWrapper buildBooleanPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+        return new PropertyMemberUIWrapper(attributeName, property, opDescriptor, context, width, callback) {
 
             @Override
             protected void setMemberValue(Object value) throws PropertyAttributeException {
@@ -158,8 +159,8 @@ public class PropertyMemberUIWrapperFactory {
         };
     }
 
-    private static PropertyMemberUIWrapper buildNamePropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
-        return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
+    private static PropertyMemberUIWrapper buildNamePropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+        return new PropertyMemberUIWrapper(attributeName, property, opDescriptor, context, width, callback) {
             public String getErrorValueMessage(Object value) {
                 if (value == null || !(value instanceof String) || ((String) value).length() == 0) {
                     return "Name of the property cannot be empty and must be a string!";
@@ -168,7 +169,7 @@ public class PropertyMemberUIWrapperFactory {
                     return null;
                 }
                 //check if there is any other property with the same name, it should not!
-                for (ParameterDescriptor prop : context.getParameterDescriptors()) {
+                for (ParameterDescriptor prop : opDescriptor.getParameterDescriptors()) {
                     if (prop != property && prop.getName().equals((value))) {
                         return "The operator must not have more then one parameter with the same name!";
                     }
@@ -199,8 +200,8 @@ public class PropertyMemberUIWrapperFactory {
         };
     }
 
-    private static PropertyMemberUIWrapper buildTypePropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
-        return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
+    private static PropertyMemberUIWrapper buildTypePropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+        return new PropertyMemberUIWrapper(attributeName, property, opDescriptor, context, width, callback) {
             public String getErrorValueMessage(Object value) {
                 if (value == null) {
                     return "Type of the property cannot be empty!";
@@ -240,8 +241,8 @@ public class PropertyMemberUIWrapperFactory {
         };
     }
 
-    private static PropertyMemberUIWrapper buildValuePropertyEditorWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
-        return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
+    private static PropertyMemberUIWrapper buildValuePropertyEditorWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+        return new PropertyMemberUIWrapper(attributeName, property, opDescriptor, context, width, callback) {
             public String getErrorValueMessage(Object value) {
                 return null;
             }
@@ -252,17 +253,17 @@ public class PropertyMemberUIWrapperFactory {
 
             @Override
             public Object getMemberValue() {
-                return null;
+                return property.getDefaultValue();
             }
 
             @Override
             protected Component buildUIComponent() {
                 //                PropertySet propertySet = new OperatorParameterSupport(duplicatedOperatorSpi.getOperatorDescriptor()).getPropertySet();
-                PropertySet propertySet = new OperatorParameterSupport(context).getPropertySet();
+                PropertyDescriptor propertydescriptor = context.getPropertySet().getDescriptor(property.getName());
                 PropertyEditor propertyEditor = PropertyEditorRegistry.getInstance().findPropertyEditor(
-                        new PropertyDescriptor(property.getName(), property.getDataType()));
-                JComponent editorComponent = propertyEditor.createEditorComponent(new PropertyDescriptor(property.getName(), property.getDataType()),
-                        new BindingContext(propertySet));
+                        propertydescriptor);
+                JComponent editorComponent = propertyEditor.createEditorComponent(propertydescriptor,
+                        context);
                 return editorComponent;
             }
 
@@ -270,11 +271,14 @@ public class PropertyMemberUIWrapperFactory {
             protected Object getValueFromUIComponent() throws PropertyAttributeException {
                 return null;
             }
+
+            @Override
+            public void focusLost(FocusEvent e){}
         };
     }
 
-    public static PropertyMemberUIWrapper buildEmptyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
-        return new PropertyMemberUIWrapper(attributeName, property, context, width, callback) {
+    public static PropertyMemberUIWrapper buildEmptyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+        return new PropertyMemberUIWrapper(attributeName, property, opDescriptor, context, width, callback) {
             @Override
             public String getErrorValueMessage(Object value) {
                 return null;

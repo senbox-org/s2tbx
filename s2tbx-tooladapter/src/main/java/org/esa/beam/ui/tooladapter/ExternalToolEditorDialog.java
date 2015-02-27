@@ -13,6 +13,7 @@ import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.SystemVariable;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
@@ -32,9 +33,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 
-/**
- * @author Ramona Manda
- */
 public class ExternalToolEditorDialog extends ModelessDialog {
 
     private ToolAdapterOperatorDescriptor operatorDescriptor;
@@ -43,6 +41,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
     private PropertyContainer propertyContainer;
     private BindingContext bindingContext;
     private JTextArea templateContent;
+    private OperatorParametersTable paramsTable;
 
     private ExternalToolEditorDialog(AppContext appContext, String title, String helpID) {
         super(appContext.getApplicationWindow(), title, ID_APPLY_CLOSE, helpID);
@@ -289,19 +288,34 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         return descriptorAndVariablesPanel;
     }
 
+    public JPanel createParametersPanel() {
+        JPanel paramsPanel = new JPanel();
+        BoxLayout layout = new BoxLayout(paramsPanel, BoxLayout.PAGE_AXIS);
+        paramsPanel.setLayout(layout);
+        AbstractButton addParamBut = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/Add16.png"),
+                false);
+        addParamBut.setAlignmentX(Component.LEFT_ALIGNMENT);
+        paramsPanel.add(addParamBut);
+        paramsTable =  new OperatorParametersTable(operatorDescriptor);
+        JScrollPane tableScrollPane = new JScrollPane(paramsTable);
+        tableScrollPane.setPreferredSize(new Dimension(500, 130));
+        tableScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
+        paramsPanel.add(tableScrollPane);
+        addParamBut.addActionListener(e -> {
+            paramsTable.addParameterToTable(new ToolParameterDescriptor("parameterName", String.class));
+        });
+        TitledBorder title = BorderFactory.createTitledBorder("Operator Parameters");
+        paramsPanel.setBorder(title);
+        return paramsPanel;
+    }
+
     public JPanel createMainPanel() {
         JPanel toolDescriptorPanel = new JPanel();
         toolDescriptorPanel.setLayout(new BorderLayout());
 
         toolDescriptorPanel.add(createDescriptorAndVariablesPanel(), BorderLayout.LINE_START);
-
         toolDescriptorPanel.add(createProcessingPanel(), BorderLayout.CENTER);
-
-        JScrollPane tableScrollPane = new JScrollPane(new OperatorParametersTable(operatorDescriptor));
-        tableScrollPane.setPreferredSize(new Dimension(500, 130));
-        TitledBorder title = BorderFactory.createTitledBorder("Operator Parameters");
-        tableScrollPane.setBorder(title);
-        toolDescriptorPanel.add(tableScrollPane, BorderLayout.PAGE_END);
+        toolDescriptorPanel.add(createParametersPanel(), BorderLayout.PAGE_END);
 
         return toolDescriptorPanel;
     }
@@ -317,6 +331,9 @@ public class ExternalToolEditorDialog extends ModelessDialog {
                     operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
                 }
             }
+        }
+        for(ToolParameterDescriptor param : operatorDescriptor.getToolParameterDescriptors()){
+            param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue().toString());
         }
         try {
             ToolAdapterIO.saveAndRegisterOperator(operatorDescriptor,

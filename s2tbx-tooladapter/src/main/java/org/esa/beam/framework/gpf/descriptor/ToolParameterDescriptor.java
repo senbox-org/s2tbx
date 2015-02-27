@@ -9,6 +9,9 @@ import java.lang.reflect.Method;
  */
 public class ToolParameterDescriptor extends DefaultParameterDescriptor {
 
+    public ToolParameterDescriptor(String name, Class<?> type){
+        super(name, type);
+    }
 
     public ToolParameterDescriptor(DefaultParameterDescriptor object) {
         super(object.getName(), object.getDataType());

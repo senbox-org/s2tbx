@@ -1,8 +1,13 @@
 package org.esa.beam.ui.tooladapter.utils;
 
+import com.bc.ceres.binding.PropertySet;
+import com.bc.ceres.swing.binding.BindingContext;
+import org.apache.commons.collections.BidiMap;
+import org.apache.commons.collections.bidimap.DualHashBidiMap;
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
+import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
 
@@ -12,6 +17,9 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,18 +31,40 @@ public class OperatorParametersTable extends JTable {
 
     private static String[] columnNames = {"", "Name", "Description", "Label", "Data type", "Default value", ""};
     private static String[] columnsMembers = {"del", "name", "description", "alias", "dataType", "defaultValue", "edit"};
+    private static final BidiMap typesMap;
     private ToolAdapterOperatorDescriptor operator = null;
     private Map<ToolParameterDescriptor, PropertyMemberUIWrapper> propertiesValueUIDescriptorMap;
     private MultiRenderer tableRenderer;
+    private BindingContext context;
+    private DefaultCellEditor comboCellEditor;
+    private TableCellRenderer comboCellRenderer;
+    //private BidiMap map
+
+    static{
+        typesMap = new DualHashBidiMap();
+        typesMap.put("String", String.class);
+        typesMap.put("File", File.class);
+        typesMap.put("Integer", Integer.class);
+        typesMap.put("Combobox", List.class);
+        typesMap.put("Checkbox", Boolean.class);
+    }
 
     public OperatorParametersTable(ToolAdapterOperatorDescriptor operator) {
         this.operator = operator;
         propertiesValueUIDescriptorMap = new HashMap<>();
+        JComboBox typesComboBox = new JComboBox(typesMap.keySet().toArray());
+        comboCellEditor = new DefaultCellEditor(typesComboBox);
+        comboCellRenderer = new DefaultTableCellRenderer();
 
-        //List<ToolParameterDescriptor> data = operator.getToolParameterDescriptors();
+        //List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
         List<ToolParameterDescriptor> data = operator.getToolParameterDescriptors();
-        for (ToolParameterDescriptor property : data) {
-            propertiesValueUIDescriptorMap.put(property, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", property, operator, null));
+            PropertySet propertySet = new OperatorParameterSupport(operator).getPropertySet();
+            //if there is an exception in teh line above, can be because the default value does not match the type
+            //TODO which param is wrong????
+        context = new BindingContext(propertySet);
+        for (ToolParameterDescriptor paramDescriptor : data) {
+            propertiesValueUIDescriptorMap.put(paramDescriptor, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", paramDescriptor, operator, context, null));
+            //context.getBinding(paramDescriptor.getName()).setPropertyValue(paramDescriptor.getDefaultValue());
         }
         tableRenderer = new MultiRenderer();
         setModel(new OperatorParametersTableNewTableModel());
@@ -46,21 +76,50 @@ public class OperatorParametersTable extends JTable {
         getColumnModel().getColumn(4).setPreferredWidth(150);
         getColumnModel().getColumn(5).setPreferredWidth(150);
         getColumnModel().getColumn(6).setPreferredWidth(40);
+
+        this.putClientProperty("JComboBox.isTableCellEditor", Boolean.FALSE);
+    }
+
+    public void addParameterToTable(ToolParameterDescriptor param){
+        operator.getToolParameterDescriptors().add(param);
+        propertiesValueUIDescriptorMap.put(param, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", param, operator, context, null));
+        revalidate();
     }
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        return tableRenderer;
-    }
-
-    @Override
-    public TableCellEditor getCellEditor() {
-        return tableRenderer;
+        switch (column){
+            case 0:
+            case 5:
+            case 6:
+                return tableRenderer;
+            case 4:
+                return comboCellRenderer;
+            default:
+                return super.getCellRenderer(row, column);
+        }
     }
 
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
-        return tableRenderer;
+        switch (column){
+            case 0:
+            case 5:
+            case 6:
+                return tableRenderer;
+            case 4:
+                return comboCellEditor;
+            default:
+                return getDefaultEditor(String.class);
+        }
+    }
+
+    public BindingContext getBindingContext(){
+        return context;
+    }
+
+    public boolean editCellAt(int row, int column){
+        return super.editCellAt(row, column);
     }
 
     class OperatorParametersTableNewTableModel extends AbstractTableModel {
@@ -86,6 +145,8 @@ public class OperatorParametersTable extends JTable {
             switch (column) {
                 case 0:
                     return false;
+                case 4:
+                    return typesMap.getKey(descriptor.getDataType());
                 case 6:
                     return false;
                 default:
@@ -110,7 +171,15 @@ public class OperatorParametersTable extends JTable {
             switch (columnIndex) {
                 case 0:
                     operator.removeParamDescriptor(descriptor);
+                    revalidate();
                     break;
+                case 4:
+                    if(descriptor.getDataType() != typesMap.get(aValue)) {
+                        descriptor.setDataType((Class<?>) typesMap.get(aValue));
+                        descriptor.setDefaultValue(descriptor.getDefaultValue());
+                        propertiesValueUIDescriptorMap.put(descriptor, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", descriptor, operator, context, null));
+                        revalidate();
+                    }
                 case 5:
                     //the custom editor should handle this
                     break;
@@ -134,19 +203,15 @@ public class OperatorParametersTable extends JTable {
                 false);
         private AbstractButton editButton = new JButton("...");
 
+        public MultiRenderer() {
+            delButton.addActionListener(e -> fireEditingStopped());
+        }
+
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             ParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(row);
             switch (column) {
                 case 0:
                     return delButton;
-                case 1:
-                    return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                case 2:
-                    return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                case 3:
-                    return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                case 4:
-                    return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 case 5:
                     try {
                         return propertiesValueUIDescriptorMap.get(descriptor).getUIComponent();
@@ -167,14 +232,6 @@ public class OperatorParametersTable extends JTable {
             switch (column) {
                 case 0:
                     return delButton;
-                case 1:
-                    return getDefaultEditor(String.class).getTableCellEditorComponent(table, value, isSelected, row, column);
-                case 2:
-                    return getDefaultEditor(String.class).getTableCellEditorComponent(table, value, isSelected, row, column);
-                case 3:
-                    return getDefaultEditor(String.class).getTableCellEditorComponent(table, value, isSelected, row, column);
-                case 4:
-                    return getDefaultEditor(String.class).getTableCellEditorComponent(table, value, isSelected, row, column);
                 case 5:
                     try {
                         return propertiesValueUIDescriptorMap.get(descriptor).getUIComponent();

@@ -1,5 +1,6 @@
 package org.esa.beam.ui.tooladapter.utils;
 
+import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.ui.UIUtils;
@@ -19,7 +20,7 @@ public class PropertyUIDescriptor {
 
     private HashMap<String, PropertyMemberUIWrapper> UIcomponentsMap;
 
-    public static PropertyUIDescriptor buildUIMinimalDescriptor(ToolParameterDescriptor parameter, String property, ToolAdapterOperatorDescriptor operator, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    public static PropertyUIDescriptor buildUIMinimalDescriptor(ToolParameterDescriptor parameter, String property, ToolAdapterOperatorDescriptor operator, BindingContext context, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         PropertyUIDescriptor descriptor = new PropertyUIDescriptor();
 
         AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/DeleteShapeTool16.gif"),
@@ -31,13 +32,13 @@ public class PropertyUIDescriptor {
         descriptor.setEditButton(editButton);
 
         HashMap<String, PropertyMemberUIWrapper> UIcomponentsMap = new HashMap<>();
-        UIcomponentsMap.put(property, PropertyMemberUIWrapperFactory.buildPropertyWrapper(property, parameter, operator, callback));
+        UIcomponentsMap.put(property, PropertyMemberUIWrapperFactory.buildPropertyWrapper(property, parameter, operator, context, callback));
         descriptor.setUIcomponentsMap(UIcomponentsMap);
 
         return descriptor;
     }
 
-    public static PropertyUIDescriptor buildUIDescriptor(ToolParameterDescriptor prop, String[] columnsMembers, ToolAdapterOperatorDescriptor context, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
+    public static PropertyUIDescriptor buildUIDescriptor(ToolParameterDescriptor prop, String[] columnsMembers, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, ActionListener deleteActionListener, ActionListener editActionListener, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         PropertyUIDescriptor descriptor = new PropertyUIDescriptor();
 
         AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/beam/resources/images/icons/DeleteShapeTool16.gif"),
@@ -51,7 +52,7 @@ public class PropertyUIDescriptor {
         HashMap<String, PropertyMemberUIWrapper> UIcomponentsMap = new HashMap<>();
         for (String col : columnsMembers) {
             if (!col.equals("del")) {
-                UIcomponentsMap.put(col, PropertyMemberUIWrapperFactory.buildPropertyWrapper(col, prop, context, callback));
+                UIcomponentsMap.put(col, PropertyMemberUIWrapperFactory.buildPropertyWrapper(col, prop, opDescriptor, context, callback));
             }
         }
         descriptor.setUIcomponentsMap(UIcomponentsMap);

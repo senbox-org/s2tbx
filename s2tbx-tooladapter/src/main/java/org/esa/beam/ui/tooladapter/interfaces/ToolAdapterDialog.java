@@ -103,7 +103,7 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
         sourceProducts.put("sourceProduct", sourceProduct);
 
         Operator op = GPF.getDefaultInstance().createOperator(this.operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
-
+//form.targetProductSelector.getModel().getProductFile()
         // set the output consumer
         ((ToolAdapterOp) op).setConsumer(new LogOutputConsumer());
 

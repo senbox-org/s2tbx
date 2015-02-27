@@ -1,5 +1,6 @@
 package org.esa.beam.ui.tooladapter.utils;
 
+import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 
@@ -16,19 +17,27 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
     protected Component UIComponent;
     protected int width = 0;
     protected ToolParameterDescriptor property;
-    protected ToolAdapterOperatorDescriptor context;
+    protected ToolAdapterOperatorDescriptor opDescriptor;
     private CallBackAfterEdit callback;
+    private BindingContext context;
 
-    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context) {
+    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context) {
         this.attributeName = attributeName;
         this.property = property;
+        this.opDescriptor = opDescriptor;
         this.context = context;
     }
 
-    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor context, int width, CallBackAfterEdit callback) {
-        this(attributeName, property, context);
+    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, CallBackAfterEdit callback) {
+        this(attributeName, property, opDescriptor, context);
         this.width = width;
         this.callback = callback;
+        try {
+            getUIComponent();
+        }catch (Exception ex){
+            //TODO
+            ex.printStackTrace();
+        }
     }
 
     public String getErrorValueMessage(Object value) {
@@ -52,6 +61,18 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
             UIComponent.setPreferredSize(new Dimension(width, 20));
         }
         UIComponent.addFocusListener(this);
+        //Object value = context.getBinding(attributeName).getPropertyValue();
+        /*if(value != null) {
+            if (UIComponent instanceof JTextField) {
+                ((JTextField) UIComponent).setText(value.toString());
+            }
+            if (UIComponent instanceof JFileChooser) {
+                ((JFileChooser) UIComponent).setSelectedFile(new File(value.toString()));
+            }
+            if (UIComponent instanceof JComboBox) {
+                ((JComboBox) UIComponent).setSelectedItem(value);
+            }
+        }*/
     }
 
     protected abstract Component buildUIComponent() throws Exception;

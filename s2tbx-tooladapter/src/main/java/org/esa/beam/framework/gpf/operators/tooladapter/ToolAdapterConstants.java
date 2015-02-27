@@ -20,6 +20,7 @@ public interface ToolAdapterConstants {
      * The id of the tool's source product.
      */
     public static final String TOOL_SOURCE_PRODUCT_ID = "sourceProduct";
+    public static final String TOOL_TARGET_PRODUCT_ID = "targetProduct";
     /**
      * The id of the tool's target file as it is used in the descriptor.
      */
