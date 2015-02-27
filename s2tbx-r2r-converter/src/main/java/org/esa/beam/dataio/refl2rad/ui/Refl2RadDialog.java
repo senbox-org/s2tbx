@@ -186,7 +186,7 @@ public class Refl2RadDialog extends ModelessDialog {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                } else if(progressDialog.isCanceled()) {
+                } else if (progressDialog.isCanceled()) {
                     progressDialog.close();
                 }
             }
@@ -228,43 +228,43 @@ public class Refl2RadDialog extends ModelessDialog {
     /**
      * Currently, the Refl2RadProcessor does not create metadata files at product level. This method adds an empty dummy
      * metadata file and will hopefully become redundant in the near future
-    private File addMetadataFileIfNecessary(File l2FileDir) throws IOException {
-        final FilenameFilter filter = new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return S2Config.METADATA_NAME_2A_PATTERN.matcher(name).matches();
-            }
-        };
-        File[] l2MetadataFiles = l2FileDir.listFiles(filter);
-        if (l2MetadataFiles.length > 0) {
-            return l2MetadataFiles[0];
-        } else {
-            String l2MetadataFilename;
-            String l1cDirPath = new File(fileLocation).getName();
-            final FilenameFilter l1cMetadataFilter = new FilenameFilter() {
-                @Override
-                public boolean accept(File file, String s) {
-                    return S2Config.METADATA_NAME_1C_PATTERN.matcher(s).matches();
-                }
-            };
-            File[] metadataFiles = new File(l1cDirPath).listFiles(l1cMetadataFilter);
-            if (metadataFiles != null && metadataFiles.length > 0) {
-                l2MetadataFilename = metadataFiles[0].getName().replace("1C", "2A");
-            } else if (S2Config.PRODUCT_DIRECTORY_1C_PATTERN.matcher(l1cDirPath).matches()) {
-                String changingName = FileUtils.getFilenameWithoutExtension(l1cDirPath).replace("PRD", "MTD").replace("1C", "2A") + ".xml";
-                if (l1cDirPath.endsWith(".SAFE")) {
-                    l2MetadataFilename = changingName.replace("MSI", "SAF");
-                } else {
-                    l2MetadataFilename = changingName.replace("MSI", "DMP");
-                }
-            } else {
-                l2MetadataFilename = "Product_Metadata_File.xml";
-            }
-            File l2MetadataFile = new File(l2FileDir + "/" + l2MetadataFilename);
-            l2MetadataFile.createNewFile();
-            return l2MetadataFile;
-        }
-    } */
+     * private File addMetadataFileIfNecessary(File l2FileDir) throws IOException {
+     * final FilenameFilter filter = new FilenameFilter() {
+     *
+     * @Override public boolean accept(File dir, String name) {
+     * return S2Config.METADATA_NAME_2A_PATTERN.matcher(name).matches();
+     * }
+     * };
+     * File[] l2MetadataFiles = l2FileDir.listFiles(filter);
+     * if (l2MetadataFiles.length > 0) {
+     * return l2MetadataFiles[0];
+     * } else {
+     * String l2MetadataFilename;
+     * String l1cDirPath = new File(fileLocation).getName();
+     * final FilenameFilter l1cMetadataFilter = new FilenameFilter() {
+     * @Override public boolean accept(File file, String s) {
+     * return S2Config.METADATA_NAME_1C_PATTERN.matcher(s).matches();
+     * }
+     * };
+     * File[] metadataFiles = new File(l1cDirPath).listFiles(l1cMetadataFilter);
+     * if (metadataFiles != null && metadataFiles.length > 0) {
+     * l2MetadataFilename = metadataFiles[0].getName().replace("1C", "2A");
+     * } else if (S2Config.PRODUCT_DIRECTORY_1C_PATTERN.matcher(l1cDirPath).matches()) {
+     * String changingName = FileUtils.getFilenameWithoutExtension(l1cDirPath).replace("PRD", "MTD").replace("1C", "2A") + ".xml";
+     * if (l1cDirPath.endsWith(".SAFE")) {
+     * l2MetadataFilename = changingName.replace("MSI", "SAF");
+     * } else {
+     * l2MetadataFilename = changingName.replace("MSI", "DMP");
+     * }
+     * } else {
+     * l2MetadataFilename = "Product_Metadata_File.xml";
+     * }
+     * File l2MetadataFile = new File(l2FileDir + "/" + l2MetadataFilename);
+     * l2MetadataFile.createNewFile();
+     * return l2MetadataFile;
+     * }
+     * }
+     */
 
     private class ProcessObserverHandler implements ProcessObserver.Handler {
 
@@ -280,7 +280,7 @@ public class Refl2RadDialog extends ModelessDialog {
 
         @Override
         public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
-            if(line.contains("error")) {
+            if (line.contains("error")) {
                 showErrorDialog(line);
             } else if (line.contains("%") && line.contains("Procedure") && lastWork < 10000) {
                 String[] splitLine = line.split("P");
@@ -295,7 +295,7 @@ public class Refl2RadDialog extends ModelessDialog {
         private void updateProgressMonitor(String s, ProgressMonitor pm) {
             double workDone = Double.parseDouble(s) * 100;
             int progress = (int) workDone - lastWork;
-            if(workDone > 10000) {
+            if (workDone > 10000) {
                 progress = 9999 - lastWork;
             }
             lastWork = (int) workDone;
@@ -304,7 +304,7 @@ public class Refl2RadDialog extends ModelessDialog {
 
         @Override
         public void onStderrLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
-            if(errorMessageBuilder == null) {
+            if (errorMessageBuilder == null) {
                 errorMessageBuilder = new StringBuilder();
             }
             errorMessageBuilder.append(line).append("\n");
@@ -312,7 +312,7 @@ public class Refl2RadDialog extends ModelessDialog {
 
         @Override
         public void onObservationEnded(ProcessObserver.ObservedProcess process, Integer exitCode, ProgressMonitor pm) {
-            if(errorMessageBuilder != null) {
+            if (errorMessageBuilder != null) {
                 showErrorDialog(errorMessageBuilder.toString());
             }
             errorMessageBuilder = null;

@@ -72,7 +72,7 @@ public class AtmCorrIOParametersPanel extends JPanel {
     }
 
     private void updateTargetProductName() {
-        if(sourceProductSelector.getSelectedProduct() != null) {
+        if (sourceProductSelector.getSelectedProduct() != null) {
             String sourceName = sourceProductSelector.getSelectedProduct().getName();
             String sourceDir = sourceProductSelector.getSelectedProduct().getFileLocation().getPath();
             String targetDir = sourceDir.replace("1C", "2A");

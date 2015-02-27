@@ -167,7 +167,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                } else if(progressDialog.isCanceled()) {
+                } else if (progressDialog.isCanceled()) {
                     progressDialog.close();
                 }
             }
@@ -197,7 +197,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
         @Override
         public void onStdoutLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
-            if(line.contains("error")) {
+            if (line.contains("error")) {
                 showErrorDialog(line);
             } else if (line.contains("%") && lastWork < 10000) {
                 updateProgressMonitor(line.split(":")[1], pm);
@@ -208,7 +208,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
         private void updateProgressMonitor(String s, ProgressMonitor pm) {
             double workDone = Double.parseDouble(s) * 100;
             int progress = (int) workDone - lastWork;
-            if(workDone > 10000) {
+            if (workDone > 10000) {
                 progress = 9999 - lastWork;
             }
             lastWork = (int) workDone;
@@ -217,7 +217,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
         @Override
         public void onStderrLineReceived(ProcessObserver.ObservedProcess process, String line, ProgressMonitor pm) {
-            if(errorMessageBuilder == null) {
+            if (errorMessageBuilder == null) {
                 errorMessageBuilder = new StringBuilder();
             }
             errorMessageBuilder.append(line).append("\n");
@@ -225,7 +225,7 @@ public class AtmosphericCorrectionDialog extends ModelessDialog {
 
         @Override
         public void onObservationEnded(ProcessObserver.ObservedProcess process, Integer exitCode, ProgressMonitor pm) {
-            if(errorMessageBuilder != null) {
+            if (errorMessageBuilder != null) {
                 showErrorDialog(errorMessageBuilder.toString());
             }
             errorMessageBuilder = null;

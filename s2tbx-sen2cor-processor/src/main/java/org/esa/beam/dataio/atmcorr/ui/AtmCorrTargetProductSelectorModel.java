@@ -152,9 +152,9 @@ public class AtmCorrTargetProductSelectorModel {
             final String name = (String) value;
             if (!ProductNode.isValidNodeName(name)) {
                 final String message = MessageFormat.format("The product name ''{0}'' is not valid.\n\n"
-                        + "Names must not start with a dot and must not\n"
-                        + "contain any of the following characters: \\/:*?\"<>|",
-                        name);
+                                                                    + "Names must not start with a dot and must not\n"
+                                                                    + "contain any of the following characters: \\/:*?\"<>|",
+                                                            name);
                 throw new ValidationException(message);
             }
         }

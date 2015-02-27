@@ -75,7 +75,7 @@ public class SpatioTempIOParametersPanel extends JPanel {
     }
 
     private void updateTargetProductName() {
-        if(sourceProductSelector.getSelectedProduct() != null) {
+        if (sourceProductSelector.getSelectedProduct() != null) {
             final String sourceName = sourceProductSelector.getSelectedProduct().getName();
             targetProductSelector.getModel().setProductName(sourceName.replace("2A", "03"));
         } else {
