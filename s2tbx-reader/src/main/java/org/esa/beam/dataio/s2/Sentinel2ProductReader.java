@@ -136,15 +136,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             boolean isAGranule = S2ProductFilename.isGranuleFilename(inputFile.getName());
             if(isAGranule)
             {
-                // critical merge getL1cTileProduct and getL1cMosaicProduct
-                // all we need is the function to accept more parameters
                 logger.fine("Reading a granule");
-                p = getL1cTileProduct(inputFile);
             }
-            else
-            {
-                p = getL1cMosaicProduct(inputFile);
-            }
+            p = getL1cMosaicProduct(inputFile, isAGranule);
 
             if (p != null) {
                 readMasks(p);
@@ -162,42 +156,52 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         Assert.notNull(p);
     }
 
-    private Product getL1cTileProduct(File granuleMetadataFile) throws IOException
+    private Product getL1cMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException
     {
         Objects.requireNonNull(granuleMetadataFile);
         // first we need to recover parent metadata file...
 
-        try
-        {
-            Objects.requireNonNull(granuleMetadataFile.getParentFile());
-            Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile());
-            Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile().getParentFile());
-        } catch (NullPointerException npe)
-        {
-            throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
-        }
-
-        File up2levels = granuleMetadataFile.getParentFile().getParentFile().getParentFile();
-        File tileIdFilter = granuleMetadataFile.getParentFile();
-
-        String filterTileId = tileIdFilter.getName();
-
+        String filterTileId = null;
         File metadataFile = null;
-        File[] files = up2levels.listFiles();
-        for(File f: files)
+        if(isAGranule)
         {
-            if(S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName()))
+            try
             {
-                metadataFile = f;
-                break;
+                Objects.requireNonNull(granuleMetadataFile.getParentFile());
+                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile());
+                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile().getParentFile());
+            } catch (NullPointerException npe)
+            {
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+            }
+
+            File up2levels = granuleMetadataFile.getParentFile().getParentFile().getParentFile();
+            File tileIdFilter = granuleMetadataFile.getParentFile();
+
+            filterTileId = tileIdFilter.getName();
+
+            File[] files = up2levels.listFiles();
+            for(File f: files)
+            {
+                if(S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName()))
+                {
+                    metadataFile = f;
+                    break;
+                }
+            }
+            if(metadataFile == null)
+            {
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
             }
         }
-        if(metadataFile == null)
+        else
         {
-            throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+            metadataFile = granuleMetadataFile;
         }
 
-        L1cMetadata metadataHeader;
+        final String aFilter = filterTileId;
+
+        L1cMetadata metadataHeader = null;
 
         try {
             metadataHeader = parseHeader(metadataFile);
@@ -215,88 +219,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
         Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
-        List<L1cMetadata.Tile> tileList = metadataHeader.getTileList().stream().filter(p -> p.id.equalsIgnoreCase(filterTileId)).collect(Collectors.toList());
 
-        for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-            int bandIndex = bandInformation.bandId;
-            if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
-
-                HashMap<String, File> tileFileMap = new HashMap<String, File>();
-                for (Tile tile : tileList) {
-                    S2GranuleDirFilename gf = S2GranuleDirFilename.create(tile.id);
-                    S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.physicalBand);
-
-                    String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFilename.name;
-
-                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
-
-                    File file = new File(productDir, imgFilename);
-                    if (file.exists()) {
-                        tileFileMap.put(tile.id, file);
-                    } else {
-                        logger.warning(String.format("Warning: missing file %s\n", file));
-                    }
-                }
-
-                if (!tileFileMap.isEmpty()) {
-                    BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
-                    bandInfoMap.put(bandIndex, bandInfo);
-                } else {
-                    logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.physicalBand));
-                }
-            } else {
-                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.physicalBand));
-            }
-        }
-
-        //todo change product filename properties...
-        //todo test saving modified product...
-        Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile),
-                                      "S2_MSI_" + productCharacteristics.processingLevel,
-                                      sceneDescription.getSceneRectangle().width,
-                                      sceneDescription.getSceneRectangle().height);
-
-        product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
-        product.setFileLocation(metadataFile.getParentFile());
-
-        // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
-        setGeoCoding(product, sceneDescription.getSceneEnvelope());
-
-        //todo look at affine tranformation geocoding info...
-        if(!bandInfoMap.isEmpty())
-        {
-            addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
-
-            //todo there is more data in product metadata file, should we preload it ?
-        }
-
-        return product;
-    }
-
-    private Product getL1cMosaicProduct(File metadataFile) throws IOException {
-        L1cMetadata metadataHeader;
-
-        try {
-            metadataHeader = parseHeader(metadataFile);
-        } catch (JDOMException e) {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
-            throw new IOException("Failed to parse metadata in " + metadataFile.getName());
-        }
-
-        L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader, Tile.idGeom.G10M);
-        logger.fine("Scene Description: " + sceneDescription);
-
-        File productDir = getProductDir(metadataFile);
-        initCacheDir(productDir);
-
-        ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
-
-        Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
         List<L1cMetadata.Tile> tileList = metadataHeader.getTileList();
+
+        if(isAGranule)
+        {
+            tileList = metadataHeader.getTileList().stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+        }
 
         for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
             int bandIndex = bandInformation.bandId;
