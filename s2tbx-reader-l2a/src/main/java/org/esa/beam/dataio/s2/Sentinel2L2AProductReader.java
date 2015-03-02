@@ -10,10 +10,13 @@ import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.beam.dataio.Utils;
-import org.esa.beam.dataio.s2.filepatterns.S2L2aGranuleMetadataFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2L2aProductFilename;
 import org.esa.beam.framework.dataio.AbstractProductReader;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.CrsGeoCoding;
+import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.SystemUtils;
 import org.esa.beam.util.io.FileUtils;
@@ -23,7 +26,11 @@ import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.*;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
@@ -33,14 +40,30 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-import static org.esa.beam.dataio.s2.ImageInfoPredicates.*;
-import static org.esa.beam.dataio.s2.L2aMetadata.*;
-import static org.esa.beam.dataio.s2.S2L2AConfig.*;
+import static org.esa.beam.dataio.s2.ImageInfoPredicates.filterImageInfo;
+import static org.esa.beam.dataio.s2.ImageInfoPredicates.isBand;
+import static org.esa.beam.dataio.s2.ImageInfoPredicates.isGranule;
+import static org.esa.beam.dataio.s2.ImageInfoPredicates.isJPEG2000;
+import static org.esa.beam.dataio.s2.L2aMetadata.ProductCharacteristics;
+import static org.esa.beam.dataio.s2.L2aMetadata.SpectralInformation;
+import static org.esa.beam.dataio.s2.L2aMetadata.Tile;
+import static org.esa.beam.dataio.s2.L2aMetadata.parseHeader;
+import static org.esa.beam.dataio.s2.S2L2AConfig.DEFAULT_JAI_TILE_SIZE;
+import static org.esa.beam.dataio.s2.S2L2AConfig.FILL_CODE_MOSAIC_BG;
+import static org.esa.beam.dataio.s2.S2L2AConfig.L2A_TILE_LAYOUTS;
+import static org.esa.beam.dataio.s2.S2L2AConfig.SAMPLE_PRODUCT_DATA_TYPE;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)
@@ -110,10 +133,16 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
             throw new FileNotFoundException(inputFile.getPath());
         }
 
-        //todo do we have to read a standalone granule or jp2 file ?
+        // critical do we have to read a standalone granule or jp2 file ?
 
         if (S2L2aProductFilename.isProductFilename(inputFile.getName())) {
-            p = getL1cMosaicProduct(inputFile);
+            boolean isAGranule = S2L2aProductFilename.isGranuleFilename(inputFile.getName());
+            if(isAGranule)
+            {
+                logger.fine("Reading a granule");
+            }
+
+            p = getL1cMosaicProduct(inputFile, isAGranule);
 
             if (p != null) {
                 readMasks(p);
@@ -137,7 +166,53 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         // fixme Implement this
     }
 
-    private Product getL1cMosaicProduct(File metadataFile) throws IOException {
+    private Product getL1cMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException {
+        // critical use granule info
+
+        // critical Fix this function
+        Objects.requireNonNull(granuleMetadataFile);
+        // first we need to recover parent metadata file...
+
+        String filterTileId = null;
+        File metadataFile = null;
+        if(isAGranule)
+        {
+            try
+            {
+                Objects.requireNonNull(granuleMetadataFile.getParentFile());
+                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile());
+                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile().getParentFile());
+            } catch (NullPointerException npe)
+            {
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+            }
+
+            File up2levels = granuleMetadataFile.getParentFile().getParentFile().getParentFile();
+            File tileIdFilter = granuleMetadataFile.getParentFile();
+
+            filterTileId = tileIdFilter.getName();
+
+            File[] files = up2levels.listFiles();
+            for(File f: files)
+            {
+                if(S2L2aProductFilename.isProductFilename(f.getName()) && S2L2aProductFilename.isMetadataFilename(f.getName()))
+                {
+                    metadataFile = f;
+                    break;
+                }
+            }
+            if(metadataFile == null)
+            {
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+            }
+        }
+        else
+        {
+            metadataFile = granuleMetadataFile;
+        }
+
+        final String aFilter = filterTileId;
+
         L2aMetadata metadataHeader;
 
         try {
@@ -146,9 +221,6 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
             BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
-
-        S2L2aGranuleMetadataFilename mtdFilename = S2L2aGranuleMetadataFilename.create(metadataFile.getName());
-        S2L2aProductFilename mtdFN = S2L2aProductFilename.create(metadataFile.getName());
 
         L2aSceneDescription sceneDescription = L2aSceneDescription.create(metadataHeader, Tile.idGeom.G10M);
         logger.fine("Scene Description: " + sceneDescription);
@@ -161,6 +233,10 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
 
         List<L2aMetadata.Tile> tileList = metadataHeader.getTileList();
+        if(isAGranule)
+        {
+            tileList = tileList.stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+        }
 
         Collection<ImageInfo> imageList = metadataHeader.getImageList();
         if (imageList.isEmpty()) {
@@ -234,11 +310,14 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
         //todo look at affine tranformation geocoding info...
-        addBands(product, bandInfoMap, new L2aSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
-        addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
-        addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
-        addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
-        addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
+        if(!bandInfoMap.isEmpty())
+        {
+            addBands(product, bandInfoMap, new L2aSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
+        }
 
         //todo there is more data in product metadata file, should we preload it ?
 

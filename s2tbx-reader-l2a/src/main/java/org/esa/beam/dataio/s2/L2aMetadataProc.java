@@ -81,6 +81,7 @@ public class L2aMetadataProc {
         return s.hasNext() ? s.next() : "";
     }
 
+    @Deprecated
     public static void setExecutable(File file, boolean executable) {
         try {
             Process p = Runtime.getRuntime().exec(new String[]{
@@ -96,6 +97,7 @@ public class L2aMetadataProc {
         }
     }
 
+    @Deprecated
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
 
         ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
@@ -107,6 +109,12 @@ public class L2aMetadataProc {
         Object casted = ((JAXBElement) ob).getValue();
 
         return casted;
+    }
+
+    public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
+        ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
+        JAXBContext jaxbContext = JAXBContext.newInstance(L2AMetadataType.L2A, s2c);
+        return jaxbContext;
     }
 
     public static L2aMetadata.ProductCharacteristics parseCharacteristics(Level2A_User_Product product) {

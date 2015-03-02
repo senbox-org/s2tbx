@@ -18,7 +18,10 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -169,6 +172,8 @@ public class L2aMetadata {
     private List<Tile> tileList;
     private Collection<ImageInfo> imageList;
     private ProductCharacteristics productCharacteristics;
+    private JAXBContext context;
+    private Unmarshaller unmarshaller;
 
     public static L2aMetadata parseHeader(File file) throws JDOMException, IOException {
         return new L2aMetadata(new FileInputStream(file), file, file.getParent());
@@ -193,66 +198,21 @@ public class L2aMetadata {
 
     private L2aMetadata(InputStream stream, File file, String parent) throws DataConversionException {
         try {
+            context = L2aMetadataProc.getJaxbContext();
+            unmarshaller = context.createUnmarshaller();
+
+            Object ob = unmarshaller.unmarshal(stream);
+            Object casted = ((JAXBElement) ob).getValue();
+
             // critical change product reading in order to process individual L1B tiles
-            Level2A_User_Product product = (Level2A_User_Product) L2aMetadataProc.readJaxbFromFilename(stream);
-            productCharacteristics = L2aMetadataProc.getProductOrganization(product);
-
-            Collection<String> tileNames = L2aMetadataProc.getTiles(product);
-            imageList = L2aMetadataProc.getImages(product);
-            List<File> fullTileNamesList = new ArrayList<File>();
-
-            tileList = new ArrayList<Tile>();
-
-            for (String granuleName : tileNames) {
-                S2L2aGranuleDirFilename aGranuleDir = S2L2aGranuleDirFilename.create(granuleName);
-                String theName = aGranuleDir.getMetadataFilename().name;
-
-                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-                if (nestedGranuleMetadata.exists()) {
-                    fullTileNamesList.add(nestedGranuleMetadata);
-                } else {
-                    String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
-                    logger.log(Level.WARNING, errorMessage);
-                }
+            if(casted instanceof Level2A_User_Product)
+            {
+                initProduct(stream, file, parent, casted);
             }
-
-            for (File aGranuleMetadataFile : fullTileNamesList) {
-                Level2A_Tile aTile = (Level2A_Tile) L2aMetadataProc.readJaxbFromFilename(new FileInputStream(aGranuleMetadataFile));
-                Map<Integer, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
-
-                Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID_2A().getValue());
-                t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
-                t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
-
-                t.tileGeometry10M = geoms.get(10);
-                t.tileGeometry20M = geoms.get(20);
-                t.tileGeometry60M = geoms.get(60);
-
-                t.sunAnglesGrid = L2aMetadataProc.getSunGrid(aTile);
-                t.viewingIncidenceAnglesGrids = L2aMetadataProc.getAnglesGrid(aTile);
-
-                tileList.add(t);
+            else
+            {
+                initTile(stream, file, parent, casted);
             }
-
-            S2L2aDatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
-            S2L2aDatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
-
-            File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
-
-            metadataElement = new MetadataElement("root");
-            MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
-            MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
-            metadataElement.addElement(userProduct);
-            metadataElement.addElement(dataStrip);
-            MetadataElement granulesMetaData = new MetadataElement("Granules");
-
-            for (File aGranuleMetadataFile : fullTileNamesList) {
-                MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
-                granulesMetaData.addElement(aGranule);
-            }
-
-            metadataElement.addElement(granulesMetaData);
-
         } catch (JAXBException e) {
             logger.severe(Utils.getStackTrace(e));
         } catch (FileNotFoundException e) {
@@ -261,6 +221,91 @@ public class L2aMetadata {
             logger.severe(Utils.getStackTrace(e));
         } catch (IOException e) {
             logger.severe(Utils.getStackTrace(e));
+        }
+    }
+
+    private void initProduct(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+        Level2A_User_Product product = (Level2A_User_Product) casted;
+        productCharacteristics = L2aMetadataProc.getProductOrganization(product);
+
+        Collection<String> tileNames = L2aMetadataProc.getTiles(product);
+        imageList = L2aMetadataProc.getImages(product);
+        List<File> fullTileNamesList = new ArrayList<File>();
+
+        tileList = new ArrayList<Tile>();
+
+        for (String granuleName : tileNames) {
+            S2L2aGranuleDirFilename aGranuleDir = S2L2aGranuleDirFilename.create(granuleName);
+            String theName = aGranuleDir.getMetadataFilename().name;
+
+            File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
+            if (nestedGranuleMetadata.exists()) {
+                fullTileNamesList.add(nestedGranuleMetadata);
+            } else {
+                String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
+                logger.log(Level.WARNING, errorMessage);
+            }
+        }
+
+        for (File aGranuleMetadataFile : fullTileNamesList) {
+            Object ob = unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
+            Object tmp = ((JAXBElement) ob).getValue();
+            Level2A_Tile aTile = (Level2A_Tile) tmp;
+
+            Map<Integer, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
+
+            Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID_2A().getValue());
+            t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
+            t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
+
+            t.tileGeometry10M = geoms.get(10);
+            t.tileGeometry20M = geoms.get(20);
+            t.tileGeometry60M = geoms.get(60);
+
+            t.sunAnglesGrid = L2aMetadataProc.getSunGrid(aTile);
+            t.viewingIncidenceAnglesGrids = L2aMetadataProc.getAnglesGrid(aTile);
+
+            tileList.add(t);
+        }
+
+        S2L2aDatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
+        S2L2aDatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
+
+        File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
+
+        metadataElement = new MetadataElement("root");
+        MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
+        MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
+        metadataElement.addElement(userProduct);
+        metadataElement.addElement(dataStrip);
+        MetadataElement granulesMetaData = new MetadataElement("Granules");
+
+        for (File aGranuleMetadataFile : fullTileNamesList) {
+            MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
+            granulesMetaData.addElement(aGranule);
+        }
+
+        metadataElement.addElement(granulesMetaData);
+    }
+
+    private void initTile(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+        Level2A_Tile aTile = (Level2A_Tile) casted;
+
+        {
+            Map<Integer, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
+
+            Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID_2A().getValue());
+            t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
+            t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
+
+            t.tileGeometry10M = geoms.get(10);
+            t.tileGeometry20M = geoms.get(20);
+            t.tileGeometry60M = geoms.get(60);
+
+            t.sunAnglesGrid = L2aMetadataProc.getSunGrid(aTile);
+            t.viewingIncidenceAnglesGrids = L2aMetadataProc.getAnglesGrid(aTile);
+
+            tileList.add(t);
         }
     }
 
