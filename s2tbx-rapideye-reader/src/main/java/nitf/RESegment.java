@@ -25,34 +25,32 @@ package nitf;
 /**
  * A representation of the NITF Reserved Extensions segment
  */
-public final class RESegment extends NITFObject
-{
+public final class RESegment extends NITFObject {
 
     /**
      * @see NITFObject#NITFObject(long)
      */
-    RESegment(long address)
-    {
+    RESegment(long address) {
         super(address);
     }
 
     /**
      * Returns the RESubheader for this segment
-     * 
+     *
      * @return
      */
     public native RESubheader getSubheader();
 
     /**
      * Returns the file offset where this segment starts
-     * 
+     *
      * @return
      */
     public native long getOffset();
 
     /**
      * Returns the end offset
-     * 
+     *
      * @return the end offset
      */
     public native long getEnd();

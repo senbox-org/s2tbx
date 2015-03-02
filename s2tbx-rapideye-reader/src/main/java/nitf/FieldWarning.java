@@ -26,21 +26,18 @@ package nitf;
  * This class represents a Warning that is created by the NITF system while
  * processing the data in some way. Usually a FieldWarning is created when a
  * Field does not contain valid data.
- * 
  */
-public class FieldWarning extends DestructibleObject
-{
+public class FieldWarning extends DestructibleObject {
     /**
      * @see NITFObject#NITFObject(long)
      */
-    FieldWarning(long address)
-    {
+    FieldWarning(long address) {
         super(address);
     }
 
     /**
      * Returns the name of the offending field
-     * 
+     *
      * @return name of the field, or null
      */
     public native String getFieldName();
@@ -48,14 +45,14 @@ public class FieldWarning extends DestructibleObject
     /**
      * Returns the offending Field object, or null if the warning is not
      * associated with one particular Field
-     * 
+     *
      * @return a Field object, or null
      */
     public native Field getField();
 
     /**
      * Returns the warning message, or expectation message
-     * 
+     *
      * @return the warning message, or null
      */
     public native String getWarning();
@@ -64,42 +61,35 @@ public class FieldWarning extends DestructibleObject
      * Returns the file offset if it is possible for the library to figure it
      * out. Otherwise, (if the warning was not created while parsing the file)
      * it will most likely return 0.
-     * 
+     *
      * @return
      */
     public native long getFileOffset();
 
     /**
      * Overrides the toString() function
-     * 
+     *
      * @return String representation of the warning
      */
-    public String toString()
-    {
+    public String toString() {
         Field field = getField();
         String warning = getWarning();
         String name = getFieldName();
         StringBuilder buf = new StringBuilder("WARNING: [");
 
-        if (name != null)
-        {
+        if (name != null) {
             buf.append(name);
-        }
-        else
-        {
+        } else {
             buf.append("UNKNOWN");
         }
         buf.append("] --> ");
-        if (warning != null)
-        {
+        if (warning != null) {
             buf.append("[").append(warning).append("]");
         }
 
-        if (field != null)
-        {
+        if (field != null) {
             String data = field.getStringData();
-            if (data != null)
-            {
+            if (data != null) {
                 buf.append(" data = [").append(data).append("]");
             }
         }
@@ -108,13 +98,11 @@ public class FieldWarning extends DestructibleObject
     }
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 

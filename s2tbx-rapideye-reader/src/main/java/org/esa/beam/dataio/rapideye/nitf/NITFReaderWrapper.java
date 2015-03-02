@@ -21,7 +21,6 @@ import java.util.logging.Logger;
  * Wrapper class over the nitro-nitf reader.
  *
  * @author Cosmin Cara
- *
  */
 public class NITFReaderWrapper {
 
@@ -30,9 +29,8 @@ public class NITFReaderWrapper {
      * the underlying nitf.imageio.NITFReader are not thread safe.
      */
     protected static final Object lock = new Object();
-
-    protected nitf.imageio.NITFReader reader;
     protected final Logger logger;
+    protected nitf.imageio.NITFReader reader;
     protected int numImages;
     protected int numBands;
     protected boolean hasBandPerImage;
@@ -117,7 +115,7 @@ public class NITFReaderWrapper {
                     if (pm.isCanceled()) {
                         break;
                     }
-                    destBuffer.setElemUIntAt(i, swapBytes((short)dataBuffer.getElem(i)));
+                    destBuffer.setElemUIntAt(i, swapBytes((short) dataBuffer.getElem(i)));
                 }
             }
             pm.worked(1);

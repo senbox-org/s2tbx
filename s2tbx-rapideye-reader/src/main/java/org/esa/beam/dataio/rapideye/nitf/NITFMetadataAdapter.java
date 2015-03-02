@@ -1,6 +1,15 @@
 package org.esa.beam.dataio.rapideye.nitf;
 
-import nitf.*;
+import nitf.BandInfo;
+import nitf.DESegment;
+import nitf.DESubheader;
+import nitf.Field;
+import nitf.FileHeader;
+import nitf.ImageSegment;
+import nitf.ImageSubheader;
+import nitf.NITFException;
+import nitf.Record;
+import nitf.TRE;
 import nitf.imageio.NITFReader;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -13,11 +22,12 @@ import java.util.Map;
 /**
  * Adapter for reading NITF file metadata. Descriptions are taken from MIL-STD-2500C document.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class NITFMetadataAdapter {
 
     private static Map<String, FieldDescriptor> fieldMap;
+
     private static void addMapEntry(String name, String description) {
         addMapEntry(name, description, ProductData.TYPE_ASCII);
     }
@@ -42,19 +52,19 @@ public class NITFMetadataAdapter {
         addMapEntry(NITFFields.FBKGC, "File background color");
         addMapEntry(NITFFields.ONAME, "Originator's name");
         addMapEntry(NITFFields.OPHONE, "Originator's phone number");
-        addMapEntry(NITFFields.FL,"File length");
+        addMapEntry(NITFFields.FL, "File length");
         addMapEntry(NITFFields.HL, "NITF file header length");
-        addMapEntry(NITFFields.NUMI,"Number of image segments");
+        addMapEntry(NITFFields.NUMI, "Number of image segments");
         addMapEntry(NITFFields.UDHDL, "User defined header data length");
         addMapEntry(NITFFields.UDHOFL, "User defined header overflow");
         addMapEntry(NITFFields.UDHD, "User defined header data");
         addMapEntry(NITFFields.XHDL, "Extended header data length");
-        addMapEntry(NITFFields.XHDLOFL,"Extended header data overflow");
+        addMapEntry(NITFFields.XHDLOFL, "Extended header data overflow");
         addMapEntry(NITFFields.XHD, "Extended header data");
         // image subheader fields
         addMapEntry(NITFFields.IM, "File part type");
-        addMapEntry(NITFFields.IID_1,"Image identifier 1");
-        addMapEntry(NITFFields.IDATIM,"Image date and time");
+        addMapEntry(NITFFields.IID_1, "Image identifier 1");
+        addMapEntry(NITFFields.IDATIM, "Image date and time");
         addMapEntry(NITFFields.TGTID, "Target identifier");
         addMapEntry(NITFFields.ISCLAS, "Image security classification");
         addMapEntry(NITFFields.ISORCE, "Image source");
@@ -152,7 +162,7 @@ public class NITFMetadataAdapter {
             BandInfo[] bandInfos = subheader.getBandInfo();
             MetadataElement biElem = new MetadataElement("Bands");
             for (int j = 0; j < bandInfos.length; j++) {
-                MetadataElement bandInfoElem = new MetadataElement("BAND" + (j+1));
+                MetadataElement bandInfoElem = new MetadataElement("BAND" + (j + 1));
                 bandInfoElem.addAttribute(asMetadataAttribute(bandInfos[i].getRepresentation(), NITFFields.IREPBAND));
                 bandInfoElem.addAttribute(asMetadataAttribute(bandInfos[i].getSubcategory(), NITFFields.ISUBCAT));
                 bandInfoElem.addAttribute(asMetadataAttribute(bandInfos[i].getImageFilterCode(), NITFFields.IFC));
@@ -210,11 +220,11 @@ public class NITFMetadataAdapter {
                 String[] coords = tokens[j].split("N|S");
                 MetadataAttribute latAttr = new MetadataAttribute("latitude",
                                                                   ProductData.ASCII.createInstance(coords[0].substring(0, 2) + "*" + coords[0].substring(2, 4) + "'" + coords[0].substring(4) + "''"),
-                                                                                                   false);
+                                                                  false);
                 cornerElem.addAttribute(latAttr);
                 MetadataAttribute longAttr = new MetadataAttribute("longitude",
                                                                    ProductData.ASCII.createInstance(coords[1].substring(0, 3) + "*" + coords[1].substring(3, 5) + "'" + coords[1].substring(5) + "''"),
-                                                                                                   false);
+                                                                   false);
                 cornerElem.addAttribute(longAttr);
                 cornerCoordElem.addElement(cornerElem);
             }
@@ -273,21 +283,20 @@ public class NITFMetadataAdapter {
     }
 
     private static class FieldDescriptor {
-        public int getDataType() {
-            return dataType;
-        }
-
         private int dataType;
-
-        public String getDescription() {
-            return description;
-        }
-
         private String description;
 
         FieldDescriptor(String description, int dataType) {
             this.description = description;
             this.dataType = dataType;
+        }
+
+        public int getDataType() {
+            return dataType;
+        }
+
+        public String getDescription() {
+            return description;
         }
     }
 

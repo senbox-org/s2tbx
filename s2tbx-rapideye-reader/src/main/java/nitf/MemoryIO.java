@@ -27,88 +27,76 @@ import java.nio.ByteBuffer;
 /**
  * Memory implementation of the IOInterface, from the Java side.
  */
-public class MemoryIO extends IOInterface
-{
+public class MemoryIO extends IOInterface {
 
     private ByteBuffer buffer;
 
-    public MemoryIO(int capacity)
-    {
+    public MemoryIO(int capacity) {
         buffer = ByteBuffer.allocate(capacity);
     }
 
-    public MemoryIO(byte[] data)
-    {
+    public MemoryIO(byte[] data) {
         buffer = ByteBuffer.wrap(data);
     }
 
     @Override
-    public void close() throws NITFException
-    {
+    public void close() throws NITFException {
         // does nothing
     }
 
     @Override
-    public long getSize() throws NITFException
-    {
+    public long getSize() throws NITFException {
         return buffer.capacity();
     }
-    
+
     @Override
-    public int getMode() throws NITFException
-    {
+    public int getMode() throws NITFException {
         return NITF_ACCESS_READWRITE;
     }
 
     @Override
-    public void read(byte[] buf, int size) throws NITFException
-    {
+    public void read(byte[] buf, int size) throws NITFException {
         int pos = buffer.position();
         if ((pos + size) > buffer.capacity() || size > buf.length)
             throw new NITFException("Attempting to read past buffer boundary.");
         System.arraycopy(buffer.array(), pos, buf, 0, size);
         buffer.position(pos + size);
     }
-    
+
     @Override
-    public boolean canSeek()
-    {
+    public boolean canSeek() {
         return true;
     }
 
     @Override
-    public long seek(long offset, int whence) throws NITFException
-    {
+    public long seek(long offset, int whence) throws NITFException {
         int pos = buffer.position();
-        switch (whence)
-        {
-        case IOInterface.SEEK_CUR:
-            if (offset + pos > buffer.capacity())
-                throw new NITFException(
-                        "Attempting to seek past buffer boundary.");
-            buffer.position((int) (pos + offset));
-            break;
-        case IOInterface.SEEK_END:
-            throw new NITFException("SEEK_END is unsupported with MemoryIO.");
-        case IOInterface.SEEK_SET:
-            if (offset > buffer.capacity())
-                throw new NITFException(
-                        "Attempting to seek past buffer boundary.");
-            buffer.position((int) (offset));
-            break;
+        switch (whence) {
+            case IOInterface.SEEK_CUR:
+                if (offset + pos > buffer.capacity())
+                    throw new NITFException(
+                            "Attempting to seek past buffer boundary.");
+                buffer.position((int) (pos + offset));
+                break;
+            case IOInterface.SEEK_END:
+                throw new NITFException("SEEK_END is unsupported with MemoryIO.");
+            case IOInterface.SEEK_SET:
+                if (offset > buffer.capacity())
+                    throw new NITFException(
+                            "Attempting to seek past buffer boundary.");
+                buffer.position((int) (offset));
+                break;
         }
         return buffer.position();
     }
 
     @Override
-    public long tell() throws NITFException
-    {
+    public long tell() throws NITFException {
         return buffer.position();
     }
 
     @Override
-    public void write(byte[] buf, int size) throws NITFException
-    {
+    public void write(byte[] buf, int size) throws NITFException {
         int pos = buffer.position();
         if ((pos + size) > buffer.capacity() || size > buf.length)
             throw new NITFException("Attempting to write past buffer boundary.");

@@ -5,7 +5,6 @@ import java.awt.*;
 /**
  * The enumeration type {@code Flags} is a representation of
  * the flags used by SPOT scene images.
- *
  */
 public class BitMask {
 
@@ -36,7 +35,9 @@ public class BitMask {
         this.description = description;
     }
 
-    public final String getName() { return name; }
+    public final String getName() {
+        return name;
+    }
 
     /**
      * Returns the bit mask associated with the flag.
@@ -78,7 +79,6 @@ public class BitMask {
      * Tests a bit pattern for the status of the flag.
      *
      * @param value the bit pattern.
-     *
      * @return true if the flag is set, false otherwise.
      */
     public final boolean isSet(final int value) {

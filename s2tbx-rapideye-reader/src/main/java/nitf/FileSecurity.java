@@ -30,20 +30,18 @@ import java.io.PrintStream;
  * information as a whole. Each component that has security information makes
  * reference to a <code>FileSecurity</code> object.
  */
-public final class FileSecurity extends NITFObject
-{
+public final class FileSecurity extends NITFObject {
 
     /**
      * @see NITFObject#NITFObject(long)
      */
-    FileSecurity(long address)
-    {
+    FileSecurity(long address) {
         super(address);
     }
 
     /**
      * Returns the classification authority Field, or null if one doesn't exist
-     * 
+     *
      * @return the classification authority Field, or null if one doesn't exist
      */
     public native Field getClassificationAuthority();
@@ -51,50 +49,50 @@ public final class FileSecurity extends NITFObject
     /**
      * Returns the classification authority type Field, or null if one doesn't
      * exist
-     * 
+     *
      * @return the classification authority type Field, or null if one doesn't
-     *         exist
+     * exist
      */
     public native Field getClassificationAuthorityType();
 
     /**
      * Returns the classification reason Field, or null if one doesn't exist
-     * 
+     *
      * @return the classification reason Field, or null if one doesn't exist
      */
     public native Field getClassificationReason();
 
     /**
      * Returns the classification system Field, or null if one doesn't exist
-     * 
+     *
      * @return the classification system Field, or null if one doesn't exist
      */
     public native Field getClassificationSystem();
 
     /**
      * Returns the classification text Field, or null if one doesn't exist
-     * 
+     *
      * @return the classification text Field, or null if one doesn't exist
      */
     public native Field getClassificationText();
 
     /**
      * Returns the codewords Field, or null if one doesn't exist
-     * 
+     *
      * @return the codewords Field, or null if one doesn't exist
      */
     public native Field getCodewords();
 
     /**
      * Returns the control and handling Field, or null if one doesn't exist
-     * 
+     *
      * @return the control and handling Field, or null if one doesn't exist
      */
     public native Field getControlAndHandling();
 
     /**
      * Returns the declassification date Field, or null if one doesn't exist
-     * 
+     *
      * @return the declassification date Field, or null if one doesn't exist
      */
     public native Field getDeclassificationDate();
@@ -102,15 +100,15 @@ public final class FileSecurity extends NITFObject
     /**
      * Returns the declassification exemption Field, or null if one doesn't
      * exist
-     * 
+     *
      * @return the declassification exemption Field, or null if one doesn't
-     *         exist
+     * exist
      */
     public native Field getDeclassificationExemption();
 
     /**
      * Returns the declassification type Field, or null if one doesn't exist
-     * 
+     *
      * @return the declassification type Field, or null if one doesn't exist
      */
     public native Field getDeclassificationType();
@@ -118,36 +116,36 @@ public final class FileSecurity extends NITFObject
     /**
      * Returns the declassification downgrade Field, or null if one doesn't
      * exist
-     * 
+     *
      * @return the declassification downgrade Field, or null if one doesn't
-     *         exist
+     * exist
      */
     public native Field getDowngrade();
 
     /**
      * Returns the downgrade date/time Field, or null if one doesn't exist
-     * 
+     *
      * @return the downgrade date/time Field, or null if one doesn't exist
      */
     public native Field getDowngradeDateTime();
 
     /**
      * Returns the releasing instructions Field, or null if one doesn't exist
-     * 
+     *
      * @return the releasing instructions Field, or null if one doesn't exist
      */
     public native Field getReleasingInstructions();
 
     /**
      * Returns the security control number Field, or null if one doesn't exist
-     * 
+     *
      * @return the security control number Field, or null if one doesn't exist
      */
     public native Field getSecurityControlNumber();
 
     /**
      * Returns the security source date Field, or null if one doesn't exist
-     * 
+     *
      * @return the security source date Field, or null if one doesn't exist
      */
     public native Field getSecuritySourceDate();
@@ -156,42 +154,40 @@ public final class FileSecurity extends NITFObject
      * Resize the file security for the given version. Warning: Only use this if
      * you know what you are doing. This will modify the underlying FileSecurity
      * fields.
-     * 
+     *
      * @param version
      */
     public native void resizeForVersion(Version version) throws NITFException;
 
     /**
      * Prints the contents of the FileSecurity info
-     * 
-     * @param out
-     *            the stream to write to
+     *
+     * @param out the stream to write to
      */
-    public void print(PrintStream out)
-    {
+    public void print(PrintStream out) {
         out.println("ClassificationAuthority = ["
-                + getClassificationAuthority() + "]");
+                            + getClassificationAuthority() + "]");
         out.println("ClassificationAuthorityType = ["
-                + getClassificationAuthorityType() + "]");
+                            + getClassificationAuthorityType() + "]");
         out.println("ClassificationReason = [" + getClassificationReason()
-                + "]");
+                            + "]");
         out.println("ClassificationSystem = [" + getClassificationSystem()
-                + "]");
+                            + "]");
         out.println("ClassificationText = [" + getClassificationText() + "]");
         out.println("Codewords = [" + getCodewords() + "]");
         out.println("ControlAndHandling = [" + getControlAndHandling() + "]");
         out.println("DeclassificationDate = [" + getDeclassificationDate()
-                + "]");
+                            + "]");
         out.println("DeclassificationExemption = ["
-                + getDeclassificationExemption() + "]");
+                            + getDeclassificationExemption() + "]");
         out.println("DeclassificationType = [" + getDeclassificationType()
-                + "]");
+                            + "]");
         out.println("Downgrade = [" + getDowngrade() + "]");
         out.println("DowngradeDateTime = [" + getDowngradeDateTime() + "]");
         out.println("ReleasingInstructions = [" + getReleasingInstructions()
-                + "]");
+                            + "]");
         out.println("SecurityControlNumber = [" + getSecurityControlNumber()
-                + "]");
+                            + "]");
         out.println("SecuritySourceDate = [" + getSecuritySourceDate() + "]");
     }
 }

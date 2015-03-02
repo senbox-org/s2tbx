@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Ramona Manda
@@ -95,9 +97,9 @@ public class SpotViewProductReaderTest {
             assertEquals(3, components.getChildren().length);
             String[] expectedIds = new String[]{"metadata.dim", "metadata.xml", "geolayer.bil"};
             int componentsAsExpected = 0;
-            for(TreeNode<File> component: components.getChildren()){
-                for(String expectedValue: expectedIds){
-                    if(component.getId().toLowerCase().equals(expectedValue.toLowerCase())){
+            for (TreeNode<File> component : components.getChildren()) {
+                for (String expectedValue : expectedIds) {
+                    if (component.getId().toLowerCase().equals(expectedValue.toLowerCase())) {
                         componentsAsExpected++;
                     }
                 }

@@ -6,7 +6,7 @@ import org.esa.beam.framework.ui.ModalDialog;
 import org.esa.beam.framework.ui.application.ApplicationDescriptor;
 import org.esa.beam.visat.VisatApp;
 
-import javax.swing.UIManager;
+import javax.swing.*;
 
 public final class S2tbxApp extends VisatApp {
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.3</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xsom</groupId>
@@ -147,8 +147,8 @@
                                             <property>dir</property>
                                             <message>The modules directory cannot be empty</message>
                                             <regex>.*</regex>
-                                            <regexMessage>The modules directory cannot be empty. (add -Ddir=/your/path/to/modules/dir to you
-r MAVEN_OPTS)</regexMessage>
+                                            <regexMessage>The modules directory cannot be empty. (add -Ddir=/your/path/to/modules/dir to your MAVEN_OPTS)
+                                            </regexMessage>
                                         </requireProperty>
                                     </rules>
                                     <fail>true</fail>

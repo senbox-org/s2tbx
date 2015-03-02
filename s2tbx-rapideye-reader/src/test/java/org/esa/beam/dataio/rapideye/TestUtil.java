@@ -25,8 +25,7 @@ public class TestUtil {
 
     private static File getTestFileOrDirectory(String file) {
         String partialPath = file;
-        if(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
-        {
+        if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX) {
             partialPath = file.replaceAll("\\\\", "/");
         }
 

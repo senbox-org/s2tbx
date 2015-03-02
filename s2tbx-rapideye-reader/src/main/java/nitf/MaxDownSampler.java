@@ -21,46 +21,41 @@
  */
 
 /**
- * 
+ *
  */
 package nitf;
 
 /**
  * <code>MaxDownSampler</code>
- * 
+ * <p/>
  * The maxDownSample selects the maximum pixel <p/> The row and column skip
  * factors divide the sub-window into non-overlaping sample windows. The pixel
  * with the maximum value in each sample window is the down-sampled value for
  * that window. For complex images, the maximum the maximum absolute value (the
  * corresponding complex value, not the real absolute value is the down-sample
  * value.
- * 
+ * <p/>
  * Created: Oct 6, 2005 9:23:06 PM
  */
-public final class MaxDownSampler extends DownSampler
-{
+public final class MaxDownSampler extends DownSampler {
 
     /**
      * @param address
      */
-    public MaxDownSampler(long address)
-    {
+    public MaxDownSampler(long address) {
         super(address);
         // TODO Auto-generated constructor stub
     }
 
     /**
-     * 
      * @param skipRows
      * @param skipCols
      */
-    public MaxDownSampler(int skipRows, int skipCols)
-    {
+    public MaxDownSampler(int skipRows, int skipCols) {
         construct(skipRows, skipCols);
     }
 
     /**
-     * 
      * @param skipRows
      * @param skipCols
      */
@@ -73,10 +68,10 @@ public final class MaxDownSampler extends DownSampler
      *      int, int, int, int)
      */
     protected native boolean apply(byte[][] inputWindows,
-            byte[][] outputWindows, int numBands, int numWindowRows,
-            int numWindowCols, int numInputCols, int numSubWindowCols,
-            int pixelType, int pixelSize, int rowsInLastWindow,
-            int colsInLastWindow) throws NITFException;
+                                   byte[][] outputWindows, int numBands, int numWindowRows,
+                                   int numWindowCols, int numInputCols, int numSubWindowCols,
+                                   int pixelType, int pixelSize, int rowsInLastWindow,
+                                   int colsInLastWindow) throws NITFException;
 
     /*
      * (non-Javadoc)

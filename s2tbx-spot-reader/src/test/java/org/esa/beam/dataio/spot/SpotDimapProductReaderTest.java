@@ -36,7 +36,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testReadProductNodesBySimpleProductReader(){
+    public void testReadProductNodesBySimpleProductReader() {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
@@ -60,7 +60,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testReadBandRasterDataBySimpleProductReader(){
+    public void testReadBandRasterDataBySimpleProductReader() {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
@@ -87,7 +87,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testGetProductComponentsOnVolumeFileInputBySimpleProductReader(){
+    public void testGetProductComponentsOnVolumeFileInputBySimpleProductReader() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("vol_list.dim");
         System.setProperty("snap.reader.tileWidth", "100");
@@ -99,9 +99,9 @@ public class SpotDimapProductReaderTest {
             assertEquals(4, components.getChildren().length);
             String[] expectedIds = new String[]{"metadata.dim", "vol_list.dim", "mediumImage.tif", "icon.jpg"};
             int componentsAsExpected = 0;
-            for(TreeNode<File> component: components.getChildren()){
-                for(String expectedValue: expectedIds){
-                    if(component.getId().toLowerCase().equals(expectedValue.toLowerCase())){
+            for (TreeNode<File> component : components.getChildren()) {
+                for (String expectedValue : expectedIds) {
+                    if (component.getId().toLowerCase().equals(expectedValue.toLowerCase())) {
                         componentsAsExpected++;
                     }
                 }
@@ -114,7 +114,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testGetProductComponentsOnArchiveInputBySimpleProductReader(){
+    public void testGetProductComponentsOnArchiveInputBySimpleProductReader() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
         System.setProperty("snap.reader.tileWidth", "100");
@@ -132,7 +132,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testConfigurePreferredTileSizeBySimpleProductReader(){
+    public void testConfigurePreferredTileSizeBySimpleProductReader() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
         System.setProperty("snap.reader.tileWidth", "200");
@@ -153,7 +153,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testReadProductNodesByVolumeProductReader(){
+    public void testReadProductNodesByVolumeProductReader() {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
@@ -177,7 +177,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testReadBandRasterDataByVolumeProductReader(){
+    public void testReadBandRasterDataByVolumeProductReader() {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
@@ -204,7 +204,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testGetProductComponentsOnVolumeFileInputByVolumeProductReader(){
+    public void testGetProductComponentsOnVolumeFileInputByVolumeProductReader() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
         System.setProperty("snap.reader.tileWidth", "100");
@@ -218,9 +218,9 @@ public class SpotDimapProductReaderTest {
                     "SPVIEW01_0_0/METADATA_0_0.dim", "SPVIEW01_0_1/ICON_0_1.JPG", "SPVIEW01_0_1/IMAGERY_0_1.TIF",
                     "SPVIEW01_0_1/METADATA_0_1.dim"};
             int componentsAsExpected = 0;
-            for(TreeNode<File> component: components.getChildren()){
-                for(String expectedValue: expectedIds){
-                    if(component.getId().toLowerCase().equals(expectedValue.toLowerCase())){
+            for (TreeNode<File> component : components.getChildren()) {
+                for (String expectedValue : expectedIds) {
+                    if (component.getId().toLowerCase().equals(expectedValue.toLowerCase())) {
                         componentsAsExpected++;
                     }
                 }
@@ -233,7 +233,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testGetProductComponentsOnArchiveInputByVolumeProductReader(){
+    public void testGetProductComponentsOnArchiveInputByVolumeProductReader() {
         //no archive to input this method!
         /*
         Product product = new Product("name", "desc", 100, 100);
@@ -254,7 +254,7 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testConfigurePreferredTileSizeByVolumeProductReader(){
+    public void testConfigurePreferredTileSizeByVolumeProductReader() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
         System.setProperty("snap.reader.tileWidth", "200");

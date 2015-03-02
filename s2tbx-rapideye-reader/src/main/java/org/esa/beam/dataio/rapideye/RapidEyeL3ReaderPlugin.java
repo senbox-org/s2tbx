@@ -19,24 +19,6 @@ public class RapidEyeL3ReaderPlugin implements ProductReaderPlugIn {
 
     public static final ProductContentEnforcer enforcer = ProductContentEnforcer.create(RapidEyeConstants.L3_MINIMAL_PRODUCT_PATTERNS, RapidEyeConstants.NOT_L3_FILENAME_PATTERNS);
 
-    @Override
-    public DecodeQualification getDecodeQualification(Object input) {
-        DecodeQualification retVal = DecodeQualification.UNABLE;
-        ZipVirtualDir virtualDir;
-        try {
-            virtualDir = getInput(input);
-            if (virtualDir != null) {
-                String[] allFiles = virtualDir.listAll();
-                if (enforcer.isConsistent(allFiles)) {
-                    retVal = DecodeQualification.INTENDED;
-                }
-            }
-        } catch (IOException e) {
-            retVal = DecodeQualification.UNABLE;
-        }
-        return retVal;
-    }
-
     static ZipVirtualDir getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
 
@@ -57,6 +39,24 @@ public class RapidEyeL3ReaderPlugin implements ProductReaderPlugIn {
             return (File) input;
         }
         return null;
+    }
+
+    @Override
+    public DecodeQualification getDecodeQualification(Object input) {
+        DecodeQualification retVal = DecodeQualification.UNABLE;
+        ZipVirtualDir virtualDir;
+        try {
+            virtualDir = getInput(input);
+            if (virtualDir != null) {
+                String[] allFiles = virtualDir.listAll();
+                if (enforcer.isConsistent(allFiles)) {
+                    retVal = DecodeQualification.INTENDED;
+                }
+            }
+        } catch (IOException e) {
+            retVal = DecodeQualification.UNABLE;
+        }
+        return retVal;
     }
 
     @Override

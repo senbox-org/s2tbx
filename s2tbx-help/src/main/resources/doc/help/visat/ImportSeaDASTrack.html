@@ -37,15 +37,17 @@
 
 <p>
     As another special case of CSV import,
-    the Sentinel-2 Toolbox supports the import of  <a href="http://seadas.gsfc.nasa.gov/">SeaDAS</a>
+    the Sentinel-2 Toolbox supports the import of <a href="http://seadas.gsfc.nasa.gov/">SeaDAS</a>
     (<b>Sea</b>WiFS <b>D</b>ata <b>A</b>nalysis <b>S</b>ystem) ship track data.
     SeaDAS is a comprehensive image analysis package for the processing, display,
     analysis, and quality control of ocean color data. It has been developed within the
     NASA SeaWiFS (<b>Sea</b>-viewing <b>Wi</b>de <b>F</b>ield-of-view <b>S</b>ensor) Project.
     Note that the Sentinel-2 Toolbox only supports the import of track data generated with the SeaDAS versions 6.x.
 </p>
+
 <p>
-    In principle, these ship track files are also CSV files, but have an extremely simple layout with three columns only:
+    In principle, these ship track files are also CSV files, but have an extremely simple layout with three columns
+    only:
     The first two columns contain the vertex points latitudes and longitudes, respectively, and the third column
     gives the values of a single data quantity (such as a ship-based radiometer measurement). These files contain
     <b>no</b> header, all numbers are separated by the 'tab' character.

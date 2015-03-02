@@ -1,16 +1,12 @@
 package org.esa.beam.dataio.spot;
 
-import com.bc.ceres.core.VirtualDir;
 import org.esa.beam.dataio.ProductContentEnforcer;
-import org.esa.beam.dataio.TarVirtualDir;
 import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.spot.dimap.SpotConstants;
 import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.io.BeamFileFilter;
-import org.esa.beam.util.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +15,7 @@ import java.util.Locale;
 /**
  * Visat plugin for reading SPOT4 TAKE5 scene files.
  * The scene files are GeoTIFF with XML metadata.
+ *
  * @author Ramona Manda
  */
 public class SpotTake5ProductReaderPlugin implements ProductReaderPlugIn {
@@ -99,8 +96,8 @@ public class SpotTake5ProductReaderPlugin implements ProductReaderPlugIn {
     @Override
     public BeamFileFilter getProductFileFilter() {
         return new BeamFileFilter(SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0],
-                SpotConstants.SPOT4_TAKE5_DEFAULT_EXTENSION,
-                SpotConstants.SPOT4_TAKE5_DESCRIPTION);
+                                  SpotConstants.SPOT4_TAKE5_DEFAULT_EXTENSION,
+                                  SpotConstants.SPOT4_TAKE5_DESCRIPTION);
     }
 
     @Override

@@ -41,48 +41,6 @@ public class ScriptPatcherAction extends AbstractInstallOrUninstallAction {
     public ScriptPatcherAction() {
     }
 
-    public String getScriptDirPath() {
-        return replaceVariables(scriptDirPath);
-    }
-
-    public void setScriptDirPath(String scriptDirPath) {
-        this.scriptDirPath = scriptDirPath;
-    }
-
-    @Override
-    public boolean install(InstallerContext context) throws UserCanceledException {
-
-
-        File installationDirectory = context.getInstallationDirectory();
-        File scriptDir = new File(installationDirectory, scriptDirPath);
-
-        File[] files = scriptDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return file.isFile() && (
-                        file.getName().endsWith(".bat")
-                        || file.getName().endsWith(".cmd")
-                        || file.getName().endsWith(".sh")
-                        || file.getName().endsWith(".command"));
-            }
-        });
-        if (files != null) {
-            ProgressInterface progressInterface = context.getProgressInterface();
-            progressInterface.setStatusMessage("Patching command line scripts");
-            for (int i = 0; i < files.length; i++) {
-                File file = files[i];
-                try {
-                    patchFile(file);
-                } catch (IOException e) {
-                    System.err.println(file + " patching failed: " + e.getMessage());
-                }
-                progressInterface.setPercentCompleted(((i + 1) * 100) / files.length);
-            }
-            progressInterface.setStatusMessage("");
-        }
-        return true;
-    }
-
     private static void patchFile(File file) throws IOException {
 
         long l = file.length();
@@ -103,6 +61,48 @@ public class ScriptPatcherAction extends AbstractInstallOrUninstallAction {
         } finally {
             randomAccessFile.close();
         }
+    }
+
+    public String getScriptDirPath() {
+        return replaceVariables(scriptDirPath);
+    }
+
+    public void setScriptDirPath(String scriptDirPath) {
+        this.scriptDirPath = scriptDirPath;
+    }
+
+    @Override
+    public boolean install(InstallerContext context) throws UserCanceledException {
+
+
+        File installationDirectory = context.getInstallationDirectory();
+        File scriptDir = new File(installationDirectory, scriptDirPath);
+
+        File[] files = scriptDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.isFile() && (
+                        file.getName().endsWith(".bat")
+                                || file.getName().endsWith(".cmd")
+                                || file.getName().endsWith(".sh")
+                                || file.getName().endsWith(".command"));
+            }
+        });
+        if (files != null) {
+            ProgressInterface progressInterface = context.getProgressInterface();
+            progressInterface.setStatusMessage("Patching command line scripts");
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                try {
+                    patchFile(file);
+                } catch (IOException e) {
+                    System.err.println(file + " patching failed: " + e.getMessage());
+                }
+                progressInterface.setPercentCompleted(((i + 1) * 100) / files.length);
+            }
+            progressInterface.setStatusMessage("");
+        }
+        return true;
     }
 
     @Override

@@ -8,7 +8,13 @@ import org.esa.beam.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.beam.dataio.rapideye.nitf.NITFMetadata;
 import org.esa.beam.dataio.rapideye.nitf.NITFReaderWrapper;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.GeoCoding;
+import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.framework.datamodel.TiePointGeoCoding;
+import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.util.TreeNode;
 
 import javax.imageio.IIOException;
@@ -23,7 +29,7 @@ import java.util.logging.Level;
 /**
  * Reader for RapidEye L1 (NITF) products.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class RapidEyeL1Reader extends RapidEyeReader {
 
@@ -67,10 +73,10 @@ public class RapidEyeL1Reader extends RapidEyeReader {
                 NITFReaderWrapper reader = new NITFReaderWrapper(productDirectory.getFile(nitfFiles[i]));
                 if (product == null) {
                     product = new Product(metadata != null ? metadata.getProductName() : RapidEyeConstants.PRODUCT_GENERIC_NAME,
-                            RapidEyeConstants.L1_FORMAT_NAMES[0],
-                            metadata != null ? metadata.getRasterWidth() : reader.getWidth(),
-                            metadata != null ? metadata.getRasterHeight() : reader.getHeight(),
-                            this);
+                                          RapidEyeConstants.L1_FORMAT_NAMES[0],
+                                          metadata != null ? metadata.getRasterWidth() : reader.getWidth(),
+                                          metadata != null ? metadata.getRasterHeight() : reader.getHeight(),
+                                          this);
                     if (metadata != null) {
                         product.setProductType(metadata.getMetadataProfile());
                         product.setStartTime(metadata.getProductStartTime());
@@ -219,16 +225,16 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         } else {
             TreeNode<File> result = super.getProductComponents();
             String[] fileNames = getMetadataFileNames(productDirectory, RapidEyeConstants.METADATA_FILE_SUFFIX);
-            for(String fileName : fileNames){
-                try{
+            for (String fileName : fileNames) {
+                try {
                     addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
                 } catch (IOException e) {
                     logger.warning(String.format("Error encountered while searching file %s", fileName));
                 }
             }
             String[] nitfFiles = getRasterFileNames(productDirectory);
-            for(String fileName : nitfFiles){
-                try{
+            for (String fileName : nitfFiles) {
+                try {
                     addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
                 } catch (IOException e) {
                     logger.warning(String.format("Error encountered while searching file %s", fileName));
@@ -236,7 +242,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
             }
             String maskFileName = metadata.getMaskFileName();
             if (maskFileName != null) {
-                try{
+                try {
                     addProductComponentIfNotPresent(maskFileName, productDirectory.getFile(maskFileName), result);
                 } catch (IOException e) {
                     logger.warning(String.format("Error encountered while searching file %s", maskFileName));

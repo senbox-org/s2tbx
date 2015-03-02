@@ -26,8 +26,7 @@ package nitf;
  * <code>PluginRegistry</code> This class provides an entrypoint to loading
  * plugins
  */
-public final class PluginRegistry extends NITFObject
-{
+public final class PluginRegistry extends NITFObject {
     /*
      * Note to Developer: I extended NITFObject solely to make sure the nitf-jni
      * library got loaded statically. This happens in NITFObject, so it only
@@ -36,15 +35,13 @@ public final class PluginRegistry extends NITFObject
      */
 
     // private
-    private PluginRegistry()
-    {
+    private PluginRegistry() {
     }
 
     /**
      * This attempts to load plugins from the given directory
-     * 
-     * @param dirName
-     *            plugin directory to load
+     *
+     * @param dirName plugin directory to load
      * @throws NITFException
      */
     public static native void loadPluginDir(String dirName)
@@ -52,9 +49,8 @@ public final class PluginRegistry extends NITFObject
 
     /**
      * Returns true if the TRE is found in the registry, false otherwise
-     * 
-     * @param name
-     *            tre name
+     *
+     * @param name tre name
      * @return
      */
     public static native boolean canHandleTRE(String name);

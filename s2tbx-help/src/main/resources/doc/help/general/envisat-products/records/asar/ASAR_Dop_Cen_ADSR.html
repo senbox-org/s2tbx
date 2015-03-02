@@ -25,10 +25,15 @@
 </head>
 
 <body>
-<table class="header"><tr class="header"><td class="header">&nbsp;Supported ENVISAT Products</td><td class="header"
-                                                                                                     align="right"><a
-        href="../../../BeamOverview.html"><img src="../../../../images/snap_header.jpg" width="227" height="29"
-                                             border="0"></a></td></tr></table>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;Supported ENVISAT Products</td>
+        <td class="header"
+            align="right"><a
+                href="../../../BeamOverview.html"><img src="../../../../images/snap_header.jpg" width="227" height="29"
+                                                       border="0"></a></td>
+    </tr>
+</table>
 <br>
 
 <h2>Doppler Centroid Parameters</h2>
@@ -73,7 +78,8 @@
         <td><a href="../../lang_types.html#Float">Float</a></td>
         <td>5</td>
         <td>Doppler centroid coefficients as a function of slant range time: D0, D1, D2, D3, and D4. where Doppler
-            Centroid = D0 + D1(tSR-t0) + D2(tSR-t0)2 + D3(tSR-t0)3 + D4(tSR-t0)4</td>
+            Centroid = D0 + D1(tSR-t0) + D2(tSR-t0)2 + D3(tSR-t0)3 + D4(tSR-t0)4
+        </td>
         <td>HzHz/sHz/s2Hz/s3Hz/s4</td>
     </tr>
     <tr>
@@ -83,7 +89,8 @@
         <td>1</td>
         <td>Doppler Centroid Confidence Measure. Value between 0 and 1, 0 = poorest confidence, 1= highest confidence.
             If multiple Doppler Centroid estimates were performed, this value is the lowest confidence value
-            attained.</td>
+            attained.
+        </td>
         <td>-</td>
     </tr>
     <tr>
@@ -92,7 +99,8 @@
         <td><a href="../../lang_types.html#UChar">UChar</a></td>
         <td>1</td>
         <td>Doppler Confidence Below Threshold Flag. 0 = confidence above threshold, Doppler Centroid calculated from
-            data. 1 = confidence below threshold, Doppler Centroid calculated from orbit.</td>
+            data. 1 = confidence below threshold, Doppler Centroid calculated from orbit.
+        </td>
         <td>flag</td>
     </tr>
     <tr>

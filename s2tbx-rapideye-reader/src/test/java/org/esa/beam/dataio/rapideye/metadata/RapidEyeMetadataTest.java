@@ -6,13 +6,10 @@ import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.beam.dataio.rapideye.TestUtil;
-import org.esa.beam.dataio.rapideye.nitf.NITFReaderWrapper;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ramona Manda
@@ -21,7 +18,7 @@ public class RapidEyeMetadataTest extends TestCase {
     private RapidEyeMetadata metadata;
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         metadata = null;
         System.gc();
     }
@@ -157,8 +154,7 @@ public class RapidEyeMetadataTest extends TestCase {
     public void testGetPath() throws Exception {
         String root = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
         String partialPath = root + "\\2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml";
-        if(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
-        {
+        if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX) {
             partialPath = partialPath.replaceAll("\\\\", "/");
         }
 

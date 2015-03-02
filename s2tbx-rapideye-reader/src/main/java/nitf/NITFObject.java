@@ -23,60 +23,51 @@
 package nitf;
 
 import org.esa.beam.dataio.NativeLibraryLoader;
-import org.esa.beam.util.logging.BeamLogManager;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.logging.Level;
 
 /**
  * The Base NITF Object
  * <p/>
- * 
+ * <p/>
  * Every core NITF Object extends this class
  */
-public abstract class NITFObject
-{
+public abstract class NITFObject {
 
     public static final long INVALID_ADDRESS = 0;
-
+    /* This is the memory address of the underlying native object */
+    protected long address = INVALID_ADDRESS;
     /**
      * The name of the library to load
      */
     public static final String NITF_LIBRARY_NAME = "nitf.jni-c";
-
     /* Load the library */
     static {
         try {
             NativeLibraryLoader.loadLibraryFromJar("/resources/lib/" + NativeLibraryLoader.getOSFamily() + "/" + NITF_LIBRARY_NAME);
-			//System.loadLibrary(NITF_LIBRARY_NAME);
+            //System.loadLibrary(NITF_LIBRARY_NAME);
         } catch (Throwable e) {
-			/* Try to load the library in the lib directory */
-			String path;
-			try {
-				path = NITFObject.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-				path = URLDecoder.decode(path, "UTF-8");
-			} catch (UnsupportedEncodingException x) {
-				throw new UnsatisfiedLinkError();
-			}	
-			
-			System.load(path + "../lib/" +  NativeLibraryLoader.getOSFamily() + "/" + System.mapLibraryName(NITF_LIBRARY_NAME));
-		}
-    }
+            /* Try to load the library in the lib directory */
+            String path;
+            try {
+                path = NITFObject.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+                path = URLDecoder.decode(path, "UTF-8");
+            } catch (UnsupportedEncodingException x) {
+                throw new UnsatisfiedLinkError();
+            }
 
-    /* This is the memory address of the underlying native object */
-    protected long address = INVALID_ADDRESS;
+            System.load(path + "../lib/" + NativeLibraryLoader.getOSFamily() + "/" + System.mapLibraryName(NITF_LIBRARY_NAME));
+        }
+    }
 
     /**
      * Constructs a new NITF Object, using the native address supplied for the
      * underlying operations
-     * 
-     * @param address
-     *            the native memory address
+     *
+     * @param address the native memory address
      */
-    protected NITFObject(long address)
-    {
+    protected NITFObject(long address) {
         this.address = address;
     }
 
@@ -84,51 +75,45 @@ public abstract class NITFObject
      * Default constructor. The object will not be valid unless an address is
      * supplied later.
      */
-    protected NITFObject()
-    {
+    protected NITFObject() {
         address = 0;
     }
 
     /**
      * Returns the native memory address
-     * 
+     *
      * @return
      */
-    synchronized long getAddress()
-    {
+    synchronized long getAddress() {
         return address;
     }
 
     /**
      * Sets the native memory address
-     * 
+     *
      * @param address
      */
-    synchronized void setAddress(long address)
-    {
+    synchronized void setAddress(long address) {
         this.address = address;
     }
 
     /**
      * Returns true if the object is valid, false otherwise
-     * 
+     *
      * @return
      */
-    public synchronized boolean isValid()
-    {
+    public synchronized boolean isValid() {
         return address != INVALID_ADDRESS;
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         return obj instanceof NITFObject
                 && ((NITFObject) obj).getAddress() == getAddress();
     }
 
     @Override
-    protected void finalize() throws Throwable
-    {
+    protected void finalize() throws Throwable {
         super.finalize();
         address = INVALID_ADDRESS;
     }

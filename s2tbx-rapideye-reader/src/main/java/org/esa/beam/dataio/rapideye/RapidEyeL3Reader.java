@@ -26,12 +26,12 @@ import java.util.logging.Level;
 /**
  * Reader for RapidEye L3 (GeoTIFF) products.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class RapidEyeL3Reader extends RapidEyeReader {
 
-    private ImageInputStreamSpi channelImageInputStreamSpi;
     private final Map<Band, Band> bandMap;
+    private ImageInputStreamSpi channelImageInputStreamSpi;
 
     public RapidEyeL3Reader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
@@ -82,7 +82,7 @@ public class RapidEyeL3Reader extends RapidEyeReader {
 
             product.setModified(false);
         }
-        return  product;
+        return product;
     }
 
     @Override
@@ -99,8 +99,8 @@ public class RapidEyeL3Reader extends RapidEyeReader {
 
     private Product createProduct(int width, int height, String metadataProfile) {
         product = new Product(metadata.getProductName() != null ? metadata.getProductName() : RapidEyeConstants.PRODUCT_GENERIC_NAME,
-                                RapidEyeConstants.L3_FORMAT_NAMES[0],
-                                width, height);
+                              RapidEyeConstants.L3_FORMAT_NAMES[0],
+                              width, height);
         product.getMetadataRoot().addElement(metadata.getRootElement());
         product.setStartTime(metadata.getProductStartTime());
         product.setEndTime(metadata.getProductEndTime());
@@ -188,14 +188,14 @@ public class RapidEyeL3Reader extends RapidEyeReader {
         } else {
             TreeNode<File> result = super.getProductComponents();
             String metaFileName = metadata.getFileName();
-                try{
-                    addProductComponentIfNotPresent(metaFileName, productDirectory.getFile(metaFileName), result);
-                } catch (IOException e) {
-                    logger.warning(String.format("Error encountered while searching file %s", metaFileName));
-                }
+            try {
+                addProductComponentIfNotPresent(metaFileName, productDirectory.getFile(metaFileName), result);
+            } catch (IOException e) {
+                logger.warning(String.format("Error encountered while searching file %s", metaFileName));
+            }
             String[] nitfFiles = metadata.getRasterFileNames(false);
-            for(String fileName : nitfFiles){
-                try{
+            for (String fileName : nitfFiles) {
+                try {
                     addProductComponentIfNotPresent(fileName, productDirectory.getFile(fileName), result);
                 } catch (IOException e) {
                     logger.warning(String.format("Error encountered while searching file %s", fileName));
@@ -203,7 +203,7 @@ public class RapidEyeL3Reader extends RapidEyeReader {
             }
             String maskFileName = metadata.getMaskFileName();
             if (maskFileName != null) {
-                try{
+                try {
                     addProductComponentIfNotPresent(maskFileName, productDirectory.getFile(maskFileName), result);
                 } catch (IOException e) {
                     logger.warning(String.format("Error encountered while searching file %s", maskFileName));

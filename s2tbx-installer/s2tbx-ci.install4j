@@ -15,7 +15,7 @@
       <variable name="installerVersion" value="${compiler:version.major}.${compiler:version.minor}.${compiler:version.patch}" description="" category="" />
       <variable name="version.major" value="1" description="" category="" />
       <variable name="version.minor" value="0" description="" category="" />
-      <variable name="version.patch" value="2" description="" category="" />
+      <variable name="version.patch" value="3" description="" category="" />
     </variables>
     <mergedProjects />
     <codeSigning macEnabled="false" macPkcs12File="" windowsEnabled="false" windowsKeySource="pkcs12" windowsPvkFile="" windowsSpcFile="" windowsPkcs12File="" />

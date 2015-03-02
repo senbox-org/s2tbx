@@ -12,6 +12,7 @@ import java.util.Map;
 
 /**
  * Holder for SPOT4 TAKE5 metadata file.
+ *
  * @author Ramona Manda
  */
 public class SpotTake5Metadata extends XmlMetadata {

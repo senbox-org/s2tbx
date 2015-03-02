@@ -21,14 +21,16 @@
     There are two levels of products that can be imported:
 </p>
 <ul>
-    <li>Level 1C : Top of Atmosphere reflectance ortho-rectified product </li>
+    <li>Level 1C : Top of Atmosphere reflectance ortho-rectified product</li>
     <li>Level 2A : Surface reflectances and cloud mask</li>
 </ul>
 <p>
     The products can be either compressed in a tar archive, or uncompressed in a specific folder structure.
 </p>
+
 <p>Wheter the product is an archive or a folder, the list of files must have the same structure:</p>
 <br>
+
 <p>For <b>Level 1C</b>, the product must contain 2 files and a MASK directory containing a mask file:</p>
 <ul>
     <li>
@@ -38,22 +40,25 @@
         the TIF file provides the bands (XS1, XS2, XS3, SWIR) coded as signed 16 bits integers
     </li>
     <li>the saturated pixel mask _SAT.TIF contains an 8 bit information:
-    <ul>
-        <li>Bit 0 is XS1 saturated pixel mask</li>
-        <li>Bit 1 is XS2 saturated pixel mask</li>
-        <li>Bit 2 is XS3 saturated pixel mask</li>
-        <li>Bit 3 is SWIR saturated pixel mask</li>
-    </ul>
+        <ul>
+            <li>Bit 0 is XS1 saturated pixel mask</li>
+            <li>Bit 1 is XS2 saturated pixel mask</li>
+            <li>Bit 2 is XS3 saturated pixel mask</li>
+            <li>Bit 3 is SWIR saturated pixel mask</li>
+        </ul>
     </li>
 </ul>
 <br>
+
 <p>For <b>Level 2A</b>, the product must contain 3 files and a MASK directory containing multiple mask files:</p>
 <ul>
     <li>
         the xml file provides the image metadata
     </li>
     <li>
-        the two .TIF files in GeoTiff format that provide surface reflectances, corrected from atmospheric effects, including adjacency effects (ORTHO_SURF_CORR_ENV, not provided for LANDSAT) and even terrain effects (ORTHO_SURF_CORR_PENTE).
+        the two .TIF files in GeoTiff format that provide surface reflectances, corrected from atmospheric effects,
+        including adjacency effects (ORTHO_SURF_CORR_ENV, not provided for LANDSAT) and even terrain effects
+        (ORTHO_SURF_CORR_PENTE).
     </li>
     <li>A saturated pixels mask _SAT.TIF (as in Level 1C)</li>
     <li>A mask of clouds and cloud shadows _NUA.TIF
@@ -73,17 +78,20 @@
             <li>bit 0 (1) : No data</li>
             <li>bit 1 (2) : Water</li>
             <li>bit 2 (4) : Snow</li>
-            <li>bit 3 (8): V2.0 only : Sun too low for terrain correction (limitation of correction factor that tends to the infinity, correction is false)</li>
+            <li>bit 3 (8): V2.0 only : Sun too low for terrain correction (limitation of correction factor that tends to
+                the infinity, correction is false)
+            </li>
             <li>bit 4 (16): V2.0 only : Sun too low for terrain correction (correction might be inaccurate)</li>
         </ul>
     </li>
 </ul>
 <br>
+
 <p>
     For detailed information about this format, please have a look at the following link:
-    <ul>
-        <li><a href="http://www.cesbio.ups-tlse.fr/multitemp/?page_id=1822">Cesbio - Take5 Product Format</a></li>
-    </ul>
+<ul>
+    <li><a href="http://www.cesbio.ups-tlse.fr/multitemp/?page_id=1822">Cesbio - Take5 Product Format</a></li>
+</ul>
 </p>
 </body>
 </html>

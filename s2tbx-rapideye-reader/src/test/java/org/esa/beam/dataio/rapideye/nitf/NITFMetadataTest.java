@@ -71,5 +71,5 @@ public class NITFMetadataTest extends TestCase {
     public void testGetWavelength() throws Exception {
         assertEquals(-1.0, metadata.getWavelength(), 0.001);
     }
-    
+
 }

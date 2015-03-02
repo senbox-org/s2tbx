@@ -1,0 +1,51 @@
+<module>
+    <manifestVersion>2.0.0</manifestVersion>
+    <symbolicName>s2tbx-r2r-converter</symbolicName>
+    <version>2.0.0</version>
+    <name>Sentinel 2 Reflectance to Radiance Converter</name>
+
+    <description>Converts reflectance to radiance and vice versa</description>
+
+    <vendor>Telespazio VEGA Deutschland GmbH</vendor>
+    <contactAddress>Europaplatz 5, 64293 Darmstadt (Germany)</contactAddress>
+    <copyright>(C) 2014 Telespazio VEGA Deutschland GmbH</copyright>
+    <url>https://github.com/senbox-org/s2tbx</url>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
+
+    <changelog>
+        <![CDATA[
+                ]]>
+    </changelog>
+
+    <dependency>
+        <module>snap-core</module>
+    </dependency>
+    <dependency>
+        <module>snap-ui</module>
+        <optional>true</optional>
+    </dependency>
+    <dependency>
+        <module>snap-visat-rcp</module>
+        <optional>true</optional>
+    </dependency>
+
+    <categories>Application,Processor,Sentinel 2</categories>
+
+    <extension point="snap-ui:actions">
+
+        <action>
+            <parent>processing.preProcessing</parent>
+            <id>r2rConverter</id>
+            <text>SEN2R2R Reflectance to Radiance Converter ...</text>
+            <class>org.esa.beam.dataio.refl2rad.Refl2RadAction</class>
+            <operatorName>SEN2R2R</operatorName>
+            <dialogTitle>Sentinel 2 Reflectance to Radiance Converter</dialogTitle>
+            <shortDescr>Converts reflectance to radiance and vice versa</shortDescr>
+            <description>Converts reflectance to radiance and vice versa</description>
+            <context>product</context>
+            <helpId>reflectanceToRadianceConverter</helpId>
+        </action>
+
+    </extension>
+
+</module>

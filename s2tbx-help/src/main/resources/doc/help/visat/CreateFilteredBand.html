@@ -41,13 +41,15 @@
     N x M pixel neighborhood of a corresponding source pixel.
     The Sentinel-2 toolbox supports basically two types of image filters, linear and non-linear filters:</p>
 
-<p><strong>Linear filters (Convolution):</strong> A target pixel is computed by element-wise multiplication of the N x M source
+<p><strong>Linear filters (Convolution):</strong> A target pixel is computed by element-wise multiplication of the N x M
+    source
     pixel neighborhood with a given N x M convolution kernel.</p>
 
-<p><strong>Non-linear filters:</strong> A target pixel is computed by applying a non-linear function (such as min, max, or median)
+<p><strong>Non-linear filters:</strong> A target pixel is computed by applying a non-linear function (such as min, max,
+    or median)
     to all source pixels of a N x M neighborhood. The pixels within the N x M neighborhood may be selected by a N x M
     Boolean kernel mask, turning the operation into a <em>morphological filter</em>. In this case the (Boolean)
-        kernel acts as the filter's <i>structuring element</i>.
+    kernel acts as the filter's <i>structuring element</i>.
 </p>
 
 <p>Image filters take full advantage of the no-data / valid-mask properties of a given source band.
@@ -59,7 +61,9 @@
 <p>SNAP has the following pre-defined filters:</p>
 
 <ul>
-    <li><strong>Detect Lines</strong>: Horizontal Edges, Vertical Edges, Diagonal Edges, Compass Edge Detector, Roberts Cross</li>
+    <li><strong>Detect Lines</strong>: Horizontal Edges, Vertical Edges, Diagonal Edges, Compass Edge Detector, Roberts
+        Cross
+    </li>
     <li><strong>Detect Gradients (Emboss)</strong>: Sobel</li>
     <li><strong>Smooth and Blurr</strong>: Arithmetic Mean, Low-Pass</li>
     <li><strong>Sharpen</strong>: High-Pass</li>

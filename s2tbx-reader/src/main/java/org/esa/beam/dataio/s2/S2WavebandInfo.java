@@ -1,8 +1,8 @@
 package org.esa.beam.dataio.s2;
 
 /**
-* @author Norman Fomferra
-*/
+ * @author Norman Fomferra
+ */
 public class S2WavebandInfo {
     final int bandId;
     final String bandName;

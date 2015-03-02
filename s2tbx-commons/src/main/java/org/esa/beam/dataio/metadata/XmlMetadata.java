@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 /**
  * Base class that encapsulates metadata read from XML file and exposes
  * helper methods for easier access of interesting metadata values.
+ *
  * @author Cosmin Cara
  */
 public abstract class XmlMetadata {
@@ -32,7 +33,7 @@ public abstract class XmlMetadata {
      * @param clazz     The actual class of the metadata. It should extend <code>XmlMetadata</code>.
      * @param inputFile The <code>File</code> object that points to the file to be parsed.
      * @param <T>       Generic type of the metadata class.
-     * @return          An instance of <code>T</code> type.
+     * @return An instance of <code>T</code> type.
      */
     public static <T extends XmlMetadata> T create(Class<T> clazz, File inputFile) {
         Assert.notNull(inputFile);
@@ -42,7 +43,7 @@ public abstract class XmlMetadata {
             if (inputFile.exists()) {
                 stream = new FileInputStream(inputFile);
                 //noinspection unchecked
-                result = (T)XmlMetadataParserFactory.getParser(clazz).parse(stream);
+                result = (T) XmlMetadataParserFactory.getParser(clazz).parse(stream);
                 result.setPath(inputFile.getPath());
                 String metadataProfile = result.getMetadataProfile();
                 if (metadataProfile != null)
@@ -63,8 +64,9 @@ public abstract class XmlMetadata {
     /**
      * Helper method that copies the child nodes of a metadata element as child nodes
      * of another metadata element.
-     * @param source    The metadata element holding the nodes to be copied
-     * @param target    The destination metadata element
+     *
+     * @param source The metadata element holding the nodes to be copied
+     * @param target The destination metadata element
      */
     public static void CopyChildElements(MetadataElement source, MetadataElement target) {
         Assert.notNull(source);
@@ -88,7 +90,7 @@ public abstract class XmlMetadata {
     /**
      * Constructs an instance of metadata class and assigns a name to the root <code>MetadataElement</code>.
      *
-     *  @param name     The name of this instance, and also the initial name of the root element.
+     * @param name The name of this instance, and also the initial name of the root element.
      */
     public XmlMetadata(String name) {
         this.name = name;
@@ -98,6 +100,7 @@ public abstract class XmlMetadata {
 
     /**
      * Returns the root node of this metadata file.
+     *
      * @return The root metadata element
      */
     public MetadataElement getRootElement() {
@@ -107,14 +110,14 @@ public abstract class XmlMetadata {
     /**
      * Gets the name of the metadata file used to obtain this instance.
      *
-     * @return  A string representing the name of the file used to obtain the instance.
+     * @return A string representing the name of the file used to obtain the instance.
      */
     public abstract String getFileName();
 
     /**
      * Sets the name of the file used to obtain this instance.
      *
-     * @param actualName    The name of the file
+     * @param actualName The name of the file
      */
     public void setFileName(String actualName) {
         name = actualName;
@@ -126,7 +129,7 @@ public abstract class XmlMetadata {
      * each metadata type may have a different hierarchy of nodes for
      * getting this value.
      *
-     * @return  the number of bands
+     * @return the number of bands
      */
     public abstract int getNumBands();
 
@@ -136,18 +139,18 @@ public abstract class XmlMetadata {
      * each metadata type may have a different hierarchy of nodes for
      * getting this value.
      *
-     *  @return     The name of the product
+     * @return The name of the product
      */
     public abstract String getProductName();
 
     /**
      * Returns the name of the raster format (for example: TIFF, NITF, etc).
-     *
+     * <p>
      * This getter should be overridden in all derived classes because
      * each metadata type may have a different hierarchy of nodes for
      * getting this value.
      *
-     * @return  The raster format name/code.
+     * @return The raster format name/code.
      */
     public abstract String getFormatName();
 
@@ -157,7 +160,7 @@ public abstract class XmlMetadata {
      * each metadata type may have a different hierarchy of nodes for
      * getting this value.
      *
-     * @return  The metadata profile
+     * @return The metadata profile
      */
     public abstract String getMetadataProfile();
 
@@ -167,7 +170,7 @@ public abstract class XmlMetadata {
      * each metadata type may have a different hierarchy of nodes for
      * getting this value.
      *
-     * @return  The width (in pixels) of the product.
+     * @return The width (in pixels) of the product.
      */
     public abstract int getRasterWidth();
 
@@ -177,7 +180,7 @@ public abstract class XmlMetadata {
      * each metadata type may have a different hierarchy of nodes for
      * getting this value.
      *
-     * @return  The height (in pixels) of the product.
+     * @return The height (in pixels) of the product.
      */
     public abstract int getRasterHeight();
 
@@ -187,14 +190,14 @@ public abstract class XmlMetadata {
      * each metadata type may have a different hierarchy of nodes for
      * getting this value.
      *
-     * @return  An array of raster file names.
+     * @return An array of raster file names.
      */
     public abstract String[] getRasterFileNames();
 
     /**
      * Returns the path of the metadata file.
      *
-     * @return  The path of the metadata file.
+     * @return The path of the metadata file.
      */
     public String getPath() {
         return path;

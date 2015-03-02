@@ -21,14 +21,11 @@
  */
 package nitf;
 
-public class NativeIOInterface extends IOInterface
-{
-    protected NativeIOInterface()
-    {
+public class NativeIOInterface extends IOInterface {
+    protected NativeIOInterface() {
     }
 
-    protected NativeIOInterface(long address)
-    {
+    protected NativeIOInterface(long address) {
         super(address);
     }
 
@@ -37,20 +34,19 @@ public class NativeIOInterface extends IOInterface
     public native void write(final byte[] buf, int size) throws NITFException;
 
     public native boolean canSeek();
-    
+
     public native long seek(long offset, int whence) throws NITFException;
 
     public native long tell() throws NITFException;
 
     public native long getSize() throws NITFException;
-    
+
     public native int getMode() throws NITFException;
 
     public native void close() throws NITFException;
 
     @Override
-    protected void construct()
-    {
+    protected void construct() {
         // do nothing, by default
     }
 

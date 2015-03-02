@@ -10,7 +10,13 @@ import org.esa.beam.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.beam.dataio.spot.dimap.SpotViewMetadata;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.CrsGeoCoding;
+import org.esa.beam.framework.datamodel.GeoCoding;
+import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.framework.datamodel.TiePointGeoCoding;
+import org.esa.beam.framework.datamodel.TiePointGrid;
 import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.TreeNode;
 import org.esa.beam.util.logging.BeamLogManager;
@@ -40,17 +46,16 @@ import java.util.logging.Logger;
  */
 public class SpotViewProductReader extends AbstractProductReader {
 
-    private ImageInputStream imageInputStream;
-    private SpotViewMetadata metadata;
-    private SpotDimapMetadata imageMetadata;
     private final Logger logger;
-    private ZipVirtualDir zipDir;
     private final Object sharedLock;
-
     static {
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new XmlMetadataParser<SpotDimapMetadata>(SpotDimapMetadata.class));
         XmlMetadataParserFactory.registerParser(SpotViewMetadata.class, new XmlMetadataParser<SpotViewMetadata>(SpotViewMetadata.class));
     }
+    private ImageInputStream imageInputStream;
+    private SpotViewMetadata metadata;
+    private SpotDimapMetadata imageMetadata;
+    private ZipVirtualDir zipDir;
 
     protected SpotViewProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
@@ -73,13 +78,13 @@ public class SpotViewProductReader extends AbstractProductReader {
         Product product = null;
         if (metadata != null) {
             String productName = metadata.getProductName().replace(" ", "_").replace("/", "_");
-            if(imageMetadata != null && imageMetadata.getProductName() != null) {
+            if (imageMetadata != null && imageMetadata.getProductName() != null) {
                 productName = imageMetadata.getProductName();
             }
             product = new Product(productName,
-                    SpotConstants.SPOTVIEW_FORMAT_NAMES[0],
-                    metadata.getRasterWidth(),
-                    metadata.getRasterHeight());
+                                  SpotConstants.SPOTVIEW_FORMAT_NAMES[0],
+                                  metadata.getRasterWidth(),
+                                  metadata.getRasterHeight());
             product.setProductReader(this);
             product.setFileLocation(metadataFile);
             product.getMetadataRoot().addElement(metadata.getRootElement());

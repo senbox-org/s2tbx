@@ -25,10 +25,15 @@
 </head>
 
 <body>
-<table class="header"><tr class="header"><td class="header">&nbsp;Supported ENVISAT Products</td><td class="header"
-                                                                                                     align="right"><a
-        href="../../../BeamOverview.html"><img src="../../../../images/snap_header.jpg" width="227" height="29"
-                                             border="0"></a></td></tr></table>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;Supported ENVISAT Products</td>
+        <td class="header"
+            align="right"><a
+                href="../../../BeamOverview.html"><img src="../../../../images/snap_header.jpg" width="227" height="29"
+                                                       border="0"></a></td>
+    </tr>
+</table>
 <br>
 
 <h2>Map Projection parameters</h2>
@@ -48,7 +53,9 @@
     <td><code>"map_descriptor"</code></td>
     <td><a href="../../lang_types.html#String">String</a></td>
     <td>1</td>
-    <td>Map projection descriptor one of:<br>UNIVERSAL_TRANSVERSE_MERCATOR, UNIVERSAL_POLAR_STEREOGRAPHIC, LAMBERT_CONFORMAL_CONIC, TRANSVERSE_MERCATOR, MERCATOR, POLAR_STEREOGRAPHIC</td>
+    <td>Map projection descriptor one of:<br>UNIVERSAL_TRANSVERSE_MERCATOR, UNIVERSAL_POLAR_STEREOGRAPHIC,
+        LAMBERT_CONFORMAL_CONIC, TRANSVERSE_MERCATOR, MERCATOR, POLAR_STEREOGRAPHIC
+    </td>
     <td>ascii</td>
 </tr>
 <tr>
@@ -553,7 +560,8 @@
     <td><a href="../../lang_types.html#Float">Float</a></td>
     <td>8</td>
     <td>8 coefficients to convert a line(L) and sample (S) position to the map projection frame of reference, say (E,N)E
-        = A11 + A12*L + A13 *S + A14 *L*SN = A21 + A22*L + A23 *S + A24 *L*S</td>
+        = A11 + A12*L + A13 *S + A14 *L*SN = A21 + A22*L + A23 *S + A24 *L*S
+    </td>
     <td>-</td>
 </tr>
 <tr>
@@ -562,7 +570,8 @@
     <td><a href="../../lang_types.html#Float">Float</a></td>
     <td>8</td>
     <td>8 coefficients to convert from the map projection (E,N) to line (L) and sample(S) position in the imageL = B11 +
-        B12*E + B13 *N + B14 *E*NS = B21 + B22*E + B23 *N + B24 *E*N</td>
+        B12*E + B13 *N + B14 *E*NS = B21 + B22*E + B23 *N + B24 *E*N
+    </td>
     <td>-</td>
 </tr>
 <tr>

@@ -30,24 +30,6 @@ public class SpotDimapMetadata extends XmlMetadata {
     private float[] bandBiases;
     private List<HashMap<String, Double>> bandStatistics;
 
-    public static class SpotDimapMetadataParser extends XmlMetadataParser<SpotDimapMetadata> {
-
-        public SpotDimapMetadataParser(Class metadataFileClass) {
-            super(metadataFileClass);
-            setSchemaLocations(DimapSchemaHelper.getSchemaLocations());
-        }
-
-        @Override
-        protected ProductData inferType(String elementName, String value) {
-            return DimapSchemaHelper.createProductData(elementName, value);
-        }
-
-        @Override
-        protected boolean shouldValidateSchema() {
-            return true;
-        }
-    }
-
     public SpotDimapMetadata(String name) {
         super(name);
     }
@@ -154,7 +136,7 @@ public class SpotDimapMetadata extends XmlMetadata {
         } else {
             logger.warning(String.format(MISSING_ELEMENT_WARNING, SpotConstants.TAG_DATA_FILE_PATH));
         }
-        return (path != null ? new String[] { path.toLowerCase() } : null);
+        return (path != null ? new String[]{path.toLowerCase()} : null);
     }
 
     /**
@@ -489,13 +471,13 @@ public class SpotDimapMetadata extends XmlMetadata {
                             final double linMax = Double.parseDouble(element.getAttributeString(SpotConstants.TAG_STX_LIN_MAX, "0"));
                             bIdx = Integer.parseInt(element.getAttributeString(SpotConstants.TAG_BAND_INDEX, "0"));
                             HashMap<String, Double> hashMap = new HashMap<String, Double>() {{
-                                                                    put(SpotConstants.TAG_STX_MIN, min);
-                                                                    put(SpotConstants.TAG_STX_MAX, max);
-                                                                    put(SpotConstants.TAG_STX_MEAN, mean);
-                                                                    put(SpotConstants.TAG_STX_STDV, stdv);
-                                                                    put(SpotConstants.TAG_STX_LIN_MIN, linMin);
-                                                                    put(SpotConstants.TAG_STX_LIN_MAX, linMax);
-                                                                }};
+                                put(SpotConstants.TAG_STX_MIN, min);
+                                put(SpotConstants.TAG_STX_MAX, max);
+                                put(SpotConstants.TAG_STX_MEAN, mean);
+                                put(SpotConstants.TAG_STX_STDV, stdv);
+                                put(SpotConstants.TAG_STX_LIN_MIN, linMin);
+                                put(SpotConstants.TAG_STX_LIN_MAX, linMax);
+                            }};
                             if (bIdx > 0) {
                                 bandStatistics.add(bIdx - 1, hashMap);
                             } else {
@@ -562,13 +544,6 @@ public class SpotDimapMetadata extends XmlMetadata {
         }
     }
 
-    public class InsertionPoint {
-        public float x;
-        public float y;
-        public float stepX;
-        public float stepY;
-    }
-
     public int getPixelDataType() {
         int value = 0, retVal;
         MetadataElement currentElement;
@@ -593,6 +568,31 @@ public class SpotDimapMetadata extends XmlMetadata {
 
         }
         return retVal;
+    }
+
+    public static class SpotDimapMetadataParser extends XmlMetadataParser<SpotDimapMetadata> {
+
+        public SpotDimapMetadataParser(Class metadataFileClass) {
+            super(metadataFileClass);
+            setSchemaLocations(DimapSchemaHelper.getSchemaLocations());
+        }
+
+        @Override
+        protected ProductData inferType(String elementName, String value) {
+            return DimapSchemaHelper.createProductData(elementName, value);
+        }
+
+        @Override
+        protected boolean shouldValidateSchema() {
+            return true;
+        }
+    }
+
+    public class InsertionPoint {
+        public float x;
+        public float y;
+        public float stepX;
+        public float stepY;
     }
 
 }

@@ -8,24 +8,23 @@ A toolbox for the MSI instrument on board of ESA's Sentinel-2 satellite.
 Clone the source code and related repositories into a folder (i.e `~/SNAP/`)
 
     cd ~/SNAP
-	git clone https://github.com/senbox-org/snap.git
-	git clone https://github.com/senbox-org/beam.git
-	git clone https://github.com/senbox-org/ceres.git
 	git clone https://github.com/senbox-org/s2tbx.git
+	cd ~/SNAP/s2tbx
+	git checkout snap-1.0.x
 	
 Use the following command to build s2tbx modules:
 
     cd ~/SNAP/s2tbx
-	mvn compile package install -U -DskipTests -Duser.language=eng
+	mvn compile package install -U -DskipTests
 
 To create a Install4j installer use the following commands:
 
     cd ~/SNAP/snap
     mvn compile -DskipTests=true
     cd ~/SNAP/s2tbx
-    mvn compile package install -U -DskipTests -Duser.language=eng
+    mvn compile package install -U -DskipTests
     cd ~/SNAP/s2tbx/s2tbx-installer
-	mvn compile package assembly:assembly -U -DskipTests -Duser.language=eng
+	mvn compile package assembly:assembly -U -DskipTests
 
 Previous command creates a directory `~/SNAP/s2tbx/s2tbx-installer/target/s2tbx-bin` containing all the files required to run SNAP S-2
 

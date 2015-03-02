@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,24 +12,30 @@
 
     <modules>
         <module>s2tbx-reader</module>
+        <module>s2tbx-reader-l1b</module>
+        <module>s2tbx-reader-l2a</module>
         <module>lib-openjpeg</module>
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-rapideye-reader</module>
+        <module>s2tbx-sen2cor-processor</module>
+        <module>s2tbx-sen2three-processor</module>
+        <module>s2tbx-r2r-converter</module>
         <module>s2tbx-bootstrap</module>
+        <module>s2tbx-python-lib</module>
         <module>s2tbx-installer</module>
         <module>s2tbx-app</module>
         <module>s2tbx-help</module>
-        <!-- <module>s2tbx-sen2cor-processor</module> -->
     </modules>
 
     <packaging>pom</packaging>
 
     <properties>
         <snap.version>1.0.0</snap.version>
-    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <outputdir>../../output</outputdir>
+        <s2tbx.version>1.0.0</s2tbx.version>
     </properties>
 
     <repositories>
@@ -142,8 +148,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.5.1</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -253,6 +259,16 @@
             <email>ramona.manda@c-s.ro</email>
             <organization>CS ROMANIA</organization>
             <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>umwilm</id>
+            <name>Uwe Mueller-Wilm</name>
+            <email>uwe.mueller-wilm@telespazio-vega.de</email>
+            <organization>Telespazio-VEGA</organization>
+            <roles>
+                <role>Python Developer</role>
                 <role>Java Developer</role>
             </roles>
         </developer>

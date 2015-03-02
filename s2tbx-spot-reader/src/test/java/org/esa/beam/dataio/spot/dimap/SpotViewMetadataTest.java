@@ -1,6 +1,5 @@
 package org.esa.beam.dataio.spot.dimap;
 
-import junit.framework.Assert;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
@@ -27,7 +26,8 @@ public class SpotViewMetadataTest {
 
     @Test
     public void testGetFileName() throws Exception {
-        assertEquals("metadata.xml", metadata.getFileName()); ;
+        assertEquals("metadata.xml", metadata.getFileName());
+        ;
     }
 
     @Test
