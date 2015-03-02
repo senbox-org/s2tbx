@@ -10,7 +10,7 @@ Clone the source code and related repositories into a folder (i.e `~/SNAP/`)
     cd ~/SNAP
 	git clone https://github.com/senbox-org/s2tbx.git
 	cd ~/SNAP/s2tbx
-	git checkout snap-1.0.x-pluginupdate
+	git checkout snap-1.0.x
 	
 Use the following command to build s2tbx modules:
 
