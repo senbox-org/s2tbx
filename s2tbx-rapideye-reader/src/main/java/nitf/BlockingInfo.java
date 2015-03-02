@@ -28,16 +28,13 @@ import java.io.PrintStream;
 /**
  * A representation of the blocking information used in the library.
  */
-public final class BlockingInfo extends DestructibleObject
-{
+public final class BlockingInfo extends DestructibleObject {
 
-    public BlockingInfo() throws NITFException
-    {
+    public BlockingInfo() throws NITFException {
         construct();
     }
 
-    BlockingInfo(long address)
-    {
+    BlockingInfo(long address) {
         super(address);
     }
 
@@ -45,101 +42,98 @@ public final class BlockingInfo extends DestructibleObject
 
     /**
      * Returns the number of blocks per row
-     * 
+     *
      * @return
      */
     public native int getNumBlocksPerRow();
 
     /**
      * Sets the number of blocks per row
-     * 
+     *
      * @param numBlocksPerRow
      */
     public native void setNumBlocksPerRow(int numBlocksPerRow);
 
     /**
      * Returns the number of blocks per column
-     * 
+     *
      * @return
      */
     public native int getNumBlocksPerCol();
 
     /**
      * Sets the number of blocks per column
-     * 
+     *
      * @param numBlocksPerCol
      */
     public native void setNumBlocksPerCol(int numBlocksPerCol);
 
     /**
      * Returns the number of rows per block
-     * 
+     *
      * @return
      */
     public native int getNumRowsPerBlock();
 
     /**
      * Sets the number of rows per block
-     * 
+     *
      * @param numRowsPerBlock
      */
     public native void setNumRowsPerBlock(int numRowsPerBlock);
 
     /**
      * Returns the number of columns per block
-     * 
+     *
      * @return
      */
     public native int getNumColsPerBlock();
 
     /**
      * Sets the number of columns per block
-     * 
+     *
      * @param numColsPerBlock
      */
     public native void setNumColsPerBlock(int numColsPerBlock);
 
     /**
      * Returns the length
-     * 
+     *
      * @return
      */
     public native long getLength();
 
     /**
      * Sets the length
-     * 
+     *
      * @param length
      */
     public native void setLength(long length);
 
     /**
      * Prints the data pertaining to this object to an OutputStream
-     * 
+     *
      * @param out
      * @throws IOException
      */
-    public void print(PrintStream out) throws IOException
-    {
+    public void print(PrintStream out) throws IOException {
         out.write(("Length: " + getLength() + "\n").getBytes());
         out.write(("NumBlocksPerRow: " + getNumBlocksPerRow() + "\n")
-                .getBytes());
+                          .getBytes());
         out.write(("NumBlocksPerCol: " + getNumBlocksPerCol() + "\n")
-                .getBytes());
+                          .getBytes());
         out.write(("NumRowsPerBlock: " + getNumRowsPerBlock() + "\n")
-                .getBytes());
+                          .getBytes());
         out.write(("NumColsPerBlock: " + getNumColsPerBlock() + "\n")
-                .getBytes());
+                          .getBytes());
     }
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 }

@@ -25,23 +25,28 @@
 <table class="header">
     <tr class="header">
         <td class="header">&nbsp;
-            Geo-Coding Information</td>
-        
-    <td class="header" align="right"><a href="../general/BeamOverview.html"><img src="../images/snap_header.jpg" border=0 ></a></td>
+            Geo-Coding Information
+        </td>
+
+        <td class="header" align="right"><a href="../general/BeamOverview.html"><img src="../images/snap_header.jpg"
+                                                                                     border=0></a></td>
     </tr>
 </table>
 
 <h3>Geo-Coding Information</h3>
 
 <p>This dialog, opened via <img src="images/icons/PhiLam24.gif">, shows the geo-coding information for the selected data
-    product. Geo-coding enables the Sentinel-2 Toolbox to transform pixel co-odinates to geographical co-ordinates and vice versa.
+    product. Geo-coding enables the Sentinel-2 Toolbox to transform pixel co-odinates to geographical co-ordinates and
+    vice versa.
     Geo-coding can be either based on a map projection (product is geo-referenced) or based on tie point grids
-    (product is geo-coded). If a product is not geo-referenced, the Sentinel-2 Toolbox uses the tie point grids "latitude" and
+    (product is geo-coded). If a product is not geo-referenced, the Sentinel-2 Toolbox uses the tie point grids
+    "latitude" and
     "longitude" for geo-coding.
 </p>
 
 <p>For tie point grid based geo-codings the transformation of a geographical co-ordinate to a pixel position is
-    more complicated than the other way round. The Sentinel-2 Toolbox uses either an iterative algorithm or a polynomial approximation
+    more complicated than the other way round. The Sentinel-2 Toolbox uses either an iterative algorithm or a polynomial
+    approximation
     depending on the root mean square error (RMSE) of the approximation. If the RMSE is underneath half a pixel, the
     approximation is used instead of the iteration because the latter can sometimes have no clear attraction point and
     would yield to infinite looping.</p>
@@ -52,7 +57,7 @@
     The copied text can then be pasted directly into a spreadsheet application
     (e.g. Microsoft&reg; Excel).</p>
 
-<blockquote> <img src="images/GeoCodingDialog.png"> </blockquote>
+<blockquote><img src="images/GeoCodingDialog.png"></blockquote>
 
 
 <hr>

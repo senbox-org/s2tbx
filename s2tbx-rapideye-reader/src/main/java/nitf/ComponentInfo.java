@@ -27,24 +27,22 @@ package nitf;
  * Each component (images, graphics, etc.) has metadata pertaining to the length
  * of the data, and length of the subheader. This class captures that.
  */
-public final class ComponentInfo extends NITFObject
-{
+public final class ComponentInfo extends NITFObject {
 
-    ComponentInfo(long address)
-    {
+    ComponentInfo(long address) {
         super(address);
     }
 
     /**
      * Returns the length of the Subheader
-     * 
+     *
      * @return
      */
     public native Field getLengthSubheader();
 
     /**
      * Returns the length of the Data
-     * 
+     *
      * @return
      */
     public native Field getLengthData();

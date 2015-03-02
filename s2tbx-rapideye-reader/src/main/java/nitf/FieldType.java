@@ -28,8 +28,7 @@ package nitf;
 /**
  * FieldType <p/> This enumeration class provides the possible types for a Field
  */
-public class FieldType
-{
+public class FieldType {
     /**
      * NITF Field Type: Represents a BCS-A character set
      */
@@ -47,13 +46,11 @@ public class FieldType
 
     protected final String myName; // for debug only
 
-    protected FieldType(String name)
-    {
+    protected FieldType(String name) {
         myName = name;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return myName;
     }
 
@@ -62,8 +59,7 @@ public class FieldType
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
 //        if (obj == null)
 //            return false;
 //        if (!(obj instanceof FieldType))

@@ -15,8 +15,8 @@
   -->
 
 <project
-        xmlns="http://maven.apache.org/POM/4.0.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://maven.apache.org/POM/4.0.0"
         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
@@ -46,7 +46,43 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-reader</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-l1b-reader</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-l2a-reader</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-r2r-converter</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-python-lib</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-sen2cor-processor</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-sen2three-processor</artifactId>
+            <version>1.0.3</version>
         </dependency>
 
         <dependency>
@@ -57,7 +93,7 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-                <artifactId>s2tbx-help</artifactId>
+            <artifactId>s2tbx-help</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -76,7 +112,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.3</version>
         </dependency>
 
         <dependency>
@@ -402,19 +438,19 @@
         <outputDirectory>target/classes</outputDirectory>
         <finalName>${project.artifactId}</finalName>
         <plugins>
-                <plugin>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.4</version>
-                    <configuration>
-                        <descriptors>
-                            <descriptor>src/main/assembly/bin.xml</descriptor>
-                            <!--<descriptor>src/main/assembly/project.xml</descriptor>-->
-                            <!--<descriptor>src/main/assembly/web-help.xml</descriptor>-->
-                        </descriptors>
-                        <finalName>s2tbx</finalName>
-                        <encoding>UTF-8</encoding>
-                    </configuration>
-                </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/bin.xml</descriptor>
+                        <!--<descriptor>src/main/assembly/project.xml</descriptor>-->
+                        <!--<descriptor>src/main/assembly/web-help.xml</descriptor>-->
+                    </descriptors>
+                    <finalName>s2tbx</finalName>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
 
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
@@ -469,55 +505,53 @@
 
 
             <!--<plugin>-->
-                <!--<artifactId>maven-dependency-plugin</artifactId>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>copy-case2-modules</id>-->
-                        <!--<phase>process-sources</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>copy</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<artifactItems>-->
-                                <!--<artifactItem>-->
-                                    <!--<groupId>org.esa.beam</groupId>-->
-                                    <!--<artifactId>beam-meris-case2-regional</artifactId>-->
-                                    <!--<version>1.6</version>-->
-                                    <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
-                                <!--</artifactItem>-->
-                                <!--<artifactItem>-->
-                                    <!--<groupId>org.esa.beam</groupId>-->
-                                    <!--<artifactId>beam-meris-l2auxdata</artifactId>-->
-                                    <!--<version>1.2.5</version>-->
-                                    <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
-                                <!--</artifactItem>-->
-                                <!--<artifactItem>-->
-                                    <!--<groupId>org.esa.beam</groupId>-->
-                                    <!--<artifactId>beam-meris-sdr</artifactId>-->
-                                    <!--<version>2.4</version>-->
-                                    <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
-                                <!--</artifactItem>-->
-                                <!--<artifactItem>-->
-                                    <!--<groupId>org.esa.beam</groupId>-->
-                                    <!--<artifactId>beam-meris-brr</artifactId>-->
-                                    <!--<version>2.4</version>-->
-                                    <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
-                                <!--</artifactItem>-->
-                                <!--<artifactItem>-->
-                                    <!--<groupId>org.esa.beam</groupId>-->
-                                    <!--<artifactId>beam-meris-glint</artifactId>-->
-                                    <!--<version>1.2.3</version>-->
-                                    <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
-                                <!--</artifactItem>-->
-                            <!--</artifactItems>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
+            <!--<artifactId>maven-dependency-plugin</artifactId>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<id>copy-case2-modules</id>-->
+            <!--<phase>process-sources</phase>-->
+            <!--<goals>-->
+            <!--<goal>copy</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+            <!--<artifactItems>-->
+            <!--<artifactItem>-->
+            <!--<groupId>org.esa.beam</groupId>-->
+            <!--<artifactId>beam-meris-case2-regional</artifactId>-->
+            <!--<version>1.6</version>-->
+            <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
+            <!--</artifactItem>-->
+            <!--<artifactItem>-->
+            <!--<groupId>org.esa.beam</groupId>-->
+            <!--<artifactId>beam-meris-l2auxdata</artifactId>-->
+            <!--<version>1.2.5</version>-->
+            <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
+            <!--</artifactItem>-->
+            <!--<artifactItem>-->
+            <!--<groupId>org.esa.beam</groupId>-->
+            <!--<artifactId>beam-meris-sdr</artifactId>-->
+            <!--<version>2.4</version>-->
+            <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
+            <!--</artifactItem>-->
+            <!--<artifactItem>-->
+            <!--<groupId>org.esa.beam</groupId>-->
+            <!--<artifactId>beam-meris-brr</artifactId>-->
+            <!--<version>2.4</version>-->
+            <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
+            <!--</artifactItem>-->
+            <!--<artifactItem>-->
+            <!--<groupId>org.esa.beam</groupId>-->
+            <!--<artifactId>beam-meris-glint</artifactId>-->
+            <!--<version>1.2.3</version>-->
+            <!--<outputDirectory>${basedir}/../target/s2tbx-bin/modules</outputDirectory>-->
+            <!--</artifactItem>-->
+            <!--</artifactItems>-->
+            <!--</configuration>-->
+            <!--</execution>-->
+            <!--</executions>-->
             <!--</plugin>-->
         </plugins>
     </build>
-
-
 
 
 </project>

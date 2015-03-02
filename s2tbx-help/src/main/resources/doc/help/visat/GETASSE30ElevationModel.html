@@ -24,9 +24,11 @@
 <table class="header">
     <tr class="header">
         <td class="header">&nbsp;
-            GETASSE30 Elevation Model</td>
-        
-    <td class="header" align="right"><a href="../general/BeamOverview.html"><img src="../images/snap_header.jpg" border=0 ></a></td>
+            GETASSE30 Elevation Model
+        </td>
+
+        <td class="header" align="right"><a href="../general/BeamOverview.html"><img src="../images/snap_header.jpg"
+                                                                                     border=0></a></td>
     </tr>
 </table>
 
@@ -39,37 +41,42 @@
     has kindly been provided to the development team by Marc Bouvet (marc.bouvet@esa.int) of ESA/ESRIN.
     This documentation is also by courtesy of Marc Bouvet.
 
-<p>Because of its size, the Sentinel-2 Toolbox installer will not automatically install the GETASSE30 DEM files. But at first use
+<p>Because of its size, the Sentinel-2 Toolbox installer will not automatically install the GETASSE30 DEM files. But at
+    first use
     the Toolbox will offer to download the DEM for you. Alternatively the GETASSE30 dataset can be manually downloaded
     from the BEAM home page at <a href="http://envisat.esa.int/services/beam/">http://envisat.esa.int/services/beam/</a>.
     The size is about 300 MB zipped and 2.3 GB unzipped. Due to the file size, we recommend this only if your internet
     connection is fast enough. If you like to install by yourself, please follow the instructions given here:
-    <ol>
-        <li>Download <code>GETASSE30.zip</code> from the BEAM home page.</li>
-        <li>Create directory <code>${USER_HOME}/.s3tbx/beam-core/auxdata/dem/GETASSE30</code></li>
-        <li>The simplest way is unzip the <code>GETASSE30.zip</code> and copy the files into
-            <p><code>${USER_HOME}/.beam/beam-core/auxdata/dem/GETASSE30/</code>.</p>
-            The DEM is now installed.</li>
-    </ol>
+<ol>
+    <li>Download <code>GETASSE30.zip</code> from the BEAM home page.</li>
+    <li>Create directory <code>${USER_HOME}/.s3tbx/beam-core/auxdata/dem/GETASSE30</code></li>
+    <li>The simplest way is unzip the <code>GETASSE30.zip</code> and copy the files into
+        <p><code>${USER_HOME}/.beam/beam-core/auxdata/dem/GETASSE30/</code>.</p>
+        The DEM is now installed.
+    </li>
+</ol>
 
-    <p>
-        If you like to share the DEM along multiple Sentinel-2 Toolbox installations in your network
-        or if you simply don't want to install in the auxdata folder, then:
-    </p>
-    <ol start=4>
-        <li>Copy the unzipped GETASSE30 dataset to a location accessible
-            by your Sentinel-2 Toolbox installation(s). This directory we call <code>${SHARED_GETASSE30}</code> from now on.</li>
-        <li>Create a file named "dem.properties" in <code>${USER_HOME}/.s3tbx/beam-core/auxdata/dem/GETASSE30/</code> and open the
-            new file in a text editor. <br>
-            Add the following line <p><code>dem.installDir = ${SHARED_GETASSE30}</code></p> to it and don't forget to
-            replace
-            <code> ${SHARED_GETASSE30}</code> by your actual, shared DEM installation path. The properties file format
-            requires to esacpe the backspace and colon characters using a backslash. Hence, on windows systems you'll
-            have
-            to escape the drive colon and file separator, e.g. <p><code>dem.installDir =
+<p>
+    If you like to share the DEM along multiple Sentinel-2 Toolbox installations in your network
+    or if you simply don't want to install in the auxdata folder, then:
+</p>
+<ol start=4>
+    <li>Copy the unzipped GETASSE30 dataset to a location accessible
+        by your Sentinel-2 Toolbox installation(s). This directory we call <code>${SHARED_GETASSE30}</code> from now on.
+    </li>
+    <li>Create a file named "dem.properties" in <code>${USER_HOME}/.s3tbx/beam-core/auxdata/dem/GETASSE30/</code> and
+        open the
+        new file in a text editor. <br>
+        Add the following line <p><code>dem.installDir = ${SHARED_GETASSE30}</code></p> to it and don't forget to
+        replace
+        <code> ${SHARED_GETASSE30}</code> by your actual, shared DEM installation path. The properties file format
+        requires to esacpe the backspace and colon characters using a backslash. Hence, on windows systems you'll
+        have
+        to escape the drive colon and file separator, e.g. <p><code>dem.installDir =
             P\:\\Data\\DEMs\\GETASSE30</code>.</p>
-            The DEM is now installed.</li>
-    </ol>
+        The DEM is now installed.
+    </li>
+</ol>
 <p></p>
 
 <h4>The GETASSE30 Data Set</h4>
@@ -88,38 +95,56 @@
     (This reader is also internally used by the <a href="OrthorectificationAlgo.html">Orthorectification</a> algorithm.)
 </p>
 
-<p align="center"> <img src="images/GETASSE30Example.jpg" border=0 width="300" height="300"><br>
+<p align="center"><img src="images/GETASSE30Example.jpg" border=0 width="300" height="300"><br>
     Example of a GETASSE30 tile
 </p>
 
 <h4>The GETASSE30 Data</h4>
 <ol type="I">
     <li>Mean sea surface height over sea and height over land, both referenced to the WGS84 ellipsoid.
-    <table>
-        <tr><td>Resolution:</td><td>30 arc second latitude and longitude</td></tr>
-        <tr><td>Unit:</td><td>meter</td></tr>
-        <tr><td>File name example:</td><td>45S045W.GETASSE30 where the first number is the latitude of the most
-            South West pixel and the second number its longitude</td></tr>
-        <tr><td>Data format:</td><td>binary, 1800*1800 signed 16-bit integer values, big endian order</td></tr>
-    </table>
+        <table>
+            <tr>
+                <td>Resolution:</td>
+                <td>30 arc second latitude and longitude</td>
+            </tr>
+            <tr>
+                <td>Unit:</td>
+                <td>meter</td>
+            </tr>
+            <tr>
+                <td>File name example:</td>
+                <td>45S045W.GETASSE30 where the first number is the latitude of the most
+                    South West pixel and the second number its longitude
+                </td>
+            </tr>
+            <tr>
+                <td>Data format:</td>
+                <td>binary, 1800*1800 signed 16-bit integer values, big endian order</td>
+            </tr>
+        </table>
 </ol>
 
-<p align="center"> <img src="images/GETASSE30ElevationData.jpg" border=0 width="636" height="318"><br>
+<p align="center"><img src="images/GETASSE30ElevationData.jpg" border=0 width="636" height="318"><br>
     The GETASSE30 elevation data
 </p>
 <br>
 There are 5 types of values:
 <ol>
     <li>Over land, between 60N and -60S, where SRTM30 DEM data are available, the
-        output value is the sum of SRTM30 elevation and the EGM96 geoid height.</li>
+        output value is the sum of SRTM30 elevation and the EGM96 geoid height.
+    </li>
     <li>Over land, between 60N and -60S, where SRTM30 DEM data are not available, the
-        output value is the sum of ACE elevation and the EGM96 geoid height.</li>
+        output value is the sum of ACE elevation and the EGM96 geoid height.
+    </li>
     <li>Over land, above 60N and -60S, where ACE data are available, the output value is the sum of
-        ACE elevation and the EGM96 geoid height.</li>
+        ACE elevation and the EGM96 geoid height.
+    </li>
     <li>Over sea, where neither ACE DEM nor SRTM30 data are not available, if MSS data are available,
-        then the output value is the MSS.</li>
+        then the output value is the MSS.
+    </li>
     <li>Over sea, where neither ACE DEM nor SRTM30 data are not available, if MSS data are not available,
-        then the output value is the EGM96 value.</li>
+        then the output value is the EGM96 value.
+    </li>
 </ol>
 <li>Flag
     <ul>
@@ -129,15 +154,28 @@ There are 5 types of values:
         <li>Pixels described as in 1) are flagged with the value 3</li>
     </ul>
     <table>
-        <tr><td>Resolution:</td><td>30 arc second latitude and longitude</td></tr>
-        <tr><td>Unit:</td><td>none</td></tr>
-        <tr><td>File name example:</td><td>45S045W.GETASSE30_flag where the first number is the latitude of the most
-            South West pixel and the second number its longitude</td></tr>
-        <tr><td>Data format:</td><td>binary, 1800*1800 unsigned 8-bit integer values, big endian order</td></tr>
+        <tr>
+            <td>Resolution:</td>
+            <td>30 arc second latitude and longitude</td>
+        </tr>
+        <tr>
+            <td>Unit:</td>
+            <td>none</td>
+        </tr>
+        <tr>
+            <td>File name example:</td>
+            <td>45S045W.GETASSE30_flag where the first number is the latitude of the most
+                South West pixel and the second number its longitude
+            </td>
+        </tr>
+        <tr>
+            <td>Data format:</td>
+            <td>binary, 1800*1800 unsigned 8-bit integer values, big endian order</td>
+        </tr>
     </table>
 
-    
-  <p align="center"> <img src="images/GETASSE30Flags.jpg" border=0 width="664" height="331"><br>
+
+    <p align="center"><img src="images/GETASSE30Flags.jpg" border=0 width="664" height="331"><br>
         The flag associated to the GETASSE30 data
     </p>
 </li>

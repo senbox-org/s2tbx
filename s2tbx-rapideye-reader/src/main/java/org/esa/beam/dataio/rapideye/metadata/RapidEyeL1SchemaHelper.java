@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * Helper for BEAM types inference from RapidEye XSD schema types
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class RapidEyeL1SchemaHelper {
 

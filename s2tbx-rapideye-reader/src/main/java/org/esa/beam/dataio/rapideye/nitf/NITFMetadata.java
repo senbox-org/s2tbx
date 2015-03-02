@@ -8,7 +8,7 @@ import java.text.ParseException;
 /**
  * Contains parsed metadata from a NITF file.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class NITFMetadata {
 
@@ -18,9 +18,13 @@ public class NITFMetadata {
     NITFMetadata() {
     }
 
-    public MetadataElement getMetadataRoot() { return root; }
+    public MetadataElement getMetadataRoot() {
+        return root;
+    }
 
-    void setRootElement(MetadataElement newRoot) { root = newRoot; }
+    void setRootElement(MetadataElement newRoot) {
+        root = newRoot;
+    }
 
     public ProductData.UTC getFileDate() {
         ProductData.UTC fileDate = null;
@@ -56,7 +60,8 @@ public class NITFMetadata {
 
     /**
      * Returns the number of images contained in the NITF file.
-     * @return  the number of images, or 0 if something goes wrong in reading the value.
+     *
+     * @return the number of images, or 0 if something goes wrong in reading the value.
      */
     public int getNumImages() {
         int ret = 0;
@@ -70,7 +75,8 @@ public class NITFMetadata {
     /**
      * Returns the number of bands of the first image contained in the NITF file.
      * This is a comodity method for files that contain only one image.
-     * @return  the number of bands, or 0 if the read failed.
+     *
+     * @return the number of bands, or 0 if the read failed.
      */
     public int getNumBands() {
         return getNumBands(FIRST_IMAGE);
@@ -79,8 +85,9 @@ public class NITFMetadata {
     /**
      * Returns the number of bands of the imageIndex-th image contained in the NITF file.
      * If the imageIndex is not in the range 0..number of images - 1, an exception is thrown.
-     * @param imageIndex    The number (0-based) of the image
-     * @return  the number of bands, or 0 if the read failed
+     *
+     * @param imageIndex The number (0-based) of the image
+     * @return the number of bands, or 0 if the read failed
      */
     public int getNumBands(int imageIndex) {
         int ret = 0;
@@ -98,7 +105,8 @@ public class NITFMetadata {
 
     /**
      * Returns the width, in pixels, of the first image.
-     * @return  the number of pixels, or 0 if read fails.
+     *
+     * @return the number of pixels, or 0 if read fails.
      */
     public int getWidth() {
         return getWidth(FIRST_IMAGE);
@@ -106,8 +114,9 @@ public class NITFMetadata {
 
     /**
      * Returns the width, in pixels, of the imageIndex-th image.
-     * @param imageIndex    the image index (0-based)
-     * @return  the number of pixels, or 0 if read fails
+     *
+     * @param imageIndex the image index (0-based)
+     * @return the number of pixels, or 0 if read fails
      */
     public int getWidth(int imageIndex) {
         int ret = 0;
@@ -125,7 +134,8 @@ public class NITFMetadata {
 
     /**
      * Returns the height, in pixels, of the first image.
-     * @return  the number of pixels, or 0 if read fails.
+     *
+     * @return the number of pixels, or 0 if read fails.
      */
     public int getHeight() {
         return getHeight(FIRST_IMAGE);
@@ -133,8 +143,9 @@ public class NITFMetadata {
 
     /**
      * Returns the height, in pixels, of the imageIndex-th image.
-     * @param imageIndex    The image index (0-based)
-     * @return  the number of pixels, or 0 if read fails.
+     *
+     * @param imageIndex The image index (0-based)
+     * @return the number of pixels, or 0 if read fails.
      */
     public int getHeight(int imageIndex) {
         int ret = 0;
@@ -152,8 +163,9 @@ public class NITFMetadata {
 
     /**
      * Returns the data type value of a pixel of the first image.
+     *
+     * @return One of the ProductData.TYPE_* values.
      * @see org.esa.beam.framework.datamodel.ProductData
-     * @return  One of the ProductData.TYPE_* values.
      */
     public int getDataType() {
         return getDataType(FIRST_IMAGE);
@@ -161,8 +173,9 @@ public class NITFMetadata {
 
     /**
      * Returns the data type value of a pixel of the imageIndex-th image.
-     * @param imageIndex    the image index (0-based)
-     * @return  the data type value, or <code>ProductData.TYPE_UNDEFINED</code> if read fails
+     *
+     * @param imageIndex the image index (0-based)
+     * @return the data type value, or <code>ProductData.TYPE_UNDEFINED</code> if read fails
      */
     public int getDataType(int imageIndex) {
         int ret = ProductData.TYPE_UNDEFINED;
@@ -264,7 +277,7 @@ public class NITFMetadata {
             throw new IllegalArgumentException("Invalid image index");
         MetadataElement currentElement = root.getElement(NITFFields.TAG_IMAGE_SUBHEADERS);
         if (((currentElement = currentElement.getElement("Bands")) != null) &&
-                ((currentElement = currentElement.getElement("BAND" + (imageIndex + 1))) != null)){
+                ((currentElement = currentElement.getElement("BAND" + (imageIndex + 1))) != null)) {
             String value = currentElement.getAttributeString(NITFFields.ISUBCAT, null);
             String unit = getUnit(imageIndex);
             if (value != null && unit != null) {

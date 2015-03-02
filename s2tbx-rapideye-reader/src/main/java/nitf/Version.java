@@ -25,8 +25,7 @@ package nitf;
 /**
  * Enumeration class for the NITF version
  */
-public enum Version
-{
+public enum Version {
 
     /**
      * Represents a NITF 2.0 type
@@ -46,20 +45,17 @@ public enum Version
     // a name that can be queried that describes the version
     private String name;
 
-    public String toString()
-    {
-        return name != null ? name : super.toString();
-    }
-
     // keep private
-    private Version(String name)
-    {
+    private Version(String name) {
         this.name = name;
     }
 
-    private Version()
-    {
+    private Version() {
         this(null);
+    }
+
+    public String toString() {
+        return name != null ? name : super.toString();
     }
 
 }

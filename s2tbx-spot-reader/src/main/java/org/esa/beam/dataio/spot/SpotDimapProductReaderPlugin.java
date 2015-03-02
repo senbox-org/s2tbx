@@ -7,9 +7,7 @@ import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.io.BeamFileFilter;
-import org.esa.beam.util.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,9 +16,45 @@ import java.util.Locale;
 /**
  * Visat plugin for reading SPOT-1 to SPOT-5 scene files.
  * The scene files are GeoTIFF with DIMAP metadata.
+ *
  * @author Cosmin Cara
  */
 public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
+
+    private static boolean isDimapFilename(String filename) {
+        boolean isMatch = false;
+        for (String pattern : SpotConstants.DIMAP_FILENAME_PATTERNS) {
+            isMatch = filename.matches(pattern);
+            if (isMatch) break;
+        }
+        return isMatch;
+    }
+
+    static SpotVirtualDir getInput(Object input) throws IOException {
+        File inputFile = getFileInput(input);
+
+        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
+            final File absoluteFile = inputFile.getAbsoluteFile();
+            inputFile = absoluteFile.getParentFile();
+            if (inputFile == null) {
+                throw new IOException("Unable to retrieve parent to file: " + absoluteFile.getAbsolutePath());
+            }
+        }
+        return new SpotVirtualDir(inputFile);
+    }
+
+    private static File getFileInput(Object input) {
+        if (input instanceof String) {
+            return new File((String) input);
+        } else if (input instanceof File) {
+            return (File) input;
+        }
+        return null;
+    }
+
+    private static boolean isMetadataFile(String file) {
+        return (file.toLowerCase().endsWith(".dim"));
+    }
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -69,43 +103,6 @@ public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
     @Override
     public BeamFileFilter getProductFileFilter() {
         return new SpotDimapFileFilter();
-    }
-
-    private static boolean isDimapFilename(String filename)
-    {
-        boolean isMatch = false;
-        for (String pattern : SpotConstants.DIMAP_FILENAME_PATTERNS) {
-            isMatch = filename.matches(pattern);
-            if (isMatch) break;
-        }
-        return isMatch;
-    }
-
-    static SpotVirtualDir getInput(Object input) throws IOException {
-        File inputFile = getFileInput(input);
-
-        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
-            final File absoluteFile = inputFile.getAbsoluteFile();
-            inputFile = absoluteFile.getParentFile();
-            if (inputFile == null) {
-                throw new IOException("Unable to retrieve parent to file: " + absoluteFile.getAbsolutePath());
-            }
-        }
-        return new SpotVirtualDir(inputFile);
-    }
-
-    private static File getFileInput(Object input) {
-        if (input instanceof String) {
-            return new File((String) input);
-        } else if (input instanceof File) {
-            return (File) input;
-        }
-        return null;
-    }
-
-    private static boolean isMetadataFile(String file)
-    {
-        return (file.toLowerCase().endsWith(".dim"));
     }
 
     /**

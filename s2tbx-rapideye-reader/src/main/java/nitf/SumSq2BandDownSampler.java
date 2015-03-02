@@ -21,48 +21,43 @@
  */
 
 /**
- * 
+ *
  */
 package nitf;
 
 /**
  * <code>SumSq2BandDownSampler</code>
- * 
+ * <p/>
  * Sum of square, two band, down-sample method
- * 
+ * <p/>
  * The maximum is calculated as the sum of the sum of squares of two bands. The
  * caller must supply exactly two bands. The complex pixel type as the
  * individual band pixel type is not supported
- * 
+ * <p/>
  * For a more comprehensive discussion of the merits and drawbacks of this type
  * of down-sampling, please refer to the NITF manual 1.1.
- * 
+ * <p/>
  * Created: Oct 6, 2005 9:23:06 PM
  */
-public final class SumSq2BandDownSampler extends DownSampler
-{
+public final class SumSq2BandDownSampler extends DownSampler {
 
     /**
      * @param address
      */
-    public SumSq2BandDownSampler(long address)
-    {
+    public SumSq2BandDownSampler(long address) {
         super(address);
         // TODO Auto-generated constructor stub
     }
 
     /**
-     * 
      * @param skipRows
      * @param skipCols
      */
-    public SumSq2BandDownSampler(int skipRows, int skipCols)
-    {
+    public SumSq2BandDownSampler(int skipRows, int skipCols) {
         construct(skipRows, skipCols);
     }
 
     /**
-     * 
      * @param skipRows
      * @param skipCols
      */
@@ -75,10 +70,10 @@ public final class SumSq2BandDownSampler extends DownSampler
      *      int, int, int, int)
      */
     protected native boolean apply(byte[][] inputWindows,
-            byte[][] outputWindows, int numBands, int numWindowRows,
-            int numWindowCols, int numInputCols, int numSubWindowCols,
-            int pixelType, int pixelSize, int rowsInLastWindow,
-            int colsInLastWindow) throws NITFException;
+                                   byte[][] outputWindows, int numBands, int numWindowRows,
+                                   int numWindowCols, int numInputCols, int numSubWindowCols,
+                                   int pixelType, int pixelSize, int rowsInLastWindow,
+                                   int colsInLastWindow) throws NITFException;
 
     /*
      * (non-Javadoc)

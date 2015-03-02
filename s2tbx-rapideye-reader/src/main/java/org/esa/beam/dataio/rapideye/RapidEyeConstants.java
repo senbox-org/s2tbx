@@ -50,6 +50,8 @@ public class RapidEyeConstants {
     public static final String UTC_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
 
     public static final double RADIOMETRIC_SCALE_FACTOR = 0.01;
+    public static double[] SCALING_FACTORS = new double[]{510 / 4095 * RADIOMETRIC_SCALE_FACTOR, 590 / 4095 * RADIOMETRIC_SCALE_FACTOR, 685 / 4095 * RADIOMETRIC_SCALE_FACTOR, 730 / 4095 * RADIOMETRIC_SCALE_FACTOR, 850 / 4095 * RADIOMETRIC_SCALE_FACTOR};
+    public static double[] SCALING_OFFSETS = new double[]{440 * RADIOMETRIC_SCALE_FACTOR, 520 * RADIOMETRIC_SCALE_FACTOR, 630 * RADIOMETRIC_SCALE_FACTOR, 690 * RADIOMETRIC_SCALE_FACTOR, 760 * RADIOMETRIC_SCALE_FACTOR};
     public static final String TAG_EARTH_OBSERVATION_META_DATA = "EarthObservationMetaData";
     public static final String TAG_IDENTIFIER = "identifier";
     public static final String TAG_RESULT_OF = "resultOf";
@@ -108,12 +110,9 @@ public class RapidEyeConstants {
     public static final String TAG_LINEDENCOEFF = "lineDenCoeff";
     public static final String TAG_SAMPLENUMCOEFF = "sampleNumCoeff";
     public static final String TAG_SAMPLEDENCOEFF = "sampleDenCoeff";
-
     public static final String[] BAND_NAMES = new String[]{"blue", "green", "red", "red_edge", "near_infrared"};
     public static final float[] WAVELENGTHS = new float[]{440, 520, 630, 690, 760};
     public static final float[] BANDWIDTHS = new float[]{70, 70, 55, 40, 90};
-    public static double[] SCALING_FACTORS = new double[]{510 / 4095 * RADIOMETRIC_SCALE_FACTOR, 590 / 4095 * RADIOMETRIC_SCALE_FACTOR, 685 / 4095 * RADIOMETRIC_SCALE_FACTOR, 730 / 4095 * RADIOMETRIC_SCALE_FACTOR, 850 / 4095 * RADIOMETRIC_SCALE_FACTOR};
-    public static double[] SCALING_OFFSETS = new double[]{440 * RADIOMETRIC_SCALE_FACTOR, 520 * RADIOMETRIC_SCALE_FACTOR, 630 * RADIOMETRIC_SCALE_FACTOR, 690 * RADIOMETRIC_SCALE_FACTOR, 760 * RADIOMETRIC_SCALE_FACTOR};
 
     public enum PixelFormat {
 

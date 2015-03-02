@@ -21,44 +21,39 @@
  */
 
 /**
- * 
+ *
  */
 package nitf;
 
 /**
  * <code>PixelSkipDownSampler</code>
- * 
+ * <p/>
  * The pixelSkip down-sampler has a designated skip value in the row and column,
  * and it skips data in between. <p/> The row and column skip factors divide the
  * sub-window into non-overlaping sample windows. The upper left corner pixel of
  * each sample window is the down-sampled value for that window
- * 
+ * <p/>
  * Created: Oct 6, 2005 9:23:06 PM
  */
-public final class PixelSkipDownSampler extends DownSampler
-{
+public final class PixelSkipDownSampler extends DownSampler {
 
     /**
      * @param address
      */
-    public PixelSkipDownSampler(long address)
-    {
+    public PixelSkipDownSampler(long address) {
         super(address);
         // TODO Auto-generated constructor stub
     }
 
     /**
-     * 
      * @param skipRows
      * @param skipCols
      */
-    public PixelSkipDownSampler(int skipRows, int skipCols)
-    {
+    public PixelSkipDownSampler(int skipRows, int skipCols) {
         construct(skipRows, skipCols);
     }
 
     /**
-     * 
      * @param skipRows
      * @param skipCols
      */
@@ -71,10 +66,10 @@ public final class PixelSkipDownSampler extends DownSampler
      *      int, int, int, int)
      */
     protected native boolean apply(byte[][] inputWindows,
-            byte[][] outputWindows, int numBands, int numWindowRows,
-            int numWindowCols, int numInputCols, int numSubWindowCols,
-            int pixelType, int pixelSize, int rowsInLastWindow,
-            int colsInLastWindow) throws NITFException;
+                                   byte[][] outputWindows, int numBands, int numWindowRows,
+                                   int numWindowCols, int numInputCols, int numSubWindowCols,
+                                   int pixelType, int pixelSize, int rowsInLastWindow,
+                                   int colsInLastWindow) throws NITFException;
 
     /*
      * (non-Javadoc)

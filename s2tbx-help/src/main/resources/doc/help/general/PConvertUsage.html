@@ -26,8 +26,10 @@
 <table class="header">
     <tr class="header">
         <td class="header">&nbsp;
-            Usage of the <code>pconvert</code> Tool</td>
-        <td class="header" align="right"><a href="../general/BeamOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+            Usage of the <code>pconvert</code> Tool
+        </td>
+        <td class="header" align="right"><a href="../general/BeamOverview.html"><img src="../images/snap_header.jpg"
+                                                                                     border=0></a></td>
     </tr>
 </table>
 
@@ -48,8 +50,9 @@
 <h3>Running pconvert</h3>
 
 <p>For executing the pconvert tool there is an executable script file located in the <code>bin</code> directory
-    of your Sentinel-2 Toolbox installation directory. The file name is <code>pconvert.bat</code> for MS Windows, <code>pconvert.sh</code> for Mac OS X and <code>
-    pconvert.sh</code> for UNIX operating systems.</p>
+    of your Sentinel-2 Toolbox installation directory. The file name is <code>pconvert.bat</code> for MS Windows, <code>pconvert.sh</code>
+    for Mac OS X and <code>
+        pconvert.sh</code> for UNIX operating systems.</p>
 
 <p><code>pconvert</code> is a command-line application and as such it is invoked from a console
     or shell. UNIX users usually know what a shell is, MS Windows
@@ -70,7 +73,8 @@
     <li>have opened a shell or console window (on MS Windows either command.exe or cmd.exe)</li>
     <li>have copied a test product to your <code><i>$S3TBX-INSTALL-DIR$</i>/bin</code> directory
         (in the following examples referred to as <code>MER_RR__1P_TEST.N1</code> - a MERIS Level 1B
-        product)</li>
+        product)
+    </li>
     <li>and that you have changed the current working directory to be the <code>bin</code> directory.</li>
 </ul>
 
@@ -82,7 +86,7 @@
 
 <p><b><code>&gt;&nbsp;pconvert -f jpg -r 512,512 -b 13 MER_RR__1P_TEST.N1</code></b>
     &nbsp; <i>Creates a JPEG greyscale image from band 13 with the name <code>MER_RR__1P_TEST.N1.jpg</code>.
-    The image will have a maximum size of 512 x 512 pixels. </i></p>
+        The image will have a maximum size of 512 x 512 pixels. </i></p>
 
 <p><b><code>&gt;&nbsp;pconvert -f h5 MER_RR__1P_TEST.N1</code></b> &nbsp; <i>Converts
     the entire product into a single HDF-5 file with the name <code>MER_RR__1P_TEST.N1.h5</code>.

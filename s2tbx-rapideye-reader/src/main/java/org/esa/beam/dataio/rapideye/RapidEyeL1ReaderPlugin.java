@@ -5,9 +5,7 @@ import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.io.BeamFileFilter;
-import org.esa.beam.util.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,29 +15,11 @@ import java.util.Locale;
  * Reader plugin class for RapidEye L1 products.
  * RE L1 products have rasters in NITF format.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class RapidEyeL1ReaderPlugin implements ProductReaderPlugIn {
 
     public static final ProductContentEnforcer enforcer = ProductContentEnforcer.create(RapidEyeConstants.L1_MINIMAL_PRODUCT_PATTERNS);
-
-    @Override
-    public DecodeQualification getDecodeQualification(Object input) {
-        DecodeQualification retVal = DecodeQualification.UNABLE;
-        ZipVirtualDir virtualDir;
-        try {
-            virtualDir = getInput(input);
-            if (virtualDir != null) {
-                String[] allFiles = virtualDir.listAll();
-                if (enforcer.isConsistent(allFiles)) {
-                    retVal = DecodeQualification.INTENDED;
-                }
-            }
-        } catch (IOException e) {
-            retVal = DecodeQualification.UNABLE;
-        }
-        return retVal;
-    }
 
     static ZipVirtualDir getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
@@ -64,7 +44,27 @@ public class RapidEyeL1ReaderPlugin implements ProductReaderPlugIn {
     }
 
     @Override
-    public Class[] getInputTypes() { return RapidEyeConstants.READER_INPUT_TYPES; }
+    public DecodeQualification getDecodeQualification(Object input) {
+        DecodeQualification retVal = DecodeQualification.UNABLE;
+        ZipVirtualDir virtualDir;
+        try {
+            virtualDir = getInput(input);
+            if (virtualDir != null) {
+                String[] allFiles = virtualDir.listAll();
+                if (enforcer.isConsistent(allFiles)) {
+                    retVal = DecodeQualification.INTENDED;
+                }
+            }
+        } catch (IOException e) {
+            retVal = DecodeQualification.UNABLE;
+        }
+        return retVal;
+    }
+
+    @Override
+    public Class[] getInputTypes() {
+        return RapidEyeConstants.READER_INPUT_TYPES;
+    }
 
     @Override
     public ProductReader createReaderInstance() {
@@ -72,13 +72,19 @@ public class RapidEyeL1ReaderPlugin implements ProductReaderPlugIn {
     }
 
     @Override
-    public String[] getFormatNames() { return RapidEyeConstants.L1_FORMAT_NAMES; }
+    public String[] getFormatNames() {
+        return RapidEyeConstants.L1_FORMAT_NAMES;
+    }
 
     @Override
-    public String[] getDefaultFileExtensions() { return RapidEyeConstants.DEFAULT_EXTENSIONS; }
+    public String[] getDefaultFileExtensions() {
+        return RapidEyeConstants.DEFAULT_EXTENSIONS;
+    }
 
     @Override
-    public String getDescription(Locale locale) { return RapidEyeConstants.L1_DESCRIPTION; }
+    public String getDescription(Locale locale) {
+        return RapidEyeConstants.L1_DESCRIPTION;
+    }
 
     @Override
     public BeamFileFilter getProductFileFilter() {

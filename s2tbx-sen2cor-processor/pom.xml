@@ -7,8 +7,9 @@
         <groupId>org.esa.s2tbx</groupId>
         <version>1.0.0</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
+    <version>1.0.3</version>
+    <modelVersion>4.0.0</modelVersion>
     <artifactId>s2tbx-sen2cor-processor</artifactId>
 
     <dependencies>
@@ -26,8 +27,8 @@
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-reader-new</artifactId>
-            <version>${project.version}</version>
+            <artifactId>s2tbx-reader</artifactId>
+            <version>1.0.3</version>
         </dependency>
     </dependencies>
 

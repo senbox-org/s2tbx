@@ -8,11 +8,13 @@ import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.beam.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.FlagCoding;
+import org.esa.beam.framework.datamodel.Mask;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
+import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.jai.ImageManager;
-import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.TreeNode;
-import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.imageio.spi.IIORegistry;
@@ -31,13 +33,13 @@ import java.util.logging.Logger;
 /**
  * Base class for RapidEye readers.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public abstract class RapidEyeReader extends AbstractProductReader {
     public static final int WIDTH_THRESHOLD = 8192;
+    protected final Logger logger;
     protected RapidEyeMetadata metadata;
     protected Product product;
-    protected final Logger logger;
     protected ZipVirtualDir productDirectory;
     private ImageInputStreamSpi channelImageInputStreamSpi;
 
@@ -49,6 +51,29 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
         registerSpi();
+    }
+
+    static File getFileInput(Object input) {
+        if (input instanceof String) {
+            return new File((String) input);
+        } else if (input instanceof File) {
+            return (File) input;
+        }
+        return null;
+    }
+
+    static ZipVirtualDir getInput(Object input) throws IOException {
+        File inputFile = getFileInput(input);
+
+        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
+            final File absoluteFile = inputFile.getAbsoluteFile();
+            inputFile = absoluteFile.getParentFile();
+            if (inputFile == null) {
+                throw new IOException(String.format("Unable to retrieve parent to file %s.", absoluteFile.getAbsolutePath()));
+            }
+        }
+
+        return new ZipVirtualDir(inputFile);
     }
 
     @Override
@@ -115,11 +140,11 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         for (String flagName : flagCoding.getFlagNames()) {
             MetadataAttribute flag = flagCoding.getFlag(flagName);
             masks.add(Mask.BandMathsType.create(flagName,
-                    flag.getDescription(),
-                    width, height,
-                    flagCodingName + "." + flagName,
-                    ColorIterator.next(),
-                    0.5));
+                                                flag.getDescription(),
+                                                width, height,
+                                                flagCodingName + "." + flagName,
+                                                ColorIterator.next(),
+                                                0.5));
         }
         return masks;
     }
@@ -130,7 +155,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
             tileSize = product.getPreferredTileSize();
             if (tileSize == null) {
                 Dimension suggestedTileSize = ImageManager.getPreferredTileSize(product);
-                tileSize = new Dimension((int)suggestedTileSize.getWidth(), (int)suggestedTileSize.getHeight());
+                tileSize = new Dimension((int) suggestedTileSize.getWidth(), (int) suggestedTileSize.getHeight());
             }
         }
         return tileSize;
@@ -211,28 +236,5 @@ public abstract class RapidEyeReader extends AbstractProductReader {
             }
             return colorIterator.next();
         }
-    }
-
-    static File getFileInput(Object input) {
-        if (input instanceof String) {
-            return new File((String) input);
-        } else if (input instanceof File) {
-            return (File) input;
-        }
-        return null;
-    }
-
-    static ZipVirtualDir getInput(Object input) throws IOException {
-        File inputFile = getFileInput(input);
-
-        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
-            final File absoluteFile = inputFile.getAbsoluteFile();
-            inputFile = absoluteFile.getParentFile();
-            if (inputFile == null) {
-                throw new IOException(String.format("Unable to retrieve parent to file %s.", absoluteFile.getAbsolutePath()));
-            }
-        }
-
-        return new ZipVirtualDir(inputFile);
     }
 }

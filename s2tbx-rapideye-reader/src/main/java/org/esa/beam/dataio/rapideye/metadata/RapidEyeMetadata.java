@@ -13,7 +13,7 @@ import java.util.Date;
 /**
  * Specialized <code>XmlMetadata</code> for RapidEye.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  * @see org.esa.beam.dataio.metadata.XmlMetadata
  */
 public class RapidEyeMetadata extends XmlMetadata {
@@ -27,7 +27,9 @@ public class RapidEyeMetadata extends XmlMetadata {
     }
 
     @Override
-    public String getFileName() { return name; }
+    public String getFileName() {
+        return name;
+    }
 
     @Override
     public int getNumBands() {
@@ -193,13 +195,13 @@ public class RapidEyeMetadata extends XmlMetadata {
                             logger.warning("Band names not found in metadata. Will scan product folder.");
                         }
                     } else {
-                        fileNames = new String[] { baseName };
+                        fileNames = new String[]{baseName};
                     }
                 } else {
                     if (((currentElement = currentElement.getElement(TAG_MOSAIC_DECOMPOSITION)) != null) &&
                             ((currentElement = currentElement.getElement(TAG_MOSAIC_TILE)) != null)) {
                         String baseName = currentElement.getAttributeString(RapidEyeConstants.TAG_FILE_NAME);
-                        fileNames = new String[] { baseName };
+                        fileNames = new String[]{baseName};
                     }
                 }
             }
@@ -239,7 +241,8 @@ public class RapidEyeMetadata extends XmlMetadata {
                         String stringData = element.getAttributeString(RapidEyeConstants.TAG_START_DATE_TIME, null);
                         if (stringData != null) {
                             try {
-                                if (stringData.endsWith("Z")) stringData = stringData.substring(0,stringData.length() - 1);
+                                if (stringData.endsWith("Z"))
+                                    stringData = stringData.substring(0, stringData.length() - 1);
                                 String microseconds = stringData.substring(stringData.indexOf(".") + 1);
                                 Date date = new SimpleDateFormat(RapidEyeConstants.UTC_DATE_FORMAT).parse(stringData);
                                 currentTime = ProductData.UTC.create(date, Long.parseLong(microseconds));
@@ -250,8 +253,8 @@ public class RapidEyeMetadata extends XmlMetadata {
                                 }
                             } catch (ParseException e) {
                                 logger.warning(String.format("Product start time not in expected format. Found %s, expected %s",
-                                        stringData,
-                                        RapidEyeConstants.UTC_DATE_FORMAT));
+                                                             stringData,
+                                                             RapidEyeConstants.UTC_DATE_FORMAT));
                             }
                         }
                     }
@@ -274,7 +277,8 @@ public class RapidEyeMetadata extends XmlMetadata {
                         String stringData = element.getAttributeString(RapidEyeConstants.TAG_END_DATE_TIME, null);
                         if (stringData != null) {
                             try {
-                                if (stringData.endsWith("Z")) stringData = stringData.substring(0,stringData.length() - 1);
+                                if (stringData.endsWith("Z"))
+                                    stringData = stringData.substring(0, stringData.length() - 1);
                                 String microseconds = stringData.substring(stringData.indexOf(".") + 1);
                                 Date date = new SimpleDateFormat(RapidEyeConstants.UTC_DATE_FORMAT).parse(stringData);
                                 currentTime = ProductData.UTC.create(date, Long.parseLong(microseconds));
@@ -313,8 +317,8 @@ public class RapidEyeMetadata extends XmlMetadata {
                                 scaleFactors[idx - 1] = Float.parseFloat(value);
                             } catch (NumberFormatException e) {
                                 logger.warning(String.format("Incorrect scale factor for band %d. Will use default (found %s, expected numeric)",
-                                        idx,
-                                        value));
+                                                             idx,
+                                                             value));
                             }
                         }
                     }
@@ -461,7 +465,8 @@ public class RapidEyeMetadata extends XmlMetadata {
         float ret = Float.NaN;
         try {
             ret = Float.parseFloat(value);
-        } catch (NumberFormatException e) {}
+        } catch (NumberFormatException e) {
+        }
         return ret;
     }
 
@@ -469,11 +474,17 @@ public class RapidEyeMetadata extends XmlMetadata {
         int ret = 0;
         try {
             ret = Integer.parseInt(value);
-        } catch (NumberFormatException e) {}
+        } catch (NumberFormatException e) {
+        }
         return ret;
     }
 
     public class SpatialReferenceSystem {
+        String epsgCode;
+        String geodeticDatum;
+        String projectionCode;
+        String projectionZone;
+
         public String getEpsgCode() {
             return epsgCode;
         }
@@ -489,11 +500,6 @@ public class RapidEyeMetadata extends XmlMetadata {
         public String getProjectionZone() {
             return projectionZone;
         }
-
-        String epsgCode;
-        String geodeticDatum;
-        String projectionCode;
-        String projectionZone;
     }
 
     public class RationalCoefficients {

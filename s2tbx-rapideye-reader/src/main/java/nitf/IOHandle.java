@@ -28,8 +28,7 @@ package nitf;
  * This class provides access to a native file object, so it does not use the
  * Java io library.
  */
-public final class IOHandle extends NativeIOInterface
-{
+public final class IOHandle extends NativeIOInterface {
     /**
      * Creates a new file
      */
@@ -49,8 +48,7 @@ public final class IOHandle extends NativeIOInterface
 
     // private long ioHandle;
 
-    IOHandle(long address)
-    {
+    IOHandle(long address) {
         super(address);
     }
 
@@ -58,48 +56,40 @@ public final class IOHandle extends NativeIOInterface
      * Creates a new IOHandle object for READING, using the file referenced from
      * a parent pathname string; This sets the access flag to
      * NITF_ACCESS_READONLY and the creation flag to NITF_OPEN_EXISTING
-     * 
-     * @param fileName
-     *            the path of the file associated with this handle
+     *
+     * @param fileName the path of the file associated with this handle
      * @throws NITFException
      */
-    public IOHandle(String fileName) throws NITFException
-    {
+    public IOHandle(String fileName) throws NITFException {
         this(fileName, NITF_ACCESS_READONLY, NITF_OPEN_EXISTING);
     }
 
     /**
      * Creates a new IOHandle object, using the file referenced from a parent
      * pathname string and an access modifier.
-     * 
-     * @param fileName
-     *            the path of the file associated with this handle
-     * @param accessFlag
-     *            options are <code>NITF_ACCESS_READONLY<code>,
+     *
+     * @param fileName     the path of the file associated with this handle
+     * @param accessFlag   options are <code>NITF_ACCESS_READONLY<code>,
      *                     <code>NITF_ACCESS_WRITEONLY</code>, or
-     *            <code>NITF_ACCESS_READWRITE</code>
-     * @param creationFlag
-     *            options are <code>NITF_CREATE<code>,
+     *                     <code>NITF_ACCESS_READWRITE</code>
+     * @param creationFlag options are <code>NITF_CREATE<code>,
      *                     <code>NITF_TRUNCATE</code>, or
-     *            <code>NITF_OPEN_EXISTING</code>
+     *                     <code>NITF_OPEN_EXISTING</code>
      * @throws NITFException
      */
     public IOHandle(String fileName, int accessFlag, int creationFlag)
-            throws NITFException
-    {
+            throws NITFException {
         super();
         this.fileName = fileName;
 
         if (accessFlag != NITF_ACCESS_READONLY
                 && accessFlag != NITF_ACCESS_READWRITE
-                && accessFlag != NITF_ACCESS_WRITEONLY)
-        {
+                && accessFlag != NITF_ACCESS_WRITEONLY) {
             throw new NITFException(
                     "Access flag must be a valid NITF_ACCESS flag");
         }
         if (creationFlag != NITF_CREATE && creationFlag != NITF_TRUNCATE
-                && creationFlag != NITF_OPEN_EXISTING)
-        {
+                && creationFlag != NITF_OPEN_EXISTING) {
             throw new NITFException(
                     "Creation flag must be a valid NITF Creation flag");
         }
@@ -109,17 +99,16 @@ public final class IOHandle extends NativeIOInterface
 
     /**
      * Return the name of the file associated with this handle
-     * 
+     *
      * @return the name of the file associated with this handle
      */
-    public String getFileName()
-    {
+    public String getFileName() {
         return fileName;
     }
 
     /**
      * Native function used internally to create a file handle
-     * 
+     *
      * @param fileName
      * @param accessFlag
      * @param creationFlag
@@ -128,5 +117,5 @@ public final class IOHandle extends NativeIOInterface
      */
     private native void createHandle(String fileName, int accessFlag,
                                      int creationFlag) throws NITFException;
-    
+
 }

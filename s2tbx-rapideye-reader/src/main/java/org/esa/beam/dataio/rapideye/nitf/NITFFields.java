@@ -3,7 +3,7 @@ package org.esa.beam.dataio.rapideye.nitf;
 /**
  * Utility class for holding NITF constant string values
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class NITFFields {
     public static final String FHDR = "FHDR";

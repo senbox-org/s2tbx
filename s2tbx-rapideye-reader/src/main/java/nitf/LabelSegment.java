@@ -25,27 +25,25 @@ package nitf;
 /**
  * A representation of the NITF Label segment
  */
-public final class LabelSegment extends NITFObject
-{
+public final class LabelSegment extends NITFObject {
 
     /**
      * @see NITFObject#NITFObject(long)
      */
-    LabelSegment(long address)
-    {
+    LabelSegment(long address) {
         super(address);
     }
 
     /**
      * Returns the LabelSubheader object associated with this segment
-     * 
+     *
      * @return the LabelSubheader object associated with this segment
      */
     public native LabelSubheader getSubheader();
 
     /**
      * Returns the offset (in the file) where this segment starts
-     * 
+     *
      * @return the offset (in the file) where this segment starts
      */
     public native long getOffset();

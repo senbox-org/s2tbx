@@ -25,26 +25,22 @@ package nitf;
 /**
  * The handle that gives access to writing images
  */
-public final class ImageWriter extends DestructibleObject
-{
+public final class ImageWriter extends DestructibleObject {
 
     /**
      * @see DestructibleObject#DestructibleObject(long)
      */
-    ImageWriter(long address)
-    {
+    ImageWriter(long address) {
         super(address);
     }
 
     /**
      * Attaches the specified ImageSource to this ImageWriter
-     * 
-     * @param imageSource
-     *            the imageSource to attach
+     *
+     * @param imageSource the imageSource to attach
      * @return true if it attached successfully, false otherwise
-     * @throws NITFException
-     *             if an ImageSource has already been attached, or if an error
-     *             occurs
+     * @throws NITFException if an ImageSource has already been attached, or if an error
+     *                       occurs
      */
     public native boolean attachSource(ImageSource imageSource)
             throws NITFException;
@@ -58,20 +54,18 @@ public final class ImageWriter extends DestructibleObject
      * band for each block column, however for the same iamge dimensions, pixel
      * size and number of bands it amount to the same storage since the blocks
      * of the S mode image are smaller (each contains only one band of data)
-     * 
+     *
      * @param flag
      * @return Returns the current enable/disable state
      */
     public native boolean setWriteCaching(boolean flag);
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 

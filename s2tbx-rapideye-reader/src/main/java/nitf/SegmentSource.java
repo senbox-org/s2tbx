@@ -25,13 +25,11 @@ package nitf;
 /**
  * Represents a source of an image band
  */
-public class SegmentSource extends NITFObject
-{
+public class SegmentSource extends NITFObject {
     /**
      * @see NITFObject#NITFObject(long)
      */
-    SegmentSource(long address)
-    {
+    SegmentSource(long address) {
         super(address);
     }
 

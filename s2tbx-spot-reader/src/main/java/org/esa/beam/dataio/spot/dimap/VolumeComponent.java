@@ -2,17 +2,18 @@ package org.esa.beam.dataio.spot.dimap;
 
 /**
  * This maps to the corresponding DIMAP Component element.
+ *
  * @author Cosmin Cara
  */
-public class VolumeComponent
-{
+public class VolumeComponent {
     String title;
     String type;
     String path;
     String thumbnailPath;
     int[] index;
 
-    public VolumeComponent() {}
+    public VolumeComponent() {
+    }
 
     public String getTitle() {
         return title;
@@ -26,7 +27,9 @@ public class VolumeComponent
         return path;
     }
 
-    public int[] getIndex() { return index; }
+    public int[] getIndex() {
+        return index;
+    }
 
     public String getThumbnailPath() {
         return thumbnailPath;

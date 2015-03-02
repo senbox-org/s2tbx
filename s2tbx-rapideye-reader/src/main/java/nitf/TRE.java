@@ -29,8 +29,7 @@ import java.util.List;
 /**
  * A representation of the NITF Tagged Record Extensions (TRE)
  */
-public final class TRE extends DestructibleObject
-{
+public final class TRE extends DestructibleObject {
 
     /**
      * Creates a new TRE of the given type. The tag is the TRE tag (such as
@@ -38,18 +37,14 @@ public final class TRE extends DestructibleObject
      * plug-in may not be able to find the TRE, or it may not be able to decide
      * which TREDescription to use by default. In those cases, a NITFException
      * will be thrown.
-     * 
-     * @param tag
-     *            the type of TRE to create
-     * @param id
-     *            the id of the TRE Description to use, or null to use the
+     *
+     * @param tag the type of TRE to create
+     * @param id  the id of the TRE Description to use, or null to use the
      *            default
-     * @throws NITFException
-     *             if tag is an unkown type, or if the default description can
-     *             not be identified
+     * @throws NITFException if tag is an unkown type, or if the default description can
+     *                       not be identified
      */
-    public TRE(String tag) throws NITFException
-    {
+    public TRE(String tag) throws NITFException {
         this(tag, null);
     }
 
@@ -58,17 +53,13 @@ public final class TRE extends DestructibleObject
      * "JITCID"). The id is the identifier of the TREDescription. Each
      * TREDescription has its own identifier pertaining to a specific revision,
      * etc. Many TREs will not have a revision, so you can leave the id null.
-     * 
-     * @param tag
-     *            the type of TRE to create
-     * @param id
-     *            the id of the TRE Description to use, or null to use the
+     *
+     * @param tag the type of TRE to create
+     * @param id  the id of the TRE Description to use, or null to use the
      *            default
-     * @throws NITFException
-     *             if tag is an unkown type
+     * @throws NITFException if tag is an unkown type
      */
-    public TRE(String tag, String id) throws NITFException
-    {
+    public TRE(String tag, String id) throws NITFException {
         if (!PluginRegistry.canHandleTRE(tag))
             throw new NITFException(
                     "TRE Handler cannot be found for this TRE: " + tag);
@@ -79,8 +70,7 @@ public final class TRE extends DestructibleObject
     /**
      * @see NITFObject#NITFObject(long)
      */
-    TRE(long address)
-    {
+    TRE(long address) {
         super(address);
     }
 
@@ -88,14 +78,14 @@ public final class TRE extends DestructibleObject
 
     /**
      * Returns the (possibly computed) current size of this TRE
-     * 
+     *
      * @return
      */
     public native int getCurrentSize();
 
     /**
      * Returns the TRE identifier tag
-     * 
+     *
      * @return the TRE identifier tag
      */
     public native String getTag();
@@ -105,47 +95,39 @@ public final class TRE extends DestructibleObject
      * identifier for the field. Check out the TRE Descriptions for a listing of
      * the field tags for each TRE. Note - Fields that loop will have a tag
      * TAG[i], such that i is the number in the loop, starting with 0
-     * 
-     * @param tag
-     *            the identifier for the field
+     *
+     * @param tag the identifier for the field
      * @return true if the field exists, false otherwise
      */
     public native boolean exists(String tag);
 
     /**
      * Returns a List of Fields that match the given pattern.
-     * 
+     * <p/>
      * TODO : more documentation here
-     * 
-     * @param pattern
-     *            the pattern to match
+     *
+     * @param pattern the pattern to match
      * @return Fields that match the pattern
-     * @throws NITFException
-     *             if an error occurs or no field with with the given tag exists
+     * @throws NITFException if an error occurs or no field with with the given tag exists
      */
     public native List<FieldPair> find(String pattern) throws NITFException;
 
     /**
      * Returns the Field associated with the given tag
-     * 
-     * @param tag
-     *            the identifier for the field
+     *
+     * @param tag the identifier for the field
      * @return the Field, if found, or null if not found
-     * @throws NITFException
-     *             if an error occurs
+     * @throws NITFException if an error occurs
      */
     public native Field getField(String tag) throws NITFException;
 
     /**
      * Attempts to set the value of the field referenced by tag to the data
      * given. Throws a NITFException if an error occurs.
-     * 
-     * @param tag
-     *            the identifier for the field
-     * @param data
-     *            the data to use
-     * @throws NITFException
-     *             if an error occurs
+     *
+     * @param tag  the identifier for the field
+     * @param data the data to use
+     * @throws NITFException if an error occurs
      */
     public native boolean setField(String tag, byte[] data)
             throws NITFException;
@@ -153,32 +135,25 @@ public final class TRE extends DestructibleObject
     /**
      * Attempts to set the value of the field referenced by tag to the data
      * given. Throws a NITFException if an error occurs.
-     * 
-     * @param tag
-     *            the identifier for the field
-     * @param data
-     *            the String to set the field to
-     * @throws NITFException
-     *             if an error occurs
+     *
+     * @param tag  the identifier for the field
+     * @param data the String to set the field to
+     * @throws NITFException if an error occurs
      */
-    public boolean setField(String tag, String data) throws NITFException
-    {
+    public boolean setField(String tag, String data) throws NITFException {
         return setField(tag, data.getBytes());
     }
 
     /**
      * Prints the contents of the TRE to the given PrintStream
-     * 
-     * @param stream
-     *            PrintStream to print to
+     *
+     * @param stream PrintStream to print to
      * @throws NITFException
      */
-    public void print(PrintStream stream) throws NITFException
-    {
+    public void print(PrintStream stream) throws NITFException {
         stream.println("\n---------------" + getTag() + "---------------");
 
-        for (TREIterator it = iterator(); it.hasNext();)
-        {
+        for (TREIterator it = iterator(); it.hasNext(); ) {
             FieldPair pair = it.next();
 
             String desc = it.getFieldDescription();
@@ -186,11 +161,11 @@ public final class TRE extends DestructibleObject
             Field field = pair.getField();
             stream
                     .println(pair.getName()
-                            + (desc != null ? (" (" + desc + ")") : "")
-                            + " = ["
-                            + (field.getType() == FieldType.NITF_BINARY ? ("<binary stuff, length = "
-                                    + field.getLength() + ">")
-                                    : field.toString()) + "]");
+                                     + (desc != null ? (" (" + desc + ")") : "")
+                                     + " = ["
+                                     + (field.getType() == FieldType.NITF_BINARY ? ("<binary stuff, length = "
+                            + field.getLength() + ">")
+                            : field.toString()) + "]");
         }
 
         stream.println("------------------------------------");
@@ -199,34 +174,34 @@ public final class TRE extends DestructibleObject
     /**
      * Retrieve an Iterator for FieldPairs. This will iterate through all of the
      * fields in the TRE, returning a FieldPair for each.
-     * 
+     *
      * @return Iterator of FieldPairs
      */
-    public TREIterator iterator()
-    {
+    public TREIterator iterator() {
         return new TREIterator(this);
+    }
+
+    @Override
+    protected MemoryDestructor getDestructor() {
+        return new Destructor();
     }
 
     /**
      * A simple class that models a name/field pair
      */
-    public static final class FieldPair
-    {
+    public static final class FieldPair {
         protected String name;
 
         protected Field field;
 
-        protected FieldPair()
-        {
+        protected FieldPair() {
         }
 
-        public String getName()
-        {
+        public String getName() {
             return name;
         }
 
-        public Field getField()
-        {
+        public Field getField() {
             return field;
         }
     }
@@ -235,15 +210,12 @@ public final class TRE extends DestructibleObject
      * An Iterator for TRE FieldPairs
      */
     public static final class TREIterator extends NITFObject implements
-            Iterator<FieldPair>
-    {
-        protected TREIterator(TRE tre)
-        {
+            Iterator<FieldPair> {
+        protected TREIterator(TRE tre) {
             construct(tre);
         }
 
-        protected TREIterator(long address)
-        {
+        protected TREIterator(long address) {
             super(address);
         }
 
@@ -253,22 +225,14 @@ public final class TRE extends DestructibleObject
 
         public native String getFieldDescription();
 
-        public void remove()
-        {
+        public void remove() {
             // do nothing - not supported
         }
 
         private native void construct(TRE tre);
     }
 
-    @Override
-    protected MemoryDestructor getDestructor()
-    {
-        return new Destructor();
-    }
-
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 }

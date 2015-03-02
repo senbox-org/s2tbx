@@ -39,7 +39,8 @@ Thus, vector data are stored to and restored to from <a href="../general/BeamDim
 files. A product can comprise any number of named <i>vector data containers</i>. Each container may virtually comprise
 any number of vector data nodes.
 
-There are two general occurrences of vector data in the Sentinel-2 Toolbox: <b>geometries</b> and <b>correlative</b> data. Both of these
+There are two general occurrences of vector data in the Sentinel-2 Toolbox: <b>geometries</b> and <b>correlative</b>
+data. Both of these
 concepts are thoroughly described below.
 
 <h3>1) Geometries</h3>
@@ -253,19 +254,20 @@ concepts are thoroughly described below.
 
 <p>
     There are several built-in strategies for importing vector data into the Sentinel-2 Toolbox:
-    <ol>
-        <li>Import ESRI shapefiles (see below)</li>
-        <li>Import generic correlative data from CSV files (see <a href="ImportCSV.html">here</a>)</li>
-        <li>Import SeaDAS ship tracks (see <a href="ImportSeaDASTrack.html">here</a>)</li>
-        <li>Import Mermaid data (see <a href="ImportMermaid.html">here</a>)</li>
-    </ol>
+<ol>
+    <li>Import ESRI shapefiles (see below)</li>
+    <li>Import generic correlative data from CSV files (see <a href="ImportCSV.html">here</a>)</li>
+    <li>Import SeaDAS ship tracks (see <a href="ImportSeaDASTrack.html">here</a>)</li>
+    <li>Import Mermaid data (see <a href="ImportMermaid.html">here</a>)</li>
+</ol>
 </p>
 
 <p>
     The <a href="ImportShapefile.html">Import Shapefile</a> command allows the user to import geometries from <i>ESRI
     Shapefiles(*.shp)</i>: Multiple geometries can be imported from a Shapefile.
     The geometry coordinates used in the Shapefile will be converted to the coordinates reference system used by the
-    current data product. Note that the Sentinel-2 Toolbox does only offer limited support regarding the various style settings which
+    current data product. Note that the Sentinel-2 Toolbox does only offer limited support regarding the various style
+    settings which
     may be attached to a specific Shapefile. It also currently ignores all the attribute data that usually
     come with a Shapefile. This may change in later SNAP versions.
 </p>
