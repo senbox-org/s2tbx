@@ -180,113 +180,14 @@ public class L1bMetadata {
             Object ob = unmarshaller.unmarshal(stream);
             Object casted = ((JAXBElement) ob).getValue();
 
-            Level1B_User_Product product = (Level1B_User_Product) casted;
-            productCharacteristics = L1bMetadataProc.getProductOrganization(product);
-
-            crs = L1bMetadataProc.getCrs(product);
-
-            Collection<String> tileNames = L1bMetadataProc.getTiles(product);
-            List<File> fullTileNamesList = new ArrayList<File>();
-
-            tileList = new ArrayList<Tile>();
-
-            for (String granuleName : tileNames) {
-                File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
-
-                if (nestedMetadata.exists()) {
-                    logger.log(Level.FINE, "File found: " + nestedMetadata.getAbsolutePath());
-                    S2L1bGranuleDirFilename aGranuleDir = S2L1bGranuleDirFilename.create(granuleName);
-                    Guardian.assertNotNull("aGranuleDir", aGranuleDir);
-                    String theName = aGranuleDir.getMetadataFilename().name;
-
-                    File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-                    if (nestedGranuleMetadata.exists()) {
-                        fullTileNamesList.add(nestedGranuleMetadata);
-                    } else {
-                        String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
-                        logger.log(Level.WARNING, errorMessage);
-                    }
-                } else {
-                    logger.log(Level.SEVERE, "File not found: " + nestedMetadata.getAbsolutePath());
-                }
+            if(casted instanceof Level1B_User_Product)
+            {
+                initProduct(stream, file, parent, casted);
             }
-
-            for (File aGranuleMetadataFile : fullTileNamesList) {
-                Object aob = unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
-                Object acasted = ((JAXBElement) aob).getValue();
-
-                Level1B_Granule aGranule = (Level1B_Granule) acasted;
-                Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule);
-
-                Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
-
-                t.tileGeometry10M = geoms.get(10);
-                t.tileGeometry20M = geoms.get(20);
-                t.tileGeometry60M = geoms.get(60);
-
-                // fixme get solar and incidence info
-                t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
-                t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
-
-                // critical use corner infos
-                t.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
-
-                tileList.add(t);
+            else
+            {
+                initTile(stream, file, parent, casted);
             }
-
-            // fixme get solar and incidence angles from DATASTRIP
-
-            S2L1bDatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
-            S2L1bDatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
-
-            File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
-
-            metadataElement = new MetadataElement("root");
-            MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
-            MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
-            metadataElement.addElement(userProduct);
-            metadataElement.addElement(dataStrip);
-            MetadataElement granulesMetaData = new MetadataElement("Granules");
-
-            // get datastrip...
-            Object dStrip = unmarshaller.unmarshal(dataStripMetadata);
-            Object castedStrip = ((JAXBElement) dStrip).getValue();
-
-            Level1B_DataStrip theDataStrip = (Level1B_DataStrip) castedStrip;
-            int numheaders = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header().size();
-
-            // fixme remove log
-            logger.fine(String.format("Recovered %d geometric headers.", numheaders));
-
-            List<AnglesGrid> sunGrid = new ArrayList<AnglesGrid>();
-            List<AnglesGrid> incidenceGrid = new ArrayList<AnglesGrid>();
-
-            List<A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header> headers = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header();
-            for (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header header : headers) {
-                Iterator it = header.getLocated_Geometric_Header().iterator();
-                while (it.hasNext()) {
-                    A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header o = (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header) it.next();
-                    AnglesGrid tmpGrid = new AnglesGrid();
-                    tmpGrid.azimuth = o.getSolar_Angles().getAZIMUTH_ANGLE().getValue();
-                    tmpGrid.zenith = o.getSolar_Angles().getZENITH_ANGLE().getValue();
-                    sunGrid.add(tmpGrid);
-
-                    AnglesGrid tmpIncidenceGrid = new AnglesGrid();
-                    tmpIncidenceGrid.azimuth = o.getIncidence_Angles().getAZIMUTH_ANGLE().getValue();
-                    tmpIncidenceGrid.zenith = o.getIncidence_Angles().getZENITH_ANGLE().getValue();
-                    incidenceGrid.add(tmpIncidenceGrid);
-                }
-            }
-
-            // fixme sunGrid and incidenceGrid are now available in sunGrid and incidenceGrid
-            // look at RapidEyeL1Reader:initGeoCoding for lon/lat tiepointgridss
-
-            for (File aGranuleMetadataFile : fullTileNamesList) {
-                MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
-                granulesMetaData.addElement(aGranule);
-            }
-
-            metadataElement.addElement(granulesMetaData);
 
         } catch (JAXBException e) {
             logger.severe(Utils.getStackTrace(e));
@@ -296,6 +197,147 @@ public class L1bMetadata {
             logger.severe(Utils.getStackTrace(e));
         } catch (IOException e) {
             logger.severe(Utils.getStackTrace(e));
+        }
+    }
+
+
+    private void initProduct(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+        Level1B_User_Product product = (Level1B_User_Product) casted;
+        productCharacteristics = L1bMetadataProc.getProductOrganization(product);
+
+        crs = L1bMetadataProc.getCrs(product);
+
+        Collection<String> tileNames = L1bMetadataProc.getTiles(product);
+        List<File> fullTileNamesList = new ArrayList<File>();
+
+        tileList = new ArrayList<Tile>();
+
+        for (String granuleName : tileNames) {
+            File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
+
+            if (nestedMetadata.exists()) {
+                logger.log(Level.FINE, "File found: " + nestedMetadata.getAbsolutePath());
+                S2L1bGranuleDirFilename aGranuleDir = S2L1bGranuleDirFilename.create(granuleName);
+                Guardian.assertNotNull("aGranuleDir", aGranuleDir);
+                String theName = aGranuleDir.getMetadataFilename().name;
+
+                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
+                if (nestedGranuleMetadata.exists()) {
+                    fullTileNamesList.add(nestedGranuleMetadata);
+                } else {
+                    String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
+                    logger.log(Level.WARNING, errorMessage);
+                }
+            } else {
+                logger.log(Level.SEVERE, "File not found: " + nestedMetadata.getAbsolutePath());
+            }
+        }
+
+        for (File aGranuleMetadataFile : fullTileNamesList) {
+            Object aob = unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
+            Object acasted = ((JAXBElement) aob).getValue();
+
+            Level1B_Granule aGranule = (Level1B_Granule) acasted;
+            Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule);
+
+            Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
+
+            t.tileGeometry10M = geoms.get(10);
+            t.tileGeometry20M = geoms.get(20);
+            t.tileGeometry60M = geoms.get(60);
+
+            // fixme get solar and incidence info
+            t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
+            t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
+
+            // critical use corner infos
+            t.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
+
+            tileList.add(t);
+        }
+
+        // fixme get solar and incidence angles from DATASTRIP
+
+        S2L1bDatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
+        S2L1bDatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
+
+        File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
+
+        metadataElement = new MetadataElement("root");
+        MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
+        MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
+        metadataElement.addElement(userProduct);
+        metadataElement.addElement(dataStrip);
+        MetadataElement granulesMetaData = new MetadataElement("Granules");
+
+        // get datastrip...
+        Object dStrip = unmarshaller.unmarshal(dataStripMetadata);
+        Object castedStrip = ((JAXBElement) dStrip).getValue();
+
+        Level1B_DataStrip theDataStrip = (Level1B_DataStrip) castedStrip;
+        int numheaders = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header().size();
+
+        // fixme remove log
+        logger.fine(String.format("Recovered %d geometric headers.", numheaders));
+
+        List<AnglesGrid> sunGrid = new ArrayList<AnglesGrid>();
+        List<AnglesGrid> incidenceGrid = new ArrayList<AnglesGrid>();
+
+        List<A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header> headers = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header();
+        for (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header header : headers) {
+            Iterator it = header.getLocated_Geometric_Header().iterator();
+            while (it.hasNext()) {
+                A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header o = (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header) it.next();
+                AnglesGrid tmpGrid = new AnglesGrid();
+                tmpGrid.azimuth = o.getSolar_Angles().getAZIMUTH_ANGLE().getValue();
+                tmpGrid.zenith = o.getSolar_Angles().getZENITH_ANGLE().getValue();
+                sunGrid.add(tmpGrid);
+
+                AnglesGrid tmpIncidenceGrid = new AnglesGrid();
+                tmpIncidenceGrid.azimuth = o.getIncidence_Angles().getAZIMUTH_ANGLE().getValue();
+                tmpIncidenceGrid.zenith = o.getIncidence_Angles().getZENITH_ANGLE().getValue();
+                incidenceGrid.add(tmpIncidenceGrid);
+            }
+        }
+
+        // fixme sunGrid and incidenceGrid are now available in sunGrid and incidenceGrid
+        // look at RapidEyeL1Reader:initGeoCoding for lon/lat tiepointgridss
+
+        for (File aGranuleMetadataFile : fullTileNamesList) {
+            MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
+            granulesMetaData.addElement(aGranule);
+        }
+
+        metadataElement.addElement(granulesMetaData);
+    }
+
+    private void initTile(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+        Level1B_Granule product = (Level1B_Granule) casted;
+        productCharacteristics = new L1bMetadata.ProductCharacteristics();
+
+        // critical fix tile size
+
+        List<File> fullTileNamesList = new ArrayList<File>();
+        tileList = new ArrayList<Tile>();
+
+        {
+            Level1B_Granule aGranule = product;
+            Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule);
+
+            Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
+
+            t.tileGeometry10M = geoms.get(10);
+            t.tileGeometry20M = geoms.get(20);
+            t.tileGeometry60M = geoms.get(60);
+
+            // fixme get solar and incidence info
+            t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
+            t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
+
+            // critical use corner infos
+            t.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
+
+            tileList.add(t);
         }
     }
 
