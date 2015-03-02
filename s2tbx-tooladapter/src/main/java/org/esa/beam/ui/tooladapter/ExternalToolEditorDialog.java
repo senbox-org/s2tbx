@@ -162,7 +162,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         //processingPanel.setMaximumSize(new Dimension(600, 230));
 
         JPanel preprocessingPanel = new JPanel();
-        preprocessingPanel.setLayout(new GridLayout(2, 1, 5, 5));
+        preprocessingPanel.setLayout(new GridLayout(2, 1, 10, 10));
         preprocessingPanel.setBorder(BorderFactory.createTitledBorder("Preprocessing"));
 
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("preprocessorExternalTool");

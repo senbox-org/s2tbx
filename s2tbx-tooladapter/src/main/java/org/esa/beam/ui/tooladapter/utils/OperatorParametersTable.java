@@ -1,9 +1,10 @@
 package org.esa.beam.ui.tooladapter.utils;
 
-import com.bc.ceres.binding.PropertySet;
+import com.bc.ceres.binding.*;
 import com.bc.ceres.swing.binding.BindingContext;
 import org.apache.commons.collections.BidiMap;
 import org.apache.commons.collections.bidimap.DualHashBidiMap;
+import org.esa.beam.framework.gpf.annotations.ParameterDescriptorFactory;
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
@@ -177,8 +178,26 @@ public class OperatorParametersTable extends JTable {
                     if(descriptor.getDataType() != typesMap.get(aValue)) {
                         descriptor.setDataType((Class<?>) typesMap.get(aValue));
                         descriptor.setDefaultValue(descriptor.getDefaultValue());
-                        propertiesValueUIDescriptorMap.put(descriptor, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", descriptor, operator, context, null));
-                        revalidate();
+                        context.getPropertySet().removeProperty(context.getPropertySet().getProperty(descriptor.getName()));
+                        try {
+                            PropertyDescriptor property =  ParameterDescriptorFactory.convert(descriptor, new ParameterDescriptorFactory().getSourceProductMap());
+                            try {
+                                property.setDefaultValue(descriptor.getDefaultValue());
+                            }catch (Exception ex){
+                                ex.printStackTrace();
+                                //TODO if the previous value cannot be cast, this shoudl be ok???
+                            }
+                            DefaultPropertySetDescriptor propertySetDescriptor = new DefaultPropertySetDescriptor();
+                            propertySetDescriptor.addPropertyDescriptor(property);
+                            PropertyContainer container = PropertyContainer.createMapBacked(new HashMap<>(), propertySetDescriptor);
+                            context.getPropertySet().addProperties(container.getProperties());
+                            propertiesValueUIDescriptorMap.put(descriptor, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", descriptor, operator, context, null));
+                            revalidate();
+                            repaint();
+                        } catch (ConversionException e) {
+                            e.printStackTrace();
+                            //TODO show error
+                        }
                     }
                 case 5:
                     //the custom editor should handle this
