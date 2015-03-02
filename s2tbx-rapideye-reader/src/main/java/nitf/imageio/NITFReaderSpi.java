@@ -33,65 +33,53 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Locale;
 
-public class NITFReaderSpi extends ImageReaderSpi
-{
+public class NITFReaderSpi extends ImageReaderSpi {
     private static final Log log = LogFactory.getLog(NITFReaderSpi.class);
 
-    public NITFReaderSpi()
-    {
+    public NITFReaderSpi() {
         super("NITRO", // vendorName
-                "1.0", // version
-                new String[] { "NITF", "nitf", "NSIF" }, // names
-                new String[] { "ntf", "nitf", "nsf" }, // suffixes
-                new String[] { "image/x-ntf", "image/x-nitf" }, // MIMETypes
-                NITFReader.class.getName(), // readerClassName
-                new Class[] { File.class }, // inputTypes
-                null, // writerSpiNames
-                false, // supportsStandardStreamMetadataFormat
-                null, // nativeStreamMetadataFormatName
-                null, // nativeStreamMetadataFormatClassName
-                null, // extraStreamMetadataFormatNames
-                null, // extraStreamMetadataFormatClassNames
-                false, // supportsStandardImageMetadataFormat
-                null, // nativeImageMetadataFormatName
-                null, // nativeImageMetadataFormatClassName
-                null, // extraImageMetadataFormatNames
-                null // extraImageMetadataFormatClassNames
+              "1.0", // version
+              new String[]{"NITF", "nitf", "NSIF"}, // names
+              new String[]{"ntf", "nitf", "nsf"}, // suffixes
+              new String[]{"image/x-ntf", "image/x-nitf"}, // MIMETypes
+              NITFReader.class.getName(), // readerClassName
+              new Class[]{File.class}, // inputTypes
+              null, // writerSpiNames
+              false, // supportsStandardStreamMetadataFormat
+              null, // nativeStreamMetadataFormatName
+              null, // nativeStreamMetadataFormatClassName
+              null, // extraStreamMetadataFormatNames
+              null, // extraStreamMetadataFormatClassNames
+              false, // supportsStandardImageMetadataFormat
+              null, // nativeImageMetadataFormatName
+              null, // nativeImageMetadataFormatClassName
+              null, // extraImageMetadataFormatNames
+              null // extraImageMetadataFormatClassNames
         );
     }
 
     @Override
-    public boolean canDecodeInput(Object source) throws IOException
-    {
+    public boolean canDecodeInput(Object source) throws IOException {
         boolean result = source instanceof File;
         if (result)
             result = isNITF((File) source);
         return result;
     }
 
-    public static boolean isNITF(File file)
-    {
+    public static boolean isNITF(File file) {
         FileInputStream fin = null;
-        try
-        {
+        try {
             fin = new FileInputStream(file);
             byte[] firstFour = new byte[4];
             fin.read(firstFour);
             return new String(firstFour).equals("NITF");
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             return false;
-        }
-        finally
-        {
-            try
-            {
+        } finally {
+            try {
                 if (fin != null)
                     fin.close();
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 log.error(ExceptionUtils.getStackTrace(e));
             }
         }
@@ -99,14 +87,12 @@ public class NITFReaderSpi extends ImageReaderSpi
 
     @Override
     public ImageReader createReaderInstance(Object extension)
-            throws IOException
-    {
+            throws IOException {
         return new NITFReader(this);
     }
 
     @Override
-    public String getDescription(Locale locale)
-    {
+    public String getDescription(Locale locale) {
         return "NITF 2.0/2.1 Reader";
     }
 

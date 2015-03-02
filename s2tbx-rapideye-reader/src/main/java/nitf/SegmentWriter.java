@@ -25,38 +25,32 @@ package nitf;
 /**
  * The handle that gives access to writing segments
  */
-public final class SegmentWriter extends DestructibleObject
-{
+public final class SegmentWriter extends DestructibleObject {
 
     /**
      * @see DestructibleObject#DestructibleObject(long)
      */
-    SegmentWriter(long address)
-    {
+    SegmentWriter(long address) {
         super(address);
     }
 
     /**
      * Attaches the specified SegmentSource to this SegmentWriter
-     * 
-     * @param segmentSource
-     *            the SegmentSource to attach
+     *
+     * @param segmentSource the SegmentSource to attach
      * @return true if it attached successfully, false otherwise
-     * @throws NITFException
-     *             if a SegmentSource has already been attached, or if an error
-     *             occurs
+     * @throws NITFException if a SegmentSource has already been attached, or if an error
+     *                       occurs
      */
     public native boolean attachSource(SegmentSource segmentSource)
             throws NITFException;
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 

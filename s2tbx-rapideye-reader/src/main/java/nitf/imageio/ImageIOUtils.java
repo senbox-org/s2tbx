@@ -45,44 +45,39 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class ImageIOUtils
-{
+public class ImageIOUtils {
 
     private static final Log log = LogFactory.getLog(ImageIOUtils.class);
 
-    private ImageIOUtils()
-    {
+    private ImageIOUtils() {
     }
 
     /**
      * Returns an ImageReader given the input filename
-     * 
+     *
      * @param filename
      * @return
      * @throws IOException
      */
     public static ImageReader getImageReader(String filename)
-            throws IOException
-    {
+            throws IOException {
         return getImageReader(new File(filename));
     }
 
     /**
      * Returns an ImageReader given the input file
-     * 
+     *
      * @param file
      * @return
      * @throws IOException
      */
-    public static ImageReader getImageReader(File file) throws IOException
-    {
+    public static ImageReader getImageReader(File file) throws IOException {
         String ext = FilenameUtils.getExtension(file.getName().toLowerCase());
         ImageReader reader = null;
 
         Iterator<ImageReader> imageReaders = ImageIO
                 .getImageReadersBySuffix(ext);
-        if (imageReaders.hasNext())
-        {
+        if (imageReaders.hasNext()) {
             reader = imageReaders.next();
             ImageInputStream stream = ImageIO.createImageInputStream(file);
             reader.setInput(stream);
@@ -92,19 +87,17 @@ public class ImageIOUtils
 
     /**
      * Returns an ImageReader given the format, and sets the input source
-     * 
+     *
      * @param file
      * @return
      * @throws IOException
      */
     public static ImageReader getImageReader(String format, Object input)
-            throws IOException
-    {
+            throws IOException {
         ImageReader reader = null;
         Iterator<ImageReader> imageReaders = ImageIO
                 .getImageReadersByFormatName(format);
-        if (imageReaders.hasNext())
-        {
+        if (imageReaders.hasNext()) {
             reader = imageReaders.next();
             reader.setInput(input);
         }
@@ -113,33 +106,30 @@ public class ImageIOUtils
 
     /**
      * Returns an ImageWriter given the output filename
-     * 
+     *
      * @param filename
      * @return
      * @throws IOException
      */
     public static ImageWriter getImageWriter(String filename)
-            throws IOException
-    {
+            throws IOException {
         return getImageWriter(new File(filename));
     }
 
     /**
      * Returns an ImageWriter given the input file
-     * 
+     *
      * @param file
      * @return
      * @throws IOException
      */
-    public static ImageWriter getImageWriter(File file) throws IOException
-    {
+    public static ImageWriter getImageWriter(File file) throws IOException {
         String ext = FilenameUtils.getExtension(file.getName().toLowerCase());
         ImageWriter writer = null;
 
         Iterator<ImageWriter> imageWriters = ImageIO
                 .getImageWritersBySuffix(ext);
-        if (imageWriters.hasNext())
-        {
+        if (imageWriters.hasNext()) {
             writer = imageWriters.next();
             ImageOutputStream stream = ImageIO.createImageOutputStream(file);
             writer.setOutput(stream);
@@ -147,14 +137,12 @@ public class ImageIOUtils
         return writer;
     }
 
-    public static String getPackageName(Class clazz)
-    {
+    public static String getPackageName(Class clazz) {
         // we can cheat and use the FilenameUtils to remove the class name
         return FilenameUtils.removeExtension(clazz.getCanonicalName());
     }
 
-    public static boolean canDisplay(BufferedImage image)
-    {
+    public static boolean canDisplay(BufferedImage image) {
         log.info("Data Type: " + image.getSampleModel().getDataType());
         log.info("Pixel Size: " + image.getColorModel().getPixelSize());
 
@@ -166,13 +154,12 @@ public class ImageIOUtils
      * Returns a list of Files contained in the given String array of files or
      * directories. If one of the array contents is a directory, it searches it.
      * Files ending in the extensions provided are returned in the list.
-     * 
+     *
      * @param filesOrDirs
      * @param extensions
      * @return
      */
-    public static List<File> getFiles(String[] filesOrDirs, String[] extensions)
-    {
+    public static List<File> getFiles(String[] filesOrDirs, String[] extensions) {
         List<File> files = new ArrayList<File>();
         final String[] exts = extensions;
         for (String arg : filesOrDirs) {
@@ -190,26 +177,22 @@ public class ImageIOUtils
         return files;
     }
 
-    public static JFrame showImage(BufferedImage image, String title)
-    {
+    public static JFrame showImage(BufferedImage image, String title) {
         return showImage(image, title, true);
     }
 
     public static JFrame showImage(BufferedImage image, String title,
-                                   boolean fitToScreen)
-    {
+                                   boolean fitToScreen) {
         JFrame frame = new JFrame(title != null ? title : "");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         Image im = image;
 
-        if (fitToScreen)
-        {
+        if (fitToScreen) {
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
             int imageHeight = image.getHeight();
             int imageWidth = image.getWidth();
-            if (imageHeight > screen.height || imageWidth > screen.width)
-            {
+            if (imageHeight > screen.height || imageWidth > screen.width) {
                 double hRatio = (imageHeight - screen.height) / screen.height;
                 double wRatio = (imageWidth - screen.width) / screen.width;
 
@@ -232,8 +215,7 @@ public class ImageIOUtils
         return frame;
     }
 
-    public static void centerWindow(Window w)
-    {
+    public static void centerWindow(Window w) {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension window = w.getSize();
         if (window.width == 0)
@@ -245,22 +227,18 @@ public class ImageIOUtils
         w.setLocation(left, top);
     }
 
-    public static ColorModel createGrayscaleColorModel(boolean invert)
-    {
+    public static ColorModel createGrayscaleColorModel(boolean invert) {
         byte[] rLUT = new byte[256];
         byte[] gLUT = new byte[256];
         byte[] bLUT = new byte[256];
         if (invert)
-            for (int i = 0; i < 256; i++)
-            {
+            for (int i = 0; i < 256; i++) {
                 rLUT[255 - i] = (byte) i;
                 gLUT[255 - i] = (byte) i;
                 bLUT[255 - i] = (byte) i;
             }
-        else
-        {
-            for (int i = 0; i < 256; i++)
-            {
+        else {
+            for (int i = 0; i < 256; i++) {
                 rLUT[i] = (byte) i;
                 gLUT[i] = (byte) i;
                 bLUT[i] = (byte) i;
@@ -270,17 +248,13 @@ public class ImageIOUtils
     }
 
     public static float[] findMinAndMax(float[] buffer, int pixelStride,
-                                        int numBands)
-    {
+                                        int numBands) {
         float min = Float.MAX_VALUE;
         float max = -Float.MAX_VALUE;
-        for (int i = 0; i < buffer.length; i += numBands)
-        {
-            for (int j = 0; j < pixelStride; ++j)
-            {
+        for (int i = 0; i < buffer.length; i += numBands) {
+            for (int j = 0; j < pixelStride; ++j) {
                 float value = buffer[i + j];
-                if (!Float.isInfinite(value))
-                {
+                if (!Float.isInfinite(value)) {
                     if (value < min)
                         min = value;
                     if (value > max)
@@ -288,21 +262,17 @@ public class ImageIOUtils
                 }
             }
         }
-        return new float[] { min, max };
+        return new float[]{min, max};
     }
 
     public static double[] findMinAndMax(double[] buffer, int pixelStride,
-                                         int numBands)
-    {
+                                         int numBands) {
         double min = Double.MAX_VALUE;
         double max = -Double.MAX_VALUE;
-        for (int i = 0; i < buffer.length; i += numBands)
-        {
-            for (int j = 0; j < pixelStride; ++j)
-            {
+        for (int i = 0; i < buffer.length; i += numBands) {
+            for (int j = 0; j < pixelStride; ++j) {
                 double value = buffer[i + j];
-                if (!Double.isInfinite(value))
-                {
+                if (!Double.isInfinite(value)) {
                     if (value < min)
                         min = value;
                     if (value > max)
@@ -310,18 +280,15 @@ public class ImageIOUtils
                 }
             }
         }
-        return new double[] { min, max };
+        return new double[]{min, max};
     }
 
     public static int[] findMinAndMax(short[] buffer, int pixelStride,
-                                      int numBands)
-    {
+                                      int numBands) {
         int min = 65535;
         int max = 0;
-        for (int i = 0; i < buffer.length; i += numBands)
-        {
-            for (int j = 0; j < pixelStride; ++j)
-            {
+        for (int i = 0; i < buffer.length; i += numBands) {
+            for (int j = 0; j < pixelStride; ++j) {
                 short value = buffer[i + j];
                 if (value < min)
                     min = value;
@@ -329,12 +296,12 @@ public class ImageIOUtils
                     max = value;
             }
         }
-        return new int[] { min, max };
+        return new int[]{min, max};
     }
 
     /**
      * Returns a generic banded WritableRaster
-     * 
+     *
      * @param numElems
      * @param numLines
      * @param bandOffsets
@@ -344,8 +311,7 @@ public class ImageIOUtils
     public static WritableRaster makeGenericBandedWritableRaster(int numElems,
                                                                  int numLines,
                                                                  int numBands,
-                                                                 int dataType)
-    {
+                                                                 int dataType) {
         int[] bandOffsets = new int[numBands];
         for (int i = 0; i < numBands; ++i)
             bandOffsets[i] = i;
@@ -359,14 +325,14 @@ public class ImageIOUtils
             throw new IllegalArgumentException("Invalid datatype: " + dataType);
 
         BandedSampleModel bsm = new BandedSampleModel(dataType, numElems,
-                numLines, bandOffsets.length, bandOffsets, bandOffsets);
+                                                      numLines, bandOffsets.length, bandOffsets, bandOffsets);
 
         return new SunWritableRaster(bsm, d, new Point(0, 0));
     }
 
     /**
      * Returns a generic pixel interleaved WritableRaster
-     * 
+     *
      * @param numElems
      * @param numLines
      * @param bandOffsets
@@ -374,11 +340,10 @@ public class ImageIOUtils
      * @return
      */
     public static WritableRaster makeGenericPixelInterleavedWritableRaster(
-                                                                           int numElems,
-                                                                           int numLines,
-                                                                           int numBands,
-                                                                           int dataType)
-    {
+            int numElems,
+            int numLines,
+            int numBands,
+            int dataType) {
         int[] bandOffsets = new int[numBands];
         for (int i = 0; i < numBands; ++i)
             bandOffsets[i] = i;
@@ -399,7 +364,7 @@ public class ImageIOUtils
 
         PixelInterleavedSampleModel pism = new PixelInterleavedSampleModel(
                 dataType, numElems, numLines, bandOffsets.length, numElems
-                        * bandOffsets.length, bandOffsets);
+                * bandOffsets.length, bandOffsets);
 
         return new SunWritableRaster(pism, d, new Point(0, 0));
     }
@@ -407,18 +372,16 @@ public class ImageIOUtils
     /**
      * Converts the float data to byte data, and sets the values in the byteData
      * buffer
-     * 
+     *
      * @param floatData
      * @param byteData
      */
     public static void floatToByteBuffer(float[] floatData, byte[] byteData,
-                                         int pixelStride, int numBands)
-    {
+                                         int pixelStride, int numBands) {
         float[] minMax = ImageIOUtils.findMinAndMax(floatData, pixelStride,
-                numBands);
+                                                    numBands);
         float scale = 255f / (minMax[1] - minMax[0]);
-        for (int i = 0, j = 0; i < floatData.length; i += numBands, j++)
-        {
+        for (int i = 0, j = 0; i < floatData.length; i += numBands, j++) {
             float val = floatData[i] - minMax[0];
             if (val < 0.0f)
                 val = 0.0f;
@@ -432,18 +395,16 @@ public class ImageIOUtils
     /**
      * Converts the float data to byte data, and sets the values in the byteData
      * buffer
-     * 
+     *
      * @param doubleData
      * @param byteData
      */
     public static void doubleToByteBuffer(double[] doubleData, byte[] byteData,
-                                          int pixelStride, int numBands)
-    {
+                                          int pixelStride, int numBands) {
         double[] minMax = ImageIOUtils.findMinAndMax(doubleData, pixelStride,
-                numBands);
+                                                     numBands);
         double scale = 255F / (minMax[1] - minMax[0]);
-        for (int i = 0, j = 0; i < doubleData.length; i += numBands, j++)
-        {
+        for (int i = 0, j = 0; i < doubleData.length; i += numBands, j++) {
             double val = doubleData[i] - minMax[0];
             if (val < 0.0f)
                 val = 0.0f;
@@ -457,20 +418,18 @@ public class ImageIOUtils
     /**
      * Converts the float data to byte data, and sets the values in the byteData
      * buffer
-     * 
+     *
      * @param shortData
      * @param byteData
      */
     public static void shortToByteBuffer(short[] shortData, byte[] byteData,
-                                         int pixelStride, int numBands)
-    {
+                                         int pixelStride, int numBands) {
         int[] minMax = ImageIOUtils.findMinAndMax(shortData, pixelStride,
-                numBands);
+                                                  numBands);
         double scale = 1.0;
         if (minMax[1] != minMax[0])
             scale = 256.0 / (minMax[1] - minMax[0]);
-        for (int i = 0, j = 0; i < shortData.length; i += numBands, j++)
-        {
+        for (int i = 0, j = 0; i < shortData.length; i += numBands, j++) {
             int value = (shortData[i] & 0xffff) - minMax[0];
             if (value < 0)
                 value = 0;
@@ -485,31 +444,28 @@ public class ImageIOUtils
      * Utility method for creating a BufferedImage from a source raster
      * Currently only Float->Byte and Byte->Byte are supported. Will throw an
      * {@link UnsupportedOperationException} if the conversion is not supported.
-     * 
+     *
      * @param raster
      * @param imageType
      * @return
      */
     public static BufferedImage rasterToBufferedImage(
-                                                      Raster raster,
-                                                      ImageTypeSpecifier imageType)
-    {
-        if (imageType == null)
-        {
+            Raster raster,
+            ImageTypeSpecifier imageType) {
+        if (imageType == null) {
             if (raster.getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE)
                 imageType = ImageTypeSpecifier.createGrayscale(8,
-                        DataBuffer.TYPE_BYTE, false);
+                                                               DataBuffer.TYPE_BYTE, false);
             else
                 throw new IllegalArgumentException(
                         "unable to dynamically determine the imageType");
         }
         // create a new buffered image, for display
         BufferedImage bufImage = imageType.createBufferedImage(raster
-                .getWidth(), raster.getHeight());
+                                                                       .getWidth(), raster.getHeight());
 
         if (raster.getDataBuffer().getDataType() == DataBuffer.TYPE_USHORT
-                && bufImage.getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE)
-        {
+                && bufImage.getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE) {
             // convert short pixels to bytes
             short[] shortData = ((DataBufferUShort) raster.getDataBuffer())
                     .getData();
@@ -517,10 +473,8 @@ public class ImageIOUtils
                     .getDataBuffer()).getData();
             ImageIOUtils.shortToByteBuffer(shortData, byteData, 1, raster
                     .getNumBands());
-        }
-        else if (raster.getDataBuffer().getDataType() == DataBuffer.TYPE_FLOAT
-                && bufImage.getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE)
-        {
+        } else if (raster.getDataBuffer().getDataType() == DataBuffer.TYPE_FLOAT
+                && bufImage.getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE) {
             // convert float pixels to bytes
             float[] floatData = ((DataBufferFloat) raster.getDataBuffer())
                     .getData();
@@ -528,10 +482,8 @@ public class ImageIOUtils
                     .getDataBuffer()).getData();
             ImageIOUtils.floatToByteBuffer(floatData, byteData, 1, raster
                     .getNumBands());
-        }
-        else if (raster.getDataBuffer().getDataType() == DataBuffer.TYPE_DOUBLE
-                && bufImage.getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE)
-        {
+        } else if (raster.getDataBuffer().getDataType() == DataBuffer.TYPE_DOUBLE
+                && bufImage.getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE) {
             // convert double pixels to bytes
             double[] doubleData = ((DataBufferDouble) raster.getDataBuffer())
                     .getData();
@@ -539,46 +491,38 @@ public class ImageIOUtils
                     .getDataBuffer()).getData();
             ImageIOUtils.doubleToByteBuffer(doubleData, byteData, 1, raster
                     .getNumBands());
-        }
-        else if ((raster.getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE && bufImage
+        } else if ((raster.getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE && bufImage
                 .getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_BYTE)
                 || (raster.getDataBuffer().getDataType() == DataBuffer.TYPE_USHORT && bufImage
-                        .getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_USHORT)
+                .getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_USHORT)
                 || (raster.getDataBuffer().getDataType() == DataBuffer.TYPE_SHORT && bufImage
-                        .getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_SHORT))
-        {
+                .getRaster().getDataBuffer().getDataType() == DataBuffer.TYPE_SHORT)) {
             bufImage.setData(raster);
-        }
-        else
-        {
+        } else {
             throw new UnsupportedOperationException(
                     "Unable to convert raster type to bufferedImage type: "
                             + raster.getDataBuffer().getDataType()
                             + " ==> "
                             + bufImage.getRaster().getDataBuffer()
-                                    .getDataType());
+                            .getDataType());
         }
         return bufImage;
     }
 
     /**
      * Turns a signed byte into an unsigned one.
-     * 
-     * @param b
-     *            The byte to read
+     *
+     * @param b The byte to read
      * @return An unsigned integer
      */
-    public static int makeUnsigned(byte b)
-    {
+    public static int makeUnsigned(byte b) {
         return b >= 0 ? (int) b : 255 + (int) b + 1;
     }
 
-    public static void main(String[] args)
-    {
-        List<File> files = getFiles(new String[] { "c:/", "c:/dev/" },
-                new String[] { "jpg" });
-        for (File file : files)
-        {
+    public static void main(String[] args) {
+        List<File> files = getFiles(new String[]{"c:/", "c:/dev/"},
+                                    new String[]{"jpg"});
+        for (File file : files) {
             log.info(file.getAbsolutePath());
         }
     }

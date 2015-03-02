@@ -26,36 +26,31 @@ package nitf;
  * Class representing a NITF object that has underlying memory that can be
  * independently destructed.
  */
-public abstract class DestructibleObject extends NITFObject
-{
+public abstract class DestructibleObject extends NITFObject {
 
     /**
      * Default constructor
      */
-    protected DestructibleObject()
-    {
+    protected DestructibleObject() {
         super();
     }
 
     /**
      * Constructor
-     * 
-     * @param address
-     *            the memory address of the underlying object
+     *
+     * @param address the memory address of the underlying object
      */
-    protected DestructibleObject(long address)
-    {
+    protected DestructibleObject(long address) {
         super(address);
         NITFResourceManager.getInstance().incrementRefCount(this);
     }
 
     /**
      * Sets the memory address, but also increments the reference count
-     * 
+     *
      * @param address
      */
-    synchronized void setAddress(long address)
-    {
+    synchronized void setAddress(long address) {
         super.setAddress(address);
         NITFResourceManager.getInstance().incrementRefCount(this);
     }
@@ -68,33 +63,30 @@ public abstract class DestructibleObject extends NITFObject
     /**
      * Attempts to destruct the underlying object, if it is not referenced
      * elsewhere.
-     * 
+     * <p>
      * Note: This method is public in order to give you more control of the
      * underlying memory. The garbage collector doesn't always finalize all
      * objects that go out of scope, so publicizing this could be useful.
-     * 
+     * <p>
      * If you try to access the object after it's underlying object has been
      * destroyed, you could be sunk. Call isValid() to see if it is still a
      * valid object.
      */
     @Deprecated
-    public void destruct()
-    {
+    public void destruct() {
         // does nothing - exists for backwards-compatibility
         // NITFResourceManager.getInstance().decrementRefCount(this);
     }
 
     @Override
-    protected void finalize() throws Throwable
-    {
+    protected void finalize() throws Throwable {
         NITFResourceManager.getInstance()
                 .decrementRefCount(getAddress(), false);
         super.finalize();
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return NITFResourceManager.getInstance().getObjectInfo(getAddress());
     }
 }

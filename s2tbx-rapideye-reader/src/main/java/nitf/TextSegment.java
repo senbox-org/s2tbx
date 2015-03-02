@@ -25,27 +25,25 @@ package nitf;
 /**
  * A representation of the NITF Text segment
  */
-public final class TextSegment extends NITFObject
-{
+public final class TextSegment extends NITFObject {
 
     /**
      * @see NITFObject#NITFObject(long)
      */
-    TextSegment(long address)
-    {
+    TextSegment(long address) {
         super(address);
     }
 
     /**
      * Returns the TextSubheader from this Text Segment
-     * 
+     *
      * @return
      */
     public native TextSubheader getSubheader();
 
     /**
      * Returns the file offset where this Text segment starts
-     * 
+     *
      * @return
      */
     public native long getOffset();

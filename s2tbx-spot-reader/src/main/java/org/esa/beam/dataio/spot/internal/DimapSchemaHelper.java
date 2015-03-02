@@ -22,7 +22,7 @@ import java.util.Map;
  * This utility class provides several methods to help with XSD schema validation
  * and type conversion (from XS types to BEAM types).
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class DimapSchemaHelper {
 

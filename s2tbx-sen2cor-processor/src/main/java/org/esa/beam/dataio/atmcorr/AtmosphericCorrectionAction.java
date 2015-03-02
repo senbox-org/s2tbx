@@ -25,7 +25,7 @@ import java.io.IOException;
  */
 public class AtmosphericCorrectionAction extends AbstractVisatAction {
 
-    private String appName = "Atmospheric Correction Processor (Sentinel 2)";
+    private String appName = "Sentinel 2 Level-2A Processor";
 
     @Override
     public void actionPerformed(CommandEvent event) {
@@ -35,7 +35,7 @@ public class AtmosphericCorrectionAction extends AbstractVisatAction {
     public void run() {
         final Window parent = VisatApp.getApp().getApplicationWindow();
         final ModelessDialog dialog = AtmosphericCorrectionDialog.createInstance(getAppContext(), parent,
-                appName, ModelessDialog.ID_APPLY_CLOSE, null);
+                                                                                 appName, ModelessDialog.ID_APPLY_CLOSE, null);
         dialog.show();
     }
 

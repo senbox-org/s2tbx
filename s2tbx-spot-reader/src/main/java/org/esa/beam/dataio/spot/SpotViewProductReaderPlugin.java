@@ -19,7 +19,7 @@ import java.util.Locale;
  * Visat plugin for reading SPOT-4 and SPOT-5 view files which are not
  * in the "official" (DIMAP+GeoTIFF) format.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class SpotViewProductReaderPlugin implements ProductReaderPlugIn {
 
@@ -54,7 +54,9 @@ public class SpotViewProductReaderPlugin implements ProductReaderPlugIn {
     }
 
     @Override
-    public String[] getFormatNames() { return SpotConstants.SPOTVIEW_FORMAT_NAMES; }
+    public String[] getFormatNames() {
+        return SpotConstants.SPOTVIEW_FORMAT_NAMES;
+    }
 
     @Override
     public String[] getDefaultFileExtensions() {
@@ -71,8 +73,7 @@ public class SpotViewProductReaderPlugin implements ProductReaderPlugIn {
         return new SpotViewFileFilter();
     }
 
-    private static boolean isSpotViewFilename(String filename)
-    {
+    private static boolean isSpotViewFilename(String filename) {
         boolean isMatch = false;
         for (String pattern : SpotConstants.SPOTVIEW_FILENAME_PATTERNS) {
             isMatch = filename.matches(pattern);
@@ -104,8 +105,7 @@ public class SpotViewProductReaderPlugin implements ProductReaderPlugIn {
         return null;
     }
 
-    private static boolean isMetadataFile(File file)
-    {
+    private static boolean isMetadataFile(File file) {
         return (file.getName().toLowerCase().endsWith(".xml"));
     }
 

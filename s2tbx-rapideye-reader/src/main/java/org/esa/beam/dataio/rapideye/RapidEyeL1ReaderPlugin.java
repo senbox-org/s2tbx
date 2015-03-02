@@ -17,7 +17,7 @@ import java.util.Locale;
  * Reader plugin class for RapidEye L1 products.
  * RE L1 products have rasters in NITF format.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class RapidEyeL1ReaderPlugin implements ProductReaderPlugIn {
 
@@ -64,7 +64,9 @@ public class RapidEyeL1ReaderPlugin implements ProductReaderPlugIn {
     }
 
     @Override
-    public Class[] getInputTypes() { return RapidEyeConstants.READER_INPUT_TYPES; }
+    public Class[] getInputTypes() {
+        return RapidEyeConstants.READER_INPUT_TYPES;
+    }
 
     @Override
     public ProductReader createReaderInstance() {
@@ -72,13 +74,19 @@ public class RapidEyeL1ReaderPlugin implements ProductReaderPlugIn {
     }
 
     @Override
-    public String[] getFormatNames() { return RapidEyeConstants.L1_FORMAT_NAMES; }
+    public String[] getFormatNames() {
+        return RapidEyeConstants.L1_FORMAT_NAMES;
+    }
 
     @Override
-    public String[] getDefaultFileExtensions() { return RapidEyeConstants.DEFAULT_EXTENSIONS; }
+    public String[] getDefaultFileExtensions() {
+        return RapidEyeConstants.DEFAULT_EXTENSIONS;
+    }
 
     @Override
-    public String getDescription(Locale locale) { return RapidEyeConstants.L1_DESCRIPTION; }
+    public String getDescription(Locale locale) {
+        return RapidEyeConstants.L1_DESCRIPTION;
+    }
 
     @Override
     public BeamFileFilter getProductFileFilter() {

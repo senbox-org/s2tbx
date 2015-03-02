@@ -73,13 +73,13 @@ public class SpotViewProductReader extends AbstractProductReader {
         Product product = null;
         if (metadata != null) {
             String productName = metadata.getProductName().replace(" ", "_").replace("/", "_");
-            if(imageMetadata != null && imageMetadata.getProductName() != null) {
+            if (imageMetadata != null && imageMetadata.getProductName() != null) {
                 productName = imageMetadata.getProductName();
             }
             product = new Product(productName,
-                    SpotConstants.SPOTVIEW_FORMAT_NAMES[0],
-                    metadata.getRasterWidth(),
-                    metadata.getRasterHeight());
+                                  SpotConstants.SPOTVIEW_FORMAT_NAMES[0],
+                                  metadata.getRasterWidth(),
+                                  metadata.getRasterHeight());
             product.setProductReader(this);
             product.setFileLocation(metadataFile);
             product.getMetadataRoot().addElement(metadata.getRootElement());

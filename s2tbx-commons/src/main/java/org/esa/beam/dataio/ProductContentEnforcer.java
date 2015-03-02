@@ -33,7 +33,7 @@ public class ProductContentEnforcer {
         } else {
             List<String> fileNames = new ArrayList<String>();
             listFiles(input, fileNames);
-            retFlag &= isConsistent((String[])fileNames.toArray());
+            retFlag &= isConsistent((String[]) fileNames.toArray());
         }
         return retFlag;
     }

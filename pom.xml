@@ -12,15 +12,21 @@
 
     <modules>
         <module>s2tbx-reader</module>
+        <module>s2tbx-reader-l2a</module>
+        <module>s2tbx-reader-l1b</module>
+        <module>s2tbx-reader-gml</module>
         <module>lib-openjpeg</module>
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-rapideye-reader</module>
+        <module>s2tbx-python-lib</module>
+        <module>s2tbx-sen2cor-processor</module>
+        <module>s2tbx-sen2three-processor</module>
+        <module>s2tbx-r2r-converter</module>
         <module>s2tbx-bootstrap</module>
-        <!-- <module>s2tbx-installer</module> -->
+        <module>s2tbx-installer</module>
         <module>s2tbx-app</module>
         <module>s2tbx-help</module>
-        <!-- <module>s2tbx-sen2cor-processor</module> -->
     </modules>
 
     <packaging>pom</packaging>
@@ -30,6 +36,9 @@
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <outputdir>../../output</outputdir>
+        <netbeans.version>RELEASE802</netbeans.version>
+        <javahelp.version>2.0.05</javahelp.version>
+        <brandingToken>s2tbx</brandingToken>
     </properties>
 
     <repositories>
@@ -256,7 +265,18 @@
                 <role>Java Developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>umwilm</id>
+            <name>Uwe Mueller-Wilm</name>
+            <email>uwe.mueller-wilm@telespazio-vega.de</email>
+            <organization>Telespazio-VEGA</organization>
+            <roles>
+                <role>Python Developer</role>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
     </developers>
+
 
     <profiles>
         <profile>
@@ -270,6 +290,56 @@
             <modules>
                 <module>../snap-engine</module>
             </modules>
+        </profile>
+        <profile>
+            <id>no-unit-tests</id>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>instrumented</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.jcabi</groupId>
+                    <artifactId>jcabi-aspects</artifactId>
+                    <version>0.20.4</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.aspectj</groupId>
+                    <artifactId>aspectjrt</artifactId>
+                    <version>1.6.12</version>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>monitored</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.github.jbellis</groupId>
+                    <artifactId>jamm</artifactId>
+                    <version>0.3.0</version>
+                </dependency>
+
+                <dependency>
+                    <groupId>io.dropwizard.metrics</groupId>
+                    <artifactId>metrics-core</artifactId>
+                    <version>3.1.0</version>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 

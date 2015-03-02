@@ -25,38 +25,29 @@ package nitf;
 /**
  * Represents a LookupTable used in the BandInfo object
  */
-public class LookupTable extends DestructibleObject
-{
+public class LookupTable extends DestructibleObject {
 
     /**
      * Creates a new LookupTable
-     * 
-     * @param numTables
-     *            the number of tables
-     * @param numEntries
-     *            the number of entries per table
-     * @param lutData
-     *            the actual LUT data, whose size should be (numTables *
-     *            numEntries)
+     *
+     * @param numTables  the number of tables
+     * @param numEntries the number of entries per table
+     * @param lutData    the actual LUT data, whose size should be (numTables *
+     *                   numEntries)
      * @throws NITFException
      */
     public LookupTable(int numTables, int numEntries, byte[] lutData)
-            throws NITFException
-    {
+            throws NITFException {
         construct(numTables, numEntries, lutData);
     }
 
     /**
      * Constructs the underlying memory
-     * 
-     * @param numTables
-     *            the number of tables
-     * @param numEntries
-     *            the number of entries per table
-     * @param lutData
-     *            the actual LUT data, whose size should be (numTables *
-     *            numEntries)
-     * 
+     *
+     * @param numTables  the number of tables
+     * @param numEntries the number of entries per table
+     * @param lutData    the actual LUT data, whose size should be (numTables *
+     *                   numEntries)
      * @throws NITFException
      */
     protected native void construct(int numTables, int numEntries,
@@ -65,8 +56,7 @@ public class LookupTable extends DestructibleObject
     /**
      * @see NITFObject#NITFObject(long)
      */
-    LookupTable(long address)
-    {
+    LookupTable(long address) {
         super(address);
     }
 
@@ -86,13 +76,11 @@ public class LookupTable extends DestructibleObject
     public synchronized native byte[] getData();
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 

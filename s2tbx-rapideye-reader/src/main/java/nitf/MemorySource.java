@@ -24,68 +24,59 @@ package nitf;
 
 /**
  * <code>MemorySource</code>
- * 
+ * <p>
  * The MemorySource class extends the BandSource class, allowing you to provide
  * data from a memory buffer.
- * 
+ * <p>
  * This class is final because the BandSource class uses special logic when it
  * gets constructed from a subclass. This can however be used as a delegate
  * member inside another specialized BandSource.
  */
-public final class MemorySource extends BandSource
-{
+public final class MemorySource extends BandSource {
 
-    protected MemorySource()
-    {
+    protected MemorySource() {
         super();
     }
 
     /**
      * @param address
      */
-    protected MemorySource(long address)
-    {
+    protected MemorySource(long address) {
         super(address);
     }
 
     /**
      * Constructs and returns a BandSource from memory
-     * 
+     * <p>
      * This is one of the two BandSources the library provides for free. If you
      * want something more detailed to your needs, feel free to extend the
      * BandInfo abstract class.
-     * 
-     * @param data
-     *            the source byte buffer
-     * @param size
-     *            the size (in bytes) of data for this band
-     * @param start
-     *            the start offset
-     * @param numBytesPerPixel
-     *            the number of bytes per pixel this is ignored if pixelSkip ==
-     *            0
-     * @param pixelSkip
-     *            the number of pixels to skip, that are between pixels of this
-     *            band. i.e. the number of bands in the data buffer - 1 If this
-     *            is 0, it signifies a contiguous read.
+     *
+     * @param data             the source byte buffer
+     * @param size             the size (in bytes) of data for this band
+     * @param start            the start offset
+     * @param numBytesPerPixel the number of bytes per pixel this is ignored if pixelSkip ==
+     *                         0
+     * @param pixelSkip        the number of pixels to skip, that are between pixels of this
+     *                         band. i.e. the number of bands in the data buffer - 1 If this
+     *                         is 0, it signifies a contiguous read.
      * @throws NITFException
      */
     public MemorySource(byte[] data, int size, int start, int numBytesPerPixel,
-            int pixelSkip) throws NITFException
-    {
+                        int pixelSkip) throws NITFException {
         construct(data, size, start, numBytesPerPixel, pixelSkip);
     }
 
     /**
      * Constructs the underlying memory
-     * 
+     *
      * @param data
      * @param size
      * @param start
      * @param pixelSkip
      */
     private native void construct(byte[] data, int size, int start,
-            int numBytesPerPixel, int pixelSkip);
+                                  int numBytesPerPixel, int pixelSkip);
 
     /*
      * (non-Javadoc)
@@ -93,10 +84,10 @@ public final class MemorySource extends BandSource
      * @see nitf.BandSource#read(byte[], int)
      */
     public native void read(byte[] buf, int size) throws NITFException;
-    
+
     @Override
     public native long getSize() throws NITFException;
-    
+
     @Override
     public native void setSize(long size) throws NITFException;
 

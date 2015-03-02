@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Level-2A_Ground_Image_Processing_Parameter>
+    <Common_Section>
+        <Trace_Level>INFO</Trace_Level> <!-- can be: NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL -->
+        <DN_Scale>4000.0</DN_Scale>
+        <DEM_Directory>dem/srtm</DEM_Directory> <!-- should be either a directory tree under S2L2APPHOME or 'false'. If false, no DEM will be used -->
+        <DEM_Reference>http://data_public:GDdci@data.cgiar-csi.org/srtm/tiles/GeoTIFF/</DEM_Reference> <!-- will be ignored if DEM is false. Either a DEM will be downloaded from this reference, if no local DEM is available -->
+    </Common_Section>
+    <Scene_Classification>
+    	<Snow_Map_Reference>GlobalSnowMap.tiff</Snow_Map_Reference>
+        <Classificators>
+            <NO_DATA>0</NO_DATA>
+            <SATURATED_DEFECTIVE>1</SATURATED_DEFECTIVE>
+            <DARK_FEATURES>2</DARK_FEATURES>
+            <CLOUD_SHADOWS>3</CLOUD_SHADOWS>
+            <VEGETATION>4</VEGETATION>
+            <BARE_SOILS>5</BARE_SOILS>
+            <WATER>6</WATER>
+            <LOW_PROBA_CLOUDS>7</LOW_PROBA_CLOUDS>
+            <MEDIUM_PROBA_CLOUDS>8</MEDIUM_PROBA_CLOUDS>
+            <HIGH_PROBA_CLOUDS>9</HIGH_PROBA_CLOUDS>
+            <THIN_CIRRUS>10</THIN_CIRRUS>
+            <SNOW_ICE>11</SNOW_ICE>
+        </Classificators>
+        <Calibration>
+            <Median_Filter>3</Median_Filter>
+        </Calibration>
+        <Thresholds>
+            <T1_B02>0.18</T1_B02>
+            <T2_B02>0.22</T2_B02>
+            <T1_B04>0.08</T1_B04>
+            <T2_B04>0.25</T2_B04>
+            <T1_B8A>0.15</T1_B8A>
+            <T2_B8A>0.35</T2_B8A>
+            <T1_B10>0.012</T1_B10>
+            <T2_B10>0.035</T2_B10>
+            <T1_B12>0.25</T1_B12>
+            <T2_B12>0.12</T2_B12>  
+            <T_B02_B12>0.018</T_B02_B12>
+            <T_CLOUD_LP>0.0</T_CLOUD_LP>
+            <T_CLOUD_MP>0.35</T_CLOUD_MP>
+            <T_CLOUD_HP>0.65</T_CLOUD_HP>
+            <T1_NDSI_CLD>-0.24</T1_NDSI_CLD>
+            <T2_NDSI_CLD>-0.16</T2_NDSI_CLD>
+            <T1_NDSI_SNW>0.20</T1_NDSI_SNW>
+            <T2_NDSI_SNW>0.42</T2_NDSI_SNW>
+            <T1_NDVI>0.36</T1_NDVI>
+            <T2_NDVI>0.47</T2_NDVI>
+            <T1_SNOW>0.12</T1_SNOW>
+            <T2_SNOW>0.25</T2_SNOW>
+            <T1_R_B02_B04>0.85</T1_R_B02_B04>
+            <T2_R_B02_B04>0.95</T2_R_B02_B04>
+            <T1_R_B8A_B03>1.50</T1_R_B8A_B03>
+            <T2_R_B8A_B03>2.50</T2_R_B8A_B03>
+            <T1_R_B8A_B11>0.90</T1_R_B8A_B11>
+            <T2_R_B8A_B11>1.10</T2_R_B8A_B11>
+            <T11_B02>-0.40</T11_B02>
+            <T12_B02>0.46</T12_B02>
+            <T11_R_B02_B11>0.8</T11_R_B02_B11>
+            <T12_R_B02_B11>1.5</T12_R_B02_B11>
+            <T21_R_B02_B11>2.00</T21_R_B02_B11>
+            <T22_R_B02_B11>4.00</T22_R_B02_B11>
+            <T21_B12>0.1</T21_B12>
+            <T22_B12>-0.09</T22_B12>
+            <RV_B2>6.96000</RV_B2>
+            <RV_B3>5.26667</RV_B3>
+            <RV_B4>5.37708</RV_B4>
+            <RV_B8>7.52000</RV_B8>
+            <RV_B11>5.45000</RV_B11>
+            <RV_B12>2.55000</RV_B12>
+            <T_SDW>0.5</T_SDW>
+        </Thresholds>
+    </Scene_Classification>
+    <Atmospheric_Correction>
+        <References>
+            <Lib_Dir>lib</Lib_Dir>
+            <Atm_Data_Filename>h99000_wv20_rura.atm</Atm_Data_Filename>
+        </References>
+        <Flags>
+            <WV_Correction>1</WV_Correction>
+            <VIS_Update_Mode>1</VIS_Update_Mode> <!-- 0: constant, 1: variable visibility -->
+            <WV_Watermask>1</WV_Watermask> <!-- 0: not replaced, 1: land-average, 2: line-average -->
+            <Cirrus_Correction>0</Cirrus_Correction>
+            <BRDF_Correction>21</BRDF_Correction>
+            <BRDF_Lower_Bound>0.25</BRDF_Lower_Bound>
+        </Flags>
+        <Calibration>
+            <DEM_Unit>0</DEM_Unit> <!-- (0=[m], 1=[dm], 2=[cm]) -->
+            <Adj_Km>1.000</Adj_Km> <!-- [km] -->
+            <Visibility>30.0</Visibility> <!-- [km] -->
+            <Altitude>0.100</Altitude> <!-- [km] -->
+            <Smooth_WV_Map>100.0</Smooth_WV_Map> <!-- length of square box, [meters] -->
+            <WV_Threshold_Cirrus>0.25</WV_Threshold_Cirrus> <!-- water vapor threshold to switch off cirrus algorithm [cm] -->
+        </Calibration>
+        <Sensor>
+            <Solar_Irradiance units = "[mW/cm2 micron]">
+                <Band_List>
+                    <wavelength fwhm="0.018800" e0="187.282">0.442250</wavelength>
+                    <wavelength fwhm="0.064400" e0="195.995">0.492225</wavelength>
+                    <wavelength fwhm="0.034800" e0="182.252">0.560310</wavelength>
+                    <wavelength fwhm="0.028800" e0="151.628">0.663085</wavelength>
+                    <wavelength fwhm="0.014400" e0="142.487">0.703959</wavelength>
+                    <wavelength fwhm="0.014800" e0="128.363">0.742381</wavelength>
+                    <wavelength fwhm="0.018800" e0="116.686">0.781725</wavelength>
+                    <wavelength fwhm="0.014400" e0="104.008">0.833331</wavelength> <!-- B8 -->
+                    <wavelength fwhm="0.022800" e0="095.447">0.865816</wavelength> <!-- B8A -->
+                    <wavelength fwhm="0.019200" e0="081.983">0.942251</wavelength>
+                    <wavelength fwhm="0.028800" e0="036.705">1.373680</wavelength>
+                    <wavelength fwhm="0.088400" e0="024.734">1.609431</wavelength>
+                    <wavelength fwhm="0.172800" e0="008.649">2.193888</wavelength>
+                </Band_List>
+            </Solar_Irradiance>
+            <Calibration units = "(mW cm-2 sr-1 um-1), L = c0 + c1 * DN">
+                <Band_List>
+                    <wavelength c0="0.00000" c1="0.1">0.442250</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">0.492225</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">0.560310</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">0.663085</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">0.703959</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">0.742381</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">0.781725</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">0.833331</wavelength> <!-- B8 -->
+                    <wavelength c0="0.00000" c1="0.1">0.865816</wavelength> <!-- B8A -->
+                    <wavelength c0="0.00000" c1="0.1">0.942251</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">1.373680</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">1.609431</wavelength>
+                    <wavelength c0="0.00000" c1="0.1">2.193888</wavelength>
+                </Band_List>
+            </Calibration>
+        </Sensor>
+    </Atmospheric_Correction>
+</Level-2A_Ground_Image_Processing_Parameter>

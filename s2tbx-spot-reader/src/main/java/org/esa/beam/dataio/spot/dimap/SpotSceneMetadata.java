@@ -1,6 +1,5 @@
 package org.esa.beam.dataio.spot.dimap;
 
-import org.esa.beam.dataio.ZipVirtualDir;
 import org.esa.beam.dataio.metadata.XmlMetadata;
 import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
 import org.esa.beam.framework.datamodel.MetadataElement;
@@ -155,7 +154,7 @@ public class SpotSceneMetadata {
             SpotDimapMetadata metadata = XmlMetadata.create(SpotDimapMetadata.class, selectedMetadataFile);
             if (metadata == null) {
                 logger.warning(String.format("Error while reading metadata file %s",
-                        selectedMetadataFile.getName()));
+                                             selectedMetadataFile.getName()));
             } else {
                 metadata.setFileName(selectedMetadataFile.getName());
                 componentMetadata.add(metadata);
@@ -178,7 +177,7 @@ public class SpotSceneMetadata {
                         SpotDimapMetadata metadata = XmlMetadata.create(SpotDimapMetadata.class, metadataFile);
                         if (metadata == null) {
                             logger.warning(String.format("Error while reading metadata file %s",
-                                    metadataFile.getName()));
+                                                         metadataFile.getName()));
                         } else {
                             metadata.setFileName(metadataFile.getName());
                             metadata.setPath(component.getPath());

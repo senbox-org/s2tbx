@@ -22,12 +22,11 @@
 
 package nitf;
 
-public interface MemoryDestructor
-{
+public interface MemoryDestructor {
     /**
      * Returns whether or not it destroyed the object represented by the native
      * memory address.
-     * 
+     *
      * @param nativeAddress
      * @return
      */

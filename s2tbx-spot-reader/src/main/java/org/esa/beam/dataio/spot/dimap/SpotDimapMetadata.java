@@ -154,7 +154,7 @@ public class SpotDimapMetadata extends XmlMetadata {
         } else {
             logger.warning(String.format(MISSING_ELEMENT_WARNING, SpotConstants.TAG_DATA_FILE_PATH));
         }
-        return (path != null ? new String[] { path.toLowerCase() } : null);
+        return (path != null ? new String[]{path.toLowerCase()} : null);
     }
 
     /**
@@ -489,13 +489,13 @@ public class SpotDimapMetadata extends XmlMetadata {
                             final double linMax = Double.parseDouble(element.getAttributeString(SpotConstants.TAG_STX_LIN_MAX, "0"));
                             bIdx = Integer.parseInt(element.getAttributeString(SpotConstants.TAG_BAND_INDEX, "0"));
                             HashMap<String, Double> hashMap = new HashMap<String, Double>() {{
-                                                                    put(SpotConstants.TAG_STX_MIN, min);
-                                                                    put(SpotConstants.TAG_STX_MAX, max);
-                                                                    put(SpotConstants.TAG_STX_MEAN, mean);
-                                                                    put(SpotConstants.TAG_STX_STDV, stdv);
-                                                                    put(SpotConstants.TAG_STX_LIN_MIN, linMin);
-                                                                    put(SpotConstants.TAG_STX_LIN_MAX, linMax);
-                                                                }};
+                                put(SpotConstants.TAG_STX_MIN, min);
+                                put(SpotConstants.TAG_STX_MAX, max);
+                                put(SpotConstants.TAG_STX_MEAN, mean);
+                                put(SpotConstants.TAG_STX_STDV, stdv);
+                                put(SpotConstants.TAG_STX_LIN_MIN, linMin);
+                                put(SpotConstants.TAG_STX_LIN_MAX, linMax);
+                            }};
                             if (bIdx > 0) {
                                 bandStatistics.add(bIdx - 1, hashMap);
                             } else {

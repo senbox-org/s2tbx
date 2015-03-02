@@ -24,11 +24,10 @@ package nitf;
 
 /**
  * A WriteHandler that just streams from an input IOInterface to an output one.
- * 
+ * <p>
  * Handy for bypassing segments when needing to round-trip.
  */
-public class StreamIOWriteHandler extends WriteHandler
-{
+public class StreamIOWriteHandler extends WriteHandler {
     private static final int CHUNK_SIZE = 8192;
 
     private IOInterface input;
@@ -37,33 +36,28 @@ public class StreamIOWriteHandler extends WriteHandler
 
     private long bytes;
 
-    public StreamIOWriteHandler(IOInterface input, long offset, long bytes)
-    {
+    public StreamIOWriteHandler(IOInterface input, long offset, long bytes) {
         this.input = input;
         this.offset = offset;
         this.bytes = bytes;
     }
 
     public StreamIOWriteHandler(IOInterface input, long offset)
-            throws NITFException
-    {
+            throws NITFException {
         this(input, offset, input.getSize());
     }
 
-    public StreamIOWriteHandler(IOInterface input) throws NITFException
-    {
+    public StreamIOWriteHandler(IOInterface input) throws NITFException {
         this(input, 0);
     }
 
     @Override
-    public StreamIOWriteHandler clone()
-    {
+    public StreamIOWriteHandler clone() {
         return new StreamIOWriteHandler(input, offset, bytes);
     }
 
     @Override
-    public void write(IOInterface io) throws NITFException
-    {
+    public void write(IOInterface io) throws NITFException {
         // stream the input to the output in chunks
 
         // first, seek to the right spot of the input handle
@@ -74,8 +68,7 @@ public class StreamIOWriteHandler extends WriteHandler
         long toWrite = bytes;
         int bytesThisPass;
 
-        while (toWrite > 0)
-        {
+        while (toWrite > 0) {
             bytesThisPass = toWrite >= CHUNK_SIZE ? CHUNK_SIZE : (int) toWrite;
 
             // read

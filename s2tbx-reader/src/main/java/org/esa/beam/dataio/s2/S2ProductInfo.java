@@ -9,19 +9,19 @@ import java.io.File;
  * @author Norman Fomferra
  */
 public class S2ProductInfo {
-        /*
-    public final int numBands;
+    /*
+public final int numBands;
 
-    public final int numL1cTiles;
+public final int numL1cTiles;
 
-    ProductInfo getProductInfo();
+ProductInfo getProductInfo();
 
-    File getJp2ImageFile(int bandIndex, int tileIndex);
+File getJp2ImageFile(int bandIndex, int tileIndex);
 
-    BandInfo getBandInfo(int bandIndex);
+BandInfo getBandInfo(int bandIndex);
 
-    L1cTileInfo getL1cTileInfo(int tileIndex);
-         */
+L1cTileInfo getL1cTileInfo(int tileIndex);
+     */
     public class ProductInfo {
         public final File productDir;
         public final Envelope2D sceneEnvelope;

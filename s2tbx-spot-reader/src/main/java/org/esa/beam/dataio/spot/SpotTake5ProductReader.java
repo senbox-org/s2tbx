@@ -58,16 +58,16 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         if (input.isThisZipFile() || input.isThisTarFile()) {
             return result;
         } else {
-            for(String inputFile: imageMetadata.getTiffFiles().values()){
+            for (String inputFile : imageMetadata.getTiffFiles().values()) {
                 try {
-                TreeNode<File> productFile = new TreeNode<File>(inputFile);
+                    TreeNode<File> productFile = new TreeNode<File>(inputFile);
                     productFile.setContent(input.getFile(inputFile));
-                result.addChild(productFile);
+                    result.addChild(productFile);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            for(String inputFile: imageMetadata.getMaskFiles().values()){
+            for (String inputFile : imageMetadata.getMaskFiles().values()) {
                 try {
                     TreeNode<File> productFile = new TreeNode<File>(inputFile);
                     productFile.setContent(input.getFile(inputFile));
@@ -116,16 +116,16 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         Product product = null;
         if (imageMetadata != null) {
             product = new Product(imageMetadata.getProductName(),
-                    SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0],
-                    imageMetadata.getRasterWidth(),
-                    imageMetadata.getRasterHeight());
+                                  SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0],
+                                  imageMetadata.getRasterWidth(),
+                                  imageMetadata.getRasterHeight());
             product.setProductReader(this);
             product.setFileLocation(imageMetadataFile);
             product.getMetadataRoot().addElement(imageMetadata.getRootElement());
             ProductData.UTC startTime = imageMetadata.getDatePdv();
             product.setStartTime(startTime);
             product.setEndTime(startTime);
-            product.setDescription(SpotConstants.SPOT4_TAKE5_FORMAT + " level:"+imageMetadata.getMetadataProfile()+ " zone:"+imageMetadata.getGeographicZone());
+            product.setDescription(SpotConstants.SPOT4_TAKE5_FORMAT + " level:" + imageMetadata.getMetadataProfile() + " zone:" + imageMetadata.getGeographicZone());
 
             //all the bands of the tiff files are added to the product
             for (Map.Entry<String, String> entry : imageMetadata.getTiffFiles().entrySet()) {
@@ -173,11 +173,11 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             }
 
             product.setAutoGrouping(SpotConstants.SPOT4_TAKE5_TAG_GEOTIFF + SpotConstants.BAND_GROUP_SEPARATOR +
-                    SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT + SpotConstants.BAND_GROUP_SEPARATOR +
-                    SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_CORR_ENV + SpotConstants.BAND_GROUP_SEPARATOR +
-                    SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_CORR_PENTE + SpotConstants.BAND_GROUP_SEPARATOR +
-                    SpotConstants.SPOT4_TAKE5_TAG_ORTHO_VAP_EAU + SpotConstants.BAND_GROUP_SEPARATOR +
-                    SpotConstants.SPOT4_TAKE5_GROUP_MASKS);
+                                            SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT + SpotConstants.BAND_GROUP_SEPARATOR +
+                                            SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_CORR_ENV + SpotConstants.BAND_GROUP_SEPARATOR +
+                                            SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_CORR_PENTE + SpotConstants.BAND_GROUP_SEPARATOR +
+                                            SpotConstants.SPOT4_TAKE5_TAG_ORTHO_VAP_EAU + SpotConstants.BAND_GROUP_SEPARATOR +
+                                            SpotConstants.SPOT4_TAKE5_GROUP_MASKS);
             product.setModified(false);
         }
         return product;
@@ -199,11 +199,11 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         for (String flagName : flagCoding.getFlagNames()) {
             MetadataAttribute flag = flagCoding.getFlag(flagName);
             masks.add(Mask.BandMathsType.create(flagName,
-                    flag.getDescription(),
-                    width, height,
-                    flagCodingName + "." + flagName,
-                    ColorIterator.next(),
-                    0.5));
+                                                flag.getDescription(),
+                                                width, height,
+                                                flagCodingName + "." + flagName,
+                                                ColorIterator.next(),
+                                                0.5));
         }
         return masks;
     }
@@ -277,7 +277,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         }
     }
 
-    private String getNotNullValueOrDefault(String value){
+    private String getNotNullValueOrDefault(String value) {
         return (value == null ? SpotConstants.VALUE_NOT_AVAILABLE : value);
     }
 

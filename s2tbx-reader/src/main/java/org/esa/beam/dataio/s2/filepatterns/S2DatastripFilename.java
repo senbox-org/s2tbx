@@ -1,5 +1,7 @@
 package org.esa.beam.dataio.s2.filepatterns;
 
+import org.esa.beam.util.logging.BeamLogManager;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,15 +34,16 @@ public class S2DatastripFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2DatastripFilename(fileName,
-                    matcher.group(1),
-                    matcher.group(2),
-                    matcher.group(3),
-                    matcher.group(4),
-                    matcher.group(5),
-                    matcher.group(6),
-                    matcher.group(7)
+                                           matcher.group(1),
+                                           matcher.group(2),
+                                           matcher.group(3),
+                                           matcher.group(4),
+                                           matcher.group(5),
+                                           matcher.group(6),
+                                           matcher.group(7)
             );
         } else {
+            BeamLogManager.getSystemLogger().warning(String.format("%s S2DatastripFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

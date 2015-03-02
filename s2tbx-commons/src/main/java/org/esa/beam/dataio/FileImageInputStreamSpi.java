@@ -19,7 +19,7 @@ public class FileImageInputStreamSpi extends ChannelImageInputStreamSpi {
     public ImageInputStream createInputStreamInstance(Object input, boolean useCache, File cacheDir) throws IOException {
         if (!File.class.isInstance(input))
             throw new IllegalArgumentException("This SPI accepts only java.io.File");
-        File inputFile = (File)input;
+        File inputFile = (File) input;
         return super.createInputStreamInstance(new RandomAccessFile(inputFile.getAbsolutePath(), "rw").getChannel(), useCache, cacheDir);
     }
 

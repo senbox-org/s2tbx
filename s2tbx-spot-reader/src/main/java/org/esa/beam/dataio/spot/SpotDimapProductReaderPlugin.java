@@ -18,6 +18,7 @@ import java.util.Locale;
 /**
  * Visat plugin for reading SPOT-1 to SPOT-5 scene files.
  * The scene files are GeoTIFF with DIMAP metadata.
+ *
  * @author Cosmin Cara
  */
 public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
@@ -71,8 +72,7 @@ public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
         return new SpotDimapFileFilter();
     }
 
-    private static boolean isDimapFilename(String filename)
-    {
+    private static boolean isDimapFilename(String filename) {
         boolean isMatch = false;
         for (String pattern : SpotConstants.DIMAP_FILENAME_PATTERNS) {
             isMatch = filename.matches(pattern);
@@ -103,8 +103,7 @@ public class SpotDimapProductReaderPlugin implements ProductReaderPlugIn {
         return null;
     }
 
-    private static boolean isMetadataFile(String file)
-    {
+    private static boolean isMetadataFile(String file) {
         return (file.toLowerCase().endsWith(".dim"));
     }
 

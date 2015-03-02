@@ -27,87 +27,84 @@ import java.io.PrintStream;
 /**
  * A representation of the NITF Reserved Extensions subheader
  */
-public final class RESubheader extends NITFObject
-{
+public final class RESubheader extends NITFObject {
 
     /**
      * @see NITFObject#NITFObject(long)
      */
-    RESubheader(long address) throws NITFException
-    {
+    RESubheader(long address) throws NITFException {
         super(address);
     }
 
     /**
      * Returns the File Part Type Field
-     * 
+     *
      * @return
      */
     public native Field getFilePartType();
 
     /**
      * Returns the TypeID Field
-     * 
+     *
      * @return
      */
     public native Field getTypeID();
 
     /**
      * Returns the RES Security Classification Field
-     * 
+     *
      * @return
      */
     public native Field getSecurityClass();
 
     /**
      * Returns the FileSecurity info for this RES Subheader
-     * 
+     *
      * @return
      */
     public native FileSecurity getSecurityGroup();
 
     /**
      * Returns the RES Version Field
-     * 
+     *
      * @return
      */
     public native Field getVersion();
 
     /**
      * Returns the Subheader Fields Length Field
-     * 
+     *
      * @return
      */
     public native Field getSubheaderFieldsLength();
 
     /**
      * Returns the Subheader Field data
-     * 
+     *
      * @return
      */
     public native char[] getSubheaderFields();
 
     /**
      * Returns the data length
-     * 
+     *
      * @return
      */
     public native long getDataLength();
 
     /**
      * Sets the data length
-     * 
+     *
      * @param dataLength
      */
     public native void setDataLength(long dataLength);
 
     /**
      * Prints the data associated with the RESubheader to a PrintStream
-     * 
+     *
      * @param out
      */
-    public void print(PrintStream out)
-    {
+    public void print(PrintStream out) {
         out.println("FilePartType = [" + getFilePartType() + "]");
         out.println("TypeID = [" + getTypeID() + "]");
         out.println("Version = [" + getVersion() + "]");
@@ -116,7 +113,7 @@ public final class RESubheader extends NITFObject
         getSecurityGroup().print(out);
 
         out.println("SubheaderFieldsLength = [" + getSubheaderFieldsLength()
-                + "]");
+                            + "]");
         out.println("DataLength = [" + getDataLength() + "]");
     }
 }

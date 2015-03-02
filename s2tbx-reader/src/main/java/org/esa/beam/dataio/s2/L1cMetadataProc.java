@@ -1,17 +1,29 @@
 package org.esa.beam.dataio.s2;
 
-import _int.esa.gs2.dico._1_0.pdgs.dimap.*;
-import _int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata.Level1CTile;
-import _int.esa.s2.pdgs.psd.user_product_level_1c.Level1CUserProduct;
+
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_DATATAKE_IDENTIFICATION;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1C;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_TILE_DESCRIPTION;
+import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.beam.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.beam.util.logging.BeamLogManager;
+import org.openjpeg.StackTraceUtils;
 
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -19,7 +31,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by opicas-p on 24/06/2014.
@@ -33,19 +50,14 @@ public class L1cMetadataProc {
         URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
 
         URL[] theURLs = s2ClassLoader.getURLs();
-        for (URL url : theURLs)
-        {
-            if(url.getPath().contains(subStr) && url.getPath().contains(".jar"))
-            {
+        for (URL url : theURLs) {
+            if (url.getPath().contains(subStr) && url.getPath().contains(".jar")) {
                 URI uri = url.toURI();
                 URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
                 return parent.getPath();
-            }
-            else
-            {
+            } else {
                 //todo please note that in dev, all the module jar files are unzipped in modules folder, so SNAP only reaches this code in dev environments
-                if(url.getPath().contains(subStr))
-                {
+                if (url.getPath().contains(subStr)) {
                     URI uri = url.toURI();
                     URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
                     return parent.getPath();
@@ -56,131 +68,57 @@ public class L1cMetadataProc {
         throw new FileNotFoundException("Module " + subStr + " not found !");
     }
 
-    public static String convertStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
+    public static String tryGetModulesDir() {
+        String theDir = "./";
+        try {
+            theDir = getModulesDir();
+        } catch (Exception e) {
+            BeamLogManager.getSystemLogger().severe(StackTraceUtils.getStackTrace(e));
+        }
+        return theDir;
     }
 
-    public static void setExecutable(File file, boolean executable)
-    {
-        try
-        {
-            Process p = Runtime.getRuntime().exec(new String[] {
-            "chmod",
-            "u"+(executable?'+':'-')+"x",
-            file.getAbsolutePath(),
-            });
-            p.waitFor();
-            String output = convertStreamToString(p.getInputStream());
-            String errorOutput = convertStreamToString(p.getErrorStream());
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    public static String getExecutable()
-    {
-        String winPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
-        String linuxPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
-        String linux64Path = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
-        String macPath = "lib-openjpeg-2.1.0/openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
-
-        String target = "opj_decompress";
-
-        //todo log stracktraces
-        if(SystemUtils.IS_OS_LINUX)
-        {
-            try {
-                Process p = Runtime.getRuntime().exec("uname -m");
-                p.waitFor();
-                String output = convertStreamToString(p.getInputStream());
-                String errorOutput = convertStreamToString(p.getErrorStream());
-
-                System.err.println(output);
-
-                if(output.startsWith("i686"))
-                {
-                    target = getModulesDir() + linuxPath;
-                }
-                else
-                {
-                    target = getModulesDir() + linux64Path;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        else if(SystemUtils.IS_OS_MAC)
-        {
-            try {
-                target = getModulesDir() + macPath;
-                setExecutable(new File(target), true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        else
-        {
-            try {
-                target = getModulesDir() + winPath;
-            } catch (Exception e) {
-                e.printStackTrace();
-                target = target + ".exe";
-            }
-        }
-
-        File fileTarget = new File(target);
-        if(fileTarget.exists())
-        {
-            fileTarget.setExecutable(true);
-        }
-
-        return target;
-    }
-
+    @Deprecated
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
-
         ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
-
-        //todo get modules classpath
-        //todo test new lecture style
-        JAXBContext jaxbContext = JAXBContext.newInstance("_int.esa.s2.pdgs.psd.user_product_level_1c:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_tile_metadata:_int.esa.s2.pdgs.psd.s2_pdi_level_1c_datastrip_metadata:_int.esa.gs2.dico._1_0.pdgs.dimap", s2c);
-
+        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        Marshaller marshaller = jaxbContext.createMarshaller();
 
-        Object ob =  unmarshaller.unmarshal(stream);
-        Object casted = ((JAXBElement)ob).getValue();
+        Object ob = unmarshaller.unmarshal(stream);
+        Object casted = ((JAXBElement) ob).getValue();
 
         return casted;
     }
 
-    public static L1cMetadata.ProductCharacteristics parseCharacteristics(Level1CUserProduct product)
-    {
-        ADATATAKEIDENTIFICATION info = product.getGeneralInfo().getProductInfo().getDatatake();
+    public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
+        ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
+        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
+        return jaxbContext;
+    }
+
+    public static L1cMetadata.ProductCharacteristics parseCharacteristics(Level1C_User_Product product) {
+        A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getProduct_Info().getDatatake();
 
         L1cMetadata.ProductCharacteristics characteristics = new L1cMetadata.ProductCharacteristics();
-        characteristics.spacecraft = info.getSPACECRAFTNAME().getValue();
-        characteristics.datasetProductionDate = product.getGeneralInfo().getProductInfo().getGENERATIONTIME().toString();
-        characteristics.processingLevel = product.getGeneralInfo().getProductInfo().getPROCESSINGLEVEL().getValue().toString();
+        characteristics.spacecraft = info.getSPACECRAFT_NAME();
+        characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString();
+        characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString();
 
         List<L1cMetadata.SpectralInformation> targetList = new ArrayList<L1cMetadata.SpectralInformation>();
 
-        List<APRODUCTINFOUSERL1C.ProductImageCharacteristics.SpectralInformationList.SpectralInformation> aList = product.getGeneralInfo().getProductImageCharacteristics().getSpectralInformationList().getSpectralInformation();
-        for(APRODUCTINFOUSERL1C.ProductImageCharacteristics.SpectralInformationList.SpectralInformation si : aList) {
+        List<A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> aList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
+        for (A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
             L1cMetadata.SpectralInformation newInfo = new L1cMetadata.SpectralInformation();
             newInfo.bandId = Integer.parseInt(si.getBandId());
             newInfo.physicalBand = si.getPhysicalBand().value();
             newInfo.resolution = si.getRESOLUTION();
-            newInfo.spectralResponseStep = si.getSpectralResponse().getSTEP().getValue();
+            newInfo.spectralResponseStep = si.getSpectral_Response().getSTEP().getValue();
             newInfo.wavelenghtCentral = si.getWavelength().getCENTRAL().getValue();
             newInfo.wavelenghtMax = si.getWavelength().getMAX().getValue();
             newInfo.wavelenghtMin = si.getWavelength().getMIN().getValue();
 
-            int size = si.getSpectralResponse().getVALUES().size();
-            newInfo.spectralResponseValues = ArrayUtils.toPrimitive(si.getSpectralResponse().getVALUES().toArray(new Double[size]));
+            int size = si.getSpectral_Response().getVALUES().size();
+            newInfo.spectralResponseValues = ArrayUtils.toPrimitive(si.getSpectral_Response().getVALUES().toArray(new Double[size]));
             targetList.add(newInfo);
         }
 
@@ -190,29 +128,25 @@ public class L1cMetadataProc {
         return characteristics;
     }
 
-    public static L1cMetadata.ProductCharacteristics getProductOrganization(Level1CUserProduct product)
-    {
-        APRODUCTINFO.ProductOrganisation info = product.getGeneralInfo().getProductInfo().getProductOrganisation();
+    public static L1cMetadata.ProductCharacteristics getProductOrganization(Level1C_User_Product product) {
+        L1cMetadata.ProductCharacteristics characteristics = new L1cMetadata.ProductCharacteristics();
+        characteristics.spacecraft = product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME();
+        characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString();
+        characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value();
 
-        L1cMetadata.ProductCharacteristics characteristics= new L1cMetadata.ProductCharacteristics();
-        characteristics.spacecraft = product.getGeneralInfo().getProductInfo().getDatatake().getSPACECRAFTNAME().getValue();
-        characteristics.datasetProductionDate = product.getGeneralInfo().getProductInfo().getDatatake().getDATATAKESENSINGSTART().toString();
-        characteristics.processingLevel = product.getGeneralInfo().getProductInfo().getPROCESSINGLEVEL().getValue().value();
-
-        List<APRODUCTINFOUSERL1C.ProductImageCharacteristics.SpectralInformationList.SpectralInformation> spectralInfoList = product.getGeneralInfo().getProductImageCharacteristics().getSpectralInformationList().getSpectralInformation();
+        List<A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
 
         List<L1cMetadata.SpectralInformation> aInfo = new ArrayList<L1cMetadata.SpectralInformation>();
 
-        for(APRODUCTINFOUSERL1C.ProductImageCharacteristics.SpectralInformationList.SpectralInformation sin : spectralInfoList)
-        {
+        for (A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
             L1cMetadata.SpectralInformation data = new L1cMetadata.SpectralInformation();
             data.bandId = Integer.parseInt(sin.getBandId());
             data.physicalBand = sin.getPhysicalBand().value();
             data.resolution = sin.getRESOLUTION();
-            data.spectralResponseStep = sin.getSpectralResponse().getSTEP().getValue();
+            data.spectralResponseStep = sin.getSpectral_Response().getSTEP().getValue();
 
-            int size = sin.getSpectralResponse().getVALUES().size();
-            data.spectralResponseValues = ArrayUtils.toPrimitive(sin.getSpectralResponse().getVALUES().toArray(new Double[size]));
+            int size = sin.getSpectral_Response().getVALUES().size();
+            data.spectralResponseValues = ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size]));
             data.wavelenghtCentral = sin.getWavelength().getCENTRAL().getValue();
             data.wavelenghtMax = sin.getWavelength().getMAX().getValue();
             data.wavelenghtMin = sin.getWavelength().getMIN().getValue();
@@ -226,16 +160,16 @@ public class L1cMetadataProc {
         return characteristics;
     }
 
-    public static Collection<String> getTiles(Level1CUserProduct product) {
-        APRODUCTINFO.ProductOrganisation info = product.getGeneralInfo().getProductInfo().getProductOrganisation();
+    public static Collection<String> getTiles(Level1C_User_Product product) {
+        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
 
-        List<APRODUCTINFO.ProductOrganisation.GranuleList> aGranuleList = info.getGranuleList();
+        List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
 
         Transformer tileSelector = new Transformer() {
             @Override
             public Object transform(Object o) {
-                APRODUCTINFO.ProductOrganisation.GranuleList ali = (APRODUCTINFO.ProductOrganisation.GranuleList) o;
-                APRODUCTORGANIZATION.Granules gr = ali.getGranules();
+                A_PRODUCT_INFO.Product_Organisation.Granule_List ali = (A_PRODUCT_INFO.Product_Organisation.Granule_List) o;
+                A_PRODUCT_ORGANIZATION.Granules gr = ali.getGranules();
                 return gr.getGranuleIdentifier();
             }
         };
@@ -244,23 +178,18 @@ public class L1cMetadataProc {
         return col;
     }
 
-    public static S2DatastripFilename getDatastrip(Level1CUserProduct product)
-    {
-        APRODUCTINFO.ProductOrganisation info = product.getGeneralInfo().getProductInfo().getProductOrganisation();
-        List<APRODUCTINFO.ProductOrganisation.GranuleList> aGranuleList = info.getGranuleList();
-        String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2GranuleDirFilename grafile = S2GranuleDirFilename.create(granule);
-        String fileCategory = grafile.fileCategory;
+    public static S2DatastripFilename getDatastrip(Level1C_User_Product product) {
+        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
+        List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
         return dirDatastrip.getDatastripFilename(null);
     }
 
-    public static S2DatastripDirFilename getDatastripDir(Level1CUserProduct product)
-    {
-        APRODUCTINFO.ProductOrganisation info = product.getGeneralInfo().getProductInfo().getProductOrganisation();
-        List<APRODUCTINFO.ProductOrganisation.GranuleList> aGranuleList = info.getGranuleList();
+    public static S2DatastripDirFilename getDatastripDir(Level1C_User_Product product) {
+        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
+        List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
         S2GranuleDirFilename grafile = S2GranuleDirFilename.create(granule);
         String fileCategory = grafile.fileCategory;
@@ -270,19 +199,17 @@ public class L1cMetadataProc {
         return dirDatastrip;
     }
 
-    public static Collection<String> getImages(Level1CUserProduct product) {
-        APRODUCTINFO.ProductOrganisation info = product.getGeneralInfo().getProductInfo().getProductOrganisation();
+    public static Collection<String> getImages(Level1C_User_Product product) {
+        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
 
-        List<APRODUCTINFO.ProductOrganisation.GranuleList> beautyQueen = info.getGranuleList();
+        List<A_PRODUCT_INFO.Product_Organisation.Granule_List> granulesList = info.getGranule_List();
         List<String> imagesList = new ArrayList<String>();
 
-        for(APRODUCTINFO.ProductOrganisation.GranuleList aGranule: beautyQueen)
-        {
-            APRODUCTORGANIZATION.Granules gr = aGranule.getGranules();
+        for (A_PRODUCT_INFO.Product_Organisation.Granule_List aGranule : granulesList) {
+            A_PRODUCT_ORGANIZATION.Granules gr = aGranule.getGranules();
             String dir_id = gr.getGranuleIdentifier();
-            List<APRODUCTORGANIZATION.Granules.IMAGEID> imageid = gr.getIMAGEID();
-            for(APRODUCTORGANIZATION.Granules.IMAGEID aImageName : imageid)
-            {
+            List<A_PRODUCT_ORGANIZATION.Granules.IMAGE_ID> imageid = gr.getIMAGE_ID();
+            for (A_PRODUCT_ORGANIZATION.Granules.IMAGE_ID aImageName : imageid) {
                 imagesList.add(dir_id + File.separator + aImageName.getValue() + ".jp2");
             }
         }
@@ -291,20 +218,17 @@ public class L1cMetadataProc {
         return imagesList;
     }
 
-    public static Map<Integer, L1cMetadata.TileGeometry> getTileGeometries(Level1CTile product) {
-        String id = product.getGeneralInfo().getTILEID().getValue();
-
-        AGEOMETRICINFOTILE info = product.getGeometricInfo();
-        AGEOMETRICINFOTILE.TileGeocoding tgeo = info.getTileGeocoding();
+    public static Map<Integer, L1cMetadata.TileGeometry> getTileGeometries(Level1C_Tile product) {
+        A_GEOMETRIC_INFO_TILE info = product.getGeometric_Info();
+        A_GEOMETRIC_INFO_TILE.Tile_Geocoding tgeo = info.getTile_Geocoding();
 
 
-        List<ATILEDESCRIPTION.Geoposition> poss = tgeo.getGeoposition();
-        List<ATILEDESCRIPTION.Size> sizz = tgeo.getSize();
+        List<A_TILE_DESCRIPTION.Geoposition> poss = tgeo.getGeoposition();
+        List<A_TILE_DESCRIPTION.Size> sizz = tgeo.getSize();
 
         Map<Integer, L1cMetadata.TileGeometry> resolutions = new HashMap<Integer, L1cMetadata.TileGeometry>();
 
-        for (ATILEDESCRIPTION.Geoposition gpos : poss)
-        {
+        for (A_TILE_DESCRIPTION.Geoposition gpos : poss) {
             int index = gpos.getResolution();
             L1cMetadata.TileGeometry tgeox = new L1cMetadata.TileGeometry();
             tgeox.upperLeftX = gpos.getULX();
@@ -314,8 +238,7 @@ public class L1cMetadataProc {
             resolutions.put(index, tgeox);
         }
 
-        for(ATILEDESCRIPTION.Size asize : sizz)
-        {
+        for (A_TILE_DESCRIPTION.Size asize : sizz) {
             int index = asize.getResolution();
             L1cMetadata.TileGeometry tgeox = resolutions.get(index);
             tgeox.numCols = asize.getNCOLS();
@@ -325,36 +248,30 @@ public class L1cMetadataProc {
         return resolutions;
     }
 
-    public static L1cMetadata.AnglesGrid getSunGrid(Level1CTile product) {
-        String id = product.getGeneralInfo().getTILEID().getValue();
+    public static L1cMetadata.AnglesGrid getSunGrid(Level1C_Tile product) {
+        A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
+        A_SUN_INCIDENCE_ANGLE_GRID sun = ang.getSun_Angles_Grid();
 
-        AGEOMETRICINFOTILE.TileAngles ang = product.getGeometricInfo().getTileAngles();
-        ASUNINCIDENCEANGLEGRID sun = ang.getSunAnglesGrid();
+        int azrows = sun.getAzimuth().getValues_List().getVALUES().size();
+        int azcolumns = sun.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
 
-        int azrows = sun.getAzimuth().getValuesList().getVALUES().size();
-        int azcolumns = sun.getAzimuth().getValuesList().getVALUES().get(0).getValue().size();
-
-        int zenrows = sun.getZenith().getValuesList().getVALUES().size();
-        int zencolumns = sun.getZenith().getValuesList().getVALUES().size();
+        int zenrows = sun.getZenith().getValues_List().getVALUES().size();
+        int zencolumns = sun.getZenith().getValues_List().getVALUES().size();
 
         L1cMetadata.AnglesGrid ag = new L1cMetadata.AnglesGrid();
         ag.azimuth = new float[azrows][azcolumns];
         ag.zenith = new float[zenrows][zencolumns];
 
-        for(int rowindex = 0; rowindex < azrows; rowindex++)
-        {
-            List<Float> azimuths = sun.getAzimuth().getValuesList().getVALUES().get(rowindex).getValue();
-            for(int colindex = 0; colindex < azcolumns; colindex++)
-            {
+        for (int rowindex = 0; rowindex < azrows; rowindex++) {
+            List<Float> azimuths = sun.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
+            for (int colindex = 0; colindex < azcolumns; colindex++) {
                 ag.azimuth[rowindex][colindex] = azimuths.get(colindex);
             }
         }
 
-        for(int rowindex = 0; rowindex < zenrows; rowindex++)
-        {
-            List<Float> zeniths = sun.getZenith().getValuesList().getVALUES().get(rowindex).getValue();
-            for(int colindex = 0; colindex < zencolumns; colindex++)
-            {
+        for (int rowindex = 0; rowindex < zenrows; rowindex++) {
+            List<Float> zeniths = sun.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
+            for (int colindex = 0; colindex < zencolumns; colindex++) {
                 ag.zenith[rowindex][colindex] = zeniths.get(colindex);
             }
         }
@@ -362,40 +279,35 @@ public class L1cMetadataProc {
         return ag;
     }
 
-    public static L1cMetadata.AnglesGrid[] getAnglesGrid(Level1CTile product) {
-        AGEOMETRICINFOTILE.TileAngles ang = product.getGeometricInfo().getTileAngles();
-        List<ANINCIDENCEANGLEGRID> incilist = ang.getViewingIncidenceAnglesGrids();
+    public static L1cMetadata.AnglesGrid[] getAnglesGrid(Level1C_Tile product) {
+        A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
+        List<AN_INCIDENCE_ANGLE_GRID> incilist = ang.getViewing_Incidence_Angles_Grids();
 
         L1cMetadata.AnglesGrid[] darr = new L1cMetadata.AnglesGrid[incilist.size()];
-        for(int index = 0; index < incilist.size() ; index++)
-        {
-            ANINCIDENCEANGLEGRID angleGrid = incilist.get(index);
+        for (int index = 0; index < incilist.size(); index++) {
+            AN_INCIDENCE_ANGLE_GRID angleGrid = incilist.get(index);
 
-            int azrows2 = angleGrid.getAzimuth().getValuesList().getVALUES().size();
-            int azcolumns2 = angleGrid.getAzimuth().getValuesList().getVALUES().get(0).getValue().size();
+            int azrows2 = angleGrid.getAzimuth().getValues_List().getVALUES().size();
+            int azcolumns2 = angleGrid.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
 
-            int zenrows2 = angleGrid.getZenith().getValuesList().getVALUES().size();
-            int zencolumns2 = angleGrid.getZenith().getValuesList().getVALUES().size();
+            int zenrows2 = angleGrid.getZenith().getValues_List().getVALUES().size();
+            int zencolumns2 = angleGrid.getZenith().getValues_List().getVALUES().size();
 
 
             L1cMetadata.AnglesGrid ag2 = new L1cMetadata.AnglesGrid();
             ag2.azimuth = new float[azrows2][azcolumns2];
             ag2.zenith = new float[zenrows2][zencolumns2];
 
-            for(int rowindex = 0; rowindex < azrows2; rowindex++)
-            {
-                List<Float> azimuths = angleGrid.getAzimuth().getValuesList().getVALUES().get(rowindex).getValue();
-                for(int colindex = 0; colindex < azcolumns2; colindex++)
-                {
+            for (int rowindex = 0; rowindex < azrows2; rowindex++) {
+                List<Float> azimuths = angleGrid.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
+                for (int colindex = 0; colindex < azcolumns2; colindex++) {
                     ag2.azimuth[rowindex][colindex] = azimuths.get(colindex);
                 }
             }
 
-            for(int rowindex = 0; rowindex < zenrows2; rowindex++)
-            {
-                List<Float> zeniths = angleGrid.getZenith().getValuesList().getVALUES().get(rowindex).getValue();
-                for(int colindex = 0; colindex < zencolumns2; colindex++)
-                {
+            for (int rowindex = 0; rowindex < zenrows2; rowindex++) {
+                List<Float> zeniths = angleGrid.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
+                for (int colindex = 0; colindex < zencolumns2; colindex++) {
                     ag2.zenith[rowindex][colindex] = zeniths.get(colindex);
                 }
             }

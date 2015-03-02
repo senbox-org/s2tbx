@@ -25,24 +25,21 @@ package nitf;
 /**
  * Class used to compile an image together, based on its constituent bands.
  */
-public final class ImageSource extends DestructibleObject
-{
+public final class ImageSource extends DestructibleObject {
 
     /**
      * Default constructor
-     * 
+     *
      * @throws NITFException
      */
-    public ImageSource() throws NITFException
-    {
+    public ImageSource() throws NITFException {
         construct();
     }
 
     /**
      * @see DestructibleObject#DestructibleObject(long)
      */
-    ImageSource(long address)
-    {
+    ImageSource(long address) {
         super(address);
     }
 
@@ -50,23 +47,22 @@ public final class ImageSource extends DestructibleObject
 
     /**
      * Returns an array of the BandSources associated with this ImageSource
-     * 
+     *
      * @return an array of the BandSources associated with this ImageSource
      */
     public native BandSource[] getBandSources();
 
     /**
      * Returns the number of band sources
-     * 
+     *
      * @return the number of band sources
      */
     public native int getSize();
 
     /**
      * Adds another BandSource to this ImageSource
-     * 
-     * @param bandSource
-     *            the BandSource to append
+     *
+     * @param bandSource the BandSource to append
      * @return true if the BandSource added successfully, false otherwise
      * @throws NITFException
      */
@@ -74,22 +70,19 @@ public final class ImageSource extends DestructibleObject
 
     /**
      * Returns the BandSource associated by the position denoted by number
-     * 
-     * @param number
-     *            the BandSource, starting at array position 0
+     *
+     * @param number the BandSource, starting at array position 0
      * @return the BandSource associated by the position denoted by number
      * @throws NITFException
      */
     public native BandSource getBand(int number) throws NITFException;
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 }

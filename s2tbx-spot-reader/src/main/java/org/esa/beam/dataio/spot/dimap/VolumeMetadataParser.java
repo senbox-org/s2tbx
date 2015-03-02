@@ -14,12 +14,12 @@ import java.text.SimpleDateFormat;
 
 /**
  * SAX parser for DIMAP volume metadata file.
+ *
  * @author Cosmin Cara
  */
 class VolumeMetadataParser {
 
-    private static class VolumeMetadataHandler extends DefaultHandler
-    {
+    private static class VolumeMetadataHandler extends DefaultHandler {
         private VolumeMetadata result;
         private VolumeComponent currentComponent;
         private String buffer;
@@ -75,7 +75,7 @@ class VolumeMetadataParser {
                 if (idx > 0) {
                     String tmp = currentComponent.title.substring(idx + 1).trim().replace("T_", "");
                     String[] tokens = tmp.split("_");
-                    currentComponent.index = new int[] { Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]) };
+                    currentComponent.index = new int[]{Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1])};
                 }
             } else if (qName.equals(SpotConstants.TAG_VOL_COMPONENT_TYPE)) {
                 currentComponent.type = buffer;

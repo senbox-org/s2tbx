@@ -10,7 +10,7 @@ import java.nio.ByteOrder;
  * This class holds parsed metadata from XML file (which is not DIMAP).
  * It exposes convenience methods for fetching various useful metadata values.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class SpotViewMetadata extends XmlMetadata {
 
@@ -113,14 +113,15 @@ public class SpotViewMetadata extends XmlMetadata {
 
     @Override
     public String[] getRasterFileNames() {
-        return new String[] { SpotConstants.SPOTVIEW_RASTER_FILENAME };
+        return new String[]{SpotConstants.SPOTVIEW_RASTER_FILENAME};
     }
 
     /**
      * Returns the names of the bands found in the metadata file.
      * If the expected metadata nodes are not present, then the default band names
      * are returned (i.e. band_n).
-     * @return  an array of band names
+     *
+     * @return an array of band names
      */
     public String[] getBandNames() {
         if (rootElement == null) {
@@ -346,7 +347,8 @@ public class SpotViewMetadata extends XmlMetadata {
      * Returns the code of the used projection, if any.
      * Please note that, for SPOTView products, a code of the projection is not present in the file.
      * For European projection, we assume the code "epsg:3035".
-     * @return  the code of the projection used, or <code>null</code> if no projection
+     *
+     * @return the code of the projection used, or <code>null</code> if no projection
      */
     public String getProjectionCode() {
         if (rootElement == null) {

@@ -24,18 +24,16 @@ package nitf;
 
 /**
  * SegmentReader
- * <p/>
+ * <p>
  * This class provides a "jailed" IOHandle to the data in a segment.
- * <p/>
- * 
+ * <p>
+ *
  * @see Reader#getNewGraphicReader(int)
  * @see Reader#getNewTextReader(int)
  */
-public final class SegmentReader extends DestructibleObject
-{
+public final class SegmentReader extends DestructibleObject {
 
-    SegmentReader(long address)
-    {
+    SegmentReader(long address) {
         super(address);
     }
 
@@ -44,11 +42,9 @@ public final class SegmentReader extends DestructibleObject
      * the data is serial as if a flat file were being read by an input stream.
      * Except for the first argument, this function has the same calling
      * sequence and behavior as IOHandle.read.
-     * 
-     * @param buffer
-     *            buffer to hold data
-     * @param count
-     *            amount of data to return
+     *
+     * @param buffer buffer to hold data
+     * @param count  amount of data to return
      * @return true on success
      * @throws NITFException
      * @see IOHandle#read(byte[], int)
@@ -60,15 +56,13 @@ public final class SegmentReader extends DestructibleObject
      * the data is serial as if a flat file were being read by an input stream.
      * Except for the first argument, this function has the same calling
      * sequence and behavior as IOHandle.read.
-     * 
-     * @param buffer
-     *            buffer to hold data
+     *
+     * @param buffer buffer to hold data
      * @return true on success
      * @throws NITFException
      * @see IOHandle#read(byte[], int)
      */
-    public boolean read(byte[] buffer) throws NITFException
-    {
+    public boolean read(byte[] buffer) throws NITFException {
         return read(buffer, buffer.length);
     }
 
@@ -76,11 +70,9 @@ public final class SegmentReader extends DestructibleObject
      * The seek function allows the user to seek within the extension data. This
      * function has the same calling sequence and behaivior as IOHandle.seek.
      * The offset is relative to the top of the segment data.
-     * 
-     * @param offset
-     *            the offset in the file
-     * @param whence
-     *            the type of seek, either SEEK_CUR, SEEK_SET, or SEEK_END
+     *
+     * @param offset the offset in the file
+     * @param whence the type of seek, either SEEK_CUR, SEEK_SET, or SEEK_END
      * @return the position in the file after the seek
      * @throws NITFException
      * @see IOHandle#seek(long, int)
@@ -92,7 +84,7 @@ public final class SegmentReader extends DestructibleObject
      * the extension data. This function has the same calling sequence and
      * behaivior as IOHandle.tell. The offset is relative to the top of the
      * segment data.
-     * 
+     *
      * @return the current file pointer position
      * @throws NITFException
      * @see IOHandle#tell()
@@ -102,7 +94,7 @@ public final class SegmentReader extends DestructibleObject
     /**
      * The seek function allows the user to determine the size of the data. This
      * function has the same calling sequence and behavior as IOHandle.getSize.
-     * 
+     *
      * @return the size of the file descriptor
      * @throws NITFException
      * @see IOHandle#getSize()
@@ -110,13 +102,11 @@ public final class SegmentReader extends DestructibleObject
     public native long getSize() throws NITFException;
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 

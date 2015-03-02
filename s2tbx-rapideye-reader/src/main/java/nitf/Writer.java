@@ -25,24 +25,21 @@ package nitf;
 /**
  * Writes NITF files
  */
-public final class Writer extends DestructibleObject
-{
+public final class Writer extends DestructibleObject {
 
     /**
      * Create a new NITF Writer.
-     * 
+     *
      * @throws NITFException
      */
-    public Writer() throws NITFException
-    {
+    public Writer() throws NITFException {
         construct();
     }
 
     /**
      * @see DestructibleObject#DestructibleObject(long)
      */
-    Writer(long address)
-    {
+    Writer(long address) {
         super(address);
     }
 
@@ -70,41 +67,36 @@ public final class Writer extends DestructibleObject
 
     /**
      * Returns the output IOInterface
-     * 
+     *
      * @return the output IOInterface
      */
     native IOInterface getOutput();
 
     /**
      * Returns the associated Record Currently not public
-     * 
+     *
      * @return the associated Record, or null if none is associated
      */
     native Record getRecord();
 
     /**
      * Prepares for writing. This is called before the write() function.
-     * 
-     * @param record
-     *            the record to write
-     * @param ioHandle
-     *            the output IOHandle
+     *
+     * @param record   the record to write
+     * @param ioHandle the output IOHandle
      * @return true if the prepare completed successfully, false otherwise
      * @throws NITFException
      */
     public boolean prepare(Record record, IOInterface ioHandle)
-            throws NITFException
-    {
+            throws NITFException {
         return prepareIO(record, ioHandle);
     }
 
     /**
      * Prepares for writing. This is called before the write() function.
-     * 
-     * @param record
-     *            the record to write
-     * @param output
-     *            the output IOInterface
+     *
+     * @param record the record to write
+     * @param output the output IOInterface
      * @return true if the prepare completed successfully, false otherwise
      * @throws NITFException
      */
@@ -138,36 +130,30 @@ public final class Writer extends DestructibleObject
 
     /**
      * Returns an ImageWriter pertaining to the image at the given index
-     * 
-     * @param imageNumber
-     *            the index of the image
+     *
+     * @param imageNumber the index of the image
      * @return an ImageWriter pertaining to the image at the given index
-     * @throws NITFException
-     *             if a native error occurs
+     * @throws NITFException if a native error occurs
      */
     public native ImageWriter getNewImageWriter(int imageNumber)
             throws NITFException;
 
     /**
      * Returns a SegmentWriter pertaining to the text at the given index
-     * 
-     * @param textNumber
-     *            the index of the text
+     *
+     * @param textNumber the index of the text
      * @return a SegmentWriter pertaining to the text at the given index
-     * @throws NITFException
-     *             if a native error occurs
+     * @throws NITFException if a native error occurs
      */
     public native SegmentWriter getNewTextWriter(int textNumber)
             throws NITFException;
 
     /**
      * Returns a SegmentWriter pertaining to the graphic at the given index
-     * 
-     * @param graphicNumber
-     *            the index of the graphic
+     *
+     * @param graphicNumber the index of the graphic
      * @return a SegmentWriter pertaining to the graphic at the given index
-     * @throws NITFException
-     *             if a native error occurs
+     * @throws NITFException if a native error occurs
      */
     public native SegmentWriter getNewGraphicWriter(int graphicNumber)
             throws NITFException;
@@ -175,33 +161,28 @@ public final class Writer extends DestructibleObject
     /**
      * Returns a SegmentWriter pertaining to the DataExtension segment at the
      * given index
-     * 
-     * @param deNumber
-     *            the index of the segment
+     *
+     * @param deNumber the index of the segment
      * @return a SegmentWriter pertaining to the DE at the given index
-     * @throws NITFException
-     *             if a native error occurs
+     * @throws NITFException if a native error occurs
      */
     public native SegmentWriter getNewDEWriter(int deNumber)
             throws NITFException;
 
     /**
      * Writes the record
-     * 
+     *
      * @return true if the write was successful, false otherwise
-     * @throws NITFException
-     *             if a native error occurs
+     * @throws NITFException if a native error occurs
      */
     public native boolean write() throws NITFException;
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 

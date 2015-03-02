@@ -1,5 +1,7 @@
 package org.esa.beam.dataio.s2.filepatterns;
 
+import org.esa.beam.util.logging.BeamLogManager;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,7 +10,8 @@ import java.util.regex.Pattern;
  */
 public class S2GranuleMetadataFilename {
 
-    final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})(_A[0-9]{6})(_T[A-Z|0-9]{5})(\\.[A-Z|a-z|0-9]{3,4})?";;
+    final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})(_A[0-9]{6})(_T[A-Z|0-9]{5})(\\.[A-Z|a-z|0-9]{3,4})?";
+    ;
     final static Pattern PATTERN = Pattern.compile(REGEX);
 
     public final String name;
@@ -38,21 +41,21 @@ public class S2GranuleMetadataFilename {
     }
 
 
-
     public static S2GranuleMetadataFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2GranuleMetadataFilename(fileName,
-                                     matcher.group(1),
-                                     matcher.group(2),
-                                     matcher.group(3),
-                                     matcher.group(4),
-                                     matcher.group(5),
-                                     matcher.group(6),
-                                     matcher.group(7),
-                                     matcher.group(8)
-                    );
+                                                 matcher.group(1),
+                                                 matcher.group(2),
+                                                 matcher.group(3),
+                                                 matcher.group(4),
+                                                 matcher.group(5),
+                                                 matcher.group(6),
+                                                 matcher.group(7),
+                                                 matcher.group(8)
+            );
         } else {
+            BeamLogManager.getSystemLogger().warning(String.format("%s S2GranuleMetadataFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

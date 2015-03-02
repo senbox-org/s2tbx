@@ -20,7 +20,7 @@ import java.util.logging.LogRecord;
 /**
  * Commodity tool view for echoing and filtering application log messages.
  *
- * @author  Cosmin Cara
+ * @author Cosmin Cara
  */
 public class ConsoleToolView extends AbstractToolView {
 
@@ -30,8 +30,8 @@ public class ConsoleToolView extends AbstractToolView {
     private static final String INFO = "Informational";
     private static final String ERROR = "Error";
     private static final String ICON_PATH = "org/esa/beam/ui/%s";
-    private static final String COLUMNS[] = {"Timestamp","Message Type", "Message"};
-    private static final int COLUMN_WIDTHS[] = { 50, 50, 800};
+    private static final String COLUMNS[] = {"Timestamp", "Message Type", "Message"};
+    private static final int COLUMN_WIDTHS[] = {50, 50, 800};
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     private Handler logHandler;
     private JTable logTable;
@@ -54,11 +54,20 @@ public class ConsoleToolView extends AbstractToolView {
             put(Level.WARNING, WARNING);
             put(Level.SEVERE, ERROR);
         }};
-        this.filterMasks.put(INFO, new ArrayList<Level>() {{ add(Level.INFO); add(Level.FINE); add(Level.FINER); add(Level.FINEST); }});
+        this.filterMasks.put(INFO, new ArrayList<Level>() {{
+            add(Level.INFO);
+            add(Level.FINE);
+            add(Level.FINER);
+            add(Level.FINEST);
+        }});
         this.filterIcons.put(INFO, String.format(ICON_PATH, "info.gif"));
-        this.filterMasks.put(WARNING, new ArrayList<Level>() {{ add(Level.WARNING); }});
+        this.filterMasks.put(WARNING, new ArrayList<Level>() {{
+            add(Level.WARNING);
+        }});
         this.filterIcons.put(WARNING, String.format(ICON_PATH, "warning.gif"));
-        this.filterMasks.put(ERROR, new ArrayList<Level>() {{ add(Level.SEVERE); }});
+        this.filterMasks.put(ERROR, new ArrayList<Level>() {{
+            add(Level.SEVERE);
+        }});
         this.filterIcons.put(ERROR, String.format(ICON_PATH, "error.gif"));
         currentFilter = Level.ALL;
         rowFilterMap = new HashMap<String, RowFilter<DefaultTableModel, Object>>();
@@ -106,7 +115,7 @@ public class ConsoleToolView extends AbstractToolView {
         String data[][] = new String[0][3];
         logTableModel = new DefaultTableModel(data, COLUMNS) {
             @Override
-            public boolean isCellEditable(int row, int col){
+            public boolean isCellEditable(int row, int col) {
                 return false;
             }
         };
@@ -158,7 +167,7 @@ public class ConsoleToolView extends AbstractToolView {
                 List<String> filterKeys = new ArrayList<String>();
                 for (Component component : parent.getComponents()) {
                     if (JToggleButton.class.isInstance(component)) {
-                        JToggleButton buttonComponent = (JToggleButton)component;
+                        JToggleButton buttonComponent = (JToggleButton) component;
                         if (buttonComponent.getModel().isSelected()) {
                             filterKeys.add(buttonComponent.getActionCommand());
                         }
@@ -169,7 +178,7 @@ public class ConsoleToolView extends AbstractToolView {
                     filters.add(rowFilterMap.get(key));
                 }
                 //noinspection unchecked
-                ((TableRowSorter)logTable.getRowSorter()).setRowFilter(RowFilter.orFilter(filters));
+                ((TableRowSorter) logTable.getRowSorter()).setRowFilter(RowFilter.orFilter(filters));
             }
         });
         return button;
@@ -178,7 +187,7 @@ public class ConsoleToolView extends AbstractToolView {
     private void createRowFilters() {
         rowFilterMap.put(INFO, new RowFilter<DefaultTableModel, Object>() {
             @Override
-            public boolean include (RowFilter.Entry entry) {
+            public boolean include(RowFilter.Entry entry) {
                 //noinspection SuspiciousMethodCalls
                 //return filterMasks.get(INFO).contains(entry.getValue(1));
                 return INFO.equals(entry.getStringValue(1));
@@ -186,7 +195,7 @@ public class ConsoleToolView extends AbstractToolView {
         });
         rowFilterMap.put(WARNING, new RowFilter<DefaultTableModel, Object>() {
             @Override
-            public boolean include (RowFilter.Entry entry) {
+            public boolean include(RowFilter.Entry entry) {
                 //noinspection SuspiciousMethodCalls
                 //return filterMasks.get(WARNING).contains(entry.getValue(1));
                 return WARNING.equals(entry.getStringValue(1));
@@ -194,7 +203,7 @@ public class ConsoleToolView extends AbstractToolView {
         });
         rowFilterMap.put(ERROR, new RowFilter<DefaultTableModel, Object>() {
             @Override
-            public boolean include (RowFilter.Entry entry) {
+            public boolean include(RowFilter.Entry entry) {
                 //noinspection SuspiciousMethodCalls
                 //return filterMasks.get(ERROR).contains(entry.getValue(1));
                 return ERROR.equals(entry.getStringValue(1));
@@ -236,8 +245,8 @@ public class ConsoleToolView extends AbstractToolView {
     class ToolTipCellRenderer extends DefaultTableCellRenderer {
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
-            JLabel c = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel c = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             if (value != null && Throwable.class.isInstance(value)) {
                 Throwable exception = (Throwable) value;
                 StringWriter stringWriter = new StringWriter();

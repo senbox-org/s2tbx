@@ -25,55 +25,48 @@ package nitf;
 /**
  * An object that reads and parses a NITF file
  */
-public final class Reader extends DestructibleObject
-{
+public final class Reader extends DestructibleObject {
     /**
      * Reader Constructor
-     * 
-     * @throws NITFException
-     *             if a problem occurs in the underlying library
+     *
+     * @throws NITFException if a problem occurs in the underlying library
      */
-    public Reader() throws NITFException
-    {
+    public Reader() throws NITFException {
         construct();
     }
 
     /**
      * @see DestructibleObject#DestructibleObject(long)
      */
-    Reader(long address)
-    {
+    Reader(long address) {
         super(address);
     }
 
     /**
      * Constructs a new Reader
-     * 
+     *
      * @throws NITFException
      */
     private native void construct() throws NITFException;
 
     /**
      * Read and parse the file into a Record
-     * 
-     * @param inputHandle
-     *            the IOHandle used to read from
+     *
+     * @param inputHandle the IOHandle used to read from
      * @return a Record containing the read data
      * @throws NITFException
      */
     public native Record read(IOInterface input) throws NITFException;
 
     // for completeness - matches the C API
-    public Record readIO(IOInterface input) throws NITFException
-    {
+    public Record readIO(IOInterface input) throws NITFException {
         return read(input);
     }
 
     /**
      * Returns a new ImageReader
-     * 
-     * @param imageSegmentNumber
-     *            the index of the image to get a reader for
+     *
+     * @param imageSegmentNumber the index of the image to get a reader for
      * @return ImageReader
      * @throws NITFException
      */
@@ -82,9 +75,8 @@ public final class Reader extends DestructibleObject
 
     /**
      * Returns a new SegmentReader for reading graphic data
-     * 
-     * @param graphicSegmentNumber
-     *            the index of the graphic to get a reader for
+     *
+     * @param graphicSegmentNumber the index of the graphic to get a reader for
      * @return new SegmentReader
      * @throws NITFException
      */
@@ -93,9 +85,8 @@ public final class Reader extends DestructibleObject
 
     /**
      * Returns a new SegmentReader for reading graphic data
-     * 
-     * @param textSegmentNumber
-     *            the index of the text to get a reader for
+     *
+     * @param textSegmentNumber the index of the text to get a reader for
      * @return new SegmentReader
      * @throws NITFException
      */
@@ -104,9 +95,8 @@ public final class Reader extends DestructibleObject
 
     /**
      * Returns a new SegmentReader
-     * 
-     * @param deSegmentNumber
-     *            the index of the DE to get a reader for
+     *
+     * @param deSegmentNumber the index of the DE to get a reader for
      * @return DEReader
      * @throws NITFException
      */
@@ -115,7 +105,7 @@ public final class Reader extends DestructibleObject
 
     /**
      * Returns the Input IOInterface
-     * 
+     *
      * @return
      * @throws NITFException
      */
@@ -123,20 +113,18 @@ public final class Reader extends DestructibleObject
 
     /**
      * Returns the Record associated with this Reader, or null if none is
-     * 
+     *
      * @return
      * @throws NITFException
      */
     public native Record getRecord() throws NITFException;
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 

@@ -19,14 +19,12 @@ package org.esa.beam.dataio.atmcorr.ui;
 import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
 import com.bc.ceres.swing.selection.SelectionChangeListener;
-import org.esa.beam.dataio.s2.update.S2Config;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductFilter;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
 import org.esa.beam.framework.ui.AppContext;
-import org.esa.beam.util.SystemUtils;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.io.File;
 
 /**
@@ -56,12 +54,11 @@ public class AtmCorrIOParametersPanel extends JPanel {
         });
 
         targetProductSelector = new AtmCorrTargetProductSelector(new AtmCorrTargetProductSelectorModel());
-
         targetProductSelector.getOpenInAppCheckBox().setText("Open in " + appContext.getApplicationName());
-
+        targetProductSelector.getProductDirChooserButton().setVisible(false);
+        targetProductSelector.getProductDirTextField().setEditable(false);
+        targetProductSelector.getProductNameTextField().setEditable(false);
         updateTargetProductName();
-
-        targetProductSelector.getModel().setProductDir(SystemUtils.getUserHomeDir());
         final TableLayout tableLayout = new TableLayout(1);
         tableLayout.setTableAnchor(TableLayout.Anchor.WEST);
         tableLayout.setTableWeightX(1.0);
@@ -75,11 +72,19 @@ public class AtmCorrIOParametersPanel extends JPanel {
     }
 
     private void updateTargetProductName() {
-        if(sourceProductSelector.getSelectedProduct() != null) {
-            final String sourceName = sourceProductSelector.getSelectedProduct().getName();
-            targetProductSelector.getModel().setProductName(sourceName.replace("1C", "2A"));
+        if (sourceProductSelector.getSelectedProduct() != null) {
+            String sourceName = sourceProductSelector.getSelectedProduct().getName();
+            String sourceDir = sourceProductSelector.getSelectedProduct().getFileLocation().getPath();
+            String targetDir = sourceDir.replace("1C", "2A");
+            targetDir = targetDir.replace("OPER", "USER");
+            targetProductSelector.getModel().setProductDir(new File(targetDir));
+            targetProductSelector.getProductDirTextField().setToolTipText(targetDir);
+            String targetName = sourceName.replace("1C", "2A");
+            targetName = targetName.replace("OPER", "USER");
+            targetProductSelector.getModel().setProductName(targetName);
+            targetProductSelector.getProductNameTextField().setToolTipText(targetName);
         } else {
-            targetProductSelector.getModel().setProductName("Level-2A_User_Product");
+            targetProductSelector.getModel().setProductName("Please select Source Product...");
         }
     }
 
@@ -104,8 +109,9 @@ public class AtmCorrIOParametersPanel extends JPanel {
         @Override
         public boolean accept(Product product) {
             String productName = product.getName();
-            return S2Config.PRODUCT_DIRECTORY_1C_PATTERN.matcher(productName).matches() ||
-                    S2Config.DIRECTORY_1C_PATTERN_ALT.matcher(productName).matches();
+            return true;
+            // return S2Config.PRODUCT_DIRECTORY_1C_PATTERN.matcher(productName).matches() ||
+            //        S2Config.DIRECTORY_1C_PATTERN_ALT.matcher(productName).matches();
         }
     }
 

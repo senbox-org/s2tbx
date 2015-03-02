@@ -1,5 +1,7 @@
 package org.esa.beam.dataio.s2.filepatterns;
 
+import org.esa.beam.util.logging.BeamLogManager;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,11 +32,9 @@ public class S2DatastripDirFilename {
         this.processingBaseline = processingBaseline;
     }
 
-    public S2DatastripFilename getDatastripFilename(String fileCategory)
-    {
+    public S2DatastripFilename getDatastripFilename(String fileCategory) {
         String defaultFileCategory = "MTD_";
-        if(fileCategory != null)
-        {
+        if (fileCategory != null) {
             defaultFileCategory = fileCategory;
         }
 
@@ -44,33 +44,32 @@ public class S2DatastripDirFilename {
 
     public static S2DatastripDirFilename create(String fileName, String fileCategory) {
         final Matcher matcher = PATTERN.matcher(fileName);
-        if (matcher.matches())
-        {
-            if(fileCategory == null)
-            {
+        if (matcher.matches()) {
+            if (fileCategory == null) {
                 return new S2DatastripDirFilename(fileName,
-                        matcher.group(1),
-                        matcher.group(2),
-                        matcher.group(3),
-                        matcher.group(4),
-                        matcher.group(5),
-                        matcher.group(6),
-                        matcher.group(7),
-                        matcher.group(8)
+                                                  matcher.group(1),
+                                                  matcher.group(2),
+                                                  matcher.group(3),
+                                                  matcher.group(4),
+                                                  matcher.group(5),
+                                                  matcher.group(6),
+                                                  matcher.group(7),
+                                                  matcher.group(8)
                 );
             }
             return new S2DatastripDirFilename(fileName.replace(matcher.group(3), fileCategory),
-                    matcher.group(1),
-                    matcher.group(2),
-                    fileCategory,
-                    matcher.group(4),
-                    matcher.group(5),
-                    matcher.group(6),
-                    matcher.group(7),
-                    matcher.group(8)
+                                              matcher.group(1),
+                                              matcher.group(2),
+                                              fileCategory,
+                                              matcher.group(4),
+                                              matcher.group(5),
+                                              matcher.group(6),
+                                              matcher.group(7),
+                                              matcher.group(8)
             );
 
         } else {
+            BeamLogManager.getSystemLogger().warning(String.format("%s S2DatastripDirFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

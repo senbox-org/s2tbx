@@ -21,8 +21,7 @@
  */
 package nitf;
 
-public abstract class IOInterface extends DestructibleObject
-{
+public abstract class IOInterface extends DestructibleObject {
 
     /**
      * Seek offset is relative to current position
@@ -38,7 +37,7 @@ public abstract class IOInterface extends DestructibleObject
      * Seek offset is relative to end of file
      */
     public static final int SEEK_END = 30;
-    
+
     /**
      * Access mode - read-only privileges
      */
@@ -54,37 +53,31 @@ public abstract class IOInterface extends DestructibleObject
      */
     public static final int NITF_ACCESS_READWRITE = 0x03;
 
-    IOInterface(long address)
-    {
+    IOInterface(long address) {
         super(address);
     }
 
     /**
      * Default constructor
      */
-    public IOInterface()
-    {
+    public IOInterface() {
         construct();
     }
 
     /**
      * Reads size bytes into the specified byte buffer
-     * 
-     * @param buf
-     *            the byte buffer to store the data
-     * @param size
-     *            the number of bytes to read
+     *
+     * @param buf  the byte buffer to store the data
+     * @param size the number of bytes to read
      * @throws NITFException
      */
     public abstract void read(byte[] buf, int size) throws NITFException;
 
-    public void read(byte[] buf) throws NITFException
-    {
+    public void read(byte[] buf) throws NITFException {
         read(buf, buf.length);
     }
 
-    public byte[] read(int size) throws NITFException
-    {
+    public byte[] read(int size) throws NITFException {
         byte[] buf = new byte[size];
         read(buf);
         return buf;
@@ -92,51 +85,45 @@ public abstract class IOInterface extends DestructibleObject
 
     /**
      * Writes bytes to the IO handle at the current position
-     * 
-     * @param buf
-     *            the byte buffer containing the data
-     * @param size
-     *            the number of bytes to write
+     *
+     * @param buf  the byte buffer containing the data
+     * @param size the number of bytes to write
      * @throws NITFException
      */
     public abstract void write(final byte[] buf, int size) throws NITFException;
 
     /**
      * Writes bytes to the IO handle at the current position
-     * 
+     *
      * @param buf
      * @throws NITFException
      */
-    public void write(final byte[] buf) throws NITFException
-    {
+    public void write(final byte[] buf) throws NITFException {
         if (buf != null && buf.length > 0)
             write(buf, buf.length);
     }
-    
+
     public abstract boolean canSeek();
 
     /**
      * Seeks to the specified offset relative to the position specified by
      * whence
-     * 
-     * @param offset
-     *            the offset
-     * @param whence
-     *            the type of seek, either SEEK_CUR, SEEK_SET, or SEEK_END
+     *
+     * @param offset the offset
+     * @param whence the type of seek, either SEEK_CUR, SEEK_SET, or SEEK_END
      * @return the position in the file after the seek
      * @throws NITFException
      */
     public abstract long seek(long offset, int whence) throws NITFException;
-    
 
-    public long seek(long offset) throws NITFException
-    {
+
+    public long seek(long offset) throws NITFException {
         return seek(offset, SEEK_SET);
     }
 
     /**
      * Returns the current IO position
-     * 
+     *
      * @return the current IO position
      * @throws NITFException
      */
@@ -144,12 +131,12 @@ public abstract class IOInterface extends DestructibleObject
 
     /**
      * Returns the size of the IO descriptor
-     * 
+     *
      * @return the size of the IO descriptor
      * @throws NITFException
      */
     public abstract long getSize() throws NITFException;
-    
+
     public abstract int getMode() throws NITFException;
 
     /**
@@ -160,13 +147,11 @@ public abstract class IOInterface extends DestructibleObject
     protected native void construct();
 
     @Override
-    protected MemoryDestructor getDestructor()
-    {
+    protected MemoryDestructor getDestructor() {
         return new Destructor();
     }
 
-    private static class Destructor implements MemoryDestructor
-    {
+    private static class Destructor implements MemoryDestructor {
         public native boolean destructMemory(long nativeAddress);
     }
 
