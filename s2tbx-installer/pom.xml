@@ -93,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-binio</artifactId>
+            <artifactId>ceres-binio</artifactId>
             <version>${snap.version}</version>
         </dependency>
         <dependency>
@@ -173,7 +173,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-getasse30-reader</artifactId>
+            <artifactId>snap-getasse30-dem</artifactId>
             <version>${snap.version}</version>
         </dependency>
         <dependency>
@@ -233,7 +233,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-statistics-op</artifactId>
+            <artifactId>snap-statistics</artifactId>
             <version>${snap.version}</version>
         </dependency>
         <dependency>
@@ -319,7 +319,7 @@
             <version>2.7</version>
         </dependency>
         <dependency>
-            <groupId>gov.nasa.gsfc.seadas</groupId>
+            <groupId>org.esa.snap.seadas</groupId>
             <artifactId>seadas-reader</artifactId>
             <version>1.5.6</version>
         </dependency>
