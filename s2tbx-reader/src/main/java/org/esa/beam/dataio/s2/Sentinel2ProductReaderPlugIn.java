@@ -5,6 +5,7 @@ import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.util.io.BeamFileFilter;
+import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.util.Locale;
@@ -16,10 +17,17 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        System.err.println("Getting decoders...");
+        BeamLogManager.getSystemLogger().fine("Getting decoders...");
+
         File file = new File(input.toString());
-        return S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.INTENDED :
-                        DecodeQualification.UNABLE;
+        DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
+        if (deco.equals(DecodeQualification.SUITABLE)) {
+            if (S2ProductFilename.create(file.getName()).fileSemantic.contains("L1C")) {
+                deco = DecodeQualification.INTENDED;
+            }
+        }
+
+        return deco;
     }
 
     @Override
@@ -29,7 +37,8 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        System.err.println("Building product reader");
+        BeamLogManager.getSystemLogger().info("Building product reader...");
+
         return new Sentinel2ProductReader(this);
     }
 

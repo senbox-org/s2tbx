@@ -1,0 +1,263 @@
+<?xml version ="1.0" encoding="UTF-8"?>
+<n1:Level-1B_Granule_ID
+        xmlns:n1="https://psd-12.sentinel2.eo.esa.int/PSD/S2_PDI_Level-1B_Granule_Metadata.xsd"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://psd-12.sentinel2.eo.esa.int/PSD/S2_PDI_Level-1B_Granule_Metadata.xsd S2_PDI_Level-1B_Granule_Metadata.xsd">
+    <n1:General_Info>
+        <GRANULE_ID>S2A_OPER_MSI_L1B_GR_MPS__20140926T120000_S20130707T171927_D06_N01.01</GRANULE_ID>
+        <DETECTOR_ID>06</DETECTOR_ID>
+        <DATASTRIP_ID>S2A_OPER_MSI_L1B_DS_MPS__20140926T120000_S20130707T171925_N01.01</DATASTRIP_ID>
+        <DOWNLINK_PRIORITY>NOMINAL</DOWNLINK_PRIORITY>
+        <SENSING_TIME>2013-07-07T17:19:27.000000Z</SENSING_TIME>
+        <Archiving_Info>
+            <ARCHIVING_CENTRE>MPS_</ARCHIVING_CENTRE>
+            <ARCHIVING_TIME>2014-07-30T12:11:50Z</ARCHIVING_TIME>
+        </Archiving_Info>
+    </n1:General_Info>
+    <n1:Geometric_Info>
+        <Granule_Footprint>
+            <Granule_Footprint>
+                <Footprint>
+                    <EXT_POS_LIST>30.651514297 -97.494317649 180.063 30.438835086 -97.551671648 175.346 30.387815142
+                        -97.295330553 164.331 30.600435577 -97.237411956 143.626 30.651514297 -97.494317649 180.063
+                    </EXT_POS_LIST>
+                    <INT_POS_LIST></INT_POS_LIST>
+                </Footprint>
+            </Granule_Footprint>
+            <RASTER_CS_TYPE>POINT</RASTER_CS_TYPE>
+            <PIXEL_ORIGIN>1</PIXEL_ORIGIN>
+        </Granule_Footprint>
+        <Granule_Position>
+            <POSITION>1</POSITION>
+            <Geometric_Header>
+                <GROUND_CENTER>30.51966472 -97.394541802 154.224</GROUND_CENTER>
+                <QL_CENTER>4 5</QL_CENTER>
+                <Incidence_Angles>
+                    <ZENITH_ANGLE unit="deg">1.01759</ZENITH_ANGLE>
+                    <AZIMUTH_ANGLE unit="deg">112.396</AZIMUTH_ANGLE>
+                </Incidence_Angles>
+                <Solar_Angles>
+                    <ZENITH_ANGLE unit="deg">18.6175</ZENITH_ANGLE>
+                    <AZIMUTH_ANGLE unit="deg">110.405</AZIMUTH_ANGLE>
+                </Solar_Angles>
+            </Geometric_Header>
+        </Granule_Position>
+        <Granule_Dimensions>
+            <Size resolution="10">
+                <NROWS>41066</NROWS>
+                <NCOLS>2548</NCOLS>
+            </Size>
+            <Size resolution="20">
+                <NROWS>20533</NROWS>
+                <NCOLS>1274</NCOLS>
+            </Size>
+            <Size resolution="60">
+                <NROWS>6844</NROWS>
+                <NCOLS>424</NCOLS>
+            </Size>
+        </Granule_Dimensions>
+    </n1:Geometric_Info>
+    <n1:Quality_Indicators_Info>
+        <Image_Content_QI>
+            <CLOUDY_PIXEL_PERCENTAGE>0</CLOUDY_PIXEL_PERCENTAGE>
+            <DEGRADED_MSI_DATA_PERCENTAGE>0</DEGRADED_MSI_DATA_PERCENTAGE>
+        </Image_Content_QI>
+        <Pixel_Level_QI geometry="FULL_RESOLUTION">
+            <MASK_FILENAME bandId="0" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B01_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="0" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B01_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="0" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B01_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="0" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B01_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="0" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B01_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="1" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B02_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="1" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B02_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="1" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B02_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="1" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B02_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="1" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B02_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="2" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B03_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="2" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B03_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="2" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B03_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="2" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B03_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="2" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B03_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="3" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B04_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="3" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B04_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="3" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B04_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="3" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B04_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="3" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B04_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="4" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B05_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="4" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B05_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="4" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B05_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="4" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B05_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="4" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B05_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="5" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B06_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="5" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B06_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="5" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B06_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="5" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B06_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="5" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B06_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="6" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B07_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="6" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B07_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="6" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B07_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="6" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B07_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="6" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B07_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="7" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B08_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="7" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B08_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="7" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B08_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="7" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B08_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="7" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B08_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="8" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B8A_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="8" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B8A_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="8" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B8A_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="8" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B8A_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="8" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B8A_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="9" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B09_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="9" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B09_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="9" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B09_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="9" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B09_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="9" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B09_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="10" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B10_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="10" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B10_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="10" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B10_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="10" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B10_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="10" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B10_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="11" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B11_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="11" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B11_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="11" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B11_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="11" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B11_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="11" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B11_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="12" type="MSK_CLOLOW" detectorId="06">
+                S2A_OPER_MSK_CLOLOW_MPS__00000000T000000_S20091211T165928_D06_B12_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="12" type="MSK_DEFECT" detectorId="06">
+                S2A_OPER_MSK_DEFECT_MPS__00000000T000000_S20091211T165928_D06_B12_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="12" type="MSK_NODATA" detectorId="06">
+                S2A_OPER_MSK_NODATA_MPS__00000000T000000_S20091211T165928_D06_B12_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="12" type="MSK_SATURA" detectorId="06">
+                S2A_OPER_MSK_SATURA_MPS__00000000T000000_S20091211T165928_D06_B12_MSIL1B.gml
+            </MASK_FILENAME>
+            <MASK_FILENAME bandId="12" type="MSK_TECQUA" detectorId="06">
+                S2A_OPER_MSK_TECQUA_MPS__00000000T000000_S20091211T165928_D06_B12_MSIL1B.gml
+            </MASK_FILENAME>
+        </Pixel_Level_QI>
+    </n1:Quality_Indicators_Info>
+</n1:Level-1B_Granule_ID>
