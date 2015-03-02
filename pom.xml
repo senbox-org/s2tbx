@@ -24,7 +24,7 @@
         <module>s2tbx-sen2three-processor</module>
         <module>s2tbx-r2r-converter</module>
         <module>s2tbx-bootstrap</module>
-        <module>s2tbx-installer</module>
+        <!-- <module>s2tbx-installer</module> -->
         <module>s2tbx-app</module>
         <module>s2tbx-help</module>
     </modules>

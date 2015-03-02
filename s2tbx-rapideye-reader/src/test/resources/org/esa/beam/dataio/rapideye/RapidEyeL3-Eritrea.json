@@ -85,11 +85,11 @@
                 "value": "QUICKLOOK"
             },
             {
-                "path": "TIFF Metadata/GeoTIFF Metadata/GTCitationGeoKey",
+                "path": "TIFF Metadata/GeoTIFF Metadata/GeoKeyDirectory/GTCitationGeoKey",
                 "value": "WGS 84 / UTM zone 37N"
             },
             {
-                "path": "TIFF Metadata/GeoTIFF Metadata/ProjLinearUnitsGeoKey",
+                "path": "TIFF Metadata/GeoTIFF Metadata/GeoKeyDirectory/ProjLinearUnitsGeoKey",
                 "value": "Linear_Meter"
             }
         ]
