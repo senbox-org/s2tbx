@@ -150,7 +150,13 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         // critical do we have to read a standalone granule or jp2 file ?
 
         if (S2L1bProductFilename.isProductFilename(inputFile.getName())) {
-            p = getL1bMosaicProduct(inputFile);
+            boolean isAGranule = S2L1bProductFilename.isGranuleFilename(inputFile.getName());
+            if(isAGranule)
+            {
+                logger.fine("Reading a granule");
+            }
+
+            p = getL1bMosaicProduct(inputFile, isAGranule);
 
             if (p != null) {
                 readMasks(p);
@@ -173,8 +179,52 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         // critical Implement this method
     }
 
-    private Product getL1bMosaicProduct(File metadataFile) throws IOException {
-        L1bMetadata metadataHeader;
+    private Product getL1bMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException {
+        // critical Fix this function
+        Objects.requireNonNull(granuleMetadataFile);
+        // first we need to recover parent metadata file...
+
+        String filterTileId = null;
+        File metadataFile = null;
+        if(isAGranule)
+        {
+            try
+            {
+                Objects.requireNonNull(granuleMetadataFile.getParentFile());
+                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile());
+                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile().getParentFile());
+            } catch (NullPointerException npe)
+            {
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+            }
+
+            File up2levels = granuleMetadataFile.getParentFile().getParentFile().getParentFile();
+            File tileIdFilter = granuleMetadataFile.getParentFile();
+
+            filterTileId = tileIdFilter.getName();
+
+            File[] files = up2levels.listFiles();
+            for(File f: files)
+            {
+                if(S2L1bProductFilename.isProductFilename(f.getName()) && S2L1bProductFilename.isMetadataFilename(f.getName()))
+                {
+                    metadataFile = f;
+                    break;
+                }
+            }
+            if(metadataFile == null)
+            {
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+            }
+        }
+        else
+        {
+            metadataFile = granuleMetadataFile;
+        }
+
+        final String aFilter = filterTileId;
+
+        L1bMetadata metadataHeader = null;
 
         try {
             metadataHeader = parseHeader(metadataFile);
@@ -194,6 +244,11 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         // fixme what if bandInformations are optional ?
         Map<Integer, TileBandInfo> bandInfoMap = new HashMap<Integer, TileBandInfo>();
         List<L1bMetadata.Tile> tileList = metadataHeader.getTileList();
+
+        if(isAGranule)
+        {
+            tileList = metadataHeader.getTileList().stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+        }
 
         Map<String, Tile> tilesById = new HashMap<>(tileList.size());
         for (Tile aTile : tileList) {
@@ -246,6 +301,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             sin.put(bandInformation.physicalBand, bandInformation);
         }
 
+        // critical here we must split by detector and band..., detector first
         Map<Pair<String, String>, Map<String, File>> detectorBandInfoMap = new HashMap<Pair<String, String>, Map<String, File>>();
         Map<String, TileBandInfo> bandInfoByKey = new HashMap<String, TileBandInfo>();
         if (productCharacteristics.bandInformations != null) {
@@ -294,6 +350,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                                       sceneDescription.getSceneRectangle().height);
 
         product.setFileLocation(metadataFile.getParentFile());
+
         Map<String, GeoCoding> geoCodingsByDetector = new HashMap<>();
 
         // fixme Iterate over detectorBandInfoMap and add TiePointGrids to product
@@ -307,9 +364,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
 
 
-        // fixme fix geocoding when multiresolution is available
+        // fixme wait until geocoding is fixed
         /*
         if (product.getGeoCoding() == null) {
+            // use default geocoding
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
         }
         */
@@ -350,7 +408,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         float[] lats = convertDoublesToFloats(getLatitudes(coords));
         float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
+        // todo create Tiepointgrid add add to product
         // fixme this will fail, only one geocoding per product ?
+
+        // fixme we should change of each band
         TiePointGrid latGrid = addTiePointGrid(aList.get(0).tileGeometry10M.numCols, aList.get(0).tileGeometry10M.numRowsDetector, tileBandInfo.wavebandInfo.bandName + ",latitude", lats);
         product.addTiePointGrid(latGrid);
         TiePointGrid lonGrid = addTiePointGrid(aList.get(0).tileGeometry10M.numCols, aList.get(0).tileGeometry10M.numRowsDetector, tileBandInfo.wavebandInfo.bandName + ",longitude", lons);
