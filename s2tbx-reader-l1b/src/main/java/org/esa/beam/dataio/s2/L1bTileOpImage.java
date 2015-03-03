@@ -88,7 +88,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
 
             return opImage;
         } else {
-            BeamLogManager.getSystemLogger().warning("Using empty image !");
+            BeamLogManager.getSystemLogger().fine("Using empty image !");
 
             int targetWidth = getSizeAtResolutionLevel(L1B_TILE_LAYOUTS[0].width, level);
             int targetHeight = getSizeAtResolutionLevel(L1B_TILE_LAYOUTS[0].height, level);
