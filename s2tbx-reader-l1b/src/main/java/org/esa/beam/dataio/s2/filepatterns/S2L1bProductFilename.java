@@ -79,6 +79,11 @@ public class S2L1bProductFilename {
         return name.toLowerCase().endsWith(".xml");
     }
 
+    static public boolean isGranuleFilename(String name)
+    {
+        return S2L1bGranuleMetadataFilename.isGranuleFilename(name);
+    }
+
     public static S2L1bProductFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {

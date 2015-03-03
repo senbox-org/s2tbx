@@ -1,5 +1,7 @@
 package org.esa.beam.dataio.s2.filepatterns;
 
+import org.esa.beam.util.logging.BeamLogManager;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,6 +70,11 @@ public class S2ProductFilename {
         return PATTERN.matcher(name).matches();
     }
 
+    static public boolean isGranuleFilename(String name)
+    {
+        return S2GranuleMetadataFilename.isGranuleFilename(name);
+    }
+
     public static boolean isMetadataFilename(String name) {
         boolean isProduct = isProductFilename(name);
         if (!isProduct) {
@@ -89,6 +96,7 @@ public class S2ProductFilename {
                                          matcher.group(6),
                                          matcher.group(7));
         } else {
+            BeamLogManager.getSystemLogger().warning(String.format("%s S2ProductFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }
