@@ -232,7 +232,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
                 //TODO log error
             }
         }
-        configPanel.add(templateContent, BorderLayout.CENTER);
+        configPanel.add(new JScrollPane(templateContent), BorderLayout.CENTER);
 
         processingPanel.add(configPanel, BorderLayout.CENTER);
 
@@ -270,9 +270,6 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         variablesBorderPanel.add(addVariableBut);
         VariablesTable varTable = new VariablesTable(operatorDescriptor.getVariables());
         varTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-        varTable.getColumnModel().getColumn(0).setPreferredWidth(27);
-        varTable.getColumnModel().getColumn(1).setPreferredWidth(150);
-        varTable.getColumnModel().getColumn(2).setPreferredWidth(200);
         JScrollPane scrollPane = new JScrollPane(varTable);
         scrollPane.setPreferredSize(new Dimension(400, 150));
         scrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -312,6 +309,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
     public JPanel createMainPanel() {
         JPanel toolDescriptorPanel = new JPanel();
         toolDescriptorPanel.setLayout(new BorderLayout());
+        toolDescriptorPanel.setPreferredSize(new Dimension(800, 500));
 
         toolDescriptorPanel.add(createDescriptorAndVariablesPanel(), BorderLayout.LINE_START);
         toolDescriptorPanel.add(createProcessingPanel(), BorderLayout.CENTER);

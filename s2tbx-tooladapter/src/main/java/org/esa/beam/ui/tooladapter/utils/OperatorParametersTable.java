@@ -8,6 +8,7 @@ import org.esa.beam.framework.gpf.annotations.ParameterDescriptorFactory;
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
@@ -32,6 +33,7 @@ public class OperatorParametersTable extends JTable {
 
     private static String[] columnNames = {"", "Name", "Description", "Label", "Data type", "Default value", ""};
     private static String[] columnsMembers = {"del", "name", "description", "alias", "dataType", "defaultValue", "edit"};
+    private static int[] widths = {27, 100, 200, 80, 100, 249, 30};
     private static final BidiMap typesMap;
     private ToolAdapterOperatorDescriptor operator = null;
     private Map<ToolParameterDescriptor, PropertyMemberUIWrapper> propertiesValueUIDescriptorMap;
@@ -70,21 +72,33 @@ public class OperatorParametersTable extends JTable {
         tableRenderer = new MultiRenderer();
         setModel(new OperatorParametersTableNewTableModel());
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        getColumnModel().getColumn(0).setPreferredWidth(27);
-        getColumnModel().getColumn(1).setPreferredWidth(120);
-        getColumnModel().getColumn(2).setPreferredWidth(200);
-        getColumnModel().getColumn(3).setPreferredWidth(80);
-        getColumnModel().getColumn(4).setPreferredWidth(150);
-        getColumnModel().getColumn(5).setPreferredWidth(150);
-        getColumnModel().getColumn(6).setPreferredWidth(40);
+        for(int i=0; i < widths.length; i++) {
+            getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
+        }
 
         this.putClientProperty("JComboBox.isTableCellEditor", Boolean.FALSE);
     }
 
     public void addParameterToTable(ToolParameterDescriptor param){
-        operator.getToolParameterDescriptors().add(param);
+        try {
+            PropertyDescriptor property =  ParameterDescriptorFactory.convert(param, new ParameterDescriptorFactory().getSourceProductMap());
+            operator.getToolParameterDescriptors().add(param);
+            DefaultPropertySetDescriptor propertySetDescriptor = new DefaultPropertySetDescriptor();
+            try {
+                property.setDefaultValue(param.getDefaultValue());
+            }catch (Exception ex){
+                ex.printStackTrace();
+                //TODO if the previous value cannot be cast, this shoudl be ok???
+            }
+        propertySetDescriptor.addPropertyDescriptor(property);
+        PropertyContainer container = PropertyContainer.createMapBacked(new HashMap<>(), propertySetDescriptor);
+        context.getPropertySet().addProperties(container.getProperties());
         propertiesValueUIDescriptorMap.put(param, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", param, operator, context, null));
         revalidate();
+        }catch (Exception ex){
+            ex.printStackTrace();
+            //TODO if the previous value cannot be cast, this shoudl be ok???
+        }
     }
 
     @Override
@@ -163,6 +177,14 @@ public class OperatorParametersTable extends JTable {
 
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
+            ToolParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(rowIndex);
+            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
+                return false;
+            }
+            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_ID) && columnIndex <= 1){
+                //if it is the target product parameter, it cannot be deleted and the name cannot be changed
+                return false;
+            }
             return true;
         }
 
@@ -174,7 +196,33 @@ public class OperatorParametersTable extends JTable {
                     operator.removeParamDescriptor(descriptor);
                     revalidate();
                     break;
+                case 1:
+                    String oldName = descriptor.getName();
+                    descriptor.setName(aValue.toString());
+                    //since the name is changed, the context must be changed also
+                    context.getPropertySet().removeProperty(context.getPropertySet().getProperty(oldName));
+                    try {
+                        PropertyDescriptor property =  ParameterDescriptorFactory.convert(descriptor, new ParameterDescriptorFactory().getSourceProductMap());
+                        try {
+                            property.setDefaultValue(descriptor.getDefaultValue());
+                        }catch (Exception ex){
+                            ex.printStackTrace();
+                            //TODO if the previous value cannot be cast, this shoudl be ok???
+                        }
+                        DefaultPropertySetDescriptor propertySetDescriptor = new DefaultPropertySetDescriptor();
+                        propertySetDescriptor.addPropertyDescriptor(property);
+                        PropertyContainer container = PropertyContainer.createMapBacked(new HashMap<>(), propertySetDescriptor);
+                        context.getPropertySet().addProperties(container.getProperties());
+                        propertiesValueUIDescriptorMap.put(descriptor, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", descriptor, operator, context, null));
+                        revalidate();
+                        repaint();
+                    } catch (ConversionException e) {
+                        e.printStackTrace();
+                        //TODO show error
+                    }
+                    break;
                 case 4:
+                    //type editing
                     if(descriptor.getDataType() != typesMap.get(aValue)) {
                         descriptor.setDataType((Class<?>) typesMap.get(aValue));
                         descriptor.setDefaultValue(descriptor.getDefaultValue());
@@ -199,6 +247,7 @@ public class OperatorParametersTable extends JTable {
                             //TODO show error
                         }
                     }
+                    break;
                 case 5:
                     //the custom editor should handle this
                     break;

@@ -273,7 +273,7 @@ public class ToolAdapterOp extends Operator {
      * @throws OperatorException in case of an error
      */
     private void loadFinalProduct() throws OperatorException {
-        File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE_ID);
+        File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_ID);
         if (input == null) {
             //no target product, means the source product was changed
             //TODO all input files should be (re)-loaded since we do not know which one was changed
@@ -418,7 +418,7 @@ public class ToolAdapterOp extends Operator {
                 if (id < sourceProducts.length) {
                     srcFileLocation = sourceProducts[id].getFileLocation().getAbsolutePath();
                 } else if (sourceProducts.length == 0) {
-                    srcFileLocation = ((File) getParameter(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE, null)).getAbsolutePath();
+                    srcFileLocation = ((File) getParameter(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, null)).getAbsolutePath();
                     //TODO check if exists!
                     if (srcFileLocation.length() <= 0 || !(new File(srcFileLocation)).exists()) {
                         throw new OperatorException("The source product file not existing!");

@@ -1,9 +1,11 @@
 package org.esa.beam.ui.tooladapter;
 
+import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOp;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
@@ -50,7 +52,8 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
         newButton.setToolTipText("Define new operator");
         newButton.addActionListener(e -> {
             close();
-            ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor("DefaultOperatorName", ToolAdapterOp.class, ToolAdapterConstants.OPERATOR_NAMESPACE + ".DefaultOperatorName", null, null, null, null, null);
+            ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor(ToolAdapterConstants.OPERATOR_NAMESPACE + "DefaultOperatorName", ToolAdapterOp.class, "DefaultOperatorName", null, null, null, null, null);
+            newOperatorSpi.getToolParameterDescriptors().add(new ToolParameterDescriptor(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, Product.class));
             ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Define new Tool", getHelpID(), newOperatorSpi, true);
             dialog.show();
         });
