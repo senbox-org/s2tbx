@@ -273,7 +273,7 @@ public class ToolAdapterOp extends Operator {
      * @throws OperatorException in case of an error
      */
     private void loadFinalProduct() throws OperatorException {
-        File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_ID);
+        File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE);
         if (input == null) {
             //no target product, means the source product was changed
             //TODO all input files should be (re)-loaded since we do not know which one was changed
@@ -451,14 +451,25 @@ public class ToolAdapterOp extends Operator {
         VelocityContext velContext = new VelocityContext();
         Property[] params = accessibleContext.getParameterSet().getProperties();
         for (Property param : params) {
-            velContext.put(param.getName(), param.getValue().toString());
+            velContext.put(param.getName(), param.getValue());
         }
         Product[] sourceProducts = getSourceProducts();
         velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, sourceProducts[0]);
+        File rasterFile = null;
+        File productFile = sourceProducts[0].getFileLocation();
+        if (productFile.isFile()) {
+            rasterFile = productFile;
+        } else {
+            File[] files = productFile.listFiles((File dir, String name) -> name.endsWith(".tif"));
+            if (files != null && files.length > 0) {
+                rasterFile = files[0];
+            }
+        }
+        velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE, rasterFile);
         for (int i = 0; i < sourceProducts.length; i++) {
             velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + (i + 1), sourceProducts[i]);
         }
-        //velContext.put(ToolAdapterConstants.TOOL_TARGET_PRODUCT_ID, getTargetProduct());
+        //velContext.put(ToolAdapterConstants.TOOL_TARGET_PRODUCT_ID, new Product("output", descriptor.getProcessingWriter(), sourceProducts[0].getSceneRasterWidth(), sourceProducts[0].getSceneRasterHeight()));
         StringWriter writer = new StringWriter();
         t.merge(velContext, writer);
         return writer.toString();

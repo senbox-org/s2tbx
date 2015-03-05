@@ -21,6 +21,8 @@ public interface ToolAdapterConstants {
      */
     public static final String TOOL_SOURCE_PRODUCT_ID = "sourceProduct";
     public static final String TOOL_TARGET_PRODUCT_ID = "targetProduct";
+    public static final String TOOL_SOURCE_PRODUCT_FILE = "sourceProductFile";
+    public static final String TOOL_TARGET_PRODUCT_FILE = "targetProductFile";
     /**
      * The id of the tool's target file as it is used in the descriptor.
      */

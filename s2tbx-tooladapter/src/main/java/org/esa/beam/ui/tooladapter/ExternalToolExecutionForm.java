@@ -15,6 +15,7 @@ import org.esa.beam.util.io.FileUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -38,7 +39,6 @@ public class ExternalToolExecutionForm extends JTabbedPane {
         final TargetProductSelectorModel targetProductSelectorModel = targetProductSelector.getModel();
         targetProductSelectorModel.setProductDir(this.operatorSpi.getWorkingDir());
 
-
         ioParamPanel = createIOParamTab();
         addTab("I/O Parameters", ioParamPanel);
         addTab("Processing Parameters", createProcessingParamTab());
@@ -54,6 +54,10 @@ public class ExternalToolExecutionForm extends JTabbedPane {
 
     public Product getSourceProduct() {
         return ioParamPanel.getSourceProductSelectorList().get(0).getSelectedProduct();
+    }
+
+    public File getTargetProductFile() {
+        return targetProductSelector.getModel().getProductFile();
     }
 
     private DefaultIOParametersPanel createIOParamTab() {

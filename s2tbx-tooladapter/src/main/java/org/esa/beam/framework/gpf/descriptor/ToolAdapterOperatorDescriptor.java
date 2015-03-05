@@ -7,6 +7,7 @@ import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.util.StringUtils;
+import org.esa.beam.utils.PrivilegedAccessor;
 
 import java.io.*;
 import java.net.URL;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * @author Ramona Manda
  */
-public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
+public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
 
     private String name;
     private Class<? extends Operator> operatorClass;
@@ -43,21 +44,27 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
     private File workingDir;
     private String templateFileLocation;
 
-    private List<SystemVariable> variables = new ArrayList<>();
+    private List<SystemVariable> variables;
 
-    private List<ToolParameterDescriptor> toolParameterDescriptors = new ArrayList<>();
+    private List<ToolParameterDescriptor> toolParameterDescriptors;
 
     ToolAdapterOperatorDescriptor() {
         this.sourceProductDescriptors = new DefaultSourceProductDescriptor[] { new DefaultSourceProductDescriptor() };
-        this.sourceProductDescriptors[0].name = ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID;
+        try {
+            PrivilegedAccessor.setValue(this.sourceProductDescriptors[0], "name", ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID);
+            // this.sourceProductDescriptors[0].name = ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // this.sourceProductDescriptors[0].name = ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID;
         this.variables = new ArrayList<>();
-        this.variables.add(new SystemVariable("key", "value"));
+        this.toolParameterDescriptors = new ArrayList<>();
     }
 
     public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass) {
+        this();
         this.name = name;
         this.operatorClass = operatorClass;
-        this.variables = new ArrayList<>();
     }
 
     public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright) {
@@ -70,7 +77,7 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
         this.copyright = copyright;
     }
 
-    public ToolAdapterOperatorDescriptor(DefaultOperatorDescriptor obj) {
+    public ToolAdapterOperatorDescriptor(ToolAdapterOperatorDescriptor obj) {
         this(obj.getName(), obj.getOperatorClass(), obj.getAlias(), obj.getLabel(), obj.getVersion(), obj.getDescription(), obj.getAuthors(), obj.getCopyright());
         this.internal = obj.isInternal();
         this.autoWriteSuppressed = obj.isAutoWriteDisabled();
@@ -82,9 +89,8 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
 
         this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor) obj.getSourceProductsDescriptor();
 
-        this.toolParameterDescriptors = new ArrayList<>();
         for (int i = 0; i < obj.getParameterDescriptors().length; i++) {
-            this.toolParameterDescriptors.add(new ToolParameterDescriptor(obj.parameterDescriptors[i]));
+            this.toolParameterDescriptors.add(new ToolParameterDescriptor(obj.toolParameterDescriptors.get(i)));
         }
 
         this.targetProductDescriptor = (DefaultTargetProductDescriptor) obj.getTargetProductDescriptor();
@@ -93,8 +99,6 @@ public class ToolAdapterOperatorDescriptor extends DefaultOperatorDescriptor {
         for (int i = 0; i < obj.getTargetPropertyDescriptors().length; i++) {
             this.targetPropertyDescriptors[i] = ((DefaultTargetPropertyDescriptor) (obj.getTargetPropertyDescriptors()[i]));
         }
-
-        this.variables = new ArrayList<>();
     }
 
     public ToolAdapterOperatorDescriptor(ToolAdapterOperatorDescriptor obj, String newName, String newAlias) {

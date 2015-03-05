@@ -40,6 +40,13 @@ public class PrivilegedAccessor {
         return field.get(instance);
     }
 
+    public static void setValue(Object instance, String fieldName, Object value)
+            throws IllegalAccessException, NoSuchFieldException {
+        Field field = getField(instance.getClass(), fieldName);
+        field.setAccessible(true);
+        field.set(instance, value);
+    }
+
     /**
      * Gets the value of the named static field and returns it as an object.
      *
