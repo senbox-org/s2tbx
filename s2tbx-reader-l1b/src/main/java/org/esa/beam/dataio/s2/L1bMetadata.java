@@ -173,7 +173,6 @@ public class L1bMetadata {
 
     private L1bMetadata(InputStream stream, File file, String parent) throws DataConversionException {
         try {
-            // critical change product reading in order to process individual L1B tiles
             context = L1bMetadataProc.getJaxbContext();
             unmarshaller = context.createUnmarshaller();
 

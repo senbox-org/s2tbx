@@ -324,7 +324,6 @@ public class L1bMetadataProc {
 
             tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
             if ((gpos.getNROWS() - (pos / ratio)) < S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height) {
-                // critical remove log
                 BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_DEBUG), "Test if we need extra processing here");
             }
 

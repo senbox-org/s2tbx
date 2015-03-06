@@ -133,8 +133,6 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
             throw new FileNotFoundException(inputFile.getPath());
         }
 
-        // critical do we have to read a standalone granule or jp2 file ?
-
         if (S2L2aProductFilename.isProductFilename(inputFile.getName())) {
             boolean isAGranule = S2L2aProductFilename.isGranuleFilename(inputFile.getName());
             if(isAGranule)
@@ -167,9 +165,6 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
     }
 
     private Product getL1cMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException {
-        // critical use granule info
-
-        // critical Fix this function
         Objects.requireNonNull(granuleMetadataFile);
         // first we need to recover parent metadata file...
 

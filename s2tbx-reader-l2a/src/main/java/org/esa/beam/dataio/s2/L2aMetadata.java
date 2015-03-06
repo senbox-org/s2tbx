@@ -204,7 +204,6 @@ public class L2aMetadata {
             Object ob = unmarshaller.unmarshal(stream);
             Object casted = ((JAXBElement) ob).getValue();
 
-            // critical change product reading in order to process individual L1B tiles
             if(casted instanceof Level2A_User_Product)
             {
                 initProduct(stream, file, parent, casted);

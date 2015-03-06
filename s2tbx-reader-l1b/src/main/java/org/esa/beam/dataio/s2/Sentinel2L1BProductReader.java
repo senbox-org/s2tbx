@@ -148,8 +148,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             throw new FileNotFoundException(inputFile.getPath());
         }
 
-        // critical do we have to read a standalone granule or jp2 file ?
-
         if (S2L1bProductFilename.isProductFilename(inputFile.getName())) {
             boolean isAGranule = S2L1bProductFilename.isGranuleFilename(inputFile.getName());
             if(isAGranule)
@@ -181,7 +179,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     }
 
     private Product getL1bMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException {
-        // critical Fix this function
         Objects.requireNonNull(granuleMetadataFile);
         // first we need to recover parent metadata file...
 
@@ -302,7 +299,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             sin.put(bandInformation.physicalBand, bandInformation);
         }
 
-        // critical here we must split by detector and band..., detector first
         Map<Pair<String, String>, Map<String, File>> detectorBandInfoMap = new HashMap<Pair<String, String>, Map<String, File>>();
         Map<String, TileBandInfo> bandInfoByKey = new HashMap<String, TileBandInfo>();
         if (productCharacteristics.bandInformations != null) {
@@ -365,7 +361,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
 
 
-        // fixme wait until geocoding is fixed
+        // critical wait until geocoding is fixed
         /*
         if (product.getGeoCoding() == null) {
             // use default geocoding
@@ -381,7 +377,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         return product;
     }
 
-    // critical add complete TiePointGrid
+    // critical use getSimpleGeoCodingFromTileBandInfo instead of getGeoCodingFromTileBandInfo
     private GeoCoding getSimpleGeoCodingFromTileBandInfo(TileBandInfo tileBandInfo, Map<String, Tile> tileList, Product product) {
         Objects.requireNonNull(tileBandInfo);
         Objects.requireNonNull(tileList);

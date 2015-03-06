@@ -204,12 +204,12 @@ class L1bTileOpImage extends SingleBandedOpImage {
             return;
         }
 
-        // critical fix for last tile of each detector
         Set<TileLayout> typeTiles = new HashSet<TileLayout>();
         Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
         Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
 
         if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
+            // critical change log level
             logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
             S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
         }
