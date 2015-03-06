@@ -81,8 +81,6 @@ public class L1cMetadataProc {
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
         JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
-
-        // critical reuse unmarshaller
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         Object ob = unmarshaller.unmarshal(stream);
