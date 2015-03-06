@@ -16,6 +16,12 @@
 
     <packaging>jar</packaging>
 
+    <changelog>
+        <![CDATA[
+<p>Internal refactoring.</p>
+                ]]>
+    </changelog>
+
     <dependency>
         <module>snap-core</module>
     </dependency>

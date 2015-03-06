@@ -16,6 +16,8 @@
 
     <changelog>
         <![CDATA[
+<b>Warning: This version requires updating the module "Sentinel-2 Toolbox Common Utilities Library" to version 1.0.3!</b>
+<p>First implementation of L1B reader using schema v12.</p>
                 ]]>
     </changelog>
 
@@ -41,15 +43,6 @@
             <useAllFileFilter>true</useAllFileFilter>
             <parent>importMultispectral</parent>
         </action>
-        <!-- Mock-up reader
-                <action>
-                    <id>importSentinel3Product</id>
-                    <helpId>importSentinel3Product</helpId>
-                    <class>org.esa.beam.visat.actions.ProductImportAction</class>
-                    <formatName>SENTINEL-3-SLSTR</formatName>
-                    <useAllFileFilter>true</useAllFileFilter>
-                </action>
-        -->
     </extension>
 
     <extension point="snap-core:rgbProfiles">
