@@ -272,16 +272,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
-        //todo look at affine tranformation geocoding info...
         if(!bandInfoMap.isEmpty())
         {
             addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+
+            // critical use only tiepointgrids instead of bands
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
-
-            //todo there is more data in product metadata file, should we preload it ?
         }
 
         return product;
