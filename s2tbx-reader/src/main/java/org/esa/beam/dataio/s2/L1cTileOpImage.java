@@ -270,7 +270,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
                                          "-r", getLevel() + "",
                                          "-t", tileIndex + "");
         } else {
-            logger.warning("Writing to " + outputFile.getPath());
+            logger.fine("Writing to " + outputFile.getPath());
 
             builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
                                          "-i", imageFile.getPath(),
