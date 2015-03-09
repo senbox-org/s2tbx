@@ -1,17 +1,23 @@
 package org.esa.beam.framework.gpf.operators.tooladapter;
 
 import com.bc.ceres.binding.Property;
+import com.bc.ceres.core.ProgressMonitor;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
-import org.esa.beam.framework.dataio.*;
+import org.esa.beam.framework.dataio.ProductIO;
+import org.esa.beam.framework.dataio.ProductIOPlugInManager;
+import org.esa.beam.framework.dataio.ProductWriterPlugIn;
+import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.internal.OperatorContext;
+import org.esa.beam.jai.ImageManager;
 import org.esa.beam.utils.PrivilegedAccessor;
 
 import java.io.*;
@@ -28,6 +34,8 @@ import java.util.logging.Level;
         version = "1.0",
         description = "Tool Adapter Operator")
 public class ToolAdapterOp extends Operator {
+
+    private static final String INTERMEDIATE_PRODUCT_NAME = "interimProduct";
 
     /**
      * Consume the output created by a tool.
@@ -157,18 +165,12 @@ public class ToolAdapterOp extends Operator {
             ProductIOPlugInManager registry = ProductIOPlugInManager.getInstance();
             Iterator<ProductWriterPlugIn> writerPlugIns = registry.getWriterPlugIns(writer);
             ProductWriterPlugIn writerPlugIn = writerPlugIns.next();
-            ProductWriter productWriter = writerPlugIn.createWriterInstance();
             Product selectedProduct = getSourceProduct();
-            File outFile = new File(descriptor.getWorkingDir(), "convertedProduct" + writerPlugIn.getDefaultFileExtensions()[0]);
-            try {
-                productWriter.writeProductNodes(selectedProduct, outFile);
-            } catch (IOException e) {
-                getLogger().severe("Cannot write in the selected format");
-            }
+            File outFile = new File(descriptor.getWorkingDir(), INTERMEDIATE_PRODUCT_NAME + writerPlugIn.getDefaultFileExtensions()[0]);
+            GPF.writeProduct(selectedProduct, outFile, writer, false, ProgressMonitor.NULL);
             if (outFile.exists()) {
-                ProductReader productReader = ProductIO.getProductReaderForInput(outFile);
                 try {
-                    Product product = productReader.readProductNodes(outFile, null);
+                    Product product = ProductIO.readProduct(outFile);
                     setSourceProducts(product);
                 } catch (IOException e) {
                     getLogger().severe("Cannot read from the selected format");
@@ -295,13 +297,14 @@ public class ToolAdapterOp extends Operator {
             input = getSourceProducts()[0].getFileLocation();
         }
         try {
-            final ProductReader productReader = ProductIO.getProductReaderForInput(input);
-            if (productReader == null) {
-                throw new OperatorException("No product reader found for '" + input.getPath() + "'");
+            Product sourceProduct = getSourceProduct();
+            File sourceFile = sourceProduct.getFileLocation();
+            if (sourceFile.getName().contains(INTERMEDIATE_PRODUCT_NAME)) {
+                sourceFile.delete();
             }
-            Product target = productReader.readProductNodes(input, null);
-            if (target.getProductReader() == null) {
-                target.setProductReader(productReader);
+            Product target = ProductIO.readProduct(input);
+            for(Band band : target.getBands()){
+                ImageManager.getInstance().getSourceImage(band, 0);
             }
             setTargetProduct(target);
         } catch (IOException e) {
