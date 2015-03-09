@@ -19,6 +19,16 @@
 
     <categories>Sentinel</categories>
 
+    <dependency>
+        <module>snap-core</module>
+    </dependency>
+    <dependency>
+        <module>snap-gpf</module>
+    </dependency>
+    <dependency>
+        <module>snap-visat-rcp</module>
+    </dependency>
+
     <extension point="snap-ui:actions">
         <action>
             <parent>processing</parent>

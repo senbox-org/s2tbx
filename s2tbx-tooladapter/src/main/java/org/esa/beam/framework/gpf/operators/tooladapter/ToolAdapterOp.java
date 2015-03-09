@@ -5,8 +5,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
-import org.esa.beam.framework.dataio.ProductIO;
-import org.esa.beam.framework.dataio.ProductReader;
+import org.esa.beam.framework.dataio.*;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
@@ -129,10 +128,10 @@ public class ToolAdapterOp extends Operator {
         validateDescriptorInput();
 
         //Prepare tool run
-        prepareToolRun();
+        beforeExecute();
 
         //Run tool
-        runTool();
+        execute();
 
         if (this.consumer != null) {
             Date finalDate = new Date();
@@ -141,7 +140,7 @@ public class ToolAdapterOp extends Operator {
 
         try {
             //Load target product
-            loadFinalProduct();
+            postExecute();
         } catch (Exception ex) {
             throw new OperatorException("Could not load final product in memory : " + ex.getMessage());
         }
@@ -152,8 +151,30 @@ public class ToolAdapterOp extends Operator {
      *
      * @throws org.esa.beam.framework.gpf.OperatorException in case of an error
      */
-    private void prepareToolRun() throws OperatorException {
-        //TODO run preprocessing tool, get output and give as input to the main tool
+    private void beforeExecute() throws OperatorException {
+        String writer = descriptor.getProcessingWriter();
+        if (writer != null) {
+            ProductIOPlugInManager registry = ProductIOPlugInManager.getInstance();
+            Iterator<ProductWriterPlugIn> writerPlugIns = registry.getWriterPlugIns(writer);
+            ProductWriterPlugIn writerPlugIn = writerPlugIns.next();
+            ProductWriter productWriter = writerPlugIn.createWriterInstance();
+            Product selectedProduct = getSourceProduct();
+            File outFile = new File(descriptor.getWorkingDir(), "convertedProduct" + writerPlugIn.getDefaultFileExtensions()[0]);
+            try {
+                productWriter.writeProductNodes(selectedProduct, outFile);
+            } catch (IOException e) {
+                getLogger().severe("Cannot write in the selected format");
+            }
+            if (outFile.exists()) {
+                ProductReader productReader = ProductIO.getProductReaderForInput(outFile);
+                try {
+                    Product product = productReader.readProductNodes(outFile, null);
+                    setSourceProducts(product);
+                } catch (IOException e) {
+                    getLogger().severe("Cannot read from the selected format");
+                }
+            }
+        }
     }
 
     /**
@@ -162,7 +183,7 @@ public class ToolAdapterOp extends Operator {
      * @return the return value of the process.
      * @throws OperatorException in case of an error.
      */
-    private int runTool() throws OperatorException {
+    private int execute() throws OperatorException {
         Process proc = null;
         BufferedReader outReader = null;
         int ret = -1;
@@ -175,24 +196,18 @@ public class ToolAdapterOp extends Operator {
             List<String> cmdLine = getToolCommandLine();
             logCommandLine(cmdLine);
             ProcessBuilder pb = new ProcessBuilder(cmdLine);
-
             //redirect the error of the tool to the standard output
             pb.redirectErrorStream(true);
-
             //set the working directory
             pb.directory(descriptor.getWorkingDir());
-
             //start the process
             proc = pb.start();
-
             //get the process output
             outReader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-
             while (!isStopped()) {
                 while (outReader.ready()) {
                     //read the process output line by line
                     String line = outReader.readLine();
-
                     //consume the line if possible
                     if (this.consumer != null) {
                         this.consumer.consumeOutputLine(line);
@@ -272,7 +287,7 @@ public class ToolAdapterOp extends Operator {
      *
      * @throws OperatorException in case of an error
      */
-    private void loadFinalProduct() throws OperatorException {
+    private void postExecute() throws OperatorException {
         File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE);
         if (input == null) {
             //no target product, means the source product was changed
@@ -456,16 +471,20 @@ public class ToolAdapterOp extends Operator {
         Product[] sourceProducts = getSourceProducts();
         velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, sourceProducts[0]);
         File rasterFile = null;
-        File productFile = sourceProducts[0].getFileLocation();
-        if (productFile.isFile()) {
-            rasterFile = productFile;
-        } else {
-            File[] files = productFile.listFiles((File dir, String name) -> name.endsWith(".tif"));
-            if (files != null && files.length > 0) {
-                rasterFile = files[0];
+        if (sourceProducts.length > 0 ) {
+            File productFile = sourceProducts[0].getFileLocation();
+            if (productFile.isFile()) {
+                rasterFile = productFile;
+            } else {
+                File[] files = productFile.listFiles((File dir, String name) -> name.endsWith(".tif"));
+                if (files != null && files.length > 0) {
+                    rasterFile = files[0];
+                }
             }
         }
-        velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE, rasterFile);
+        if (rasterFile != null) {
+            velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE, rasterFile);
+        }
         for (int i = 0; i < sourceProducts.length; i++) {
             velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + (i + 1), sourceProducts[i]);
         }

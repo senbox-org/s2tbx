@@ -9,17 +9,7 @@
     <packaging>dir</packaging>
 
     <dependency>
-        <module>snap-core</module>
-    </dependency>
-    <dependency>
-        <module>snap-geotiff</module>
-    </dependency>
-    <dependency>
         <module>s2tbx-commons</module>
-    </dependency>
-    <dependency>
-        <module>snap-visat-rcp</module>
-        <optional>true</optional>
     </dependency>
 
     <categories>Reader, DEIMOS</categories>
