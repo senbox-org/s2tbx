@@ -11,5 +11,5 @@ public interface ProcessOutputConsumer {
      *
      * @param line a line of output text.
      */
-    public void consumeOutputLine(String line);
+    public void consumeOutput(String line);
 }

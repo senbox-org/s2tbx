@@ -183,7 +183,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
         panelLeft = new JPanel(new FlowLayout());
-        panelLeft.add(createCheckboxComponent("writeForProcessing", editorComponent, operatorDescriptor.getWriteForProcessing()));
+        panelLeft.add(createCheckboxComponent("writeForProcessing", editorComponent, operatorDescriptor.shouldWriteBeforeProcessing()));
         panelLeft.add(new JLabel("Write before processing using:"));
 
         JPanel panelProcessingWriter = new JPanel(new BorderLayout());

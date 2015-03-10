@@ -262,11 +262,11 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
         this.processingWriter = processingWriter;
     }
 
-    public Boolean getWriteForProcessing() {
+    public Boolean shouldWriteBeforeProcessing() {
         return writeForProcessing;
     }
 
-    public void setWriteForProcessing(Boolean writeForProcessing) {
+    public void writeBeforeProcessing(Boolean writeForProcessing) {
         this.writeForProcessing = writeForProcessing;
     }
 

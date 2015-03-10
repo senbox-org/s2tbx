@@ -126,7 +126,7 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
          * @param line a line of output text.
          */
         @Override
-        public void consumeOutputLine(String line) {
+        public void consumeOutput(String line) {
             BeamLogManager.getSystemLogger().log(Level.INFO, line);
         }
     }
