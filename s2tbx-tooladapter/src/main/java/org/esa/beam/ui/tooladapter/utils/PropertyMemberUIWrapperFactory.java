@@ -25,6 +25,30 @@ import java.util.regex.Pattern;
  */
 public class PropertyMemberUIWrapperFactory {
 
+    public static PropertyMemberUIWrapper buildEmptyPropertyWrapper(){
+        return new PropertyMemberUIWrapper(null, null, null, null, -1, null) {
+            public String getErrorValueMessage(Object value) {
+                return null;
+            }
+
+            @Override
+            protected void setMemberValue(Object value) throws PropertyAttributeException {     }
+
+            @Override
+            public String getMemberValue() {return null;}
+
+            @Override
+            protected Component buildUIComponent() {
+                return new JLabel();
+            }
+
+            @Override
+            protected String getValueFromUIComponent() throws PropertyAttributeException {
+                return null;
+            }
+        };
+    }
+
     public static PropertyMemberUIWrapper buildPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
         if (attributeName.equals("name")) {
             return buildNamePropertyWrapper(attributeName, property, opDescriptor, context, 100, callback);

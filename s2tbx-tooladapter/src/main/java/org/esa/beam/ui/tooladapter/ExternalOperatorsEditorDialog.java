@@ -18,6 +18,7 @@ import org.esa.beam.ui.tooladapter.utils.OperatorsTableModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -53,7 +54,8 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
         newButton.addActionListener(e -> {
             close();
             ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor(ToolAdapterConstants.OPERATOR_NAMESPACE + "DefaultOperatorName", ToolAdapterOp.class, "DefaultOperatorName", null, null, null, null, null);
-            newOperatorSpi.getToolParameterDescriptors().add(new ToolParameterDescriptor(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, Product.class));
+            newOperatorSpi.getToolParameterDescriptors().add(new ToolParameterDescriptor(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, Object.class));
+            newOperatorSpi.getToolParameterDescriptors().add(new ToolParameterDescriptor(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE, File.class));
             ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Define new Tool", getHelpID(), newOperatorSpi, true);
             dialog.show();
         });

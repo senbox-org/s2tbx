@@ -48,8 +48,8 @@ public class OperatorParametersTable extends JTable {
         typesMap.put("String", String.class);
         typesMap.put("File", File.class);
         typesMap.put("Integer", Integer.class);
-        typesMap.put("Combobox", List.class);
-        typesMap.put("Checkbox", Boolean.class);
+        typesMap.put("List", List.class);
+        typesMap.put("Boolean", Boolean.class);
     }
 
     public OperatorParametersTable(ToolAdapterOperatorDescriptor operator) {
@@ -66,7 +66,11 @@ public class OperatorParametersTable extends JTable {
             //TODO which param is wrong????
         context = new BindingContext(propertySet);
         for (ToolParameterDescriptor paramDescriptor : data) {
-            propertiesValueUIDescriptorMap.put(paramDescriptor, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", paramDescriptor, operator, context, null));
+            if(paramDescriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
+                propertiesValueUIDescriptorMap.put(paramDescriptor, PropertyMemberUIWrapperFactory.buildEmptyPropertyWrapper());
+            } else {
+                propertiesValueUIDescriptorMap.put(paramDescriptor, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", paramDescriptor, operator, context, null));
+            }
             //context.getBinding(paramDescriptor.getName()).setPropertyValue(paramDescriptor.getDefaultValue());
         }
         tableRenderer = new MultiRenderer();
@@ -77,6 +81,7 @@ public class OperatorParametersTable extends JTable {
         }
 
         this.putClientProperty("JComboBox.isTableCellEditor", Boolean.FALSE);
+        this.setRowHeight(20);
     }
 
     public void addParameterToTable(ToolParameterDescriptor param){
@@ -179,6 +184,9 @@ public class OperatorParametersTable extends JTable {
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             ToolParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(rowIndex);
             if(descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
+                return false;
+            }
+            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE) && (columnIndex == 0 || columnIndex == 1 || columnIndex == 4)){
                 return false;
             }
             if(descriptor.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_ID) && columnIndex <= 1){

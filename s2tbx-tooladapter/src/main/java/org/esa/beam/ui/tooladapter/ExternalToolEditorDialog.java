@@ -331,7 +331,13 @@ public class ExternalToolEditorDialog extends ModelessDialog {
             }
         }
         for(ToolParameterDescriptor param : operatorDescriptor.getToolParameterDescriptors()){
-            param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue().toString());
+            if(paramsTable.getBindingContext().getBinding(param.getName()) == null){
+                //TODO why is this happening???
+            } else {
+                if(paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue() != null) {
+                    param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue().toString());
+                }
+            }
         }
         try {
             ToolAdapterIO.saveAndRegisterOperator(operatorDescriptor,
