@@ -322,12 +322,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         super.onApply();
         if (operatorIsNew) {
             if (operatorDescriptor.getTemplateFileLocation() == null) {
-                //TODO this is a dirty check, it should be a user option
-                if (templateContent.getText().contains("${")) {
-                    operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_CMD_TEMPLATE_SUFIX);
-                } else {
-                    operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
-                }
+                operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
             }
         }
         for(ToolParameterDescriptor param : operatorDescriptor.getToolParameterDescriptors()){
@@ -340,8 +335,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
             }
         }
         try {
-            ToolAdapterIO.saveAndRegisterOperator(operatorDescriptor,
-                    templateContent.getText());
+            ToolAdapterIO.saveAndRegisterOperator(operatorDescriptor, templateContent.getText());
         } catch (Exception e) {
             e.printStackTrace();
             //TODO show error on screeen

@@ -4,18 +4,20 @@ import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
-import org.esa.beam.framework.gpf.operators.tooladapter.ProcessOutputConsumer;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOp;
 import org.esa.beam.framework.gpf.ui.OperatorMenu;
 import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.beam.framework.gpf.ui.SingleTargetProductDialog;
 import org.esa.beam.framework.ui.AppContext;
+import org.esa.beam.framework.ui.BasicApp;
 import org.esa.beam.ui.tooladapter.ExternalToolExecutionForm;
-import org.esa.beam.util.logging.BeamLogManager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 /**
  * @author Lucian Barbulescu.
@@ -34,6 +36,10 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
      * The form used to get the user's input
      */
     private ExternalToolExecutionForm form;
+
+    private ExecutorService executor;
+
+    private Product result;
 
     /**
      * Constructor.
@@ -57,12 +63,21 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
                 appContext,
                 helpID);
         getJDialog().setJMenuBar(operatorMenu.createDefaultMenu());
+        executor = Executors.newSingleThreadExecutor();
     }
 
     @Override
     protected void onApply() {
-        if (validateUserInput()) {
-            super.onApply();
+        if (validateUserInput() && canApply()) {
+            String productDir = targetProductSelector.getModel().getProductDir().getAbsolutePath();
+            appContext.getPreferences().setPropertyString(BasicApp.PROPERTY_KEY_APP_LAST_SAVE_DIR, productDir);
+            final Product sourceProduct = form.getSourceProduct();
+            Map<String, Product> sourceProducts = new HashMap<>();
+            sourceProducts.put("sourceProduct", sourceProduct);
+            Operator op = GPF.getDefaultInstance().createOperator(this.operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
+            // set the output consumer
+            ((ToolAdapterOp) op).setConsumer(new ToolAdapterOp.LogOutputConsumer());
+            executor.submit(new AsyncOperatorTask(op, ToolAdapterDialog.this::operatorCompleted));
         }
     }
 
@@ -80,6 +95,7 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
     @Override
     public void hide() {
         form.prepareHide();
+        executor.shutdown();
         super.hide();
     }
 
@@ -97,17 +113,7 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
      */
     @Override
     protected Product createTargetProduct() throws Exception {
-        //Get the selected product.
-        final Product sourceProduct = form.getSourceProduct();
-        Map<String, Product> sourceProducts = new HashMap<>();
-        sourceProducts.put("sourceProduct", sourceProduct);
-
-        Operator op = GPF.getDefaultInstance().createOperator(this.operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
-//form.targetProductSelector.getModel().getProductFile()
-        // set the output consumer
-        ((ToolAdapterOp) op).setConsumer(new LogOutputConsumer());
-
-        return op.getTargetProduct();
+        return result;
     }
 
     @Override
@@ -115,19 +121,27 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
         return true;
     }
 
-    /**
-     * Add the output of the tool to the log.
-     */
-    private class LogOutputConsumer implements ProcessOutputConsumer {
+    private void operatorCompleted(Product result) {
+        this.result = result;
+        super.onApply();
+    }
 
-        /**
-         * Consume a line of output obtained from a tool.
-         *
-         * @param line a line of output text.
-         */
+    private class AsyncOperatorTask implements Callable<Void> {
+
+        private Operator operator;
+        private Consumer<Product> callbackMethod;
+        private Product result;
+
+        public AsyncOperatorTask(Operator op, Consumer<Product> callback) {
+            operator = op;
+            callbackMethod = callback;
+        }
+
         @Override
-        public void consumeOutput(String line) {
-            BeamLogManager.getSystemLogger().log(Level.INFO, line);
+        public Void call() throws Exception {
+            result = operator.getTargetProduct();
+            callbackMethod.accept(result);
+            return null;
         }
     }
 }

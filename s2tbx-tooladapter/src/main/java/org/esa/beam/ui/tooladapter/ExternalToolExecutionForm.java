@@ -1,11 +1,13 @@
 package org.esa.beam.ui.tooladapter;
 
+import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.swing.binding.PropertyPane;
 import com.bc.ceres.swing.selection.AbstractSelectionChangeListener;
 import com.bc.ceres.swing.selection.SelectionChangeEvent;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.framework.gpf.ui.DefaultIOParametersPanel;
 import org.esa.beam.framework.gpf.ui.SourceProductSelector;
 import org.esa.beam.framework.gpf.ui.TargetProductSelector;
@@ -27,6 +29,7 @@ public class ExternalToolExecutionForm extends JTabbedPane {
     private PropertySet propertySet;
     private TargetProductSelector targetProductSelector;
     private DefaultIOParametersPanel ioParamPanel;
+    private String fileExtension;
 
     public ExternalToolExecutionForm(AppContext appContext, ToolAdapterOperatorDescriptor operatorSpi, PropertySet propertySet,
                                      TargetProductSelector targetProductSelector) {
@@ -42,6 +45,7 @@ public class ExternalToolExecutionForm extends JTabbedPane {
         ioParamPanel = createIOParamTab();
         addTab("I/O Parameters", ioParamPanel);
         addTab("Processing Parameters", createProcessingParamTab());
+        updateTargetProductFields();
     }
 
     public void prepareShow() {
@@ -79,9 +83,21 @@ public class ExternalToolExecutionForm extends JTabbedPane {
         return new JScrollPane(parametersPanel);
     }
 
+    private void updateTargetProductFields() {
+        File file = new File(propertySet.getProperty(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE).getValueAsText());
+        String productName = FileUtils.getFilenameWithoutExtension(file);
+        if (fileExtension == null) {
+            fileExtension = FileUtils.getExtension(file);
+        }
+        TargetProductSelectorModel model = targetProductSelector.getModel();
+        model.setProductName(productName);
+        model.setSaveToFileSelected(false);
+        targetProductSelector.getProductDirTextField().setEnabled(false);
+    }
+
     private class SourceProductChangeListener extends AbstractSelectionChangeListener {
 
-        private static final String TARGET_PRODUCT_NAME_SUFFIX = "_simple";
+        private static final String TARGET_PRODUCT_NAME_SUFFIX = "_processed";
 
         @Override
         public void selectionChanged(SelectionChangeEvent event) {
@@ -91,7 +107,12 @@ public class ExternalToolExecutionForm extends JTabbedPane {
                 productName = FileUtils.getFilenameWithoutExtension(selectedProduct.getName());
             }
             final TargetProductSelectorModel targetProductSelectorModel = targetProductSelector.getModel();
-            targetProductSelectorModel.setProductName(productName + TARGET_PRODUCT_NAME_SUFFIX);
+            productName += TARGET_PRODUCT_NAME_SUFFIX;
+            targetProductSelectorModel.setProductName(productName);
+            Property targetProperty = propertySet.getProperty(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE);
+            Object value = targetProperty.getValue();
+            File oldValue = value instanceof File ? (File) value : new File((String) value);
+            propertySet.setValue(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE, new File(oldValue.getParentFile().getAbsolutePath(), productName + fileExtension));
         }
     }
 
