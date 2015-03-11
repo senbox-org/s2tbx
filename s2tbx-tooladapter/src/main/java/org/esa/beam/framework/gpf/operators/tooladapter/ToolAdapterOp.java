@@ -244,7 +244,9 @@ public class ToolAdapterOp extends Operator {
                     //read the process output line by line
                     String line = outReader.readLine();
                     //consume the line if possible
-                    this.consumer.consumeOutput(line);
+                    if (line != null && !"".equals(line.trim())) {
+                        this.consumer.consumeOutput(line);
+                    }
                 }
                 // check if the project finished execution
                 if (!process.isAlive()) {
@@ -402,20 +404,7 @@ public class ToolAdapterOp extends Operator {
 
     private File selectCandidateRasterFile(File folder) {
         File rasterFile = null;
-        List<File> candidates = new ArrayList<>();
-        for (String extension : DEFAULT_EXTENSIONS) {
-            File[] files = folder.listFiles((File dir, String name) -> name.endsWith(extension));
-            if (files != null) {
-                candidates.addAll(Arrays.asList(files));
-            }
-            File[] subFolders = folder.listFiles(File::isDirectory);
-            for(File subFolder : subFolders) {
-                File subCandidate = selectCandidateRasterFile(subFolder);
-                if (subCandidate != null) {
-                    candidates.add(subCandidate);
-                }
-            }
-        }
+        List<File> candidates = getRasterFiles(folder);
         int numFiles = candidates.size() - 1;
         if (numFiles >= 0) {
             candidates.sort(Comparator.comparingLong(File::length));
@@ -423,6 +412,24 @@ public class ToolAdapterOp extends Operator {
             getLogger().info(rasterFile.getName() + " was selected as raster file");
         }
         return rasterFile;
+    }
+
+    private List<File> getRasterFiles(File folder) {
+        List<File> rasters = new ArrayList<>();
+        for (String extension : DEFAULT_EXTENSIONS) {
+            File[] files = folder.listFiles((File dir, String name) -> name.endsWith(extension));
+            if (files != null) {
+                rasters.addAll(Arrays.asList(files));
+            }
+            File[] subFolders = folder.listFiles(File::isDirectory);
+            for(File subFolder : subFolders) {
+                File subCandidate = selectCandidateRasterFile(subFolder);
+                if (subCandidate != null) {
+                    rasters.add(subCandidate);
+                }
+            }
+        }
+        return rasters;
     }
 
     /**

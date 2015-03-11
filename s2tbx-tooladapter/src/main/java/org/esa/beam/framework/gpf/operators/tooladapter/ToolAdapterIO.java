@@ -125,17 +125,19 @@ public class ToolAdapterIO {
 
     private static File getModulesPath() {
         if (modulePath == null) {
+            String homeFolder = System.getProperty("snap.home");
             String moduleFolder = System.getProperty("snap.tooladapter.moduleFolder");
             if (moduleFolder == null) {
-                moduleFolder = ToolAdapterIO.class.getProtectionDomain().getCodeSource().getLocation().getPath() + ToolAdapterConstants.FAILSAFE_MODULE_FOLDER;
+                modulePath = new File(new File(homeFolder, "extensions"), "adapters");
             } else {
                 if (moduleFolder.startsWith("${snap.home}")) {
-                    String homeFolder = System.getProperty("snap.home");
                     moduleFolder = homeFolder + moduleFolder.substring(12);
                 }
+                modulePath = new File(moduleFolder);
             }
-            modulePath = new File(moduleFolder);
-            modulePath.mkdirs();
+            if (!modulePath.mkdirs()) {
+                logger.severe("Cannot create folder for external tool adapter extensions");
+            }
         }
         return modulePath;
     }

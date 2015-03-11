@@ -1,6 +1,5 @@
 package org.esa.beam.ui.tooladapter;
 
-import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
@@ -104,7 +103,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
             final ToolAdapterDialog operatorDialog = new ToolAdapterDialog(
                     operatorSpi,
                     appContext,
-                    "Sentinel-2 Tool Adapter",
+                    operatorSpi.getLabel(),
                     getHelpID());
             operatorDialog.show();
         });

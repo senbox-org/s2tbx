@@ -82,6 +82,7 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
     }
 
     private boolean validateUserInput() {
+        // future validation of input parameters goes here
         return true;
     }
 
