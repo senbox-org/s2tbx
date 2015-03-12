@@ -2,6 +2,7 @@ package org.esa.beam.framework.gpf.operators.tooladapter;
 
 import com.bc.ceres.binding.Property;
 import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.core.SubProgressMonitor;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -11,15 +12,12 @@ import org.esa.beam.framework.dataio.ProductIOPlugInManager;
 import org.esa.beam.framework.dataio.ProductWriterPlugIn;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.internal.OperatorContext;
 import org.esa.beam.jai.ImageManager;
-import org.esa.beam.util.logging.BeamLogManager;
-import org.esa.beam.utils.CollectionHelper;
 import org.esa.beam.utils.PrivilegedAccessor;
 
 import java.io.*;
@@ -57,6 +55,12 @@ public class ToolAdapterOp extends Operator {
 
     private ToolAdapterOperatorDescriptor descriptor;
 
+    private ProgressMonitor progressMonitor;
+
+    private File intermediateProductFile;
+
+    private boolean canContinue;
+
     /**
      * The folder where the tool descriptors reside.
      */
@@ -77,6 +81,8 @@ public class ToolAdapterOp extends Operator {
             getLogger().severe(e.getMessage());
         }
         Velocity.init();
+        this.progressMonitor = ProgressMonitor.NULL;
+        this.canContinue = true;
         //this.descriptor = ((ToolAdapterOperatorDescriptor) accessibleContext.getOperatorSpi().getOperatorDescriptor());
     }
 
@@ -88,6 +94,8 @@ public class ToolAdapterOp extends Operator {
     public void setConsumer(ProcessOutputConsumer consumer) {
         this.consumer = consumer;
     }
+
+    public void setProgressMonitor(ProgressMonitor monitor) { this.progressMonitor = monitor; }
 
     /**
      * Command to stop the tool.
@@ -136,15 +144,22 @@ public class ToolAdapterOp extends Operator {
         //Validate the input
         validateDescriptor();
         //Prepare tool run
+        if (this.consumer == null ) {
+            this.consumer = new DefaultOutputConsumer(descriptor.getProgressPattern(), descriptor.getErrorPattern(), this.progressMonitor);
+        }
         beforeExecute();
-        //Run tool
-        execute();
+        if (canContinue) {
+            //Run tool
+            execute();
+        }
         if (this.consumer != null) {
             Date finalDate = new Date();
             this.consumer.consumeOutput("Finished tool execution in " + (finalDate.getTime() - currentTime.getTime()) / 1000 + " seconds");
         }
-        //Try to load target product
-        postExecute();
+        if (canContinue) {
+            //Try to load target product
+            postExecute();
+        }
     }
 
     /**
@@ -185,10 +200,11 @@ public class ToolAdapterOp extends Operator {
         if (descriptor.shouldWriteBeforeProcessing()) {
             String sourceFormatName = descriptor.getProcessingWriter();
             if (sourceFormatName != null) {
+                this.progressMonitor.beginTask("Writing source product as " + sourceFormatName, 0);
                 ProductIOPlugInManager registry = ProductIOPlugInManager.getInstance();
                 Iterator<ProductWriterPlugIn> writerPlugIns = registry.getWriterPlugIns(sourceFormatName);
                 ProductWriterPlugIn writerPlugIn = writerPlugIns.next();
-                Product selectedProduct = getSourceProduct();
+                final Product selectedProduct = getSourceProduct();
                 String sourceDefaultExtension = writerPlugIn.getDefaultFileExtensions()[0];
                 File outFile = new File(descriptor.getWorkingDir(), INTERMEDIATE_PRODUCT_NAME + sourceDefaultExtension);
                 if (outFile.exists() && outFile.canWrite()) {
@@ -196,15 +212,16 @@ public class ToolAdapterOp extends Operator {
                         getLogger().warning("Could not delete previous temporary image");
                     }
                 }
-                GPF.writeProduct(selectedProduct, outFile, sourceFormatName, true, ProgressMonitor.NULL);
+                try {
+                    ProductIO.writeProduct(selectedProduct, outFile, sourceFormatName, true, SubProgressMonitor.create(progressMonitor, 50));
+                } catch (IOException e) {
+                    getLogger().severe("Cannot write to " + sourceFormatName + " format");
+                    canContinue = false;
+                }
                 if (outFile.exists()) {
-                    try {
-                        Product product = ProductIO.readProduct(outFile);
-                        setSourceProducts(product);
-                        product.closeIO();
-                    } catch (IOException e) {
-                        getLogger().severe("Cannot read from the selected format");
-                    }
+                    intermediateProductFile = outFile;
+                } else {
+                    canContinue = false;
                 }
             }
         }
@@ -221,9 +238,7 @@ public class ToolAdapterOp extends Operator {
         BufferedReader outReader = null;
         int ret = -1;
         try {
-            if (this.consumer == null) {
-                this.consumer = new LogOutputConsumer();
-            }
+            this.progressMonitor.setTaskName("Starting tool execution");
             //initialise stop flag.
             synchronized (this.lock) {
                 this.stop = false;
@@ -256,6 +271,9 @@ public class ToolAdapterOp extends Operator {
                     //yield the control to other threads
                     Thread.yield();
                 }
+            }
+            if (process.exitValue() != 0) {
+                throw new IOException(String.format("Process exited with value %d", process.exitValue()));
             }
         } catch (IOException e) {
             throw new OperatorException("Error running tool " + descriptor.getName(), e);
@@ -292,6 +310,7 @@ public class ToolAdapterOp extends Operator {
      * @throws OperatorException in case of an error
      */
     private void postExecute() throws OperatorException {
+        this.progressMonitor.setTaskName("Trying to open the new product");
         File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE);
         if (input == null) {
             //no target product, means the source product was changed
@@ -299,13 +318,8 @@ public class ToolAdapterOp extends Operator {
             input = getSourceProduct().getFileLocation();
         } else {
             try {
-                Product[] sourceProducts = getSourceProducts();
-                Product tmpProduct = CollectionHelper.firstOrDefault(sourceProducts, p -> {
-                    return p.getFileLocation().getName().contains(INTERMEDIATE_PRODUCT_NAME);
-                });
-                if (tmpProduct != null) {
-                    tmpProduct.closeIO();
-                    if (!tmpProduct.getFileLocation().delete()) {
+                if (intermediateProductFile != null && intermediateProductFile.exists()) {
+                    if (!intermediateProductFile.delete()) {
                         getLogger().warning("Temporary image could not be deleted");
                     }
                 }
@@ -317,6 +331,9 @@ public class ToolAdapterOp extends Operator {
             } catch (IOException e) {
                 throw new OperatorException("Error reading product '" + input.getPath() + "'");
             }
+        }
+        if (this.consumer != null && this.consumer instanceof DefaultOutputConsumer) {
+            ((DefaultOutputConsumer) this.consumer).close();
         }
     }
 
@@ -390,7 +407,7 @@ public class ToolAdapterOp extends Operator {
                        sourceProducts.length == 1 ? sourceProducts[0] : sourceProducts);
         File[] rasterFiles = new File[sourceProducts.length];
         for (int i = 0; i < sourceProducts.length; i++) {
-            File productFile = sourceProducts[i].getFileLocation();
+            File productFile = intermediateProductFile != null ? intermediateProductFile : sourceProducts[i].getFileLocation();
             rasterFiles[i] = productFile.isFile() ? productFile : selectCandidateRasterFile(productFile);
         }
         velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE,
@@ -423,28 +440,12 @@ public class ToolAdapterOp extends Operator {
             }
             File[] subFolders = folder.listFiles(File::isDirectory);
             for(File subFolder : subFolders) {
-                File subCandidate = selectCandidateRasterFile(subFolder);
-                if (subCandidate != null) {
-                    rasters.add(subCandidate);
+                List<File> subCandidates = getRasterFiles(subFolder);
+                if (subCandidates != null) {
+                    rasters.addAll(subCandidates);
                 }
             }
         }
         return rasters;
-    }
-
-    /**
-     * Add the output of the tool to the log.
-     */
-    public static class LogOutputConsumer implements ProcessOutputConsumer {
-
-        /**
-         * Consume a line of output obtained from a tool.
-         *
-         * @param line a line of output text.
-         */
-        @Override
-        public void consumeOutput(String line) {
-            BeamLogManager.getSystemLogger().info(line);
-        }
     }
 }

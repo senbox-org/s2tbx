@@ -1,5 +1,6 @@
 package org.esa.beam.ui.tooladapter.interfaces;
 
+import com.bc.ceres.swing.progress.DialogProgressMonitor;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.Operator;
@@ -12,6 +13,7 @@ import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.BasicApp;
 import org.esa.beam.ui.tooladapter.ExternalToolExecutionForm;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -40,6 +42,8 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
     private ExecutorService executor;
 
     private Product result;
+
+    private DialogProgressMonitor dialogProgressMonitor;
 
     /**
      * Constructor.
@@ -76,8 +80,12 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
             sourceProducts.put("sourceProduct", sourceProduct);
             Operator op = GPF.getDefaultInstance().createOperator(this.operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
             // set the output consumer
-            ((ToolAdapterOp) op).setConsumer(new ToolAdapterOp.LogOutputConsumer());
-            executor.submit(new AsyncOperatorTask(op, ToolAdapterDialog.this::operatorCompleted));
+            //((ToolAdapterOp) op).setConsumer(new DefaultOutputConsumer());
+            final AsyncOperatorTask operatorTask = new AsyncOperatorTask(op, ToolAdapterDialog.this::operatorCompleted);
+            dialogProgressMonitor = new CancellableDialogProgressMonitor(getJDialog(), this.getTitle(), Dialog.ModalityType.MODELESS,
+                    aVoid -> operatorTask.cancel());
+            ((ToolAdapterOp) op).setProgressMonitor(dialogProgressMonitor);
+            executor.submit(operatorTask);
         }
     }
 
@@ -124,10 +132,14 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
 
     private void operatorCompleted(Product result) {
         this.result = result;
+        if (dialogProgressMonitor != null) {
+            dialogProgressMonitor.done();
+            dialogProgressMonitor = null;
+        }
         super.onApply();
     }
 
-    private class AsyncOperatorTask implements Callable<Void> {
+    public class AsyncOperatorTask implements Callable<Void> {
 
         private Operator operator;
         private Consumer<Product> callbackMethod;
@@ -140,9 +152,18 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
 
         @Override
         public Void call() throws Exception {
-            result = operator.getTargetProduct();
-            callbackMethod.accept(result);
+            try {
+                callbackMethod.accept(operator.getTargetProduct());
+            } catch (Throwable t) {
+                handleInitialisationError(t);
+            }
             return null;
+        }
+
+        public void cancel() {
+            if (operator instanceof ToolAdapterOp) {
+                ((ToolAdapterOp)operator).stopTool();
+            }
         }
     }
 }

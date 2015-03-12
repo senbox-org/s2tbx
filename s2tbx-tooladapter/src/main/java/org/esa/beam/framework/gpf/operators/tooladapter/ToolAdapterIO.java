@@ -88,7 +88,14 @@ public class ToolAdapterIO {
 
     private static File getTemplateFile(String toolName) {
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(toolName);
-        String templateFile = ((ToolAdapterOperatorDescriptor) spi.getOperatorDescriptor()).getTemplateFileLocation();
+        if (spi == null) {
+            throw new OperatorException("Cannot find the operator SPI");
+        }
+        ToolAdapterOperatorDescriptor operatorDescriptor = (ToolAdapterOperatorDescriptor) spi.getOperatorDescriptor();
+        if (operatorDescriptor == null) {
+            throw new OperatorException("Cannot read the operator template file");
+        }
+        String templateFile = operatorDescriptor.getTemplateFileLocation();
         return new File(getModulesPath(), spi.getOperatorAlias() + File.separator + templateFile);
     }
 

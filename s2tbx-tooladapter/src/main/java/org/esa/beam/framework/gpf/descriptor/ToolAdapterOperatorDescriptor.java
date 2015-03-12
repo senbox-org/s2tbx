@@ -44,6 +44,9 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
     private File workingDir;
     private String templateFileLocation;
 
+    private String progressPattern;
+    private String errorPattern;
+
     private List<SystemVariable> variables;
 
     private List<ToolParameterDescriptor> toolParameterDescriptors;
@@ -253,6 +256,14 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
     public void setMainToolFileLocation(File mainToolFileLocation) {
         this.mainToolFileLocation = mainToolFileLocation;
     }
+
+    public void setProgressPattern(String pattern) { this.progressPattern = pattern; }
+
+    public String getProgressPattern() { return progressPattern; }
+
+    public void setErrorPattern(String pattern) { this.errorPattern = pattern; }
+
+    public String getErrorPattern() { return errorPattern; }
 
     public String getProcessingWriter() {
         return processingWriter;
