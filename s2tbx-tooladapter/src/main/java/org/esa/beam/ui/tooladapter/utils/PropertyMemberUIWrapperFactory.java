@@ -1,14 +1,12 @@
 package org.esa.beam.ui.tooladapter.utils;
 
-import com.bc.ceres.binding.PropertyDescriptor;
-import com.bc.ceres.binding.PropertySet;
-import com.bc.ceres.binding.ValueRange;
-import com.bc.ceres.binding.ValueSet;
+import com.bc.ceres.binding.*;
 import com.bc.ceres.binding.converters.ArrayConverter;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyEditor;
 import com.bc.ceres.swing.binding.PropertyEditorRegistry;
 import org.apache.commons.lang.StringUtils;
+import org.esa.beam.framework.gpf.annotations.ParameterDescriptorFactory;
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
@@ -18,6 +16,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -38,7 +37,7 @@ public class PropertyMemberUIWrapperFactory {
             public String getMemberValue() {return null;}
 
             @Override
-            protected Component buildUIComponent() {
+            protected JComponent buildUIComponent() {
                 return new JLabel();
             }
 
@@ -140,7 +139,7 @@ public class PropertyMemberUIWrapperFactory {
             }
 
             @Override
-            protected Component buildUIComponent() throws Exception {
+            protected JComponent buildUIComponent() throws Exception {
                 JTextField field = new JTextField(getMemberValue());
                 return field;
             }
@@ -170,7 +169,7 @@ public class PropertyMemberUIWrapperFactory {
             }
 
             @Override
-            protected Component buildUIComponent() throws PropertyAttributeException {
+            protected JComponent buildUIComponent() throws PropertyAttributeException {
                 JCheckBox button = new JCheckBox();
                 button.setSelected(getMemberValue());
                 return button;
@@ -212,7 +211,7 @@ public class PropertyMemberUIWrapperFactory {
             }
 
             @Override
-            protected Component buildUIComponent() {
+            protected JComponent buildUIComponent() {
                 JTextField field = new JTextField(getMemberValue());
                 return field;
             }
@@ -244,7 +243,7 @@ public class PropertyMemberUIWrapperFactory {
             }
 
             @Override
-            protected Component buildUIComponent() {
+            protected JComponent buildUIComponent() {
                 JTextField field = new JTextField(getMemberValue().getCanonicalName());
                 return field;
             }
@@ -275,13 +274,37 @@ public class PropertyMemberUIWrapperFactory {
             public void setMemberValue(Object value) throws PropertyAttributeException {
             }
 
+            public JComponent reloadUIComponent(Class<?> newParamType) throws Exception{
+                property.setDataType(newParamType);
+                Property oldProp = context.getPropertySet().getProperty(property.getName());
+                if(oldProp != null) {
+                    context.getPropertySet().removeProperty(oldProp);
+                }
+                try {
+                    PropertyDescriptor descriptor = ParameterDescriptorFactory.convert(property, new ParameterDescriptorFactory().getSourceProductMap());
+                    try {
+                        descriptor.setDefaultValue(property.getDefaultValue());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        //TODO if the previous value cannot be cast, this shoudl be ok???
+                    }
+                    DefaultPropertySetDescriptor propertySetDescriptor = new DefaultPropertySetDescriptor();
+                    propertySetDescriptor.addPropertyDescriptor(descriptor);
+                    PropertyContainer container = PropertyContainer.createMapBacked(new HashMap<>(), propertySetDescriptor);
+                    context.getPropertySet().addProperties(container.getProperties());
+                    return super.reloadUIComponent(newParamType);
+                }catch (Exception ex){
+                    throw ex;
+                }
+            }
+
             @Override
             public Object getMemberValue() {
                 return property.getDefaultValue();
             }
 
             @Override
-            protected Component buildUIComponent() {
+            protected JComponent buildUIComponent() {
                 //                PropertySet propertySet = new OperatorParameterSupport(duplicatedOperatorSpi.getOperatorDescriptor()).getPropertySet();
                 PropertyDescriptor propertydescriptor = context.getPropertySet().getDescriptor(property.getName());
                 PropertyEditor propertyEditor = PropertyEditorRegistry.getInstance().findPropertyEditor(
@@ -318,7 +341,7 @@ public class PropertyMemberUIWrapperFactory {
             }
 
             @Override
-            protected Component buildUIComponent() {
+            protected JComponent buildUIComponent() {
                 return new JLabel("");
             }
 

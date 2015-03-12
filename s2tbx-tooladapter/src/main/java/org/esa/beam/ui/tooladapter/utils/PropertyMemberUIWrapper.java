@@ -4,6 +4,7 @@ import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -14,7 +15,7 @@ import java.awt.event.FocusListener;
 public abstract class PropertyMemberUIWrapper implements FocusListener {
 
     protected String attributeName;
-    protected Component UIComponent;
+    protected JComponent UIComponent;
     protected int width = 0;
     protected ToolParameterDescriptor property;
     protected ToolAdapterOperatorDescriptor opDescriptor;
@@ -48,10 +49,15 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
 
     public abstract Object getMemberValue() throws PropertyAttributeException;
 
-    public Component getUIComponent() throws Exception {
+    public JComponent getUIComponent() throws Exception {
         if (UIComponent == null) {
             buildAndLinkUIComponent();
         }
+        return UIComponent;
+    }
+
+    public JComponent reloadUIComponent(Class<?> newParamType) throws Exception{
+        buildAndLinkUIComponent();
         return UIComponent;
     }
 
@@ -75,7 +81,7 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
         }*/
     }
 
-    protected abstract Component buildUIComponent() throws Exception;
+    protected abstract JComponent buildUIComponent() throws Exception;
 
     public void setMemberValueWithCheck(Object value) throws PropertyAttributeException {
         String msg = getErrorValueMessage(value);

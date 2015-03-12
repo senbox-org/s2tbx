@@ -10,8 +10,10 @@ import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
+import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
+import org.esa.beam.ui.tooladapter.ToolParameterEditorDialog;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -41,7 +43,7 @@ public class OperatorParametersTable extends JTable {
     private BindingContext context;
     private DefaultCellEditor comboCellEditor;
     private TableCellRenderer comboCellRenderer;
-    //private BidiMap map
+    private AppContext appContext;
 
     static{
         typesMap = new DualHashBidiMap();
@@ -52,8 +54,9 @@ public class OperatorParametersTable extends JTable {
         typesMap.put("Boolean", Boolean.class);
     }
 
-    public OperatorParametersTable(ToolAdapterOperatorDescriptor operator) {
+    public OperatorParametersTable(ToolAdapterOperatorDescriptor operator, AppContext appContext) {
         this.operator = operator;
+        this.appContext = appContext;
         propertiesValueUIDescriptorMap = new HashMap<>();
         JComboBox typesComboBox = new JComboBox(typesMap.keySet().toArray());
         comboCellEditor = new DefaultCellEditor(typesComboBox);
@@ -235,8 +238,16 @@ public class OperatorParametersTable extends JTable {
                         descriptor.setDataType((Class<?>) typesMap.get(aValue));
                         descriptor.setDefaultValue(descriptor.getDefaultValue());
                         context.getPropertySet().removeProperty(context.getPropertySet().getProperty(descriptor.getName()));
+                        PropertyDescriptor property;
                         try {
-                            PropertyDescriptor property =  ParameterDescriptorFactory.convert(descriptor, new ParameterDescriptorFactory().getSourceProductMap());
+                            try {
+                                property =  ParameterDescriptorFactory.convert(descriptor, new ParameterDescriptorFactory().getSourceProductMap());
+                            }catch (Exception ex){
+                                //ex.printStackTrace();
+                                //TODO if the previous value cannot be cast, this shoudl be ok???
+                                descriptor.setDefaultValue("");
+                                property =  ParameterDescriptorFactory.convert(descriptor, new ParameterDescriptorFactory().getSourceProductMap());
+                            }
                             try {
                                 property.setDefaultValue(descriptor.getDefaultValue());
                             }catch (Exception ex){
@@ -248,6 +259,7 @@ public class OperatorParametersTable extends JTable {
                             PropertyContainer container = PropertyContainer.createMapBacked(new HashMap<>(), propertySetDescriptor);
                             context.getPropertySet().addProperties(container.getProperties());
                             propertiesValueUIDescriptorMap.put(descriptor, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", descriptor, operator, context, null));
+
                             revalidate();
                             repaint();
                         } catch (ConversionException e) {
@@ -260,7 +272,8 @@ public class OperatorParametersTable extends JTable {
                     //the custom editor should handle this
                     break;
                 case 6:
-                    //TODO edit
+                    ToolParameterEditorDialog editor = new ToolParameterEditorDialog(appContext, "Parameter editor for " + descriptor.getName(), "", descriptor, propertiesValueUIDescriptorMap.get(descriptor));
+                    editor.show();
                     break;
                 default:
                     try {
@@ -281,6 +294,7 @@ public class OperatorParametersTable extends JTable {
 
         public MultiRenderer() {
             delButton.addActionListener(e -> fireEditingStopped());
+            editButton.addActionListener(e -> fireEditingStopped());
         }
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

@@ -46,31 +46,31 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-reader</artifactId>
-            <version>${snap.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-app</artifactId>
-            <version>${snap.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-rapideye-reader</artifactId>
-            <version>${snap.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-spot-reader</artifactId>
-            <version>${snap.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
-            <version>${snap.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

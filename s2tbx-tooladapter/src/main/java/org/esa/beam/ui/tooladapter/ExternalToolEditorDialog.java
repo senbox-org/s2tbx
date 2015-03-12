@@ -42,9 +42,12 @@ public class ExternalToolEditorDialog extends ModelessDialog {
     private BindingContext bindingContext;
     private JTextArea templateContent;
     private OperatorParametersTable paramsTable;
+    private AppContext appContext;
 
     private ExternalToolEditorDialog(AppContext appContext, String title, String helpID) {
         super(appContext.getApplicationWindow(), title, ID_APPLY_CLOSE, helpID);
+        this.appContext = appContext;
+        getJDialog().setResizable(false);
     }
 
     private ExternalToolEditorDialog(AppContext appContext, String title, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor) {
@@ -64,6 +67,8 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         propertyContainer.getDescriptor("preprocessorExternalTool").setValueSet(new ValueSet(toolboxSpis.toArray(new String[toolboxSpis.size()])));
 
         bindingContext = new BindingContext(propertyContainer);
+
+        paramsTable =  new OperatorParametersTable(operatorDescriptor, appContext);
     }
 
     public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
@@ -71,8 +76,6 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         this.operatorIsNew = operatorIsNew;
         this.newNameIndex = -1;
         setContent(createMainPanel());
-        //getJDialog().setMaximumSize(new Dimension(400, 400));
-        getJDialog().setResizable(false);
     }
 
     public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, int newNameIndex) {
@@ -80,7 +83,6 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         this.newNameIndex = newNameIndex;
         this.operatorIsNew = this.newNameIndex >= 1;
         setContent(createMainPanel());
-        getJDialog().setResizable(false);
     }
 
     private JPanel createOperatorDescriptorPanel() {
@@ -293,7 +295,6 @@ public class ExternalToolEditorDialog extends ModelessDialog {
                 false);
         addParamBut.setAlignmentX(Component.LEFT_ALIGNMENT);
         paramsPanel.add(addParamBut);
-        paramsTable =  new OperatorParametersTable(operatorDescriptor);
         JScrollPane tableScrollPane = new JScrollPane(paramsTable);
         tableScrollPane.setPreferredSize(new Dimension(500, 130));
         tableScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
