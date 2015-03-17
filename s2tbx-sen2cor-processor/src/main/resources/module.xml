@@ -18,7 +18,14 @@
     </changelog>
 
     <dependency>
+        <module>snap-core</module>
+    </dependency>
+    <dependency>
         <module>snap-ui</module>
+        <optional>true</optional>
+    </dependency>
+    <dependency>
+        <module>snap-visat-rcp</module>
         <optional>true</optional>
     </dependency>
 
@@ -27,12 +34,16 @@
     <extension point="snap-ui:actions">
 
         <action>
+            <parent>processing.thematicLand</parent>
+            <id>level2AProcessor</id>
+            <text>SEN2COR Level 2A Processor...</text>
             <class>org.esa.beam.dataio.atmcorr.AtmosphericCorrectionAction</class>
             <operatorName>SEN2COR</operatorName>
             <dialogTitle>Level 2A Processor</dialogTitle>
             <shortDescr>Performs atmospheric correction on Sentinel2 L1C products</shortDescr>
             <description>Performs atmospheric correction on Sentinel2 L1C products, thereby creating L2A products</description>
             <context>product</context>
+            <helpId>level2AProcessor</helpId>
         </action>
 
     </extension>
