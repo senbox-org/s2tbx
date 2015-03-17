@@ -11,6 +11,7 @@
     <import namespace="http://www.opengis.net/ows/2.0" schemaLocation="http://schemas.opengis.net/ows/2.0/owsAll.xsd" />
     <import namespace="http://www.opengis.net/om/2.0" schemaLocation="http://schemas.opengis.net/om/2.0/observation.xsd" />
     <import namespace="http://www.opengis.net/swe/1.0" schemaLocation="http://schemas.opengis.net/sweCommon/1.0.0/phenomenon.xsd" />
+
     <element name="EarthObservation" substitutionGroup="om:OM_Observation" type="eop:EarthObservationType">
         <annotation>
             <documentation>
