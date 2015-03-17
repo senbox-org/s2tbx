@@ -132,6 +132,16 @@ public class L2aMetadataProc {
             L2aMetadata.SpectralInformation newInfo = new L2aMetadata.SpectralInformation();
             newInfo.bandId = Integer.parseInt(si.getBandId());
             newInfo.physicalBand = si.getPhysicalBand().value();
+
+            if(newInfo.physicalBand.length() == 2)
+            {
+                char[] bigBand = new char[3];
+                bigBand[0] = newInfo.physicalBand.charAt(0);
+                bigBand[1] =  '0';
+                bigBand[2] = newInfo.physicalBand.charAt(1);
+                newInfo.physicalBand = new String(bigBand);
+            }
+
             newInfo.resolution = si.getRESOLUTION();
             newInfo.spectralResponseStep = si.getSpectral_Response().getSTEP().getValue();
             newInfo.wavelenghtCentral = si.getWavelength().getCENTRAL().getValue();
@@ -168,6 +178,16 @@ public class L2aMetadataProc {
                 L2aMetadata.SpectralInformation data = new L2aMetadata.SpectralInformation();
                 data.bandId = Integer.parseInt(sin.getBandId());
                 data.physicalBand = sin.getPhysicalBand().value();
+
+                if(data.physicalBand.length() == 2)
+                {
+                    char[] bigBand = new char[3];
+                    bigBand[0] = data.physicalBand.charAt(0);
+                    bigBand[1] =  '0';
+                    bigBand[2] = data.physicalBand.charAt(1);
+                    data.physicalBand = new String(bigBand);
+                }
+
                 data.resolution = sin.getRESOLUTION();
                 data.spectralResponseStep = sin.getSpectral_Response().getSTEP().getValue();
 
