@@ -66,6 +66,12 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jvnet.ogc</groupId>
+            <artifactId>gml-v_3_2_1-schema</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
     </dependencies>
 
 
@@ -87,7 +93,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/eop/eop/2.0</schemaDirectory>
+                            <schemaDirectory>src/main/resources/eop2/eop/2.0</schemaDirectory>
                             <schemaIncludes>
                                 <include>*.xsd</include>
                             </schemaIncludes>
