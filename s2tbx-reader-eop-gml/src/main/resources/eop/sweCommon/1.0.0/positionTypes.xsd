@@ -9,7 +9,7 @@
 		</xs:documentation>
 	</xs:annotation>
 	<!-- ================================================= -->
-	<xs:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.1.1/base/gml.xsd"/>
+	<xs:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"/>
 	<xs:include schemaLocation="./swe.xsd"/>
 	<xs:include schemaLocation="./aggregateTypes.xsd"/>
 	<!-- ================================================= -->

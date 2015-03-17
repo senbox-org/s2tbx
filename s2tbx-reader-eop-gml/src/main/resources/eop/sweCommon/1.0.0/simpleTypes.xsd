@@ -16,7 +16,7 @@ Note: In general, content model definition using composition is more easily acco
 	</xs:annotation>
 	<!-- ================================================= -->
 	<xs:import namespace="http://www.w3.org/1999/xlink" schemaLocation="http://www.w3.org/1999/xlink.xsd"/>
-	<xs:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.1.1/base/gml.xsd"/>
+	<xs:import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd"/>
 	<xs:include schemaLocation="./swe.xsd"/>
 	<xs:include schemaLocation="./basicTypes.xsd"/>
 	<!-- ================================================= -->

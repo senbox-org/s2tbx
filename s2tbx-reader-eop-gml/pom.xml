@@ -87,7 +87,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/eop</schemaDirectory>
+                            <schemaDirectory>src/main/resources/eop/eop/2.0</schemaDirectory>
                             <schemaIncludes>
                                 <include>*.xsd</include>
                             </schemaIncludes>
