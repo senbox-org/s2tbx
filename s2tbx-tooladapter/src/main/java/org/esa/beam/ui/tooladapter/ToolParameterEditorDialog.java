@@ -129,18 +129,17 @@ public class ToolParameterEditorDialog extends ModelessDialog {
         scrollFileContent.setVisible(false);
         refreshFileContentArea();
 
-
         addPropertyEditor(mainPanel, "Description: ", "description", parameter.getDescription(), 5);
         addPropertyEditor(mainPanel, "Label: ", "label", parameter.getLabel(), 6);
         addPropertyEditor(mainPanel, "Unit: ", "unit", parameter.getUnit(), 7);
         addPropertyEditor(mainPanel, "interval: ", "interval", parameter.getInterval(), 8);
         //valueSet
-        addPropertyEditor(mainPanel, "condition: ", "condition", parameter.getCondition(), 9);
-        addPropertyEditor(mainPanel, "pattern: ", "pattern", parameter.getPattern(), 10);
-        addPropertyEditor(mainPanel, "format: ", "format", parameter.getFormat(), 11);
+        addPropertyEditor(mainPanel, "Condition: ", "condition", parameter.getCondition(), 9);
+        addPropertyEditor(mainPanel, "Pattern: ", "pattern", parameter.getPattern(), 10);
+        addPropertyEditor(mainPanel, "Format: ", "format", parameter.getFormat(), 11);
         //notNull
         //notEmpty
-        addPropertyEditor(mainPanel, "itemAlias: ", "itemAlias", parameter.getName(), 12);
+        addPropertyEditor(mainPanel, "ItemAlias: ", "itemAlias", parameter.getName(), 12);
         //deprecated
 
         return mainPanel;

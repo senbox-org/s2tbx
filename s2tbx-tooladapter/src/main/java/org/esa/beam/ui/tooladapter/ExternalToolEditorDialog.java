@@ -85,8 +85,19 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         setContent(createMainPanel());
     }
 
-    private JPanel createOperatorDescriptorPanel() {
+    public JPanel createMainPanel() {
+        JPanel toolDescriptorPanel = new JPanel();
+        toolDescriptorPanel.setLayout(new BorderLayout());
+        toolDescriptorPanel.setPreferredSize(new Dimension(800, 550));
 
+        toolDescriptorPanel.add(createDescriptorAndVariablesAndPreprocessingPanel(), BorderLayout.LINE_START);
+        toolDescriptorPanel.add(createProcessingPanel(), BorderLayout.CENTER);
+        toolDescriptorPanel.add(createParametersPanel(), BorderLayout.PAGE_END);
+
+        return toolDescriptorPanel;
+    }
+
+    private JPanel createOperatorDescriptorPanel() {
         GridBagLayout layout = new GridBagLayout();
         layout.columnWidths = new int[]{100, 315};
 
@@ -156,15 +167,9 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         return c;
     }
 
-    private JPanel createProcessingPanel() {
-
-        final JPanel processingPanel = new JPanel();
-        processingPanel.setLayout(new BorderLayout());
-        //processingPanel.setPreferredSize(new Dimension(600, 230));
-        //processingPanel.setMaximumSize(new Dimension(600, 230));
-
+    private JPanel createPreProcessingPanel(){
         JPanel preprocessingPanel = new JPanel();
-        preprocessingPanel.setLayout(new GridLayout(2, 1, 10, 10));
+        preprocessingPanel.setLayout(new GridLayout(2, 1, 5, 5));
         preprocessingPanel.setBorder(BorderFactory.createTitledBorder("Preprocessing"));
 
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("preprocessorExternalTool");
@@ -193,7 +198,15 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         panelProcessingWriter.add(editorComponent, BorderLayout.CENTER);
         preprocessingPanel.add(panelProcessingWriter);
 
-        processingPanel.add(preprocessingPanel, BorderLayout.PAGE_START);
+        return preprocessingPanel;
+    }
+
+    private JPanel createProcessingPanel() {
+
+        final JPanel processingPanel = new JPanel();
+        processingPanel.setLayout(new BorderLayout());
+
+        //processingPanel.add(createPreProcessingPanel(), BorderLayout.PAGE_START);
 
         JPanel configPanel = new JPanel();
         configPanel.setLayout(new BorderLayout());
@@ -202,9 +215,9 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         JPanel topConfigPanel = new JPanel();
         topConfigPanel.setLayout(new GridLayout(3, 1, 5, 5));
 
-        propertyDescriptor = propertyContainer.getDescriptor("mainToolFileLocation");
-        editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
-        editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
+        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("mainToolFileLocation");
+        PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
+        JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
         JPanel panelToolLocation = new JPanel(new BorderLayout());
         panelToolLocation.add(new JLabel("Tool location: "), BorderLayout.LINE_START);
@@ -238,7 +251,33 @@ public class ExternalToolEditorDialog extends ModelessDialog {
 
         processingPanel.add(configPanel, BorderLayout.CENTER);
 
+        processingPanel.add(createProgressPatternsPanel(), BorderLayout.PAGE_END);
+
         return processingPanel;
+    }
+
+    private JPanel createProgressPatternsPanel(){
+        GridBagLayout layout = new GridBagLayout();
+        layout.columnWidths = new int[]{100, 280};
+
+        JPanel patternsPanel = new JPanel(layout);
+        patternsPanel.setBorder(BorderFactory.createTitledBorder("Patterns"));
+
+        TextFieldEditor textEditor = new TextFieldEditor();
+        PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(operatorDescriptor);
+        BindingContext bindingContext = new BindingContext(propertyContainer);
+
+        patternsPanel.add(new JLabel("Progress pattern:"), getConstraints(0, 0));
+        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("progressPattern");
+        JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        patternsPanel.add(editorComponent, getConstraints(0, 1));
+
+        patternsPanel.add(new JLabel("Error pattern:"), getConstraints(1, 0));
+        propertyDescriptor = propertyContainer.getDescriptor("errorPattern");
+        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        patternsPanel.add(editorComponent, getConstraints(1, 1));
+
+        return patternsPanel;
     }
 
     private JComponent createCheckboxComponent(String memberName, JComponent toogleComponentEnabled, Boolean value) {
@@ -255,13 +294,17 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         return editorComponent;
     }
 
-    private JPanel createDescriptorAndVariablesPanel() {
+    private JPanel createDescriptorAndVariablesAndPreprocessingPanel() {
         JPanel descriptorAndVariablesPanel = new JPanel();
+        descriptorAndVariablesPanel.setPreferredSize(new Dimension(420, 480));
         BoxLayout layout = new BoxLayout(descriptorAndVariablesPanel, BoxLayout.PAGE_AXIS);
         descriptorAndVariablesPanel.setLayout(layout);
+
         JPanel descriptorPanel = createOperatorDescriptorPanel();
         descriptorPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        descriptorPanel.setMaximumSize(new Dimension(415, 400));
         descriptorAndVariablesPanel.add(descriptorPanel);
+
         JPanel variablesBorderPanel = new JPanel();
         layout = new BoxLayout(variablesBorderPanel, BoxLayout.PAGE_AXIS);
         variablesBorderPanel.setLayout(layout);
@@ -273,11 +316,19 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         VariablesTable varTable = new VariablesTable(operatorDescriptor.getVariables());
         varTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         JScrollPane scrollPane = new JScrollPane(varTable);
-        scrollPane.setPreferredSize(new Dimension(400, 150));
+        scrollPane.setPreferredSize(new Dimension(400, 80));
         scrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
         variablesBorderPanel.add(scrollPane);
         variablesBorderPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        variablesBorderPanel.setMaximumSize(new Dimension(415, 40));
+        variablesBorderPanel.setMinimumSize(new Dimension(415, 40));
         descriptorAndVariablesPanel.add(variablesBorderPanel);
+
+        JPanel preprocessingPanel = createPreProcessingPanel();
+        preprocessingPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        preprocessingPanel.setMaximumSize(new Dimension(415, 35));
+        preprocessingPanel.setMinimumSize(new Dimension(415, 35));
+        descriptorAndVariablesPanel.add(preprocessingPanel);
 
         addVariableBut.addActionListener(e -> {
             operatorDescriptor.getVariables().add(new SystemVariable("key", ""));
@@ -305,18 +356,6 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         TitledBorder title = BorderFactory.createTitledBorder("Operator Parameters");
         paramsPanel.setBorder(title);
         return paramsPanel;
-    }
-
-    public JPanel createMainPanel() {
-        JPanel toolDescriptorPanel = new JPanel();
-        toolDescriptorPanel.setLayout(new BorderLayout());
-        toolDescriptorPanel.setPreferredSize(new Dimension(800, 500));
-
-        toolDescriptorPanel.add(createDescriptorAndVariablesPanel(), BorderLayout.LINE_START);
-        toolDescriptorPanel.add(createProcessingPanel(), BorderLayout.CENTER);
-        toolDescriptorPanel.add(createParametersPanel(), BorderLayout.PAGE_END);
-
-        return toolDescriptorPanel;
     }
 
     protected void onApply() {
