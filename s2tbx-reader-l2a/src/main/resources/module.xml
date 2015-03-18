@@ -1,7 +1,7 @@
 <module>
     <manifestVersion>1.0.0</manifestVersion>
     <symbolicName>s2tbx-l2a-reader</symbolicName>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <name>Sentinel-2 L2A PSD 12 Product Reader</name>
 
     <description>Enables SNAP to read Sentinel 2 products of type L2A PSD12</description>
