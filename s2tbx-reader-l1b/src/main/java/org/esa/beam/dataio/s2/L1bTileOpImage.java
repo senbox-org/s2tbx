@@ -210,8 +210,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
 
         if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
-            // critical change log level
-            logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
+            logger.warning(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
             S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
         }
 
@@ -267,7 +266,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         }
 
         try {
-            logger.finer(String.format("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
+            logger.finest(String.format("Jp2ExeImage.readTileData(): reading res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             readTileData(outputFile0, tileX, tileY, tileWidth, tileHeight, jp2TileX, jp2TileY, jp2TileWidth, jp2TileHeight, tileData, destRect);
         } catch (IOException e) {
             logger.severe("Failed to read uncompressed file data: " + Utils.getStackTrace(e));

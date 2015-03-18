@@ -16,7 +16,7 @@
     <description>
         This module provides common tools to Sentinel2 Toolbox modules
     </description>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
 
     <dependencies>
         <dependency>

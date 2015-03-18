@@ -47,6 +47,8 @@ public class Utils {
             lenght = GetShortPathName(workingPath).length();
         }
 
+        // critical fixme uniformize file separators...
+
         String[] shortenedFragments = GetShortPathName(workingPath).split(Pattern.quote(File.separator));
         String[] fragments = path.split(Pattern.quote(File.separator));
 

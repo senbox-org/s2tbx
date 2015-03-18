@@ -5,6 +5,10 @@ import org.esa.beam.framework.datamodel.ProductData;
 import org.openjpeg.JpegUtils;
 
 import java.awt.image.DataBuffer;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Norman Fomferra
@@ -48,6 +52,17 @@ public interface S2L2AConfig {
             new TileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
             new TileLayout(5490, 5490, 2048, 2048, 3, 3, 6),
             new TileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
+    };
+
+    Set<TileLayout> REAL_TILE_LAYOUT = new HashSet<>();
+
+    Map<Integer, Integer> LAYOUTMAP = new HashMap<Integer, Integer>() {
+        {
+            put(10, 0);
+            put(20, 1);
+            put(60, 2);
+        }
+        ;
     };
 
     String FORMAT_NAME = "SENTINEL-2-MSI-L2A";

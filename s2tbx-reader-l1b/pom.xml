@@ -14,7 +14,7 @@
     <artifactId>s2tbx-l1b-reader</artifactId>
     <name>Sentinel-2 Reader L1B PSD12</name>
     <description>
-        This module enables the Sentinel Toolbox to read the following Sentinel-2 data products: L1B,L1C
+        This module enables the Sentinel Toolbox to read the following Sentinel-2 data products: L1B
     </description>
     <version>1.0.3</version>
 
@@ -64,7 +64,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
         </dependency>
 
     </dependencies>
