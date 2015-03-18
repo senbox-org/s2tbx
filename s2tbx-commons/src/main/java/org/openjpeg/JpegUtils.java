@@ -46,7 +46,7 @@ public class JpegUtils {
     }
 
     public static String getExecutable(String modulesDir) {
-        String winPath = "lib-openjpeg-2.1.1/openjpeg-2.0.0-win32-x86/bin/opj_decompress.exe";
+        String winPath = "lib-openjpeg-2.1.1/openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
         String linuxPath = "lib-openjpeg-2.1.1/openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
         String linux64Path = "lib-openjpeg-2.1.1/openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
         String macPath = "lib-openjpeg-2.1.1/openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
@@ -106,7 +106,7 @@ public class JpegUtils {
         String linux64Path = "lib-openjpeg-2.1.1/openjpeg-2.1.0-Linux-x64/bin/opj_dump";
         String macPath = "lib-openjpeg-2.1.1/openjpeg-2.1.0-Darwin-i386/bin/opj_dump";
 
-        String target = "opj_decompress";
+        String target = "opj_dump";
 
         if (SystemUtils.IS_OS_LINUX) {
             try {

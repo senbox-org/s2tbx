@@ -2,6 +2,8 @@ package jp2;
 
 import jp2.segments.CodingStyleDefaultSegment;
 import jp2.segments.ImageAndTileSizeSegment;
+import org.apache.commons.lang.SystemUtils;
+import org.esa.beam.dataio.Utils;
 import org.openjpeg.CommandOutput;
 import org.openjpeg.JpegUtils;
 
@@ -106,8 +108,21 @@ public class CodeStreamUtils {
     public static TileLayout getTileLayoutWithOpenJPEG(String opjdumpPath, URI uri, BoxReader.Listener listener) throws IOException, InterruptedException {
         Objects.requireNonNull(opjdumpPath);
 
-        String thePath = opjdumpPath;
-        ProcessBuilder builder = new ProcessBuilder(thePath, "-i", uri.getPath().substring(1));
+        String exePath = opjdumpPath;
+        String filePath = uri.getPath();
+
+        if(SystemUtils.IS_OS_WINDOWS)
+        {
+            if(filePath.startsWith("/"))
+            {
+                filePath = filePath.substring(1);
+            }
+            filePath = filePath.replace("/","\\");
+            exePath = Utils.GetIterativeShortPathName(exePath);
+            filePath = Utils.GetIterativeShortPathName(filePath);
+        }
+
+        ProcessBuilder builder = new ProcessBuilder(exePath, "-i", filePath);
         builder.redirectErrorStream(true);
 
         CommandOutput exit = JpegUtils.runProcess(builder);
