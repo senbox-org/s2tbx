@@ -37,8 +37,11 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import static org.esa.beam.dataio.s2.S2L2AConfig.L2A_TILE_LAYOUTS;
@@ -184,9 +187,30 @@ class L2aTileOpImage extends SingleBandedOpImage {
         final int tileX = destRect.x / tileWidth;
         final int tileY = destRect.y / tileHeight;
 
+        int realInternalJpegIndex = l2aTileLayout.numXTiles * l2aTileLayout.numYTiles;
+
         if (tileWidth * tileHeight != tileData.length) {
             throw new IllegalStateException(String.format("tileWidth (=%d) * tileHeight (=%d) != tileData.length (=%d)",
                                                           tileWidth, tileHeight, tileData.length));
+        }
+
+        TileLayout myLayout = null;
+
+        try {
+            myLayout = CodeStreamUtils.getTileLayout(S2L2AConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener(), S2L2AConfig.NODUMP);
+            realInternalJpegIndex = myLayout.numXTiles * myLayout.numYTiles;
+        } catch (Exception iae) {
+            Arrays.fill(tileData, S2L2AConfig.FILL_CODE_MOSAIC_BG);
+            return;
+        }
+
+        Set<TileLayout> typeTiles = new HashSet<TileLayout>();
+        Collections.addAll(typeTiles, S2L2AConfig.L2A_TILE_LAYOUTS);
+        Collections.addAll(S2L2AConfig.REAL_TILE_LAYOUT, S2L2AConfig.L2A_TILE_LAYOUTS);
+
+        if (!S2L2AConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
+            logger.warning(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
+            S2L2AConfig.REAL_TILE_LAYOUT.add(myLayout);
         }
 
         final Dimension jp2TileDim = getDimAtResolutionLevel(l2aTileLayout.tileWidth, l2aTileLayout.tileHeight, getLevel());
@@ -215,20 +239,16 @@ class L2aTileOpImage extends SingleBandedOpImage {
             logger.severe(Utils.getStackTrace(e));
         }
 
-        logger.fine("Processing file: " + imageFile.getName());
-
-        TileLayout myLayout = null;
-        try {
-            myLayout = CodeStreamUtils.getTileLayout(S2L2AConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener(), S2L2AConfig.NODUMP);
-        } catch (Exception iae) {
-            Arrays.fill(tileData, S2L2AConfig.FILL_CODE_MOSAIC_BG);
-            return;
-        }
-
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.
         //        This may be the reason for party filled tiles, that sometimes occur
         if (!outputFile0.exists()) {
+            int tileIndex = l2aTileLayout.numXTiles * jp2TileY + jp2TileX;
+            if (tileIndex >= realInternalJpegIndex) {
+                Arrays.fill(tileData, S2L2AConfig.FILL_CODE_MOSAIC_BG);
+                return;
+            }
+
             logger.finest(String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
