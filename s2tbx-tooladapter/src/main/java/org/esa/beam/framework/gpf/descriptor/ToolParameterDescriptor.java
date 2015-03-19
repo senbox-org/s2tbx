@@ -9,6 +9,8 @@ import java.lang.reflect.Method;
  */
 public class ToolParameterDescriptor extends DefaultParameterDescriptor {
 
+    private boolean templateFile = false;
+
     public ToolParameterDescriptor(String name, Class<?> type){
         super(name, type);
     }
@@ -60,5 +62,13 @@ public class ToolParameterDescriptor extends DefaultParameterDescriptor {
         } catch (Exception e) {
             throw new PropertyAttributeException("Exception on setting the value '" + obj.toString() + "' to the attribute '" + propertyName + "' message: " + e.getMessage());
         }
+    }
+
+    public boolean isTemplateFile() {
+        return templateFile;
+    }
+
+    public void setTemplateFile(boolean templateFile) {
+        this.templateFile = templateFile;
     }
 }

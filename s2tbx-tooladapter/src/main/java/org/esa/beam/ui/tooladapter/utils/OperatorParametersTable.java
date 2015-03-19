@@ -47,11 +47,12 @@ public class OperatorParametersTable extends JTable {
 
     static{
         typesMap = new DualHashBidiMap();
-        typesMap.put("String", String.class);
-        typesMap.put("File", File.class);
-        typesMap.put("Integer", Integer.class);
-        typesMap.put("List", List.class);
-        typesMap.put("Boolean", Boolean.class);
+        typesMap.put("String", CustomParameterClass.StringClass);
+        typesMap.put("File", CustomParameterClass.RegularFileClass);
+        typesMap.put("Template File", CustomParameterClass.TemplateFileClass);
+        typesMap.put("Integer", CustomParameterClass.IntegerClass);
+        typesMap.put("List", CustomParameterClass.ListClass);
+        typesMap.put("Boolean", CustomParameterClass.BooleanClass);
     }
 
     public OperatorParametersTable(ToolAdapterOperatorDescriptor operator, AppContext appContext) {
@@ -169,7 +170,7 @@ public class OperatorParametersTable extends JTable {
                 case 0:
                     return false;
                 case 4:
-                    return typesMap.getKey(descriptor.getDataType());
+                    return typesMap.getKey(CustomParameterClass.getObject(descriptor.getDataType(), descriptor.isTemplateFile()));
                 case 6:
                     return false;
                 default:
@@ -234,8 +235,10 @@ public class OperatorParametersTable extends JTable {
                     break;
                 case 4:
                     //type editing
-                    if(descriptor.getDataType() != typesMap.get(aValue)) {
-                        descriptor.setDataType((Class<?>) typesMap.get(aValue));
+                    CustomParameterClass customClass = (CustomParameterClass)typesMap.get(aValue);
+                    descriptor.setTemplateFile(customClass.isTemplate());
+                    if(descriptor.getDataType() != customClass.getaClass()) {
+                        descriptor.setDataType(customClass.getaClass());
                         descriptor.setDefaultValue(descriptor.getDefaultValue());
                         context.getPropertySet().removeProperty(context.getPropertySet().getProperty(descriptor.getName()));
                         PropertyDescriptor property;
