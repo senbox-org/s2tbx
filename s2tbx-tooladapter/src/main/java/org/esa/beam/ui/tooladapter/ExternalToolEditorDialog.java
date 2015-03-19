@@ -62,7 +62,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
         java.util.List<String> toolboxSpis = new ArrayList<>();
         spis.stream().filter(p -> p instanceof ToolAdapterOpSpi && p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
-                forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getName()));
+                forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getAlias()));
         toolboxSpis.sort(Comparator.<String>naturalOrder());
         propertyContainer.getDescriptor("preprocessorExternalTool").setValueSet(new ValueSet(toolboxSpis.toArray(new String[toolboxSpis.size()])));
 

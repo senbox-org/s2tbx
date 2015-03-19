@@ -18,6 +18,7 @@ import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.internal.OperatorContext;
 import org.esa.beam.jai.ImageManager;
+import org.esa.beam.util.ProductUtils;
 import org.esa.beam.utils.PrivilegedAccessor;
 
 import java.io.*;
@@ -46,20 +47,13 @@ public class ToolAdapterOp extends Operator {
     /**
      * Stop the tool's execution.
      */
-    private boolean stop;
-
-    /**
-     * Synchronization lock.
-     */
-    private final Object lock;
+    private volatile boolean isStopped;
 
     private ToolAdapterOperatorDescriptor descriptor;
 
     private ProgressMonitor progressMonitor;
 
     private File intermediateProductFile;
-
-    private boolean canContinue;
 
     /**
      * The folder where the tool descriptors reside.
@@ -73,8 +67,6 @@ public class ToolAdapterOp extends Operator {
     public ToolAdapterOp() {
         super();
         this.consumer = null;
-        this.stop = false;
-        this.lock = new Object();
         try {
             accessibleContext = (OperatorContext) PrivilegedAccessor.getValue(this, "context");
         } catch (Exception e) {
@@ -82,7 +74,6 @@ public class ToolAdapterOp extends Operator {
         }
         Velocity.init();
         this.progressMonitor = ProgressMonitor.NULL;
-        this.canContinue = true;
         //this.descriptor = ((ToolAdapterOperatorDescriptor) accessibleContext.getOperatorSpi().getOperatorDescriptor());
     }
 
@@ -98,19 +89,17 @@ public class ToolAdapterOp extends Operator {
     public void setProgressMonitor(ProgressMonitor monitor) { this.progressMonitor = monitor; }
 
     /**
-     * Command to stop the tool.
+     * Command to isStopped the tool.
      * <p>
      * This method is synchronized.
      * </p>
      */
-    public void stopTool() {
-        synchronized (this.lock) {
-            this.stop = true;
-        }
+    public void stop() {
+        this.isStopped = true;
     }
 
     /**
-     * Check if a stop command was issued.
+     * Check if a isStopped command was issued.
      * <p>
      * This method is synchronized.
      * </p>
@@ -118,9 +107,7 @@ public class ToolAdapterOp extends Operator {
      * @return true if the execution of the tool must be stopped.
      */
     private boolean isStopped() {
-        synchronized (this.lock) {
-            return this.stop;
-        }
+        return this.isStopped;
     }
 
     public void setAdapterFolder(File folder) {
@@ -138,27 +125,45 @@ public class ToolAdapterOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
         Date currentTime = new Date();
+        OperatorException exception = null;
         if (descriptor == null) {
             descriptor = ((ToolAdapterOperatorDescriptor) accessibleContext.getOperatorSpi().getOperatorDescriptor());
         }
-        //Validate the input
-        validateDescriptor();
-        //Prepare tool run
+        try {
+            validateDescriptor();
+        } catch (OperatorException validationException) {
+            exception = validationException;
+        }
         if (this.consumer == null ) {
             this.consumer = new DefaultOutputConsumer(descriptor.getProgressPattern(), descriptor.getErrorPattern(), this.progressMonitor);
         }
-        beforeExecute();
-        if (canContinue) {
-            //Run tool
-            execute();
+        if (!isStopped && exception == null) {
+            try {
+                beforeExecute();
+            } catch (OperatorException beforeException) {
+                exception = beforeException;
+            }
+        }
+        if (!isStopped && exception == null) {
+            try {
+                execute();
+            } catch (OperatorException executionException) {
+                exception = executionException;
+            }
         }
         if (this.consumer != null) {
             Date finalDate = new Date();
             this.consumer.consumeOutput("Finished tool execution in " + (finalDate.getTime() - currentTime.getTime()) / 1000 + " seconds");
         }
-        if (canContinue) {
-            //Try to load target product
-            postExecute();
+        if (exception == null) {
+            try {
+                postExecute();
+            } catch (OperatorException afterException) {
+                exception = afterException;
+            }
+        }
+        if (exception != null) {
+            throw exception;
         }
     }
 
@@ -207,21 +212,37 @@ public class ToolAdapterOp extends Operator {
                 final Product selectedProduct = getSourceProduct();
                 String sourceDefaultExtension = writerPlugIn.getDefaultFileExtensions()[0];
                 File outFile = new File(descriptor.getWorkingDir(), INTERMEDIATE_PRODUCT_NAME + sourceDefaultExtension);
-                if (outFile.exists() && outFile.canWrite()) {
-                    if (outFile.delete()) {
-                        getLogger().warning("Could not delete previous temporary image");
+                boolean hasDeleted = false;
+                while (outFile.exists() && !hasDeleted) {
+                    hasDeleted = outFile.canWrite() && outFile.delete();
+                    if (!hasDeleted) {
+                        getLogger().warning(String.format("Could not delete previous temporary image %s", outFile.getName()));
+                        outFile = new File(descriptor.getWorkingDir(), INTERMEDIATE_PRODUCT_NAME + "_" + new Date().getTime() + sourceDefaultExtension);
                     }
                 }
+                Product interimProduct = new Product(outFile.getName(), selectedProduct.getProductType(),
+                        selectedProduct.getSceneRasterWidth(), selectedProduct.getSceneRasterHeight());
                 try {
-                    ProductIO.writeProduct(selectedProduct, outFile, sourceFormatName, true, SubProgressMonitor.create(progressMonitor, 50));
+                    ProductUtils.copyProductNodes(selectedProduct, interimProduct);
+                    for (Band sourceBand : selectedProduct.getBands()) {
+                        ProductUtils.copyBand(sourceBand.getName(), selectedProduct, interimProduct, true);
+                    }
+                    ProductIO.writeProduct(interimProduct, outFile, sourceFormatName, true, SubProgressMonitor.create(progressMonitor, 50));
                 } catch (IOException e) {
                     getLogger().severe("Cannot write to " + sourceFormatName + " format");
-                    canContinue = false;
+                    stop();
+                } finally {
+                    try {
+                        interimProduct.closeIO();
+                        interimProduct.dispose();
+                    } catch (IOException e) {
+                    }
+                    interimProduct = null;
                 }
                 if (outFile.exists()) {
                     intermediateProductFile = outFile;
                 } else {
-                    canContinue = false;
+                    stop();
                 }
             }
         }
@@ -239,10 +260,6 @@ public class ToolAdapterOp extends Operator {
         int ret = -1;
         try {
             this.progressMonitor.setTaskName("Starting tool execution");
-            //initialise stop flag.
-            synchronized (this.lock) {
-                this.stop = false;
-            }
             List<String> cmdLine = getCommandLineTokens();
             logCommandLine(cmdLine);
             ProcessBuilder pb = new ProcessBuilder(cmdLine);
@@ -265,8 +282,8 @@ public class ToolAdapterOp extends Operator {
                 }
                 // check if the project finished execution
                 if (!process.isAlive()) {
-                    //stop the loop
-                    stopTool();
+                    //isStopped the loop
+                    stop();
                 } else {
                     //yield the control to other threads
                     Thread.yield();
@@ -279,7 +296,7 @@ public class ToolAdapterOp extends Operator {
             throw new OperatorException("Error running tool " + descriptor.getName(), e);
         } finally {
             if (process != null) {
-                // if the process is still running, force it to stop
+                // if the process is still running, force it to isStopped
                 if (process.isAlive()) {
                     //destroy the process
                     process.destroyForcibly();
@@ -312,15 +329,11 @@ public class ToolAdapterOp extends Operator {
     private void postExecute() throws OperatorException {
         this.progressMonitor.setTaskName("Trying to open the new product");
         File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE);
-        if (input == null) {
-            //no target product, means the source product was changed
-            //TODO all input files should be (re)-loaded since we do not know which one was changed
-            input = getSourceProduct().getFileLocation();
-        } else {
+        if (input != null) {
             try {
                 if (intermediateProductFile != null && intermediateProductFile.exists()) {
-                    if (!intermediateProductFile.delete()) {
-                        getLogger().warning("Temporary image could not be deleted");
+                    if (!(intermediateProductFile.canWrite() && intermediateProductFile.delete())) {
+                        getLogger().warning(String.format("Temporary image %s could not be deleted", intermediateProductFile.getName()));
                     }
                 }
                 Product target = ProductIO.readProduct(input);
@@ -448,4 +461,5 @@ public class ToolAdapterOp extends Operator {
         }
         return rasters;
     }
+
 }
