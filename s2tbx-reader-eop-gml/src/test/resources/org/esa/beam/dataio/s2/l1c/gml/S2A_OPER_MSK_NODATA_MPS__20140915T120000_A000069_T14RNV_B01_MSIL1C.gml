@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no" ?><hma:Mask gml:id="S2A_OPER_MSK_NODATA_GPPL1C_069_20130707171925_20130707172037_00_000000_14RNV_0001" xmlns:gml="http://www.opengis.net/gml" xmlns:hma="http://earth.esa.int/hma" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<hma:Mask gml:id="S2A_OPER_MSK_NODATA_GPPL1C_069_20130707171925_20130707172037_00_000000_14RNV_0001" xmlns:gml="http://www.opengis.net/gml" xmlns:hma="http://earth.esa.int/hma" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <gml:name>nodata pixels mask from data-strip GS2A_20130707T171636_GPP_09648</gml:name>
 

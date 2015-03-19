@@ -11,13 +11,11 @@ import java.io.InputStream;
  */
 public class GMLReader
 {
-    public String GML = "net.opengis.gml:_int.esa.earth.atm:_int.esa.earth.hma:_int.esa.earth.ohr:_int.esa.earth.sar";
-
     private JAXBContext context;
     private Unmarshaller unmarshaller;
 
     public GMLReader() throws JAXBException {
-        context = JAXBContext.newInstance(GML);
+        context = JAXBContext.newInstance("net.opengis.gml.v_3_2_1");
         unmarshaller = context.createUnmarshaller();
     }
 
@@ -29,4 +27,6 @@ public class GMLReader
 
         return casted;
     }
+
+
 }
