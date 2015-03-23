@@ -35,4 +35,8 @@ public class TemplateParameterDescriptor extends ToolParameterDescriptor{
         this.toolParameterDescriptors.remove(descriptor);
     }
 
+    public List<ToolParameterDescriptor> getToolParameterDescriptors(){
+        return this.toolParameterDescriptors;
+    }
+
 }

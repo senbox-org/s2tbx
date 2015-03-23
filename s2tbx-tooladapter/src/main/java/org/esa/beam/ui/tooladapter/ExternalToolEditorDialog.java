@@ -206,7 +206,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
 
         JPanel configPanel = new JPanel();
         configPanel.setLayout(new BorderLayout());
-        configPanel.setBorder(BorderFactory.createTitledBorder("Configuration parameters"));
+        configPanel.setBorder(BorderFactory.createTitledBorder("Configuration Parameters"));
 
         JPanel topConfigPanel = new JPanel();
         topConfigPanel.setLayout(new GridLayout(3, 2, 5, 5));
@@ -257,7 +257,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
         layout.columnWidths = new int[]{100, 280};
 
         JPanel patternsPanel = new JPanel(layout);
-        patternsPanel.setBorder(BorderFactory.createTitledBorder("Tool output patterns"));
+        patternsPanel.setBorder(BorderFactory.createTitledBorder("Tool Output Patterns"));
 
         TextFieldEditor textEditor = new TextFieldEditor();
         PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(operatorDescriptor);

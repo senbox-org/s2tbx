@@ -1,5 +1,6 @@
 package org.esa.beam.ui.tooladapter.utils;
 
+import com.bc.ceres.binding.Property;
 import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
@@ -17,20 +18,20 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
     protected String attributeName;
     protected JComponent UIComponent;
     protected int width = 0;
-    protected ToolParameterDescriptor property;
+    protected ToolParameterDescriptor paramDescriptor;
     protected ToolAdapterOperatorDescriptor opDescriptor;
     private CallBackAfterEdit callback;
     private BindingContext context;
 
-    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context) {
+    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor paramDescriptor, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context) {
         this.attributeName = attributeName;
-        this.property = property;
+        this.paramDescriptor = paramDescriptor;
         this.opDescriptor = opDescriptor;
         this.context = context;
     }
 
-    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, CallBackAfterEdit callback) {
-        this(attributeName, property, opDescriptor, context);
+    public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor paramDescriptor, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, CallBackAfterEdit callback) {
+        this(attributeName, paramDescriptor, opDescriptor, context);
         this.width = width;
         this.callback = callback;
         try {
@@ -39,6 +40,14 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
             //TODO
             ex.printStackTrace();
         }
+    }
+
+    public BindingContext getContext(){
+        return this.context;
+    }
+
+    public ToolParameterDescriptor getParamDescriptor(){
+        return this.paramDescriptor;
     }
 
     public String getErrorValueMessage(Object value) {
@@ -118,11 +127,11 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
                 }
                 setMemberValueWithCheck(getValueFromUIComponent());
                 if (callback != null) {
-                    callback.doCallBack(null, property, null, attributeName);
+                    callback.doCallBack(null, paramDescriptor, null, attributeName);
                 }
             } catch (PropertyAttributeException ex) {
                 if (callback != null) {
-                    callback.doCallBack(ex, property, null, attributeName);
+                    callback.doCallBack(ex, paramDescriptor, null, attributeName);
                 }
                 UIComponent.requestFocusInWindow();
             }

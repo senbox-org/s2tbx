@@ -6,6 +6,7 @@ import org.apache.commons.collections.BidiMap;
 import org.apache.commons.collections.bidimap.DualHashBidiMap;
 import org.esa.beam.framework.gpf.annotations.ParameterDescriptorFactory;
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
+import org.esa.beam.framework.gpf.descriptor.TemplateParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
@@ -13,6 +14,7 @@ import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
+import org.esa.beam.ui.tooladapter.TemplateParameterEditorDialog;
 import org.esa.beam.ui.tooladapter.ToolParameterEditorDialog;
 
 import javax.swing.*;
@@ -275,8 +277,18 @@ public class OperatorParametersTable extends JTable {
                     //the custom editor should handle this
                     break;
                 case 6:
-                    ToolParameterEditorDialog editor = new ToolParameterEditorDialog(appContext, "Parameter editor for " + descriptor.getName(), "", descriptor, propertiesValueUIDescriptorMap.get(descriptor));
-                    editor.show();
+                    if(descriptor.isTemplateFile() && descriptor.getDataType().equals(File.class)){
+                        try {
+                            TemplateParameterEditorDialog editor = new TemplateParameterEditorDialog(appContext, "", new TemplateParameterDescriptor(descriptor), propertiesValueUIDescriptorMap.get(descriptor));
+                            editor.show();
+                        }catch (Exception ex){
+                            //TODO show exception
+                            ex.printStackTrace();
+                        }
+                    } else {
+                        ToolParameterEditorDialog editor = new ToolParameterEditorDialog(appContext, "Parameter editor for " + descriptor.getName(), "", descriptor, propertiesValueUIDescriptorMap.get(descriptor));
+                        editor.show();
+                    }
                     break;
                 default:
                     try {
