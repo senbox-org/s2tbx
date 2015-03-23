@@ -27,6 +27,16 @@
             <artifactId>snap-visat-rcp</artifactId>
             <version>${snap.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-ui</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jidesoft</groupId>
+            <artifactId>jide-common</artifactId>
+            <version>3.6.1</version>
+        </dependency>
     </dependencies>
 
 </project>

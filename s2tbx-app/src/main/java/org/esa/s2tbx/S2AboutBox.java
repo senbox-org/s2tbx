@@ -27,8 +27,8 @@ public class S2AboutBox extends ModalDialog {
     }
 
     private S2AboutBox(JButton[] others) {
-        super(VisatApp.getApp().getMainFrame(), String.format("About %s", VisatApp.getApp().getAppName()),
-                ModalDialog.ID_OK, others, null);    /*I18N*/
+        super(VisatApp.getApp().getApplicationWindow(), String.format("About %s", VisatApp.getApp().getAppName()),
+                ModalDialog.ID_OK, others, "");    /*I18N*/
 
         JButton systemButton = others[0];
         systemButton.setText("System Info...");  /*I18N*/

@@ -21,9 +21,6 @@
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-python-lib</module>
-        <module>s2tbx-sen2cor-processor</module>
-        <module>s2tbx-sen2three-processor</module>
-        <module>s2tbx-r2r-converter</module>
         <module>s2tbx-bootstrap</module>
         <module>s2tbx-installer</module>
         <module>s2tbx-app</module>
@@ -33,7 +30,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>1.0.1</snap.version>
+        <snap.version>2.0.0-SNAPSHOT</snap.version>
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <outputdir>../../output</outputdir>
@@ -55,6 +52,24 @@
                 <enabled>true</enabled>
                 <checksumPolicy>warn</checksumPolicy>
             </snapshots>
+        </repository>
+
+        <repository>
+            <id>cwatch-repo-releases</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>http://cwatch.org/repo/releases</url>
+        </repository>
+        <repository>
+            <id>cwatch-repo-snapshots</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>http://cwatch.org/repo/libs-snapshot-local</url>
         </repository>
     </repositories>
 
@@ -290,6 +305,14 @@
             <id>all</id>
             <modules>
                 <module>../snap-engine</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>sencore</id>
+            <modules>
+                <module>s2tbx-sen2cor-processor</module>
+                <module>s2tbx-sen2three-processor</module>
+                <module>s2tbx-r2r-converter</module>
             </modules>
         </profile>
         <profile>
