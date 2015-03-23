@@ -18,6 +18,7 @@ import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
 import org.esa.beam.framework.ui.AppContext;
+import org.esa.beam.framework.ui.ModalDialog;
 import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
@@ -33,7 +34,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 
-public class ExternalToolEditorDialog extends ModelessDialog {
+public class ExternalToolEditorDialog extends ModalDialog {
 
     private ToolAdapterOperatorDescriptor operatorDescriptor;
     private boolean operatorIsNew;
@@ -45,13 +46,13 @@ public class ExternalToolEditorDialog extends ModelessDialog {
     private AppContext appContext;
 
     private ExternalToolEditorDialog(AppContext appContext, String title, String helpID) {
-        super(appContext.getApplicationWindow(), title, ID_APPLY_CLOSE, helpID);
+        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, helpID);
         this.appContext = appContext;
         getJDialog().setResizable(false);
     }
 
-    private ExternalToolEditorDialog(AppContext appContext, String title, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor) {
-        this(appContext, title, helpID);
+    private ExternalToolEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor) {
+        this(appContext, operatorDescriptor.getAlias(), helpID);
         this.operatorDescriptor = operatorDescriptor;
 
         propertyContainer = PropertyContainer.createObjectBacked(operatorDescriptor);
@@ -61,7 +62,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         propertyContainer.getDescriptor("processingWriter").setValueSet(new ValueSet(writers));
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
         java.util.List<String> toolboxSpis = new ArrayList<>();
-        spis.stream().filter(p -> p instanceof ToolAdapterOpSpi && p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
+        spis.stream().filter(p -> p instanceof ToolAdapterOpSpi && p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class && p.getOperatorAlias() != operatorDescriptor.getAlias()).
                 forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getAlias()));
         toolboxSpis.sort(Comparator.<String>naturalOrder());
         propertyContainer.getDescriptor("preprocessorExternalTool").setValueSet(new ValueSet(toolboxSpis.toArray(new String[toolboxSpis.size()])));
@@ -71,15 +72,15 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         paramsTable =  new OperatorParametersTable(operatorDescriptor, appContext);
     }
 
-    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
-        this(appContext, title, helpID, operatorDescriptor);
+    public ExternalToolEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
+        this(appContext, helpID, operatorDescriptor);
         this.operatorIsNew = operatorIsNew;
         this.newNameIndex = -1;
         setContent(createMainPanel());
     }
 
-    public ExternalToolEditorDialog(AppContext appContext, String title, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, int newNameIndex) {
-        this(appContext, title, helpID, operatorDescriptor);
+    public ExternalToolEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, int newNameIndex) {
+        this(appContext, helpID, operatorDescriptor);
         this.newNameIndex = newNameIndex;
         this.operatorIsNew = this.newNameIndex >= 1;
         setContent(createMainPanel());
@@ -168,37 +169,32 @@ public class ExternalToolEditorDialog extends ModelessDialog {
     }
 
     private JPanel createPreProcessingPanel(){
-        JPanel preprocessingPanel = new JPanel();
-        preprocessingPanel.setLayout(new GridLayout(2, 1, 5, 5));
-        preprocessingPanel.setBorder(BorderFactory.createTitledBorder("Preprocessing"));
+        GridBagLayout layout = new GridBagLayout();
+        layout.columnWidths = new int[]{35, 180, 200};
+
+        final JPanel preProcessingPanel = new JPanel(layout);
 
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("preprocessorExternalTool");
         PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
-        JPanel panelLeft = new JPanel(new FlowLayout());
-        panelLeft.add(createCheckboxComponent("preprocessTool", editorComponent, operatorDescriptor.getPreprocessTool()));
-        panelLeft.add(new JLabel("Preprocessing tool:"));
-
-        JPanel panelPreprocessingTool = new JPanel(new BorderLayout());
-        panelPreprocessingTool.add(panelLeft, BorderLayout.LINE_START);
-        panelPreprocessingTool.add(editorComponent, BorderLayout.CENTER);
-        preprocessingPanel.add(panelPreprocessingTool);
+        preProcessingPanel.add(createCheckboxComponent("preprocessTool", editorComponent, operatorDescriptor.getPreprocessTool()), getConstraints(0, 0));
+        preProcessingPanel.add(new JLabel("Preprocessing tool:"), getConstraints(0, 1));
+        preProcessingPanel.add(editorComponent, getConstraints(0, 2));
 
         propertyDescriptor = propertyContainer.getDescriptor("processingWriter");
         editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
-        panelLeft = new JPanel(new FlowLayout());
-        panelLeft.add(createCheckboxComponent("writeForProcessing", editorComponent, operatorDescriptor.shouldWriteBeforeProcessing()));
-        panelLeft.add(new JLabel("Write before processing using:"));
+        preProcessingPanel.add(createCheckboxComponent("writeForProcessing", editorComponent, operatorDescriptor.shouldWriteBeforeProcessing()), getConstraints(1, 0));
+        preProcessingPanel.add(new JLabel("Write before processing using:"), getConstraints(1, 1));
+        preProcessingPanel.add(editorComponent, getConstraints(1, 2));
 
-        JPanel panelProcessingWriter = new JPanel(new BorderLayout());
-        panelProcessingWriter.add(panelLeft, BorderLayout.LINE_START);
-        panelProcessingWriter.add(editorComponent, BorderLayout.CENTER);
-        preprocessingPanel.add(panelProcessingWriter);
+        TitledBorder title = BorderFactory.createTitledBorder("Preprocessing");
+        preProcessingPanel.setBorder(title);
+        preProcessingPanel.setPreferredSize(new Dimension(415, 70));
 
-        return preprocessingPanel;
+        return preProcessingPanel;
     }
 
     private JPanel createProcessingPanel() {
@@ -213,7 +209,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         configPanel.setBorder(BorderFactory.createTitledBorder("Configuration parameters"));
 
         JPanel topConfigPanel = new JPanel();
-        topConfigPanel.setLayout(new GridLayout(3, 1, 5, 5));
+        topConfigPanel.setLayout(new GridLayout(3, 2, 5, 5));
 
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("mainToolFileLocation");
         PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
@@ -238,7 +234,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
 
         configPanel.add(topConfigPanel, BorderLayout.PAGE_START);
 
-        templateContent = new JTextArea("", 15, 10);
+        templateContent = new JTextArea("", 15, 9);
         if (!operatorIsNew) {
             try {
                 templateContent.setText(ToolAdapterIO.readOperatorTemplate(operatorDescriptor.getName()));
@@ -261,7 +257,7 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         layout.columnWidths = new int[]{100, 280};
 
         JPanel patternsPanel = new JPanel(layout);
-        patternsPanel.setBorder(BorderFactory.createTitledBorder("Patterns"));
+        patternsPanel.setBorder(BorderFactory.createTitledBorder("Tool output patterns"));
 
         TextFieldEditor textEditor = new TextFieldEditor();
         PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(operatorDescriptor);
@@ -326,8 +322,8 @@ public class ExternalToolEditorDialog extends ModelessDialog {
 
         JPanel preprocessingPanel = createPreProcessingPanel();
         preprocessingPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        preprocessingPanel.setMaximumSize(new Dimension(415, 35));
-        preprocessingPanel.setMinimumSize(new Dimension(415, 35));
+        preprocessingPanel.setMaximumSize(new Dimension(415, 60));
+        //preprocessingPanel.setMinimumSize(new Dimension(415, 35));
         descriptorAndVariablesPanel.add(preprocessingPanel);
 
         addVariableBut.addActionListener(e -> {
@@ -358,8 +354,9 @@ public class ExternalToolEditorDialog extends ModelessDialog {
         return paramsPanel;
     }
 
-    protected void onApply() {
-        super.onApply();
+    @Override
+    protected void onOK() {
+        super.onOK();
         if (operatorIsNew) {
             if (operatorDescriptor.getTemplateFileLocation() == null) {
                 operatorDescriptor.setTemplateFileLocation(operatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);

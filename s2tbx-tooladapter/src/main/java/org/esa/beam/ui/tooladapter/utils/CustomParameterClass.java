@@ -1,6 +1,7 @@
 package org.esa.beam.ui.tooladapter.utils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,6 +51,6 @@ public class CustomParameterClass {
     public static final CustomParameterClass RegularFileClass = new CustomParameterClass(File.class, false);
     public static final CustomParameterClass StringClass = new CustomParameterClass(String.class, false);
     public static final CustomParameterClass IntegerClass = new CustomParameterClass(Integer.class, false);
-    public static final CustomParameterClass ListClass = new CustomParameterClass(List.class, false);
+    public static final CustomParameterClass ListClass = new CustomParameterClass(String[].class, false);
     public static final CustomParameterClass BooleanClass = new CustomParameterClass(Boolean.class, false);
 }

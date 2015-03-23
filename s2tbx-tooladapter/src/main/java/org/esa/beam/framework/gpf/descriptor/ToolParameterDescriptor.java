@@ -71,4 +71,8 @@ public class ToolParameterDescriptor extends DefaultParameterDescriptor {
     public void setTemplateFile(boolean templateFile) {
         this.templateFile = templateFile;
     }
+
+    public void setDeprecated(boolean deprecated){
+        this.deprecated = deprecated;
+    }
 }

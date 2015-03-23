@@ -281,7 +281,14 @@ public class PropertyMemberUIWrapperFactory {
                     context.getPropertySet().removeProperty(oldProp);
                 }
                 try {
-                    PropertyDescriptor descriptor = ParameterDescriptorFactory.convert(property, new ParameterDescriptorFactory().getSourceProductMap());
+                    PropertyDescriptor descriptor;
+                    try {
+                        descriptor = ParameterDescriptorFactory.convert(property, new ParameterDescriptorFactory().getSourceProductMap());
+                    } catch (Exception ex) {
+                        property.setDefaultValue(null);
+                        descriptor = ParameterDescriptorFactory.convert(property, new ParameterDescriptorFactory().getSourceProductMap());
+                    }
+                    descriptor.setDefaultConverter();
                     try {
                         descriptor.setDefaultValue(property.getDefaultValue());
                     } catch (Exception ex) {

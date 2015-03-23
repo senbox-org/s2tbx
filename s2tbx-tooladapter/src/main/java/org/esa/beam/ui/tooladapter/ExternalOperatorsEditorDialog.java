@@ -9,7 +9,7 @@ import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOp;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
 import org.esa.beam.framework.ui.AppContext;
-import org.esa.beam.framework.ui.ModelessDialog;
+import org.esa.beam.framework.ui.ModalDialog;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
 import org.esa.beam.ui.tooladapter.interfaces.ToolAdapterDialog;
@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * @author Ramona Manda
  */
-public class ExternalOperatorsEditorDialog extends ModelessDialog {
+public class ExternalOperatorsEditorDialog extends ModalDialog {
 
     private AppContext appContext;
     private JTable operatorsTable = null;
@@ -55,7 +55,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
             ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor(ToolAdapterConstants.OPERATOR_NAMESPACE + "DefaultOperatorName", ToolAdapterOp.class, "DefaultOperatorName", null, null, null, null, null);
             newOperatorSpi.getToolParameterDescriptors().add(new ToolParameterDescriptor(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, Object.class));
             newOperatorSpi.getToolParameterDescriptors().add(new ToolParameterDescriptor(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE, File.class));
-            ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Define new Tool", getHelpID(), newOperatorSpi, true);
+            ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, getHelpID(), newOperatorSpi, true);
             dialog.show();
         });
         panel.add(newButton);
@@ -77,7 +77,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
             //String descriptorString = ((DefaultOperatorDescriptor) operatorDesc).toXml(ExternalOperatorsEditorDialog.class.getClassLoader());
             //DefaultOperatorDescriptor dod = DefaultOperatorDescriptor.fromXml(new StringReader(descriptorString), "New duplicate operator", ExternalOperatorsEditorDialog.class.getClassLoader());
             ToolAdapterOperatorDescriptor duplicatedOperatorSpi = new ToolAdapterOperatorDescriptor(operatorDesc, opName, opAlias);
-            ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Edit Tool", getHelpID(), duplicatedOperatorSpi, newNameIndex);
+            ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, getHelpID(), duplicatedOperatorSpi, newNameIndex);
             dialog.show();
         });
         panel.add(copyButton);
@@ -88,7 +88,7 @@ public class ExternalOperatorsEditorDialog extends ModelessDialog {
         editButton.addActionListener(e -> {
             close();
             ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-            ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, "Edit Tool", getHelpID(), operatorDesc, false);
+            ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, getHelpID(), operatorDesc, false);
             dialog.show();
         });
         panel.add(editButton);
