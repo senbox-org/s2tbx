@@ -10,22 +10,13 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>s2tbx-sen2cor-processor</artifactId>
+    <name>Sen2cor processor</name>
 
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-ui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-gpf-ui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
             <artifactId>snap-visat-rcp</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
@@ -33,5 +24,51 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>OneSeries</id>
+            <activation>
+                <property>
+                    <name>snap.version</name>
+                    <value>1.0.1</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>snap-ui</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>snap-gpf</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>TwoSeries</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>snap.version</name>
+                    <value>2.0.0-SNAPSHOT</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>ceres-ui</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>snap-gpf-ui</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
 </project>
