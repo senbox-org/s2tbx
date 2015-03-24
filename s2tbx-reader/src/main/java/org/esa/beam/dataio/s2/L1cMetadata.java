@@ -40,6 +40,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+// critical test adding PSD11 product
+// critical add dependencies to eop-gml and hma-gml
+
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
  * <p>
