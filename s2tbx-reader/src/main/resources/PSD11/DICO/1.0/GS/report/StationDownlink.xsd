@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:date_time="http://gs2.esa.int/DICO/1.0/SY/date_time/" xmlns="http://gs2.esa.int/DICO/1.0/GS" targetNamespace="http://gs2.esa.int/DICO/1.0/GS" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:include schemaLocation="..\header\stationHeader.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/date_time/" schemaLocation="..\..\SY\date_time\date_time.xsd"/>
+	<xs:complexType name="StationDownlinkDetailsType">
+		<xs:annotation>
+			<xs:documentation>Type for Details of station downlink</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="AntennaId" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Identification of the antenna used</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Acq_Id" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Acquisition Id code</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DownlinkStartTime" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>Effective Date/Time of data acquisition start</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DownlinkStopTime" type="date_time:AN_UTC_DATE_TIME">
+				<xs:annotation>
+					<xs:documentation>Effective Date/Time of data acquisition stop</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DownlinkStatus" type="DownlinkStatusType">
+				<xs:annotation>
+					<xs:documentation>Oveall status of downlink</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Comments" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Commented reason for Not OK downlinks</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="DownlinkStatusType">
+		<xs:annotation>
+			<xs:documentation>Oveall status of downlink : OK/Not_OK</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="OK"/>
+			<xs:enumeration value="Not_OK"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

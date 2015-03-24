@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns:base="http://gs2.esa.int/DICO/1.0/IPF/S2/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://gs2.esa.int/DICO/1.0/IPF/base/" targetNamespace="http://gs2.esa.int/DICO/1.0/IPF/base/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:simpleType name="A_IPF_VERSION">
+		<xs:annotation>
+			<xs:documentation>Version identification</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="\d\d\.\d\d"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="A_FILE_NAME_TYPE">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Physical"/>
+			<xs:enumeration value="Logical"/>
+			<xs:enumeration value="Stem"/>
+			<xs:enumeration value="Directory"/>
+			<xs:enumeration value="Regexp"/>
+			<xs:enumeration value="Prefix"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="A_MESSAGE">
+		<xs:annotation>
+			<xs:documentation>Message formatted in conformance as the log message format</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Function_Name" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Fonction name generating the message</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Message_Code" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>log code formatted</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Text" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>description</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Date_Time" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>generation date</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Node_Name" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Working station</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Processor_Name" type="A_IDP_SC_NAME">
+				<xs:annotation>
+					<xs:documentation>IDP-SCName</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Processor_Version" type="A_IPF_VERSION">
+				<xs:annotation>
+					<xs:documentation>Processor version</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Type">
+				<xs:annotation>
+					<xs:documentation>type of log : debug, warning, info,...</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="DEBUG"/>
+						<xs:enumeration value="INFORMATION"/>
+						<xs:enumeration value="PROGRESS"/>
+						<xs:enumeration value="WARNING"/>
+						<xs:enumeration value="ERROR"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="S2_FILE_TYPE_INPUT">
+		<xs:annotation>
+			<xs:documentation>File type input of an IDP-SC</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="PDI_GR"/>
+			<xs:enumeration value="PDI_DS"/>
+			<xs:enumeration value="PDI_ATF"/>
+			<xs:enumeration value="MASK"/>
+			<xs:enumeration value="GIPP"/>
+			<xs:enumeration value="DEM"/>
+			<xs:enumeration value="GRI_DS"/>
+			<xs:enumeration value="GRI_GR"/>
+			<xs:enumeration value="ECMWF"/>
+			<xs:enumeration value="IERS"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="S2_FILE_TYPE_OUTPUT">
+		<xs:annotation>
+			<xs:documentation>File type output of an IDP-SC</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="PDI_GR"/>
+			<xs:enumeration value="PDI_DS"/>
+			<xs:enumeration value="PDI_ATF"/>
+			<xs:enumeration value="MASK"/>
+			<xs:enumeration value="MPC"/>
+			<xs:enumeration value="REPORT"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="A_IDP_SC_NAME">
+		<xs:annotation>
+			<xs:documentation>IDP-SC or OLQC name</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="INIT_LOC_L0"/>
+			<xs:enumeration value="QL_GEO"/>
+			<xs:enumeration value="QL_CLOUD_MASK"/>
+			<xs:enumeration value="FORMAT_IMG_QL_L0"/>
+			<xs:enumeration value="FORMAT_ISP"/>
+			<xs:enumeration value="FORMAT_METADATA_GR_L0C"/>
+			<xs:enumeration value="FORMAT_METADATA_DS_L0C"/>
+			<xs:enumeration value="UNFORMAT_SAFE_GR"/>
+			<xs:enumeration value="UNFORMAT_SAFE_DS"/>
+			<xs:enumeration value="UPDATE_LOC"/>
+			<xs:enumeration value="QL_DECOMP"/>
+			<xs:enumeration value="QL_CLOUD_MASK"/>
+			<xs:enumeration value="INIT_LOC_L1"/>
+			<xs:enumeration value="DECOMP"/>
+			<xs:enumeration value="RADIO_AB"/>
+			<xs:enumeration value="RADIO_FINALIZE"/>
+			<xs:enumeration value="FORMAT_METADATA_GR_L1A"/>
+			<xs:enumeration value="FORMAT_METADATA_DS_L1A"/>
+			<xs:enumeration value="FORMAT_IMG_L1A"/>
+			<xs:enumeration value="GET_GRI"/>
+			<xs:enumeration value="UNFORMAT_GRI"/>
+			<xs:enumeration value="INIT_VS_GEO"/>
+			<xs:enumeration value="RESAMPLE_TO_VS"/>
+			<xs:enumeration value="TP_COLLECT"/>
+			<xs:enumeration value="TP_FILTER"/>
+			<xs:enumeration value="SPATIO"/>
+			<xs:enumeration value="GEO1B_FINALIZE"/>
+			<xs:enumeration value="FORMAT_METADATA_GR_L1B"/>
+			<xs:enumeration value="FORMAT_METADATA_DS_L1B"/>
+			<xs:enumeration value="FORMAT_IMG_L1B"/>
+			<xs:enumeration value="GET_TILE_LIST"/>
+			<xs:enumeration value="TILE_INIT"/>
+			<xs:enumeration value="GEN_ORTHO_TOA"/>
+			<xs:enumeration value="TILE_FINALIZE"/>
+			<xs:enumeration value="MASK_S2"/>
+			<xs:enumeration value="FORMAT_IMG_L1C"/>
+			<xs:enumeration value="FORMAT_IMG_PVI_TCI"/>
+			<xs:enumeration value="FORMAT_METADATA_TILE_L1C"/>
+			<xs:enumeration value="FORMAT_METADATA_DS_L1C"/>
+			<xs:enumeration value="OLQC"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
