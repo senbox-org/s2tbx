@@ -99,7 +99,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/eop2/eop/2.0</schemaDirectory>
+                            <schemaDirectory>src/main/resources/eop2</schemaDirectory>
                             <schemaIncludes>
                                 <include>*.xsd</include>
                             </schemaIncludes>

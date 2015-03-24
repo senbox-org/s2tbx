@@ -302,9 +302,9 @@
             </modules>
         </profile>
         <profile>
-            <id>all</id>
+            <id>withdesktop</id>
             <modules>
-                <module>../snap-engine</module>
+                <module>../snap-desktop</module>
             </modules>
         </profile>
         <profile>
