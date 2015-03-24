@@ -7,18 +7,32 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.XMLOutputter;
 import org.jdom2.util.IteratorIterable;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NamespaceFilter {
 
-    public NamespaceFilter() {
+    private final GMLReader innerReader;
+    private final XMLOutputter xmlOutput;
 
+    public NamespaceFilter() throws JAXBException {
+        this.innerReader = new GMLReader();
+        this.xmlOutput = new XMLOutputter();
     }
 
-    public void parse(String fileName) throws JDOMException, IOException {
+    public List<JAXBElement> parse(String fileName) throws JDOMException, IOException, JAXBException {
+        List<JAXBElement> gmlElementsRecovered = new ArrayList<>();
+
         InputStream stream = getClass().getResourceAsStream(fileName);
 
         // Use a SAX builder
@@ -40,10 +54,24 @@ public class NamespaceFilter {
                     boolean parentNotGml = !(web_app_content.getParentElement().getNamespace().getPrefix().contains("gml"));
                     if(parentNotGml)
                     {
-                        System.out.println(web_app_content.toString());
+                        Element capturedElement = (Element) web_app_content;
+
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        xmlOutput.output(capturedElement, baos);
+                        String content = baos.toString();
+
+                        Unmarshaller un = innerReader.getUnmarshaller();
+                        ByteArrayInputStream bain = new ByteArrayInputStream(content.getBytes());
+                        JAXBElement ob = (JAXBElement) un.unmarshal(bain);
+                        gmlElementsRecovered.add(ob);
+
+                        // fixme remove sysout
+                        System.out.println(ob.getDeclaredType().getName());
                     }
                 }
             }
         }
+
+        return gmlElementsRecovered;
     }
 }

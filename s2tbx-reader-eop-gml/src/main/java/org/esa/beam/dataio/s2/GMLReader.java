@@ -19,6 +19,11 @@ public class GMLReader
         unmarshaller = context.createUnmarshaller();
     }
 
+    public Unmarshaller getUnmarshaller()
+    {
+        return unmarshaller;
+    }
+
     public Object readJaxbFromStreamResource(String streamResource) throws JAXBException {
         InputStream stream = getClass().getResourceAsStream(streamResource);
 
