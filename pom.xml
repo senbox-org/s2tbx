@@ -368,6 +368,31 @@
             </dependencies>
         </profile>
         <profile>
+            <id>netbeans-deps</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-openide-awt</artifactId>
+                    <version>${netbeans.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-openide-util</artifactId>
+                    <version>${netbeans.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-openide-util-lookup</artifactId>
+                    <version>${netbeans.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-netbeans-api-annotations-common</artifactId>
+                    <version>${netbeans.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
             <id>OneSeries</id>
             <activation>
                 <property>
