@@ -10,7 +10,7 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <packaging>jar</packaging>
+    <packaging>nbm</packaging>
     <artifactId>s2tbx-reader</artifactId>
     <name>Sentinel-2 Reader</name>
     <description>
@@ -68,11 +68,8 @@
 
     </dependencies>
 
-
     <build>
-
         <plugins>
-
             <plugin>
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
                 <artifactId>maven-jaxb2-plugin</artifactId>
@@ -108,6 +105,15 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

@@ -26,7 +26,7 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <packaging>jar</packaging>
+    <packaging>nbm</packaging>
 
     <name>S2Tbx Help</name>
     <artifactId>s2tbx-help</artifactId>
@@ -45,6 +45,22 @@
                         <!-- because javahelp does not like framesets-->
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
