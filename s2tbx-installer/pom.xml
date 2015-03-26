@@ -30,7 +30,7 @@
     <name>Sentinel-2 Installer Resources</name>
     <artifactId>s2tbx-installer</artifactId>
 
-    <packaging>nbm</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <public.s2tbx.version>2.0</public.s2tbx.version>
