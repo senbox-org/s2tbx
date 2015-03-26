@@ -38,7 +38,7 @@ public class OperatorsTableModel extends AbstractTableModel {
             case 1:
                 return data.get(rowIndex).getAlias();
             case 2:
-                return data.get(rowIndex).getName();
+                return data.get(rowIndex).getDescription();
         }
         return "";
     }

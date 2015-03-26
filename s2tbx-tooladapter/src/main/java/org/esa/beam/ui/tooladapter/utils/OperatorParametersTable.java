@@ -49,9 +49,11 @@ public class OperatorParametersTable extends JTable {
 
     static{
         typesMap = new DualHashBidiMap();
-        typesMap.put("String", CustomParameterClass.StringClass);
+        typesMap.put("Template Parameter", CustomParameterClass.TemplateFileClass);
+        typesMap.put("Template Before", CustomParameterClass.BeforeTemplateFileClass);
+        typesMap.put("Template After", CustomParameterClass.AfterTemplateFileClass);
         typesMap.put("File", CustomParameterClass.RegularFileClass);
-        typesMap.put("Template File", CustomParameterClass.TemplateFileClass);
+        typesMap.put("String", CustomParameterClass.StringClass);
         typesMap.put("Integer", CustomParameterClass.IntegerClass);
         typesMap.put("List", CustomParameterClass.ListClass);
         typesMap.put("Boolean", CustomParameterClass.BooleanClass);
@@ -172,7 +174,7 @@ public class OperatorParametersTable extends JTable {
                 case 0:
                     return false;
                 case 4:
-                    return typesMap.getKey(CustomParameterClass.getObject(descriptor.getDataType(), descriptor.isTemplateFile()));
+                    return typesMap.getKey(CustomParameterClass.getObject(descriptor.getDataType(), descriptor.getParameterTypeMask()));
                 case 6:
                     return false;
                 default:
@@ -238,7 +240,7 @@ public class OperatorParametersTable extends JTable {
                 case 4:
                     //type editing
                     CustomParameterClass customClass = (CustomParameterClass)typesMap.get(aValue);
-                    descriptor.setTemplateFile(customClass.isTemplate());
+                    descriptor.setParameterTypeMask(customClass.getTypeMask());
                     if(descriptor.getDataType() != customClass.getaClass()) {
                         descriptor.setDataType(customClass.getaClass());
                         descriptor.setDefaultValue(descriptor.getDefaultValue());
@@ -277,9 +279,16 @@ public class OperatorParametersTable extends JTable {
                     //the custom editor should handle this
                     break;
                 case 6:
-                    if(descriptor.isTemplateFile() && descriptor.getDataType().equals(File.class)){
+                    if(!descriptor.isParameter() && descriptor.getDataType().equals(File.class)){
+                        TemplateParameterDescriptor parameter;
+                        if(descriptor instanceof TemplateParameterDescriptor){
+                            parameter = (TemplateParameterDescriptor) descriptor;
+                        } else {
+                            parameter = new TemplateParameterDescriptor(descriptor);
+                            //TODO replace also the parameter in the tooldescriptor!!!
+                        }
                         try {
-                            TemplateParameterEditorDialog editor = new TemplateParameterEditorDialog(appContext, "", new TemplateParameterDescriptor(descriptor), propertiesValueUIDescriptorMap.get(descriptor));
+                            TemplateParameterEditorDialog editor = new TemplateParameterEditorDialog(appContext, "", parameter, propertiesValueUIDescriptorMap.get(descriptor));
                             editor.show();
                         }catch (Exception ex){
                             //TODO show exception

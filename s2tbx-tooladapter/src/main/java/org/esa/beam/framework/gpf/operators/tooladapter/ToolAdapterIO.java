@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -104,6 +105,7 @@ public class ToolAdapterIO {
     }
 
     public static List<File> scanForModules() throws IOException {
+        logger.log(Level.INFO, "Loading external tools...");
         File root = getModulesPath();
         if (!root.exists() || !root.isDirectory()) {
             throw new FileNotFoundException(root.getAbsolutePath());

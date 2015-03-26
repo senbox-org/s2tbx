@@ -1,5 +1,7 @@
 package org.esa.beam.framework.gpf.descriptor;
 
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,21 +11,20 @@ import java.util.List;
 public class TemplateParameterDescriptor extends ToolParameterDescriptor{
     private List<ToolParameterDescriptor> toolParameterDescriptors;
 
-    public TemplateParameterDescriptor(String name, Class<?> type){
+    public TemplateParameterDescriptor(String name, Class<?> type, int typeMask){
         super(name, type);
-        this.setTemplateFile(true);
+        super.setParameterTypeMask(typeMask);
+        this.setParameterTypeMask(ToolAdapterConstants.TEMPLATE_PARAM_MASK);
         this.toolParameterDescriptors = new ArrayList<>();
     }
 
-    public TemplateParameterDescriptor(DefaultParameterDescriptor object) {
-        super(object);
-        this.setTemplateFile(true);
+    public TemplateParameterDescriptor(DefaultParameterDescriptor object, int typeMask) {
+        super(object, typeMask);
         this.toolParameterDescriptors = new ArrayList<>();
     }
 
     public TemplateParameterDescriptor(ToolParameterDescriptor object) {
-        super(object);
-        this.setTemplateFile(true);
+        super(object, object.getParameterTypeMask());
         this.toolParameterDescriptors = new ArrayList<>();
     }
 

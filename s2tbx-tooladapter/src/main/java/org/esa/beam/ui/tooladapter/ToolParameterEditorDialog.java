@@ -206,7 +206,7 @@ public class ToolParameterEditorDialog extends ModalDialog {
             oldParameter.setItemAlias(parameter.getItemAlias());
         }
         oldParameter.setDeprecated(parameter.isDeprecated());
-        oldParameter.setTemplateFile(parameter.isTemplateFile());
+        oldParameter.setParameterTypeMask(parameter.getParameterTypeMask());
     }
 
 }

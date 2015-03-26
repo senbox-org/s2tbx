@@ -1,5 +1,6 @@
 package org.esa.beam.framework.gpf.descriptor;
 
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.ui.tooladapter.utils.PropertyAttributeException;
 
 import java.lang.reflect.Method;
@@ -9,7 +10,7 @@ import java.lang.reflect.Method;
  */
 public class ToolParameterDescriptor extends DefaultParameterDescriptor {
 
-    private boolean templateFile = false;
+    private int parameterTypeMask;
 
     public ToolParameterDescriptor(String name, Class<?> type){
         super(name, type);
@@ -34,6 +35,12 @@ public class ToolParameterDescriptor extends DefaultParameterDescriptor {
         super.setConverterClass(object.getConverterClass());
         super.setDomConverterClass(object.getDomConverterClass());
         super.setItemAlias(object.getItemAlias());
+        parameterTypeMask = ToolAdapterConstants.REGULAR_PARAM_MASK;
+    }
+
+    public ToolParameterDescriptor(DefaultParameterDescriptor object, int parameterTypeMask) {
+        this(object);
+        this.parameterTypeMask = parameterTypeMask;
     }
 
     //TODO throws specific exception, also in the calling methods!
@@ -64,12 +71,28 @@ public class ToolParameterDescriptor extends DefaultParameterDescriptor {
         }
     }
 
-    public boolean isTemplateFile() {
-        return templateFile;
+    public int getParameterTypeMask() {
+        return parameterTypeMask;
     }
 
-    public void setTemplateFile(boolean templateFile) {
-        this.templateFile = templateFile;
+    public boolean isTemplateParameter() {
+        return (parameterTypeMask & ToolAdapterConstants.TEMPLATE_PARAM_MASK) != 0;
+    }
+
+    public boolean isTemplateBefore() {
+        return (parameterTypeMask & ToolAdapterConstants.TEMPLATE_BEFORE_MASK) != 0;
+    }
+
+    public boolean isTemplateAfter() {
+        return (parameterTypeMask & ToolAdapterConstants.TEMPLATE_AFTER_MASK) != 0;
+    }
+
+    public boolean isParameter() {
+        return (parameterTypeMask & ToolAdapterConstants.REGULAR_PARAM_MASK) != 0;
+    }
+
+    public void setParameterTypeMask(int mask) {
+        this.parameterTypeMask = mask;
     }
 
     public void setDeprecated(boolean deprecated){

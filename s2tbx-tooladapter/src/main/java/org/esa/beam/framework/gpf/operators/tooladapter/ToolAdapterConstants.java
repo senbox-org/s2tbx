@@ -27,6 +27,10 @@ public interface ToolAdapterConstants {
      * The id of the tool's target file as it is used in the descriptor.
      */
     public static final String OPERATOR_GENERATED_NAME_SEPARATOR = "_";
-    public static String TOOL_VELO_TEMPLATE_SUFIX = "-template.vm";
-    public static String TOOL_CMD_TEMPLATE_SUFIX = "-cmdLineTemplate.tpl";
+    public static final String TOOL_VELO_TEMPLATE_SUFIX = "-template.vm";
+
+    public static final int TEMPLATE_PARAM_MASK = 0x1000;
+    public static final int TEMPLATE_BEFORE_MASK = 0x0100;
+    public static final int TEMPLATE_AFTER_MASK = 0x0010;
+    public static final int REGULAR_PARAM_MASK = 0x0001;
 }

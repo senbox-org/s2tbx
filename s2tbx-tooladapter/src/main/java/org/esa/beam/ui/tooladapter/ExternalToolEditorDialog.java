@@ -168,6 +168,16 @@ public class ExternalToolEditorDialog extends ModalDialog {
         return c;
     }
 
+    private GridBagConstraints getConstraints(int row, int col, int noCells) {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = col;
+        c.gridy = row;
+        c.gridwidth = noCells;
+        c.insets = new Insets(2, 10, 2, 10);
+        return c;
+    }
+
     private JPanel createPreProcessingPanel(){
         GridBagLayout layout = new GridBagLayout();
         layout.columnWidths = new int[]{35, 180, 200};
@@ -208,31 +218,35 @@ public class ExternalToolEditorDialog extends ModalDialog {
         configPanel.setLayout(new BorderLayout());
         configPanel.setBorder(BorderFactory.createTitledBorder("Configuration Parameters"));
 
-        JPanel topConfigPanel = new JPanel();
-        topConfigPanel.setLayout(new GridLayout(3, 2, 5, 5));
+        //JPanel topConfigPanel = new JPanel();
+        //topConfigPanel.setLayout(new GridLayout(3, 1, 5, 5));
 
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("mainToolFileLocation");
         PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
-        JPanel panelToolLocation = new JPanel(new BorderLayout());
-        panelToolLocation.add(new JLabel("Tool location: "), BorderLayout.LINE_START);
-        panelToolLocation.add(editorComponent, BorderLayout.CENTER);
-        topConfigPanel.add(panelToolLocation);
+        JPanel panelToolFiles = new JPanel();
+        GridBagLayout layout = new GridBagLayout();
+        layout.columnWidths = new int[]{90, 280};
+        panelToolFiles.setLayout(layout);
+
+        panelToolFiles.add(new JLabel("Tool location: "), getConstraints(0, 0));
+        panelToolFiles.add(editorComponent, getConstraints(0, 1));
 
         propertyDescriptor = propertyContainer.getDescriptor("workingDir");
         propertyDescriptor.setAttribute("directory", true);
         editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
-        JPanel panelWorkingDir = new JPanel(new BorderLayout());
-        panelWorkingDir.add(new JLabel("Working directory: "), BorderLayout.LINE_START);
-        panelWorkingDir.add(editorComponent, BorderLayout.CENTER);
-        topConfigPanel.add(panelWorkingDir);
+        panelToolFiles.add(new JLabel("Working directory: "), getConstraints(1, 0));
+        panelToolFiles.add(editorComponent, getConstraints(1, 1));
 
-        topConfigPanel.add(new JLabel("Command line template:"));
+        panelToolFiles.add(new JLabel("Command line template:"), getConstraints(2, 0, 2));
 
-        configPanel.add(topConfigPanel, BorderLayout.PAGE_START);
+        //topConfigPanel.add(panelToolFiles);
+        //topConfigPanel.setBackground(Color.cyan);
+
+        configPanel.add(panelToolFiles, BorderLayout.PAGE_START);
 
         templateContent = new JTextArea("", 15, 9);
         if (!operatorIsNew) {

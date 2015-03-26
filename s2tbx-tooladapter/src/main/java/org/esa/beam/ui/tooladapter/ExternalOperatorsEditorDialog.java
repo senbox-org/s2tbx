@@ -19,6 +19,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Set;
 
 /**
@@ -122,6 +123,12 @@ public class ExternalOperatorsEditorDialog extends ModalDialog {
         java.util.List<ToolAdapterOperatorDescriptor> toolboxSpis = new ArrayList<>();
         spis.stream().filter(p -> p instanceof ToolAdapterOpSpi && p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
                 forEach(operator -> toolboxSpis.add((ToolAdapterOperatorDescriptor) operator.getOperatorDescriptor()));
+        toolboxSpis.sort(new Comparator<ToolAdapterOperatorDescriptor>() {
+            @Override
+            public int compare(ToolAdapterOperatorDescriptor o1, ToolAdapterOperatorDescriptor o2) {
+                return o1.getAlias().compareTo(o2.getAlias());
+            }
+        });
         OperatorsTableModel model = new OperatorsTableModel(toolboxSpis);
         operatorsTable = new JTable(model);
         operatorsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
