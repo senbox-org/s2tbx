@@ -14,12 +14,12 @@ Clone the source code and related repositories into a folder (i.e `~/SNAP/`)
 Use the following command to build s2tbx modules:
 
     cd ~/SNAP/s2tbx
-	mvn compile package install -U -DskipTests -P withbeam
+	mvn compile package install -U -DskipTests -P withSnapEngineSources
 
 To create a Install4j installer use the following commands:
 
     cd ~/SNAP/s2tbx
-    mvn compile package install -U -DskipTests -P withbeam
+    mvn compile package install -U -DskipTests -P withSnapEngineSources
     cd ~/SNAP/s2tbx/s2tbx-installer
 	mvn compile package assembly:assembly -U -DskipTests
 

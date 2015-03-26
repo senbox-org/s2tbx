@@ -326,13 +326,13 @@
 
     <profiles>
         <profile>
-            <id>withbeam</id>
+            <id>withSnapEngineSources</id>
             <modules>
                 <module>../snap-engine</module>
             </modules>
         </profile>
         <profile>
-            <id>withdesktop</id>
+            <id>withSnapDesktopSources</id>
             <modules>
                 <module>../snap-desktop</module>
             </modules>
