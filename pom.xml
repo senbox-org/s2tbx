@@ -193,6 +193,28 @@
                         <encoding>UTF-8</encoding>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.4</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-first-or-second-profile-is-active</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireActiveProfile>
+                                        <profiles>OneSeries,TwoSeries</profiles>
+                                        <all>false</all>
+                                    </requireActiveProfile>
+                                </rules>
+                                <fail>true</fail>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -409,7 +431,6 @@
         <profile>
             <id>TwoSeries</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>snap.version</name>
                     <value>2.0.0-SNAPSHOT</value>

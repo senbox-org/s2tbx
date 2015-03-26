@@ -81,7 +81,6 @@
         <profile>
             <id>TwoSeries</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>snap.version</name>
                     <value>2.0.0-SNAPSHOT</value>
