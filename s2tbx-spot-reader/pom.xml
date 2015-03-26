@@ -10,12 +10,12 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <packaging>nbm</packaging>
     <artifactId>s2tbx-spot-reader</artifactId>
     <name>Spot Reader</name>
     <description>
         This module enables the Sentinel Toolbox to read Spot data products
     </description>
+    <packaging>nbm</packaging>
 
     <dependencies>
         <dependency>
@@ -71,20 +71,28 @@
             <version>${snap.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-core</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-ui</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-jai</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
-                <configuration>
-                    <archive>
-                        <manifestFile>src/main/resources/META-INF/MANIFEST.mf</manifestFile>
-                    </archive>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -105,45 +113,6 @@
     </build>
 
     <profiles>
-        <profile>
-            <id>skipTests</id>
-            <activation>
-                <property>
-                    <name>!skipTests</name>
-                </property>
-            </activation>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-enforcer-plugin</artifactId>
-                        <version>1.3.1</version>
-                        <executions>
-                            <execution>
-                                <id>enforce-property</id>
-                                <goals>
-                                    <goal>enforce</goal>
-                                </goals>
-                                <configuration>
-                                    <rules>
-                                        <requireProperty>
-                                            <property>beam.reader.tests.data.dir</property>
-                                            <message>The unit test directory must exist</message>
-                                            <regex>.*</regex>
-                                            <regexMessage>The unit test files cannot be empty.</regexMessage>
-                                        </requireProperty>
-                                    </rules>
-                                    <fail>true</fail>
-                                </configuration>
-                                <phase>test</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <profile>
             <id>prepareInstall4j</id>
             <build>

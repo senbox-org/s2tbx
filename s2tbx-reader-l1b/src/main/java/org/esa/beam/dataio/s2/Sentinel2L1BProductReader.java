@@ -25,7 +25,7 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
-import com.jcabi.aspects.Loggable;
+// import com.jcabi.aspects.Loggable;
 import com.vividsolutions.jts.geom.Coordinate;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -660,7 +660,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
 
         @Override
-        @Loggable
+        // @Loggable
         public MultiLevelImage createSourceImage(TileBandInfo tileBandInfo) {
             BandL1bSceneMultiLevelSource bandScene = new BandL1bSceneMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
             BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_SCENE), "BandScene: " + bandScene);

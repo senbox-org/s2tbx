@@ -66,6 +66,24 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-core</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-glayer</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-jai</artifactId>
+            <version>2.0.0-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -120,12 +138,7 @@
 
     <profiles>
         <profile>
-            <id>skipTests</id>
-            <activation>
-                <property>
-                    <name>!skipTests</name>
-                </property>
-            </activation>
+            <id>runAllTests</id>
 
             <build>
                 <plugins>

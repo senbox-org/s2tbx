@@ -18,7 +18,7 @@
 
 package org.esa.beam.dataio.s2;
 
-import com.jcabi.aspects.Loggable;
+// import com.jcabi.aspects.Loggable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.geotools.geometry.Envelope2D;
@@ -66,7 +66,7 @@ public class L1bSceneDescription {
         }
     }
 
-    @Loggable
+    // @Loggable
     public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index) {
         // fixme look if Scenedescription object has to be redefined (add a range) or use multiple Scenedescription objects
 
