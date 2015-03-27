@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://gs2.esa.int/DICO/1.0/IPF/job" xmlns:ipf_base="http://gs2.esa.int/DICO/1.0/IPF/base/" xmlns:center="http://gs2.esa.int/DICO/1.0/PDGS/center/" targetNamespace="http://gs2.esa.int/DICO/1.0/IPF/job" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/IPF/base/" schemaLocation="..\base\base.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/center/" schemaLocation="..\..\PDGS\center\center.xsd"/>
+	<xs:simpleType name="File_Name_Type">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Physical"/>
+			<xs:enumeration value="Logical"/>
+			<xs:enumeration value="Stem"/>
+			<xs:enumeration value="Directory"/>
+			<xs:enumeration value="Regexp"/>
+			<xs:enumeration value="Prefix"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="Processing_Parameter">
+		<xs:sequence>
+			<xs:element name="Name" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>A string defining the name of
+the parameter</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Value" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>A string defining the value of
+the parameter</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="Ipf_Job_Order" type="Ipf_Job_OrderType"/>
+	<xs:complexType name="Ipf_Proc">
+		<xs:annotation>
+			<xs:documentation>Execution Parameter of one task</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Task_Name" type="xs:string"/>
+			<xs:element name="Task_Version" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>The IDP-SC version</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Breakpoint" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Intermediate  data or trace files produced by the Tasks during IPF testing/maintenance mode</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="List_of_Brk_Files">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Brk_File" minOccurs="0" maxOccurs="unbounded">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="Enable" default="OFF">
+													<xs:annotation>
+														<xs:documentation>Indicator of generation of the breakpoint file</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:NMTOKEN">
+															<xs:whiteSpace value="collapse"/>
+															<xs:enumeration value="ON"/>
+															<xs:enumeration value="OFF"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:element>
+												<xs:element name="File_Type" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>List of file type is specific to each task</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:whiteSpace value="collapse"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:element>
+												<xs:element name="File_Name_Type" type="ipf_base:A_FILE_NAME_TYPE" default="Physical" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>Origin : physical, logical, stem, regexp or directory</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="File_Name" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>Complete path + filename</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:whiteSpace value="collapse"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+								<xs:attribute name="count" type="xs:positiveInteger" use="required"/>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="List_of_Inputs">
+				<xs:annotation>
+					<xs:documentation>Package of input file</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Input" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="File_Type" type="ipf_base:S2_FILE_TYPE_INPUT">
+										<xs:annotation>
+											<xs:documentation>List of file type is specific to each task</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="File_Name_Type" type="ipf_base:A_FILE_NAME_TYPE" default="Physical">
+										<xs:annotation>
+											<xs:documentation>Physical, logical, stem, regexp or directory</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="List_of_File_Names">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="File_Name" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>Complete path + filename</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="count" type="xs:positiveInteger" use="required"/>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="List_of_Time_Intervals" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>List of time validity intervals is generic partitioning in subintervals of sensing time, indicating which of the input files should be used in the specific interval</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="Time_Interval" minOccurs="0" maxOccurs="unbounded">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="Start">
+																<xs:annotation>
+																	<xs:documentation>date time start in specific format</xs:documentation>
+																</xs:annotation>
+																<xs:simpleType>
+																	<xs:restriction base="xs:dateTime">
+																		<xs:pattern value='"\d\d\d\d\d\d\d\d_\d\d\d\d\d\d\d\d\d\d\d\d"'/>
+																	</xs:restriction>
+																</xs:simpleType>
+															</xs:element>
+															<xs:element name="Stop">
+																<xs:annotation>
+																	<xs:documentation>date time stop in specific format</xs:documentation>
+																</xs:annotation>
+																<xs:simpleType>
+																	<xs:restriction base="xs:dateTime">
+																		<xs:pattern value='"\d\d\d\d\d\d\d\d_\d\d\d\d\d\d\d\d\d\d\d\d"'/>
+																	</xs:restriction>
+																</xs:simpleType>
+															</xs:element>
+															<xs:element name="File_Name" type="xs:string">
+																<xs:annotation>
+																	<xs:documentation>any of the filename listed in the previous List_of_File_Names fields</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="count"/>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="count" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="List_of_Outputs">
+				<xs:annotation>
+					<xs:documentation>Package of output file</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Output" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="File_Type" type="ipf_base:S2_FILE_TYPE_OUTPUT">
+										<xs:annotation>
+											<xs:documentation>List of file types is specific to each task</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="File_Name_Type" type="ipf_base:A_FILE_NAME_TYPE" default="Physical"/>
+									<xs:element name="File_Name" type="xs:string"/>
+								</xs:sequence>
+								<xs:attribute name="mandatory" type="xs:boolean"/>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="count" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Ipf_Job_OrderType">
+		<xs:annotation>
+			<xs:documentation>Job Order Type</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Ipf_Conf">
+				<xs:annotation>
+					<xs:documentation>Common Parameters</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Processor_Name" type="ipf_base:A_IDP_SC_NAME">
+							<xs:annotation>
+								<xs:documentation>The IDP-SC or OLQC name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Version" type="ipf_base:A_IPF_VERSION">
+							<xs:annotation>
+								<xs:documentation>The IDP-SC version</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Stdout_Log_Level" default="INFO">
+							<xs:annotation>
+								<xs:documentation>Logging levels are ordered from low to-high details as in the list. E.g.setting INFO forces PROGRESS,
+WARNING and ERROR messages to be issued as well.</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="DEBUG"/>
+									<xs:enumeration value="INFO"/>
+									<xs:enumeration value="PROGRESS"/>
+									<xs:enumeration value="WARNING"/>
+									<xs:enumeration value="ERROR"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="Stderr_Log_Level" default="INFO">
+							<xs:annotation>
+								<xs:documentation>Logging levels are ordered from low to-high details as in the list. E.g.setting PROGRESS,forces
+WARNING and ERROR messages to be issued as well.</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="DEBUG"/>
+									<xs:enumeration value="INFO"/>
+									<xs:enumeration value="PROGRESS"/>
+									<xs:enumeration value="WARNING"/>
+									<xs:enumeration value="ERROR"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="Test" default="false">
+							<xs:annotation>
+								<xs:documentation>Always set to false in S2 environment</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:boolean">
+									<xs:pattern value="true"/>
+									<xs:pattern value="false"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="Breakpoint_Enable" default="false">
+							<xs:annotation>
+								<xs:documentation>Flag indicated if intermediate  data or trace files shall be produced</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:boolean">
+									<xs:pattern value="true"/>
+									<xs:pattern value="false"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="Acquisition_Station" type="center:A_S2_CENTER" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Not relevant in S2 PDGS processing context</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Processing_Station" type="center:A_S2_PROCESSING_CENTRE">
+							<xs:annotation>
+								<xs:documentation>String with mission specific content</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Config_Files">
+							<xs:annotation>
+								<xs:documentation>The config_Files section will
+contain one entry for
+each configuration file. In case of no configuration file such tag shall be present in the Job Order with null occurrence.</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Conf_File_Name" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>Absolute pathname and
+filename of the configuration
+file</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="Sensing_Time" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>The sensing start/stop time represents the requested data window to be processed. Not filled in S2 context</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Start">
+										<xs:annotation>
+											<xs:documentation>The start time of the processing of main input data in the format
+YYYYMMDD_HHMMSSuuuuuu</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:dateTime">
+												<xs:pattern value='"\d\d\d\d\d\d\d\d_\d\d\d\d\d\d\d\d\d\d\d\d"'/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+									<xs:element name="Stop">
+										<xs:annotation>
+											<xs:documentation>The stop time for the processing of main input data in the format YYYYMMDD_HHMMSSuuuuuu</xs:documentation>
+										</xs:annotation>
+										<xs:simpleType>
+											<xs:restriction base="xs:dateTime">
+												<xs:pattern value='"\d\d\d\d\d\d\d\d_\d\d\d\d\d\d\d\d\d\d\d\d"'/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="Dynamic_Processing_Parameters" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Specific Processing parameter directly provided and not stored in conf file</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Processing_Parameter" type="Processing_Parameter" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>Characteristics of each parameter</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="List_of_Ipf_Procs">
+				<xs:annotation>
+					<xs:documentation>List of  tasks involved in the IDP_SC</xs:documentation>
+				</xs:annotation>
+				<xs:complexType mixed="false">
+					<xs:sequence maxOccurs="unbounded">
+						<xs:element name="Ipf_Proc" type="Ipf_Proc"/>
+					</xs:sequence>
+					<xs:attribute name="count" type="xs:nonNegativeInteger" use="required"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

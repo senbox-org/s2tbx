@@ -1,3 +1,21 @@
+/*
+ *
+ *  * Copyright (C) 2015 CS SI
+ *  *
+ *  * This program is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU General Public License as published by the Free
+ *  * Software Foundation; either version 3 of the License, or (at your option)
+ *  * any later version.
+ *  * This program is distributed in the hope that it will be useful, but WITHOUT
+ *  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ *  * more details.
+ *  *
+ *  * You should have received a copy of the GNU General Public License along
+ *  * with this program; if not, see http://www.gnu.org/licenses/
+ *
+ */
+
 package org.esa.beam.dataio.s2;
 
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
@@ -132,6 +150,16 @@ public class L2aMetadataProc {
             L2aMetadata.SpectralInformation newInfo = new L2aMetadata.SpectralInformation();
             newInfo.bandId = Integer.parseInt(si.getBandId());
             newInfo.physicalBand = si.getPhysicalBand().value();
+
+            if(newInfo.physicalBand.length() == 2)
+            {
+                char[] bigBand = new char[3];
+                bigBand[0] = newInfo.physicalBand.charAt(0);
+                bigBand[1] =  '0';
+                bigBand[2] = newInfo.physicalBand.charAt(1);
+                newInfo.physicalBand = new String(bigBand);
+            }
+
             newInfo.resolution = si.getRESOLUTION();
             newInfo.spectralResponseStep = si.getSpectral_Response().getSTEP().getValue();
             newInfo.wavelenghtCentral = si.getWavelength().getCENTRAL().getValue();
@@ -168,6 +196,16 @@ public class L2aMetadataProc {
                 L2aMetadata.SpectralInformation data = new L2aMetadata.SpectralInformation();
                 data.bandId = Integer.parseInt(sin.getBandId());
                 data.physicalBand = sin.getPhysicalBand().value();
+
+                if(data.physicalBand.length() == 2)
+                {
+                    char[] bigBand = new char[3];
+                    bigBand[0] = data.physicalBand.charAt(0);
+                    bigBand[1] =  '0';
+                    bigBand[2] = data.physicalBand.charAt(1);
+                    data.physicalBand = new String(bigBand);
+                }
+
                 data.resolution = sin.getRESOLUTION();
                 data.spectralResponseStep = sin.getSpectral_Response().getSTEP().getValue();
 

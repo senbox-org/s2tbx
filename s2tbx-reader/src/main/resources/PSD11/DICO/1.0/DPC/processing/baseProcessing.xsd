@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 rel. 3 sp2 (http://www.altova.com) by Thales (THALES INFORMATION SYSTEMS) -->
+<xs:schema xmlns:baseProcessing="http://gs2.esa.int/DICO/1.0/DPC/processing/baseProcessing" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://gs2.esa.int/DICO/1.0/DPC/processing/baseProcessing" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+	<xs:complexType name="A_DATA_EXCHANGE_DESC">
+		<xs:annotation>
+			<xs:documentation>Description of data exchange with DPC external entity</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="URL" type="baseProcessing:A_DPC_URL" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="type" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation>Data type (ie : product, GIPP, aux_data, ...)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="A_PROCESSING_LEVEL2">
+		<xs:annotation>
+			<xs:documentation>S2 data processing level : L0, L1A, L1B, L1C, L2, Tile Consolidation</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PROCESSING_LEVEL" type="xs:string"/>
+		</xs:sequence>
+		<xs:attribute name="version" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation>Version of the processing chain to execute (not used by the current version of Phoebus)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="A_SAVING_BEHAVIOR">
+		<xs:annotation>
+			<xs:documentation>Production context saving behavior</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SAVE_TYPE" type="baseProcessing:A_SAVING_TYPE">
+				<xs:annotation>
+					<xs:documentation>saving type : full or mimimum</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PACKAGE_URL" type="baseProcessing:A_DPC_URL">
+				<xs:annotation>
+					<xs:documentation>Location to put the saving package</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="A_IPF_VERSION">
+		<xs:annotation>
+			<xs:documentation>Version identification</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="\d\d\.\d\d"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="A_REQUEST_ID">
+		<xs:annotation>
+			<xs:documentation> Identifier of a production request</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Physical"/>
+			<xs:enumeration value="Logical"/>
+			<xs:enumeration value="Stem"/>
+			<xs:enumeration value="Directory"/>
+			<xs:enumeration value="Regexp"/>
+			<xs:enumeration value="Prefix"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ACTIVATE_TRACE_MODE">
+		<xs:annotation>
+			<xs:documentation>Activation of trace mode during execution (true/false)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:boolean"/>
+	</xs:simpleType>
+	<xs:simpleType name="A_PRIORITY_LEVEL">
+		<xs:annotation>
+			<xs:documentation>Production priority level (integer value 0 to 100)</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:element name="A_PROCESSING_LEVEL">
+		<xs:annotation>
+			<xs:documentation>S2 data processing level : L0, L1A, L1B, L1C, L2, Tile Consolidation</xs:documentation>
+		</xs:annotation>
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:enumeration value="L0"/>
+				<xs:enumeration value="L1A"/>
+				<xs:enumeration value="L1B"/>
+				<xs:enumeration value="L1C"/>
+				<xs:enumeration value="L2"/>
+				<xs:enumeration value="TILE"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:simpleType name="A_SAVING_TYPE">
+		<xs:annotation>
+			<xs:documentation>Production Context execution saving type : full or minimum</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="FULL"/>
+			<xs:enumeration value="MINIMUM"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="A_DPC_URL">
+		<xs:annotation>
+			<xs:documentation>URL to exchange data with external entities</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="file://."/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="A_DPC_SC_NAME">
+		<xs:annotation>
+			<xs:documentation>Internal DPC components</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="TAR_GRANULES"/>
+			<xs:enumeration value="TAR_TILE"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="A_PROCESSING_CONTROL">
+		<xs:annotation>
+			<xs:documentation>Order to a processing execution</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="STOP"/>
+			<xs:enumeration value="RESUME"/>
+			<xs:enumeration value="CANCEL"/>
+			<xs:enumeration value="CHANGE_PRIORITY"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

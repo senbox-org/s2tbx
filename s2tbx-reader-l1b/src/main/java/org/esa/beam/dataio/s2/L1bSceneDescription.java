@@ -1,6 +1,24 @@
+/*
+ *
+ *  * Copyright (C) 2015 CS SI
+ *  *
+ *  * This program is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU General Public License as published by the Free
+ *  * Software Foundation; either version 3 of the License, or (at your option)
+ *  * any later version.
+ *  * This program is distributed in the hope that it will be useful, but WITHOUT
+ *  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ *  * more details.
+ *  *
+ *  * You should have received a copy of the GNU General Public License along
+ *  * with this program; if not, see http://www.gnu.org/licenses/
+ *
+ */
+
 package org.esa.beam.dataio.s2;
 
-import com.jcabi.aspects.Loggable;
+// import com.jcabi.aspects.Loggable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.geotools.geometry.Envelope2D;
@@ -48,7 +66,7 @@ public class L1bSceneDescription {
         }
     }
 
-    @Loggable
+    // @Loggable
     public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index) {
         // fixme look if Scenedescription object has to be redefined (add a range) or use multiple Scenedescription objects
 

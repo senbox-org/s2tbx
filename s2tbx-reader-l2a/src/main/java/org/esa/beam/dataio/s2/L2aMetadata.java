@@ -1,3 +1,21 @@
+/*
+ *
+ *  * Copyright (C) 2015 CS SI
+ *  *
+ *  * This program is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU General Public License as published by the Free
+ *  * Software Foundation; either version 3 of the License, or (at your option)
+ *  * any later version.
+ *  * This program is distributed in the hope that it will be useful, but WITHOUT
+ *  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ *  * more details.
+ *  *
+ *  * You should have received a copy of the GNU General Public License along
+ *  * with this program; if not, see http://www.gnu.org/licenses/
+ *
+ */
+
 package org.esa.beam.dataio.s2;
 
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
@@ -204,7 +222,6 @@ public class L2aMetadata {
             Object ob = unmarshaller.unmarshal(stream);
             Object casted = ((JAXBElement) ob).getValue();
 
-            // critical change product reading in order to process individual L1B tiles
             if(casted instanceof Level2A_User_Product)
             {
                 initProduct(stream, file, parent, casted);

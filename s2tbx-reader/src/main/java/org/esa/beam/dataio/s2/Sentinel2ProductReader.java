@@ -1,3 +1,21 @@
+/*
+ *
+ *  * Copyright (C) 2015 CS SI
+ *  *
+ *  * This program is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU General Public License as published by the Free
+ *  * Software Foundation; either version 3 of the License, or (at your option)
+ *  * any later version.
+ *  * This program is distributed in the hope that it will be useful, but WITHOUT
+ *  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ *  * more details.
+ *  *
+ *  * You should have received a copy of the GNU General Public License along
+ *  * with this program; if not, see http://www.gnu.org/licenses/
+ *
+ */
+
 package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.Assert;
@@ -260,7 +278,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         //todo change product filename properties...
-        //todo test saving modified product...
         Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile),
                                       "S2_MSI_" + productCharacteristics.processingLevel,
                                       sceneDescription.getSceneRectangle().width,
@@ -272,16 +289,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         setGeoCoding(product, sceneDescription.getSceneEnvelope());
 
-        //todo look at affine tranformation geocoding info...
         if(!bandInfoMap.isEmpty())
         {
             addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+
+            // critical use only tiepointgrids instead of bands
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
-
-            //todo there is more data in product metadata file, should we preload it ?
         }
 
         return product;

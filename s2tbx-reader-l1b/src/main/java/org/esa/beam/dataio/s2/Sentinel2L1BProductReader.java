@@ -1,3 +1,21 @@
+/*
+ *
+ *  * Copyright (C) 2015 CS SI
+ *  *
+ *  * This program is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU General Public License as published by the Free
+ *  * Software Foundation; either version 3 of the License, or (at your option)
+ *  * any later version.
+ *  * This program is distributed in the hope that it will be useful, but WITHOUT
+ *  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ *  * more details.
+ *  *
+ *  * You should have received a copy of the GNU General Public License along
+ *  * with this program; if not, see http://www.gnu.org/licenses/
+ *
+ */
+
 package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.Assert;
@@ -7,7 +25,7 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
-import com.jcabi.aspects.Loggable;
+// import com.jcabi.aspects.Loggable;
 import com.vividsolutions.jts.geom.Coordinate;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -148,8 +166,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             throw new FileNotFoundException(inputFile.getPath());
         }
 
-        // critical do we have to read a standalone granule or jp2 file ?
-
         if (S2L1bProductFilename.isProductFilename(inputFile.getName())) {
             boolean isAGranule = S2L1bProductFilename.isGranuleFilename(inputFile.getName());
             if(isAGranule)
@@ -181,7 +197,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     }
 
     private Product getL1bMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException {
-        // critical Fix this function
         Objects.requireNonNull(granuleMetadataFile);
         // first we need to recover parent metadata file...
 
@@ -302,7 +317,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             sin.put(bandInformation.physicalBand, bandInformation);
         }
 
-        // critical here we must split by detector and band..., detector first
         Map<Pair<String, String>, Map<String, File>> detectorBandInfoMap = new HashMap<Pair<String, String>, Map<String, File>>();
         Map<String, TileBandInfo> bandInfoByKey = new HashMap<String, TileBandInfo>();
         if (productCharacteristics.bandInformations != null) {
@@ -365,7 +379,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
 
 
-        // fixme wait until geocoding is fixed
+        // critical wait until geocoding is fixed
         /*
         if (product.getGeoCoding() == null) {
             // use default geocoding
@@ -381,7 +395,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         return product;
     }
 
-    // critical add complete TiePointGrid
+    // critical use getSimpleGeoCodingFromTileBandInfo instead of getGeoCodingFromTileBandInfo
     private GeoCoding getSimpleGeoCodingFromTileBandInfo(TileBandInfo tileBandInfo, Map<String, Tile> tileList, Product product) {
         Objects.requireNonNull(tileBandInfo);
         Objects.requireNonNull(tileList);
@@ -646,7 +660,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
 
         @Override
-        @Loggable
+        // @Loggable
         public MultiLevelImage createSourceImage(TileBandInfo tileBandInfo) {
             BandL1bSceneMultiLevelSource bandScene = new BandL1bSceneMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
             BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_SCENE), "BandScene: " + bandScene);

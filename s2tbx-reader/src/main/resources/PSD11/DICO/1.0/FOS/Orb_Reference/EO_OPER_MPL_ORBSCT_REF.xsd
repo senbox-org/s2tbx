@@ -1,0 +1,28 @@
+<xsd:schema xmlns="http://gs2.esa.int/DICO/1.0/FOS/Orb_Reference/" xmlns:Orb_Reference="http://gs2.esa.int/DICO/1.0/FOS/Orb_Reference/" xmlns:misc="http://gs2.esa.int/DICO/1.0/SY/misc/" xmlns:header="http://gs2.esa.int/DICO/1.0/PDGS/header/" xmlns:orbital="http://gs2.esa.int/DICO/1.0/SY/orbital/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://gs2.esa.int/DICO/1.0/FOS/Orb_Reference/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+	<xsd:import namespace="http://gs2.esa.int/DICO/1.0/SY/misc/" schemaLocation="../../SY/misc/misc.xsd"/>
+	<xsd:import namespace="http://gs2.esa.int/DICO/1.0/SY/orbital/" schemaLocation="../../SY/orbital/orbital.xsd"/>
+	<xsd:import namespace="http://gs2.esa.int/DICO/1.0/SY/orbital/" schemaLocation="../../SY/orbital/HeaderTypes_Orbit.xsd"/>
+	<xsd:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/header/" schemaLocation="../../PDGS/header/EOF_Header.xsd"/>
+	<xsd:annotation>
+		<xsd:documentation>Orbit Scenario Data Types</xsd:documentation>
+	</xsd:annotation>
+	<xsd:annotation>
+		<xsd:documentation>$Revision: 1.1 $ $Date: 2011/06/16 11:11:07 $</xsd:documentation>
+	</xsd:annotation>
+	<xsd:complexType name="Orbit_Scenario_Header_Type">
+		<xsd:sequence>
+			<xsd:element name="Fixed_Header" type="header:Fixed_Header_Type"/>
+			<xsd:element name="Variable_Header" type="orbital:Orbit_Scenario_Variable_Header"/>
+		</xsd:sequence>
+		<xsd:attribute name="schemaVersion" type="xsd:decimal" use="optional"/>
+	</xsd:complexType>
+	<xsd:element name="Earth_Explorer_Header" type="Orbit_Scenario_Header_Type"/>
+	<xsd:complexType name="Orbit_Scenario_Data_Block_Type" mixed="false">
+		<xsd:sequence>
+			<xsd:element name="List_of_Orbit_Changes" type="orbital:List_of_Orbit_Changes_Type"/>
+		</xsd:sequence>
+		<xsd:attribute name="type" type="misc:String_Type" use="required" fixed="xml"/>
+		<xsd:attribute name="schemaVersion" type="xsd:decimal" use="optional"/>
+	</xsd:complexType>
+	<xsd:element name="Data_Block" type="Orbit_Scenario_Data_Block_Type"/>
+</xsd:schema>

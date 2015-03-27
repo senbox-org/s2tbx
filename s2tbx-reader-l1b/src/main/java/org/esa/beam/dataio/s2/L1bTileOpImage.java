@@ -1,3 +1,21 @@
+/*
+ *
+ *  * Copyright (C) 2015 CS SI
+ *  *
+ *  * This program is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU General Public License as published by the Free
+ *  * Software Foundation; either version 3 of the License, or (at your option)
+ *  * any later version.
+ *  * This program is distributed in the hope that it will be useful, but WITHOUT
+ *  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ *  * more details.
+ *  *
+ *  * You should have received a copy of the GNU General Public License along
+ *  * with this program; if not, see http://www.gnu.org/licenses/
+ *
+ */
+
 package org.esa.beam.dataio.s2;
 
 import com.bc.ceres.core.Assert;
@@ -204,12 +222,12 @@ class L1bTileOpImage extends SingleBandedOpImage {
             return;
         }
 
-        // critical fix for last tile of each detector
         Set<TileLayout> typeTiles = new HashSet<TileLayout>();
         Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
         Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
 
         if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
+            // critical change log level
             logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
             S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
         }

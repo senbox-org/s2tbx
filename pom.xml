@@ -14,25 +14,23 @@
         <module>s2tbx-reader</module>
         <module>s2tbx-reader-l2a</module>
         <module>s2tbx-reader-l1b</module>
-        <module>s2tbx-reader-gml</module>
         <module>lib-openjpeg</module>
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-python-lib</module>
+        <module>s2tbx-bootstrap</module>
+        <module>s2tbx-app</module>
+        <module>s2tbx-help</module>
         <module>s2tbx-sen2cor-processor</module>
         <module>s2tbx-sen2three-processor</module>
         <module>s2tbx-r2r-converter</module>
-        <module>s2tbx-bootstrap</module>
-        <module>s2tbx-installer</module>
-        <module>s2tbx-app</module>
-        <module>s2tbx-help</module>
     </modules>
 
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>1.0.1</snap.version>
+        <snap.version>2.0.0-SNAPSHOT</snap.version>
     	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <outputdir>../../output</outputdir>
@@ -54,6 +52,24 @@
                 <enabled>true</enabled>
                 <checksumPolicy>warn</checksumPolicy>
             </snapshots>
+        </repository>
+
+        <repository>
+            <id>cwatch-repo-releases</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>http://cwatch.org/repo/releases</url>
+        </repository>
+        <repository>
+            <id>cwatch-repo-snapshots</id>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>http://cwatch.org/repo/libs-snapshot-local</url>
         </repository>
     </repositories>
 
@@ -145,32 +161,62 @@
     </dependencies>
 
     <build>
-        <outputDirectory>${outputdir}/modules/${project.artifactId}-${project.version}</outputDirectory>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.5.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <debug>true</debug>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2-beta-5</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/main/assembly/bin.xml</descriptor>
-                        <!--
-                        <descriptor>src/main/assembly/project.xml</descriptor>
-                        -->
-                    </descriptors>
-                    <finalName>s2tbx</finalName>
-                </configuration>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>nbm-maven-plugin</artifactId>
+                    <version>3.14</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <nbmBuildDir>${project.basedir}/../target/nbm</nbmBuildDir>
+                        <licenseName>THE BEER-WARE LICENSE</licenseName>
+                        <licenseFile>../LICENSE.html</licenseFile>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.5</version>
+                    <configuration>
+                        <!-- to have the jar plugin pickup the nbm generated manifest -->
+                        <useDefaultManifestFile>true</useDefaultManifestFile>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.1</version>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                        <debug>true</debug>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.4</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-first-or-second-profile-is-active</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireActiveProfile>
+                                        <profiles>OneSeries,TwoSeries</profiles>
+                                        <all>false</all>
+                                    </requireActiveProfile>
+                                </rules>
+                                <fail>true</fail>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <developers>
@@ -280,15 +326,22 @@
 
     <profiles>
         <profile>
-            <id>withbeam</id>
+            <id>withSnapEngineSources</id>
             <modules>
                 <module>../snap-engine</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>withSnapDesktopSources</id>
+            <modules>
+                <module>../snap-desktop</module>
             </modules>
         </profile>
         <profile>
             <id>all</id>
             <modules>
                 <module>../snap-engine</module>
+                <module>../snap-desktop</module>
             </modules>
         </profile>
         <profile>
@@ -341,6 +394,131 @@
                 </dependency>
             </dependencies>
         </profile>
+        <profile>
+            <id>netbeans-deps</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-openide-awt</artifactId>
+                    <version>${netbeans.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-openide-util</artifactId>
+                    <version>${netbeans.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-openide-util-lookup</artifactId>
+                    <version>${netbeans.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-netbeans-api-annotations-common</artifactId>
+                    <version>${netbeans.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>OneSeries</id>
+            <activation>
+                <property>
+                    <name>snap.version</name>
+                    <value>1.0.1</value>
+                </property>
+            </activation>
+        </profile>
+        <profile>
+            <id>TwoSeries</id>
+            <activation>
+                <property>
+                    <name>snap.version</name>
+                    <value>2.0.0-SNAPSHOT</value>
+                </property>
+            </activation>
+        </profile>
+        <profile>
+            <id>installer</id>
+            <modules>
+                <module>s2tbx-installer</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>runAllTests</id>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>1.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>enforce-property</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireProperty>
+                                            <property>beam.reader.tests.data.dir</property>
+                                            <message>The unit test directory must exist</message>
+                                            <regex>.*</regex>
+                                            <regexMessage>The unit test files cannot be empty.</regexMessage>
+                                        </requireProperty>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                                <phase>test</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>prepareInstall4j</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>1.3.1</version>
+                        <executions>
+                            <execution>
+                                <id>enforce-property</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireProperty>
+                                            <property>dir</property>
+                                            <message>The modules directory cannot be empty</message>
+                                            <regex>.*</regex>
+                                            <regexMessage>The modules directory cannot be empty. (add -Ddir=/your/path/to/modules/dir to you
+                                                r MAVEN_OPTS)</regexMessage>
+                                        </requireProperty>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>2.3.1</version>
+                        <configuration>
+                            <outputDirectory>${dir}</outputDirectory>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 
     <reporting>

@@ -48,7 +48,11 @@
             <artifactId>s2tbx-rapideye-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>nbexec</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
