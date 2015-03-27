@@ -31,13 +31,6 @@
             <artifactId>snap-ui</artifactId>
             <version>${snap.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.jidesoft</groupId>
-            <artifactId>jide-common</artifactId>
-            <version>3.6.1</version>
-        </dependency>
-
-
     </dependencies>
 
     <profiles>
@@ -50,7 +43,11 @@
                 </property>
             </activation>
             <dependencies>
-
+                <dependency>
+                    <groupId>com.jidesoft</groupId>
+                    <artifactId>jide-common</artifactId>
+                    <version>3.6.1</version>
+                </dependency>
             </dependencies>
         </profile>
         <profile>
@@ -65,6 +62,11 @@
                 <dependency>
                     <groupId>org.esa.snap</groupId>
                     <artifactId>ceres-core</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>ceres-ui</artifactId>
                     <version>${snap.version}</version>
                 </dependency>
             </dependencies>

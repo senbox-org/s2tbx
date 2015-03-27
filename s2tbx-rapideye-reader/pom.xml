@@ -105,6 +105,12 @@
                     <artifactId>ceres-jai</artifactId>
                     <version>${snap.version}</version>
                 </dependency>
+
+                <dependency>
+                    <groupId>org.esa.snap</groupId>
+                    <artifactId>ceres-ui</artifactId>
+                    <version>${snap.version}</version>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>
