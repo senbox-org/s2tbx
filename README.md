@@ -8,34 +8,28 @@ A toolbox for the MSI instrument on board of ESA's Sentinel-2 satellite.
 Clone the source code and related repositories into a folder (i.e `~/SNAP/`)
 
     cd ~/SNAP
-	git clone https://github.com/senbox-org/snap-engine.git
+	git clone https://github.com/senbox-org/snap-desktop.git
 	git clone https://github.com/senbox-org/s2tbx.git
 	
-Use the following command to build s2tbx modules:
+Use the following command to build s2tbx modules using checked out snap-desktop:
 
     cd ~/SNAP/s2tbx
-	mvn compile package install -U -DskipTests -P withSnapEngineSources,OneSeries
+	mvn clean package -DskipTests=true -P withSnapDesktopSources,TwoSeries
 
-To create a Install4j installer use the following commands:
+Use the following command to build s2tbx modules using already installed snap-desktop:
 
     cd ~/SNAP/s2tbx
-    mvn compile package install -U -DskipTests -P withSnapEngineSources,OneSeries
-    cd ~/SNAP/s2tbx/s2tbx-installer
-	mvn compile package assembly:assembly -U -DskipTests
-
-Previous command creates a directory `~/SNAP/s2tbx/s2tbx-installer/target/s2tbx-bin` containing all the files required to run SNAP S-2
-
-Then open the file `~/SNAP/s2tbx/s2tbx-installer/s2tbx.install4j` with Install4j and start the build (maybe you will be required to download JRE's first).
+	mvn clean package -DskipTests=true -P TwoSeries
 
 ## Debugging s2tbx: ##
 
 Open the ~/SNAP/s2tbx/pom.xml file from within IntelliJ IDEA to import.
 Use the following configuration to run DAT:
 
-    * Main class: com.bc.ceres.launcher.Launcher
-    * VM parameters: -Xmx4G -Dceres.context=snap
-    * Program parameters: none
-    * Working directory: ~/SNAP/output
-    * Use classpath of module: s2tbx-bootstrap
+    * Main class: org.esa.snap.nbexec.Launcher
+    * VM parameters: -Dsun.java2d.noddraw=true -Dsun.awt.nopixfmt=true -Dsun.java2d.dpiaware=false -Dorg.netbeans.level=INFO -Xmx4G
+    * Program parameters: --clusters "~/SNAP/s2tbx/target/nbm/netbeans/extra"
+    * Working directory: ~/SNAP/snap-desktop/snap-application/target/snap
+    * Use classpath of module: nbexec
 
 Enjoy!
