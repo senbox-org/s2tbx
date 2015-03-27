@@ -32,6 +32,33 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>OneSeries</id>
+            <activation>
+                <property>
+                    <name>snap.version</name>
+                    <value>1.0.1</value>
+                </property>
+            </activation>
+            <dependencies>
+
+            </dependencies>
+        </profile>
+        <profile>
+            <id>TwoSeries</id>
+            <activation>
+                <property>
+                    <name>snap.version</name>
+                    <value>2.0.0-SNAPSHOT</value>
+                </property>
+            </activation>
+            <dependencies>
+
+            </dependencies>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
