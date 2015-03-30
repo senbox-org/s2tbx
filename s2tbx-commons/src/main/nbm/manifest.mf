@@ -5,6 +5,7 @@ OpenIDE-Module: lib.commons
 OpenIDE-Module-Specification-Version: 2.0.0
 OpenIDE-Module-Implementation-Version: 201501011020
 OpenIDE-Module-Java-Dependencies: Java > 1.8
+OpenIDE-Module-Module-Dependencies: lib.openjpeg > 2.0.0
 OpenIDE-Module-Display-Category: SNAP
 OpenIDE-Module-Public-Packages: jp2.*, jp2.segments.*, jp2.boxes.* ,org.esa.beam.ui.*, org.esa.beam.dataio.*, org.esa.beam.dataio.metadata.*, org.openjpeg.*
 OpenIDE-Module-Long-Description: <p>TBD

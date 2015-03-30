@@ -4,6 +4,7 @@ AutoUpdate-Essential-Module: true
 OpenIDE-Module: org.esa.beam.dataio.s2.1b
 OpenIDE-Module-Specification-Version: 2.0.0
 OpenIDE-Module-Implementation-Version: 201501011020
+OpenIDE-Module-Module-Dependencies: lib.commons > 2.0.0
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Display-Category: SNAP
 OpenIDE-Module-Long-Description: <p>TBD
