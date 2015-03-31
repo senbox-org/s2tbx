@@ -4,6 +4,7 @@ import com.bc.ceres.core.NullProgressMonitor;
 import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.util.TreeNode;
+import org.esa.beam.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 

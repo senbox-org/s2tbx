@@ -88,7 +88,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-app</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
@@ -100,19 +100,19 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-rapideye-reader</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-spot-reader</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
-            <version>${project.version}</version>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>

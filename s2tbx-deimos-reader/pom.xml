@@ -18,28 +18,28 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-core</artifactId>
-            <version>${snap.version}</version>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-commons</artifactId>
+            <version>${project.version}</version>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.esa.snap</groupId>-->
+            <!--<artifactId>snap-core</artifactId>-->
+            <!--<version>${snap.version}</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-geotiff</artifactId>
             <version>${snap.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-visat-rcp</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.esa.snap</groupId>-->
+            <!--<artifactId>snap-visat-rcp</artifactId>-->
+            <!--<version>${snap.version}</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-commons</artifactId>
-            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>

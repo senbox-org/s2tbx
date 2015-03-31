@@ -1,0 +1,4 @@
+-r
+$resamplingAlgorithm
+$sourceProduct.getFileLocation().getAbsolutePath()
+$levels

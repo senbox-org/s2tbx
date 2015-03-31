@@ -18,6 +18,9 @@
         <module>snap-core</module>
     </dependency>
     <dependency>
+        <module>snap-geotiff</module>
+    </dependency>
+    <dependency>
         <module>snap-visat-rcp</module>
         <optional>true</optional>
     </dependency>

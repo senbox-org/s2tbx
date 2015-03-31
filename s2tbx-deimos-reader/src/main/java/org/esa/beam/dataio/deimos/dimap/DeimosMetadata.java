@@ -116,7 +116,7 @@ public class DeimosMetadata extends XmlMetadata {
         int nBands = getNumBands();
         String[] names = new String[nBands];
         for (int i = 0; i < nBands; i++) {
-            names[i] = getAttributeValue(DeimosConstants.PATH_BAND_DESCRIPTION, i, DeimosConstants.DEFAULT_BAND_NAME_PREFIX + i);
+            names[i] = getAttributeValue(DeimosConstants.PATH_BAND_DESCRIPTION, i, DeimosConstants.DEFAULT_BAND_NAMES[i]);
         }
         return names;
     }

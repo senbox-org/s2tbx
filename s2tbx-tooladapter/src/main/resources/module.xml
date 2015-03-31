@@ -19,15 +19,25 @@
 
     <categories>Sentinel</categories>
 
+    <dependency>
+        <module>snap-core</module>
+    </dependency>
+    <dependency>
+        <module>snap-gpf</module>
+    </dependency>
+    <dependency>
+        <module>snap-visat-rcp</module>
+    </dependency>
+
     <extension point="snap-ui:actions">
         <action>
             <parent>processing</parent>
             <id>S2tbxToolAdapterOp</id>
             <placeLast>false</placeLast>
-            <class>org.esa.s2tbx.tooladapter.S2tbxToolAdapterAction</class>
+            <class>org.esa.beam.ui.tooladapter.interfaces.ToolAdapterAction</class>
             <helpId>toolAdapter</helpId>
-            <text>Run external tools...</text>
-            <shortDescr>Run an external tool.</shortDescr>
+            <text>Manage external tools</text>
+            <shortDescr>Manage external tools.</shortDescr>
             <mnemonic>T</mnemonic>
         </action>
     </extension>
