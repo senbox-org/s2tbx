@@ -26,7 +26,7 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <packaging>nbm</packaging>
+    <!--<packaging>nbm</packaging>-->
 
     <name>S2Tbx Help</name>
     <artifactId>s2tbx-help</artifactId>
@@ -84,6 +84,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
+                <version>3.14</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

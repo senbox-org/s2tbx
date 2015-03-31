@@ -19,18 +19,21 @@
 package org.esa.beam.dataio.rapideye;
 
 import org.esa.beam.dataio.FileImageInputStreamSpi;
-import org.esa.beam.dataio.ZipVirtualDir;
+import org.esa.beam.dataio.VirtualDirEx;
 import org.esa.beam.dataio.geotiff.GeoTiffProductReader;
 import org.esa.beam.dataio.metadata.XmlMetadataParser;
 import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.beam.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.beam.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.framework.datamodel.*;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.FlagCoding;
+import org.esa.beam.framework.datamodel.Mask;
+import org.esa.beam.framework.datamodel.MetadataAttribute;
+import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.jai.ImageManager;
-import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.TreeNode;
-import org.esa.beam.util.io.FileUtils;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import javax.imageio.spi.IIORegistry;
@@ -52,15 +55,15 @@ import java.util.logging.Logger;
  * @author Cosmin Cara
  */
 public abstract class RapidEyeReader extends AbstractProductReader {
-    public static final int WIDTH_THRESHOLD = 8192;
+//    public static final int WIDTH_THRESHOLD = 8192;
     protected RapidEyeMetadata metadata;
     protected Product product;
     protected final Logger logger;
-    protected ZipVirtualDir productDirectory;
+    protected VirtualDirEx productDirectory;
     private ImageInputStreamSpi channelImageInputStreamSpi;
 
     static {
-        XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<RapidEyeMetadata>(RapidEyeMetadata.class));
+        XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<>(RapidEyeMetadata.class));
     }
 
     public RapidEyeReader(ProductReaderPlugIn readerPlugIn) {
@@ -80,13 +83,13 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         super.close();
     }
 
-    protected void readMasks(ZipVirtualDir folder) {
+    protected void readMasks() {
         File file;
         if (metadata != null) {
             try {
                 String maskFileName = metadata.getMaskFileName();
                 if (maskFileName != null) {
-                    file = folder.getFile(maskFileName);
+                    file = productDirectory.getFile(maskFileName);
                     if (file != null && file.exists()) {
                         GeoTiffProductReader reader = new GeoTiffProductReader(getReaderPlugIn());
                         Product udmProduct = reader.readProductNodes(file, null);
@@ -113,20 +116,20 @@ public abstract class RapidEyeReader extends AbstractProductReader {
 
     protected FlagCoding createFlagCoding(Product product) {
         FlagCoding flagCoding = new FlagCoding("unusable_data");
-        flagCoding.addFlag("black_fill", 1, "area was not imaged by spacecraft");
-        flagCoding.addFlag("clouds", 2, "cloud covered");
-        flagCoding.addFlag("missing_blue_data", 4, "missing/suspect data in blue band");
-        flagCoding.addFlag("missing_green_data", 8, "missing/suspect data in green band");
-        flagCoding.addFlag("missing_red_data", 16, "missing/suspect data in red band");
-        flagCoding.addFlag("missing_red_edge_data", 32, "missing/suspect data in red edge band");
-        flagCoding.addFlag("missing_nir_data", 64, "missing/suspect data in nir band");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_BLACK_FILL, 1, "area was not imaged by spacecraft");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_CLOUDS, 2, "cloud covered");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_BLUE_DATA, 4, "missing/suspect data in blue band");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_GREEN_DATA, 8, "missing/suspect data in green band");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_RED_DATA, 16, "missing/suspect data in red band");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_RED_EDGE_DATA, 32, "missing/suspect data in red edge band");
+        flagCoding.addFlag(RapidEyeConstants.FLAG_MISSING_NIR_DATA, 64, "missing/suspect data in nir band");
         product.getFlagCodingGroup().add(flagCoding);
         return flagCoding;
     }
 
     protected List<Mask> createMasksFromFlagCodding(Product product, FlagCoding flagCoding) {
         String flagCodingName = flagCoding.getName();
-        ArrayList<Mask> masks = new ArrayList<Mask>();
+        ArrayList<Mask> masks = new ArrayList<>();
         final int width = product.getSceneRasterWidth();
         final int height = product.getSceneRasterHeight();
 
@@ -187,7 +190,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
             }
         }
         if (resultComponent == null) {
-            resultComponent = new TreeNode<File>(componentId, componentFile);
+            resultComponent = new TreeNode<>(componentId, componentFile);
             currentComponents.addChild(resultComponent);
         }
     }
@@ -198,7 +201,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         static Iterator<Color> colorIterator;
 
         static {
-            colors = new ArrayList<Color>();
+            colors = new ArrayList<>();
             colors.add(Color.red);
             colors.add(Color.red.darker());
             colors.add(Color.blue);
@@ -240,10 +243,10 @@ public abstract class RapidEyeReader extends AbstractProductReader {
         return null;
     }
 
-    static ZipVirtualDir getInput(Object input) throws IOException {
+    static VirtualDirEx getInput(Object input) throws IOException {
         File inputFile = getFileInput(input);
 
-        if (inputFile.isFile() && !ZipVirtualDir.isCompressedFile(inputFile)) {
+        if (inputFile.isFile() && !VirtualDirEx.isPackedFile(inputFile)) {
             final File absoluteFile = inputFile.getAbsoluteFile();
             inputFile = absoluteFile.getParentFile();
             if (inputFile == null) {
@@ -251,6 +254,6 @@ public abstract class RapidEyeReader extends AbstractProductReader {
             }
         }
 
-        return new ZipVirtualDir(inputFile);
+        return VirtualDirEx.create(inputFile);
     }
 }

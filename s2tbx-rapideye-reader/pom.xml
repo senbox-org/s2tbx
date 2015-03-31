@@ -11,7 +11,6 @@
     </parent>
 
     <artifactId>s2tbx-rapideye-reader</artifactId>
-    <packaging>nbm</packaging>
     <name>RapidEye Reader</name>
     <description>
         This module enables the Sentinel Toolbox to read RapidEye data products
@@ -75,7 +74,6 @@
             <scope>test</scope>
             <version>${snap.version}</version>
         </dependency>
-
     </dependencies>
 
     <profiles>
@@ -128,6 +126,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
+                <version>3.14</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

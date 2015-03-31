@@ -18,16 +18,13 @@
 
 package org.esa.beam.dataio.spot;
 
+import org.esa.beam.dataio.VirtualDirEx;
+import org.esa.beam.dataio.readers.GeoTiffBasedReader;
 import org.esa.beam.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.beam.dataio.spot.dimap.SpotSceneMetadata;
-import org.esa.beam.dataio.spot.internal.SpotVirtualDir;
-import org.esa.beam.framework.dataio.AbstractProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.framework.datamodel.Band;
 import org.esa.beam.framework.datamodel.ProductData;
-
-import java.io.IOException;
-import java.util.logging.Logger;
 
 /**
  * This is the base class for SPOT DIMAP readers, which regroups common
@@ -35,26 +32,20 @@ import java.util.logging.Logger;
  *
  * @author Cosmin Cara
  */
-public abstract class SpotProductReader extends AbstractProductReader {
+public abstract class SpotProductReader extends GeoTiffBasedReader<SpotDimapMetadata> {
 
-    protected SpotVirtualDir productDirectory;
-    protected SpotSceneMetadata metadata;
-    protected Logger logger;
+    protected SpotSceneMetadata wrappingMetadata;
 
     protected SpotProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
     }
 
-    public void setProductDirectory(SpotVirtualDir productDirectory) {
+    public void setProductDirectory(VirtualDirEx productDirectory) {
         this.productDirectory = productDirectory;
     }
 
-    public void setLogger(Logger logger) {
-        this.logger = logger;
-    }
-
     public void setMetadata(SpotSceneMetadata metadata) {
-        this.metadata = metadata;
+        this.wrappingMetadata = metadata;
     }
 
     protected ProductData createProductData(int dataType, int size) {
@@ -107,11 +98,4 @@ public abstract class SpotProductReader extends AbstractProductReader {
         }*/
     }
 
-    @Override
-    public void close() throws IOException {
-        if (productDirectory != null) {
-            productDirectory.close();
-        }
-        super.close();
-    }
 }

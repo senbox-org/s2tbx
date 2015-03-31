@@ -56,9 +56,9 @@ public class XmlMetadataParser<T extends XmlMetadata> {
      * Tries to infer the type of the element, based on the available XSD schema definition.
      * If no schema definition exist, the type will always be <code>ProductData.ASCII</code>.
      *
-     * @param elementName The name of the XML element.
-     * @param value       The value of the XML element.
-     * @return An instance of <code>ProductData</code> wrapping the element value.
+     * @param elementName   The name of the XML element.
+     * @param value         The value of the XML element.
+     * @return      An instance of <code>ProductData</code> wrapping the element value.
      */
     protected ProductData inferType(String elementName, String value) {
         return ProductData.ASCII.createInstance(value);
@@ -67,7 +67,7 @@ public class XmlMetadataParser<T extends XmlMetadata> {
     /**
      * Constructs an instance of <code>XmlMetadataParser</code> for the given metadata class.
      *
-     * @param metadataClass The class of metadata (it should be derived from <code>XmlMetadata</code>).
+     * @param metadataClass    The class of metadata (it should be derived from <code>XmlMetadata</code>).
      */
     public XmlMetadataParser(Class metadataClass) {
         this.fileClass = metadataClass;
@@ -76,18 +76,18 @@ public class XmlMetadataParser<T extends XmlMetadata> {
     /**
      * Tries to parse the given <code>InputStream</code> (which may be a string or a stream over a file).
      *
-     * @param inputStream The input stream
-     * @return If successful, it returns an instance of a class extending <code>XmlMetadata</code>.
-     * @throws ParserConfigurationException Exception is thrown by the underlying SAX mechanism.
-     * @throws SAXException                 Exception is thrown if the XML is not well formed.
-     * @throws IOException                  Exception is thrown if there is a problem reading the input stream.
+     * @param inputStream   The input stream
+     * @return  If successful, it returns an instance of a class extending <code>XmlMetadata</code>.
+     * @throws ParserConfigurationException     Exception is thrown by the underlying SAX mechanism.
+     * @throws SAXException                     Exception is thrown if the XML is not well formed.
+     * @throws IOException                      Exception is thrown if there is a problem reading the input stream.
      */
     public T parse(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         if (schemaLocations != null && shouldValidateSchema()) {
             SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             ClassLoader classLoader = this.getClass().getClassLoader();
-            List<StreamSource> streamSourceList = new Vector<StreamSource>();
+            List<StreamSource> streamSourceList = new Vector<>();
             for (String schemaLocation : schemaLocations) {
                 InputStream is = classLoader.getResourceAsStream(schemaLocation);
                 StreamSource streamSource = new StreamSource(is);
@@ -108,10 +108,9 @@ public class XmlMetadataParser<T extends XmlMetadata> {
     /**
      * Indicates if the XSD validation should be performed.
      * Override this in derived classes to enable schema validation.
-     *
-     * @return The default implementation always returns <code>false</code>.
-     * In a derived class, <code>true</code> would mean that the XML
-     * schema validation should be performed.
+     * @return  The default implementation always returns <code>false</code>.
+     *          In a derived class, <code>true</code> would mean that the XML
+     *          schema validation should be performed.
      */
     protected boolean shouldValidateSchema() {
         return false;
@@ -121,7 +120,7 @@ public class XmlMetadataParser<T extends XmlMetadata> {
      * Sets the location(s) of the XSD schema(s) that should be used for XSD
      * schema validation.
      *
-     * @param schemaLocations An array of schema locations.
+     * @param schemaLocations   An array of schema locations.
      */
     protected void setSchemaLocations(String[] schemaLocations) {
         this.schemaLocations = schemaLocations;
@@ -130,9 +129,11 @@ public class XmlMetadataParser<T extends XmlMetadata> {
     /**
      * Actual document handler implementation
      */
-    protected class MetadataHandler extends DefaultHandler {
+    protected class MetadataHandler extends DefaultHandler
+    {
         private T result;
         private String buffer;
+        private String currentPath;
         private Stack<MetadataElement> elementStack;
         private Logger systemLogger;
 
@@ -143,10 +144,11 @@ public class XmlMetadataParser<T extends XmlMetadata> {
         @Override
         public void startDocument() throws SAXException {
             systemLogger = BeamLogManager.getSystemLogger();
-            elementStack = new Stack<MetadataElement>();
+            elementStack = new Stack<>();
             try {
                 @SuppressWarnings("unchecked") Constructor<T> ctor = fileClass.getConstructor(String.class);
                 result = ctor.newInstance("Metadata");
+                currentPath = "/";
             } catch (Exception e) {
                 systemLogger.severe(e.getMessage());
             }
@@ -170,25 +172,35 @@ public class XmlMetadataParser<T extends XmlMetadata> {
             }
             MetadataElement element = new MetadataElement(qName);
             buffer = "";
-            for (int i = 0; i < attributes.getLength(); i++) {
-                element.addAttribute(new MetadataAttribute(attributes.getQName(i), ProductData.ASCII.createInstance(attributes.getValue(i)), false));
+            currentPath += qName + "/";
+            for (int i = 0; i < attributes.getLength(); i++)
+            {
+                MetadataAttribute attribute = new MetadataAttribute(attributes.getQName(i), ProductData.ASCII.createInstance(attributes.getValue(i)), false);
+                element.addAttribute(attribute);
+                result.indexAttribute(currentPath, attribute);
             }
             elementStack.push(element);
         }
 
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
-            MetadataElement closingElement = elementStack.pop();
-            if (!elementStack.empty()) {
+            MetadataElement closingElement =  elementStack.pop();
+            if (!elementStack.empty())
+            {
                 if (buffer != null && !buffer.isEmpty() && !buffer.startsWith("\n")) {
-                    elementStack.peek().addAttribute(new MetadataAttribute(closingElement.getName(), inferType(qName, buffer), false));
+                    MetadataAttribute attribute = new MetadataAttribute(closingElement.getName(), inferType(qName, buffer), false);
+                    elementStack.peek().addAttribute(attribute);
+                    currentPath = currentPath.replace(closingElement.getName() + "/", "");
+                    result.indexAttribute(currentPath, attribute);
                     buffer = "";
                 } else {
                     elementStack.peek().addElement(closingElement);
+                    currentPath = currentPath.replace(closingElement.getName() + "/", "");
                 }
             } else {
                 XmlMetadata.CopyChildElements(closingElement, result.getRootElement());
                 result.getRootElement().setName("Metadata");
+                currentPath = currentPath.replace(closingElement.getName() + "/", "");
             }
         }
 

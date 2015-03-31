@@ -10,7 +10,7 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <packaging>nbm</packaging>
+    <!--<packaging>nbm</packaging>-->
     <artifactId>s2tbx-l1b-reader</artifactId>
     <name>Sentinel-2 Reader L1B PSD12</name>
     <description>

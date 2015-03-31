@@ -27,9 +27,10 @@ import java.io.File;
  */
 public class SpotConstants {
 
+    public static final String DEFAULT_PRODUCT_NAME = "SPOT DIMAP Product";
     public static final String DIMAP_VOLUME_FILE = "vol_list.dim";
     public static final String SPOTSCENE_METADATA_FILE = "metadata.dim";
-    public static final String DEFAULT_METADATA_NAME = "DIMAP Metadata";
+    /*public static final String DEFAULT_METADATA_NAME = "DIMAP Metadata";*/
     public static final String DIMAP = "DIMAP";
     public static final String TAG_RASTER_DIMENSIONS = "Raster_Dimensions";
     public static final String TAG_NCOLS = "NCOLS";
@@ -77,7 +78,7 @@ public class SpotConstants {
     public static final String TAG_NROWS = "NROWS";
     public static final String DEFAULT_BAND_NAME_PREFIX = "band_";
     public static final String DEFAULT_SPOT_UNIT = "W/(m^2*sr*µm)";
-    public static final String TAG_DATASET_ID = "Dataset_Id";
+    /*public static final String TAG_DATASET_ID = "Dataset_Id";*/
     public static final String TAG_DATASET_NAME = "DATASET_NAME";
     public static final String TAG_TIME_STAMP = "Time_Stamp";
     public static final String TAG_PHYSICAL_UNIT = "PHYSICAL_UNIT";
@@ -144,35 +145,36 @@ public class SpotConstants {
     public static final String TAG_BAND_INDEX = "BAND_INDEX";
     public static final String TAG_STX_LIN_MIN = "STX_LIN_MIN";
     public static final String TAG_STX_LIN_MAX = "STX_LIN_MAX";
+    public static final String[] DEFAULT_BAND_NAMES = {"XS1", "XS2", "XS3", "SWIR"};
     // constants for plugins
     public static final Class[] DIMAP_READER_INPUT_TYPES = new Class[]{String.class, File.class};
     public static final String DIMAP_DESCRIPTION = "SPOT DIMAP Data Products";
-    public static final String[] DIMAP_DEFAULT_EXTENSIONS = new String[]{".dim", ".DIM", ".zip", ".ZIP"};
+    public static final String[] DIMAP_DEFAULT_EXTENSIONS = new String[]{".dim", ".zip"};
     public static final String[] DIMAP_FORMAT_NAMES = new String[]{"SPOTDimap"};
-    public static final String[] DIMAP_FILENAME_PATTERNS = new String[]{
-            "1\\d{19}(P|X)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
-            "2\\d{19}(P|X)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
-            "3\\d{19}(P|X)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
-            "4\\d{19}(I|M)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
-            "5\\d{19}J\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.(zip|ZIP)",
-            "SPOT-5_\\d+\\.{0,1}\\d*m[a-z]{1,2}_\\d[a-z]*.(zip|ZIP)",
-            "(vol_list|VOL_LIST)\\.(dim|DIM)",
-            "(metadata|METADATA)\\.(dim|DIM)"};
-    public static final String[] DIMAP_MINIMAL_PRODUCT_PATTERNS = new String[]{
+    /*public static final String[] DIMAP_FILENAME_PATTERNS = new String[] {
+            "1\\d{19}(P|X)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.zip",
+            "2\\d{19}(P|X)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.zip",
+            "3\\d{19}(P|X)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.zip",
+            "4\\d{19}(I|M)\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.zip",
+            "5\\d{19}J\\d{1}_\\d{1}[ABC]_(NETWORK|DVD)\\.zip",
+            "SPOT-5_\\d+\\.{0,1}\\d*m[a-z]{1,2}_\\d[a-z]*.zip",
             "vol_list\\.dim",
-            "(scene\\d{2}[/\\\\]metadata\\.dim)|(spview((\\d*_)\\d*)*[/\\\\]metadata(_\\d)*.dim)",
-            "(scene\\d{2}[/\\\\]imagery\\.tif)|((spview((\\d*_)\\d*)*[/\\\\]imagery(_\\d)*.tif))"};
+            "metadata\\.dim" };*/
+    public static final String[] DIMAP_MINIMAL_PRODUCT_PATTERNS = new String[] {
+        "vol_list\\.dim",
+        "(scene\\d{2}[/\\\\]metadata\\.dim)|(spview((\\d*_)\\d*)*[/\\\\]metadata(_\\d)*.dim)",
+        "(scene\\d{2}[/\\\\]imagery\\.tif)|((spview((\\d*_)\\d*)*[/\\\\]imagery(_\\d)*.tif))"};
 
     public static final Class[] SPOTVIEW_READER_INPUT_TYPES = new Class[]{String.class, File.class};
     public static final String SPOTVIEW_DESCRIPTION = "SPOTView (not DIMAP) Data Products";
-    public static final String[] SPOTVIEW_DEFAULT_EXTENSIONS = new String[]{".xml", ".XML", ".zip", ".ZIP"};
+    public static final String[] SPOTVIEW_DEFAULT_EXTENSIONS = new String[]{".xml", ".zip"};
     public static final String[] SPOTVIEW_FORMAT_NAMES = new String[]{"SPOTView"};
-    public static final String[] SPOTVIEW_FILENAME_PATTERNS = new String[]{
+    /*public static final String[] SPOTVIEW_FILENAME_PATTERNS = new String[] {
             "SP04_HRI\\d{1}_X__1O_\\d{8}T\\d{6}_\\d{8}T\\d{6}_(DLR|MET)_\\d{2,3}_PREU.BIL\\.(zip|ZIP)",
             "SP05_HRG\\d{1}_X__1O_\\d{8}T\\d{6}_\\d{8}T\\d{6}_(DLR|MET)_\\d{2,3}_PREU.BIL\\.(zip|ZIP)",
-            "(metadata|METADATA)\\.(xml|XML)"};
+            "(metadata|METADATA)\\.(xml|XML)"};*/
     public static final String SPOTVIEW_METADATA_FILE = "metadata.xml";
-    public static final String[] SPOTVIEW_MINIMAL_PRODUCT_PATTERNS = new String[]{
+    public static final String[] SPOTVIEW_MINIMAL_PRODUCT_PATTERNS = new String[] {
             SPOTVIEW_METADATA_FILE,
             SPOTVIEW_RASTER_FILENAME,
             SPOTVIEW_GEOLAYER_FILENAME};
@@ -182,10 +184,10 @@ public class SpotConstants {
     public static final String SPOT4_TAKE5_DESCRIPTION = "SPOTTake5 Data Products";
     public static final String[] SPOT4_TAKE5_DEFAULT_EXTENSION = new String[]{".xml", ".XML", ".tgz", ".TGZ"};
     public static final String[] SPOT4_TAKE5_FORMAT_NAME = new String[]{"SPOTTake5"};
-    public static final String[] SPOT4_TAKE5_FILENAME_PATTERNS = new String[]{
+    /*public static final String[] SPOT4_TAKE5_FILENAME_PATTERNS = new String[] {
             "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC](_.+){0,1}\\.(tgz|TGZ)",
-            "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC](_.+){0,1}\\.(xml|XML)"};
-    public static final String[] SPOTTAKE5_MINIMAL_PRODUCT_PATTERNS = new String[]{
+            "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC](_.+){0,1}\\.(xml|XML)"};*/
+    public static final String[] SPOTTAKE5_MINIMAL_PRODUCT_PATTERNS = new String[] {
             "(.+[/\\\\]){0,1}spot4_hrvir1_xs_.*\\.xml",
             "(.+[/\\\\]){0,1}spot4_hrvir1_xs_.*\\.tif"};
 

@@ -1,0 +1,4 @@
+/C
+${command}
+${sourceProduct} 
+${targetProductFile}

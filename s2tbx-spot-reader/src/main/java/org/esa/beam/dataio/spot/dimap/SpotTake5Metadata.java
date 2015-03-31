@@ -286,6 +286,26 @@ public class SpotTake5Metadata extends XmlMetadata {
         return fileNames;
     }
 
+    @Override
+    public ProductData.UTC getProductStartTime() {
+        return null;
+    }
+
+    @Override
+    public ProductData.UTC getProductEndTime() {
+        return null;
+    }
+
+    @Override
+    public ProductData.UTC getCenterTime() {
+        return null;
+    }
+
+    @Override
+    public String getProductDescription() {
+        return getProductName();
+    }
+
     /**
      * Reads the date of the acquisition of the image, as it appears in the metadata file, under the tag METADATA/HEADER/DATE_PDV
      *

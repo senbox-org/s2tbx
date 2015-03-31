@@ -25,6 +25,9 @@
         <module>s2tbx-sen2cor-processor</module>
         <module>s2tbx-sen2three-processor</module>
         <module>s2tbx-r2r-converter</module>
+        <module>s2tbx-deimos-reader</module>
+        <!--<module>s2tbx-tooladapter</module>-->
+        <!-- <module>s2tbx-sen2cor-processor</module> -->
     </modules>
 
     <packaging>pom</packaging>
@@ -161,62 +164,32 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>nbm-maven-plugin</artifactId>
-                    <version>3.14</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <nbmBuildDir>${project.basedir}/../target/nbm</nbmBuildDir>
-                        <licenseName>THE BEER-WARE LICENSE</licenseName>
-                        <licenseFile>../LICENSE.html</licenseFile>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.5</version>
-                    <configuration>
-                        <!-- to have the jar plugin pickup the nbm generated manifest -->
-                        <useDefaultManifestFile>true</useDefaultManifestFile>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                        <debug>true</debug>
-                        <encoding>UTF-8</encoding>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>1.4</version>
-                    <executions>
-                        <execution>
-                            <id>enforce-first-or-second-profile-is-active</id>
-                            <goals>
-                                <goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <requireActiveProfile>
-                                        <profiles>OneSeries,TwoSeries</profiles>
-                                        <all>false</all>
-                                    </requireActiveProfile>
-                                </rules>
-                                <fail>true</fail>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+        <outputDirectory>${outputdir}/modules/${project.artifactId}-${project.version}</outputDirectory>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <debug>true</debug>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-5</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/bin.xml</descriptor>
+                        <!--
+                        <descriptor>src/main/assembly/project.xml</descriptor>
+                        -->
+                    </descriptors>
+                    <finalName>s2tbx</finalName>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <developers>

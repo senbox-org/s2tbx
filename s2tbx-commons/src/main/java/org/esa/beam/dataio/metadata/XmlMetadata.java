@@ -21,11 +21,16 @@ package org.esa.beam.dataio.metadata;
 import com.bc.ceres.core.Assert;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -35,14 +40,17 @@ import java.util.logging.Logger;
  * @author Cosmin Cara
  */
 public abstract class XmlMetadata {
-    protected static final String MISSING_ELEMENT_WARNING = "Metadata: %s element is missing or has a bad value";
-    protected MetadataElement rootElement;
+    protected static final String MISSING_ELEMENT_WARNING = "Metadata: [%s] element is missing or has a bad value";
+    protected static final String NO_SUCH_PATH_WARNING = "Metadata: the path to element [%s] does not exist";
+    protected final MetadataElement rootElement;
     protected String name;
     protected int width;
     protected int height;
     protected int numBands;
     protected String path;
     protected Logger logger;
+
+    protected Map<String, List<MetadataAttribute>> attributeMap;
 
     /**
      * Factory method for creating instances of classes that (at least) extend
@@ -92,8 +100,7 @@ public abstract class XmlMetadata {
         MetadataAttribute[] attributes = source.getAttributes();
         if (attributes != null) {
             for (MetadataAttribute attribute : attributes) {
-                if (!target.containsAttribute(attribute.getName()) &&
-                        attribute.getName().indexOf(":") == -1) {
+                if (!target.containsAttribute(attribute.getName()) && !attribute.getName().contains(":")) {
                     target.addAttribute(attribute);
                 }
             }
@@ -114,6 +121,7 @@ public abstract class XmlMetadata {
         this.name = name;
         this.rootElement = new MetadataElement(this.name);
         this.logger = BeamLogManager.getSystemLogger();
+        this.attributeMap = new HashMap<>();
     }
 
     /**
@@ -121,9 +129,7 @@ public abstract class XmlMetadata {
      *
      * @return The root metadata element
      */
-    public MetadataElement getRootElement() {
-        return rootElement;
-    }
+    public MetadataElement getRootElement() { return rootElement; }
 
     /**
      * Gets the name of the metadata file used to obtain this instance.
@@ -239,4 +245,204 @@ public abstract class XmlMetadata {
         this.name = value;
         this.rootElement.setName(value);
     }
+
+    /**
+     * Returns the value of the attribute (or the default value) specified by its XPath expression.
+     * @param attributePath the XPath location of the attribute
+     * @param defaultValue  the default value if the attribute is not found or has a <code>null</code> value
+     * @return  The attribute (or default) value
+     */
+    public String getAttributeValue(String attributePath, String defaultValue) {
+        return getAttributeValue(attributePath, 0, defaultValue);
+    }
+
+    /**
+     * Returns the value of the attribute (or the default value) specified by its XPath expression and the given index,
+     * when multiple such attributes are present at the same XPath location.
+     * @param attributePath the XPath location of the attribute
+     * @param attributeIndex    the index of the attribute in the attribute array
+     * @param defaultValue  the default value if the attribute is not found or has a <code>null</code> value
+     * @return  The attribute (or default) value
+     */
+    public String getAttributeValue(String attributePath, int attributeIndex, String defaultValue) {
+        String value = defaultValue;
+        if (attributePath != null) {
+            attributePath = ensureAttributeTagPresent(attributePath);
+            List<MetadataAttribute> attributes;
+            if (attributeMap.containsKey(attributePath) && (attributes = attributeMap.get(attributePath)) != null && attributes.size() > attributeIndex) {
+                value = attributes.get(attributeIndex).getData().getElemString();
+                if (value == null) {
+                    value = defaultValue;
+                    warn(MISSING_ELEMENT_WARNING, attributes.get(attributeIndex).getName());
+                }
+            } else {
+                warn(NO_SUCH_PATH_WARNING, attributePath);
+            }
+        }
+        return value;
+    }
+
+    public String[] getAttributeValues(String attributePath) {
+        String[] values = null;
+        if (attributePath != null) {
+            attributePath = ensureAttributeTagPresent(attributePath);
+            List<MetadataAttribute> attributes;
+            if (attributeMap.containsKey(attributePath) && (attributes = attributeMap.get(attributePath)) != null && attributes.size() > 0) {
+                values = new String[attributes.size()];
+                for (int i = 0; i < attributes.size(); i++) {
+                    values[i] = attributes.get(i).getData().getElemString();
+                    if (values[i] == null) {
+                        warn(MISSING_ELEMENT_WARNING, attributes.get(i).getName());
+                    }
+                }
+            } else {
+                warn(NO_SUCH_PATH_WARNING, attributePath);
+            }
+        }
+        return values;
+    }
+
+    /**
+     * Returns the value of the attribute (or the default value) specified by its XPath expression, and whose sibling value is equal to a certain value.
+     * @param attributePath The path of the attribute to be tested
+     * @param attributeValue    The test value
+     * @param siblingPath   The path of the attribute whose value we want to retrieve
+     * @param defaultSiblingValue   The default value if the attribute does not exist or the condition of the sibling value is not met.
+     * @return  The attribute (or default) value.
+     */
+    public String getAttributeSiblingValue(String attributePath, String attributeValue, String siblingPath, String defaultSiblingValue) {
+        String value = defaultSiblingValue;
+        if (attributePath != null && siblingPath != null && attributeValue != null) {
+            attributePath = ensureAttributeTagPresent(attributePath);
+            List<MetadataAttribute> attributes;
+            if (attributeMap.containsKey(attributePath) && (attributes = attributeMap.get(attributePath)) != null && attributes.size() > 0) {
+                int foundIndex = -1;
+                for (int i = 0; i < attributes.size(); i++) {
+                    if (attributeValue.equalsIgnoreCase(attributes.get(i).getData().getElemString())) {
+                        foundIndex = i;
+                        break;
+                    }
+                }
+                if (foundIndex != -1) {
+                    value = getAttributeValue(siblingPath, foundIndex, null);
+                    if (value == null) {
+                        value = defaultSiblingValue;
+                    }
+                }
+            } else {
+                warn(NO_SUCH_PATH_WARNING, attributePath);
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Returns the product start time in UTC format.
+     * This method has to be implemented by subclasses since the value may be or may not be present in metadata,
+     * or may be in different formats for different products.
+     * @return  the product start time
+     */
+    public abstract ProductData.UTC getProductStartTime();
+
+    /**
+     * Returns the product end time in UTC format.
+     * This method has to be implemented by subclasses since the value may be or may not be present in metadata,
+     * or may be in different formats for different products.
+     * @return  the product end time
+     */
+    public abstract ProductData.UTC getProductEndTime();
+
+    /**
+     * Returns the product center time in UTC format.
+     * This method has to be implemented by subclasses since the value may be or may not be present in metadata,
+     * or may be in different formats for different products.
+     * @return  the product center time.
+     */
+    public abstract ProductData.UTC getCenterTime();
+
+    /**
+     * Returns the product description, preferably from metadata
+     * @return  the product description
+     */
+    public abstract String getProductDescription();
+
+    protected void warn(String message, String argument) {
+        if (argument == null) {
+            logger.warning(message);
+        } else
+        {
+            argument = argument.replace("@", "");
+            if (argument.contains("/")) {
+                logger.warning(String.format(message, argument.substring(argument.lastIndexOf("/") + 1)));
+            } else {
+                logger.warning(String.format(message, argument));
+            }
+        }
+    }
+
+    /**
+     * Converts the value to a float array.
+     * @param value The string list of values
+     * @param separator The items separator
+     * @return  An array of float values
+     */
+    protected float[] asFloatArray(String value, String separator) {
+        float[] array = null;
+        if (value != null && !value.isEmpty()) {
+            String[] values = value.split(separator);
+            if (values.length > 1) {
+                array = new float[values.length];
+                for (int i = 0; i < values.length; i++) {
+                    array[i] = Float.parseFloat(values[i]);
+                }
+            }
+        }
+        return array;
+    }
+
+    /**
+     * Silently converts a string to a float (i.e. without throwing exception for unconvertible values)
+     * @param value The value to be converted
+     * @return  The float value or <code>Float.NaN</code> if the conversion cannot be performed.
+     */
+    protected float asFloat(String value) {
+        float ret = Float.NaN;
+        try {
+            ret = Float.parseFloat(value);
+        } catch (NumberFormatException ignored) {}
+        return ret;
+    }
+
+    /**
+     * Silently converts a string to a int (i.e. without throwing exception for unconvertible values)
+     * @param value The value to be converted
+     * @return  The int value or <code>0</code> if the conversion cannot be performed.
+     */
+    protected int asInt(String value) {
+        int ret = 0;
+        try {
+            ret = Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {}
+        return ret;
+    }
+
+    void indexAttribute(String parentElementPath, MetadataAttribute attribute) {
+        String key = (parentElementPath + "@" + attribute.getName()).toLowerCase();
+        if (!this.attributeMap.containsKey(key)) {
+            this.attributeMap.put(key, new ArrayList<>());
+        }
+        this.attributeMap.get(key).add(attribute);
+    }
+
+    private String ensureAttributeTagPresent(String path) {
+        if (path != null) {
+            path = path.toLowerCase();
+            if (!path.contains("@")) {
+                int idx = path.lastIndexOf("/") + 1;
+                path = path.substring(0, idx) + "@" + path.substring(idx);
+            }
+        }
+        return path;
+    }
+
 }

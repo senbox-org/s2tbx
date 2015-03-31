@@ -58,6 +58,11 @@ public class SpotViewMetadata extends XmlMetadata {
     }
 
     @Override
+    public String getProductDescription() {
+        return getProductName();
+    }
+
+    @Override
     public int getNumBands() {
         int numBands = 0;
         MetadataElement currentElement;
@@ -133,6 +138,19 @@ public class SpotViewMetadata extends XmlMetadata {
     public String[] getRasterFileNames() {
         return new String[]{SpotConstants.SPOTVIEW_RASTER_FILENAME};
     }
+
+    @Override
+    public ProductData.UTC getProductStartTime() {
+        return null;
+    }
+
+    @Override
+    public ProductData.UTC getProductEndTime() {
+        return null;
+    }
+
+    @Override
+    public ProductData.UTC getCenterTime() { return null; }
 
     /**
      * Returns the names of the bands found in the metadata file.
