@@ -10,10 +10,8 @@ import org.esa.beam.framework.gpf.annotations.ParameterDescriptorFactory;
 import org.esa.beam.framework.gpf.descriptor.ParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
-import org.esa.beam.framework.gpf.ui.OperatorParameterSupport;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.lang.reflect.Method;
 import java.util.HashMap;

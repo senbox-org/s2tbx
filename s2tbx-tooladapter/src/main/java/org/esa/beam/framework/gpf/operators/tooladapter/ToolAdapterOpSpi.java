@@ -2,6 +2,7 @@ package org.esa.beam.framework.gpf.operators.tooladapter;
 
 import org.esa.beam.framework.gpf.*;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
@@ -42,6 +43,7 @@ public class ToolAdapterOpSpi extends OperatorSpi {
             throw new OperatorException("Operator already registered");
         }
         operatorSpiRegistry.addOperatorSpi(operatorName, operatorSpi);
+        ToolAdapterIO.registerOperatorMenu((ToolAdapterOperatorDescriptor)operatorDescriptor, "External tools", "Menu/Tools" );
     }
 
     /**

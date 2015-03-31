@@ -1,6 +1,5 @@
 package org.esa.beam.ui.tooladapter.utils;
 
-import com.bc.ceres.binding.Property;
 import com.bc.ceres.swing.binding.BindingContext;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;

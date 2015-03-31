@@ -19,7 +19,6 @@ import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.ModalDialog;
-import org.esa.beam.framework.ui.ModelessDialog;
 import org.esa.beam.framework.ui.UIUtils;
 import org.esa.beam.framework.ui.tool.ToolButtonFactory;
 import org.esa.beam.ui.tooladapter.utils.OperatorParametersTable;

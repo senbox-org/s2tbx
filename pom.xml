@@ -26,7 +26,7 @@
         <module>s2tbx-sen2three-processor</module>
         <module>s2tbx-r2r-converter</module>
         <module>s2tbx-deimos-reader</module>
-        <!--<module>s2tbx-tooladapter</module>-->
+        <module>s2tbx-tooladapter</module>
         <!-- <module>s2tbx-sen2cor-processor</module> -->
     </modules>
 
@@ -125,6 +125,12 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-gpf</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-gpf-ui</artifactId>
                 <version>${snap.version}</version>
             </dependency>
 
@@ -334,7 +340,7 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
+        <!--<profile>
             <id>instrumented</id>
             <dependencies>
                 <dependency>
@@ -366,7 +372,7 @@
                     <version>3.1.0</version>
                 </dependency>
             </dependencies>
-        </profile>
+        </profile>-->
         <profile>
             <id>netbeans-deps</id>
             <dependencies>
@@ -494,7 +500,7 @@
 
     </profiles>
 
-    <reporting>
+    <!--<reporting>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -514,6 +520,6 @@
                 </configuration>
             </plugin>
         </plugins>
-    </reporting>
+    </reporting>-->
 
 </project>

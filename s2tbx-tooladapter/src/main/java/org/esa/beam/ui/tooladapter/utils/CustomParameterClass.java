@@ -3,8 +3,6 @@ package org.esa.beam.ui.tooladapter.utils;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Ramona Manda

@@ -4,8 +4,14 @@ import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.ui.tooladapter.interfaces.ToolAdapterDialog;
 import org.esa.beam.util.logging.BeamLogManager;
+import org.esa.snap.rcp.SnapDialogs;
+import org.esa.snap.rcp.actions.AbstractSnapAction;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -15,7 +21,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +34,7 @@ public class ToolAdapterIO {
 
     private static File modulePath;
     private static Logger logger = BeamLogManager.getSystemLogger();
+    private static final Map<String, ToolAdapterOperatorDescriptor> actionMap = new HashMap<>();
 
     public static OperatorSpi readOperator(File operatorFolder) throws OperatorException {
         //Look for the descriptor
@@ -53,6 +62,30 @@ public class ToolAdapterIO {
             writer.write(content);
             writer.flush();
             writer.close();
+        }
+    }
+
+    public static void registerOperatorMenu(ToolAdapterOperatorDescriptor operator, String groupName, String menu) {
+        FileObject menuFolder = FileUtil.getConfigFile(menu);
+        try {
+            FileObject groupItem = menuFolder.getFileObject(groupName);
+            if (groupItem == null) {
+                groupItem = menuFolder.createFolder(groupName);
+                groupItem.setAttribute("position", 1001);
+            }
+
+            String operatorAlias = operator.getAlias();
+            FileObject newItem = groupItem.getFileObject(operatorAlias, "instance");
+            if (newItem != null) {
+                newItem.delete();
+            }
+            newItem = groupItem.createData(operatorAlias, "instance");
+            ToolAdapterItemAction action = new ToolAdapterItemAction(operatorAlias);
+            newItem.setAttribute("instanceCreate", action);
+            newItem.setAttribute("instanceClass", action.getClass().getName());
+            actionMap.put(operatorAlias, operator);
+        } catch (IOException e) {
+            SnapDialogs.showError("Error:" + e.getMessage());
         }
     }
 
@@ -85,6 +118,7 @@ public class ToolAdapterIO {
             writer.close();
         }
         writeOperatorTemplate(operator.getName(), templateContent);
+        registerOperatorMenu(operator, "External tools", "Menu/Tools");
     }
 
     private static File getTemplateFile(String toolName) {
@@ -149,5 +183,25 @@ public class ToolAdapterIO {
             }
         }
         return modulePath;
+    }
+
+    public static class ToolAdapterItemAction extends AbstractSnapAction {
+
+        public ToolAdapterItemAction() {
+            super();
+        }
+
+        public ToolAdapterItemAction(String label) {
+            putValue(NAME, label);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ToolAdapterOperatorDescriptor operatorDescriptor = actionMap.get(getValue(NAME));
+            if (operatorDescriptor != null) {
+                final ToolAdapterDialog operatorDialog = new ToolAdapterDialog(operatorDescriptor, getAppContext(), operatorDescriptor.getLabel(), getHelpId());
+                operatorDialog.show();
+            }
+        }
     }
 }
