@@ -10,20 +10,23 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>s2tbx-python-lib</artifactId>
-    <!--<packaging>nbm</packaging>-->
+    <packaging>nbm</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-ui</artifactId>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-gpf</artifactId>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-visat-rcp</artifactId>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>

@@ -15,6 +15,11 @@ Use the following command to build s2tbx modules using checked out snap-desktop:
 
     cd ~/SNAP/s2tbx
 	mvn clean package -DskipTests=true -P withSnapDesktopSources,TwoSeries
+	
+	cd ~/SNAP/snap-desktop
+	mvn clean install -DskipTests=true
+	cd ~/SNAP/snap-desktop/snap-application
+	mvn nbm:cluster-app
 
 Use the following command to build s2tbx modules using already installed snap-desktop:
 

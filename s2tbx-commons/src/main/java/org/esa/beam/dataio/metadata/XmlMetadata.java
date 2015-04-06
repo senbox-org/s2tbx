@@ -22,7 +22,6 @@ import com.bc.ceres.core.Assert;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
-import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -76,7 +75,7 @@ public abstract class XmlMetadata {
                     result.setName(metadataProfile);
             }
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(e.getMessage());
+            Logger.getLogger(XmlMetadata.class.getName()).severe(e.getMessage());
         } finally {
             if (stream != null) try {
                 stream.close();
@@ -120,7 +119,7 @@ public abstract class XmlMetadata {
     public XmlMetadata(String name) {
         this.name = name;
         this.rootElement = new MetadataElement(this.name);
-        this.logger = BeamLogManager.getSystemLogger();
+        this.logger = Logger.getLogger(XmlMetadata.class.getName());
         this.attributeMap = new HashMap<>();
     }
 

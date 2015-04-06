@@ -21,7 +21,6 @@ package org.esa.beam.dataio.metadata;
 import org.esa.beam.framework.datamodel.MetadataAttribute;
 import org.esa.beam.framework.datamodel.MetadataElement;
 import org.esa.beam.framework.datamodel.ProductData;
-import org.esa.beam.util.logging.BeamLogManager;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -143,7 +142,7 @@ public class XmlMetadataParser<T extends XmlMetadata> {
 
         @Override
         public void startDocument() throws SAXException {
-            systemLogger = BeamLogManager.getSystemLogger();
+            systemLogger = Logger.getLogger(XmlMetadataParser.class.getName());
             elementStack = new Stack<>();
             try {
                 @SuppressWarnings("unchecked") Constructor<T> ctor = fileClass.getConstructor(String.class);

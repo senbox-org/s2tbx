@@ -3,7 +3,6 @@ package org.esa.beam.dataio;
 import com.bc.ceres.core.VirtualDir;
 import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.io.FileUtils;
-import org.esa.beam.util.logging.BeamLogManager;
 import org.xeustechnologies.jtar.TarEntry;
 import org.xeustechnologies.jtar.TarHeader;
 import org.xeustechnologies.jtar.TarInputStream;
@@ -176,7 +175,7 @@ public abstract class VirtualDirEx extends VirtualDir {
                     zipFile.close();
                 } catch (IOException e) {
                     // cannot open zip, list will be empty
-                    BeamLogManager.getSystemLogger().severe(e.getMessage());
+                    Logger.getLogger(VirtualDirEx.class.getName()).severe(e.getMessage());
                 }
             } else {
                 //listFiles(new File(path), fileNames);
@@ -201,7 +200,7 @@ public abstract class VirtualDirEx extends VirtualDir {
 
     private List<String> listFiles(File parent) {
         List<String> files = new ArrayList<>();
-        final Logger logger = BeamLogManager.getSystemLogger();
+        final Logger logger = Logger.getLogger(VirtualDirEx.class.getName());
         try {
             Files.walkFileTree(Paths.get(parent.getAbsolutePath()),
                     EnumSet.noneOf(FileVisitOption.class),
@@ -390,7 +389,7 @@ public abstract class VirtualDirEx extends VirtualDir {
                                      k -> {
                                          String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
                                          name = name.substring(name.lastIndexOf("/") + 1);
-                                         return extPart.equalsIgnoreCase(FileUtils.getExtension(k)) && namePart.startsWith(name);
+                                         return (extPart != null ? extPart.equalsIgnoreCase(FileUtils.getExtension(k)) : false) && namePart.startsWith(name);
                                      });
             }
             return ret;

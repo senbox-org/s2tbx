@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>s2tbx-spot-reader</artifactId>
+    <packaging>nbm</packaging>
     <name>Spot Reader</name>
     <description>
         This module enables the Sentinel Toolbox to read Spot data products

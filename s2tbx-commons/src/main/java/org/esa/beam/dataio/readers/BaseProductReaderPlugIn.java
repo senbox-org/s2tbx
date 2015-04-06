@@ -5,13 +5,13 @@ import org.esa.beam.framework.dataio.DecodeQualification;
 import org.esa.beam.framework.dataio.ProductReader;
 import org.esa.beam.framework.dataio.ProductReaderPlugIn;
 import org.esa.beam.util.io.BeamFileFilter;
-import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Base class for product reader plugins which follow the logic of checking consistency
@@ -188,7 +188,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
                         shouldAccept = enforcer.isConsistent(files);
                         processed.put(folder, shouldAccept);
                     } catch (IOException e) {
-                        BeamLogManager.getSystemLogger().warning(e.getMessage());
+                        Logger.getLogger(BaseProductFileFilter.class.getName()).warning(e.getMessage());
                     }
                 } else {
                     shouldAccept = processed.get(folder);

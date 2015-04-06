@@ -18,7 +18,6 @@
 
 package org.esa.beam.dataio;
 
-import org.esa.beam.util.logging.BeamLogManager;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
+import java.util.logging.Logger;
 
 /**
  * Simple library class for working with JNI (Java Native Interface)
@@ -94,7 +94,7 @@ public class NativeLibraryLoader {
                     path = parentPath + path.replace("/resources/", "");
                 System.load(path);
             } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(e.getMessage());
+                Logger.getLogger(NativeLibraryLoader.class.getName()).severe(e.getMessage());
             }
         } else {
             // Prepare temporary file

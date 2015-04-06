@@ -17,7 +17,6 @@ import org.esa.beam.framework.datamodel.ProductData;
 import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.StringUtils;
 import org.esa.beam.util.TreeNode;
-import org.esa.beam.util.logging.BeamLogManager;
 import org.esa.beam.utils.CollectionHelper;
 
 import javax.imageio.spi.IIORegistry;
@@ -53,7 +52,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
     protected GeoTiffBasedReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = Logger.getLogger(GeoTiffBasedReader.class.getName());
         this.metadataClass = getTypeArgument();
         registerMetadataParser();
         registerSpi();
