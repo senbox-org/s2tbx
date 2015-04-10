@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>s2tbx-r2r-converter</artifactId>
-    <!--<packaging>nbm</packaging>-->
+    <packaging>nbm</packaging>
 
     <dependencies>
         <dependency>
