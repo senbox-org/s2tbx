@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>s2tbx-tooladapter</artifactId>
+    <packaging>nbm</packaging>
     <!--<packaging>jar</packaging>-->
 
     <name>Sentinel-2 Tool Adapter</name>
@@ -68,11 +69,6 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>1.7.1</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

@@ -4,7 +4,6 @@ import org.esa.beam.framework.gpf.GPF;
 import org.esa.beam.framework.gpf.OperatorSpi;
 import org.esa.beam.framework.gpf.descriptor.AnnotationOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOp;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
@@ -17,7 +16,6 @@ import org.esa.beam.ui.tooladapter.utils.OperatorsTableModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
@@ -54,8 +52,6 @@ public class ExternalOperatorsEditorDialog extends ModalDialog {
         newButton.addActionListener(e -> {
             close();
             ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor(ToolAdapterConstants.OPERATOR_NAMESPACE + "DefaultOperatorName", ToolAdapterOp.class, "DefaultOperatorName", null, null, null, null, null);
-            newOperatorSpi.getToolParameterDescriptors().add(new ToolParameterDescriptor(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, Object.class));
-            newOperatorSpi.getToolParameterDescriptors().add(new ToolParameterDescriptor(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE, File.class));
             ExternalToolEditorDialog dialog = new ExternalToolEditorDialog(appContext, getHelpID(), newOperatorSpi, true);
             dialog.show();
         });

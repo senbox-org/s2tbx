@@ -10,9 +10,9 @@ import java.io.File;
 public class CustomParameterClass {
 
     private Class<?> aClass;
-    private int typeMask;
+    private String typeMask;
 
-    public CustomParameterClass(Class<?> aClass, int typeMask){
+    public CustomParameterClass(Class<?> aClass, String typeMask){
         this.aClass = aClass;
         this.typeMask = typeMask;
     }
@@ -22,24 +22,24 @@ public class CustomParameterClass {
     }
 
     public boolean isTemplateParameter() {
-        return (typeMask & ToolAdapterConstants.TEMPLATE_PARAM_MASK) != 0;
+        return typeMask.equals(ToolAdapterConstants.TEMPLATE_PARAM_MASK);
     }
 
     public boolean isTemplateBefore() {
-        return (typeMask & ToolAdapterConstants.TEMPLATE_BEFORE_MASK) != 0;
+        return typeMask.equals(ToolAdapterConstants.TEMPLATE_BEFORE_MASK);
     }
 
     public boolean isTemplateAfter() {
-        return (typeMask & ToolAdapterConstants.TEMPLATE_AFTER_MASK) != 0;
+        return typeMask.equals(ToolAdapterConstants.TEMPLATE_AFTER_MASK);
     }
 
     public boolean isParameter() {
-        return (typeMask & ToolAdapterConstants.REGULAR_PARAM_MASK) != 0;
+        return typeMask.equals(ToolAdapterConstants.REGULAR_PARAM_MASK);
     }
 
-    public int getTypeMask(){ return this.typeMask; }
+    public String getTypeMask(){ return this.typeMask; }
 
-    public static CustomParameterClass getObject(Class<?> aClass, int typeMask){
+    public static CustomParameterClass getObject(Class<?> aClass, String typeMask){
         CustomParameterClass result = matchClass(TemplateFileClass, aClass, typeMask);
         if(result == null){
             result = matchClass(BeforeTemplateFileClass, aClass, typeMask);
@@ -65,8 +65,8 @@ public class CustomParameterClass {
         return result;
     }
 
-    private static CustomParameterClass matchClass(CustomParameterClass paramClass, Class<?> aClass, int typeMask){
-        if(paramClass.getaClass().equals(aClass) && paramClass.typeMask == typeMask){
+    private static CustomParameterClass matchClass(CustomParameterClass paramClass, Class<?> aClass, String typeMask){
+        if(paramClass.getaClass().equals(aClass) && paramClass.typeMask.equals(typeMask)){
             return paramClass;
         }
         return null;

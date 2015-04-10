@@ -15,13 +15,17 @@ import org.esa.beam.framework.datamodel.Product;
 import org.esa.beam.framework.gpf.Operator;
 import org.esa.beam.framework.gpf.OperatorException;
 import org.esa.beam.framework.gpf.annotations.OperatorMetadata;
+import org.esa.beam.framework.gpf.descriptor.SystemVariable;
+import org.esa.beam.framework.gpf.descriptor.TemplateParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.beam.framework.gpf.internal.OperatorContext;
 import org.esa.beam.jai.ImageManager;
 import org.esa.beam.util.ProductUtils;
 import org.esa.beam.utils.PrivilegedAccessor;
 
 import java.io.*;
+import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -202,6 +206,16 @@ public class ToolAdapterOp extends Operator {
      * @throws org.esa.beam.framework.gpf.OperatorException in case of an error
      */
     private void beforeExecute() throws OperatorException {
+        for(TemplateParameterDescriptor parameter : descriptor.getToolParameterDescriptors()){
+            if(parameter.getParameterType().equals(ToolAdapterConstants.TEMPLATE_BEFORE_MASK)){
+                try {
+                    transformTemplateParameter(parameter);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new OperatorException("Error processing template before execution for parameter: '" + parameter.getName() + "'");
+                }
+            }
+        }
         if (descriptor.shouldWriteBeforeProcessing()) {
             String sourceFormatName = descriptor.getProcessingWriter();
             if (sourceFormatName != null) {
@@ -345,6 +359,15 @@ public class ToolAdapterOp extends Operator {
                 throw new OperatorException("Error reading product '" + input.getPath() + "'");
             }
         }
+        for(TemplateParameterDescriptor parameter : descriptor.getToolParameterDescriptors()){
+            if(parameter.getParameterType().equals(ToolAdapterConstants.TEMPLATE_AFTER_MASK)){
+                try {
+                    transformTemplateParameter(parameter);
+                } catch (IOException e) {
+                    throw new OperatorException("Error processing template after execution for parameter: '" + parameter.getName() + "'");
+                }
+            }
+        }
         if (this.consumer != null && this.consumer instanceof DefaultOutputConsumer) {
             ((DefaultOutputConsumer) this.consumer).close();
         }
@@ -405,29 +428,85 @@ public class ToolAdapterOp extends Operator {
         return tokens;
     }
 
-    private List<String> transformTemplate(File templateFile) {
-        VelocityEngine ve = new VelocityEngine();
-        ve.setProperty("file.resource.loader.path", templateFile.getParent());
-        ve.init();
-        Template t = ve.getTemplate(templateFile.getName());
-        VelocityContext velContext = new VelocityContext();
+    private void putParametersToVeloContext(VelocityContext context, boolean transformTemplates){
         Property[] params = accessibleContext.getParameterSet().getProperties();
         for (Property param : params) {
-            velContext.put(param.getName(), param.getValue());
+            boolean foundTemplateParam = false;
+            if(transformTemplates) {
+                for (TemplateParameterDescriptor paramDescriptor : descriptor.getToolParameterDescriptors()) {
+                    if (paramDescriptor.getName().equals(param.getName()) && paramDescriptor.isTemplateParameter()) {
+                        foundTemplateParam = true;
+                        try {
+                            String transformedFile = transformTemplateParameter(paramDescriptor);
+                            context.put(param.getName(), transformedFile);
+                            break;
+                        } catch (IOException ex) {
+                            throw new OperatorException("Error on transforming template for parameter '" + paramDescriptor.getName());
+                        }
+                    }
+                }
+            }
+            if(!foundTemplateParam) {
+                context.put(param.getName(), param.getValue());
+            }
         }
+
         Product[] sourceProducts = getSourceProducts();
-        velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID,
-                       sourceProducts.length == 1 ? sourceProducts[0] : sourceProducts);
+        context.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID,
+                sourceProducts.length == 1 ? sourceProducts[0] : sourceProducts);
         File[] rasterFiles = new File[sourceProducts.length];
         for (int i = 0; i < sourceProducts.length; i++) {
             File productFile = intermediateProductFile != null ? intermediateProductFile : sourceProducts[i].getFileLocation();
             rasterFiles[i] = productFile.isFile() ? productFile : selectCandidateRasterFile(productFile);
         }
-        velContext.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE,
-                       rasterFiles.length == 1 ? rasterFiles[0] : rasterFiles);
+        context.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE,
+                rasterFiles.length == 1 ? rasterFiles[0] : rasterFiles);
+    }
+
+    private String transformTemplateParameter(TemplateParameterDescriptor parameter) throws IOException{
+        File templateFile = accessibleContext.getParameterSet().getProperty(parameter.getName()).getValue();
+        VelocityEngine veloEngine = new VelocityEngine();
+        veloEngine.setProperty("file.resource.loader.path", templateFile.getParent());
+        for(SystemVariable variable : descriptor.getVariables()) {
+            veloEngine.addProperty(variable.getKey(), variable.getValue());
+        }
+        veloEngine.init();
+        Template veloTemplate = veloEngine.getTemplate(templateFile.getName());
+        VelocityContext veloContext = new VelocityContext();
+        for (ToolParameterDescriptor param : parameter.getToolParameterDescriptors()) {
+            veloContext.put(param.getName(), param.getDefaultValue());
+        }
+        putParametersToVeloContext(veloContext, false);
 
         StringWriter writer = new StringWriter();
-        t.merge(velContext, writer);
+        veloTemplate.merge(veloContext, writer);
+        String result = writer.toString();
+        String separatorChar = ToolAdapterConstants.OPERATOR_TEMP_FILES_SEPARATOR;
+        String dateFormatted = DateFormat.getDateInstance(
+                DateFormat.SHORT,
+                Locale.ENGLISH).format(new Date());
+        dateFormatted = dateFormatted + separatorChar + DateFormat.getTimeInstance(
+                DateFormat.DEFAULT,
+                Locale.ENGLISH).format(new Date()).replace(":", separatorChar);
+        dateFormatted = dateFormatted.replace("/", separatorChar).replace(" ", separatorChar);
+        String newFileName = descriptor.getWorkingDir() + templateFile.getName() + "_result_" + dateFormatted;
+        ToolAdapterIO.saveFileContent(new File(newFileName), result);
+        return newFileName;
+    }
+
+    private List<String> transformTemplate(File templateFile) throws OperatorException {
+        VelocityEngine veloEngine = new VelocityEngine();
+        veloEngine.setProperty("file.resource.loader.path", templateFile.getParent());
+        for(SystemVariable variable : descriptor.getVariables()) {
+            veloEngine.addProperty(variable.getKey(), variable.getValue());
+        }
+        veloEngine.init();
+        Template veloTemplate = veloEngine.getTemplate(templateFile.getName());
+        VelocityContext veloContext = new VelocityContext();
+        putParametersToVeloContext(veloContext, true);
+
+        StringWriter writer = new StringWriter();
+        veloTemplate.merge(veloContext, writer);
         String result = writer.toString();
         return Arrays.asList(result.split(VELOCITY_LINE_SEPARATOR));
     }

@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Operator descriptor class for ToolAdapterOp.
+ *
  * @author Ramona Manda
  */
 public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
@@ -49,7 +51,7 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
 
     private List<SystemVariable> variables;
 
-    private List<ToolParameterDescriptor> toolParameterDescriptors;
+    private List<TemplateParameterDescriptor> toolParameterDescriptors = new ArrayList<>();
 
     ToolAdapterOperatorDescriptor() {
         this.sourceProductDescriptors = new DefaultSourceProductDescriptor[] { new DefaultSourceProductDescriptor() };
@@ -84,6 +86,24 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
         this(obj.getName(), obj.getOperatorClass(), obj.getAlias(), obj.getLabel(), obj.getVersion(), obj.getDescription(), obj.getAuthors(), obj.getCopyright());
         this.internal = obj.isInternal();
         this.autoWriteSuppressed = obj.isAutoWriteDisabled();
+        
+        this.preprocessTool = obj.preprocessTool;
+        this.preprocessorExternalTool = obj.preprocessorExternalTool;
+        this.writeForProcessing = obj.writeForProcessing;
+        this.processingWriter = obj.processingWriter;
+        this.mainToolFileLocation = obj.mainToolFileLocation;
+        this.workingDir = obj.workingDir;
+        this.templateFileLocation = obj.templateFileLocation;
+
+        this.progressPattern = obj.progressPattern;
+        this.errorPattern = obj.errorPattern;
+
+        List<SystemVariable> variableList = obj.getVariables();
+        if (variableList != null) {
+            this.variables.addAll(variableList.stream()
+                    .filter(systemVariable -> systemVariable != null)
+                    .map(SystemVariable::createCopy).collect(Collectors.toList()));
+        }
 
         this.sourceProductDescriptors = new DefaultSourceProductDescriptor[obj.getSourceProductDescriptors().length];
         for (int i = 0; i < obj.getSourceProductDescriptors().length; i++) {
@@ -92,8 +112,8 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
 
         this.sourceProductsDescriptor = (DefaultSourceProductsDescriptor) obj.getSourceProductsDescriptor();
 
-        for (int i = 0; i < obj.getParameterDescriptors().length; i++) {
-            this.toolParameterDescriptors.add(new ToolParameterDescriptor(obj.toolParameterDescriptors.get(i)));
+        for (TemplateParameterDescriptor parameter : obj.getToolParameterDescriptors()) {
+            this.toolParameterDescriptors.add(new TemplateParameterDescriptor(parameter));
         }
 
         this.targetProductDescriptor = (DefaultTargetProductDescriptor) obj.getTargetProductDescriptor();
@@ -116,11 +136,14 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
         }
     }
 
-    public void removeParamDescriptor(ToolParameterDescriptor descriptor) {
+    public void removeParamDescriptor(TemplateParameterDescriptor descriptor) {
         this.toolParameterDescriptors.remove(descriptor);
     }
 
-    public List<ToolParameterDescriptor> getToolParameterDescriptors() {
+    public List<TemplateParameterDescriptor> getToolParameterDescriptors() {
+        if(this.toolParameterDescriptors == null){
+            this.toolParameterDescriptors = new ArrayList<>();
+        }
         return this.toolParameterDescriptors;
     }
 
@@ -298,6 +321,9 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
     }
 
     public List<SystemVariable> getVariables() {
+        if(this.variables == null){
+            this.variables = new ArrayList<>();
+        }
         return variables;
     }
 
@@ -393,7 +419,7 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
         xStream.setClassLoader(classLoader);
         xStream.alias("operator", ToolAdapterOperatorDescriptor.class);
 
-        xStream.alias("parameter", ToolParameterDescriptor.class);
+        xStream.alias("parameter", TemplateParameterDescriptor.class);
         xStream.aliasField("parameters", ToolAdapterOperatorDescriptor.class, "toolParameterDescriptors");
 
         xStream.alias("variable", SystemVariable.class);

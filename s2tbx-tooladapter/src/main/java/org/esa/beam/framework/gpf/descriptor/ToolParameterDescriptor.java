@@ -10,7 +10,11 @@ import java.lang.reflect.Method;
  */
 public class ToolParameterDescriptor extends DefaultParameterDescriptor {
 
-    private int parameterTypeMask;
+    private String parameterType = ToolAdapterConstants.REGULAR_PARAM_MASK;
+
+    public ToolParameterDescriptor(){
+        super();
+    }
 
     public ToolParameterDescriptor(String name, Class<?> type){
         super(name, type);
@@ -35,12 +39,12 @@ public class ToolParameterDescriptor extends DefaultParameterDescriptor {
         super.setConverterClass(object.getConverterClass());
         super.setDomConverterClass(object.getDomConverterClass());
         super.setItemAlias(object.getItemAlias());
-        parameterTypeMask = ToolAdapterConstants.REGULAR_PARAM_MASK;
+        parameterType = ToolAdapterConstants.REGULAR_PARAM_MASK;
     }
 
-    public ToolParameterDescriptor(DefaultParameterDescriptor object, int parameterTypeMask) {
+    public ToolParameterDescriptor(DefaultParameterDescriptor object, String parameterTypeMask) {
         this(object);
-        this.parameterTypeMask = parameterTypeMask;
+        this.parameterType = parameterTypeMask;
     }
 
     //TODO throws specific exception, also in the calling methods!
@@ -71,28 +75,31 @@ public class ToolParameterDescriptor extends DefaultParameterDescriptor {
         }
     }
 
-    public int getParameterTypeMask() {
-        return parameterTypeMask;
+    public String getParameterType() {
+        if(this.parameterType == null){
+            this.parameterType = ToolAdapterConstants.REGULAR_PARAM_MASK;
+        }
+        return this.parameterType;
     }
 
     public boolean isTemplateParameter() {
-        return (parameterTypeMask & ToolAdapterConstants.TEMPLATE_PARAM_MASK) != 0;
+        return getParameterType().equals(ToolAdapterConstants.TEMPLATE_PARAM_MASK);
     }
 
     public boolean isTemplateBefore() {
-        return (parameterTypeMask & ToolAdapterConstants.TEMPLATE_BEFORE_MASK) != 0;
+        return getParameterType().equals(ToolAdapterConstants.TEMPLATE_BEFORE_MASK);
     }
 
     public boolean isTemplateAfter() {
-        return (parameterTypeMask & ToolAdapterConstants.TEMPLATE_AFTER_MASK) != 0;
+        return getParameterType().equals(ToolAdapterConstants.TEMPLATE_AFTER_MASK);
     }
 
     public boolean isParameter() {
-        return (parameterTypeMask & ToolAdapterConstants.REGULAR_PARAM_MASK) != 0;
+        return getParameterType().equals(ToolAdapterConstants.REGULAR_PARAM_MASK);
     }
 
-    public void setParameterTypeMask(int mask) {
-        this.parameterTypeMask = mask;
+    public void setParameterType(String type) {
+        this.parameterType = type;
     }
 
     public void setDeprecated(boolean deprecated){

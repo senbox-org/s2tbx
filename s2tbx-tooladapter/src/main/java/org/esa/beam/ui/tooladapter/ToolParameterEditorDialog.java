@@ -48,7 +48,7 @@ public class ToolParameterEditorDialog extends ModalDialog {
         this.parameter = new ToolParameterDescriptor(parameter);
         this.uiWrapper = uiWrapper;
         setContent(createMainPanel());
-        getJDialog().setPreferredSize(new Dimension(500, 470));
+        getJDialog().setPreferredSize(new Dimension(500, 500));
     }
 
     public JPanel createMainPanel(){
@@ -206,7 +206,7 @@ public class ToolParameterEditorDialog extends ModalDialog {
             oldParameter.setItemAlias(parameter.getItemAlias());
         }
         oldParameter.setDeprecated(parameter.isDeprecated());
-        oldParameter.setParameterTypeMask(parameter.getParameterTypeMask());
+        oldParameter.setParameterType(parameter.getParameterType());
     }
 
 }

@@ -2,30 +2,44 @@ package org.esa.beam.framework.gpf.operators.tooladapter;
 
 import org.esa.beam.framework.gpf.*;
 import org.esa.beam.framework.gpf.descriptor.OperatorDescriptor;
-import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
-import org.esa.beam.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
+ * The SPI class for ToolAdapterOp.
+ *
  * @author Lucian Barbulescu.
  */
 public class ToolAdapterOpSpi extends OperatorSpi {
 
-    private static Logger logger;
     private File adapterFolder;
 
     static {
-        logger = BeamLogManager.getSystemLogger();
+        registerModules();
+    }
+
+    /**
+     * Scans for modules in the system and user paths and registers all
+     * the modules that have been found.
+     *
+     * @return  A list of registered OperatorSPIs
+     */
+    public static Set<OperatorSpi> registerModules() {
+        Logger logger = Logger.getLogger(ToolAdapterOpSpi.class.getName());
+        Set<OperatorSpi> spis = new HashSet<>();
         try {
             List<File> moduleFolders = ToolAdapterIO.scanForModules();
-            moduleFolders.forEach(ToolAdapterOpSpi::registerModule);
+            spis.addAll(moduleFolders.stream().map(ToolAdapterOpSpi::registerModule).collect(Collectors.toList()));
         } catch (IOException e) {
             logger.severe("Failed scan for Tools descriptors: I/O problem: " + e.getMessage());
         }
+        return spis;
     }
 
     /**
@@ -34,16 +48,15 @@ public class ToolAdapterOpSpi extends OperatorSpi {
      * @param moduleFolder the folder of the tool adapter
      * @throws OperatorException in case of an error
      */
-    public static void registerModule(File moduleFolder) throws OperatorException {
+    public static OperatorSpi registerModule(File moduleFolder) throws OperatorException {
         OperatorSpi operatorSpi = ToolAdapterIO.readOperator(moduleFolder);
         OperatorDescriptor operatorDescriptor = operatorSpi.getOperatorDescriptor();
         String operatorName = operatorDescriptor.getName() != null ? operatorDescriptor.getName() : operatorDescriptor.getAlias();
         OperatorSpiRegistry operatorSpiRegistry = GPF.getDefaultInstance().getOperatorSpiRegistry();
-        if (operatorSpiRegistry.getOperatorSpi(operatorName) != null) {
-            throw new OperatorException("Operator already registered");
+        if (operatorSpiRegistry.getOperatorSpi(operatorName) == null) {
+            operatorSpiRegistry.addOperatorSpi(operatorName, operatorSpi);
         }
-        operatorSpiRegistry.addOperatorSpi(operatorName, operatorSpi);
-        ToolAdapterIO.registerOperatorMenu((ToolAdapterOperatorDescriptor)operatorDescriptor, "External tools", "Menu/Tools" );
+        return operatorSpi;
     }
 
     /**

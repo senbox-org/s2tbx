@@ -44,6 +44,7 @@ public class OperatorParametersTable extends JTable {
     private DefaultCellEditor comboCellEditor;
     private TableCellRenderer comboCellRenderer;
     private AppContext appContext;
+    private DefaultTableCellRenderer labelTypeCellRenderer = new DefaultTableCellRenderer();
 
     static{
         typesMap = new DualHashBidiMap();
@@ -64,9 +65,10 @@ public class OperatorParametersTable extends JTable {
         JComboBox typesComboBox = new JComboBox(typesMap.keySet().toArray());
         comboCellEditor = new DefaultCellEditor(typesComboBox);
         comboCellRenderer = new DefaultTableCellRenderer();
+        labelTypeCellRenderer.setText("Product");
 
         //List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
-        List<ToolParameterDescriptor> data = operator.getToolParameterDescriptors();
+        List<TemplateParameterDescriptor> data = operator.getToolParameterDescriptors();
             PropertySet propertySet = new OperatorParameterSupport(operator).getPropertySet();
             //if there is an exception in teh line above, can be because the default value does not match the type
             //TODO which param is wrong????
@@ -90,7 +92,7 @@ public class OperatorParametersTable extends JTable {
         this.setRowHeight(20);
     }
 
-    public void addParameterToTable(ToolParameterDescriptor param){
+    public void addParameterToTable(TemplateParameterDescriptor param){
         try {
             PropertyDescriptor property =  ParameterDescriptorFactory.convert(param, new ParameterDescriptorFactory().getSourceProductMap());
             operator.getToolParameterDescriptors().add(param);
@@ -120,7 +122,12 @@ public class OperatorParametersTable extends JTable {
             case 6:
                 return tableRenderer;
             case 4:
-                return comboCellRenderer;
+                ToolParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(row);
+                if(descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
+                    return labelTypeCellRenderer;
+                } else {
+                    return comboCellRenderer;
+                }
             default:
                 return super.getCellRenderer(row, column);
         }
@@ -172,7 +179,11 @@ public class OperatorParametersTable extends JTable {
                 case 0:
                     return false;
                 case 4:
-                    return typesMap.getKey(CustomParameterClass.getObject(descriptor.getDataType(), descriptor.getParameterTypeMask()));
+                    if(descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
+                        return "Product";
+                    } else {
+                        return typesMap.getKey(CustomParameterClass.getObject(descriptor.getDataType(), descriptor.getParameterType()));
+                    }
                 case 6:
                     return false;
                 default:
@@ -192,11 +203,10 @@ public class OperatorParametersTable extends JTable {
             if(descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
                 return false;
             }
-            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE) && (columnIndex == 0 || columnIndex == 1 || columnIndex == 4)){
+            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE)){
                 return false;
             }
-            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_ID) && columnIndex <= 1){
-                //if it is the target product parameter, it cannot be deleted and the name cannot be changed
+            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE) && (columnIndex == 0 || columnIndex == 1 || columnIndex == 4 || columnIndex == 6)){
                 return false;
             }
             return true;
@@ -204,7 +214,7 @@ public class OperatorParametersTable extends JTable {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            ToolParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(rowIndex);
+            TemplateParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(rowIndex);
             switch (columnIndex) {
                 case 0:
                     operator.removeParamDescriptor(descriptor);
@@ -238,7 +248,7 @@ public class OperatorParametersTable extends JTable {
                 case 4:
                     //type editing
                     CustomParameterClass customClass = (CustomParameterClass)typesMap.get(aValue);
-                    descriptor.setParameterTypeMask(customClass.getTypeMask());
+                    descriptor.setParameterType(customClass.getTypeMask());
                     if(descriptor.getDataType() != customClass.getaClass()) {
                         descriptor.setDataType(customClass.getaClass());
                         descriptor.setDefaultValue(descriptor.getDefaultValue());
@@ -277,6 +287,7 @@ public class OperatorParametersTable extends JTable {
                     //the custom editor should handle this
                     break;
                 case 6:
+                    //edit details
                     if(!descriptor.isParameter() && descriptor.getDataType().equals(File.class)){
                         TemplateParameterDescriptor parameter;
                         if(descriptor instanceof TemplateParameterDescriptor){

@@ -38,6 +38,16 @@ public class ExternalToolExecutionForm extends JTabbedPane {
         this.propertySet = propertySet;
         this.targetProductSelector = targetProductSelector;
 
+        //before executing, the sourceProduct and sourceProductFile must be removed from the list, since they cannot be edited
+        Property sourceProperty = this.propertySet.getProperty(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE);
+        if(sourceProperty != null) {
+            this.propertySet.removeProperty(sourceProperty);
+        }
+        sourceProperty = this.propertySet.getProperty(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID);
+        if(sourceProperty != null) {
+            this.propertySet.removeProperty(sourceProperty);
+        }
+
         //initialise the target product's directory to the working directory
         final TargetProductSelectorModel targetProductSelectorModel = targetProductSelector.getModel();
         targetProductSelectorModel.setProductDir(this.operatorSpi.getWorkingDir());

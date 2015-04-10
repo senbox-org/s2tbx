@@ -3,6 +3,7 @@ package org.esa.beam.ui.tooladapter;
 import org.esa.beam.framework.gpf.descriptor.TemplateParameterDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.beam.framework.gpf.descriptor.ToolParameterDescriptor;
+import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOp;
 import org.esa.beam.framework.ui.AppContext;
 import org.esa.beam.framework.ui.ModalDialog;
@@ -31,6 +32,8 @@ public class TemplateParameterEditorDialog extends ModalDialog {
     private ToolAdapterOperatorDescriptor operator;
     private PropertyMemberUIWrapper fileWrapper;
     private AppContext appContext;
+    private JTextArea fileContentArea = new JTextArea("", 10, 10);
+    OperatorParametersTable paramsTable;
 
     public TemplateParameterEditorDialog(AppContext appContext, String title, String helpID) {
         super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, helpID);
@@ -42,7 +45,7 @@ public class TemplateParameterEditorDialog extends ModalDialog {
         this.parameter = parameter;
         this.operator = new ToolAdapterOperatorDescriptor("OperatorForParameters", ToolAdapterOp.class);
         for(ToolParameterDescriptor param : parameter.getToolParameterDescriptors()) {
-            this.operator.getToolParameterDescriptors().add(param);
+            this.operator.getToolParameterDescriptors().add(new TemplateParameterDescriptor(param));
         }
         this.fileWrapper = fileWrapper;
         setContent(createMainPanel());
@@ -57,21 +60,20 @@ public class TemplateParameterEditorDialog extends ModalDialog {
         addParamBut.setAlignmentX(Component.LEFT_ALIGNMENT);
         paramsPanel.add(addParamBut);
 
-        OperatorParametersTable paramsTable =  new OperatorParametersTable(this.operator, appContext);
+        paramsTable =  new OperatorParametersTable(this.operator, appContext);
         JScrollPane tableScrollPane = new JScrollPane(paramsTable);
         tableScrollPane.setPreferredSize(new Dimension(500, 130));
         tableScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
         paramsPanel.add(tableScrollPane);
         addParamBut.addActionListener(e -> {
-            paramsTable.addParameterToTable(new ToolParameterDescriptor("parameterName", String.class));
+            paramsTable.addParameterToTable(new TemplateParameterDescriptor("parameterName", String.class));
         });
-        TitledBorder title = BorderFactory.createTitledBorder("Operator Parameters");
+        TitledBorder title = BorderFactory.createTitledBorder("Template Parameters");
         paramsPanel.setBorder(title);
         return paramsPanel;
     }
 
     private JPanel createMainPanel(){
-        JTextArea fileContentArea = new JTextArea("TEXT", 10, 10);
 
         BorderLayout layout = new BorderLayout();
         JPanel mainPanel = new JPanel(layout);
@@ -80,7 +82,9 @@ public class TemplateParameterEditorDialog extends ModalDialog {
         JPanel filePanel = new JPanel();
         filePanel.add(new JLabel("File:"));
         try {
-            filePanel.add(this.fileWrapper.getUIComponent());
+            JComponent fileEditor = this.fileWrapper.getUIComponent();
+            fileEditor.setPreferredSize(new Dimension(770, 25));
+            filePanel.add(fileEditor);
         } catch (Exception e) {
             //TODO error
             e.printStackTrace();
@@ -88,28 +92,70 @@ public class TemplateParameterEditorDialog extends ModalDialog {
         this.fileWrapper.getContext().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                byte[] encoded = new byte[0];
-                String result = null;
-                try {
-                    encoded = Files.readAllBytes(Paths.get(((File)evt.getNewValue()).getAbsolutePath()));
-                    result = new String(encoded, Charset.defaultCharset());
-                } catch (IOException e) {
-                    //TODO file could not be read
-                    e.printStackTrace();
-                }
-                if(result != null){
-                    fileContentArea.setText(result);
-                } else {
-                    //TODO error message
-                    fileContentArea.setText("ERROR!!!");
-                }
+                updateFileAreaContent();
             }
         });
 
         mainPanel.add(filePanel, BorderLayout.PAGE_START);
         mainPanel.add(new JScrollPane(fileContentArea), BorderLayout.CENTER);
+        updateFileAreaContent();
         mainPanel.add(createParametersPanel(), BorderLayout.PAGE_END);
 
         return mainPanel;
+    }
+
+    private void updateFileAreaContent(){
+        byte[] encoded = new byte[0];
+        String result = null;
+        try {
+            File defaultValue = fileWrapper.getContext().getPropertySet().getProperty(this.parameter.getName()).getValue();
+            if(defaultValue.exists()) {
+                encoded = Files.readAllBytes(Paths.get((defaultValue).getAbsolutePath()));
+                result = new String(encoded, Charset.defaultCharset());
+            } else {
+                //if the file does not exist, it keeps the old content, in case the user wants to save in the new file
+                result = fileContentArea.getText();
+            }
+        } catch (IOException e) {
+            //TODO file could not be read
+            e.printStackTrace();
+        } catch (Exception e) {
+            //TODO value not available
+            e.printStackTrace();
+        }
+        if(result != null){
+            fileContentArea.setText(result);
+            fileContentArea.setCaretPosition(0);
+        } else {
+            //TODO error message
+            fileContentArea.setText("ERROR!!!");
+        }
+    }
+
+    @Override
+    protected void onOK() {
+        super.onOK();
+        //set value
+        File defaultValue = fileWrapper.getContext().getPropertySet().getProperty(this.parameter.getName()).getValue();
+        this.parameter.setDefaultValue(defaultValue.getAbsolutePath());
+        //save parameters
+        parameter.getToolParameterDescriptors().clear();
+        for(TemplateParameterDescriptor subparameter : operator.getToolParameterDescriptors()){
+            if(paramsTable.getBindingContext().getBinding(subparameter.getName()) == null){
+                //TODO why is this happening???
+            } else {
+                if(paramsTable.getBindingContext().getBinding(subparameter.getName()).getPropertyValue() != null) {
+                    subparameter.setDefaultValue(paramsTable.getBindingContext().getBinding(subparameter.getName()).getPropertyValue().toString());
+                }
+            }
+            parameter.addParameterDescriptor(subparameter);
+        }
+        //save file content
+        try {
+            ToolAdapterIO.saveFileContent(defaultValue, fileContentArea.getText());
+        } catch (IOException e) {
+            //TODO file could not be saved
+            e.printStackTrace();
+        }
     }
 }

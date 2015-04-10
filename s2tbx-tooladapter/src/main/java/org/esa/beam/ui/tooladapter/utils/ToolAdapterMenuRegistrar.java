@@ -12,10 +12,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.OnStart;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * This runnable should be invoked when the Tool Adapter module starts, and will
+ * Helper class for creating menu entries for tool adapter operators.
+ * The inner runnable class should be invoked when the IDE starts, and will
  * register the available adapters as menu actions.
  *
  * @author Cosmin Cara
@@ -68,6 +71,9 @@ public class ToolAdapterMenuRegistrar {
             if (spiRegistry != null) {
                 Set<OperatorSpi> operatorSpis = spiRegistry.getOperatorSpis();
                 if (operatorSpis != null) {
+                    if (operatorSpis.size() == 0) {
+                        operatorSpis = ToolAdapterOpSpi.registerModules();
+                    }
                     operatorSpis.stream().filter(spi -> spi instanceof ToolAdapterOpSpi).forEach(spi -> {
                         ToolAdapterOperatorDescriptor operatorDescriptor = (ToolAdapterOperatorDescriptor) spi.getOperatorDescriptor();
                         registerOperatorMenu(operatorDescriptor, MENU_TEXT, MENU_PATH);
