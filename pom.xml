@@ -21,6 +21,7 @@
         <module>s2tbx-python-lib</module>
         <module>s2tbx-bootstrap</module>
         <module>s2tbx-app</module>
+        <module>s2tbx-kit</module>
         <module>s2tbx-help</module>
         <module>s2tbx-sen2cor-processor</module>
         <module>s2tbx-sen2three-processor</module>
