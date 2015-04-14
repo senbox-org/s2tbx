@@ -150,7 +150,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-filesystems</artifactId>
-            <version>RELEASE802</version>
+            <version>${netbeans.version}</version>
         </dependency>
     </dependencies>
     <build>
