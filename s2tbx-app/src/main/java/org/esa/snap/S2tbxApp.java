@@ -2,9 +2,9 @@ package org.esa.snap;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.jidesoft.plaf.LookAndFeelFactory;
-import org.esa.beam.framework.ui.ModalDialog;
-import org.esa.beam.framework.ui.application.ApplicationDescriptor;
-import org.esa.beam.visat.VisatApp;
+import org.esa.snap.framework.ui.ModalDialog;
+import org.esa.snap.framework.ui.application.ApplicationDescriptor;
+import org.esa.snap.visat.VisatApp;
 
 import javax.swing.UIManager;
 

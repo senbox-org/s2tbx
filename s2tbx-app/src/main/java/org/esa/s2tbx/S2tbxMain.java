@@ -1,9 +1,9 @@
 package org.esa.s2tbx;
 
 import com.jidesoft.utils.Lm;
-import org.esa.beam.framework.ui.application.ApplicationDescriptor;
-import org.esa.beam.visat.VisatApp;
-import org.esa.beam.visat.VisatMain;
+import org.esa.snap.framework.ui.application.ApplicationDescriptor;
+import org.esa.snap.visat.VisatApp;
+import org.esa.snap.visat.VisatMain;
 
 public class S2tbxMain extends VisatMain {
 

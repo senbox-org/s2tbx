@@ -1,6 +1,8 @@
 package jp2;
 
-import jp2.boxes.*;
+import jp2.boxes.FileTypeBox;
+import jp2.boxes.ImageHeaderBox;
+import jp2.boxes.Jpeg2000SignatureBox;
 import org.junit.Test;
 
 import javax.imageio.stream.FileImageInputStream;
@@ -8,15 +10,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static jp2.BoxType.decode4b;
-import static jp2.BoxType.encode4b;
+import static jp2.BoxType.*;
 import static org.junit.Assert.*;
 
 public class BoxReaderS2Test {
 
     @Test
     public void testIsoSpecPart1ConformanceFiles() throws IOException, URISyntaxException {
-        test("/org/esa/beam/dataio/s2/l1c/S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_B02.jp2", 10980, 10980, 635565);
+        test("/org/esa/s2tbx/dataio/s2/l1c/S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_B02.jp2", 10980, 10980, 635565);
     }
 
     private void test(String jp2Path, int width, int height, long codestreamBoxLength) throws URISyntaxException, IOException {

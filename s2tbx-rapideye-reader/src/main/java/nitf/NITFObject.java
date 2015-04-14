@@ -22,13 +22,10 @@
 
 package nitf;
 
-import org.esa.beam.dataio.NativeLibraryLoader;
-import org.esa.beam.util.logging.BeamLogManager;
+import org.esa.s2tbx.dataio.NativeLibraryLoader;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.logging.Level;
 
 /**
  * The Base NITF Object

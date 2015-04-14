@@ -1,6 +1,11 @@
 package jp2;
 
-import jp2.boxes.*;
+import jp2.boxes.ColorSpecificationBox;
+import jp2.boxes.FileTypeBox;
+import jp2.boxes.IgnoredBox;
+import jp2.boxes.ImageHeaderBox;
+import jp2.boxes.Jpeg2000SignatureBox;
+import jp2.boxes.UuidBox;
 import org.junit.Test;
 
 import javax.imageio.stream.FileImageInputStream;
@@ -8,8 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static jp2.BoxType.decode4b;
-import static jp2.BoxType.encode4b;
+import static jp2.BoxType.*;
 import static org.junit.Assert.*;
 
 /**
@@ -18,7 +22,7 @@ import static org.junit.Assert.*;
 public class BoxReaderTest {
     @Test
     public void testSentinel2L1cTile() throws URISyntaxException, IOException {
-        final BoxReader boxReader = openBoxReader("/org/esa/beam/dataio/s2/l1c/IMG_GPPL1C_054_20091210235100_20091210235130_02_000000_15SUC.jp2");
+        final BoxReader boxReader = openBoxReader("/org/esa/s2tbx/dataio/s2/l1c/IMG_GPPL1C_054_20091210235100_20091210235130_02_000000_15SUC.jp2");
         final Box box1 = boxReader.readBox();
         assertEquals("jP  ", box1.getSymbol());
         assertEquals(12, box1.getLength());

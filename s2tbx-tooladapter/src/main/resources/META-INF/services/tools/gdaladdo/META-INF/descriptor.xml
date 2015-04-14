@@ -7,7 +7,7 @@
     <name>org.esa.s2tbx.tooladapter.gdaladdo</name>
     <!-- The alias is a more user-friendly name, e.g. to be used on the command line -->
     <alias>gdaladdo</alias>
-    <operatorClass>org.esa.beam.framework.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
+    <operatorClass>org.esa.s2tbx.framework.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
 
     <version>1.0</version>
     <authors>CS Romania</authors>

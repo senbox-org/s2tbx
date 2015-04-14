@@ -20,8 +20,8 @@ package org.openjpeg;
 
 import jp2.TileLayout;
 import org.apache.commons.lang.SystemUtils;
-import org.esa.beam.dataio.Utils;
-import org.esa.beam.util.logging.BeamLogManager;
+import org.esa.s2tbx.dataio.Utils;
+import org.esa.snap.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.io.IOException;

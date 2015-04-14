@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static jp2.BoxReaderTest.openBoxReader;
+import static jp2.BoxReaderTest.*;
 import static org.junit.Assert.*;
 
 /**
@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 public class CodestreamReaderS2BrokenTest {
     @Test
     public void testMarkerStructure() throws URISyntaxException, IOException {
-        final BoxReader boxReader = openBoxReader("/org/esa/beam/dataio/s2/l2a/S2A_USER_MSI_L2A_TL_MPS__20150210T180608_A000069_T14RMQ_B03_20m.jp2");
+        final BoxReader boxReader = openBoxReader("/org/esa/s2tbx/dataio/s2/l2a/S2A_USER_MSI_L2A_TL_MPS__20150210T180608_A000069_T14RMQ_B03_20m.jp2");
 
         Box box;
         do {

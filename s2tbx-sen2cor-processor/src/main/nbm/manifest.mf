@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
 AutoUpdate-Essential-Module: true
-OpenIDE-Module: org.esa.beam.dataio.atmcorr
+OpenIDE-Module: org.esa.s2tbx.dataio.atmcorr
 OpenIDE-Module-Specification-Version: 2.0.0
 OpenIDE-Module-Implementation-Version: 201501011020
 OpenIDE-Module-Java-Dependencies: Java > 1.8

@@ -9,14 +9,14 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class ParseOpjDumpTest {
 
     @Test
     public void testRun4() throws URISyntaxException, IOException
     {
-        String jp2Path = "/org/esa/beam/dataio/s2/l2a/out.txt";
+        String jp2Path = "/org/esa/s2tbx/dataio/s2/l2a/out.txt";
         final File file = new File(ParseOpjDumpTest.class.getResource(jp2Path).toURI());
 
         List<String> content = Files.readAllLines(file.toPath());
@@ -35,7 +35,7 @@ public class ParseOpjDumpTest {
     @Test
     public void testRun5() throws URISyntaxException, IOException
     {
-        String jp2Path = "/org/esa/beam/dataio/s2/l1c/out.txt";
+        String jp2Path = "/org/esa/s2tbx/dataio/s2/l1c/out.txt";
         final File file = new File(ParseOpjDumpTest.class.getResource(jp2Path).toURI());
 
         List<String> content = Files.readAllLines(file.toPath());

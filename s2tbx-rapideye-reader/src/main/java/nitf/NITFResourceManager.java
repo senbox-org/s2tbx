@@ -146,7 +146,7 @@ public final class NITFResourceManager {
      * Decrements the reference count of an object, and destructs the object if
      * the count is now < 1
      *
-     * @param object
+     * @param address
      */
     protected void decrementRefCount(long address, boolean nativeRef) {
         if (address != NITFObject.INVALID_ADDRESS) {

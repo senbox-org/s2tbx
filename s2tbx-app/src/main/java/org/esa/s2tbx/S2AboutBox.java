@@ -1,12 +1,19 @@
 package org.esa.s2tbx;
 
-import org.esa.beam.framework.ui.ModalDialog;
-import org.esa.beam.framework.ui.application.ApplicationDescriptor;
-import org.esa.beam.util.logging.BeamLogManager;
-import org.esa.beam.visat.VisatApp;
+import org.esa.snap.framework.ui.ModalDialog;
+import org.esa.snap.framework.ui.application.ApplicationDescriptor;
+import org.esa.snap.util.logging.BeamLogManager;
+import org.esa.snap.visat.VisatApp;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
