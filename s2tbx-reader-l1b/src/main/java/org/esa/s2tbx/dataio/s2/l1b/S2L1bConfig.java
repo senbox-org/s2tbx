@@ -20,7 +20,7 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import jp2.TileLayout;
 import org.esa.snap.framework.datamodel.ProductData;
-import org.openjpeg.JpegUtils;
+import org.esa.s2tbx.openjpeg.OpenJpegUtils;
 
 import java.awt.image.DataBuffer;
 import java.util.HashMap;
@@ -45,8 +45,8 @@ public interface S2L1bConfig {
     String LOG_OPS = DEBUG ? "FINE" : "FINEST";
     String LOG_DEBUG = DEBUG ? "WARNING" : "FINEST";
 
-    String OPJ_DECOMPRESSOR_EXE = JpegUtils.getExecutable(L1bMetadataProc.tryGetModulesDir());
-    String OPJ_INFO_EXE = JpegUtils.getInfoExecutable(L1bMetadataProc.tryGetModulesDir());
+    String OPJ_DECOMPRESSOR_EXE = OpenJpegUtils.getSafeDecompressor();
+    String OPJ_INFO_EXE = OpenJpegUtils.getSafeInfoExtractor();
 
     int DEFAULT_JAI_TILE_SIZE = 512;
 

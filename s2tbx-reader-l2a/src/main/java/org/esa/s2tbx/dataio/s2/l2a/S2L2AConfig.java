@@ -20,7 +20,7 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import jp2.TileLayout;
 import org.esa.snap.framework.datamodel.ProductData;
-import org.openjpeg.JpegUtils;
+import org.esa.s2tbx.openjpeg.OpenJpegUtils;
 
 import java.awt.image.DataBuffer;
 
@@ -35,8 +35,8 @@ public interface S2L2AConfig {
      * Path to "opj_decompress" executable from OpenJPEG 2.1.0 package
      */
 
-    String OPJ_DECOMPRESSOR_EXE = JpegUtils.getExecutable(L2aMetadataProc.tryGetModulesDir());
-    String OPJ_INFO_EXE = JpegUtils.getInfoExecutable(L2aMetadataProc.tryGetModulesDir());
+    String OPJ_DECOMPRESSOR_EXE = OpenJpegUtils.getSafeDecompressor();
+    String OPJ_INFO_EXE = OpenJpegUtils.getSafeInfoExtractor();
 
     // fixme parametrize log levels
     String LOG_JPEG = DEBUG ? "INFO" : "FINEST";
