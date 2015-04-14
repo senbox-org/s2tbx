@@ -32,8 +32,8 @@ import java.util.Set;
  * @author Norman Fomferra
  */
 public interface S2L1bConfig {
-    public boolean DEBUG = Boolean.getBoolean("org.esa.beam.dataio.s2.S2Config.DEBUG");
-    public boolean NODUMP = Boolean.getBoolean("org.esa.beam.dataio.s2.S2Config.NODUMP");
+    public boolean DEBUG = Boolean.getBoolean("org.esa.s2tbx.dataio.s2.S2Config.DEBUG");
+    public boolean NODUMP = Boolean.getBoolean("org.esa.s2tbx.dataio.s2.S2Config.NODUMP");
 
     /**
      * Path to "opj_decompress" executable from OpenJPEG 2.1.0 package

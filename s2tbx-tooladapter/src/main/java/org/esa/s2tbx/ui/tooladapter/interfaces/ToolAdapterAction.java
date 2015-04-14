@@ -14,7 +14,7 @@ import java.awt.event.ActionEvent;
  *
  * @author Lucian Barbulescu
  */
-@ActionID(category = "Tools", id = "org.esa.beam.ui.tooladapter.interfaces.BinningOperatorAction")
+@ActionID(category = "Tools", id = "org.esa.snap.ui.tooladapter.interfaces.BinningOperatorAction")
 @ActionRegistration(displayName = "#CTL_ToolAdapterOperatorAction_Text", lazy = false)
 @ActionReference(path = "Menu/Tools", position = 10000)
 @NbBundle.Messages({

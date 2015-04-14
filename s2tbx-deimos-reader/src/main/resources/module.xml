@@ -17,7 +17,7 @@
     <extension point="snap-ui:actions">
         <action>
             <id>importDEIMOSProduct</id>
-            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <class>org.esa.snap.visat.actions.ProductImportAction</class>
             <formatName>DEIMOSDimap</formatName>
             <useAllFileFilter>false</useAllFileFilter>
             <shortDesc>Import a DEIMOS product</shortDesc>

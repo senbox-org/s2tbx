@@ -33,7 +33,7 @@
     <extension point="snap-ui:actions">
         <action>
             <id>importSPOTSceneProduct</id>
-            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <class>org.esa.snap.visat.actions.ProductImportAction</class>
             <formatName>SPOTDimap</formatName>
             <useAllFileFilter>false</useAllFileFilter>
             <shortDesc>Import a SPOT DIMAP product</shortDesc>
@@ -44,7 +44,7 @@
     <extension point="snap-ui:actions">
         <action>
             <id>importSPOTViewProduct</id>
-            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <class>org.esa.snap.visat.actions.ProductImportAction</class>
             <formatName>SPOTView</formatName>
             <useAllFileFilter>false</useAllFileFilter>
             <shortDesc>Import a SPOT View product</shortDesc>
@@ -55,7 +55,7 @@
     <extension point="snap-ui:actions">
         <action>
             <id>importSPOTTake5Product</id>
-            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <class>org.esa.snap.visat.actions.ProductImportAction</class>
             <formatName>SPOTTake5</formatName>
             <useAllFileFilter>false</useAllFileFilter>
             <shortDesc>Import a SPOT4 Take5 product</shortDesc>

@@ -23,7 +23,7 @@
     <extension point="snap-ui:actions">
         <action>
             <id>importRapidEyeL1Product</id>
-            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <class>org.esa.snap.visat.actions.ProductImportAction</class>
             <formatName>RapidEyeNITF</formatName>
             <useAllFileFilter>false</useAllFileFilter>
             <shortDesc>Import a RapidEye L1 product</shortDesc>
@@ -35,7 +35,7 @@
     <extension point="snap-ui:actions">
         <action>
             <id>importRapidEyeL3Product</id>
-            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <class>org.esa.snap.visat.actions.ProductImportAction</class>
             <formatName>RapidEyeGeoTIFF</formatName>
             <useAllFileFilter>false</useAllFileFilter>
             <shortDesc>Import a RapidEye L3 product</shortDesc>

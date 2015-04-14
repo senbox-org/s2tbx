@@ -69,7 +69,7 @@
                 <version>3.14</version>
                 <configuration>
                     <publicPackages>
-                        <publicPackage>org.esa.beam.dataio.deimos</publicPackage>
+                        <publicPackage>org.esa.snap.dataio.deimos</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>

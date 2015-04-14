@@ -183,7 +183,7 @@ public class NITFMetadata {
      * Returns the data type value of a pixel of the first image.
      *
      * @return One of the ProductData.TYPE_* values.
-     * @see org.esa.beam.framework.datamodel.ProductData
+     * @see org.esa.snap.framework.datamodel.ProductData
      */
     public int getDataType() {
         return getDataType(FIRST_IMAGE);

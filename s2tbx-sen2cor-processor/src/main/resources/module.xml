@@ -37,7 +37,7 @@
             <parent>processing.thematicLand</parent>
             <id>level2AProcessor</id>
             <text>SEN2COR Level 2A Processor...</text>
-            <class>org.esa.beam.dataio.atmcorr.AtmosphericCorrectionAction</class>
+            <class>org.esa.s2tbx.dataio.atmcorr.AtmosphericCorrectionAction</class>
             <operatorName>SEN2COR</operatorName>
             <dialogTitle>Level 2A Processor</dialogTitle>
             <shortDescr>Performs atmospheric correction on Sentinel2 L1C products</shortDescr>

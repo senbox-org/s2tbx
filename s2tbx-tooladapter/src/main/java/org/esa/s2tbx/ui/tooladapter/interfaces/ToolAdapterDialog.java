@@ -111,14 +111,14 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
 
     /**
      * Creates the desired target product.
-     * Usually, this method will be implemented by invoking one of the multiple {@link org.esa.beam.framework.gpf.GPF GPF}
+     * Usually, this method will be implemented by invoking one of the multiple {@link org.esa.snap.framework.gpf.GPF GPF}
      * {@code createProduct} methods.
      * <p/>
-     * The method should throw a {@link org.esa.beam.framework.gpf.OperatorException} in order to signal "nominal" processing errors,
+     * The method should throw a {@link org.esa.snap.framework.gpf.OperatorException} in order to signal "nominal" processing errors,
      * other exeption types are treated as internal errors.
      *
      * @return The target product.
-     * @throws Exception if an error occurs, an {@link org.esa.beam.framework.gpf.OperatorException} is signaling "nominal" processing errors.
+     * @throws Exception if an error occurs, an {@link org.esa.snap.framework.gpf.OperatorException} is signaling "nominal" processing errors.
      */
     @Override
     protected Product createTargetProduct() throws Exception {

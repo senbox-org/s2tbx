@@ -34,7 +34,7 @@
         <action>
             <id>importSentinel2Product</id>
             <helpId>importSentinel2Product</helpId>
-            <class>org.esa.beam.visat.actions.ProductImportAction</class>
+            <class>org.esa.snap.visat.actions.ProductImportAction</class>
             <formatName>SENTINEL-2-MSI-L1C</formatName>
             <useAllFileFilter>true</useAllFileFilter>
             <parent>importMultispectral</parent>
@@ -43,7 +43,7 @@
                 <action>
                     <id>importSentinel3Product</id>
                     <helpId>importSentinel3Product</helpId>
-                    <class>org.esa.beam.visat.actions.ProductImportAction</class>
+                    <class>org.esa.snap.visat.actions.ProductImportAction</class>
                     <formatName>SENTINEL-3-SLSTR</formatName>
                     <useAllFileFilter>true</useAllFileFilter>
                 </action>

@@ -37,7 +37,7 @@
             <parent>processing.thematicLand</parent>
             <id>levelThreeProcessor</id>
             <text>SEN2THREE Level 3 Processor...</text>
-            <class>org.esa.beam.dataio.spatiotemp.SpatioTemporalAction</class>
+            <class>org.esa.snap.s2tbx.spatiotemp.SpatioTemporalAction</class>
             <operatorName>SEN2THREE</operatorName>
             <dialogTitle>Level 3 Processor</dialogTitle>
             <shortDescr>Performs spatio temporal synthesis on Sentinel 2 L2A products</shortDescr>

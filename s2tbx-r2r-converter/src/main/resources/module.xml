@@ -33,7 +33,7 @@
             <parent>processing.preProcessing</parent>
             <id>r2rConverter</id>
             <text>SEN2R2R Reflectance to Radiance Converter ...</text>
-            <class>org.esa.beam.dataio.refl2rad.Refl2RadAction</class>
+            <class>org.esa.s2tbx.dataio.refl2rad.Refl2RadAction</class>
             <operatorName>SEN2R2R</operatorName>
             <dialogTitle>Sentinel 2 Reflectance to Radiance Converter</dialogTitle>
             <shortDescr>Converts reflectance to radiance and vice versa</shortDescr>
