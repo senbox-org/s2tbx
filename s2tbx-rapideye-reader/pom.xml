@@ -66,6 +66,11 @@
             <artifactId>snap-reader-tests</artifactId>
             <version>${snap.version}</version>
         </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.5</version>
+        </dependency>
 
         <dependency>
             <groupId>org.esa.snap</groupId>

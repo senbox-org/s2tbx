@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.rapideye;
 
-import org.esa.snap.dataio.ProductReaderAcceptanceTest;
+
+import org.esa.beam.dataio.ProductReaderAcceptanceTest;
 
 /**
  * Created by kraftek on 9/11/2014.

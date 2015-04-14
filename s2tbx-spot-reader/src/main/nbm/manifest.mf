@@ -5,6 +5,7 @@ OpenIDE-Module: org.esa.s2tbx.dataio.spot
 OpenIDE-Module-Specification-Version: 2.0.0
 OpenIDE-Module-Implementation-Version: 201501011020
 OpenIDE-Module-Module-Dependencies: lib.commons > 2.0.0, org.esa.snap.snap.core > 2.0.0, org.esa.snap.ceres.glayer > 2.0.0, org.esa.snap.ceres.core > 2.0.0, org.esa.snap.ceres.jai > 2.0.0
+OpenIDE-Module-Layer: org/esa/s2tbx/dataio/spot/layer.xml
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Long-Description: <p>TBD

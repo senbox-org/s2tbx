@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.deimos;
 
-import org.esa.snap.dataio.ProductReaderAcceptanceTest;
+
+import org.esa.beam.dataio.ProductReaderAcceptanceTest;
 
 /**
  * Created by ramona manda on 12/3/2014.

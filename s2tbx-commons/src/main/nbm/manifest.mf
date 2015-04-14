@@ -8,7 +8,7 @@ OpenIDE-Module-Module-Dependencies: lib.openjpeg > 2.1.0
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Layer: org/esa/s2tbx/ui/layer.xml
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
-OpenIDE-Module-Public-Packages: jp2.*, jp2.segments.*, jp2.boxes.* ,org.esa.s2tbx.ui.*, org.esa.s2tbx.dataio.*, org.esa.s2tbx.dataio.metadata.*, org.openjpeg.*
+OpenIDE-Module-Public-Packages: jp2.*, jp2.segments.*, jp2.boxes.* ,org.esa.s2tbx.ui.*, org.esa.s2tbx.utils.*, org.esa.s2tbx.dataio.*, org.esa.s2tbx.dataio.readers.*, org.esa.s2tbx.dataio.metadata.*, org.openjpeg.*
 OpenIDE-Module-Long-Description: <p>TBD
  </p><p><b>Vendor:</b> CS SI</p><
  p><b>Contact address:</b> 22 Avenue Galilee, 92350 Le Plessis Robinson
