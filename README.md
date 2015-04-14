@@ -14,7 +14,7 @@ Clone the source code and related repositories into a folder (i.e `~/SNAP/`)
 Use the following command to build s2tbx modules using checked out snap-desktop:
 
     cd ~/SNAP/s2tbx
-	mvn clean package -DskipTests=true -P withSnapDesktopSources,TwoSeries
+	mvn clean package -DskipTests=true -P withSnapDesktopSources
 	
 	cd ~/SNAP/snap-desktop
 	mvn clean install -DskipTests=true
@@ -24,7 +24,7 @@ Use the following command to build s2tbx modules using checked out snap-desktop:
 Use the following command to build s2tbx modules using already installed snap-desktop:
 
     cd ~/SNAP/s2tbx
-	mvn clean package -DskipTests=true -P TwoSeries
+	mvn clean package -DskipTests=true
 
 ## Debugging s2tbx: ##
 

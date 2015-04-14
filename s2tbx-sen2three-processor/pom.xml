@@ -25,77 +25,41 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-core</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
 
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-ui</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-core</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-binding</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-ui</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-gpf-ui</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>OneSeries</id>
-            <activation>
-                <property>
-                    <name>snap.version</name>
-                    <value>1.0.1</value>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.esa.snap</groupId>
-                    <artifactId>snap-ui</artifactId>
-                    <version>${snap.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.esa.snap</groupId>
-                    <artifactId>snap-gpf</artifactId>
-                    <version>${snap.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>TwoSeries</id>
-            <activation>
-                <property>
-                    <name>snap.version</name>
-                    <value>2.0.0-SNAPSHOT</value>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.esa.snap</groupId>
-                    <artifactId>snap-core</artifactId>
-                    <version>${snap.version}</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.esa.snap</groupId>
-                    <artifactId>snap-ui</artifactId>
-                    <version>${snap.version}</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.esa.snap</groupId>
-                    <artifactId>ceres-core</artifactId>
-                    <version>${snap.version}</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.esa.snap</groupId>
-                    <artifactId>ceres-binding</artifactId>
-                    <version>${snap.version}</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.esa.snap</groupId>
-                    <artifactId>ceres-ui</artifactId>
-                    <version>${snap.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.esa.snap</groupId>
-                    <artifactId>snap-gpf-ui</artifactId>
-                    <version>${snap.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 
     <build>
         <plugins>

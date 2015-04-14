@@ -213,28 +213,6 @@
                         <encoding>UTF-8</encoding>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>1.4</version>
-                    <executions>
-                        <execution>
-                            <id>enforce-first-or-second-profile-is-active</id>
-                            <goals>
-                                <goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <requireActiveProfile>
-                                        <profiles>OneSeries,TwoSeries</profiles>
-                                        <all>false</all>
-                                    </requireActiveProfile>
-                                </rules>
-                                <fail>true</fail>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -438,24 +416,6 @@
                     <version>${netbeans.version}</version>
                 </dependency>
             </dependencies>
-        </profile>
-        <profile>
-            <id>OneSeries</id>
-            <activation>
-                <property>
-                    <name>snap.version</name>
-                    <value>1.0.1</value>
-                </property>
-            </activation>
-        </profile>
-        <profile>
-            <id>TwoSeries</id>
-            <activation>
-                <property>
-                    <name>snap.version</name>
-                    <value>2.0.0-SNAPSHOT</value>
-                </property>
-            </activation>
         </profile>
         <profile>
             <id>installer</id>
