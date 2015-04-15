@@ -1,4 +1,5 @@
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l2a;
+
 
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
