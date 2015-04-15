@@ -1,7 +1,7 @@
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l2a;
 
-import org.esa.s2tbx.dataio.s2.filepatterns.S2L2aDatastripDirFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2L2aDatastripFilename;
+import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripDirFilename;
+import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripFilename;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

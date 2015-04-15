@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l2a;
 
 import junit.framework.Assert;
 import org.apache.commons.lang.SystemUtils;

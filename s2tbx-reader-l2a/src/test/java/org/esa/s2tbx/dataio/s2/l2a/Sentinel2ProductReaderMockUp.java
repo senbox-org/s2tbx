@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.framework.dataio.AbstractProductReader;
@@ -8,13 +8,9 @@ import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.framework.ui.ModalDialog;
 
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.io.IOException;
 
 /**
@@ -105,6 +101,7 @@ public class Sentinel2ProductReaderMockUp extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         return new Product("S2", "S2", 16, 16);
     }
+
 
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
