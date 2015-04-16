@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.spot;
 
 
-import org.esa.beam.dataio.ProductReaderAcceptanceTest;
+import org.esa.snap.dataio.ProductReaderAcceptanceTest;
 
 /**
  * Created by kraftek on 9/11/2014.
