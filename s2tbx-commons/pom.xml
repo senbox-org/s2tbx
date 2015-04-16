@@ -117,9 +117,15 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <configuration>
                     <publicPackages>
-                        <publicPackage>org.esa.snap.dataio</publicPackage>
-                        <publicPackage>org.esa.snap.ui</publicPackage>
-                        <publicPackage>jp2</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.utils.*</publicPackage>
+                        <publicPackage>jp2.*</publicPackage>
+                        <publicPackage>jp2.segments.*</publicPackage>
+                        <publicPackage>jp2.boxes.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.ui.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.readers.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.metadata.*</publicPackage>
+                        <publicPackage>org.openjpeg.*</publicPackage>
                     </publicPackages>
                 </configuration>
                 <version>3.14</version>
