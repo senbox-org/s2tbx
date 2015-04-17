@@ -19,13 +19,14 @@ import java.awt.event.ActionEvent;
 @ActionReference(path = "Menu/Tools", position = 10000)
 @NbBundle.Messages({
         "CTL_ToolAdapterOperatorAction_Text=Manage external tools",
-        "CTL_ToolAdapterOperatorAction_Description=Define adapters for external processes."
+        "CTL_ToolAdapterOperatorAction_Description=Define adapters for external processes.",
+        "CTL_ExternalOperatorsEditorDialog_Title=External Tools"
 })
 public class ToolAdapterAction extends AbstractSnapAction {
 
     public ToolAdapterAction() {
-        putValue(NAME, "Manage external tools");
-        putValue(SHORT_DESCRIPTION, "Define adapters for external processes");
+        putValue(NAME, Bundle.CTL_ToolAdapterOperatorAction_Text());
+        putValue(SHORT_DESCRIPTION, Bundle.CTL_ToolAdapterOperatorAction_Description());
     }
 
     /**
@@ -35,7 +36,9 @@ public class ToolAdapterAction extends AbstractSnapAction {
      */
     @Override
     public void actionPerformed(ActionEvent event) {
-        ExternalOperatorsEditorDialog operatorDialog = new ExternalOperatorsEditorDialog(getAppContext(), "External Tools", event.getActionCommand());
+        ExternalOperatorsEditorDialog operatorDialog = new ExternalOperatorsEditorDialog(getAppContext(),
+                Bundle.CTL_ExternalOperatorsEditorDialog_Title(),
+                event.getActionCommand());
         operatorDialog.show();
     }
 

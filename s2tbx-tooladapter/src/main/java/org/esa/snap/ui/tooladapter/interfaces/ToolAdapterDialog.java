@@ -26,6 +26,7 @@ import java.util.function.Consumer;
  */
 public class ToolAdapterDialog extends SingleTargetProductDialog {
 
+    public static final String SOURCE_PRODUCT_FIELD = "sourceProduct";
     /**
      * Operator identifier.
      */
@@ -79,7 +80,7 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
             appContext.getPreferences().setPropertyString(BasicApp.PROPERTY_KEY_APP_LAST_SAVE_DIR, productDir);
             final Product sourceProduct = form.getSourceProduct();
             Map<String, Product> sourceProducts = new HashMap<>();
-            sourceProducts.put("sourceProduct", sourceProduct);
+            sourceProducts.put(SOURCE_PRODUCT_FIELD, sourceProduct);
             Operator op = GPF.getDefaultInstance().createOperator(this.operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
             // set the output consumer
             //((ToolAdapterOp) op).setConsumer(new DefaultOutputConsumer());

@@ -25,6 +25,7 @@ import org.esa.snap.framework.ui.tool.ToolButtonFactory;
 import org.esa.snap.ui.tooladapter.utils.OperatorParametersTable;
 import org.esa.snap.ui.tooladapter.utils.ToolAdapterMenuRegistrar;
 import org.esa.snap.ui.tooladapter.utils.VariablesTable;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -38,6 +39,16 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 
+@NbBundle.Messages({
+        "CTL_Label_Alias_Text=Alias:",
+        "CTL_Label_UniqueName_Text=Unique name:",
+        "CTL_Label_Label_Text=Label:",
+        "CTL_Label_Version_Text=Version:",
+        "CTL_Label_Copyright_Text=Copyright:",
+        "CTL_Label_Authors_Text=Authors:",
+        "CTL_Label_Description_Text=Description:",
+        "CTL_Panel_OperatorDescriptor_Text=Operator Descriptor"
+})
 public class ExternalToolEditorDialog extends ModalDialog {
 
     private ToolAdapterOperatorDescriptor oldOperatorDescriptor;
@@ -125,7 +136,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
         PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(newOperatorDescriptor);
         BindingContext bindingContext = new BindingContext(propertyContainer);
 
-        descriptorPanel.add(new JLabel("Alias:"), getConstraints(0, 0));
+        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Alias_Text()), getConstraints(0, 0));
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("alias");
         JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         if (this.newNameIndex >= 1) {
@@ -133,7 +144,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
         }
         descriptorPanel.add(editorComponent, getConstraints(0, 1));
 
-        descriptorPanel.add(new JLabel("Unique name:"), getConstraints(1, 0));
+        descriptorPanel.add(new JLabel(Bundle.CTL_Label_UniqueName_Text()), getConstraints(1, 0));
         propertyDescriptor = propertyContainer.getDescriptor("name");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         if (this.newNameIndex >= 1) {
@@ -141,32 +152,32 @@ public class ExternalToolEditorDialog extends ModalDialog {
         }
         descriptorPanel.add(editorComponent, getConstraints(1, 1));
 
-        descriptorPanel.add(new JLabel("Label:"), getConstraints(2, 0));
+        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Label_Text()), getConstraints(2, 0));
         propertyDescriptor = propertyContainer.getDescriptor("label");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         descriptorPanel.add(editorComponent, getConstraints(2, 1));
 
-        descriptorPanel.add(new JLabel("Version:"), getConstraints(3, 0));
+        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Version_Text()), getConstraints(3, 0));
         propertyDescriptor = propertyContainer.getDescriptor("version");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         descriptorPanel.add(editorComponent, getConstraints(3, 1));
 
-        descriptorPanel.add(new JLabel("Copyright:"), getConstraints(4, 0));
+        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Copyright_Text()), getConstraints(4, 0));
         propertyDescriptor = propertyContainer.getDescriptor("copyright");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         descriptorPanel.add(editorComponent, getConstraints(4, 1));
 
-        descriptorPanel.add(new JLabel("Authors:"), getConstraints(5, 0));
+        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Authors_Text()), getConstraints(5, 0));
         propertyDescriptor = propertyContainer.getDescriptor("authors");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         descriptorPanel.add(editorComponent, getConstraints(5, 1));
 
-        descriptorPanel.add(new JLabel("Description:"), getConstraints(6, 0));
+        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Description_Text()), getConstraints(6, 0));
         propertyDescriptor = propertyContainer.getDescriptor("description");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         descriptorPanel.add(editorComponent, getConstraints(6, 1));
 
-        TitledBorder title = BorderFactory.createTitledBorder("Operator Descriptor");
+        TitledBorder title = BorderFactory.createTitledBorder(Bundle.CTL_Panel_OperatorDescriptor_Text());
         descriptorPanel.setBorder(title);
         descriptorPanel.setPreferredSize(new Dimension(415, 200));
 

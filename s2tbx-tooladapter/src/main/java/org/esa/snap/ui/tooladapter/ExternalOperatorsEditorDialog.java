@@ -13,6 +13,7 @@ import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
 import org.esa.snap.ui.tooladapter.interfaces.ToolAdapterDialog;
 import org.esa.snap.ui.tooladapter.utils.OperatorsTableModel;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +24,19 @@ import java.util.Set;
 /**
  * @author Ramona Manda
  */
+@NbBundle.Messages({
+        "ToolTipNewOperator_Text=Define new operator",
+        "ToolTipCopyOperator_Text=Duplicate the selected operator",
+        "ToolTipEditOperator_Text=Edit the selected operator",
+        "ToolTipExecuteOperator_Text=Execute the selected operator",
+        "ToolTipDeleteOperator_Text=Delete the selected operator(s)",
+        "Icon_New=/org/esa/snap/resources/images/icons/New24.gif",
+        "Icon_Copy=/org/esa/snap/resources/images/icons/Copy24.gif",
+        "Icon_Edit=/org/esa/snap/resources/images/icons/Edit24.gif",
+        "Icon_Execute=/org/esa/snap/resources/images/icons/Update24.gif",
+        "Icon_Remove=/org/esa/snap/resources/images/icons/Remove16.gif"
+
+})
 public class ExternalOperatorsEditorDialog extends ModalDialog {
 
     private AppContext appContext;
@@ -46,9 +60,9 @@ public class ExternalOperatorsEditorDialog extends ModalDialog {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-        AbstractButton newButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/snap/resources/images/icons/New24.gif"),
+        AbstractButton newButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_New()),
                 false);
-        newButton.setToolTipText("Define new operator");
+        newButton.setToolTipText(Bundle.ToolTipNewOperator_Text());
         newButton.addActionListener(e -> {
             close();
             ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor(ToolAdapterConstants.OPERATOR_NAMESPACE + "DefaultOperatorName", ToolAdapterOp.class, "DefaultOperatorName", null, null, null, null, null);
@@ -57,9 +71,9 @@ public class ExternalOperatorsEditorDialog extends ModalDialog {
         });
         panel.add(newButton);
 
-        AbstractButton copyButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/snap/resources/images/icons/Copy24.gif"),
+        AbstractButton copyButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Copy()),
                 false);
-        copyButton.setToolTipText("Duplicate selected operator");
+        copyButton.setToolTipText(Bundle.ToolTipCopyOperator_Text());
         copyButton.addActionListener(e -> {
             close();
 
@@ -79,9 +93,9 @@ public class ExternalOperatorsEditorDialog extends ModalDialog {
         });
         panel.add(copyButton);
 
-        AbstractButton editButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/snap/resources/images/icons/Edit24.gif"),
+        AbstractButton editButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Edit()),
                 false);
-        editButton.setToolTipText("Edit selected operator");
+        editButton.setToolTipText(Bundle.ToolTipEditOperator_Text());
         editButton.addActionListener(e -> {
             close();
             ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
@@ -90,9 +104,9 @@ public class ExternalOperatorsEditorDialog extends ModalDialog {
         });
         panel.add(editButton);
 
-        AbstractButton runButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/snap/resources/images/icons/Update24.gif"),
+        AbstractButton runButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Execute()),
                 false);
-        runButton.setToolTipText("Execute selected operator");
+        runButton.setToolTipText(Bundle.ToolTipExecuteOperator_Text());
         runButton.addActionListener(e -> {
             close();
             ToolAdapterOperatorDescriptor operatorSpi = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
@@ -106,9 +120,9 @@ public class ExternalOperatorsEditorDialog extends ModalDialog {
         });
         panel.add(runButton);
 
-        AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/snap/resources/images/icons/Remove16.gif"),
+        AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Remove()),
                 false);
-        delButton.setToolTipText("Delete selected operator(s)");
+        delButton.setToolTipText(Bundle.ToolTipDeleteOperator_Text());
         panel.add(delButton);
 
         return panel;
