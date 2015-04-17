@@ -1,4 +1,0 @@
-/C
-${command}
-${sourceProduct} 
-${targetProductFile}
