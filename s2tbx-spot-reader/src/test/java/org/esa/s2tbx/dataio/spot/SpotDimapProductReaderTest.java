@@ -4,6 +4,7 @@ import com.bc.ceres.core.NullProgressMonitor;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.util.TreeNode;
+import org.esa.beam.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 

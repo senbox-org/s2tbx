@@ -1,27 +1,28 @@
-package org.esa.s2tbx.dataio.readers;
+package org.esa.beam.dataio.readers;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.dataio.FileImageInputStreamSpi;
-import org.esa.s2tbx.dataio.VirtualDirEx;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.utils.CollectionHelper;
-import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
-import org.esa.snap.framework.dataio.AbstractProductReader;
-import org.esa.snap.framework.dataio.DecodeQualification;
-import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.framework.datamodel.Band;
-import org.esa.snap.framework.datamodel.MetadataElement;
-import org.esa.snap.framework.datamodel.Product;
-import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.jai.ImageManager;
-import org.esa.snap.util.StringUtils;
-import org.esa.snap.util.TreeNode;
+import org.esa.beam.dataio.FileImageInputStreamSpi;
+import org.esa.beam.dataio.VirtualDirEx;
+import org.esa.beam.dataio.geotiff.GeoTiffProductReader;
+import org.esa.beam.dataio.metadata.XmlMetadata;
+import org.esa.beam.dataio.metadata.XmlMetadataParser;
+import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.beam.framework.dataio.AbstractProductReader;
+import org.esa.beam.framework.dataio.DecodeQualification;
+import org.esa.beam.framework.dataio.ProductReaderPlugIn;
+import org.esa.beam.framework.datamodel.Band;
+import org.esa.beam.framework.datamodel.MetadataElement;
+import org.esa.beam.framework.datamodel.Product;
+import org.esa.beam.framework.datamodel.ProductData;
+import org.esa.beam.jai.ImageManager;
+import org.esa.beam.util.StringUtils;
+import org.esa.beam.util.TreeNode;
+import org.esa.beam.util.logging.BeamLogManager;
+import org.esa.beam.utils.CollectionHelper;
 
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
@@ -52,7 +53,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
     protected GeoTiffBasedReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        logger = Logger.getLogger(GeoTiffBasedReader.class.getName());
+        logger = BeamLogManager.getSystemLogger();
         this.metadataClass = getTypeArgument();
         registerMetadataParser();
         registerSpi();
@@ -224,9 +225,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
             logger.info("No metadata file found");
         }
         if (metadata != null && metadata.size() > 0) {
-            List<M> rasterMetadataList = CollectionHelper.where(metadata, m -> {
-                return m.getFileName().endsWith(getMetadataFileSuffix());
-            });
+            List<M> rasterMetadataList = CollectionHelper.where(metadata, m -> m.getFileName().endsWith(getMetadataFileSuffix()));
 
             M firstMetadata;
             String metadataProfile;
@@ -431,6 +430,42 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
             }
         }
         return groupPattern.substring(0, groupPattern.length() - 1);
+    }
+
+    @Override
+    public TreeNode<File> getProductComponents() {
+        TreeNode<File> result = super.getProductComponents();
+        if (productDirectory.isCompressed()) {
+            return result;
+        } else {
+            TreeNode<File>[] nodesClone = result.getChildren().clone();
+            for(TreeNode<File> node : nodesClone){
+                result.removeChild(node);
+            }
+            for(XmlMetadata metaFile: metadata){
+                TreeNode<File> productFile = new TreeNode<>(metaFile.getFileName());
+                result.addChild(productFile);
+                /*try {
+                    TreeNode<File> productFile = new TreeNode<File>(metaFile.getFileName());
+                    productFile.setContent(input.getFile(inputFile));
+                    result.addChild(productFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
+            }
+            for(String inputFile: getRasterFileNames()){
+                TreeNode<File> productFile = new TreeNode<>(inputFile);
+                result.addChild(productFile);
+                /*try {
+                    TreeNode<File> productFile = new TreeNode<File>(inputFile);
+                    productFile.setContent(input.getFile(inputFile));
+                    result.addChild(productFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }*/
+            }
+            return result;
+        }
     }
 
     /**

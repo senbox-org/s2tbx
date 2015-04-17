@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.spot.dimap;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.spot.TestUtil;
+import org.esa.beam.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,50 +1,46 @@
-package org.esa.s2tbx.dataio.spot;
+package org.esa.beam.dataio.deimos;
 
-import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
-import org.esa.snap.framework.dataio.DecodeQualification;
-import org.esa.snap.framework.dataio.ProductIOPlugInManager;
-import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.util.io.BeamFileFilter;
+import org.esa.beam.dataio.deimos.dimap.DeimosConstants;
+import org.esa.beam.framework.dataio.DecodeQualification;
+import org.esa.beam.framework.dataio.ProductIOPlugInManager;
+import org.esa.beam.framework.dataio.ProductReaderPlugIn;
+import org.esa.beam.util.io.BeamFileFilter;
 import org.esa.beam.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
- * @author Ramona Manda
+ * @author Ramona MANDA
  */
-public class SpotTake5ProductReaderPluginTest {
+public class DeimosProductReaderPluginTest {
 
-    private SpotTake5ProductReaderPlugin plugIn;
+    private DeimosProductReaderPlugin plugIn;
 
     @Before
     public void setup() {
-        plugIn = new SpotTake5ProductReaderPlugin();
+        plugIn = new DeimosProductReaderPlugin();
     }
 
     @Test
-    public void spotTake5ReaderIsLoaded() {
-        final Iterator iterator = ProductIOPlugInManager.getInstance().getReaderPlugIns(SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0]);
+    public void deimosReaderIsLoaded() {
+        final Iterator iterator = ProductIOPlugInManager.getInstance().getReaderPlugIns(DeimosConstants.DIMAP_FORMAT_NAMES[0]);
         final ProductReaderPlugIn plugIn = (ProductReaderPlugIn) iterator.next();
-        assertEquals(SpotTake5ProductReaderPlugin.class, plugIn.getClass());
+        assertEquals(DeimosProductReaderPlugin.class, plugIn.getClass());
     }
 
     @Test
     public void testDecodeQualificationForXML() throws IOException {
         Date startDate = Calendar.getInstance().getTime();
-        DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("dimap/test_ST4_MT.xml"));
+        DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
         assertEquals(DecodeQualification.UNABLE, decodeQualification);
-        decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.tgz"));
+        decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim"));
         assertEquals(DecodeQualification.INTENDED, decodeQualification);
         Date endDate = Calendar.getInstance().getTime();
         assertTrue("The decoding time for the file is too big!", (endDate.getTime() - startDate.getTime()) / 1000 < 30);//30 sec
@@ -55,11 +51,10 @@ public class SpotTake5ProductReaderPluginTest {
         final String[] fileExtensions = plugIn.getDefaultFileExtensions();
         assertNotNull(fileExtensions);
         final List<String> extensionList = Arrays.asList(fileExtensions);
-        assertEquals(4, extensionList.size());
-        assertEquals(".xml", extensionList.get(0));
-        assertEquals(".XML", extensionList.get(1));
-        assertEquals(".tgz", extensionList.get(2));
-        assertEquals(".TGZ", extensionList.get(3));
+        assertEquals(3, extensionList.size());
+        assertEquals(".dim", extensionList.get(0));
+        assertEquals(".zip", extensionList.get(1));
+        assertEquals(".tar", extensionList.get(2));
     }
 
     @Test
@@ -67,7 +62,7 @@ public class SpotTake5ProductReaderPluginTest {
         final String[] formatNames = plugIn.getFormatNames();
         assertNotNull(formatNames);
         assertEquals(1, formatNames.length);
-        assertEquals("SPOTTake5", formatNames[0]);
+        assertEquals("DEIMOSDimap", formatNames[0]);
     }
 
     @Test
@@ -88,5 +83,4 @@ public class SpotTake5ProductReaderPluginTest {
         assertEquals(plugIn.getFormatNames()[0], beamFileFilter.getFormatName());
         assertEquals(true, beamFileFilter.getDescription().contains(plugIn.getDescription(Locale.getDefault())));
     }
-
 }
