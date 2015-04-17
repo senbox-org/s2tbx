@@ -19,6 +19,11 @@
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-jai</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
             <artifactId>snap-engine-kit</artifactId>
             <version>${snap.version}</version>
         </dependency>
@@ -40,6 +45,7 @@
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-reader-tests</artifactId>
             <version>${snap.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
