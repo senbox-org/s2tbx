@@ -62,6 +62,9 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
+                    <publicPackages>
+                        <publicPackage>org.esa.s2tbx.openjpeg.*</publicPackage>
+                    </publicPackages>
                     <nbmResources>
                         <nbmResource>
                             <directory>release/dependency</directory>
