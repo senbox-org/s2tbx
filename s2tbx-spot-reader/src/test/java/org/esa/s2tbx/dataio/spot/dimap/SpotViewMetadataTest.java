@@ -4,9 +4,8 @@ import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.dataio.spot.TestUtil;
+import org.esa.s2tbx.utils.TestUtil;
 import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.beam.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 

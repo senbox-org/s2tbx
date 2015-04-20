@@ -1,20 +1,24 @@
-package org.esa.beam.dataio.deimos;
+package org.esa.s2tbx.dataio.deimos;
 
-import org.esa.beam.dataio.deimos.dimap.DeimosConstants;
-import org.esa.beam.framework.dataio.DecodeQualification;
-import org.esa.beam.framework.dataio.ProductIOPlugInManager;
-import org.esa.beam.framework.dataio.ProductReaderPlugIn;
-import org.esa.beam.util.io.BeamFileFilter;
-import org.esa.beam.utils.TestUtil;
+import org.esa.s2tbx.dataio.deimos.dimap.DeimosConstants;
+import org.esa.s2tbx.utils.TestUtil;
+import org.esa.snap.framework.dataio.DecodeQualification;
+import org.esa.snap.framework.dataio.ProductIOPlugInManager;
+import org.esa.snap.framework.dataio.ProductReaderPlugIn;
+import org.esa.snap.util.io.BeamFileFilter;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ramona MANDA
@@ -38,9 +42,11 @@ public class DeimosProductReaderPluginTest {
     @Test
     public void testDecodeQualificationForXML() throws IOException {
         Date startDate = Calendar.getInstance().getTime();
-        DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
+        DecodeQualification decodeQualification = plugIn.getDecodeQualification(
+                TestUtil.getTestFile("2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
         assertEquals(DecodeQualification.UNABLE, decodeQualification);
-        decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim"));
+        decodeQualification = plugIn.getDecodeQualification(
+                TestUtil.getTestFile("small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim"));
         assertEquals(DecodeQualification.INTENDED, decodeQualification);
         Date endDate = Calendar.getInstance().getTime();
         assertTrue("The decoding time for the file is too big!", (endDate.getTime() - startDate.getTime()) / 1000 < 30);//30 sec

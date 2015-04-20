@@ -1,16 +1,16 @@
-package org.esa.beam.dataio.deimos.dimap;
+package org.esa.s2tbx.dataio.deimos.dimap;
 
 import junit.framework.TestCase;
-import org.esa.beam.dataio.metadata.XmlMetadata;
-import org.esa.beam.dataio.metadata.XmlMetadataParser;
-import org.esa.beam.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.beam.framework.datamodel.ProductData;
-import org.esa.beam.utils.DateHelper;
-import org.esa.beam.utils.TestUtil;
+import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
+import org.esa.s2tbx.utils.DateHelper;
+import org.esa.s2tbx.utils.TestUtil;
+import org.esa.snap.framework.datamodel.ProductData;
 import org.junit.After;
 import org.junit.Before;
 
-import java.awt.*;
+import java.awt.Color;
 
 /**
  * Unit test class for Deimos Metadata

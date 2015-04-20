@@ -1,10 +1,10 @@
-package org.esa.beam.dataio.deimos;
+package org.esa.s2tbx.dataio.deimos;
 
 import com.bc.ceres.core.NullProgressMonitor;
-import org.esa.beam.framework.datamodel.Product;
-import org.esa.beam.framework.datamodel.ProductData;
-import org.esa.beam.util.TreeNode;
-import org.esa.beam.utils.TestUtil;
+import org.esa.s2tbx.utils.TestUtil;
+import org.esa.snap.framework.datamodel.Product;
+import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.util.TreeNode;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,9 +13,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Ramona MANDA

@@ -1,11 +1,11 @@
 package org.esa.s2tbx.dataio.spot;
 
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
+import org.esa.s2tbx.utils.TestUtil;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductIOPlugInManager;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.io.BeamFileFilter;
-import org.esa.beam.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
