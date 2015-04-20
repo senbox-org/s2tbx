@@ -23,7 +23,7 @@ public class DeimosMetadataTest extends TestCase {
     @Before
     public void setUp() throws Exception {
         XmlMetadataParserFactory.registerParser(DeimosMetadata.class, new XmlMetadataParser<>(DeimosMetadata.class));
-        metadata = XmlMetadata.create(DeimosMetadata.class, TestUtil.getTestFile("DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502.tar"));
+        metadata = XmlMetadata.create(DeimosMetadata.class, TestUtil.getTestFile("DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502/DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502.dim"));
     }
 
     @After
@@ -33,7 +33,7 @@ public class DeimosMetadataTest extends TestCase {
     }
 
     public void testGetFileName() throws Exception {
-        assertEquals("DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502.tif", metadata.getFileName());
+        assertEquals("DEIMOS", metadata.getFileName());
     }
 
     public void testGetProductName() throws Exception {
@@ -64,7 +64,7 @@ public class DeimosMetadataTest extends TestCase {
         String[] fileNames = metadata.getRasterFileNames();
         assertNotNull(fileNames);
         assertEquals(fileNames.length, 1);
-        assertEquals("DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502.tif", fileNames[0]);
+        assertEquals("de01_sl6_22p_1t_20120905t170604_20120905t170613_dmi_0_4502.tif", fileNames[0]);
     }
 
     public void testGetBandNames() throws Exception {
@@ -93,12 +93,12 @@ public class DeimosMetadataTest extends TestCase {
     }
 
     public void testGetSaturatedColor() throws Exception {
-        assertEquals(Color.WHITE, metadata.getSaturatedColor());
+        assertEquals(Color.BLACK, metadata.getSaturatedColor());
     }
 
     public void testGetCenterTime() throws Exception {
         ProductData.UTC time = DateHelper.parseDate("2012-09-05 17:06:09", DeimosConstants.DEIMOS_DATE_FORMAT);
-        assertEquals(time, metadata.getCenterTime());
+        assertEquals(time.getAsDate(), metadata.getCenterTime().getAsDate());
     }
 
     public void testGetProcessingLevel() throws Exception {

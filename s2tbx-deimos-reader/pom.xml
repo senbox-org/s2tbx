@@ -95,7 +95,7 @@
                 <version>3.14</version>
                 <configuration>
                     <publicPackages>
-                        <publicPackage>org.esa.snap.dataio.deimos</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.deimos</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
