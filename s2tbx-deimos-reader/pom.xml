@@ -45,6 +45,7 @@
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-reader-tests</artifactId>
             <version>${snap.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
@@ -94,7 +95,7 @@
                 <version>3.14</version>
                 <configuration>
                     <publicPackages>
-                        <publicPackage>org.esa.snap.dataio.deimos</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.deimos</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>

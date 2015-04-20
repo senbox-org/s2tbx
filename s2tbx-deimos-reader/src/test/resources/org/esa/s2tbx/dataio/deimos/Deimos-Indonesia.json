@@ -125,6 +125,54 @@
                  "value": "3"
             },
             {
+                 "path": "DMCII/Quality_Assessment/QUALITY_TABLES",
+                 "value": "SPACEMETRIC"
+            },
+            {
+                 "path": "DMCII/Quality_Assessment/Quality_Parameter[1]/QUALITY_PARAMETER_DESC",
+                 "value": "Number of control points"
+            },
+            {
+                 "path": "DMCII/Quality_Assessment/Quality_Parameter[1]/QUALITY_PARAMETER_CODE",
+                 "value": "SPACEMETRIC:NGCP"
+            },
+            {
+                 "path": "DMCII/Quality_Assessment/Quality_Parameter[1]/QUALITY_PARAMETER_VALUE",
+                 "value": "21"
+            },
+            {
+                 "path": "DMCII/Quality_Assessment/Quality_Parameter[2]/QUALITY_PARAMETER_DESC",
+                 "value": "Root Mean Square residual error X component"
+            },
+            {
+                 "path": "DMCII/Quality_Assessment/Quality_Parameter[2]/QUALITY_PARAMETER_CODE",
+                 "value": "SPACEMETRIC:RMSX"
+            },
+            {
+                 "path": "DMCII/Quality_Assessment/Quality_Parameter[2]/QUALITY_PARAMETER_VALUE",
+                 "value": "6.2"
+            },
+            {
+                 "path": "DMCII/Quality_Assessment/Quality_Parameter[3]/QUALITY_PARAMETER_DESC",
+                 "value": "Root Mean Square residual error Y component"
+            },
+            {
+                 "path": "DMCII/Quality_Assessment/Quality_Parameter[3]/QUALITY_PARAMETER_CODE",
+                 "value": "SPACEMETRIC:RMSY"
+            },
+            {
+                 "path": "DMCII/Quality_Assessment/Quality_Parameter[3]/QUALITY_PARAMETER_VALUE",
+                 "value": "6.69"
+            },
+            {
+                 "path": "DMCII/Image_Display/Special_Value/SPECIAL_VALUE_INDEX",
+                 "value": "0"
+            },
+            {
+                 "path": "DMCII/Image_Display/Special_Value/SPECIAL_VALUE_TEXT",
+                 "value": "nodata"
+            },
+            {
                  "path": "TIFF Metadata/GeoTIFF Metadata/GeoKeyDirectory/ProjectedCSTypeGeoKey",
                  "value": "PCS_WGS84_UTM_zone_50N"
             },
