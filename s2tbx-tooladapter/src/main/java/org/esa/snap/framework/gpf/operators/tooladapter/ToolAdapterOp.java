@@ -23,6 +23,7 @@ import org.esa.snap.framework.gpf.internal.OperatorContext;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.ProductUtils;
 import org.esa.snap.utils.PrivilegedAccessor;
+import org.netbeans.api.progress.ProgressHandle;
 
 import java.io.*;
 import java.text.DateFormat;
@@ -77,7 +78,7 @@ public class ToolAdapterOp extends Operator {
             getLogger().severe(e.getMessage());
         }
         Velocity.init();
-        this.progressMonitor = ProgressMonitor.NULL;
+        //this.progressMonitor = ProgressMonitor.NULL;
         //this.descriptor = ((ToolAdapterOperatorDescriptor) accessibleContext.getOperatorSpi().getOperatorDescriptor());
     }
 
@@ -90,7 +91,7 @@ public class ToolAdapterOp extends Operator {
         this.consumer = consumer;
     }
 
-    public void setProgressMonitor(ProgressMonitor monitor) { this.progressMonitor = monitor; }
+    public void setProgressMonitor(ProgressHandle monitor) { this.progressMonitor = new ProgressWrapper(monitor); }
 
     /**
      * Command to isStopped the tool.
@@ -129,45 +130,32 @@ public class ToolAdapterOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
         Date currentTime = new Date();
-        OperatorException exception = null;
-        if (descriptor == null) {
-            descriptor = ((ToolAdapterOperatorDescriptor) accessibleContext.getOperatorSpi().getOperatorDescriptor());
-        }
         try {
+            if (descriptor == null) {
+                descriptor = ((ToolAdapterOperatorDescriptor) accessibleContext.getOperatorSpi().getOperatorDescriptor());
+            }
+            if (this.progressMonitor != null) {
+                this.progressMonitor.beginTask("Starting " + this.descriptor.getName(), 100);
+            }
             validateDescriptor();
-        } catch (OperatorException validationException) {
-            exception = validationException;
-        }
-        if (this.consumer == null ) {
-            this.consumer = new DefaultOutputConsumer(descriptor.getProgressPattern(), descriptor.getErrorPattern(), this.progressMonitor);
-        }
-        if (!isStopped && exception == null) {
-            try {
+            if (this.consumer == null) {
+                this.consumer = new DefaultOutputConsumer(descriptor.getProgressPattern(), descriptor.getErrorPattern(), this.progressMonitor);
+            }
+            if (!isStopped) {
                 beforeExecute();
-            } catch (OperatorException beforeException) {
-                exception = beforeException;
             }
-        }
-        if (!isStopped && exception == null) {
-            try {
+            if (!isStopped) {
                 execute();
-            } catch (OperatorException executionException) {
-                exception = executionException;
             }
-        }
-        if (this.consumer != null) {
-            Date finalDate = new Date();
-            this.consumer.consumeOutput("Finished tool execution in " + (finalDate.getTime() - currentTime.getTime()) / 1000 + " seconds");
-        }
-        if (exception == null) {
-            try {
-                postExecute();
-            } catch (OperatorException afterException) {
-                exception = afterException;
+            if (this.consumer != null) {
+                Date finalDate = new Date();
+                this.consumer.consumeOutput("Finished tool execution in " + (finalDate.getTime() - currentTime.getTime()) / 1000 + " seconds");
             }
-        }
-        if (exception != null) {
-            throw exception;
+            postExecute();
+        } finally {
+            if (this.progressMonitor != null) {
+                this.progressMonitor.done();
+            }
         }
     }
 
@@ -206,20 +194,19 @@ public class ToolAdapterOp extends Operator {
      * @throws org.esa.snap.framework.gpf.OperatorException in case of an error
      */
     private void beforeExecute() throws OperatorException {
-        for(TemplateParameterDescriptor parameter : descriptor.getToolParameterDescriptors()){
-            if(parameter.getParameterType().equals(ToolAdapterConstants.TEMPLATE_BEFORE_MASK)){
-                try {
-                    transformTemplateParameter(parameter);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    throw new OperatorException("Error processing template before execution for parameter: '" + parameter.getName() + "'");
-                }
-            }
-        }
+        reportProgress("Interpreting pre-execution template");
+        descriptor.getToolParameterDescriptors().stream().filter(parameter -> parameter.getParameterType().equals(ToolAdapterConstants.TEMPLATE_BEFORE_MASK))
+                .forEach(parameter -> {
+                    try {
+                        transformTemplateParameter(parameter);
+                    } catch (IOException e) {
+                        getLogger().severe("Error processing template before execution for parameter: '" + parameter.getName() + "'");
+                    }
+                });
         if (descriptor.shouldWriteBeforeProcessing()) {
             String sourceFormatName = descriptor.getProcessingWriter();
             if (sourceFormatName != null) {
-                this.progressMonitor.beginTask("Writing source product as " + sourceFormatName, 0);
+                reportProgress(String.format("Converting source product to %s", sourceFormatName));
                 ProductIOPlugInManager registry = ProductIOPlugInManager.getInstance();
                 Iterator<ProductWriterPlugIn> writerPlugIns = registry.getWriterPlugIns(sourceFormatName);
                 ProductWriterPlugIn writerPlugIn = writerPlugIns.next();
@@ -249,9 +236,10 @@ public class ToolAdapterOp extends Operator {
                     try {
                         interimProduct.closeIO();
                         interimProduct.dispose();
-                    } catch (IOException e) {
+                    } catch (IOException ignored) {
                     }
                     interimProduct = null;
+                    reportProgress("Product conversion finished");
                 }
                 if (outFile.exists()) {
                     intermediateProductFile = outFile;
@@ -273,7 +261,7 @@ public class ToolAdapterOp extends Operator {
         BufferedReader outReader = null;
         int ret = -1;
         try {
-            this.progressMonitor.setTaskName("Starting tool execution");
+            reportProgress("Starting tool execution");
             List<String> cmdLine = getCommandLineTokens();
             logCommandLine(cmdLine);
             ProcessBuilder pb = new ProcessBuilder(cmdLine);
@@ -341,7 +329,7 @@ public class ToolAdapterOp extends Operator {
      * @throws OperatorException in case of an error
      */
     private void postExecute() throws OperatorException {
-        this.progressMonitor.setTaskName("Trying to open the new product");
+        reportProgress("Trying to open the new product");
         File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE);
         if (input != null) {
             try {
@@ -541,4 +529,59 @@ public class ToolAdapterOp extends Operator {
         return rasters;
     }
 
+    private void reportProgress(String message) {
+        if (this.progressMonitor != null) {
+            this.progressMonitor.setTaskName(message);
+        }
+    }
+
+    class ProgressWrapper implements ProgressMonitor {
+
+        private ProgressHandle progressHandle;
+
+        ProgressWrapper(ProgressHandle handle) {
+            this.progressHandle = handle;
+        }
+
+        @Override
+        public void beginTask(String taskName, int totalWork) {
+            this.progressHandle.setDisplayName(taskName);
+            this.progressHandle.start();
+        }
+
+        @Override
+        public void done() {
+            this.progressHandle.finish();
+        }
+
+        @Override
+        public void internalWorked(double work) {
+            this.progressHandle.progress((int)work);
+        }
+
+        @Override
+        public boolean isCanceled() {
+            return false;
+        }
+
+        @Override
+        public void setCanceled(boolean canceled) {
+            this.progressHandle.suspend("Cancelled");
+        }
+
+        @Override
+        public void setTaskName(String taskName) {
+            this.progressHandle.progress(taskName);
+        }
+
+        @Override
+        public void setSubTaskName(String subTaskName) {
+            this.progressHandle.progress(subTaskName);
+        }
+
+        @Override
+        public void worked(int work) {
+            internalWorked(work);
+        }
+    }
 }

@@ -3,7 +3,6 @@ package org.esa.snap.framework.gpf.operators.tooladapter;
 import org.esa.snap.framework.gpf.GPF;
 import org.esa.snap.framework.gpf.OperatorException;
 import org.esa.snap.framework.gpf.OperatorSpi;
-import org.esa.snap.framework.gpf.OperatorSpiRegistry;
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.snap.util.SystemUtils;
 
@@ -16,6 +15,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,13 +35,39 @@ public class ToolAdapterIO {
     private static Logger logger = Logger.getLogger(ToolAdapterIO.class.getName());
 
     /**
+     * Scans for modules in the system and user paths and registers all
+     * the modules that have been found.
+     *
+     * @return  A list of registered OperatorSPIs
+     */
+    public static Collection<ToolAdapterOpSpi> registerModules() {
+        Logger logger = Logger.getLogger(ToolAdapterOpSpi.class.getName());
+        List<File> moduleFolders = null;
+        try {
+            moduleFolders = ToolAdapterIO.scanForModules();
+        } catch (IOException e) {
+            logger.severe("Failed scan for Tools descriptors: I/O problem: " + e.getMessage());
+        }
+        if (moduleFolders != null) {
+            for (File moduleFolder : moduleFolders) {
+                try {
+                    ToolAdapterIO.registerModule(moduleFolder);
+                } catch (Exception ex) {
+                    logger.severe(String.format("Failed to register module %s. Problem: %s", moduleFolder.getName(), ex.getMessage()));
+                }
+            }
+        }
+        return ToolAdapterRegistry.INSTANCE.getOperatorMap().values();
+    }
+
+    /**
      * Constructs an OperatorSpi from a given folder.
      *
      * @param operatorFolder    The path containing the file/folder operator structure
      * @return                  An SPI for the read operator.
      * @throws OperatorException
      */
-    public static OperatorSpi readOperator(File operatorFolder) throws OperatorException {
+    public static ToolAdapterOpSpi readOperator(File operatorFolder) throws OperatorException {
         //Look for the descriptor
         File descriptorFile = new File(operatorFolder, ToolAdapterConstants.DESCRIPTOR_FILE);
         ToolAdapterOperatorDescriptor operatorDescriptor;
@@ -63,7 +89,7 @@ public class ToolAdapterIO {
      * @throws IOException
      */
     public static String readOperatorTemplate(String toolName) throws IOException {
-        File file = getTemplateFile(toolName);
+        File file = getTemplateFile(toolName, true);
         byte[] encoded = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
         return new String(encoded, Charset.defaultCharset());
     }
@@ -76,7 +102,7 @@ public class ToolAdapterIO {
      * @throws IOException
      */
     public static void writeOperatorTemplate(String toolName, String content) throws IOException {
-        File file = getTemplateFile(toolName);
+        File file = getTemplateFile(toolName, false);
         saveFileContent(file, content);
     }
 
@@ -107,7 +133,7 @@ public class ToolAdapterIO {
             }
         }
         ToolAdapterOpSpi operatorSpi = new ToolAdapterOpSpi(operator, moduleFolder);
-        GPF.getDefaultInstance().getOperatorSpiRegistry().addOperatorSpi(operator.getName(), operatorSpi);
+//        GPF.getDefaultInstance().getOperatorSpiRegistry().addOperatorSpi(operator.getName(), operatorSpi);
         File descriptorFile = new File(moduleFolder, ToolAdapterConstants.DESCRIPTOR_FILE);
         if (!descriptorFile.exists()) {
             //noinspection ResultOfMethodCallIgnored
@@ -118,7 +144,22 @@ public class ToolAdapterIO {
         }
         String xmlContent = operator.toXml(ToolAdapterIO.class.getClassLoader());
         saveFileContent(descriptorFile, xmlContent);
+        ToolAdapterRegistry.INSTANCE.registerOperator(operatorSpi);
         writeOperatorTemplate(operator.getName(), templateContent);
+    }
+
+    /**
+     * Register a tool as an operator.
+     *
+     * @param moduleFolder the folder of the tool adapter
+     * @throws OperatorException in case of an error
+     */
+    public static void registerModule(File moduleFolder) throws OperatorException {
+        ToolAdapterOpSpi operatorSpi = ToolAdapterIO.readOperator(moduleFolder);
+        if (moduleFolder.getAbsolutePath().startsWith(systemModulePath.getAbsolutePath())) {
+            ((ToolAdapterOperatorDescriptor) operatorSpi.getOperatorDescriptor()).setSystem(true);
+        }
+        ToolAdapterRegistry.INSTANCE.registerOperator(operatorSpi);
     }
 
     /**
@@ -174,7 +215,7 @@ public class ToolAdapterIO {
         }
     }
 
-    private static File getSystemModulesPath() {
+    public static File getSystemModulesPath() {
         if (systemModulePath == null) {
             String applicationHomePropertyName = SystemUtils.getApplicationHomePropertyName();
             if (applicationHomePropertyName == null) {
@@ -221,7 +262,7 @@ public class ToolAdapterIO {
         return modules;
     }
 
-    private static File getTemplateFile(String toolName) {
+    private static File getTemplateFile(String toolName, boolean forReading) {
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(toolName);
         if (spi == null) {
             throw new OperatorException("Cannot find the operator SPI");
@@ -231,7 +272,7 @@ public class ToolAdapterIO {
             throw new OperatorException("Cannot read the operator template file");
         }
         String templateFile = operatorDescriptor.getTemplateFileLocation();
-        File template = new File(getSystemModulesPath(), spi.getOperatorAlias() + File.separator + templateFile);
+        File template = new File(forReading ? getSystemModulesPath() : getUserModulesPath(), spi.getOperatorAlias() + File.separator + templateFile);
         if (!template.exists()) {
             template = new File(getUserModulesPath(), spi.getOperatorAlias() + File.separator + templateFile);
         }
@@ -239,17 +280,15 @@ public class ToolAdapterIO {
     }
 
     private static void removeOperator(ToolAdapterOperatorDescriptor operator, boolean removeOperatorFolder) {
-        OperatorSpiRegistry operatorSpiRegistry = GPF.getDefaultInstance().getOperatorSpiRegistry();
-        OperatorSpi spi = operatorSpiRegistry.getOperatorSpi(operator.getName());
-        if (spi != null) {
-            operatorSpiRegistry.removeOperatorSpi(spi);
-        }
-        if (removeOperatorFolder) {
-            File rootFolder = getUserModulesPath();
-            File moduleFolder = new File(rootFolder, operator.getAlias());
-            if (moduleFolder.exists()) {
-                if (!moduleFolder.delete()) {
-                    logger.warning(String.format("Folder %s cannot be deleted", moduleFolder.getAbsolutePath()));
+        if (!operator.isSystem()) {
+            ToolAdapterRegistry.INSTANCE.removeOperator(operator);
+            if (removeOperatorFolder) {
+                File rootFolder = getUserModulesPath();
+                File moduleFolder = new File(rootFolder, operator.getAlias());
+                if (moduleFolder.exists()) {
+                    if (!moduleFolder.delete()) {
+                        logger.warning(String.format("Folder %s cannot be deleted", moduleFolder.getAbsolutePath()));
+                    }
                 }
             }
         }

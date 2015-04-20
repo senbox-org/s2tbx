@@ -410,7 +410,14 @@ public class ExternalToolEditorDialog extends ModalDialog {
     @Override
     protected void onOK() {
         super.onOK();
+        ToolAdapterMenuRegistrar.removeOperatorMenu(oldOperatorDescriptor);
         ToolAdapterIO.removeOperator(oldOperatorDescriptor);
+        String oldOperatorName = oldOperatorDescriptor.getName();
+        if (oldOperatorDescriptor.isSystem() && oldOperatorName.equals(newOperatorDescriptor.getName())) {
+            newOperatorDescriptor.setName(newOperatorDescriptor.getName() + ".custom");
+            newOperatorDescriptor.setAlias(newOperatorDescriptor.getAlias() + "-custom");
+        }
+        newOperatorDescriptor.setSystem(false);
         newOperatorDescriptor.setTemplateFileLocation(newOperatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
         for(TemplateParameterDescriptor param : newOperatorDescriptor.getToolParameterDescriptors()){
             if(paramsTable.getBindingContext().getBinding(param.getName()) == null){

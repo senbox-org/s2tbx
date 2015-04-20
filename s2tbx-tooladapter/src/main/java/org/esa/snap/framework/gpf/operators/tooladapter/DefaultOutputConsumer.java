@@ -1,7 +1,6 @@
 package org.esa.snap.framework.gpf.operators.tooladapter;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -39,7 +38,7 @@ public class DefaultOutputConsumer implements ProcessOutputConsumer {
             progress = Pattern.compile(progressPattern, Pattern.CASE_INSENSITIVE);
             initializeProgressMonitor();
         }
-        logger = BeamLogManager.getSystemLogger();
+        logger = Logger.getLogger(DefaultOutputConsumer.class.getName());
     }
 
     public void setProgressMonitor(ProgressMonitor monitor) {
@@ -53,13 +52,14 @@ public class DefaultOutputConsumer implements ProcessOutputConsumer {
         try {
             if (progress != null && (matcher = progress.matcher(line)).matches()) {
                 int worked = Integer.parseInt(matcher.group(1));
-                if (worked < 2)
+                /*if (worked < 2)
                     progressMonitor.beginTask("Processing", worked);
-                else
-                    progressMonitor.worked(worked);
+                else*/
+                progressMonitor.worked(worked);
             } else if (error != null && (matcher = error.matcher(line)).matches()) {
                 logger.severe(matcher.group(1));
             } else {
+                //progressMonitor.setSubTaskName(line);
                 //progressMonitor.setSubTaskName(line);
                 logger.info(line);
             }
@@ -70,8 +70,8 @@ public class DefaultOutputConsumer implements ProcessOutputConsumer {
     private void initializeProgressMonitor() {
         if (progressMonitor == null) {
             progressMonitor = ProgressMonitor.NULL;
+            progressMonitor.beginTask("Starting", 100);
         }
-        progressMonitor.beginTask("Starting", 100);
     }
 
     public void close() {

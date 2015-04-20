@@ -4,6 +4,7 @@ import org.esa.snap.framework.gpf.GPF;
 import org.esa.snap.framework.gpf.OperatorSpi;
 import org.esa.snap.framework.gpf.OperatorSpiRegistry;
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
 import org.esa.snap.rcp.SnapDialogs;
 import org.esa.snap.ui.tooladapter.interfaces.ToolAdapterItemAction;
@@ -46,7 +47,7 @@ public class ToolAdapterMenuRegistrar {
      * @param operator  The operator descriptor
      */
     public static void registerOperatorMenu(ToolAdapterOperatorDescriptor operator) {
-        registerOperatorMenu(operator, MENU_TEXT, MENU_PATH);
+        registerOperatorMenu(operator, MENU_TEXT, MENU_PATH, true);
     }
 
     /**
@@ -56,7 +57,7 @@ public class ToolAdapterMenuRegistrar {
      * @param groupName The menu group name
      * @param menu      The parent menu
      */
-    public static void registerOperatorMenu(ToolAdapterOperatorDescriptor operator, String groupName, String menu) {
+    public static void registerOperatorMenu(ToolAdapterOperatorDescriptor operator, String groupName, String menu, boolean hasChanged) {
         FileObject menuFolder = FileUtil.getConfigFile(menu);
         try {
             FileObject groupItem = menuFolder.getFileObject(groupName);
@@ -65,18 +66,56 @@ public class ToolAdapterMenuRegistrar {
                 groupItem.setAttribute("position", 1001);
             }
 
-            String operatorAlias = operator.getAlias();
-            FileObject newItem = groupItem.getFileObject(operatorAlias, "instance");
-            if (newItem != null) {
-                newItem.delete();
-            }
-            newItem = groupItem.createData(operatorAlias, "instance");
-            ToolAdapterItemAction action = new ToolAdapterItemAction(operatorAlias);
+            String candidateMenuKey = operator.getAlias();
+            FileObject newItem = groupItem.getFileObject(candidateMenuKey, "instance");
+            if (newItem == null) {
+                newItem = groupItem.createData(candidateMenuKey, "instance");
+            } /*else {
+                if (hasChanged || operator.isSystem()) {
+                    if (!operator.getName().endsWith(".custom"))
+                        operator.setName(operator.getName() + ".custom");
+                    candidateMenuKey = operator.getAlias() + " (custom)";
+                    operator.setAlias(candidateMenuKey);
+                    newItem = groupItem.getFileObject(candidateMenuKey, "instance");
+                    if (newItem == null) {
+                        newItem = groupItem.createData(candidateMenuKey, "instance");
+                    }
+                }
+            }*/
+            ToolAdapterItemAction action = new ToolAdapterItemAction(candidateMenuKey);
             newItem.setAttribute("instanceCreate", action);
             newItem.setAttribute("instanceClass", action.getClass().getName());
-            actionMap.put(operatorAlias, operator);
+            if (actionMap.containsKey(candidateMenuKey)) {
+                actionMap.remove(candidateMenuKey);
+            }
+            actionMap.put(candidateMenuKey, operator);
         } catch (IOException e) {
             SnapDialogs.showError("Error:" + e.getMessage());
+        }
+    }
+
+    public static void removeOperatorMenu(ToolAdapterOperatorDescriptor operator) {
+        removeOperatorMenu(operator, MENU_TEXT, MENU_PATH);
+    }
+
+    public static void removeOperatorMenu(ToolAdapterOperatorDescriptor operator, String groupName, String menu) {
+        if (!operator.isSystem()) {
+            FileObject menuFolder = FileUtil.getConfigFile(menu);
+            try {
+                FileObject groupItem = menuFolder.getFileObject(groupName);
+                if (groupItem != null) {
+                    String operatorAlias = operator.getAlias();
+                    FileObject newItem = groupItem.getFileObject(operatorAlias, "instance");
+                    if (newItem != null) {
+                        newItem.delete();
+                    }
+                    if (actionMap.containsKey(operatorAlias)) {
+                        actionMap.remove(operatorAlias);
+                    }
+                }
+            } catch (IOException e) {
+                SnapDialogs.showError("Error:" + e.getMessage());
+            }
         }
     }
 
@@ -92,11 +131,11 @@ public class ToolAdapterMenuRegistrar {
                 Collection<OperatorSpi> operatorSpis = spiRegistry.getOperatorSpis();
                 if (operatorSpis != null) {
                     if (operatorSpis.size() == 0) {
-                        operatorSpis = ToolAdapterOpSpi.registerModules();
+                        operatorSpis.addAll(ToolAdapterIO.registerModules());
                     }
                     operatorSpis.stream().filter(spi -> spi instanceof ToolAdapterOpSpi).forEach(spi -> {
                         ToolAdapterOperatorDescriptor operatorDescriptor = (ToolAdapterOperatorDescriptor) spi.getOperatorDescriptor();
-                        registerOperatorMenu(operatorDescriptor, MENU_TEXT, MENU_PATH);
+                        registerOperatorMenu(operatorDescriptor, MENU_TEXT, MENU_PATH, false);
                     });
                 }
             }

@@ -22,9 +22,9 @@ import java.awt.event.ActionEvent;
         "CTL_ToolAdapterOperatorAction_Description=Define adapters for external processes.",
         "CTL_ExternalOperatorsEditorDialog_Title=External Tools"
 })
-public class ToolAdapterAction extends AbstractSnapAction {
+public class ToolAdapterManageAction extends AbstractSnapAction {
 
-    public ToolAdapterAction() {
+    public ToolAdapterManageAction() {
         putValue(NAME, Bundle.CTL_ToolAdapterOperatorAction_Text());
         putValue(SHORT_DESCRIPTION, Bundle.CTL_ToolAdapterOperatorAction_Description());
     }

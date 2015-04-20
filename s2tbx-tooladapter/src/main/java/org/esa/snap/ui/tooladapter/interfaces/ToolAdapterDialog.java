@@ -1,6 +1,5 @@
 package org.esa.snap.ui.tooladapter.interfaces;
 
-import com.bc.ceres.swing.progress.DialogProgressMonitor;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.gpf.GPF;
 import org.esa.snap.framework.gpf.Operator;
@@ -12,13 +11,13 @@ import org.esa.snap.framework.gpf.ui.SingleTargetProductDialog;
 import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.BasicApp;
 import org.esa.snap.ui.tooladapter.ExternalToolExecutionForm;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressUtils;
+import org.openide.util.Cancellable;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 /**
@@ -40,13 +39,14 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
      */
     private ExternalToolExecutionForm form;
 
-    private ExecutorService executor;
+//    private ExecutorService executor;
 
     private Product result;
 
-    private DialogProgressMonitor dialogProgressMonitor;
+//    private DialogProgressMonitor dialogProgressMonitor;
 
-    private AsyncOperatorTask operatorTask;
+//    private AsyncOperatorTask operatorTask;
+    private OperatorTask operatorTask;
 
     /**
      * Constructor.
@@ -70,7 +70,7 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
                 appContext,
                 helpID);
         getJDialog().setJMenuBar(operatorMenu.createDefaultMenu());
-        executor = Executors.newSingleThreadExecutor();
+//        executor = Executors.newSingleThreadExecutor();
     }
 
     @Override
@@ -82,13 +82,10 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
             Map<String, Product> sourceProducts = new HashMap<>();
             sourceProducts.put(SOURCE_PRODUCT_FIELD, sourceProduct);
             Operator op = GPF.getDefaultInstance().createOperator(this.operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
-            // set the output consumer
-            //((ToolAdapterOp) op).setConsumer(new DefaultOutputConsumer());
-            operatorTask = new AsyncOperatorTask(op, ToolAdapterDialog.this::operatorCompleted);
-            dialogProgressMonitor = new CancellableDialogProgressMonitor(getJDialog(), this.getTitle(), Dialog.ModalityType.MODELESS,
-                    aVoid -> operatorTask.cancel());
-            ((ToolAdapterOp) op).setProgressMonitor(dialogProgressMonitor);
-            executor.submit(operatorTask);
+            operatorTask = new OperatorTask(op, ToolAdapterDialog.this::operatorCompleted);
+            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(this.getTitle());
+            ((ToolAdapterOp)op).setProgressMonitor(progressHandle);
+            ProgressUtils.runOffEventThreadWithProgressDialog(operatorTask, this.getTitle(), progressHandle, true, 1, 1);
         }
     }
 
@@ -133,66 +130,66 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
 
     @Override
     protected void onCancel() {
-        tearDown(null);
-        executor.shutdown();
         super.onCancel();
     }
 
     @Override
     protected void onClose() {
-        tearDown(null);
-        executor.shutdown();
         super.onClose();
     }
 
     private void operatorCompleted(Product result) {
         this.result = result;
-        tearDown(null);
         super.onApply();
     }
 
     private void tearDown(Throwable throwable) {
+        boolean hasBeenCancelled = operatorTask != null && !operatorTask.hasCompleted;
         if (operatorTask != null) {
             operatorTask.cancel();
         }
-        if (dialogProgressMonitor != null) {
-            dialogProgressMonitor.done();
-        }
-        if (throwable != null) {
+        if (throwable != null && !hasBeenCancelled) {
             handleInitialisationError(throwable);
         }
     }
 
-    public class AsyncOperatorTask implements Callable<Void> {
+    public class OperatorTask implements Runnable, Cancellable { //implements ProgressRunnable<Object>, Cancellable {
 
         private Operator operator;
         private Consumer<Product> callbackMethod;
         private Product result;
         private boolean hasCompleted;
 
-        public AsyncOperatorTask(Operator op, Consumer<Product> callback) {
+        public OperatorTask(Operator op, Consumer<Product> callback) {
             operator = op;
             callbackMethod = callback;
         }
 
         @Override
-        public Void call() throws Exception {
+        public boolean cancel() {
+            if (!hasCompleted) {
+                if (operator instanceof ToolAdapterOp) {
+                    ((ToolAdapterOp) operator).stop();
+                    onCancel();
+                }
+                hasCompleted = true;
+            }
+            return true;
+        }
+
+        @Override
+//        public Object run(ProgressHandle progressHandle) {
+        public void run() {
             try {
+
                 callbackMethod.accept(operator.getTargetProduct());
             } catch (Throwable t) {
                 tearDown(t);
             } finally {
                 hasCompleted = true;
             }
-            return null;
-        }
-
-        public void cancel() {
-            if (!hasCompleted) {
-                if (operator instanceof ToolAdapterOp) {
-                    ((ToolAdapterOp) operator).stop();
-                }
-            }
+            //return null;
         }
     }
+
 }

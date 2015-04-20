@@ -1,25 +1,24 @@
 package org.esa.snap.ui.tooladapter;
 
 import org.esa.snap.framework.gpf.GPF;
-import org.esa.snap.framework.gpf.OperatorSpi;
-import org.esa.snap.framework.gpf.descriptor.AnnotationOperatorDescriptor;
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterConstants;
+import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOp;
-import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
+import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterRegistry;
 import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.ModalDialog;
 import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
 import org.esa.snap.ui.tooladapter.interfaces.ToolAdapterDialog;
 import org.esa.snap.ui.tooladapter.utils.OperatorsTableModel;
+import org.esa.snap.ui.tooladapter.utils.ToolAdapterMenuRegistrar;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Ramona Manda
@@ -123,22 +122,25 @@ public class ExternalOperatorsEditorDialog extends ModalDialog {
         AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Remove()),
                 false);
         delButton.setToolTipText(Bundle.ToolTipDeleteOperator_Text());
+        delButton.addActionListener(e -> {
+            ToolAdapterOperatorDescriptor descriptor = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
+            ToolAdapterMenuRegistrar.removeOperatorMenu(descriptor);
+            ToolAdapterIO.removeOperator(descriptor);
+            close();
+        });
         panel.add(delButton);
 
         return panel;
     }
 
     private JTable getOperatorsTable() {
-        Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
+        //Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
         java.util.List<ToolAdapterOperatorDescriptor> toolboxSpis = new ArrayList<>();
-        spis.stream().filter(p -> p instanceof ToolAdapterOpSpi && p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class).
-                forEach(operator -> toolboxSpis.add((ToolAdapterOperatorDescriptor) operator.getOperatorDescriptor()));
-        toolboxSpis.sort(new Comparator<ToolAdapterOperatorDescriptor>() {
-            @Override
-            public int compare(ToolAdapterOperatorDescriptor o1, ToolAdapterOperatorDescriptor o2) {
-                return o1.getAlias().compareTo(o2.getAlias());
-            }
-        });
+        toolboxSpis.addAll(ToolAdapterRegistry.INSTANCE.getOperatorMap().values()
+                                .stream()
+                                .map(e -> (ToolAdapterOperatorDescriptor)e.getOperatorDescriptor())
+                                .collect(Collectors.toList()));
+        toolboxSpis.sort((o1, o2) -> o1.getAlias().compareTo(o2.getAlias()));
         OperatorsTableModel model = new OperatorsTableModel(toolboxSpis);
         operatorsTable = new JTable(model);
         operatorsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);

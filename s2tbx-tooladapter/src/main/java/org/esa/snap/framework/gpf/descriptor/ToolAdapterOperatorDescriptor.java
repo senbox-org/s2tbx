@@ -53,6 +53,8 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
 
     private List<TemplateParameterDescriptor> toolParameterDescriptors = new ArrayList<>();
 
+    private boolean isSystem;
+
     ToolAdapterOperatorDescriptor() {
         this.sourceProductDescriptors = new DefaultSourceProductDescriptor[] { new DefaultSourceProductDescriptor() };
         try {
@@ -223,6 +225,12 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
     public String getDescription() {
         return description;
     }
+
+    public void setSystem(boolean value) {
+        isSystem = value;
+    }
+
+    public boolean isSystem() { return isSystem; }
 
     @Override
     public Class<? extends Operator> getOperatorClass() {
