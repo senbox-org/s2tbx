@@ -1,4 +1,0 @@
--r
-${resamplingAlgorithm}
-${sourceProduct}
-${levels}

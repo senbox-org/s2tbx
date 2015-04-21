@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
+        <artifactId>s2tbx</artifactId>
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
@@ -20,51 +20,89 @@
     </description>
 
     <dependencies>
+        <!-- Ceres dependencies -->
+        <!--<dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-core</artifactId>
+            <version>${snap.version}</version>
+        </dependency>-->
+
+        <!--<dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-ui</artifactId>
+            <version>${snap.version}</version>
+        </dependency>-->
+
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-jai</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <artifactId>ceres-binding</artifactId>
+            <version>${snap.version}</version>
         </dependency>
+
+        <!--<dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-jai</artifactId>
+            <version>${snap.version}</version>
+        </dependency>-->
+
+        <!-- SNAP dependencies -->
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-core</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <version>${snap.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-geotiff</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <artifactId>snap-ui</artifactId>
+            <version>${snap.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-gpf</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <version>${snap.version}</version>
         </dependency>
-        <dependency>
+
+        <!--<dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-gpf-ui</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
-        </dependency>
+            <version>${snap.version}</version>
+        </dependency>-->
+
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-visat-rcp</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <version>${snap.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-rcp</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <version>${snap.version}</version>
         </dependency>
+
         <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-geotiff</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <!-- S2TBX dependencies -->
+
+<!--        <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
             <version>2.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
+        </dependency>-->
+
+        <!-- Other dependencies -->
+
+        <!--<dependency>
             <groupId>ant</groupId>
             <artifactId>ant</artifactId>
             <version>1.6</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
@@ -80,22 +118,22 @@
             <artifactId>commons-logging</artifactId>
             <version>1.1</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.3</version>
-        </dependency>
-        <dependency>
+        </dependency>-->
+        <!--<dependency>
             <groupId>jdom</groupId>
             <artifactId>jdom</artifactId>
             <version>1.0</version>
-        </dependency>
-        <dependency>
+        </dependency>-->
+        <!--<dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>3.8.1</version>
-        </dependency>
-        <dependency>
+        </dependency>-->
+        <!--<dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.12</version>
@@ -104,7 +142,7 @@
             <groupId>logkit</groupId>
             <artifactId>logkit</artifactId>
             <version>2.0</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>oro</groupId>
             <artifactId>oro</artifactId>
@@ -121,29 +159,7 @@
             <version>1.7</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-core</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-ui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-binding</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-ui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
+        <!-- NetBeans dependencies -->
 
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -157,13 +173,15 @@
             <version>${netbeans.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-progress</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>nbm-maven-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -173,7 +191,45 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+                    <execution>
+                        <id>copy-sample-adapters</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/../../snap-desktop/snap-application/target/snap/snap/modules/extensions/adapters</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/resources/sampleAdapters</directory>
+                                    <includes>
+                                        <include>**/*.xml</include>
+                                        <include>**/*.vm</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+                <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <useDefaultManifestFile>true</useDefaultManifestFile>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
