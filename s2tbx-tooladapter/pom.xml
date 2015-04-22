@@ -21,17 +21,17 @@
 
     <dependencies>
         <!-- Ceres dependencies -->
-        <!--<dependency>
+        <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-core</artifactId>
             <version>${snap.version}</version>
-        </dependency>-->
+        </dependency>
 
-        <!--<dependency>
+        <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-ui</artifactId>
             <version>${snap.version}</version>
-        </dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>org.esa.snap</groupId>
@@ -64,11 +64,11 @@
             <version>${snap.version}</version>
         </dependency>
 
-        <!--<dependency>
+        <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-gpf-ui</artifactId>
             <version>${snap.version}</version>
-        </dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>org.esa.snap</groupId>

@@ -130,6 +130,9 @@ class L1cTileOpImage extends SingleBandedOpImage {
         float scaleX = targetWidth / ((float) sourceImage.getWidth());
         float scaleY = targetHeight / ((float) sourceImage.getHeight());
 
+        scaleX = (float) 1.0;
+        scaleY = (float) 1.0;
+
         BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
         RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
                                                            borderExtender);
