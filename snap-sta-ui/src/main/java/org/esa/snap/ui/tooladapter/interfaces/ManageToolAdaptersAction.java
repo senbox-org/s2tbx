@@ -1,7 +1,7 @@
 package org.esa.snap.ui.tooladapter.interfaces;
 
 import org.esa.snap.rcp.actions.AbstractSnapAction;
-import org.esa.snap.ui.tooladapter.ExternalOperatorsEditorDialog;
+import org.esa.snap.ui.tooladapter.ToolAdaptersManagementDialog;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -10,7 +10,8 @@ import org.openide.util.NbBundle;
 import java.awt.event.ActionEvent;
 
 /**
- * Sentinel-2 Tool Adapter action class
+ * Action for launching the form that manages the existing
+ * tool adapters.
  *
  * @author Lucian Barbulescu
  */
@@ -22,9 +23,9 @@ import java.awt.event.ActionEvent;
         "CTL_ToolAdapterOperatorAction_Description=Define adapters for external processes.",
         "CTL_ExternalOperatorsEditorDialog_Title=External Tools"
 })
-public class ToolAdapterManageAction extends AbstractSnapAction {
+public class ManageToolAdaptersAction extends AbstractSnapAction {
 
-    public ToolAdapterManageAction() {
+    public ManageToolAdaptersAction() {
         putValue(NAME, Bundle.CTL_ToolAdapterOperatorAction_Text());
         putValue(SHORT_DESCRIPTION, Bundle.CTL_ToolAdapterOperatorAction_Description());
     }
@@ -36,7 +37,7 @@ public class ToolAdapterManageAction extends AbstractSnapAction {
      */
     @Override
     public void actionPerformed(ActionEvent event) {
-        ExternalOperatorsEditorDialog operatorDialog = new ExternalOperatorsEditorDialog(getAppContext(),
+        ToolAdaptersManagementDialog operatorDialog = new ToolAdaptersManagementDialog(getAppContext(),
                 Bundle.CTL_ExternalOperatorsEditorDialog_Title(),
                 event.getActionCommand());
         operatorDialog.show();

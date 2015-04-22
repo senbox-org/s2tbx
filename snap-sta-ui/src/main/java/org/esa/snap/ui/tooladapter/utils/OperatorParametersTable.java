@@ -11,6 +11,7 @@ import org.esa.snap.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
+import org.esa.snap.rcp.SnapDialogs;
 import org.esa.snap.ui.tooladapter.TemplateParameterEditorDialog;
 import org.esa.snap.ui.tooladapter.ToolParameterEditorDialog;
 
@@ -24,6 +25,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * @author Ramona Manda
@@ -42,6 +44,7 @@ public class OperatorParametersTable extends JTable {
     private TableCellRenderer comboCellRenderer;
     private AppContext appContext;
     private DefaultTableCellRenderer labelTypeCellRenderer = new DefaultTableCellRenderer();
+    private Logger logger;
 
     static{
         typesMap = new DualHashBidiMap();
@@ -56,6 +59,7 @@ public class OperatorParametersTable extends JTable {
     }
 
     public OperatorParametersTable(ToolAdapterOperatorDescriptor operator, AppContext appContext) {
+        logger = Logger.getLogger(OperatorParametersTable.class.getName());
         this.operator = operator;
         this.appContext = appContext;
         propertiesValueUIDescriptorMap = new HashMap<>();
@@ -64,11 +68,10 @@ public class OperatorParametersTable extends JTable {
         comboCellRenderer = new DefaultTableCellRenderer();
         labelTypeCellRenderer.setText("Product");
 
-        //List<S2tbxParameterDescriptor> data = operator.getS2tbxParameterDescriptors();
         List<TemplateParameterDescriptor> data = operator.getToolParameterDescriptors();
-            PropertySet propertySet = new OperatorParameterSupport(operator).getPropertySet();
-            //if there is an exception in teh line above, can be because the default value does not match the type
-            //TODO which param is wrong????
+        PropertySet propertySet = new OperatorParameterSupport(operator).getPropertySet();
+        //if there is an exception in the line above, can be because the default value does not match the type
+        //TODO which param is wrong????
         context = new BindingContext(propertySet);
         for (ToolParameterDescriptor paramDescriptor : data) {
             if(paramDescriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
@@ -76,7 +79,6 @@ public class OperatorParametersTable extends JTable {
             } else {
                 propertiesValueUIDescriptorMap.put(paramDescriptor, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", paramDescriptor, operator, context, null));
             }
-            //context.getBinding(paramDescriptor.getName()).setPropertyValue(paramDescriptor.getDefaultValue());
         }
         tableRenderer = new MultiRenderer();
         setModel(new OperatorParametersTableNewTableModel());
@@ -96,18 +98,16 @@ public class OperatorParametersTable extends JTable {
             DefaultPropertySetDescriptor propertySetDescriptor = new DefaultPropertySetDescriptor();
             try {
                 property.setDefaultValue(param.getDefaultValue());
-            }catch (Exception ex){
-                ex.printStackTrace();
-                //TODO if the previous value cannot be cast, this shoudl be ok???
+            } catch (Exception ex){
+                logger.warning(ex.getMessage());
             }
-        propertySetDescriptor.addPropertyDescriptor(property);
-        PropertyContainer container = PropertyContainer.createMapBacked(new HashMap<>(), propertySetDescriptor);
-        context.getPropertySet().addProperties(container.getProperties());
-        propertiesValueUIDescriptorMap.put(param, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", param, operator, context, null));
-        revalidate();
-        }catch (Exception ex){
-            ex.printStackTrace();
-            //TODO if the previous value cannot be cast, this shoudl be ok???
+            propertySetDescriptor.addPropertyDescriptor(property);
+            PropertyContainer container = PropertyContainer.createMapBacked(new HashMap<>(), propertySetDescriptor);
+            context.getPropertySet().addProperties(container.getProperties());
+            propertiesValueUIDescriptorMap.put(param, PropertyMemberUIWrapperFactory.buildPropertyWrapper("defaultValue", param, operator, context, null));
+            revalidate();
+        } catch (Exception ex){
+            logger.warning(ex.getMessage());
         }
     }
 
@@ -187,9 +187,8 @@ public class OperatorParametersTable extends JTable {
                     try {
                         return descriptor.getAttribute(columnsMembers[column]);
                     } catch (PropertyAttributeException e) {
-                        e.printStackTrace();
-                        //TODO
-                        return "ERROR!!!";
+                        logger.warning(e.getMessage());
+                        return String.format("Error: %s", e.getMessage());
                     }
             }
         }
@@ -197,16 +196,10 @@ public class OperatorParametersTable extends JTable {
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             ToolParameterDescriptor descriptor = operator.getToolParameterDescriptors().get(rowIndex);
-            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
-                return false;
-            }
-            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE)){
-                return false;
-            }
-            if(descriptor.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE) && (columnIndex == 0 || columnIndex == 1 || columnIndex == 4 || columnIndex == 6)){
-                return false;
-            }
-            return true;
+            return !descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)
+                    && !descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE)
+                    && !(descriptor.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE)
+                    && (columnIndex == 0 || columnIndex == 1 || columnIndex == 4 || columnIndex == 6));
         }
 
         @Override
@@ -227,8 +220,7 @@ public class OperatorParametersTable extends JTable {
                         try {
                             property.setDefaultValue(descriptor.getDefaultValue());
                         }catch (Exception ex){
-                            ex.printStackTrace();
-                            //TODO if the previous value cannot be cast, this shoudl be ok???
+                            logger.warning(ex.getMessage());
                         }
                         DefaultPropertySetDescriptor propertySetDescriptor = new DefaultPropertySetDescriptor();
                         propertySetDescriptor.addPropertyDescriptor(property);
@@ -238,8 +230,8 @@ public class OperatorParametersTable extends JTable {
                         revalidate();
                         repaint();
                     } catch (ConversionException e) {
-                        e.printStackTrace();
-                        //TODO show error
+                        logger.warning(e.getMessage());
+                        SnapDialogs.showError(e.getMessage());
                     }
                     break;
                 case 4:
@@ -254,17 +246,15 @@ public class OperatorParametersTable extends JTable {
                         try {
                             try {
                                 property =  ParameterDescriptorFactory.convert(descriptor, new ParameterDescriptorFactory().getSourceProductMap());
-                            }catch (Exception ex){
-                                //ex.printStackTrace();
-                                //TODO if the previous value cannot be cast, this shoudl be ok???
+                            } catch (Exception ex){
+                                logger.warning(ex.getMessage());
                                 descriptor.setDefaultValue("");
                                 property =  ParameterDescriptorFactory.convert(descriptor, new ParameterDescriptorFactory().getSourceProductMap());
                             }
                             try {
                                 property.setDefaultValue(descriptor.getDefaultValue());
-                            }catch (Exception ex){
-                                ex.printStackTrace();
-                                //TODO if the previous value cannot be cast, this shoudl be ok???
+                            } catch (Exception ex){
+                                logger.warning(ex.getMessage());
                             }
                             DefaultPropertySetDescriptor propertySetDescriptor = new DefaultPropertySetDescriptor();
                             propertySetDescriptor.addPropertyDescriptor(property);
@@ -275,8 +265,8 @@ public class OperatorParametersTable extends JTable {
                             revalidate();
                             repaint();
                         } catch (ConversionException e) {
-                            e.printStackTrace();
-                            //TODO show error
+                            logger.warning(e.getMessage());
+                            SnapDialogs.showError(e.getMessage());
                         }
                     }
                     break;
@@ -287,7 +277,7 @@ public class OperatorParametersTable extends JTable {
                     //edit details
                     if(!descriptor.isParameter() && descriptor.getDataType().equals(File.class)){
                         TemplateParameterDescriptor parameter;
-                        if(descriptor instanceof TemplateParameterDescriptor){
+                        if (descriptor instanceof TemplateParameterDescriptor){
                             parameter = (TemplateParameterDescriptor) descriptor;
                         } else {
                             parameter = new TemplateParameterDescriptor(descriptor);
@@ -297,8 +287,7 @@ public class OperatorParametersTable extends JTable {
                             TemplateParameterEditorDialog editor = new TemplateParameterEditorDialog(appContext, "", parameter, propertiesValueUIDescriptorMap.get(descriptor));
                             editor.show();
                         }catch (Exception ex){
-                            //TODO show exception
-                            ex.printStackTrace();
+                            SnapDialogs.showError(ex.getMessage());
                         }
                     } else {
                         ToolParameterEditorDialog editor = new ToolParameterEditorDialog(appContext, "Parameter editor for " + descriptor.getName(), "", descriptor, propertiesValueUIDescriptorMap.get(descriptor));
@@ -309,8 +298,7 @@ public class OperatorParametersTable extends JTable {
                     try {
                         descriptor.setAttribute(columnsMembers[columnIndex], aValue == null ? null : aValue.toString());
                     } catch (PropertyAttributeException e) {
-                        e.printStackTrace();
-                        //TODO
+                        logger.warning(e.getMessage());
                     }
             }
         }
@@ -336,7 +324,7 @@ public class OperatorParametersTable extends JTable {
                     try {
                         return propertiesValueUIDescriptorMap.get(descriptor).getUIComponent();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.warning(e.getMessage());
                         return null;
                     }
                 case 6:
@@ -356,7 +344,7 @@ public class OperatorParametersTable extends JTable {
                     try {
                         return propertiesValueUIDescriptorMap.get(descriptor).getUIComponent();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.warning(e.getMessage());
                         return null;
                     }
                 case 6:

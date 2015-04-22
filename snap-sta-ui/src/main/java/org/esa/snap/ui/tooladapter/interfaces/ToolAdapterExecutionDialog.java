@@ -10,20 +10,23 @@ import org.esa.snap.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.snap.framework.gpf.ui.SingleTargetProductDialog;
 import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.BasicApp;
-import org.esa.snap.ui.tooladapter.ExternalToolExecutionForm;
+import org.esa.snap.ui.tooladapter.ToolExecutionForm;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressUtils;
 import org.openide.util.Cancellable;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
 /**
+ * Form dialog for running a tool adapter operator.
+ *
  * @author Lucian Barbulescu.
  */
-public class ToolAdapterDialog extends SingleTargetProductDialog {
+public class ToolAdapterExecutionDialog extends SingleTargetProductDialog {
 
     public static final String SOURCE_PRODUCT_FIELD = "sourceProduct";
     /**
@@ -37,15 +40,10 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
     /**
      * The form used to get the user's input
      */
-    private ExternalToolExecutionForm form;
-
-//    private ExecutorService executor;
+    private ToolExecutionForm form;
 
     private Product result;
 
-//    private DialogProgressMonitor dialogProgressMonitor;
-
-//    private AsyncOperatorTask operatorTask;
     private OperatorTask operatorTask;
 
     /**
@@ -56,13 +54,13 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
      * @param title
      * @param helpID
      */
-    public ToolAdapterDialog(ToolAdapterOperatorDescriptor operatorSpi, AppContext appContext, String title, String helpID) {
+    public ToolAdapterExecutionDialog(ToolAdapterOperatorDescriptor operatorSpi, AppContext appContext, String title, String helpID) {
         super(appContext, title, helpID);
         this.operatorDescriptor = operatorSpi;
 
         this.parameterSupport = new OperatorParameterSupport(operatorSpi);
 
-        form = new ExternalToolExecutionForm(appContext, operatorSpi, parameterSupport.getPropertySet(),
+        form = new ToolExecutionForm(appContext, operatorSpi, parameterSupport.getPropertySet(),
                 getTargetProductSelector());
         OperatorMenu operatorMenu = new OperatorMenu(this.getJDialog(),
                 operatorSpi,
@@ -70,8 +68,9 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
                 appContext,
                 helpID);
         getJDialog().setJMenuBar(operatorMenu.createDefaultMenu());
-//        executor = Executors.newSingleThreadExecutor();
     }
+
+    /* Begin @Override methods section */
 
     @Override
     protected void onApply() {
@@ -81,17 +80,12 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
             final Product sourceProduct = form.getSourceProduct();
             Map<String, Product> sourceProducts = new HashMap<>();
             sourceProducts.put(SOURCE_PRODUCT_FIELD, sourceProduct);
-            Operator op = GPF.getDefaultInstance().createOperator(this.operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
-            operatorTask = new OperatorTask(op, ToolAdapterDialog.this::operatorCompleted);
+            Operator op = GPF.getDefaultInstance().createOperator(operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
+            operatorTask = new OperatorTask(op, ToolAdapterExecutionDialog.this::operatorCompleted);
             ProgressHandle progressHandle = ProgressHandleFactory.createHandle(this.getTitle());
             ((ToolAdapterOp)op).setProgressMonitor(progressHandle);
             ProgressUtils.runOffEventThreadWithProgressDialog(operatorTask, this.getTitle(), progressHandle, true, 1, 1);
         }
-    }
-
-    private boolean validateUserInput() {
-        // future validation of input parameters goes here
-        return true;
     }
 
     @Override
@@ -107,17 +101,6 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
         super.hide();
     }
 
-    /**
-     * Creates the desired target product.
-     * Usually, this method will be implemented by invoking one of the multiple {@link org.esa.snap.framework.gpf.GPF GPF}
-     * {@code createProduct} methods.
-     * <p/>
-     * The method should throw a {@link org.esa.snap.framework.gpf.OperatorException} in order to signal "nominal" processing errors,
-     * other exeption types are treated as internal errors.
-     *
-     * @return The target product.
-     * @throws Exception if an error occurs, an {@link org.esa.snap.framework.gpf.OperatorException} is signaling "nominal" processing errors.
-     */
     @Override
     protected Product createTargetProduct() throws Exception {
         return result;
@@ -138,6 +121,27 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
         super.onClose();
     }
 
+    /* End @Override methods section */
+
+    /**
+     * Performs any validation on the user input.
+     *
+     * @return  <code>true</code> if the input is valid, <code>false</code> otherwise
+     */
+    private boolean validateUserInput() {
+        boolean isValid = true;
+        File productDir = targetProductSelector.getModel().getProductDir();
+        isValid &= (productDir != null) && productDir.exists();
+
+        return isValid;
+    }
+
+    /**
+     * This is actually the callback method to be passed to the runnable
+     * wrapping the operator execution.
+     *
+     * @param result    The output product
+     */
     private void operatorCompleted(Product result) {
         this.result = result;
         super.onApply();
@@ -153,13 +157,25 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
         }
     }
 
-    public class OperatorTask implements Runnable, Cancellable { //implements ProgressRunnable<Object>, Cancellable {
+    /**
+     * Runnable for executing the operator. It requires a callback
+     * method that is to be called when the operator has finished its
+     * execution.
+     */
+    public class OperatorTask implements Runnable, Cancellable {
 
         private Operator operator;
         private Consumer<Product> callbackMethod;
         private Product result;
         private boolean hasCompleted;
 
+        /**
+         * Constructs a runnable for the given operator that will
+         * call back the given method when the execution has finished.
+         *
+         * @param op        The operator to be executed
+         * @param callback  The callback method to be invoked at completion
+         */
         public OperatorTask(Operator op, Consumer<Product> callback) {
             operator = op;
             callbackMethod = callback;
@@ -178,7 +194,6 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
         }
 
         @Override
-//        public Object run(ProgressHandle progressHandle) {
         public void run() {
             try {
 
@@ -188,7 +203,6 @@ public class ToolAdapterDialog extends SingleTargetProductDialog {
             } finally {
                 hasCompleted = true;
             }
-            //return null;
         }
     }
 

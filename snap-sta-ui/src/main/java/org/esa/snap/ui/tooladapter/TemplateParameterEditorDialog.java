@@ -22,8 +22,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 /**
+ * Form for displaying and editing details of a tool adapter parameter of File Template type.
+ *
  * @author Ramona Manda
  */
 public class TemplateParameterEditorDialog extends ModalDialog {
@@ -34,10 +37,12 @@ public class TemplateParameterEditorDialog extends ModalDialog {
     private AppContext appContext;
     private JTextArea fileContentArea = new JTextArea("", 10, 10);
     OperatorParametersTable paramsTable;
+    private Logger logger;
 
     public TemplateParameterEditorDialog(AppContext appContext, String title, String helpID) {
         super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, helpID);
         this.appContext = appContext;
+        this.logger = Logger.getLogger(TemplateParameterEditorDialog.class.getName());
     }
 
     public TemplateParameterEditorDialog(AppContext appContext, String helpID, TemplateParameterDescriptor parameter, PropertyMemberUIWrapper fileWrapper) {
@@ -86,8 +91,7 @@ public class TemplateParameterEditorDialog extends ModalDialog {
             fileEditor.setPreferredSize(new Dimension(770, 25));
             filePanel.add(fileEditor);
         } catch (Exception e) {
-            //TODO error
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
         this.fileWrapper.getContext().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -116,12 +120,8 @@ public class TemplateParameterEditorDialog extends ModalDialog {
                 //if the file does not exist, it keeps the old content, in case the user wants to save in the new file
                 result = fileContentArea.getText();
             }
-        } catch (IOException e) {
-            //TODO file could not be read
-            e.printStackTrace();
         } catch (Exception e) {
-            //TODO value not available
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
         if(result != null){
             fileContentArea.setText(result);
@@ -140,10 +140,8 @@ public class TemplateParameterEditorDialog extends ModalDialog {
         this.parameter.setDefaultValue(defaultValue.getAbsolutePath());
         //save parameters
         parameter.getToolParameterDescriptors().clear();
-        for(TemplateParameterDescriptor subparameter : operator.getToolParameterDescriptors()){
-            if(paramsTable.getBindingContext().getBinding(subparameter.getName()) == null){
-                //TODO why is this happening???
-            } else {
+        for (TemplateParameterDescriptor subparameter : operator.getToolParameterDescriptors()){
+            if (paramsTable.getBindingContext().getBinding(subparameter.getName()) != null){
                 if(paramsTable.getBindingContext().getBinding(subparameter.getName()).getPropertyValue() != null) {
                     subparameter.setDefaultValue(paramsTable.getBindingContext().getBinding(subparameter.getName()).getPropertyValue().toString());
                 }
@@ -154,8 +152,7 @@ public class TemplateParameterEditorDialog extends ModalDialog {
         try {
             ToolAdapterIO.saveFileContent(defaultValue, fileContentArea.getText());
         } catch (IOException e) {
-            //TODO file could not be saved
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
     }
 }

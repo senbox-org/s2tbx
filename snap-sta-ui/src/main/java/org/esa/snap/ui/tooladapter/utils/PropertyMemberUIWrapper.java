@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.logging.Logger;
 
 /**
  * @author Ramona Manda
@@ -22,12 +23,14 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
     protected ToolAdapterOperatorDescriptor opDescriptor;
     private CallBackAfterEdit callback;
     private BindingContext context;
+    private Logger logger;
 
     public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor paramDescriptor, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context) {
         this.attributeName = attributeName;
         this.paramDescriptor = paramDescriptor;
         this.opDescriptor = opDescriptor;
         this.context = context;
+        this.logger = Logger.getLogger(PropertyMemberUIWrapper.class.getName());
     }
 
     public PropertyMemberUIWrapper(String attributeName, ToolParameterDescriptor paramDescriptor, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, int width, CallBackAfterEdit callback) {
@@ -37,8 +40,7 @@ public abstract class PropertyMemberUIWrapper implements FocusListener {
         try {
             getUIComponent();
         }catch (Exception ex){
-            //TODO
-            ex.printStackTrace();
+            logger.warning(ex.getMessage());
         }
     }
 

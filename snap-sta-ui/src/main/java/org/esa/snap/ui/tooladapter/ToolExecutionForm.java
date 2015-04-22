@@ -21,9 +21,12 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- * Date: 13.07.11
+ * Form for displaying execution parameters.
+ * This form is part of <code>ToolAdapterExecutionDialog</code>.
+ *
+ * @author Ramona Manda
  */
-public class ExternalToolExecutionForm extends JTabbedPane {
+public class ToolExecutionForm extends JTabbedPane {
     private AppContext appContext;
     private ToolAdapterOperatorDescriptor operatorSpi;
     private PropertySet propertySet;
@@ -31,8 +34,8 @@ public class ExternalToolExecutionForm extends JTabbedPane {
     private DefaultIOParametersPanel ioParamPanel;
     private String fileExtension;
 
-    public ExternalToolExecutionForm(AppContext appContext, ToolAdapterOperatorDescriptor operatorSpi, PropertySet propertySet,
-                                     TargetProductSelector targetProductSelector) {
+    public ToolExecutionForm(AppContext appContext, ToolAdapterOperatorDescriptor operatorSpi, PropertySet propertySet,
+                             TargetProductSelector targetProductSelector) {
         this.appContext = appContext;
         this.operatorSpi = operatorSpi;
         this.propertySet = propertySet;
