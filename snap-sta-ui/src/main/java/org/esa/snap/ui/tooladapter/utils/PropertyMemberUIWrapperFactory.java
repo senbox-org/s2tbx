@@ -16,6 +16,7 @@ import javax.swing.*;
 import java.awt.event.FocusEvent;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -48,7 +49,17 @@ public class PropertyMemberUIWrapperFactory {
     }
 
     public static PropertyMemberUIWrapper buildPropertyWrapper(String attributeName, ToolParameterDescriptor property, ToolAdapterOperatorDescriptor opDescriptor, BindingContext context, PropertyMemberUIWrapper.CallBackAfterEdit callback) {
-        if (attributeName.equals("name")) {
+        switch (attributeName) {
+            case "name":
+                return buildNamePropertyWrapper(attributeName, property, opDescriptor, context, 100, callback);
+            case "dataType":
+                return buildTypePropertyWrapper(attributeName, property, opDescriptor, context, 150, callback);
+            case "defaultValue":
+                return buildValuePropertyEditorWrapper(attributeName, property, opDescriptor, context, 250, callback);
+            default:
+                break;
+        }
+        /*if (attributeName.equals("name")) {
             return buildNamePropertyWrapper(attributeName, property, opDescriptor, context, 100, callback);
         }
         if (attributeName.equals("dataType")) {
@@ -56,16 +67,16 @@ public class PropertyMemberUIWrapperFactory {
         }
         if (attributeName.equals("defaultValue")) {
             return buildValuePropertyEditorWrapper(attributeName, property, opDescriptor, context, 250, callback);
-        }
+        }*/
         Method getter = null;
         try {
             getter = property.getClass().getSuperclass().getDeclaredMethod("is" + attributeName.substring(0, 1).toUpperCase() + attributeName.substring(1));
-        } catch (NoSuchMethodException ex) {
+        } catch (NoSuchMethodException ignored) {
         }
         Object value = null;
         try {
             value = property.getAttribute(attributeName);
-        } catch (Exception ex) {
+        } catch (Exception ignored) {
         }
         //TODO class/superclass!
         if (getter != null || (value != null && value.getClass().getSuperclass().equals(Boolean.class))) {
@@ -73,7 +84,7 @@ public class PropertyMemberUIWrapperFactory {
         }
         try {
             getter = property.getClass().getSuperclass().getDeclaredMethod("get" + attributeName.substring(0, 1).toUpperCase() + attributeName.substring(1));
-        } catch (NoSuchMethodException ex) {
+        } catch (NoSuchMethodException ignored) {
         }
         if (getter != null && getter.getReturnType().equals(String.class)) {
             return buildStringPropertyWrapper(attributeName, property, opDescriptor, context, 100, callback);
@@ -279,29 +290,25 @@ public class PropertyMemberUIWrapperFactory {
                 if(oldProp != null) {
                     context.getPropertySet().removeProperty(oldProp);
                 }
+
+                PropertyDescriptor descriptor;
                 try {
-                    PropertyDescriptor descriptor;
-                    try {
-                        descriptor = ParameterDescriptorFactory.convert(property, new ParameterDescriptorFactory().getSourceProductMap());
-                    } catch (Exception ex) {
-                        property.setDefaultValue(null);
-                        descriptor = ParameterDescriptorFactory.convert(property, new ParameterDescriptorFactory().getSourceProductMap());
-                    }
-                    descriptor.setDefaultConverter();
-                    try {
-                        descriptor.setDefaultValue(property.getDefaultValue());
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        //TODO if the previous value cannot be cast, this shoudl be ok???
-                    }
-                    DefaultPropertySetDescriptor propertySetDescriptor = new DefaultPropertySetDescriptor();
-                    propertySetDescriptor.addPropertyDescriptor(descriptor);
-                    PropertyContainer container = PropertyContainer.createMapBacked(new HashMap<>(), propertySetDescriptor);
-                    context.getPropertySet().addProperties(container.getProperties());
-                    return super.reloadUIComponent(newParamType);
-                }catch (Exception ex){
-                    throw ex;
+                    descriptor = ParameterDescriptorFactory.convert(property, new ParameterDescriptorFactory().getSourceProductMap());
+                } catch (Exception ex) {
+                    property.setDefaultValue(null);
+                    descriptor = ParameterDescriptorFactory.convert(property, new ParameterDescriptorFactory().getSourceProductMap());
                 }
+                descriptor.setDefaultConverter();
+                try {
+                    descriptor.setDefaultValue(property.getDefaultValue());
+                } catch (Exception ex) {
+                    Logger.getLogger(PropertyMemberUIWrapper.class.getName()).warning(ex.getMessage());
+                }
+                DefaultPropertySetDescriptor propertySetDescriptor = new DefaultPropertySetDescriptor();
+                propertySetDescriptor.addPropertyDescriptor(descriptor);
+                PropertyContainer container = PropertyContainer.createMapBacked(new HashMap<>(), propertySetDescriptor);
+                context.getPropertySet().addProperties(container.getProperties());
+                return super.reloadUIComponent(newParamType);
             }
 
             @Override
@@ -311,7 +318,6 @@ public class PropertyMemberUIWrapperFactory {
 
             @Override
             protected JComponent buildUIComponent() {
-                //                PropertySet propertySet = new OperatorParameterSupport(duplicatedOperatorSpi.getOperatorDescriptor()).getPropertySet();
                 PropertyDescriptor propertydescriptor = context.getPropertySet().getDescriptor(property.getName());
                 PropertyEditor propertyEditor = PropertyEditorRegistry.getInstance().findPropertyEditor(
                         propertydescriptor);

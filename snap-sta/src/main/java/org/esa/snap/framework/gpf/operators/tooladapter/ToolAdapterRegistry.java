@@ -11,9 +11,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by kraftek on 4/20/2015.
+ * Registry (map) class for mapping ToolAdapterOpSpi-s to adapter names.
+ *
+ * @author Cosmin Cara
  */
 public enum ToolAdapterRegistry {
+    /**
+     * The singleton instance of the class
+     */
     INSTANCE;
 
     private final Map<String, ToolAdapterOpSpi> registeredAdapters;
@@ -22,10 +27,22 @@ public enum ToolAdapterRegistry {
         registeredAdapters = new HashMap<>();
     }
 
+    /**
+     * Gets the registered ToolAdapterOpSpi-s
+     *
+     * @return  the map of the registered ToolAdapterOpSpi-s
+     */
     public Map<String, ToolAdapterOpSpi> getOperatorMap() {
         return registeredAdapters;
     }
 
+    /**
+     * Adds an operator to this registry and registers it in the global
+     * OperatorSpiRegistry.
+     *
+     * @param operatorSpi   The SPI to be registered
+     * @throws OperatorException    If the SPI is already registered
+     */
     public void registerOperator(ToolAdapterOpSpi operatorSpi) throws OperatorException {
         OperatorDescriptor operatorDescriptor = operatorSpi.getOperatorDescriptor();
         String operatorName = operatorDescriptor.getName() != null ? operatorDescriptor.getName() : operatorDescriptor.getAlias();
@@ -39,6 +56,11 @@ public enum ToolAdapterRegistry {
         registeredAdapters.put(operatorName, operatorSpi);
     }
 
+    /**
+     * De-registers a ToolAdapterOpSpi given the adapter descriptor.
+     *
+     * @param operatorDescriptor    The descriptor of the operator to be removed
+     */
     public void removeOperator(ToolAdapterOperatorDescriptor operatorDescriptor) {
         if (!operatorDescriptor.isSystem()) {
             String operatorDescriptorName = operatorDescriptor.getName();

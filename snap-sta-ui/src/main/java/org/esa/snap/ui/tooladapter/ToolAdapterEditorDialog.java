@@ -22,23 +22,23 @@ import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.ModalDialog;
 import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
+import org.esa.snap.rcp.SnapDialogs;
 import org.esa.snap.ui.tooladapter.utils.OperatorParametersTable;
-import org.esa.snap.ui.tooladapter.utils.ToolAdapterMenuRegistrar;
+import org.esa.snap.ui.tooladapter.utils.ToolAdapterActionRegistrar;
 import org.esa.snap.ui.tooladapter.utils.VariablesTable;
-import org.esa.snap.utils.NetBeansModulePackager;
+import org.esa.snap.utils.JarPackager;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
+import java.util.logging.Logger;
 
 @NbBundle.Messages({
         "CTL_Label_Alias_Text=Alias:",
@@ -48,9 +48,22 @@ import java.util.Set;
         "CTL_Label_Copyright_Text=Copyright:",
         "CTL_Label_Authors_Text=Authors:",
         "CTL_Label_Description_Text=Description:",
-        "CTL_Panel_OperatorDescriptor_Text=Operator Descriptor"
+        "CTL_Panel_OperatorDescriptor_Text=Operator Descriptor",
+        "CTL_Label_PreprocessingTool_Text=Preprocessing tool",
+        "CTL_Label_WriteBefore_Text=Write before processing using:",
+        "CTL_Panel_PreProcessing_Border_TitleText=Preprocessing",
+        "CTL_Panel_ConfigParams_Text=Configuration Parameters",
+        "CTL_Label_ToolLocation_Text=Tool location: ",
+        "CTL_Label_WorkDir_Text=Working directory: ",
+        "CTL_Label_CmdLineTemplate_Text=Command line template:",
+        "CTL_Panel_OutputPattern_Border_TitleText=Tool Output Patterns",
+        "CTL_Label_ProgressPattern=Progress pattern:",
+        "CTL_Label_ErrorPattern=Error pattern:",
+        "CTL_Panel_SysVar_Border_TitleText=System variables",
+        "Icon_Add=/org/esa/snap/resources/images/icons/Add16.png",
+        "CTL_Panel_OpParams_Border_TitleText=Operator Parameters"
 })
-public class ExternalToolEditorDialog extends ModalDialog {
+public class ToolAdapterEditorDialog extends ModalDialog {
 
     private ToolAdapterOperatorDescriptor oldOperatorDescriptor;
     private ToolAdapterOperatorDescriptor newOperatorDescriptor;
@@ -60,15 +73,15 @@ public class ExternalToolEditorDialog extends ModalDialog {
     private BindingContext bindingContext;
     private JTextArea templateContent;
     private OperatorParametersTable paramsTable;
-    private AppContext appContext;
+    private Logger logger;
 
-    private ExternalToolEditorDialog(AppContext appContext, String title, String helpID) {
+    private ToolAdapterEditorDialog(AppContext appContext, String title, String helpID) {
         super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, helpID);
-        this.appContext = appContext;
+        this.logger = Logger.getLogger(ToolAdapterEditorDialog.class.getName());
         getJDialog().setResizable(false);
     }
 
-    private ExternalToolEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor) {
+    private ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor) {
         this(appContext, operatorDescriptor.getAlias(), helpID);
         this.oldOperatorDescriptor = operatorDescriptor;
         this.newOperatorDescriptor = new ToolAdapterOperatorDescriptor(this.oldOperatorDescriptor);
@@ -91,8 +104,10 @@ public class ExternalToolEditorDialog extends ModalDialog {
         propertyContainer.getDescriptor("processingWriter").setValueSet(new ValueSet(writers));
         Set<OperatorSpi> spis = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpis();
         java.util.List<String> toolboxSpis = new ArrayList<>();
-        spis.stream().filter(p -> p instanceof ToolAdapterOpSpi && p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class && p.getOperatorAlias() != oldOperatorDescriptor.getAlias()).
-                forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getAlias()));
+        spis.stream().filter(p -> (p instanceof ToolAdapterOpSpi)
+                                && (p.getOperatorDescriptor().getClass() != AnnotationOperatorDescriptor.class)
+                                && !p.getOperatorAlias().equals(oldOperatorDescriptor.getAlias()))
+                     .forEach(operator -> toolboxSpis.add(operator.getOperatorDescriptor().getAlias()));
         toolboxSpis.sort(Comparator.<String>naturalOrder());
         propertyContainer.getDescriptor("preprocessorExternalTool").setValueSet(new ValueSet(toolboxSpis.toArray(new String[toolboxSpis.size()])));
 
@@ -101,14 +116,14 @@ public class ExternalToolEditorDialog extends ModalDialog {
         paramsTable =  new OperatorParametersTable(newOperatorDescriptor, appContext);
     }
 
-    public ExternalToolEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
+    public ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
         this(appContext, helpID, operatorDescriptor);
         this.operatorIsNew = operatorIsNew;
         this.newNameIndex = -1;
         setContent(createMainPanel());
     }
 
-    public ExternalToolEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, int newNameIndex) {
+    public ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, int newNameIndex) {
         this(appContext, helpID, operatorDescriptor);
         this.newNameIndex = newNameIndex;
         this.operatorIsNew = this.newNameIndex >= 1;
@@ -218,7 +233,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
         JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
         preProcessingPanel.add(createCheckboxComponent("preprocessTool", editorComponent, newOperatorDescriptor.getPreprocessTool()), getConstraints(0, 0));
-        preProcessingPanel.add(new JLabel("Preprocessing tool:"), getConstraints(0, 1));
+        preProcessingPanel.add(new JLabel(Bundle.CTL_Label_PreprocessingTool_Text()), getConstraints(0, 1));
         preProcessingPanel.add(editorComponent, getConstraints(0, 2));
 
         propertyDescriptor = propertyContainer.getDescriptor("processingWriter");
@@ -227,20 +242,18 @@ public class ExternalToolEditorDialog extends ModalDialog {
 
         JComponent writeComponent = createCheckboxComponent("writeForProcessing", editorComponent, newOperatorDescriptor.shouldWriteBeforeProcessing());
         if(writeComponent instanceof JCheckBox){
-            ((JCheckBox) writeComponent).addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if(((JCheckBox) writeComponent).isSelected()){
+            ((JCheckBox) writeComponent).addActionListener(e -> {
+                //noinspection StatementWithEmptyBody
+                if (((JCheckBox) writeComponent).isSelected()){
 
-                    };
                 }
             });
         }
         preProcessingPanel.add(writeComponent, getConstraints(1, 0));
-        preProcessingPanel.add(new JLabel("Write before processing using:"), getConstraints(1, 1));
+        preProcessingPanel.add(new JLabel(Bundle.CTL_Label_WriteBefore_Text()), getConstraints(1, 1));
         preProcessingPanel.add(editorComponent, getConstraints(1, 2));
 
-        TitledBorder title = BorderFactory.createTitledBorder("Preprocessing");
+        TitledBorder title = BorderFactory.createTitledBorder(Bundle.CTL_Panel_PreProcessing_Border_TitleText());
         preProcessingPanel.setBorder(title);
         preProcessingPanel.setPreferredSize(new Dimension(415, 70));
 
@@ -256,7 +269,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
 
         JPanel configPanel = new JPanel();
         configPanel.setLayout(new BorderLayout());
-        configPanel.setBorder(BorderFactory.createTitledBorder("Configuration Parameters"));
+        configPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CTL_Panel_ConfigParams_Text()));
 
         //JPanel topConfigPanel = new JPanel();
         //topConfigPanel.setLayout(new GridLayout(3, 1, 5, 5));
@@ -270,7 +283,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
         layout.columnWidths = new int[]{120, 250};
         panelToolFiles.setLayout(layout);
 
-        panelToolFiles.add(new JLabel("Tool location: "), getConstraints(0, 0));
+        panelToolFiles.add(new JLabel(Bundle.CTL_Label_ToolLocation_Text()), getConstraints(0, 0));
         panelToolFiles.add(editorComponent, getConstraints(0, 1));
 
         propertyDescriptor = propertyContainer.getDescriptor("workingDir");
@@ -278,10 +291,10 @@ public class ExternalToolEditorDialog extends ModalDialog {
         editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
 
-        panelToolFiles.add(new JLabel("Working directory: "), getConstraints(1, 0));
+        panelToolFiles.add(new JLabel(Bundle.CTL_Label_WorkDir_Text()), getConstraints(1, 0));
         panelToolFiles.add(editorComponent, getConstraints(1, 1));
 
-        panelToolFiles.add(new JLabel("Command line template:"), getConstraints(2, 0, 2));
+        panelToolFiles.add(new JLabel(Bundle.CTL_Label_CmdLineTemplate_Text()), getConstraints(2, 0, 2));
 
         //topConfigPanel.add(panelToolFiles);
         //topConfigPanel.setBackground(Color.cyan);
@@ -293,8 +306,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
             try {
                 templateContent.setText(ToolAdapterIO.readOperatorTemplate(newOperatorDescriptor.getName()));
             } catch (IOException e) {
-                e.printStackTrace();
-                //TODO log error
+                logger.warning(e.getMessage());
             }
         }
         configPanel.add(new JScrollPane(templateContent), BorderLayout.CENTER);
@@ -311,18 +323,18 @@ public class ExternalToolEditorDialog extends ModalDialog {
         layout.columnWidths = new int[]{100, 280};
 
         JPanel patternsPanel = new JPanel(layout);
-        patternsPanel.setBorder(BorderFactory.createTitledBorder("Tool Output Patterns"));
+        patternsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CTL_Panel_OutputPattern_Border_TitleText()));
 
         TextFieldEditor textEditor = new TextFieldEditor();
         PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(newOperatorDescriptor);
         BindingContext bindingContext = new BindingContext(propertyContainer);
 
-        patternsPanel.add(new JLabel("Progress pattern:"), getConstraints(0, 0));
+        patternsPanel.add(new JLabel(Bundle.CTL_Label_ProgressPattern()), getConstraints(0, 0));
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("progressPattern");
         JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         patternsPanel.add(editorComponent, getConstraints(0, 1));
 
-        patternsPanel.add(new JLabel("Error pattern:"), getConstraints(1, 0));
+        patternsPanel.add(new JLabel(Bundle.CTL_Label_ErrorPattern()), getConstraints(1, 0));
         propertyDescriptor = propertyContainer.getDescriptor("errorPattern");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         patternsPanel.add(editorComponent, getConstraints(1, 1));
@@ -358,8 +370,8 @@ public class ExternalToolEditorDialog extends ModalDialog {
         JPanel variablesBorderPanel = new JPanel();
         layout = new BoxLayout(variablesBorderPanel, BoxLayout.PAGE_AXIS);
         variablesBorderPanel.setLayout(layout);
-        variablesBorderPanel.setBorder(BorderFactory.createTitledBorder("System variables"));
-        AbstractButton addVariableBut = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/snap/resources/images/icons/Add16.png"),
+        variablesBorderPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CTL_Panel_SysVar_Border_TitleText()));
+        AbstractButton addVariableBut = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Add()),
                 false);
         addVariableBut.setAlignmentX(Component.LEFT_ALIGNMENT);
         variablesBorderPanel.add(addVariableBut);
@@ -392,7 +404,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
         JPanel paramsPanel = new JPanel();
         BoxLayout layout = new BoxLayout(paramsPanel, BoxLayout.PAGE_AXIS);
         paramsPanel.setLayout(layout);
-        AbstractButton addParamBut = ToolButtonFactory.createButton(UIUtils.loadImageIcon("/org/esa/snap/resources/images/icons/Add16.png"),
+        AbstractButton addParamBut = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Add()),
                 false);
         addParamBut.setAlignmentX(Component.LEFT_ALIGNMENT);
         paramsPanel.add(addParamBut);
@@ -400,10 +412,8 @@ public class ExternalToolEditorDialog extends ModalDialog {
         tableScrollPane.setPreferredSize(new Dimension(500, 130));
         tableScrollPane.setAlignmentX(Component.LEFT_ALIGNMENT);
         paramsPanel.add(tableScrollPane);
-        addParamBut.addActionListener(e -> {
-            paramsTable.addParameterToTable(new TemplateParameterDescriptor("parameterName", String.class));
-        });
-        TitledBorder title = BorderFactory.createTitledBorder("Operator Parameters");
+        addParamBut.addActionListener(e -> paramsTable.addParameterToTable(new TemplateParameterDescriptor("parameterName", String.class)));
+        TitledBorder title = BorderFactory.createTitledBorder(Bundle.CTL_Panel_OpParams_Border_TitleText());
         paramsPanel.setBorder(title);
         return paramsPanel;
     }
@@ -411,7 +421,7 @@ public class ExternalToolEditorDialog extends ModalDialog {
     @Override
     protected void onOK() {
         super.onOK();
-        ToolAdapterMenuRegistrar.removeOperatorMenu(oldOperatorDescriptor);
+        ToolAdapterActionRegistrar.removeOperatorMenu(oldOperatorDescriptor);
         ToolAdapterIO.removeOperator(oldOperatorDescriptor);
         String oldOperatorName = oldOperatorDescriptor.getName();
         if (oldOperatorDescriptor.isSystem() && oldOperatorName.equals(newOperatorDescriptor.getName())) {
@@ -420,22 +430,18 @@ public class ExternalToolEditorDialog extends ModalDialog {
         }
         newOperatorDescriptor.setSystem(false);
         newOperatorDescriptor.setTemplateFileLocation(newOperatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
-        for(TemplateParameterDescriptor param : newOperatorDescriptor.getToolParameterDescriptors()){
-            if(paramsTable.getBindingContext().getBinding(param.getName()) == null){
-                //TODO why is this happening???
-            } else {
-                if(paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue() != null) {
-                    param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue().toString());
-                }
-            }
-        }
+        java.util.List<TemplateParameterDescriptor> toolParameterDescriptors = newOperatorDescriptor.getToolParameterDescriptors();
+        toolParameterDescriptors.stream().filter(param -> paramsTable.getBindingContext().getBinding(param.getName()) != null)
+                                         .filter(param -> paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue() != null)
+                                         .forEach(param -> param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName())
+                                                 .getPropertyValue().toString()));
         try {
             ToolAdapterIO.saveAndRegisterOperator(newOperatorDescriptor, templateContent.getText());
-			ToolAdapterMenuRegistrar.registerOperatorMenu(newOperatorDescriptor);
-            NetBeansModulePackager.packAdapterJar(newOperatorDescriptor, new File(ToolAdapterIO.getUserModulesPath(), newOperatorDescriptor.getAlias() + ".jar"));
+			ToolAdapterActionRegistrar.registerOperatorMenu(newOperatorDescriptor);
+            JarPackager.packAdapterJar(newOperatorDescriptor, new File(ToolAdapterIO.getUserAdapterPath(), newOperatorDescriptor.getAlias() + ".jar"));
         } catch (Exception e) {
-            e.printStackTrace();
-            //TODO show error on screeen
+            logger.warning(e.getMessage());
+            SnapDialogs.showError(e.getMessage());
         }
     }
 }

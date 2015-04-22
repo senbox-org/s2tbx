@@ -7,7 +7,7 @@ import java.io.File;
  */
 public interface ToolAdapterConstants {
 
-    public static final String OPERATOR_NAMESPACE = "org.esa.s2tbx.framework.gpf.operators.tooladapter.";
+    public static final String OPERATOR_NAMESPACE = "org.esa.snap.framework.gpf.operators.tooladapter.";
     public static String DESCRIPTOR_FILE = "META-INF" + File.separator + "descriptor.xml";
     public static String SPI_FILE = "META-INF" + File.separator + "services" + File.separator + "org.esa.snap.framework.gpf.OperatorSpi";
     public static String SPI_FILE_CONTENT = OPERATOR_NAMESPACE + ".ToolAdapterOpSpi";

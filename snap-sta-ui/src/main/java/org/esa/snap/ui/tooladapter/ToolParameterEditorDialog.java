@@ -18,6 +18,8 @@ import java.awt.*;
 import java.io.File;
 
 /**
+ * Form for displaying and editing details of a tool adapter parameter.
+ *
  * @author Ramona Manda
  */
 public class ToolParameterEditorDialog extends ModalDialog {

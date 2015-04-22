@@ -89,6 +89,6 @@ public class OperatorsTableModel extends AbstractTableModel {
                 result.add(this.data.get(i));
             }
         }
-        return null;
+        return result;
     }
 }

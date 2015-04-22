@@ -7,7 +7,7 @@ import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
 import org.esa.snap.rcp.SnapDialogs;
-import org.esa.snap.ui.tooladapter.interfaces.ToolAdapterItemAction;
+import org.esa.snap.ui.tooladapter.interfaces.ExecuteToolAdapterAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.OnStart;
@@ -25,7 +25,7 @@ import java.util.Map;
  * @author Cosmin Cara
  */
 
-public class ToolAdapterMenuRegistrar {
+public class ToolAdapterActionRegistrar {
 
     private static final String MENU_PATH = "Menu/Tools";
     private static final String MENU_TEXT = "External tools";
@@ -71,7 +71,7 @@ public class ToolAdapterMenuRegistrar {
             if (newItem == null) {
                 newItem = groupItem.createData(candidateMenuKey, "instance");
             }
-            ToolAdapterItemAction action = new ToolAdapterItemAction(candidateMenuKey);
+            ExecuteToolAdapterAction action = new ExecuteToolAdapterAction(candidateMenuKey);
             newItem.setAttribute("instanceCreate", action);
             newItem.setAttribute("instanceClass", action.getClass().getName());
             if (actionMap.containsKey(candidateMenuKey)) {
@@ -120,7 +120,7 @@ public class ToolAdapterMenuRegistrar {
                 Collection<OperatorSpi> operatorSpis = spiRegistry.getOperatorSpis();
                 if (operatorSpis != null) {
                     if (operatorSpis.size() == 0) {
-                        operatorSpis.addAll(ToolAdapterIO.registerModules());
+                        operatorSpis.addAll(ToolAdapterIO.searchAndRegisterAdapters());
                     }
                     operatorSpis.stream().filter(spi -> spi instanceof ToolAdapterOpSpi).forEach(spi -> {
                         ToolAdapterOperatorDescriptor operatorDescriptor = (ToolAdapterOperatorDescriptor) spi.getOperatorDescriptor();
