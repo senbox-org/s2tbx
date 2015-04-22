@@ -1,6 +1,9 @@
 package org.esa.snap.framework.gpf.descriptor;
 
 /**
+ * This class encapsulates an environment (or system) variable
+ * that can be passed to a tool adapter operator.
+ *
  * @author Ramona Manda
  */
 public class SystemVariable {
@@ -17,22 +20,43 @@ public class SystemVariable {
         this.value = value;
     }
 
+    /**
+     * Gets the name of the system variable.
+     * @return
+     */
     public String getKey() {
         return key;
     }
 
+    /**
+     * Sets the name of the system variable.
+     * @param key
+     */
     public void setKey(String key) {
         this.key = key;
     }
 
+    /**
+     * Gets the value of the system variable
+     * @return
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * Sets the value of the system variable
+     * @param value
+     */
     public void setValue(String value) {
         this.value = value;
     }
 
+    /**
+     *  Creates a copy of this SystemVariable instance.
+     *
+     * @return  A copy of this instance
+     */
     public SystemVariable createCopy() {
         SystemVariable newVariable = new SystemVariable();
         newVariable.setKey(this.key);
@@ -40,28 +64,4 @@ public class SystemVariable {
         return newVariable;
     }
 
-    //TODO delete this if not necessary!
-    /*public static class XStreamConverter implements com.thoughtworks.xstream.converters.Converter {
-
-        public boolean canConvert(Class aClass) {
-            return SystemVariable.class.equals(aClass);
-        }
-
-        @Override
-        public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
-            SystemVariable headerParameter = (SystemVariable) source;
-            writer.addAttribute("key", headerParameter.getKey());
-            writer.addAttribute("value", headerParameter.getValue());
-        }
-
-        @Override
-        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
-            SystemVariable headerParameter = new SystemVariable();
-
-            headerParameter.setKey(reader.getAttribute("key"));
-            headerParameter.setValue(reader.getAttribute("value"));
-
-            return headerParameter;
-        }
-    }*/
 }
