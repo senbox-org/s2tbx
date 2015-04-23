@@ -58,8 +58,13 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-tooladapter</artifactId>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-sta</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-sta-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
 
