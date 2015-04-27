@@ -1,8 +1,8 @@
-package org.esa.snap.ui.tooladapter.interfaces;
+package org.esa.snap.ui.tooladapter.actions;
 
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.snap.rcp.actions.AbstractSnapAction;
-import org.esa.snap.ui.tooladapter.utils.ToolAdapterActionRegistrar;
+import org.esa.snap.ui.tooladapter.dialogs.ToolAdapterExecutionDialog;
 
 import java.awt.event.ActionEvent;
 

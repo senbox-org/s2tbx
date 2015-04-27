@@ -1,7 +1,7 @@
-package org.esa.snap.ui.tooladapter.interfaces;
+package org.esa.snap.ui.tooladapter.actions;
 
 import org.esa.snap.rcp.actions.AbstractSnapAction;
-import org.esa.snap.ui.tooladapter.ToolAdaptersManagementDialog;
+import org.esa.snap.ui.tooladapter.dialogs.ToolAdaptersManagementDialog;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;

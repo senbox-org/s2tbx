@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter;
+package org.esa.snap.ui.tooladapter.dialogs;
 
 import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.binding.PropertyDescriptor;
@@ -10,7 +10,7 @@ import org.apache.commons.collections.bidimap.DualHashBidiMap;
 import org.esa.snap.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.ModalDialog;
-import org.esa.snap.ui.tooladapter.utils.PropertyMemberUIWrapper;
+import org.esa.snap.ui.tooladapter.model.PropertyMemberUIWrapper;
 import org.esa.snap.util.StringUtils;
 
 import javax.swing.*;

@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter.utils;
+package org.esa.snap.ui.tooladapter.model;
 
 import com.bc.ceres.binding.*;
 import com.bc.ceres.binding.converters.ArrayConverter;

@@ -5,6 +5,8 @@ import org.esa.snap.framework.gpf.OperatorException;
 import org.esa.snap.framework.gpf.OperatorSpi;
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.snap.util.SystemUtils;
+import org.openide.modules.Places;
+import org.openide.util.NbPreferences;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,6 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 import static org.esa.snap.utils.JarPackager.unpackAdapterJar;
 
@@ -29,7 +32,6 @@ import static org.esa.snap.utils.JarPackager.unpackAdapterJar;
  */
 public class ToolAdapterIO {
 
-    private static final String NB_USERDIR = "netbeans.user";
     private static final String[] SYS_SUBFOLDERS = { "modules", "extensions", "adapters" };
     private static final String[] USER_SUBFOLDERS = { "extensions", "adapters" };
     private static File systemModulePath;
@@ -193,12 +195,15 @@ public class ToolAdapterIO {
      */
     public static File getUserAdapterPath() {
         if (userModulePath == null) {
-            String moduleFolder = System.getProperty(NB_USERDIR);
-            if (moduleFolder != null) {
-                userModulePath = new File(moduleFolder, SystemUtils.getApplicationContextId());
+            String userPath = null;
+            Preferences preferences = NbPreferences.forModule(ToolAdapterIO.class);
+            if ((userPath = preferences.get("user.module.path", null)) == null) {
+                userModulePath = new File(Places.getUserDirectory(), SystemUtils.getApplicationContextId());
                 for (String subFolder : USER_SUBFOLDERS) {
                     userModulePath = new File(userModulePath, subFolder);
                 }
+            } else {
+                userModulePath = new File(userPath);
             }
             if (!userModulePath.exists() && !userModulePath.mkdirs()) {
                 logger.severe("Cannot create user folder for external tool adapter extensions");

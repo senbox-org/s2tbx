@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter.utils;
+package org.esa.snap.ui.tooladapter.model;
 
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 

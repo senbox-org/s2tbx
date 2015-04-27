@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter;
+package org.esa.snap.ui.tooladapter.dialogs;
 
 import org.esa.snap.framework.gpf.descriptor.TemplateParameterDescriptor;
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
@@ -9,8 +9,8 @@ import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.ModalDialog;
 import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
-import org.esa.snap.ui.tooladapter.utils.OperatorParametersTable;
-import org.esa.snap.ui.tooladapter.utils.PropertyMemberUIWrapper;
+import org.esa.snap.ui.tooladapter.model.OperatorParametersTable;
+import org.esa.snap.ui.tooladapter.model.PropertyMemberUIWrapper;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;

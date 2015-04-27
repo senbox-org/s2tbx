@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter;
+package org.esa.snap.ui.tooladapter.dialogs;
 
 import org.esa.snap.framework.gpf.GPF;
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
@@ -10,16 +10,24 @@ import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.ModalDialog;
 import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
-import org.esa.snap.ui.tooladapter.interfaces.ToolAdapterExecutionDialog;
-import org.esa.snap.ui.tooladapter.utils.OperatorsTableModel;
-import org.esa.snap.ui.tooladapter.utils.ToolAdapterActionRegistrar;
+import org.esa.snap.rcp.SnapDialogs;
+import org.esa.snap.ui.tooladapter.actions.ToolAdapterActionRegistrar;
+import org.esa.snap.ui.tooladapter.model.OperatorsTableModel;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 /**
@@ -54,14 +62,17 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         //compute content and other buttons
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-        JPanel buttonsPanel = getButtonsPanel();
+        JPanel buttonsPanel = createButtonsPanel();
         buttonsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(buttonsPanel);
-        panel.add(new JScrollPane(getOperatorsTable()));
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(createPropertiesPanel());
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(new JScrollPane(createAdaptersPanel()));
         setContent(panel);
     }
 
-    private JPanel getButtonsPanel() {
+    private JPanel createButtonsPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
@@ -132,7 +143,59 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         return panel;
     }
 
-    private JTable getOperatorsTable() {
+    private JTable createPropertiesPanel() {
+        DefaultTableModel model = new DefaultTableModel(1, 2) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 1;
+            }
+        };
+        model.setValueAt("User-defined adapter path", 0, 0);
+        model.setValueAt(ToolAdapterIO.getUserAdapterPath(), 0, 1);
+        model.addTableModelListener(l -> {
+            String newPath = model.getValueAt(0, 1).toString();
+            File path = new File(newPath);
+            if (!path.exists() &&
+                    SnapDialogs.Answer.YES == SnapDialogs.requestDecision("Path does not exist", "The path you have entered does not exist.\nDo you want to create it?", true, "Don't ask me in the future")) {
+                if (!path.mkdirs()) {
+                    SnapDialogs.showError("Path could not be created!");
+                }
+            }
+            if (path.exists()) {
+                try {
+                    Preferences modulePrefs = NbPreferences.forModule(ToolAdapterIO.class);
+                    modulePrefs.put("user.module.path", newPath);
+                    modulePrefs.sync();
+                    SnapDialogs.showInformation("The path for user adapters will be considered next time the applicaiton is opened.", "Don't show this dialog");
+                } catch (BackingStoreException e1) {
+                    SnapDialogs.showError(e1.getMessage());
+                }
+            }
+        });
+        JTable table = new JTable(model);
+        table.getColumnModel().getColumn(0).setMaxWidth(250);
+        table.getColumnModel().getColumn(1).setMaxWidth(570);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        table.setRowHeight(20);
+        table.setBorder(BorderFactory.createLineBorder(Color.black));
+        table.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                Object source = e.getSource();
+                if (!table.equals(source)) {
+                    table.editingCanceled(new ChangeEvent(source));
+                    table.clearSelection();
+                }
+            }
+        });
+        return table;
+    }
+
+    private JTable createAdaptersPanel() {
         java.util.List<ToolAdapterOperatorDescriptor> toolboxSpis = new ArrayList<>();
         toolboxSpis.addAll(ToolAdapterRegistry.INSTANCE.getOperatorMap().values()
                                 .stream()

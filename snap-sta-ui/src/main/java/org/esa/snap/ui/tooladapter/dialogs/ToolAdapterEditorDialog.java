@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter;
+package org.esa.snap.ui.tooladapter.dialogs;
 
 import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.binding.PropertyDescriptor;
@@ -23,9 +23,9 @@ import org.esa.snap.framework.ui.ModalDialog;
 import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
 import org.esa.snap.rcp.SnapDialogs;
-import org.esa.snap.ui.tooladapter.utils.OperatorParametersTable;
-import org.esa.snap.ui.tooladapter.utils.ToolAdapterActionRegistrar;
-import org.esa.snap.ui.tooladapter.utils.VariablesTable;
+import org.esa.snap.ui.tooladapter.actions.ToolAdapterActionRegistrar;
+import org.esa.snap.ui.tooladapter.model.OperatorParametersTable;
+import org.esa.snap.ui.tooladapter.model.VariablesTable;
 import org.esa.snap.utils.JarPackager;
 import org.openide.util.NbBundle;
 

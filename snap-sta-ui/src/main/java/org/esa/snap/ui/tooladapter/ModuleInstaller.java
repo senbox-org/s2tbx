@@ -6,7 +6,7 @@ import org.esa.snap.framework.gpf.OperatorSpiRegistry;
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
-import org.esa.snap.ui.tooladapter.utils.ToolAdapterActionRegistrar;
+import org.esa.snap.ui.tooladapter.actions.ToolAdapterActionRegistrar;
 import org.openide.modules.ModuleInstall;
 
 import java.util.Collection;

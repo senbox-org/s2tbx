@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter;
+package org.esa.snap.ui.tooladapter.dialogs;
 
 import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertySet;

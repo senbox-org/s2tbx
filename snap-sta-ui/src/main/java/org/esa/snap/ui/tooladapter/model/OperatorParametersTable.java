@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter.utils;
+package org.esa.snap.ui.tooladapter.model;
 
 import com.bc.ceres.binding.*;
 import com.bc.ceres.swing.binding.BindingContext;
@@ -12,8 +12,8 @@ import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
 import org.esa.snap.rcp.SnapDialogs;
-import org.esa.snap.ui.tooladapter.TemplateParameterEditorDialog;
-import org.esa.snap.ui.tooladapter.ToolParameterEditorDialog;
+import org.esa.snap.ui.tooladapter.dialogs.TemplateParameterEditorDialog;
+import org.esa.snap.ui.tooladapter.dialogs.ToolParameterEditorDialog;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;

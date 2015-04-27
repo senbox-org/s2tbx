@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter.utils;
+package org.esa.snap.ui.tooladapter.actions;
 
 import org.esa.snap.framework.gpf.GPF;
 import org.esa.snap.framework.gpf.OperatorSpi;
@@ -7,7 +7,6 @@ import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
 import org.esa.snap.rcp.SnapDialogs;
-import org.esa.snap.ui.tooladapter.interfaces.ExecuteToolAdapterAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.OnStart;

@@ -1,4 +1,4 @@
-package org.esa.snap.ui.tooladapter.interfaces;
+package org.esa.snap.ui.tooladapter.dialogs;
 
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.gpf.GPF;
@@ -10,7 +10,6 @@ import org.esa.snap.framework.gpf.ui.OperatorParameterSupport;
 import org.esa.snap.framework.gpf.ui.SingleTargetProductDialog;
 import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.BasicApp;
-import org.esa.snap.ui.tooladapter.ToolExecutionForm;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressUtils;
