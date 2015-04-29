@@ -1,6 +1,5 @@
 /*
  *
- * Copyright (C) 2013-2014 Brockmann Consult GmbH (info@brockmann-consult.de)
  * Copyright (C) 2014-2015 CS SI
  *
  * This program is free software; you can redistribute it and/or modify it
