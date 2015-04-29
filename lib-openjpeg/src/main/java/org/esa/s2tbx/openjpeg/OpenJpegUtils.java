@@ -46,7 +46,7 @@ public class OpenJpegUtils {
         public void run() {
             String usedPath = null;
 
-            String winPath = "openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
+            String winPath = "openjpeg-2.1.0-win32-x86_dyn/bin/opj_decompress.exe";
             String linuxPath = "openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
             String linux64Path = "openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
             String macPath = "openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
@@ -129,7 +129,7 @@ public class OpenJpegUtils {
     public static String getInfoExtractor() throws IOException, InterruptedException {
         String usedPath = null;
 
-        String winPath = "openjpeg-2.0.0-win32-x86/bin/opj_dump.exe";
+        String winPath = "openjpeg-2.1.0-win32-x86_dyn/bin/opj_dump.exe";
         String linuxPath = "openjpeg-2.1.0-Linux-i386/bin/opj_dump";
         String linux64Path = "openjpeg-2.1.0-Linux-x64/bin/opj_dump";
         String macPath = "openjpeg-2.1.0-Darwin-i386/bin/opj_dump";
@@ -174,7 +174,7 @@ public class OpenJpegUtils {
     public static String getDecompressor() throws InterruptedException, IOException {
         String usedPath = null;
 
-        String winPath = "openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
+        String winPath = "openjpeg-2.1.0-win32-x86_dyn/bin/opj_decompress.exe";
         String linuxPath = "openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
         String linux64Path = "openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
         String macPath = "openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
