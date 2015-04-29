@@ -309,7 +309,7 @@ public class L1cMetadataProc {
             int azcolumns2 = angleGrid.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
 
             int zenrows2 = angleGrid.getZenith().getValues_List().getVALUES().size();
-            int zencolumns2 = angleGrid.getZenith().getValues_List().getVALUES().size();
+            int zencolumns2 = angleGrid.getZenith().getValues_List().getVALUES().get(0).getValue().size();
 
 
             L1cMetadata.AnglesGrid ag2 = new L1cMetadata.AnglesGrid();
