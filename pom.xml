@@ -419,12 +419,6 @@
             </dependencies>
         </profile>
         <profile>
-            <id>installer</id>
-            <modules>
-                <module>s2tbx-installer</module>
-            </modules>
-        </profile>
-        <profile>
             <id>runAllTests</id>
 
             <build>
