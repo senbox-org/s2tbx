@@ -40,6 +40,14 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * A dialog window used to edit an operator, or to create a new operator.
+ * It shows details of an operator such as: descriptor details (name, alias, label, version, copyright,
+ * authors, description), system variables, preprocessing tool, product writer, tool location,
+ * operator working directory, command line template content, tool output patterns and parameters.
+ *
+ * @author Ramona Manda
+ */
 @NbBundle.Messages({
         "CTL_Label_Alias_Text=Alias:",
         "CTL_Label_UniqueName_Text=Unique name:",
@@ -67,7 +75,7 @@ public class ToolAdapterEditorDialog extends ModalDialog {
 
     private ToolAdapterOperatorDescriptor oldOperatorDescriptor;
     private ToolAdapterOperatorDescriptor newOperatorDescriptor;
-    private boolean operatorIsNew;
+    private boolean operatorIsNew = false;
     private int newNameIndex = -1;
     private PropertyContainer propertyContainer;
     private BindingContext bindingContext;
@@ -116,6 +124,13 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         paramsTable =  new OperatorParametersTable(newOperatorDescriptor, appContext);
     }
 
+    /**
+     * Constructs a new window for editing the operator
+     * @param appContext the application context
+     * @param helpID
+     * @param operatorDescriptor the descriptor of the operator to be edited
+     * @param operatorIsNew true if the operator was not previously registered (so it is a new operator) and false if the operator was registered and the editing operation is requested
+     */
     public ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
         this(appContext, helpID, operatorDescriptor);
         this.operatorIsNew = operatorIsNew;
@@ -123,14 +138,25 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         setContent(createMainPanel());
     }
 
+    /**
+     * Constructs a new window for editing the operator
+     * @param appContext the application context
+     * @param helpID
+     * @param operatorDescriptor the descriptor of the operator to be edited
+     * @param newNameIndex an integer value representing the suffix for the new operator name; if this value is less than 1, the editing operation of the current operator is executed; if the value is equal to or greater than 1, the operator is duplicated and the index value is used to compute the name of the new operator
+     */
     public ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, int newNameIndex) {
         this(appContext, helpID, operatorDescriptor);
         this.newNameIndex = newNameIndex;
         this.operatorIsNew = this.newNameIndex >= 1;
+        if(this.newNameIndex >= 1) {
+            this.newOperatorDescriptor.setName(this.oldOperatorDescriptor.getName() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
+            this.newOperatorDescriptor.setAlias(this.oldOperatorDescriptor.getAlias() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
+        }
         setContent(createMainPanel());
     }
 
-    public JPanel createMainPanel() {
+    private JPanel createMainPanel() {
         JPanel toolDescriptorPanel = new JPanel();
         toolDescriptorPanel.setLayout(new BorderLayout());
         toolDescriptorPanel.setPreferredSize(new Dimension(800, 550));
@@ -155,17 +181,11 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Alias_Text()), getConstraints(0, 0));
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("alias");
         JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        if (this.newNameIndex >= 1) {
-            ((JTextField) editorComponent).setText(newOperatorDescriptor.getAlias() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
-        }
         descriptorPanel.add(editorComponent, getConstraints(0, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_UniqueName_Text()), getConstraints(1, 0));
         propertyDescriptor = propertyContainer.getDescriptor("name");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        if (this.newNameIndex >= 1) {
-            ((JTextField) editorComponent).setText(newOperatorDescriptor.getName() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + this.newNameIndex);
-        }
         descriptorPanel.add(editorComponent, getConstraints(1, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Label_Text()), getConstraints(2, 0));
@@ -302,12 +322,14 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         configPanel.add(panelToolFiles, BorderLayout.PAGE_START);
 
         templateContent = new JTextArea("", 15, 9);
-        if (!operatorIsNew) {
-            try {
+        try {
+            if (operatorIsNew) {
+                templateContent.setText(ToolAdapterIO.readOperatorTemplate(oldOperatorDescriptor.getName()));
+            } else {
                 templateContent.setText(ToolAdapterIO.readOperatorTemplate(newOperatorDescriptor.getName()));
-            } catch (IOException e) {
-                logger.warning(e.getMessage());
             }
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
         }
         configPanel.add(new JScrollPane(templateContent), BorderLayout.CENTER);
 
@@ -421,8 +443,10 @@ public class ToolAdapterEditorDialog extends ModalDialog {
     @Override
     protected void onOK() {
         super.onOK();
-        ToolAdapterActionRegistrar.removeOperatorMenu(oldOperatorDescriptor);
-        ToolAdapterIO.removeOperator(oldOperatorDescriptor);
+        if(!this.operatorIsNew) {
+            ToolAdapterActionRegistrar.removeOperatorMenu(oldOperatorDescriptor);
+            ToolAdapterIO.removeOperator(oldOperatorDescriptor);
+        }
         String oldOperatorName = oldOperatorDescriptor.getName();
         if (oldOperatorDescriptor.isSystem() && oldOperatorName.equals(newOperatorDescriptor.getName())) {
             newOperatorDescriptor.setName(newOperatorDescriptor.getName() + ".custom");

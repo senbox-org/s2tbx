@@ -88,9 +88,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                 newNameIndex++;
                 opName = operatorDesc.getName() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
             }
-            String opAlias = operatorDesc.getAlias() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
-            ToolAdapterOperatorDescriptor duplicatedOperatorSpi = new ToolAdapterOperatorDescriptor(operatorDesc, opName, opAlias);
-            ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), duplicatedOperatorSpi, newNameIndex);
+            ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), operatorDesc, newNameIndex);
             dialog.show();
         });
         panel.add(copyButton);
