@@ -119,17 +119,22 @@ class L1cTileOpImage extends SingleBandedOpImage {
         }
     }
 
-    static PlanarImage createGenericScaledImage(PlanarImage sourceImage, Envelope2D sceneEnvelope, S2SpatialResolution resolution, int level) {
+    static PlanarImage createGenericScaledImage(PlanarImage sourceImage, Envelope2D sceneEnvelope, S2SpatialResolution resolution, int level, boolean forceResize) {
         BeamLogManager.getSystemLogger().fine("Asking for scaled mosaic image: " + resolution.toString());
-        BeamLogManager.getSystemLogger().fine("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
-        BeamLogManager.getSystemLogger().fine("TargetImage:" + sceneEnvelope.getWidth() + ", " + sceneEnvelope.getHeight());
+        BeamLogManager.getSystemLogger().warning("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
 
-        int targetWidth = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getWidth() / (S2SpatialResolution.R10M.resolution)), level);
-        int targetHeight = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getHeight() / (S2SpatialResolution.R10M.resolution)), level);
+        int targetWidth = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getWidth() / (resolution.resolution)), level);
+        int targetHeight = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getHeight() / (resolution.resolution)), level);
 
 
         float scaleX = targetWidth / ((float) sourceImage.getWidth());
         float scaleY = targetHeight / ((float) sourceImage.getHeight());
+
+        if(!forceResize)
+        {
+            scaleX = (float) 1.0;
+            scaleY = (float) 1.0;
+        }
 
         BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
         RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,

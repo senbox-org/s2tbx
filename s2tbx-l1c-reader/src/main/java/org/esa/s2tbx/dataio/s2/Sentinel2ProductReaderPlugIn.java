@@ -58,7 +58,7 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
     public ProductReader createReaderInstance() {
         BeamLogManager.getSystemLogger().info("Building product reader...");
 
-        return new Sentinel2ProductReader(this);
+        return new Sentinel2ProductReader(this, false);
     }
 
     @Override

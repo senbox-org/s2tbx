@@ -104,6 +104,8 @@ import static org.esa.s2tbx.dataio.s2.S2Config.*;
  */
 public class Sentinel2ProductReader extends AbstractProductReader {
 
+    private final boolean forceResize;
+
     private File cacheDir;
     protected final Logger logger;
 
@@ -120,15 +122,24 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             this.imageLayout = imageLayout;
         }
 
+        public S2WavebandInfo getWavebandInfo() {
+            return wavebandInfo;
+        }
+
+        public TileLayout getImageLayout() {
+            return imageLayout;
+        }
+
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
     }
 
 
-    Sentinel2ProductReader(Sentinel2ProductReaderPlugIn readerPlugIn) {
+    Sentinel2ProductReader(Sentinel2ProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
+        this.forceResize = forceResize;
     }
 
     @Override
@@ -283,11 +294,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         product.setFileLocation(metadataFile.getParentFile());
 
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
-        setGeoCoding(product, sceneDescription.getSceneEnvelope());
+
+        if(forceResize) {
+            setGeoCoding(product, sceneDescription.getSceneEnvelope());
+        }
 
         if(!bandInfoMap.isEmpty())
         {
-            addBands(product, bandInfoMap, new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+            addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
             // critical use only tiepointgrids instead of bands
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
@@ -304,7 +318,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
 
-    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
+    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
 
@@ -321,11 +335,35 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
             Band band = addBand(product, bandInfo);
             band.setSourceImage(mlif.createSourceImage(bandInfo));
+
+            if(!forceResize)
+            {
+                try {
+                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                            band.getRasterWidth(),
+                            band.getRasterHeight(),
+                            envelope.getMinX(),
+                            envelope.getMaxY(),
+                            bandInfo.getWavebandInfo().resolution.resolution,
+                            bandInfo.getWavebandInfo().resolution.resolution,
+                            0.0, 0.0));
+                } catch (FactoryException e) {
+                    logger.severe("Illegal CRS");
+                } catch (TransformException e) {
+                    logger.severe("Illegal projection");
+                }
+            }
+
+            // TODO Use the info in bandInfo.getWavebandInfo().resolution to change geocoding
         }
     }
 
     private Band addBand(Product product, BandInfo bandInfo) {
-        final Band band = product.addBand(bandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE);
+        int index = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
+        int defRes = S2SpatialResolution.R10M.resolution;
+
+        final Band band = new Band(bandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
+        product.addBand(band);
 
         band.setSpectralBandIndex(bandInfo.bandIndex);
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
@@ -333,7 +371,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
 
         //todo add masks from GML metadata files (gml branch)
-        setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
+        // setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
 
         // todo - We don't use the scaling factor because we want to stay with 16bit unsigned short samples due to the large
         // amounts of data when saving the images. We provide virtual reflectance bands for this reason. We can use the
@@ -659,13 +697,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
             }
 
+
             if (this.bandInfo.wavebandInfo.resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = L1cTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level);
+                PlanarImage scaled = L1cTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level, forceResize);
 
                 logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 
                 return scaled;
             }
+
             // todo add crop ?
 
             logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY(), mosaicOp.getWidth(), mosaicOp.getHeight()));
