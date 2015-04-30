@@ -369,16 +369,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
 
-
-        //todo add masks from GML metadata files (gml branch)
-        // setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
-
-        // todo - We don't use the scaling factor because we want to stay with 16bit unsigned short samples due to the large
-        // amounts of data when saving the images. We provide virtual reflectance bands for this reason. We can use the
-        // scaling factor again, once we have product writer parameters, so that users can decide to write data as
-        // 16bit samples.
-        //
-        //band.setScalingFactor(bandInfo.wavebandInfo.scalingFactor);
+        // todo add masks from GML metadata files (gml branch)
+        setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
 
         return band;
     }
