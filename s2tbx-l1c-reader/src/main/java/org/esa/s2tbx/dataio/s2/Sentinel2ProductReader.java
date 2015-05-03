@@ -34,11 +34,8 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.AbstractProductReader;
-import org.esa.snap.framework.datamodel.Band;
-import org.esa.snap.framework.datamodel.CrsGeoCoding;
-import org.esa.snap.framework.datamodel.Product;
-import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.framework.datamodel.TiePointGrid;
+import org.esa.snap.framework.datamodel.*;
+import org.esa.snap.framework.dataop.barithm.BandArithmetic;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
@@ -336,6 +333,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             Band band = addBand(product, bandInfo);
             band.setSourceImage(mlif.createSourceImage(bandInfo));
 
+            // CRITICAL todo add mask
+            // product.addMask(new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE ));
+
             if(!forceResize)
             {
                 try {
@@ -378,7 +378,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     private void setValidPixelMask(Band band, String bandName) {
         band.setNoDataValue(0);
         band.setValidPixelExpression(String.format("%s.raw > %s",
-                                                   bandName, S2Config.RAW_NO_DATA_THRESHOLD));
+                bandName, S2Config.RAW_NO_DATA_THRESHOLD));
     }
 
     private void addL1cTileTiePointGrids(L1cMetadata metadataHeader, Product product, int tileIndex) {
