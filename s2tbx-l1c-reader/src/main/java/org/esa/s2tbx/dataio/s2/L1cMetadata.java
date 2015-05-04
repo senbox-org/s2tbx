@@ -184,6 +184,14 @@ public class L1cMetadata {
             spectralResponseValues = new double[]{};
         }
 
+        public SpectralInformation(String physicalBand, int bandId, int resolution)
+        {
+            this.physicalBand = physicalBand;
+            this.bandId = bandId;
+            this.resolution = resolution;
+            spectralResponseValues = new double[]{};
+        }
+
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
