@@ -3,12 +3,12 @@ package org.esa.s2tbx.dataio.spot.dimap;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.utils.TestUtil;
 import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ramona Manda

@@ -19,6 +19,8 @@ import org.openide.util.NbPreferences;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -174,7 +176,9 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         });
         JTable table = new JTable(model);
         table.getColumnModel().getColumn(0).setMaxWidth(250);
-        table.getColumnModel().getColumn(1).setMaxWidth(570);
+        TableColumn pathColumn = table.getColumnModel().getColumn(1);
+        pathColumn.setMaxWidth(570);
+        pathColumn.setCellEditor(new FileChooserCellEditor());
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.setRowHeight(20);
         table.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -240,5 +244,53 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         return operatorsTable;
     }
 
+    public class FileChooserCellEditor extends DefaultCellEditor implements TableCellEditor {
+
+        /** Number of clicks to start editing */
+        private static final int CLICK_COUNT_TO_START = 2;
+        /** Editor component */
+        private JButton button;
+        /** File chooser */
+        private JFileChooser fileChooser;
+        /** Selected file */
+        private String file = "";
+
+        /**
+         * Constructor.
+         */
+        public FileChooserCellEditor() {
+            super(new JTextField());
+            setClickCountToStart(CLICK_COUNT_TO_START);
+
+            // Using a JButton as the editor component
+            button = new JButton();
+            button.setBackground(Color.white);
+            button.setFont(button.getFont().deriveFont(Font.PLAIN));
+            button.setBorder(null);
+
+            // Dialog which will do the actual editing
+            fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return file;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            file = value.toString();
+            SwingUtilities.invokeLater(() -> {
+                fileChooser.setSelectedFile(new File(file));
+                if (fileChooser.showOpenDialog(button) == JFileChooser.APPROVE_OPTION) {
+                    file = fileChooser.getSelectedFile().getAbsolutePath();
+                }
+                fireEditingStopped();
+            });
+            button.setText(file);
+            return button;
+        }
+    }
 
 }

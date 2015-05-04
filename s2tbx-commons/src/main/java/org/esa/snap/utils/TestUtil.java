@@ -1,10 +1,10 @@
-package org.esa.s2tbx.utils;
+package org.esa.snap.utils;
 
 import org.apache.commons.lang.SystemUtils;
 
 import java.io.File;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public class TestUtil {
 

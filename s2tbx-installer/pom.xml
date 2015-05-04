@@ -122,11 +122,23 @@
         </dependency>
 
         <dependency>
-            <!--used to get other dependencies -->
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-sta</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-sta-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--<dependency>
+            &lt;!&ndash;used to get other dependencies &ndash;&gt;
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-beam-bootstrap</artifactId>
             <version>${snap.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-core</artifactId>

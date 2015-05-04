@@ -1,4 +1,4 @@
-package org.esa.s2tbx.utils;
+package org.esa.snap.utils;
 
 import java.io.File;
 import java.io.IOException;

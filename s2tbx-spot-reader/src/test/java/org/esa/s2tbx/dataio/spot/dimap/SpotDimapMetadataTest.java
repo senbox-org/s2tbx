@@ -2,16 +2,17 @@ package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.utils.TestUtil;
+import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Ramona Manda

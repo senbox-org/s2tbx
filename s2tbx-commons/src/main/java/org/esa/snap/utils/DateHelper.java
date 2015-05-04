@@ -1,4 +1,4 @@
-package org.esa.s2tbx.utils;
+package org.esa.snap.utils;
 
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.util.logging.BeamLogManager;

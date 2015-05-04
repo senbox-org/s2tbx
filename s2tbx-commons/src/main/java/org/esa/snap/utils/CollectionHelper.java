@@ -1,4 +1,4 @@
-package org.esa.s2tbx.utils;
+package org.esa.snap.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;

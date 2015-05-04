@@ -33,8 +33,8 @@
     <extension point="snap-ui:toolViews">
 
         <toolView>
-            <id>org.esa.s2tbx.ui.ConsoleToolView</id>
-            <class>org.esa.s2tbx.ui.ConsoleToolView</class>
+            <id>org.esa.snap.ui.ConsoleToolView</id>
+            <class>org.esa.snap.ui.ConsoleToolView</class>
             <title>Console View</title>
             <tabTitle>Console Info</tabTitle>
             <description>Display logged messages</description>

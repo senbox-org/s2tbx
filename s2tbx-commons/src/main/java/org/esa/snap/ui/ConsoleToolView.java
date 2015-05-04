@@ -16,43 +16,21 @@
  *
  */
 
-package org.esa.s2tbx.ui;
+package org.esa.snap.ui;
 
-import org.esa.s2tbx.utils.CollectionHelper;
 import org.esa.snap.framework.ui.application.support.AbstractToolView;
 import org.esa.snap.util.logging.BeamLogManager;
+import org.esa.snap.utils.CollectionHelper;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
-import javax.swing.RowFilter;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableRowSorter;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
+import javax.swing.*;
+import javax.swing.table.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;

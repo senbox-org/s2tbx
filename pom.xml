@@ -27,7 +27,9 @@
         <module>s2tbx-sen2three-processor</module>
         <module>s2tbx-r2r-converter</module>
         <module>s2tbx-deimos-reader</module>
-        <module>s2tbx-tooladapter</module>
+        <!--<module>s2tbx-tooladapter</module>-->
+        <module>snap-sta</module>
+        <module>snap-sta-ui</module>
         <!-- <module>s2tbx-sen2cor-processor</module> -->
     </modules>
 
@@ -113,6 +115,11 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-engine</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-desktop</artifactId>
                 <version>${snap.version}</version>
             </dependency>
             <!--<dependency>
@@ -365,13 +372,13 @@
                 <dependency>
                     <groupId>com.jcabi</groupId>
                     <artifactId>jcabi-aspects</artifactId>
-                    <version>0.20.4</version>
+                    <!--<version>0.20.4</version>-->
                 </dependency>
 
                 <dependency>
                     <groupId>org.aspectj</groupId>
                     <artifactId>aspectjrt</artifactId>
-                    <version>1.6.12</version>
+                    <!--<version>1.6.12</version>-->
                     <scope>runtime</scope>
                 </dependency>
             </dependencies>
@@ -382,13 +389,13 @@
                 <dependency>
                     <groupId>com.github.jbellis</groupId>
                     <artifactId>jamm</artifactId>
-                    <version>0.3.0</version>
+                    <!--<version>0.3.0</version>-->
                 </dependency>
 
                 <dependency>
                     <groupId>io.dropwizard.metrics</groupId>
                     <artifactId>metrics-core</artifactId>
-                    <version>3.1.0</version>
+                    <!--<version>3.1.0</version>-->
                 </dependency>
             </dependencies>
         </profile>
@@ -490,9 +497,9 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jar-plugin</artifactId>
-                        <version>2.3.1</version>
+                        <!--<version>2.3.1</version>-->
                         <configuration>
-                            <outputDirectory>${dir}</outputDirectory>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -506,7 +513,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.16</version>
                 <configuration>
                     <showSuccess>false</showSuccess>
                     <outputDirectory>${outputdir}/target/surefire-reports</outputDirectory>

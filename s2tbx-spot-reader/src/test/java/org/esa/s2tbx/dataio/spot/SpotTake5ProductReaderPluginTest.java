@@ -1,22 +1,17 @@
 package org.esa.s2tbx.dataio.spot;
 
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
-import org.esa.s2tbx.utils.TestUtil;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductIOPlugInManager;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.io.BeamFileFilter;
+import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
