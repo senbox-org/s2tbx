@@ -406,11 +406,16 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 sunZeniths[index] = sunAnglesGrid.zenith[y][x];
                 sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
                 for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
-                    if (!Float.isNaN(grid.zenith[y][x])) {
-                        viewingZeniths[index] = grid.zenith[y][x];
-                    }
-                    if (!Float.isNaN(grid.azimuth[y][x])) {
-                        viewingAzimuths[index] = grid.azimuth[y][x];
+                    try {
+                        if (!Float.isNaN(grid.zenith[y][x])) {
+                            viewingZeniths[index] = grid.zenith[y][x];
+                        }
+                        if (!Float.isNaN(grid.azimuth[y][x])) {
+                            viewingAzimuths[index] = grid.azimuth[y][x];
+                        }
+                    } catch (Exception e) {
+                        // todo CRITICAL Fix this
+                        e.printStackTrace();
                     }
                 }
             }

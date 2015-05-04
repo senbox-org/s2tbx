@@ -294,7 +294,7 @@ public class L1cMetadataProc {
         int azcolumns = sun.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
 
         int zenrows = sun.getZenith().getValues_List().getVALUES().size();
-        int zencolumns = sun.getZenith().getValues_List().getVALUES().size();
+        int zencolumns = sun.getZenith().getValues_List().getVALUES().get(0).getValue().size();
 
         L1cMetadata.AnglesGrid ag = new L1cMetadata.AnglesGrid();
         ag.azimuth = new float[azrows][azcolumns];
