@@ -57,11 +57,6 @@
             <artifactId>s2tbx-deimos-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--<dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-tooladapter</artifactId>
-            <version>${project.version}</version>
-        </dependency>-->
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-sta</artifactId>
