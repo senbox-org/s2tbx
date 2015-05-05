@@ -174,7 +174,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private void readMasks(Product p) {
-        // critical read geocoding using gml module
+        // todo CRITICAL read geocoding using gml module
         Assert.notNull(p);
     }
 
@@ -296,11 +296,20 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
         }
 
+        if(!tileList.isEmpty())
+        {
+            // todo critical recover mask info from the tilelist
+            for(L1cMetadata.Tile tile: tileList)
+            {
+                MaskFilename[] filenames = tile.maskFilenames;
+            }
+        }
+
         if(!bandInfoMap.isEmpty())
         {
             addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
-            // critical use only tiepointgrids instead of bands
+            // todo critical use only tiepointgrids instead of bands
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
@@ -334,7 +343,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             band.setSourceImage(mlif.createSourceImage(bandInfo));
 
             // CRITICAL todo add mask
-            // product.addMask(new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE ));
+            Mask newMask = new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE );
+            // VectorDataNode vdn = new VectorDataNode();
+            // Mask.VectorDataType.setVectorData(newMask, null);
+            product.addMask(newMask);
 
             if(!forceResize)
             {
@@ -406,11 +418,16 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 sunZeniths[index] = sunAnglesGrid.zenith[y][x];
                 sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
                 for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
-                    if (!Float.isNaN(grid.zenith[y][x])) {
-                        viewingZeniths[index] = grid.zenith[y][x];
-                    }
-                    if (!Float.isNaN(grid.azimuth[y][x])) {
-                        viewingAzimuths[index] = grid.azimuth[y][x];
+                    try {
+                        if (!Float.isNaN(grid.zenith[y][x])) {
+                            viewingZeniths[index] = grid.zenith[y][x];
+                        }
+                        if (!Float.isNaN(grid.azimuth[y][x])) {
+                            viewingAzimuths[index] = grid.azimuth[y][x];
+                        }
+                    } catch (Exception e) {
+                        // todo CRITICAL Fix this
+                        e.printStackTrace();
                     }
                 }
             }

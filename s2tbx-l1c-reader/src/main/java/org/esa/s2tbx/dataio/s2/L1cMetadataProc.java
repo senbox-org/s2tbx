@@ -153,24 +153,43 @@ public class L1cMetadataProc {
         characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString();
         characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value();
 
-        List<A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
-
         List<L1cMetadata.SpectralInformation> aInfo = new ArrayList<L1cMetadata.SpectralInformation>();
 
-        for (A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
-            L1cMetadata.SpectralInformation data = new L1cMetadata.SpectralInformation();
-            data.bandId = Integer.parseInt(sin.getBandId());
-            data.physicalBand = sin.getPhysicalBand().value();
-            data.resolution = sin.getRESOLUTION();
-            data.spectralResponseStep = sin.getSpectral_Response().getSTEP().getValue();
+        if (product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List() != null)
+        {
+            List<A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
 
-            int size = sin.getSpectral_Response().getVALUES().size();
-            data.spectralResponseValues = ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size]));
-            data.wavelenghtCentral = sin.getWavelength().getCENTRAL().getValue();
-            data.wavelenghtMax = sin.getWavelength().getMAX().getValue();
-            data.wavelenghtMin = sin.getWavelength().getMIN().getValue();
+            for (A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
+                L1cMetadata.SpectralInformation data = new L1cMetadata.SpectralInformation();
+                data.bandId = Integer.parseInt(sin.getBandId());
+                data.physicalBand = sin.getPhysicalBand().value();
+                data.resolution = sin.getRESOLUTION();
+                data.spectralResponseStep = sin.getSpectral_Response().getSTEP().getValue();
 
-            aInfo.add(data);
+                int size = sin.getSpectral_Response().getVALUES().size();
+                data.spectralResponseValues = ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size]));
+                data.wavelenghtCentral = sin.getWavelength().getCENTRAL().getValue();
+                data.wavelenghtMax = sin.getWavelength().getMAX().getValue();
+                data.wavelenghtMin = sin.getWavelength().getMIN().getValue();
+
+                aInfo.add(data);
+            }
+        }
+        else
+        {
+            aInfo.add(new L1cMetadata.SpectralInformation("B1",0,60));
+            aInfo.add(new L1cMetadata.SpectralInformation("B2",1,10));
+            aInfo.add(new L1cMetadata.SpectralInformation("B3",2,10));
+            aInfo.add(new L1cMetadata.SpectralInformation("B4",3,10));
+            aInfo.add(new L1cMetadata.SpectralInformation("B5",4,20));
+            aInfo.add(new L1cMetadata.SpectralInformation("B6",5,20));
+            aInfo.add(new L1cMetadata.SpectralInformation("B7",6,20));
+            aInfo.add(new L1cMetadata.SpectralInformation("B8",7,10));
+            aInfo.add(new L1cMetadata.SpectralInformation("B8A",8,20));
+            aInfo.add(new L1cMetadata.SpectralInformation("B9",9,60));
+            aInfo.add(new L1cMetadata.SpectralInformation("B10",10,60));
+            aInfo.add(new L1cMetadata.SpectralInformation("B11",11,20));
+            aInfo.add(new L1cMetadata.SpectralInformation("B12",12,20));
         }
 
         int size = aInfo.size();
@@ -275,7 +294,7 @@ public class L1cMetadataProc {
         int azcolumns = sun.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
 
         int zenrows = sun.getZenith().getValues_List().getVALUES().size();
-        int zencolumns = sun.getZenith().getValues_List().getVALUES().size();
+        int zencolumns = sun.getZenith().getValues_List().getVALUES().get(0).getValue().size();
 
         L1cMetadata.AnglesGrid ag = new L1cMetadata.AnglesGrid();
         ag.azimuth = new float[azrows][azcolumns];
