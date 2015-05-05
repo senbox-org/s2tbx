@@ -60,8 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-// critical test adding PSD11 product
-// critical add dependencies to eop-gml and hma-gml
+// todo critical test adding PSD11 product
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
@@ -304,6 +303,10 @@ public class L1cMetadata {
         Collection<String> tileNames = L1cMetadataProc.getTiles(product);
         List<File> fullTileNamesList = new ArrayList<File>();
 
+
+        // todo populate allTileLists
+        allTileLists = new HashMap<String, List<Tile>>();
+
         tileList = new ArrayList<Tile>();
 
         for (String granuleName : tileNames) {
@@ -357,7 +360,17 @@ public class L1cMetadata {
         }
 
         // todo CRITICAL add extra band splitting
+        // todo split by utm zone...
+
+        for(String key: counters.keySet())
+        {
+            List<L1cMetadata.Tile> aUTMZone = tileList.stream().filter(i -> i.horizontalCsCode.equals(key)).collect(Collectors.toList());
+            allTileLists.put(key, aUTMZone);
+        }
+
         // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
+        // todo make sure that tileList and allTileLists.get(maximus) are the same before removing this code
+
         if (counters.values().size() > 1) {
             Counter maximus = Collections.max(counters.values());
             logger.info(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
@@ -388,11 +401,10 @@ public class L1cMetadata {
         Level1C_Tile product = (Level1C_Tile) casted;
         productCharacteristics = new L1cMetadata.ProductCharacteristics();
 
-
-        List<File> fullTileNamesList = new ArrayList<File>();
-
         tileList = new ArrayList<Tile>();
+        allTileLists = new HashMap<String, List<Tile>>();
 
+        // todo move this code to a common function
         {
             Level1C_Tile aTile = product;
             Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);

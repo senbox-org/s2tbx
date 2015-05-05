@@ -252,6 +252,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             tileList = metadataHeader.getTileList().stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
         }
 
+        // todo put spectral information handling in a function
         for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
             int bandIndex = bandInformation.bandId;
             if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
@@ -293,8 +294,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
         product.setFileLocation(metadataFile.getParentFile());
 
-        // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
-
         if(forceResize) {
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
         }
@@ -322,6 +321,12 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
 
+        // todo critical create mask here using informations from polygons...
+        // CRITICAL todo add mask
+        // Mask newMask = new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE );
+        // VectorDataNode vdn = new VectorDataNode();
+        // Mask.VectorDataType.setVectorData(newMask, null);
+        // product.addMask(newMask);
 
         if(!bandInfoMap.isEmpty())
         {
@@ -359,12 +364,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
             Band band = addBand(product, bandInfo);
             band.setSourceImage(mlif.createSourceImage(bandInfo));
-
-            // CRITICAL todo add mask
-            // Mask newMask = new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE );
-            // VectorDataNode vdn = new VectorDataNode();
-            // Mask.VectorDataType.setVectorData(newMask, null);
-            // product.addMask(newMask);
 
             if(!forceResize)
             {
