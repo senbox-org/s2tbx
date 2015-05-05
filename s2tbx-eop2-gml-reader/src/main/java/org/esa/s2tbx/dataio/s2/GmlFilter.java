@@ -32,9 +32,6 @@ import org.jdom2.output.XMLOutputter;
 import org.jdom2.util.IteratorIterable;
 import org.xml.sax.SAXException;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.ArrayList;
@@ -49,8 +46,7 @@ public class GmlFilter {
     }
 
     /**
-     * Parses GML3 without specifying a schema location, and illusrates the use
-     * of the streaming parser.
+     * Parses GML3 using the streaming parser.
      */
     public static List<Polygon> streamParseGML3(InputStream in) throws ParserConfigurationException, SAXException {
         GMLConfiguration gml = new GMLConfiguration();
@@ -58,21 +54,16 @@ public class GmlFilter {
 
         List<Polygon> polygons = new ArrayList<Polygon>();
 
-        int nfeatures = 0;
         Polygon f = null;
         while( ( f = (Polygon) parser.parse() ) != null ) {
-            nfeatures++;
             polygons.add(f);
         }
 
         return polygons;
     }
 
-    public List<Polygon> parse(String fileName) throws JDOMException, IOException, ParserConfigurationException, SAXException {
-        InputStream stream = new FileInputStream(fileName);
-        // Use a SAX builder
+    public List<Polygon> parse(InputStream stream) throws JDOMException, IOException, ParserConfigurationException, SAXException {
         SAXBuilder builder = new SAXBuilder();
-        // build a JDOM2 Document using the SAXBuilder.
         Document jdomDoc = builder.build(stream);
 
         //get the root element
@@ -92,14 +83,13 @@ public class GmlFilter {
                     if(parentNotGml)
                     {
                         Element capturedElement = (Element) web_app_content;
-
                         Document newDoc = new Document(capturedElement.clone().detach());
 
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         xmlOutput.output(newDoc, baos);
-                        String content = baos.toString();
+                        String replacedContent = baos.toString().replace("/www.opengis.net/gml/3.2", "/www.opengis.net/gml");
 
-                        InputStream ois = new ByteArrayInputStream(baos.toString().replace("/www.opengis.net/gml/3.2","/www.opengis.net/gml").getBytes());
+                        InputStream ois = new ByteArrayInputStream(replacedContent.getBytes());
 
                         recoveredGeometries.addAll(streamParseGML3(ois));
                     }
@@ -108,5 +98,17 @@ public class GmlFilter {
         }
 
         return recoveredGeometries;
+    }
+
+    public List<Polygon> parse(String resource) throws JDOMException, IOException, ParserConfigurationException, SAXException {
+        InputStream stream = getClass().getResourceAsStream(resource);
+
+        return parse(stream);
+    }
+
+    public List<Polygon> parse(File fileName) throws JDOMException, IOException, ParserConfigurationException, SAXException {
+        InputStream stream = new FileInputStream(fileName);
+
+        return parse(stream);
     }
 }

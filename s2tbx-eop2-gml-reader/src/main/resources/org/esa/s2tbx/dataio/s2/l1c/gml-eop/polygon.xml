@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<gml:Polygon srsName="urn:ogc:def:derivedCRSType:OGC:1.0:image" xmlns:gml="http://www.opengis.net/gml/3.2">
-    <gml:exterior>
-        <gml:LinearRing>
-            <gml:posList>20.166667 0.5 20.166667 6846.5 20.5 6846.5 20.5 0.5 20.166667 0.5</gml:posList>
-        </gml:LinearRing>
-    </gml:exterior>
-</gml:Polygon>
