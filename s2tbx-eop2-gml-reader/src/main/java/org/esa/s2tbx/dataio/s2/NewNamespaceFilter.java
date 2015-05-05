@@ -1,8 +1,24 @@
+/*
+ *
+ * Copyright (C) 2014-2015 CS SI
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ *  This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see http://www.gnu.org/licenses/
+ *
+ */
+
 package org.esa.s2tbx.dataio.s2;
 
 
-import net.opengis.gml.v_3_2_1.PolygonType;
-import org.geotools.gml3.bindings.PolygonTypeBinding;
 import org.jdom2.Content;
 import org.jdom2.Content.CType;
 import org.jdom2.Document;
@@ -22,12 +38,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NamespaceFilter {
+public class NewNamespaceFilter {
 
     private final GMLReader innerReader;
     private final XMLOutputter xmlOutput;
 
-    public NamespaceFilter() throws JAXBException {
+    public NewNamespaceFilter() throws JAXBException {
         this.innerReader = new GMLReader();
         this.xmlOutput = new XMLOutputter();
     }
