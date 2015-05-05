@@ -13,7 +13,7 @@
     <artifactId>snap-sta</artifactId>
     <name>Standalone Tool Adapter</name>
     <description>Adapter for external tools invocation from within the Sentinel Toolboxes</description>
-    <packaging>jar</packaging>
+    <packaging>nbm</packaging>
 
     <dependencies>
         <!-- SNAP dependencies -->
@@ -107,7 +107,11 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
+                <version>3.14</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <nbmBuildDir>${project.basedir}/../target/nbm</nbmBuildDir>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
