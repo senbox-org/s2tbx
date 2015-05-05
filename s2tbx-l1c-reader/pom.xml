@@ -94,6 +94,12 @@
             <artifactId>snap-ui</artifactId>
             <version>${snap.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-eop2-gml-reader</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
     </dependencies>
 
 

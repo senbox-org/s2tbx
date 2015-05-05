@@ -132,6 +132,10 @@ public class L1cMetadata {
             this.name = name;
         }
 
+        public File getName() {
+            return name;
+        }
+
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }

@@ -26,6 +26,7 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
+import com.vividsolutions.jts.geom.Polygon;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -44,6 +45,7 @@ import org.geotools.geometry.Envelope2D;
 import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.xml.sax.SAXException;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -54,6 +56,7 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -307,6 +310,17 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
 
+        GmlFilter gmlFilter = new GmlFilter();
+        List<Polygon> polygons = new ArrayList<>();
+        List<File> allFiles = allMasks.stream().map(s -> {return s.getName();}).collect(Collectors.toList());
+        for(File aFile: allFiles)
+        {
+            try {
+                polygons.addAll(gmlFilter.parse(aFile.getAbsolutePath()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
 
         if(!bandInfoMap.isEmpty())
