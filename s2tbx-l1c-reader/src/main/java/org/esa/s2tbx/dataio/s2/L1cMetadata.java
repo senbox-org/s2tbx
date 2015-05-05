@@ -122,10 +122,12 @@ public class L1cMetadata {
 
     static class MaskFilename
     {
+        String bandId;
         String type;
-        String name;
+        File name;
 
-        public MaskFilename(String type, String name) {
+        public MaskFilename(String bandId, String type, File name) {
+            this.bandId = bandId;
             this.type = type;
             this.name = name;
         }
@@ -241,6 +243,8 @@ public class L1cMetadata {
     private List<Tile> tileList;
 
     // todo CRITICAL Add alternative tileLists
+    private Map<String, List<Tile>> allTileLists;
+
     private ProductCharacteristics productCharacteristics;
     private JAXBContext context;
     private Unmarshaller unmarshaller;
@@ -342,15 +346,8 @@ public class L1cMetadata {
             t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
             t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
 
-            // todo CRITICAL get Quality inidcator infos
-            List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getPixel_Level_QI().getMASK_FILENAME();
-            List<MaskFilename> aMaskList = new ArrayList<MaskFilename>();
-            for(A_MASK_LIST.MASK_FILENAME filename: masks)
-            {
-                aMaskList.add(new MaskFilename(filename.getType(), filename.getValue()));
-            }
-
-            t.maskFilenames = aMaskList.toArray(new MaskFilename[aMaskList.size()]);
+            // todo CRITICAL test reading mask info
+            t.maskFilenames = L1cMetadataProc.getMasks(aTile, aGranuleMetadataFile);
 
             tileList.add(t);
         }
@@ -408,15 +405,8 @@ public class L1cMetadata {
             t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
             t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
 
-            // todo CRITICAL get Quality inidcator infos
-            List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getPixel_Level_QI().getMASK_FILENAME();
-            List<MaskFilename> aMaskList = new ArrayList<MaskFilename>();
-            for(A_MASK_LIST.MASK_FILENAME filename: masks)
-            {
-                aMaskList.add(new MaskFilename(filename.getType(), filename.getValue()));
-            }
-
-            t.maskFilenames = aMaskList.toArray(new MaskFilename[aMaskList.size()]);
+            L1cMetadataProc.getMasks(aTile, file);
+            t.maskFilenames = L1cMetadataProc.getMasks(aTile, file);
 
             tileList.add(t);
         }

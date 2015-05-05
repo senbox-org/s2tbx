@@ -296,14 +296,18 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
         }
 
+        List<MaskFilename> allMasks = new ArrayList<MaskFilename>();
         if(!tileList.isEmpty())
         {
             // todo critical recover mask info from the tilelist
             for(L1cMetadata.Tile tile: tileList)
             {
                 MaskFilename[] filenames = tile.maskFilenames;
+                allMasks.addAll(Arrays.asList(filenames));
             }
         }
+
+
 
         if(!bandInfoMap.isEmpty())
         {
@@ -343,10 +347,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             band.setSourceImage(mlif.createSourceImage(bandInfo));
 
             // CRITICAL todo add mask
-            Mask newMask = new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE );
+            // Mask newMask = new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE );
             // VectorDataNode vdn = new VectorDataNode();
             // Mask.VectorDataType.setVectorData(newMask, null);
-            product.addMask(newMask);
+            // product.addMask(newMask);
 
             if(!forceResize)
             {
