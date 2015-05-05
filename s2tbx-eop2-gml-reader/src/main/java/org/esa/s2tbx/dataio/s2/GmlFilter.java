@@ -36,10 +36,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,8 +69,7 @@ public class GmlFilter {
     }
 
     public List<Polygon> parse(String fileName) throws JDOMException, IOException, ParserConfigurationException, SAXException {
-        InputStream stream = getClass().getResourceAsStream(fileName);
-
+        InputStream stream = new FileInputStream(fileName);
         // Use a SAX builder
         SAXBuilder builder = new SAXBuilder();
         // build a JDOM2 Document using the SAXBuilder.
