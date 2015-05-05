@@ -17,7 +17,6 @@
  */
 package org.esa.snap.framework.gpf.descriptor;
 
-import com.bc.ceres.core.Assert;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.StreamException;
 import org.esa.snap.framework.gpf.Operator;
@@ -410,8 +409,6 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
      * @return A new operator descriptor.
      */
     public static ToolAdapterOperatorDescriptor fromXml(Reader reader, String resourceName, ClassLoader classLoader) throws OperatorException {
-        Assert.notNull(reader, "reader");
-        Assert.notNull(resourceName, "resourceName");
         ToolAdapterOperatorDescriptor descriptor = new ToolAdapterOperatorDescriptor();
         try {
             createXStream(classLoader).fromXML(reader, descriptor);

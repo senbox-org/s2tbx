@@ -1,7 +1,6 @@
 package org.esa.snap.utils;
 
 import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -9,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 
 /**
  * Utility class for date manipulation
@@ -77,9 +77,9 @@ public class DateHelper {
                 Date date = simpleDateFormat.parse(stringData);
                 parsedDate = ProductData.UTC.create(date, Long.parseLong(microseconds));
             } catch (ParseException e) {
-                BeamLogManager.getSystemLogger().warning(String.format("Date not in expected format. Found %s, expected %s",
-                                                                       stringData,
-                                                                       dateFormat));
+                Logger.getLogger(DateHelper.class.getName()).warning(String.format("Date not in expected format. Found %s, expected %s",
+                        stringData,
+                        dateFormat));
             }
         }
         return parsedDate;

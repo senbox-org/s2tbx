@@ -29,16 +29,9 @@ import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.SpotViewMetadata;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.framework.datamodel.Band;
-import org.esa.snap.framework.datamodel.CrsGeoCoding;
-import org.esa.snap.framework.datamodel.GeoCoding;
-import org.esa.snap.framework.datamodel.Product;
-import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.framework.datamodel.TiePointGeoCoding;
-import org.esa.snap.framework.datamodel.TiePointGrid;
+import org.esa.snap.framework.datamodel.*;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.TreeNode;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
 import org.geotools.referencing.ReferencingFactoryFinder;
 import org.opengis.referencing.FactoryException;
@@ -48,7 +41,7 @@ import org.opengis.referencing.operation.TransformException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
@@ -79,7 +72,7 @@ public class SpotViewProductReader extends AbstractProductReader {
 
     protected SpotViewProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = Logger.getLogger(SpotViewProductReader.class.getName());
         sharedLock = new Object();
     }
 

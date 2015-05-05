@@ -18,17 +18,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-jai</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-engine-kit</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>s2tbx-commons</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -24,7 +24,6 @@ import com.sun.xml.xsom.XSSchemaSet;
 import com.sun.xml.xsom.XSType;
 import com.sun.xml.xsom.parser.XSOMParser;
 import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -35,6 +34,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * This utility class provides several methods to help with XSD schema validation
@@ -85,7 +85,7 @@ public class DimapSchemaHelper {
                 }
             }
         } catch (SAXException e) {
-            BeamLogManager.getSystemLogger().severe(e.getMessage());
+            Logger.getLogger(DimapSchemaHelper.class.getName()).severe(e.getMessage());
         }
     }
 

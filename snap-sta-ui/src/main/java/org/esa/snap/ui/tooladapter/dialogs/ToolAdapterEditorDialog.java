@@ -40,9 +40,11 @@ import org.esa.snap.framework.ui.ModalDialog;
 import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
 import org.esa.snap.rcp.SnapDialogs;
+import org.esa.snap.ui.tooladapter.ModuleInstaller;
 import org.esa.snap.ui.tooladapter.actions.ToolAdapterActionRegistrar;
 import org.esa.snap.ui.tooladapter.model.OperatorParametersTable;
 import org.esa.snap.ui.tooladapter.model.VariablesTable;
+import org.esa.snap.ui.tooladapter.validators.RequiredFieldValidator;
 import org.esa.snap.utils.JarPackager;
 import org.openide.util.NbBundle;
 
@@ -90,6 +92,7 @@ import java.util.logging.Logger;
 })
 public class ToolAdapterEditorDialog extends ModalDialog {
 
+    public static final String MESSAGE_REQUIRED = "This field is required";
     private ToolAdapterOperatorDescriptor oldOperatorDescriptor;
     private ToolAdapterOperatorDescriptor newOperatorDescriptor;
     private boolean operatorIsNew = false;
@@ -101,9 +104,10 @@ public class ToolAdapterEditorDialog extends ModalDialog {
     private Logger logger;
 
     private ToolAdapterEditorDialog(AppContext appContext, String title, String helpID) {
-        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, helpID);
+        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, new Object[] { new JButton("Export as module") }, helpID);
         this.logger = Logger.getLogger(ToolAdapterEditorDialog.class.getName());
         getJDialog().setResizable(false);
+        this.registerButton(ID_OTHER, new JButton("Export as module"));
     }
 
     private ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor) {
@@ -198,21 +202,25 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Alias_Text()), getConstraints(0, 0));
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("alias");
         JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
         descriptorPanel.add(editorComponent, getConstraints(0, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_UniqueName_Text()), getConstraints(1, 0));
         propertyDescriptor = propertyContainer.getDescriptor("name");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
         descriptorPanel.add(editorComponent, getConstraints(1, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Label_Text()), getConstraints(2, 0));
         propertyDescriptor = propertyContainer.getDescriptor("label");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
         descriptorPanel.add(editorComponent, getConstraints(2, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Version_Text()), getConstraints(3, 0));
         propertyDescriptor = propertyContainer.getDescriptor("version");
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
         descriptorPanel.add(editorComponent, getConstraints(3, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Copyright_Text()), getConstraints(4, 0));
@@ -314,6 +322,7 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("mainToolFileLocation");
         PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
+        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
 
         JPanel panelToolFiles = new JPanel();
         GridBagLayout layout = new GridBagLayout();
@@ -327,6 +336,7 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         propertyDescriptor.setAttribute("directory", true);
         editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
+        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
 
         panelToolFiles.add(new JLabel(Bundle.CTL_Label_WorkDir_Text()), getConstraints(1, 0));
         panelToolFiles.add(editorComponent, getConstraints(1, 1));
@@ -348,6 +358,7 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         } catch (IOException e) {
             logger.warning(e.getMessage());
         }
+        templateContent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
         configPanel.add(new JScrollPane(templateContent), BorderLayout.CENTER);
 
         processingPanel.add(configPanel, BorderLayout.CENTER);
@@ -479,8 +490,23 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         try {
             ToolAdapterIO.saveAndRegisterOperator(newOperatorDescriptor, templateContent.getText());
 			ToolAdapterActionRegistrar.registerOperatorMenu(newOperatorDescriptor);
-            JarPackager.packAdapterJar(newOperatorDescriptor, new File(ToolAdapterIO.getUserAdapterPath(), newOperatorDescriptor.getAlias() + ".jar"));
         } catch (Exception e) {
+            logger.warning(e.getMessage());
+            SnapDialogs.showError(e.getMessage());
+        }
+    }
+
+    @Override
+    protected void onOther() {
+        try {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (fileChooser.showOpenDialog(getButton(ID_OTHER)) == JFileChooser.APPROVE_OPTION) {
+                File targetFolder = fileChooser.getSelectedFile();
+                JarPackager.packAdapterJar(newOperatorDescriptor, new File(targetFolder, newOperatorDescriptor.getAlias() + ".jar"), ModuleInstaller.class);
+                SnapDialogs.showInformation(String.format("The adapter was exported as a NetBeans module in %s", targetFolder.getAbsolutePath()), null);
+            }
+        } catch (IOException e) {
             logger.warning(e.getMessage());
             SnapDialogs.showError(e.getMessage());
         }

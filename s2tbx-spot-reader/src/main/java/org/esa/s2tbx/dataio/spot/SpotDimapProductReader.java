@@ -23,18 +23,13 @@ import org.esa.s2tbx.dataio.FileImageInputStreamSpi;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
-import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
-import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
-import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
-import org.esa.s2tbx.dataio.spot.dimap.VolumeComponent;
-import org.esa.s2tbx.dataio.spot.dimap.VolumeMetadata;
+import org.esa.s2tbx.dataio.spot.dimap.*;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.Band;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.util.TreeNode;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.metadata.InvalidMetadataException;
 
 import javax.imageio.spi.IIORegistry;
@@ -64,7 +59,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     protected SpotDimapProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = Logger.getLogger(SpotDimapProductReader.class.getName());
         registerSpi();
     }
 

@@ -24,11 +24,10 @@ import nitf.NITFException;
 import nitf.imageio.ImageIOUtils;
 import nitf.imageio.NITFReaderSpi;
 import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.spi.IIORegistry;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.io.File;
@@ -62,7 +61,7 @@ public class NITFReaderWrapper {
     }
 
     public NITFReaderWrapper(File file) throws IOException {
-        logger = BeamLogManager.getSystemLogger();
+        logger = Logger.getLogger(NITFReaderWrapper.class.getName());
         reader = (nitf.imageio.NITFReader) ImageIOUtils.getImageReader("nitf", file);
         try {
             imageWidth = reader.getWidth(0);

@@ -22,7 +22,7 @@ package org.esa.snap.framework.gpf.operators.tooladapter;
  *
  * @author Lucian Barbulescu.
  */
-public interface ProcessOutputConsumer {
+interface ProcessOutputConsumer {
     /**
      * Consume a line of output obtained from a tool.
      *

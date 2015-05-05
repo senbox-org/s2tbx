@@ -43,7 +43,7 @@ import java.util.ArrayList;
  *
  * @author Ramona Manda
  */
-public class ToolExecutionForm extends JTabbedPane {
+class ToolExecutionForm extends JTabbedPane {
     private AppContext appContext;
     private ToolAdapterOperatorDescriptor operatorSpi;
     private PropertySet propertySet;

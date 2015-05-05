@@ -4,13 +4,13 @@ import junit.framework.TestCase;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.utils.DateHelper;
-import org.esa.s2tbx.utils.TestUtil;
 import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.utils.DateHelper;
+import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 
-import java.awt.Color;
+import java.awt.*;
 
 /**
  * Unit test class for Deimos Metadata

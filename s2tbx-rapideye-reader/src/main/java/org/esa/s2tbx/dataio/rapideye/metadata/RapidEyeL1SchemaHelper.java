@@ -25,7 +25,6 @@ import com.sun.xml.xsom.XSSchemaSet;
 import com.sun.xml.xsom.XSType;
 import com.sun.xml.xsom.parser.XSOMParser;
 import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -36,6 +35,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Helper for BEAM types inference from RapidEye XSD schema types
@@ -84,7 +84,7 @@ public class RapidEyeL1SchemaHelper {
                 }
             }
         } catch (SAXException e) {
-            BeamLogManager.getSystemLogger().severe(e.getMessage());
+            Logger.getLogger(RapidEyeL1SchemaHelper.class.getName()).severe(e.getMessage());
         }
     }
 

@@ -28,6 +28,8 @@ import org.esa.snap.framework.gpf.descriptor.ToolParameterDescriptor;
 import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.ModalDialog;
 import org.esa.snap.ui.tooladapter.model.PropertyMemberUIWrapper;
+import org.esa.snap.ui.tooladapter.validators.RequiredFieldValidator;
+import org.esa.snap.ui.tooladapter.validators.TypedValueValidator;
 import org.esa.snap.util.StringUtils;
 
 import javax.swing.*;
@@ -79,8 +81,8 @@ public class ToolParameterEditorDialog extends ModalDialog {
         container = PropertyContainer.createObjectBacked(parameter);
         context = new BindingContext(container);
 
-        addTextPropertyEditor(mainPanel, "Name: ", "name", parameter.getName(), 0);
-        addTextPropertyEditor(mainPanel, "Alias: ", "alias", parameter.getAlias(), 1);
+        addTextPropertyEditor(mainPanel, "Name: ", "name", parameter.getName(), 0, true);
+        addTextPropertyEditor(mainPanel, "Alias: ", "alias", parameter.getAlias(), 1, true);
 
 
         //dataType
@@ -98,6 +100,9 @@ public class ToolParameterEditorDialog extends ModalDialog {
                         mainPanel.remove(editorComponent);
                     }
                     editorComponent = uiWrapper.reloadUIComponent((Class<?>) typesMap.get(typeName));
+                    if (!("File".equals(typeName) || "List".equals(typeName))) {
+                        editorComponent.setInputVerifier(new TypedValueValidator("The value entered is not of the specified data type", parameter.getDataType()));
+                    }
                     mainPanel.add(editorComponent, getConstraints(3, 1, 1));
                     mainPanel.revalidate();
                 } catch (Exception e1) {
@@ -117,28 +122,31 @@ public class ToolParameterEditorDialog extends ModalDialog {
             e.printStackTrace();
         }
 
-        addTextPropertyEditor(mainPanel, "Description: ", "description", parameter.getDescription(), 4);
-        addTextPropertyEditor(mainPanel, "Label: ", "label", parameter.getLabel(), 5);
-        addTextPropertyEditor(mainPanel, "Unit: ", "unit", parameter.getUnit(), 6);
-        addTextPropertyEditor(mainPanel, "Interval: ", "interval", parameter.getInterval(), 7);
-        addTextPropertyEditor(mainPanel, "Value set: ", "valueSet", StringUtils.join(parameter.getValueSet(), ","), 8);
-        addTextPropertyEditor(mainPanel, "Condition: ", "condition", parameter.getCondition(), 9);
-        addTextPropertyEditor(mainPanel, "Pattern: ", "pattern", parameter.getPattern(), 10);
-        addTextPropertyEditor(mainPanel, "Format: ", "format", parameter.getFormat(), 11);
+        addTextPropertyEditor(mainPanel, "Description: ", "description", parameter.getDescription(), 4, false);
+        addTextPropertyEditor(mainPanel, "Label: ", "label", parameter.getLabel(), 5, false);
+        addTextPropertyEditor(mainPanel, "Unit: ", "unit", parameter.getUnit(), 6, false);
+        addTextPropertyEditor(mainPanel, "Interval: ", "interval", parameter.getInterval(), 7, false);
+        addTextPropertyEditor(mainPanel, "Value set: ", "valueSet", StringUtils.join(parameter.getValueSet(), ","), 8, false);
+        addTextPropertyEditor(mainPanel, "Condition: ", "condition", parameter.getCondition(), 9, false);
+        addTextPropertyEditor(mainPanel, "Pattern: ", "pattern", parameter.getPattern(), 10, false);
+        addTextPropertyEditor(mainPanel, "Format: ", "format", parameter.getFormat(), 11, false);
         addBoolPropertyEditor(mainPanel, "Not null", "notNull", parameter.isNotNull(), 12);
         addBoolPropertyEditor(mainPanel, "Not empty", "notEmpty", parameter.isNotEmpty(), 13);
-        addTextPropertyEditor(mainPanel, "ItemAlias: ", "itemAlias", parameter.getItemAlias(), 14);
+        addTextPropertyEditor(mainPanel, "ItemAlias: ", "itemAlias", parameter.getItemAlias(), 14, false);
         addBoolPropertyEditor(mainPanel, "Deprecated", "deprecated", parameter.isDeprecated(), 15);
 
         return mainPanel;
     }
 
-    private JComponent addTextPropertyEditor(JPanel parent, String label, String propertyName, String value, int line){
+    private JComponent addTextPropertyEditor(JPanel parent, String label, String propertyName, String value, int line, boolean isRequired){
         parent.add(new JLabel(label), getConstraints(line, 0, 1));
         PropertyDescriptor propertyDescriptor = container.getDescriptor(propertyName);
         TextFieldEditor textEditor = new TextFieldEditor();
         JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, context);
         ((JTextField) editorComponent).setText(value);
+        if (isRequired) {
+            editorComponent.setInputVerifier(new RequiredFieldValidator("This field is required"));
+        }
         parent.add(editorComponent, getConstraints(line, 1, 1));
         return editorComponent;
     }

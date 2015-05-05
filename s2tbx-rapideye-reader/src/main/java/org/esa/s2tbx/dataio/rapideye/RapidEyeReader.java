@@ -27,22 +27,16 @@ import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.framework.datamodel.Band;
-import org.esa.snap.framework.datamodel.FlagCoding;
-import org.esa.snap.framework.datamodel.Mask;
-import org.esa.snap.framework.datamodel.MetadataAttribute;
-import org.esa.snap.framework.datamodel.Product;
+import org.esa.snap.framework.datamodel.*;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.TreeNode;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
 import javax.media.jai.Interpolation;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.ScaleDescriptor;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,7 +63,7 @@ public abstract class RapidEyeReader extends AbstractProductReader {
 
     public RapidEyeReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = Logger.getLogger(RapidEyeReader.class.getName());
         registerSpi();
     }
 

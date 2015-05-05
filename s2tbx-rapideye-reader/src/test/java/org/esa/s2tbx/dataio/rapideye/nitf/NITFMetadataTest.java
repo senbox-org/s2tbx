@@ -1,8 +1,8 @@
 package org.esa.s2tbx.dataio.rapideye.nitf;
 
 import junit.framework.TestCase;
-import org.esa.s2tbx.utils.TestUtil;
 import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 

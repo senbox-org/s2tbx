@@ -1,14 +1,14 @@
 package org.esa.s2tbx.dataio.rapideye;
 
 import com.bc.ceres.core.NullProgressMonitor;
-import org.esa.s2tbx.utils.TestUtil;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.util.TreeNode;
+import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
