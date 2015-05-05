@@ -174,7 +174,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private void readMasks(Product p) {
-        // critical read geocoding using gml module
+        // todo CRITICAL read geocoding using gml module
         Assert.notNull(p);
     }
 
@@ -296,11 +296,24 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
         }
 
+        List<MaskFilename> allMasks = new ArrayList<MaskFilename>();
+        if(!tileList.isEmpty())
+        {
+            // todo critical recover mask info from the tilelist
+            for(L1cMetadata.Tile tile: tileList)
+            {
+                MaskFilename[] filenames = tile.maskFilenames;
+                allMasks.addAll(Arrays.asList(filenames));
+            }
+        }
+
+
+
         if(!bandInfoMap.isEmpty())
         {
             addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
-            // critical use only tiepointgrids instead of bands
+            // todo critical use only tiepointgrids instead of bands
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
@@ -334,7 +347,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             band.setSourceImage(mlif.createSourceImage(bandInfo));
 
             // CRITICAL todo add mask
-            // product.addMask(new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE ));
+            // Mask newMask = new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE );
+            // VectorDataNode vdn = new VectorDataNode();
+            // Mask.VectorDataType.setVectorData(newMask, null);
+            // product.addMask(newMask);
 
             if(!forceResize)
             {

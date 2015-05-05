@@ -20,14 +20,7 @@
 package org.esa.s2tbx.dataio.s2;
 
 
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_DATATAKE_IDENTIFICATION;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1C;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_TILE_DESCRIPTION;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.collections.CollectionUtils;
@@ -356,5 +349,18 @@ public class L1cMetadataProc {
         }
 
         return darr;
+    }
+
+    public static L1cMetadata.MaskFilename[] getMasks(Level1C_Tile aTile, File file) {
+        List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getPixel_Level_QI().getMASK_FILENAME();
+        List<L1cMetadata.MaskFilename> aMaskList = new ArrayList<L1cMetadata.MaskFilename>();
+        for(A_MASK_LIST.MASK_FILENAME filename: masks)
+        {
+            File QIData = new File(file.getParent(), "QI_DATA");
+            File GmlData =  new File(QIData, filename.getValue());
+            aMaskList.add(new L1cMetadata.MaskFilename(filename.getBandId(), filename.getType(), GmlData));
+        }
+
+        return aMaskList.toArray(new L1cMetadata.MaskFilename[aMaskList.size()]);
     }
 }

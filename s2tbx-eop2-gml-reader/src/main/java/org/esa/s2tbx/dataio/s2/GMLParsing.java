@@ -27,6 +27,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.io.IOUtils;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -47,9 +48,9 @@ import org.w3c.dom.Document;
 public class GMLParsing {
 
     public static void main(String[] args) throws Exception {
-        parseGML3();
+        // parseGML3();
         streamParseGML3();
-        schemaParseGML3();
+        // schemaParseGML3();
     }
     
     /**
@@ -79,15 +80,15 @@ public class GMLParsing {
      * of the streaming parser.
      */
     public static void streamParseGML3() throws Exception {
-        InputStream in = GMLParsing.class.getResourceAsStream( "states.xml");
+        InputStream in = GMLParsing.class.getResourceAsStream( "guat.xml");
         GMLConfiguration gml = new GMLConfiguration();
-        StreamingParser parser = new StreamingParser( gml, in, SimpleFeature.class );
+        StreamingParser parser = new StreamingParser( gml, in, Polygon.class );
         
         int nfeatures = 0;
-        SimpleFeature f = null;
-        while( ( f = (SimpleFeature) parser.parse() ) != null ) {
+        Polygon f = null;
+        while( ( f = (Polygon) parser.parse() ) != null ) {
             nfeatures++;
-            System.out.println(f.getID());
+            System.out.println(f.getLength());
         }
         
         System.out.println("Number of features: " + nfeatures);

@@ -19,6 +19,7 @@
 
 package org.esa.s2tbx.dataio.s2;
 
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_MASK_LIST;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -88,6 +89,7 @@ public class L1cMetadata {
         TileGeometry tileGeometry60M;
         AnglesGrid sunAnglesGrid;
         AnglesGrid[] viewingIncidenceAnglesGrids;
+        MaskFilename[] maskFilenames;
 
         public static enum idGeom {G10M, G20M, G60M}
 
@@ -111,6 +113,23 @@ public class L1cMetadata {
                 default:
                     throw new IllegalStateException();
             }
+        }
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+    }
+
+    static class MaskFilename
+    {
+        String bandId;
+        String type;
+        File name;
+
+        public MaskFilename(String bandId, String type, File name) {
+            this.bandId = bandId;
+            this.type = type;
+            this.name = name;
         }
 
         public String toString() {
@@ -222,7 +241,10 @@ public class L1cMetadata {
     }
 
     private List<Tile> tileList;
-    private List<String> imageList; //todo populate imagelist
+
+    // todo CRITICAL Add alternative tileLists
+    private Map<String, List<Tile>> allTileLists;
+
     private ProductCharacteristics productCharacteristics;
     private JAXBContext context;
     private Unmarshaller unmarshaller;
@@ -324,9 +346,13 @@ public class L1cMetadata {
             t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
             t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
 
+            // todo CRITICAL test reading mask info
+            t.maskFilenames = L1cMetadataProc.getMasks(aTile, aGranuleMetadataFile);
+
             tileList.add(t);
         }
 
+        // todo CRITICAL add extra band splitting
         // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
         if (counters.values().size() > 1) {
             Counter maximus = Collections.max(counters.values());
@@ -378,6 +404,9 @@ public class L1cMetadata {
 
             t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
             t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
+
+            L1cMetadataProc.getMasks(aTile, file);
+            t.maskFilenames = L1cMetadataProc.getMasks(aTile, file);
 
             tileList.add(t);
         }
