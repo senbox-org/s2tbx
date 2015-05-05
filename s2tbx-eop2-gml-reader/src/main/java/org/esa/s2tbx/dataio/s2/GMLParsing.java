@@ -80,7 +80,7 @@ public class GMLParsing {
      * of the streaming parser.
      */
     public static void streamParseGML3() throws Exception {
-        InputStream in = GMLParsing.class.getResourceAsStream( "states2.xml");
+        InputStream in = GMLParsing.class.getResourceAsStream( "guat.xml");
         GMLConfiguration gml = new GMLConfiguration();
         StreamingParser parser = new StreamingParser( gml, in, Polygon.class );
         
