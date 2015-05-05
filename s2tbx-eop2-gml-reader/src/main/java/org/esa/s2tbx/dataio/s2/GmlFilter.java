@@ -30,10 +30,12 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.util.IteratorIterable;
+import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,13 +43,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewNamespaceFilter {
+public class GmlFilter {
 
-    private final GMLReader innerReader;
     private final XMLOutputter xmlOutput;
 
-    public NewNamespaceFilter() throws JAXBException {
-        this.innerReader = new GMLReader();
+    public GmlFilter() {
         this.xmlOutput = new XMLOutputter();
     }
 
@@ -55,23 +55,23 @@ public class NewNamespaceFilter {
      * Parses GML3 without specifying a schema location, and illusrates the use
      * of the streaming parser.
      */
-    public static void streamParseGML3(InputStream in) throws Exception {
+    public static List<Polygon> streamParseGML3(InputStream in) throws ParserConfigurationException, SAXException {
         GMLConfiguration gml = new GMLConfiguration();
         StreamingParser parser = new StreamingParser( gml, in, Polygon.class );
+
+        List<Polygon> polygons = new ArrayList<Polygon>();
 
         int nfeatures = 0;
         Polygon f = null;
         while( ( f = (Polygon) parser.parse() ) != null ) {
             nfeatures++;
-            System.out.println(f.getLength());
+            polygons.add(f);
         }
 
-        System.out.println("Number of features: " + nfeatures);
+        return polygons;
     }
 
-    public List<JAXBElement> parse(String fileName) throws Exception {
-        List<JAXBElement> gmlElementsRecovered = new ArrayList<>();
-
+    public List<Polygon> parse(String fileName) throws JDOMException, IOException, ParserConfigurationException, SAXException {
         InputStream stream = getClass().getResourceAsStream(fileName);
 
         // Use a SAX builder
@@ -81,6 +81,8 @@ public class NewNamespaceFilter {
 
         //get the root element
         Element web_app = jdomDoc.getRootElement();
+
+        List<Polygon> recoveredGeometries = new ArrayList<>();
 
         IteratorIterable<Content> contents = web_app.getDescendants();
         while (contents.hasNext()) {
@@ -103,14 +105,12 @@ public class NewNamespaceFilter {
 
                         InputStream ois = new ByteArrayInputStream(baos.toString().replace("/www.opengis.net/gml/3.2","/www.opengis.net/gml").getBytes());
 
-                        streamParseGML3(ois);
-
-                        System.err.println(content);
+                        recoveredGeometries.addAll(streamParseGML3(ois));
                     }
                 }
             }
         }
 
-        return gmlElementsRecovered;
+        return recoveredGeometries;
     }
 }

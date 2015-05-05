@@ -28,7 +28,7 @@ public class NewNamespaceReaderTest {
 
     public Object getMask(String uri) throws Exception
     {
-        NewNamespaceFilter gr = new NewNamespaceFilter();
+        GmlFilter gr = new GmlFilter();
         gr.parse(uri);
         return gr;
     }
