@@ -78,6 +78,20 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         super(appContext.getApplicationWindow(), title, ID_CLOSE, helpID);
         this.appContext = appContext;
 
+       /* //compute content and other buttons
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+        JPanel buttonsPanel = createButtonsPanel();
+        buttonsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(buttonsPanel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(createPropertiesPanel());
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(new JScrollPane(createAdaptersPanel()));*/
+        setContent(createContentPanel());
+    }
+
+    private JPanel createContentPanel() {
         //compute content and other buttons
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
@@ -88,7 +102,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         panel.add(createPropertiesPanel());
         panel.add(Box.createVerticalStrut(10));
         panel.add(new JScrollPane(createAdaptersPanel()));
-        setContent(panel);
+        return panel;
     }
 
     private JPanel createButtonsPanel() {
@@ -98,10 +112,11 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         AbstractButton newButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_New()), false);
         newButton.setToolTipText(Bundle.ToolTipNewOperator_Text());
         newButton.addActionListener(e -> {
-            close();
-            ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor(ToolAdapterConstants.OPERATOR_NAMESPACE + "DefaultOperatorName", ToolAdapterOp.class, "DefaultOperatorName", null, null, null, null, null);
+            ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor(ToolAdapterConstants.OPERATOR_NAMESPACE + "DefaultOperatorName", ToolAdapterOp.class, "DefaultOperatorName", null, null, null, null, null, null);
             ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), newOperatorSpi, true);
             dialog.show();
+            setContent(createContentPanel());
+            getContent().repaint();
         });
         panel.add(newButton);
 
@@ -109,27 +124,36 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                 false);
         copyButton.setToolTipText(Bundle.ToolTipCopyOperator_Text());
         copyButton.addActionListener(e -> {
-            close();
-
             ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-            String opName = operatorDesc.getName();
-            int newNameIndex = 0;
-            while (GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(opName) != null) {
-                newNameIndex++;
-                opName = operatorDesc.getName() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
+            if (operatorDesc != null) {
+                String opName = operatorDesc.getName();
+                int newNameIndex = 0;
+                while (GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(opName) != null) {
+                    newNameIndex++;
+                    opName = operatorDesc.getName() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
+                }
+                ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), operatorDesc, newNameIndex);
+                dialog.show();
+                setContent(createContentPanel());
+                getContent().repaint();
+            } else {
+                SnapDialogs.showWarning("Please select an adapter first");
             }
-            ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), operatorDesc, newNameIndex);
-            dialog.show();
         });
         panel.add(copyButton);
 
         AbstractButton editButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Edit()), false);
         editButton.setToolTipText(Bundle.ToolTipEditOperator_Text());
         editButton.addActionListener(e -> {
-            close();
             ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-            ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), operatorDesc, false);
-            dialog.show();
+            if (operatorDesc != null) {
+                ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), operatorDesc, false);
+                dialog.show();
+                setContent(createContentPanel());
+                getContent().repaint();
+            } else {
+                SnapDialogs.showWarning("Please select an adapter first");
+            }
         });
         panel.add(editButton);
 
@@ -137,23 +161,28 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         runButton.setToolTipText(Bundle.ToolTipExecuteOperator_Text());
         runButton.addActionListener(e -> {
             close();
-            ToolAdapterOperatorDescriptor operatorSpi = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-            final ToolAdapterExecutionDialog operatorDialog = new ToolAdapterExecutionDialog(
-                    operatorSpi,
-                    appContext,
-                    operatorSpi.getLabel(),
-                    getHelpID());
-            operatorDialog.show();
+            ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
+            if (operatorDesc != null) {
+                final ToolAdapterExecutionDialog operatorDialog = new ToolAdapterExecutionDialog(
+                        operatorDesc,
+                        appContext,
+                        operatorDesc.getLabel(),
+                        getHelpID());
+                operatorDialog.show();
+            } else {
+                SnapDialogs.showWarning("Please select an adapter first");
+            }
         });
         panel.add(runButton);
 
         AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Remove()), false);
         delButton.setToolTipText(Bundle.ToolTipDeleteOperator_Text());
         delButton.addActionListener(e -> {
-            close();
             ToolAdapterOperatorDescriptor descriptor = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
             ToolAdapterActionRegistrar.removeOperatorMenu(descriptor);
             ToolAdapterIO.removeOperator(descriptor);
+            setContent(createContentPanel());
+            getContent().repaint();
         });
         panel.add(delButton);
 
@@ -233,10 +262,12 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                 if (e.getClickCount() >= 2) {
                     int selectedRow = operatorsTable.getSelectedRow();
                     operatorsTable.getModel().setValueAt(true, selectedRow, 0);
-                    close();
+                    operatorsTable.repaint();
                     ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
                     ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), operatorDesc, false);
                     dialog.show();
+                    setContent(createContentPanel());
+                    getContent().repaint();
                 }
             }
 

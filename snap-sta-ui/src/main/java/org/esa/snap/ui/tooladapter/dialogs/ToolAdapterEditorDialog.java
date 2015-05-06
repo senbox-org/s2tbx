@@ -20,6 +20,7 @@ package org.esa.snap.ui.tooladapter.dialogs;
 import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.ValueSet;
+import com.bc.ceres.binding.validators.NotEmptyValidator;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyEditor;
 import com.bc.ceres.swing.binding.PropertyEditorRegistry;
@@ -201,26 +202,30 @@ public class ToolAdapterEditorDialog extends ModalDialog {
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Alias_Text()), getConstraints(0, 0));
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("alias");
+        propertyDescriptor.setValidator(new NotEmptyValidator());
         JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
+        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
         descriptorPanel.add(editorComponent, getConstraints(0, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_UniqueName_Text()), getConstraints(1, 0));
         propertyDescriptor = propertyContainer.getDescriptor("name");
+        propertyDescriptor.setValidator(new NotEmptyValidator());
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
+        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
         descriptorPanel.add(editorComponent, getConstraints(1, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Label_Text()), getConstraints(2, 0));
         propertyDescriptor = propertyContainer.getDescriptor("label");
+        propertyDescriptor.setValidator(new NotEmptyValidator());
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
+        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
         descriptorPanel.add(editorComponent, getConstraints(2, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Version_Text()), getConstraints(3, 0));
         propertyDescriptor = propertyContainer.getDescriptor("version");
+        propertyDescriptor.setValidator(new NotEmptyValidator());
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
+        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
         descriptorPanel.add(editorComponent, getConstraints(3, 1));
 
         descriptorPanel.add(new JLabel(Bundle.CTL_Label_Copyright_Text()), getConstraints(4, 0));
@@ -238,9 +243,16 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         descriptorPanel.add(editorComponent, getConstraints(6, 1));
 
+        descriptorPanel.add(new JLabel("Menu location:"), getConstraints(7, 0));
+        propertyDescriptor = propertyContainer.getDescriptor("menuLocation");
+        propertyDescriptor.setValidator(new NotEmptyValidator());
+        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
+        descriptorPanel.add(editorComponent, getConstraints(7, 1));
+
         TitledBorder title = BorderFactory.createTitledBorder(Bundle.CTL_Panel_OperatorDescriptor_Text());
         descriptorPanel.setBorder(title);
-        descriptorPanel.setPreferredSize(new Dimension(415, 200));
+        descriptorPanel.setPreferredSize(new Dimension(415, 232));
 
         return descriptorPanel;
     }
@@ -320,9 +332,10 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         //topConfigPanel.setLayout(new GridLayout(3, 1, 5, 5));
 
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("mainToolFileLocation");
+        propertyDescriptor.setValidator(new NotEmptyValidator());
         PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
-        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
+        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
 
         JPanel panelToolFiles = new JPanel();
         GridBagLayout layout = new GridBagLayout();
@@ -334,9 +347,10 @@ public class ToolAdapterEditorDialog extends ModalDialog {
 
         propertyDescriptor = propertyContainer.getDescriptor("workingDir");
         propertyDescriptor.setAttribute("directory", true);
+        propertyDescriptor.setValidator(new NotEmptyValidator());
         editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
-        editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
+        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
 
         panelToolFiles.add(new JLabel(Bundle.CTL_Label_WorkDir_Text()), getConstraints(1, 0));
         panelToolFiles.add(editorComponent, getConstraints(1, 1));
@@ -408,13 +422,15 @@ public class ToolAdapterEditorDialog extends ModalDialog {
 
     private JPanel createDescriptorAndVariablesAndPreprocessingPanel() {
         JPanel descriptorAndVariablesPanel = new JPanel();
-        descriptorAndVariablesPanel.setPreferredSize(new Dimension(420, 480));
+//        descriptorAndVariablesPanel.setPreferredSize(new Dimension(420, 480));
+        descriptorAndVariablesPanel.setPreferredSize(new Dimension(420, 512));
         BoxLayout layout = new BoxLayout(descriptorAndVariablesPanel, BoxLayout.PAGE_AXIS);
         descriptorAndVariablesPanel.setLayout(layout);
 
         JPanel descriptorPanel = createOperatorDescriptorPanel();
         descriptorPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        descriptorPanel.setMaximumSize(new Dimension(415, 400));
+//        descriptorPanel.setMaximumSize(new Dimension(415, 400));
+        descriptorPanel.setMaximumSize(new Dimension(415, 420));
         descriptorAndVariablesPanel.add(descriptorPanel);
 
         JPanel variablesBorderPanel = new JPanel();
@@ -488,6 +504,9 @@ public class ToolAdapterEditorDialog extends ModalDialog {
                                          .forEach(param -> param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName())
                                                  .getPropertyValue().toString()));
         try {
+//            if (newOperatorDescriptor.getMenuLocation() == null) {
+//                newOperatorDescriptor.setMenuLocation(ToolAdapterActionRegistrar.getDefaultMenuLocation());
+//            }
             ToolAdapterIO.saveAndRegisterOperator(newOperatorDescriptor, templateContent.getText());
 			ToolAdapterActionRegistrar.registerOperatorMenu(newOperatorDescriptor);
         } catch (Exception e) {

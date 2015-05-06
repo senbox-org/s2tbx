@@ -48,6 +48,7 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
     private String copyright;
     private Boolean internal;
     private Boolean autoWriteSuppressed;
+    private String menuLocation;
 
     private DefaultSourceProductDescriptor[] sourceProductDescriptors;
     private DefaultSourceProductsDescriptor sourceProductsDescriptor;
@@ -90,7 +91,7 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
         this.operatorClass = operatorClass;
     }
 
-    public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright) {
+    public ToolAdapterOperatorDescriptor(String name, Class<? extends Operator> operatorClass, String alias, String label, String version, String description, String authors, String copyright, String menuLocation) {
         this(name, operatorClass);
         this.alias = alias;
         this.label = label;
@@ -98,10 +99,11 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
         this.description = description;
         this.authors = authors;
         this.copyright = copyright;
+        this.menuLocation = menuLocation;
     }
 
     public ToolAdapterOperatorDescriptor(ToolAdapterOperatorDescriptor obj) {
-        this(obj.getName(), obj.getOperatorClass(), obj.getAlias(), obj.getLabel(), obj.getVersion(), obj.getDescription(), obj.getAuthors(), obj.getCopyright());
+        this(obj.getName(), obj.getOperatorClass(), obj.getAlias(), obj.getLabel(), obj.getVersion(), obj.getDescription(), obj.getAuthors(), obj.getCopyright(), obj.getMenuLocation());
         this.internal = obj.isInternal();
         this.autoWriteSuppressed = obj.isAutoWriteDisabled();
 
@@ -240,6 +242,40 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
     @Override
     public String getDescription() {
         return description;
+    }
+
+    public String getMenuLocation() { return menuLocation; }
+
+    public void setMenuLocation(String value) { menuLocation = value; }
+
+    public String getMenuGroup() {
+        String group = null;
+        if (menuLocation != null) {
+            String[] tokens = menuLocation.split("/");
+            int idx = menuLocation.lastIndexOf('/');
+            if (tokens.length > 2 && idx > 0) {
+                group = menuLocation.substring(0, idx);
+            } else {
+                group = menuLocation;
+            }
+        }
+        return group;
+    }
+
+    public String getMenuEntry() {
+        String entry = null;
+        if (menuLocation != null) {
+            String[] tokens = menuLocation.split("/");
+            int idx = menuLocation.lastIndexOf('/');
+            if (tokens.length > 2 && idx > 0) {
+                entry = menuLocation.substring(idx + 1);
+            } else {
+                entry = menuLocation;
+            }
+        } else {
+            entry = getAlias();
+        }
+        return entry;
     }
 
     public void setSystem(boolean value) {

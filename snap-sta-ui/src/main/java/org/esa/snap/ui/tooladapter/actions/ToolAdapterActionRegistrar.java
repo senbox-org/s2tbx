@@ -43,8 +43,8 @@ import java.util.Map;
 
 public class ToolAdapterActionRegistrar {
 
-    private static final String MENU_PATH = "Menu/Tools";
-    private static final String MENU_TEXT = "External tools";
+    private static final String DEFAULT_MENU_PATH = "Menu/Tools";
+    private static final String DEFAULT_MENU_GROUP = "External tools";
 
     private static final Map<String, ToolAdapterOperatorDescriptor> actionMap = new HashMap<>();
 
@@ -57,13 +57,22 @@ public class ToolAdapterActionRegistrar {
         return actionMap;
     }
 
+    public static String getDefaultMenuLocation() {
+        return DEFAULT_MENU_PATH + "/" + DEFAULT_MENU_GROUP;
+    }
+
     /**
      * Creates a menu entry in the default menu location (Tools > External Tools) for the given adapter operator.
      *
      * @param operator  The operator descriptor
      */
     public static void registerOperatorMenu(ToolAdapterOperatorDescriptor operator) {
-        registerOperatorMenu(operator, MENU_TEXT, MENU_PATH, true);
+        String menuGroup = operator.getMenuGroup();
+        if (menuGroup != null) {
+            registerOperatorMenu(operator, null, menuGroup, true);
+        } else {
+            registerOperatorMenu(operator, DEFAULT_MENU_GROUP, DEFAULT_MENU_PATH, true);
+        }
     }
 
     /**
@@ -76,12 +85,16 @@ public class ToolAdapterActionRegistrar {
     public static void registerOperatorMenu(ToolAdapterOperatorDescriptor operator, String groupName, String menu, boolean hasChanged) {
         FileObject menuFolder = FileUtil.getConfigFile(menu);
         try {
-            FileObject groupItem = menuFolder.getFileObject(groupName);
-            if (groupItem == null) {
-                groupItem = menuFolder.createFolder(groupName);
-                groupItem.setAttribute("position", 1001);
+            FileObject groupItem = null;
+            if (groupName != null) {
+                groupItem = menuFolder.getFileObject(groupName);
+                if (groupItem == null) {
+                    groupItem = menuFolder.createFolder(groupName);
+                    groupItem.setAttribute("position", 1001);
+                }
+            } else {
+                groupItem = menuFolder;
             }
-
             String candidateMenuKey = operator.getAlias();
             FileObject newItem = groupItem.getFileObject(candidateMenuKey, "instance");
             if (newItem == null) {
@@ -100,14 +113,19 @@ public class ToolAdapterActionRegistrar {
     }
 
     public static void removeOperatorMenu(ToolAdapterOperatorDescriptor operator) {
-        removeOperatorMenu(operator, MENU_TEXT, MENU_PATH);
+        String menuGroup = operator.getMenuGroup();
+        if (menuGroup != null) {
+            removeOperatorMenu(operator, null, menuGroup);
+        } else {
+            removeOperatorMenu(operator, DEFAULT_MENU_GROUP, DEFAULT_MENU_PATH);
+        }
     }
 
     public static void removeOperatorMenu(ToolAdapterOperatorDescriptor operator, String groupName, String menu) {
         if (!operator.isSystem()) {
             FileObject menuFolder = FileUtil.getConfigFile(menu);
             try {
-                FileObject groupItem = menuFolder.getFileObject(groupName);
+                FileObject groupItem = groupName != null ? menuFolder.getFileObject(groupName) : menuFolder;
                 if (groupItem != null) {
                     String operatorAlias = operator.getAlias();
                     FileObject newItem = groupItem.getFileObject(operatorAlias, "instance");
@@ -140,7 +158,11 @@ public class ToolAdapterActionRegistrar {
                     }
                     operatorSpis.stream().filter(spi -> spi instanceof ToolAdapterOpSpi).forEach(spi -> {
                         ToolAdapterOperatorDescriptor operatorDescriptor = (ToolAdapterOperatorDescriptor) spi.getOperatorDescriptor();
-                        registerOperatorMenu(operatorDescriptor, MENU_TEXT, MENU_PATH, false);
+                        String groupName = operatorDescriptor.getMenuGroup();
+                        registerOperatorMenu(operatorDescriptor,
+                                             groupName != null ? null : DEFAULT_MENU_GROUP,
+                                             groupName != null ? groupName : DEFAULT_MENU_PATH,
+                                             false);
                     });
                 }
             }
