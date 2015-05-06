@@ -36,7 +36,7 @@ import java.awt.event.ActionEvent;
 @ActionRegistration(displayName = "#CTL_ToolAdapterOperatorAction_Text", lazy = false)
 @ActionReference(path = "Menu/Tools", position = 10000)
 @NbBundle.Messages({
-        "CTL_ToolAdapterOperatorAction_Text=Manage external tools",
+        "CTL_ToolAdapterOperatorAction_Text=Manage External Tools",
         "CTL_ToolAdapterOperatorAction_Description=Define adapters for external processes.",
         "CTL_ExternalOperatorsEditorDialog_Title=External Tools"
 })

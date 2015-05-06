@@ -248,36 +248,6 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
 
     public void setMenuLocation(String value) { menuLocation = value; }
 
-    public String getMenuGroup() {
-        String group = null;
-        if (menuLocation != null) {
-            String[] tokens = menuLocation.split("/");
-            int idx = menuLocation.lastIndexOf('/');
-            if (tokens.length > 2 && idx > 0) {
-                group = menuLocation.substring(0, idx);
-            } else {
-                group = menuLocation;
-            }
-        }
-        return group;
-    }
-
-    public String getMenuEntry() {
-        String entry = null;
-        if (menuLocation != null) {
-            String[] tokens = menuLocation.split("/");
-            int idx = menuLocation.lastIndexOf('/');
-            if (tokens.length > 2 && idx > 0) {
-                entry = menuLocation.substring(idx + 1);
-            } else {
-                entry = menuLocation;
-            }
-        } else {
-            entry = getAlias();
-        }
-        return entry;
-    }
-
     public void setSystem(boolean value) {
         isSystem = value;
     }

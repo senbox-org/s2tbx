@@ -47,6 +47,8 @@ import org.esa.snap.ui.tooladapter.model.OperatorParametersTable;
 import org.esa.snap.ui.tooladapter.model.VariablesTable;
 import org.esa.snap.ui.tooladapter.validators.RequiredFieldValidator;
 import org.esa.snap.utils.JarPackager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -246,9 +248,16 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         descriptorPanel.add(new JLabel("Menu location:"), getConstraints(7, 0));
         propertyDescriptor = propertyContainer.getDescriptor("menuLocation");
         propertyDescriptor.setValidator(new NotEmptyValidator());
-        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        java.util.List<String> menus = new ArrayList<>();
+        getAvailableMenuOptions(null, menus);
+        menus.sort(Comparator.<String>naturalOrder());
+        propertyDescriptor.setValueSet(new ValueSet(menus.toArray()));
+        PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
+        JComponent editorComp = editor.createEditorComponent(propertyDescriptor, bindingContext);
+
+        //editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
         //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
-        descriptorPanel.add(editorComponent, getConstraints(7, 1));
+        descriptorPanel.add(editorComp, getConstraints(7, 1));
 
         TitledBorder title = BorderFactory.createTitledBorder(Bundle.CTL_Panel_OperatorDescriptor_Text());
         descriptorPanel.setBorder(title);
@@ -466,6 +475,25 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         return descriptorAndVariablesPanel;
     }
 
+    private void getAvailableMenuOptions(FileObject current, java.util.List<String> resultList) {
+        if (resultList == null) {
+            resultList = new ArrayList<>();
+        }
+        if (current == null) {
+            current = FileUtil.getConfigRoot().getFileObject("Menu");
+        }
+        FileObject[] children = current.getChildren();
+        for (FileObject child : children) {
+            String entry = child.getPath();
+            if (!(entry.endsWith(".instance") ||
+                    entry.endsWith(".shadow") ||
+                    entry.endsWith(".xml"))) {
+                resultList.add(entry);//.replace("Menu/", ""));
+                getAvailableMenuOptions(child, resultList);
+            }
+        }
+    }
+
     public JPanel createParametersPanel() {
         JPanel paramsPanel = new JPanel();
         BoxLayout layout = new BoxLayout(paramsPanel, BoxLayout.PAGE_AXIS);
@@ -504,9 +532,10 @@ public class ToolAdapterEditorDialog extends ModalDialog {
                                          .forEach(param -> param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName())
                                                  .getPropertyValue().toString()));
         try {
-//            if (newOperatorDescriptor.getMenuLocation() == null) {
-//                newOperatorDescriptor.setMenuLocation(ToolAdapterActionRegistrar.getDefaultMenuLocation());
-//            }
+            String menuLocation = newOperatorDescriptor.getMenuLocation();
+            if (menuLocation != null && !menuLocation.startsWith("Menu/")) {
+                newOperatorDescriptor.setMenuLocation("Menu/" + menuLocation);
+            }
             ToolAdapterIO.saveAndRegisterOperator(newOperatorDescriptor, templateContent.getText());
 			ToolAdapterActionRegistrar.registerOperatorMenu(newOperatorDescriptor);
         } catch (Exception e) {

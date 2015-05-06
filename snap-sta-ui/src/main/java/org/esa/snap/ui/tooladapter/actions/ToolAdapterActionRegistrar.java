@@ -43,10 +43,20 @@ import java.util.Map;
 
 public class ToolAdapterActionRegistrar {
 
-    private static final String DEFAULT_MENU_PATH = "Menu/Tools";
-    private static final String DEFAULT_MENU_GROUP = "External tools";
+    private static final String DEFAULT_MENU_PATH = "Menu/Tools/External Tools";
 
     private static final Map<String, ToolAdapterOperatorDescriptor> actionMap = new HashMap<>();
+
+    static {
+        try {
+        FileObject defaultMenu = FileUtil.getConfigFile(DEFAULT_MENU_PATH);
+            if (defaultMenu == null) {
+                defaultMenu = FileUtil.getConfigFile("Menu").createFolder(DEFAULT_MENU_PATH.replace("Menu/", ""));
+            }
+            defaultMenu.setAttribute("position", 9999);
+        } catch (IOException ignored) {
+        }
+    }
 
     /**
      * Returns the map of menu items (actions) and operator descriptors.
@@ -58,7 +68,7 @@ public class ToolAdapterActionRegistrar {
     }
 
     public static String getDefaultMenuLocation() {
-        return DEFAULT_MENU_PATH + "/" + DEFAULT_MENU_GROUP;
+        return DEFAULT_MENU_PATH;
     }
 
     /**
@@ -67,25 +77,33 @@ public class ToolAdapterActionRegistrar {
      * @param operator  The operator descriptor
      */
     public static void registerOperatorMenu(ToolAdapterOperatorDescriptor operator) {
-        String menuGroup = operator.getMenuGroup();
-        if (menuGroup != null) {
-            registerOperatorMenu(operator, null, menuGroup, true);
-        } else {
-            registerOperatorMenu(operator, DEFAULT_MENU_GROUP, DEFAULT_MENU_PATH, true);
+        String menuGroup = operator.getMenuLocation();
+        if (menuGroup == null) {
+            operator.setMenuLocation(DEFAULT_MENU_PATH);
         }
+         registerOperatorMenu(operator, true);
     }
 
     /**
      * Creates a menu entry in the given menu location for the given adapter operator.
      *
      * @param operator  The operator descriptor
-     * @param groupName The menu group name
-     * @param menu      The parent menu
+     * @param hasChanged      Flag that indicates if the descriptor has changed (true) or is new (false)
      */
-    public static void registerOperatorMenu(ToolAdapterOperatorDescriptor operator, String groupName, String menu, boolean hasChanged) {
-        FileObject menuFolder = FileUtil.getConfigFile(menu);
+    public static void registerOperatorMenu(ToolAdapterOperatorDescriptor operator, boolean hasChanged) {
+        String menuLocation = operator.getMenuLocation();
+        if (menuLocation == null) {
+            menuLocation = getDefaultMenuLocation();
+            operator.setMenuLocation(menuLocation);
+        }
+        FileObject menuFolder = FileUtil.getConfigFile(menuLocation);
         try {
-            FileObject groupItem = null;
+            if (menuFolder == null) {
+                FileObject root = FileUtil.getConfigFile("Menu");
+                menuFolder = root.createFolder(menuLocation.replace("Menu/", ""));
+                menuFolder.setAttribute("position", 9999);
+            }
+            /*FileObject groupItem = null;
             if (groupName != null) {
                 groupItem = menuFolder.getFileObject(groupName);
                 if (groupItem == null) {
@@ -94,11 +112,15 @@ public class ToolAdapterActionRegistrar {
                 }
             } else {
                 groupItem = menuFolder;
-            }
+            }*/
             String candidateMenuKey = operator.getAlias();
-            FileObject newItem = groupItem.getFileObject(candidateMenuKey, "instance");
+            /*FileObject newItem = groupItem.getFileObject(candidateMenuKey, "instance");
             if (newItem == null) {
                 newItem = groupItem.createData(candidateMenuKey, "instance");
+            }*/
+            FileObject newItem = menuFolder.getFileObject(candidateMenuKey, "instance");
+            if (newItem == null) {
+                newItem = menuFolder.createData(candidateMenuKey, "instance");
             }
             ExecuteToolAdapterAction action = new ExecuteToolAdapterAction(candidateMenuKey);
             newItem.setAttribute("instanceCreate", action);
@@ -113,22 +135,14 @@ public class ToolAdapterActionRegistrar {
     }
 
     public static void removeOperatorMenu(ToolAdapterOperatorDescriptor operator) {
-        String menuGroup = operator.getMenuGroup();
-        if (menuGroup != null) {
-            removeOperatorMenu(operator, null, menuGroup);
-        } else {
-            removeOperatorMenu(operator, DEFAULT_MENU_GROUP, DEFAULT_MENU_PATH);
-        }
-    }
-
-    public static void removeOperatorMenu(ToolAdapterOperatorDescriptor operator, String groupName, String menu) {
         if (!operator.isSystem()) {
-            FileObject menuFolder = FileUtil.getConfigFile(menu);
+            FileObject menuFolder = FileUtil.getConfigFile(operator.getMenuLocation());
             try {
-                FileObject groupItem = groupName != null ? menuFolder.getFileObject(groupName) : menuFolder;
-                if (groupItem != null) {
+                /*FileObject groupItem = groupName != null ? menuFolder.getFileObject(groupName) : menuFolder;
+                if (groupItem != null) {*/
+                if (menuFolder != null) {
                     String operatorAlias = operator.getAlias();
-                    FileObject newItem = groupItem.getFileObject(operatorAlias, "instance");
+                    FileObject newItem = menuFolder.getFileObject(operatorAlias, "instance");
                     if (newItem != null) {
                         newItem.delete();
                     }
@@ -158,11 +172,7 @@ public class ToolAdapterActionRegistrar {
                     }
                     operatorSpis.stream().filter(spi -> spi instanceof ToolAdapterOpSpi).forEach(spi -> {
                         ToolAdapterOperatorDescriptor operatorDescriptor = (ToolAdapterOperatorDescriptor) spi.getOperatorDescriptor();
-                        String groupName = operatorDescriptor.getMenuGroup();
-                        registerOperatorMenu(operatorDescriptor,
-                                             groupName != null ? null : DEFAULT_MENU_GROUP,
-                                             groupName != null ? groupName : DEFAULT_MENU_PATH,
-                                             false);
+                        registerOperatorMenu(operatorDescriptor, false);
                     });
                 }
             }
