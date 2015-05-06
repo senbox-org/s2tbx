@@ -315,7 +315,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         for(File aFile: allFiles)
         {
             try {
-                polygons.addAll(gmlFilter.parse(aFile.getAbsolutePath()));
+                polygons.addAll(gmlFilter.parse(aFile));
             } catch (Exception e) {
                 e.printStackTrace();
             }
