@@ -341,7 +341,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         // todo critical create mask here using informations from polygons...
         // CRITICAL todo add mask
 
-        /*
         Mask newMask = new Mask("A-custom-geometry",product.getBand("B2").getRasterWidth(),product.getBand("B2").getRasterHeight(), Mask.VectorDataType.INSTANCE );
         Mask testMask = Mask.BandMathsType.create("custom-geometry","custom-geometry", product.getBand("B2").getRasterWidth(),product.getBand("B2").getRasterHeight(), "B2.raw > 10", Color.yellow, 0.5 );
 
@@ -354,10 +353,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         VectorDataNode vdn = new VectorDataNode("magic", collection);
         Mask.VectorDataType.setVectorData(newMask, vdn);
 
-
         product.addMask(testMask);
         product.addMask(newMask);
-        */
 
         return product;
     }
