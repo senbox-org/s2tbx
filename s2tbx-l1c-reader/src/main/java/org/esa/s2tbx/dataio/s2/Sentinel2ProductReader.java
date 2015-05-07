@@ -475,6 +475,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
                     } catch (Exception e) {
                         // todo CRITICAL Fix this
+                        // {@report "Solar info problem"}
                         e.printStackTrace();
                     }
                 }
