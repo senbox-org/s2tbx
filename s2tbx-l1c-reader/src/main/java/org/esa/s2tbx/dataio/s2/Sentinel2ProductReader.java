@@ -26,6 +26,8 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -41,8 +43,13 @@ import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
 import org.esa.snap.util.logging.BeamLogManager;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureImpl;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.Envelope2D;
 import org.jdom.JDOMException;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.xml.sax.SAXException;
@@ -57,8 +64,7 @@ import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -321,13 +327,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
 
-        // todo critical create mask here using informations from polygons...
-        // CRITICAL todo add mask
-        // Mask newMask = new Mask("custom-geometry",band.getRasterWidth(),band.getRasterHeight(), Mask.VectorDataType.INSTANCE );
-        // VectorDataNode vdn = new VectorDataNode();
-        // Mask.VectorDataType.setVectorData(newMask, null);
-        // product.addMask(newMask);
-
         if(!bandInfoMap.isEmpty())
         {
             addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
@@ -338,6 +337,27 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
         }
+
+        // todo critical create mask here using informations from polygons...
+        // CRITICAL todo add mask
+
+        /*
+        Mask newMask = new Mask("A-custom-geometry",product.getBand("B2").getRasterWidth(),product.getBand("B2").getRasterHeight(), Mask.VectorDataType.INSTANCE );
+        Mask testMask = Mask.BandMathsType.create("custom-geometry","custom-geometry", product.getBand("B2").getRasterWidth(),product.getBand("B2").getRasterHeight(), "B2.raw > 10", Color.yellow, 0.5 );
+
+        final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+        Object[] data1 = {polygons.get(0), "Polygon1"};
+        SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl("F1"), true);
+        final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
+        collection.add(f1);
+
+        VectorDataNode vdn = new VectorDataNode("magic", collection);
+        Mask.VectorDataType.setVectorData(newMask, vdn);
+
+
+        product.addMask(testMask);
+        product.addMask(newMask);
+        */
 
         return product;
     }
@@ -436,12 +456,26 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
                 for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
                     try {
-                        if (!Float.isNaN(grid.zenith[y][x])) {
-                            viewingZeniths[index] = grid.zenith[y][x];
+                        if( y < grid.zenith.length)
+                        {
+                            if( x < grid.zenith[y].length)
+                            {
+                                if (!Float.isNaN(grid.zenith[y][x])) {
+                                    viewingZeniths[index] = grid.zenith[y][x];
+                                }
+                            }
                         }
-                        if (!Float.isNaN(grid.azimuth[y][x])) {
-                            viewingAzimuths[index] = grid.azimuth[y][x];
+
+                        if( y < grid.azimuth.length)
+                        {
+                            if( x < grid.azimuth[y].length)
+                            {
+                                if (!Float.isNaN(grid.azimuth[y][x])) {
+                                    viewingAzimuths[index] = grid.azimuth[y][x];
+                                }
+                            }
                         }
+
                     } catch (Exception e) {
                         // todo CRITICAL Fix this
                         e.printStackTrace();

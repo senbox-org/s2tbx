@@ -425,6 +425,8 @@ public class L1cMetadata {
             t.maskFilenames = L1cMetadataProc.getMasks(aTile, file);
 
             tileList.add(t);
+
+            allTileLists.put(t.horizontalCsCode, tileList);
         }
     }
 
