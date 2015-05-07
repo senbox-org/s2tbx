@@ -69,6 +69,7 @@ import java.util.logging.Logger;
  * operator working directory, command line template content, tool output patterns and parameters.
  *
  * @author Ramona Manda
+ * @author Cosmin Cara
  */
 @NbBundle.Messages({
         "CTL_Label_Alias_Text=Alias:",
@@ -78,6 +79,7 @@ import java.util.logging.Logger;
         "CTL_Label_Copyright_Text=Copyright:",
         "CTL_Label_Authors_Text=Authors:",
         "CTL_Label_Description_Text=Description:",
+        "CTL_Label_MenuLocation_Text=Menu location:",
         "CTL_Panel_OperatorDescriptor_Text=Operator Descriptor",
         "CTL_Label_PreprocessingTool_Text=Preprocessing tool",
         "CTL_Label_WriteBefore_Text=Write before processing using:",
@@ -91,7 +93,9 @@ import java.util.logging.Logger;
         "CTL_Label_ErrorPattern=Error pattern:",
         "CTL_Panel_SysVar_Border_TitleText=System variables",
         "Icon_Add=/org/esa/snap/resources/images/icons/Add16.png",
-        "CTL_Panel_OpParams_Border_TitleText=Operator Parameters"
+        "CTL_Panel_OpParams_Border_TitleText=Operator Parameters",
+        "CTL_Button_Export_Text=Export as module",
+        "MSG_Export_Complete_Text=The adapter was exported as a NetBeans module in %s"
 })
 public class ToolAdapterEditorDialog extends ModalDialog {
 
@@ -107,10 +111,11 @@ public class ToolAdapterEditorDialog extends ModalDialog {
     private Logger logger;
 
     private ToolAdapterEditorDialog(AppContext appContext, String title, String helpID) {
-        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, new Object[] { new JButton("Export as module") }, helpID);
+//        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, new Object[] { new JButton(Bundle.CTL_Button_Export_Text()) }, helpID);
+        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, null, helpID);
         this.logger = Logger.getLogger(ToolAdapterEditorDialog.class.getName());
         getJDialog().setResizable(false);
-        this.registerButton(ID_OTHER, new JButton("Export as module"));
+        this.registerButton(ID_OTHER, new JButton(Bundle.CTL_Button_Export_Text()));
     }
 
     private ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor) {
@@ -119,13 +124,13 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         this.newOperatorDescriptor = new ToolAdapterOperatorDescriptor(this.oldOperatorDescriptor);
 
         //see if all necessary parameters are present:
-        if(newOperatorDescriptor.getToolParameterDescriptors().stream().filter(p -> p.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)).count() == 0){
-            newOperatorDescriptor.getToolParameterDescriptors().add(new TemplateParameterDescriptor(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, Product.class));
+        if (newOperatorDescriptor.getToolParameterDescriptors().stream().filter(p -> p.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)).count() == 0){
+            newOperatorDescriptor.getToolParameterDescriptors().add(new TemplateParameterDescriptor(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID, Product[].class));
         }
-        if(newOperatorDescriptor.getToolParameterDescriptors().stream().filter(p -> p.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE)).count() == 0){
-            newOperatorDescriptor.getToolParameterDescriptors().add(new TemplateParameterDescriptor(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE, File.class));
+        if (newOperatorDescriptor.getToolParameterDescriptors().stream().filter(p -> p.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE)).count() == 0){
+            newOperatorDescriptor.getToolParameterDescriptors().add(new TemplateParameterDescriptor(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE, File[].class));
         }
-        if(newOperatorDescriptor.getToolParameterDescriptors().stream().filter(p -> p.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE)).count() == 0){
+        if (newOperatorDescriptor.getToolParameterDescriptors().stream().filter(p -> p.getName().equals(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE)).count() == 0){
             newOperatorDescriptor.getToolParameterDescriptors().add(new TemplateParameterDescriptor(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE, File.class));
         }
 
@@ -192,6 +197,31 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         return toolDescriptorPanel;
     }
 
+    private void addTextField(JPanel parent, TextFieldEditor textEditor, String labelText, String propertyName, int row, boolean isRequired) {
+        parent.add(new JLabel(labelText), getConstraints(row, 0));
+        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(propertyName);
+        if (isRequired) {
+            propertyDescriptor.setValidator(new NotEmptyValidator());
+        }
+        JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        parent.add(editorComponent, getConstraints(row, 1));
+    }
+
+    private void addComboField(JPanel parent, TextFieldEditor textEditor, String labelText, String propertyName, java.util.List<String> values, boolean sortValues, int row, boolean isRequired) {
+        parent.add(new JLabel(labelText), getConstraints(row, 0));
+        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(propertyName);
+        if (isRequired) {
+            propertyDescriptor.setValidator(new NotEmptyValidator());
+        }
+        if (sortValues) {
+            values.sort(Comparator.<String>naturalOrder());
+        }
+        propertyDescriptor.setValueSet(new ValueSet(values.toArray()));
+        PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
+        JComponent editorComp = editor.createEditorComponent(propertyDescriptor, bindingContext);
+        parent.add(editorComp, getConstraints(row, 1));
+    }
+
     private JPanel createOperatorDescriptorPanel() {
         GridBagLayout layout = new GridBagLayout();
         layout.columnWidths = new int[]{100, 315};
@@ -199,93 +229,24 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         final JPanel descriptorPanel = new JPanel(layout);
 
         TextFieldEditor textEditor = new TextFieldEditor();
-        PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(newOperatorDescriptor);
-        BindingContext bindingContext = new BindingContext(propertyContainer);
 
-        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Alias_Text()), getConstraints(0, 0));
-        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("alias");
-        propertyDescriptor.setValidator(new NotEmptyValidator());
-        JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
-        descriptorPanel.add(editorComponent, getConstraints(0, 1));
+        addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Alias_Text(), "alias", 0, true);
+        addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_UniqueName_Text(), "name", 1, true);
+        addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Label_Text(), "label", 2, true);
+        addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Version_Text(), "version", 3, true);
+        addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Copyright_Text(), "copyright", 4, false);
+        addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Authors_Text(), "authors", 5, false);
+        addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Description_Text(), "description", 6, false);
 
-        descriptorPanel.add(new JLabel(Bundle.CTL_Label_UniqueName_Text()), getConstraints(1, 0));
-        propertyDescriptor = propertyContainer.getDescriptor("name");
-        propertyDescriptor.setValidator(new NotEmptyValidator());
-        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
-        descriptorPanel.add(editorComponent, getConstraints(1, 1));
-
-        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Label_Text()), getConstraints(2, 0));
-        propertyDescriptor = propertyContainer.getDescriptor("label");
-        propertyDescriptor.setValidator(new NotEmptyValidator());
-        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
-        descriptorPanel.add(editorComponent, getConstraints(2, 1));
-
-        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Version_Text()), getConstraints(3, 0));
-        propertyDescriptor = propertyContainer.getDescriptor("version");
-        propertyDescriptor.setValidator(new NotEmptyValidator());
-        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
-        descriptorPanel.add(editorComponent, getConstraints(3, 1));
-
-        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Copyright_Text()), getConstraints(4, 0));
-        propertyDescriptor = propertyContainer.getDescriptor("copyright");
-        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        descriptorPanel.add(editorComponent, getConstraints(4, 1));
-
-        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Authors_Text()), getConstraints(5, 0));
-        propertyDescriptor = propertyContainer.getDescriptor("authors");
-        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        descriptorPanel.add(editorComponent, getConstraints(5, 1));
-
-        descriptorPanel.add(new JLabel(Bundle.CTL_Label_Description_Text()), getConstraints(6, 0));
-        propertyDescriptor = propertyContainer.getDescriptor("description");
-        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        descriptorPanel.add(editorComponent, getConstraints(6, 1));
-
-        descriptorPanel.add(new JLabel("Menu location:"), getConstraints(7, 0));
-        propertyDescriptor = propertyContainer.getDescriptor("menuLocation");
-        propertyDescriptor.setValidator(new NotEmptyValidator());
         java.util.List<String> menus = new ArrayList<>();
         getAvailableMenuOptions(null, menus);
-        menus.sort(Comparator.<String>naturalOrder());
-        propertyDescriptor.setValueSet(new ValueSet(menus.toArray()));
-        PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
-        JComponent editorComp = editor.createEditorComponent(propertyDescriptor, bindingContext);
-
-        //editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
-        descriptorPanel.add(editorComp, getConstraints(7, 1));
+        addComboField(descriptorPanel, textEditor, Bundle.CTL_Label_MenuLocation_Text(), "menuLocation", menus, true, 7, true);
 
         TitledBorder title = BorderFactory.createTitledBorder(Bundle.CTL_Panel_OperatorDescriptor_Text());
         descriptorPanel.setBorder(title);
         descriptorPanel.setPreferredSize(new Dimension(415, 232));
 
         return descriptorPanel;
-    }
-
-    private GridBagConstraints getConstraints(int row, int col) {
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = col;
-        c.gridy = row;
-        if (col == 1) {
-            c.gridwidth = 1;
-        }
-        c.insets = new Insets(2, 10, 2, 10);
-        return c;
-    }
-
-    private GridBagConstraints getConstraints(int row, int col, int noCells) {
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridx = col;
-        c.gridy = row;
-        c.gridwidth = noCells;
-        c.insets = new Insets(2, 10, 2, 10);
-        return c;
     }
 
     private JPanel createPreProcessingPanel(){
@@ -331,20 +292,14 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         final JPanel processingPanel = new JPanel();
         processingPanel.setLayout(new BorderLayout());
 
-        //processingPanel.add(createPreProcessingPanel(), BorderLayout.PAGE_START);
-
         JPanel configPanel = new JPanel();
         configPanel.setLayout(new BorderLayout());
         configPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CTL_Panel_ConfigParams_Text()));
-
-        //JPanel topConfigPanel = new JPanel();
-        //topConfigPanel.setLayout(new GridLayout(3, 1, 5, 5));
 
         PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("mainToolFileLocation");
         propertyDescriptor.setValidator(new NotEmptyValidator());
         PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
-        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
 
         JPanel panelToolFiles = new JPanel();
         GridBagLayout layout = new GridBagLayout();
@@ -359,22 +314,20 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         propertyDescriptor.setValidator(new NotEmptyValidator());
         editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
         editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
-        //editorComponent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
 
         panelToolFiles.add(new JLabel(Bundle.CTL_Label_WorkDir_Text()), getConstraints(1, 0));
         panelToolFiles.add(editorComponent, getConstraints(1, 1));
 
         panelToolFiles.add(new JLabel(Bundle.CTL_Label_CmdLineTemplate_Text()), getConstraints(2, 0, 2));
 
-        //topConfigPanel.add(panelToolFiles);
-        //topConfigPanel.setBackground(Color.cyan);
-
         configPanel.add(panelToolFiles, BorderLayout.PAGE_START);
 
         templateContent = new JTextArea("", 15, 9);
         try {
             if (operatorIsNew) {
-                templateContent.setText(ToolAdapterIO.readOperatorTemplate(oldOperatorDescriptor.getName()));
+                if (oldOperatorDescriptor.getTemplateFileLocation() != null) {
+                    templateContent.setText(ToolAdapterIO.readOperatorTemplate(oldOperatorDescriptor.getName()));
+                }
             } else {
                 templateContent.setText(ToolAdapterIO.readOperatorTemplate(newOperatorDescriptor.getName()));
             }
@@ -399,18 +352,9 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         patternsPanel.setBorder(BorderFactory.createTitledBorder(Bundle.CTL_Panel_OutputPattern_Border_TitleText()));
 
         TextFieldEditor textEditor = new TextFieldEditor();
-        PropertyContainer propertyContainer = PropertyContainer.createObjectBacked(newOperatorDescriptor);
-        BindingContext bindingContext = new BindingContext(propertyContainer);
 
-        patternsPanel.add(new JLabel(Bundle.CTL_Label_ProgressPattern()), getConstraints(0, 0));
-        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor("progressPattern");
-        JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        patternsPanel.add(editorComponent, getConstraints(0, 1));
-
-        patternsPanel.add(new JLabel(Bundle.CTL_Label_ErrorPattern()), getConstraints(1, 0));
-        propertyDescriptor = propertyContainer.getDescriptor("errorPattern");
-        editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        patternsPanel.add(editorComponent, getConstraints(1, 1));
+        addTextField(patternsPanel, textEditor, Bundle.CTL_Label_ProgressPattern(), "progressPattern", 0, false);
+        addTextField(patternsPanel, textEditor, Bundle.CTL_Label_ErrorPattern(), "errorPattern", 1, false);
 
         return patternsPanel;
     }
@@ -431,14 +375,12 @@ public class ToolAdapterEditorDialog extends ModalDialog {
 
     private JPanel createDescriptorAndVariablesAndPreprocessingPanel() {
         JPanel descriptorAndVariablesPanel = new JPanel();
-//        descriptorAndVariablesPanel.setPreferredSize(new Dimension(420, 480));
         descriptorAndVariablesPanel.setPreferredSize(new Dimension(420, 512));
         BoxLayout layout = new BoxLayout(descriptorAndVariablesPanel, BoxLayout.PAGE_AXIS);
         descriptorAndVariablesPanel.setLayout(layout);
 
         JPanel descriptorPanel = createOperatorDescriptorPanel();
         descriptorPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-//        descriptorPanel.setMaximumSize(new Dimension(415, 400));
         descriptorPanel.setMaximumSize(new Dimension(415, 420));
         descriptorAndVariablesPanel.add(descriptorPanel);
 
@@ -464,7 +406,6 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         JPanel preprocessingPanel = createPreProcessingPanel();
         preprocessingPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         preprocessingPanel.setMaximumSize(new Dimension(415, 60));
-        //preprocessingPanel.setMinimumSize(new Dimension(415, 35));
         descriptorAndVariablesPanel.add(preprocessingPanel);
 
         addVariableBut.addActionListener(e -> {
@@ -488,13 +429,13 @@ public class ToolAdapterEditorDialog extends ModalDialog {
             if (!(entry.endsWith(".instance") ||
                     entry.endsWith(".shadow") ||
                     entry.endsWith(".xml"))) {
-                resultList.add(entry);//.replace("Menu/", ""));
+                resultList.add(entry);
                 getAvailableMenuOptions(child, resultList);
             }
         }
     }
 
-    public JPanel createParametersPanel() {
+    private JPanel createParametersPanel() {
         JPanel paramsPanel = new JPanel();
         BoxLayout layout = new BoxLayout(paramsPanel, BoxLayout.PAGE_AXIS);
         paramsPanel.setLayout(layout);
@@ -536,7 +477,21 @@ public class ToolAdapterEditorDialog extends ModalDialog {
             if (menuLocation != null && !menuLocation.startsWith("Menu/")) {
                 newOperatorDescriptor.setMenuLocation("Menu/" + menuLocation);
             }
-            ToolAdapterIO.saveAndRegisterOperator(newOperatorDescriptor, templateContent.getText());
+            String templateContent = this.templateContent.getText();
+            int idx = templateContent.lastIndexOf(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + "[");
+            if (idx > 0) {
+                String value = templateContent.substring(idx + (ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + "[").length(), templateContent.indexOf("]", idx));
+                int maxNum = Integer.valueOf(value) + 1;
+                newOperatorDescriptor.setSourceProductCount(maxNum);
+            } else {
+                idx = templateContent.lastIndexOf(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE + "[");
+                if (idx > 0) {
+                    String value = templateContent.substring(idx + (ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE + "[").length(), templateContent.indexOf("]", idx));
+                    int maxNum = Integer.valueOf(value) + 1;
+                    newOperatorDescriptor.setSourceProductCount(maxNum);
+                }
+            }
+            ToolAdapterIO.saveAndRegisterOperator(newOperatorDescriptor, templateContent);
 			ToolAdapterActionRegistrar.registerOperatorMenu(newOperatorDescriptor);
         } catch (Exception e) {
             logger.warning(e.getMessage());
@@ -552,11 +507,33 @@ public class ToolAdapterEditorDialog extends ModalDialog {
             if (fileChooser.showOpenDialog(getButton(ID_OTHER)) == JFileChooser.APPROVE_OPTION) {
                 File targetFolder = fileChooser.getSelectedFile();
                 JarPackager.packAdapterJar(newOperatorDescriptor, new File(targetFolder, newOperatorDescriptor.getAlias() + ".jar"), ModuleInstaller.class);
-                SnapDialogs.showInformation(String.format("The adapter was exported as a NetBeans module in %s", targetFolder.getAbsolutePath()), null);
+                SnapDialogs.showInformation(String.format(Bundle.MSG_Export_Complete_Text(), targetFolder.getAbsolutePath()), null);
             }
         } catch (IOException e) {
             logger.warning(e.getMessage());
             SnapDialogs.showError(e.getMessage());
         }
+    }
+
+    private GridBagConstraints getConstraints(int row, int col) {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = col;
+        c.gridy = row;
+        if (col == 1) {
+            c.gridwidth = 1;
+        }
+        c.insets = new Insets(2, 10, 2, 10);
+        return c;
+    }
+
+    private GridBagConstraints getConstraints(int row, int col, int noCells) {
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = col;
+        c.gridy = row;
+        c.gridwidth = noCells;
+        c.insets = new Insets(2, 10, 2, 10);
+        return c;
     }
 }

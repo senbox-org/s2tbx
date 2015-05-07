@@ -36,6 +36,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Form for displaying execution parameters.
@@ -45,16 +47,16 @@ import java.util.ArrayList;
  */
 class ToolExecutionForm extends JTabbedPane {
     private AppContext appContext;
-    private ToolAdapterOperatorDescriptor operatorSpi;
+    private ToolAdapterOperatorDescriptor operatorDescriptor;
     private PropertySet propertySet;
     private TargetProductSelector targetProductSelector;
     private DefaultIOParametersPanel ioParamPanel;
     private String fileExtension;
 
-    public ToolExecutionForm(AppContext appContext, ToolAdapterOperatorDescriptor operatorSpi, PropertySet propertySet,
+    public ToolExecutionForm(AppContext appContext, ToolAdapterOperatorDescriptor descriptor, PropertySet propertySet,
                              TargetProductSelector targetProductSelector) {
         this.appContext = appContext;
-        this.operatorSpi = operatorSpi;
+        this.operatorDescriptor = descriptor;
         this.propertySet = propertySet;
         this.targetProductSelector = targetProductSelector;
 
@@ -70,7 +72,7 @@ class ToolExecutionForm extends JTabbedPane {
 
         //initialise the target product's directory to the working directory
         final TargetProductSelectorModel targetProductSelectorModel = targetProductSelector.getModel();
-        targetProductSelectorModel.setProductDir(this.operatorSpi.getWorkingDir());
+        targetProductSelectorModel.setProductDir(this.operatorDescriptor.getWorkingDir());
 
         ioParamPanel = createIOParamTab();
         addTab("I/O Parameters", ioParamPanel);
@@ -78,24 +80,45 @@ class ToolExecutionForm extends JTabbedPane {
         updateTargetProductFields();
     }
 
+    /**
+     * Method called before actually showing the form, in which additional
+     * initialisation may occur.
+     */
     public void prepareShow() {
         ioParamPanel.initSourceProductSelectors();
     }
 
+    /**
+     * Method called before hiding the form, in which additional
+     * cleanup may be performed.
+     */
     public void prepareHide() {
         ioParamPanel.releaseSourceProductSelectors();
     }
 
-    public Product getSourceProduct() {
-        return ioParamPanel.getSourceProductSelectorList().get(0).getSelectedProduct();
+    /**
+     * Fetches the list of products selected in UI
+     *
+     * @return  The list of selected products to be used as input source
+     */
+    public Product[] getSourceProducts() {
+        List<Product> sourceProducts = new ArrayList<>();
+        ArrayList<SourceProductSelector> sourceProductSelectorList = ioParamPanel.getSourceProductSelectorList();
+        sourceProducts.addAll(sourceProductSelectorList.stream().map(SourceProductSelector::getSelectedProduct).collect(Collectors.toList()));
+        return sourceProducts.toArray(new Product[sourceProducts.size()]);
     }
 
+    /**
+     * Gets the target (destination) product file
+     *
+     * @return  The target product file
+     */
     public File getTargetProductFile() {
         return targetProductSelector.getModel().getProductFile();
     }
 
     private DefaultIOParametersPanel createIOParamTab() {
-        final DefaultIOParametersPanel ioPanel = new DefaultIOParametersPanel(appContext, operatorSpi,
+        final DefaultIOParametersPanel ioPanel = new DefaultIOParametersPanel(appContext, operatorDescriptor,
                 targetProductSelector);
         final ArrayList<SourceProductSelector> sourceProductSelectorList = ioPanel.getSourceProductSelectorList();
         if (!sourceProductSelectorList.isEmpty()) {

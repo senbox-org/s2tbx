@@ -31,6 +31,7 @@ import org.esa.snap.framework.ui.tool.ToolButtonFactory;
 import org.esa.snap.rcp.SnapDialogs;
 import org.esa.snap.ui.tooladapter.dialogs.TemplateParameterEditorDialog;
 import org.esa.snap.ui.tooladapter.dialogs.ToolParameterEditorDialog;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -45,8 +46,29 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
+ * Table holding the operator parameter descriptors
+ *
  * @author Ramona Manda
+ * @author Cosmin Cara
  */
+@NbBundle.Messages({
+        "Column_Name_Text=Name",
+        "Column_Description_Text=Description",
+        "Column_Label_Text=Label",
+        "Column_DataType_Text=Data type",
+        "Column_DefaultValue_Text=Default value",
+        "Type_TemplateFileClass_Text=Template Parameter",
+        "Type_BeforeTemplateFileClass_Text=Template Before",
+        "Type_AfterTemplateFileClass_Text=Template After",
+        "Type_RegularFileClass_Text=File",
+        "Type_FileListClass_Text=File List",
+        "Type_StringClass_Text=String",
+        "Type_IntegerClass_Text=Integer",
+        "Type_ListClass_Text=List",
+        "Type_BooleanClass_Text=Boolean",
+        "Type_FloatClass_Text=Decimal",
+        "Type_ProductList_Text=Product List"
+})
 public class OperatorParametersTable extends JTable {
 
     private static String[] columnNames = {"", "Name", "Description", "Label", "Data type", "Default value", ""};
@@ -65,14 +87,16 @@ public class OperatorParametersTable extends JTable {
 
     static{
         typesMap = new DualHashBidiMap();
-        typesMap.put("Template Parameter", CustomParameterClass.TemplateFileClass);
-        typesMap.put("Template Before", CustomParameterClass.BeforeTemplateFileClass);
-        typesMap.put("Template After", CustomParameterClass.AfterTemplateFileClass);
-        typesMap.put("File", CustomParameterClass.RegularFileClass);
-        typesMap.put("String", CustomParameterClass.StringClass);
-        typesMap.put("Integer", CustomParameterClass.IntegerClass);
-        typesMap.put("List", CustomParameterClass.ListClass);
-        typesMap.put("Boolean", CustomParameterClass.BooleanClass);
+        typesMap.put(Bundle.Type_TemplateFileClass_Text(), CustomParameterClass.TemplateFileClass);
+        typesMap.put(Bundle.Type_BeforeTemplateFileClass_Text(), CustomParameterClass.BeforeTemplateFileClass);
+        typesMap.put(Bundle.Type_AfterTemplateFileClass_Text(), CustomParameterClass.AfterTemplateFileClass);
+        typesMap.put(Bundle.Type_RegularFileClass_Text(), CustomParameterClass.RegularFileClass);
+        typesMap.put(Bundle.Type_FileListClass_Text(), CustomParameterClass.FileListClass);
+        typesMap.put(Bundle.Type_StringClass_Text(), CustomParameterClass.StringClass);
+        typesMap.put(Bundle.Type_IntegerClass_Text(), CustomParameterClass.IntegerClass);
+        typesMap.put(Bundle.Type_ListClass_Text(), CustomParameterClass.ListClass);
+        typesMap.put(Bundle.Type_BooleanClass_Text(), CustomParameterClass.BooleanClass);
+        typesMap.put(Bundle.Type_FloatClass_Text(), CustomParameterClass.FloatClass);
     }
 
     public OperatorParametersTable(ToolAdapterOperatorDescriptor operator, AppContext appContext) {
@@ -83,12 +107,12 @@ public class OperatorParametersTable extends JTable {
         JComboBox typesComboBox = new JComboBox(typesMap.keySet().toArray());
         comboCellEditor = new DefaultCellEditor(typesComboBox);
         comboCellRenderer = new DefaultTableCellRenderer();
-        labelTypeCellRenderer.setText("Product");
+        labelTypeCellRenderer.setText(Bundle.Type_ProductList_Text());
 
         List<TemplateParameterDescriptor> data = operator.getToolParameterDescriptors();
         PropertySet propertySet = new OperatorParameterSupport(operator).getPropertySet();
         //if there is an exception in the line above, can be because the default value does not match the type
-        //TODO which param is wrong????
+        //TODO determine if (and which) param has a wrong type
         context = new BindingContext(propertySet);
         for (ToolParameterDescriptor paramDescriptor : data) {
             if(paramDescriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
@@ -194,7 +218,9 @@ public class OperatorParametersTable extends JTable {
                     return false;
                 case 4:
                     if(descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID)){
-                        return "Product";
+                        return Bundle.Type_ProductList_Text();
+                    } else if (descriptor.getName().equals(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE)) {
+                        return Bundle.Type_FileListClass_Text();
                     } else {
                         return typesMap.getKey(CustomParameterClass.getObject(descriptor.getDataType(), descriptor.getParameterType()));
                     }
@@ -255,8 +281,8 @@ public class OperatorParametersTable extends JTable {
                     //type editing
                     CustomParameterClass customClass = (CustomParameterClass)typesMap.get(aValue);
                     descriptor.setParameterType(customClass.getTypeMask());
-                    if(descriptor.getDataType() != customClass.getaClass()) {
-                        descriptor.setDataType(customClass.getaClass());
+                    if(descriptor.getDataType() != customClass.getParameterClass()) {
+                        descriptor.setDataType(customClass.getParameterClass());
                         descriptor.setDefaultValue(descriptor.getDefaultValue());
                         context.getPropertySet().removeProperty(context.getPropertySet().getProperty(descriptor.getName()));
                         PropertyDescriptor property;

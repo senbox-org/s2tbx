@@ -41,6 +41,7 @@ import java.util.function.Consumer;
  * Form dialog for running a tool adapter operator.
  *
  * @author Lucian Barbulescu.
+ * @author Cosmin Cara
  */
 public class ToolAdapterExecutionDialog extends SingleTargetProductDialog {
 
@@ -93,10 +94,11 @@ public class ToolAdapterExecutionDialog extends SingleTargetProductDialog {
         if (validateUserInput() && canApply()) {
             String productDir = targetProductSelector.getModel().getProductDir().getAbsolutePath();
             appContext.getPreferences().setPropertyString(BasicApp.PROPERTY_KEY_APP_LAST_SAVE_DIR, productDir);
-            final Product sourceProduct = form.getSourceProduct();
-            Map<String, Product> sourceProducts = new HashMap<>();
-            sourceProducts.put(SOURCE_PRODUCT_FIELD, sourceProduct);
-            Operator op = GPF.getDefaultInstance().createOperator(operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProducts, null);
+            final Product[] sourceProducts = form.getSourceProducts();
+            Map<String, Product> sourceProductMap = new HashMap<>();
+            sourceProductMap.put(SOURCE_PRODUCT_FIELD, sourceProducts[0]);
+            Operator op = GPF.getDefaultInstance().createOperator(operatorDescriptor.getName(), parameterSupport.getParameterMap(), sourceProductMap, null);
+            op.setSourceProducts(sourceProducts);
             operatorTask = new OperatorTask(op, ToolAdapterExecutionDialog.this::operatorCompleted);
             ProgressHandle progressHandle = ProgressHandleFactory.createHandle(this.getTitle());
             ((ToolAdapterOp)op).setProgressMonitor(progressHandle);

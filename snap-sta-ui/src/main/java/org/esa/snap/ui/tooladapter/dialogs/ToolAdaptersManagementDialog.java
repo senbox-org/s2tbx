@@ -66,7 +66,8 @@ import java.util.stream.Collectors;
         "Icon_Copy=/org/esa/snap/resources/images/icons/Copy24.gif",
         "Icon_Edit=/org/esa/snap/resources/images/icons/Edit24.gif",
         "Icon_Execute=/org/esa/snap/resources/images/icons/Update24.gif",
-        "Icon_Remove=/org/esa/snap/resources/images/icons/Remove16.gif"
+        "Icon_Remove=/org/esa/snap/resources/images/icons/Remove16.gif",
+        "MessageNoSelection_Text=Please select an adapter first"
 
 })
 public class ToolAdaptersManagementDialog extends ModalDialog {
@@ -137,7 +138,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                 setContent(createContentPanel());
                 getContent().repaint();
             } else {
-                SnapDialogs.showWarning("Please select an adapter first");
+                SnapDialogs.showWarning(Bundle.MessageNoSelection_Text());
             }
         });
         panel.add(copyButton);
@@ -152,7 +153,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                 setContent(createContentPanel());
                 getContent().repaint();
             } else {
-                SnapDialogs.showWarning("Please select an adapter first");
+                SnapDialogs.showWarning(Bundle.MessageNoSelection_Text());
             }
         });
         panel.add(editButton);
@@ -170,7 +171,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                         getHelpID());
                 operatorDialog.show();
             } else {
-                SnapDialogs.showWarning("Please select an adapter first");
+                SnapDialogs.showWarning(Bundle.MessageNoSelection_Text());
             }
         });
         panel.add(runButton);
@@ -196,7 +197,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                 return column == 1;
             }
         };
-        model.setValueAt("User-defined adapter path", 0, 0);
+        model.setValueAt("Adapters location", 0, 0);
         model.setValueAt(ToolAdapterIO.getUserAdapterPath(), 0, 1);
         model.addTableModelListener(l -> {
             String newPath = model.getValueAt(0, 1).toString();
@@ -212,7 +213,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                     Preferences modulePrefs = NbPreferences.forModule(ToolAdapterIO.class);
                     modulePrefs.put("user.module.path", newPath);
                     modulePrefs.sync();
-                    SnapDialogs.showInformation("The path for user adapters will be considered next time the applicaiton is opened.", "Don't show this dialog");
+                    SnapDialogs.showInformation("The path for user adapters will be considered next time the application is opened.", "Don't show this dialog");
                 } catch (BackingStoreException e1) {
                     SnapDialogs.showError(e1.getMessage());
                 }
