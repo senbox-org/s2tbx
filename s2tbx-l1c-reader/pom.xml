@@ -100,6 +100,7 @@
             <artifactId>s2tbx-eop2-gml-reader</artifactId>
             <version>${snap.version}</version>
         </dependency>
+
     </dependencies>
 
 
@@ -158,6 +159,29 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <copy todir="C:/Users/Oscar/.snap2/modules" overwrite="true" verbose="true">
+                                    <fileset dir="../target/nbm/netbeans/extra/modules" includes="*l1c*.jar" />
+                                </copy>
+                                <copy todir="C:/Users/Oscar/.snap2/modules/ext" overwrite="true" verbose="true">
+                                    <fileset dir="../target/nbm/netbeans/extra/modules/ext" includes="*l1c*/**" />
+                                </copy>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
