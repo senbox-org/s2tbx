@@ -161,6 +161,7 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
 
+            <!--
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.4</version>
@@ -183,6 +184,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 
