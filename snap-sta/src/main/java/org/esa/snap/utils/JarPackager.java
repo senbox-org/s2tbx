@@ -22,6 +22,10 @@ import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterIO;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.jar.*;
 
@@ -45,6 +49,7 @@ public final class JarPackager {
         attributes.put(new Attributes.Name("OpenIDE-Module-Java-Dependencies"), "Java > 1.8");
         attributes.put(new Attributes.Name("OpenIDE-Module-Module-Dependencies"), "org.esa.snap.snap.sta.ui");
         attributes.put(new Attributes.Name("OpenIDE-Module-Display-Category"), "SNAP");
+        attributes.put(new Attributes.Name("OpenIDE-Module-Layer"), "layer.xml");
         attributes.put(ATTR_DESCRIPTION_NAME, "External tool adapter");
         modulesPath = ToolAdapterIO.getUserAdapterPath();
     }
@@ -57,13 +62,13 @@ public final class JarPackager {
      * @param jarFile       The target jar file
      * @throws IOException
      */
-    public static void packAdapterJar(ToolAdapterOperatorDescriptor descriptor, File jarFile, Class moduleInstallerClass) throws IOException {
+    public static void packAdapterJar(ToolAdapterOperatorDescriptor descriptor, File jarFile, Class actionClass) throws IOException {
         _manifest.getMainAttributes().put(ATTR_DESCRIPTION_NAME, "<p>" + descriptor.getAlias() + "</p>");
         File moduleFolder = new File(modulesPath, descriptor.getAlias());
         try (FileOutputStream fOut = new FileOutputStream(jarFile)) {
-            if (moduleInstallerClass != null) {
-                _manifest.getMainAttributes().put(new Attributes.Name("OpenIDE-Module-Install"), moduleInstallerClass.getName().replace('.', '/') + ".class");
-            }
+//            if (actionClass != null) {
+//                _manifest.getMainAttributes().put(new Attributes.Name("OpenIDE-Module-Install"), actionClass.getName().replace('.', '/') + ".class");
+//            }
             try (JarOutputStream jarOut = new JarOutputStream(fOut, _manifest)) {
                 File[] files = moduleFolder.listFiles();
                 if (files != null) {
@@ -71,8 +76,16 @@ public final class JarPackager {
                         addFile(child, jarOut);
                     }
                 }
-                if (moduleInstallerClass != null) {
-                    addFile(moduleInstallerClass, jarOut);
+                if (actionClass != null) {
+                    addFile(actionClass, jarOut);
+                    try {
+                        File templateFile = new File(new File(JarPackager.class.getProtectionDomain().getCodeSource().getLocation().toURI()), "/META-INF//org/esa/snap/utils/template_layer.xml");
+                        Path destination = Paths.get(moduleFolder.getAbsolutePath(), "layer.xml");
+                        Files.copy(templateFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                        addFile(new File(moduleFolder, "layer.xml"), jarOut);
+                    } catch (Exception ignored) {
+                        ignored.printStackTrace();
+                    }
                 }
                 jarOut.close();
             }

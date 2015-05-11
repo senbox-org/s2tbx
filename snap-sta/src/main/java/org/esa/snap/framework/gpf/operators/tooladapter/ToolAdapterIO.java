@@ -22,6 +22,7 @@ import org.esa.snap.framework.gpf.OperatorException;
 import org.esa.snap.framework.gpf.OperatorSpi;
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.snap.util.SystemUtils;
+import org.esa.snap.util.io.FileUtils;
 import org.openide.modules.Places;
 import org.openide.util.NbPreferences;
 
@@ -318,7 +319,7 @@ public class ToolAdapterIO {
                 File rootFolder = getUserAdapterPath();
                 File moduleFolder = new File(rootFolder, operator.getAlias());
                 if (moduleFolder.exists()) {
-                    if (!moduleFolder.delete()) {
+                    if (!FileUtils.deleteTree(moduleFolder)) {
                         logger.warning(String.format("Folder %s cannot be deleted", moduleFolder.getAbsolutePath()));
                     }
                 }
