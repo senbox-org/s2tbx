@@ -24,11 +24,6 @@
             <version>${snap.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-visat-rcp</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-l1c-reader</artifactId>
             <version>${project.version}</version>

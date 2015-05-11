@@ -179,11 +179,13 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Remove()), false);
         delButton.setToolTipText(Bundle.ToolTipDeleteOperator_Text());
         delButton.addActionListener(e -> {
-            ToolAdapterOperatorDescriptor descriptor = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-            ToolAdapterActionRegistrar.removeOperatorMenu(descriptor);
-            ToolAdapterIO.removeOperator(descriptor);
-            setContent(createContentPanel());
-            getContent().repaint();
+            if (SnapDialogs.Answer.YES == SnapDialogs.requestDecision("Confirm removal", "Are you sure you want to remove this adapter?\nThe operation will delete also its folder and files", true, "Don't ask me in the future")) {
+                ToolAdapterOperatorDescriptor descriptor = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
+                ToolAdapterActionRegistrar.removeOperatorMenu(descriptor);
+                ToolAdapterIO.removeOperator(descriptor);
+                setContent(createContentPanel());
+                getContent().repaint();
+            }
         });
         panel.add(delButton);
 

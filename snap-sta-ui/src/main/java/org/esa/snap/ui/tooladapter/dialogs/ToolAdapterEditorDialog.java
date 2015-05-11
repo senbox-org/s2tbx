@@ -41,7 +41,7 @@ import org.esa.snap.framework.ui.ModalDialog;
 import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
 import org.esa.snap.rcp.SnapDialogs;
-import org.esa.snap.ui.tooladapter.ModuleInstaller;
+import org.esa.snap.ui.tooladapter.actions.ExecuteToolAdapterAction;
 import org.esa.snap.ui.tooladapter.actions.ToolAdapterActionRegistrar;
 import org.esa.snap.ui.tooladapter.model.OperatorParametersTable;
 import org.esa.snap.ui.tooladapter.model.VariablesTable;
@@ -111,8 +111,8 @@ public class ToolAdapterEditorDialog extends ModalDialog {
     private Logger logger;
 
     private ToolAdapterEditorDialog(AppContext appContext, String title, String helpID) {
-//        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, new Object[] { new JButton(Bundle.CTL_Button_Export_Text()) }, helpID);
-        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, null, helpID);
+        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, new Object[] { new JButton(Bundle.CTL_Button_Export_Text()) }, helpID);
+        //super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, null, helpID);
         this.logger = Logger.getLogger(ToolAdapterEditorDialog.class.getName());
         getJDialog().setResizable(false);
         this.registerButton(ID_OTHER, new JButton(Bundle.CTL_Button_Export_Text()));
@@ -506,7 +506,7 @@ public class ToolAdapterEditorDialog extends ModalDialog {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (fileChooser.showOpenDialog(getButton(ID_OTHER)) == JFileChooser.APPROVE_OPTION) {
                 File targetFolder = fileChooser.getSelectedFile();
-                JarPackager.packAdapterJar(newOperatorDescriptor, new File(targetFolder, newOperatorDescriptor.getAlias() + ".jar"), ModuleInstaller.class);
+                JarPackager.packAdapterJar(newOperatorDescriptor, new File(targetFolder, newOperatorDescriptor.getAlias() + ".jar"), ExecuteToolAdapterAction.class);
                 SnapDialogs.showInformation(String.format(Bundle.MSG_Export_Complete_Text(), targetFolder.getAbsolutePath()), null);
             }
         } catch (IOException e) {
