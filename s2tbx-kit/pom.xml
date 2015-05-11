@@ -112,6 +112,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-sta</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-sta-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-deimos-reader</artifactId>
             <version>${project.version}</version>
@@ -169,6 +181,18 @@
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-geotiff</artifactId>
             <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-gpf</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-progress</artifactId>
+            <version>RELEASE802</version>
         </dependency>
 
     </dependencies>
