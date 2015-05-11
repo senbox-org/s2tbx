@@ -29,14 +29,13 @@
     <artifactId>snap-sta-ui</artifactId>
     <name>Standalone Tool Adapter GUI</name>
     <description>GUI for Standalone Tool Adapter</description>
-
     <packaging>nbm</packaging>
 
     <dependencies>
 
         <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-binding</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>snap-sta</artifactId>
             <version>${snap.version}</version>
         </dependency>
 
@@ -53,8 +52,8 @@
 
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-sta</artifactId>
-            <version>${project.version}</version>
+            <artifactId>ceres-binding</artifactId>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>

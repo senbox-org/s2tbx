@@ -37,20 +37,17 @@ import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.StringUtils;
 import org.esa.snap.util.TreeNode;
 import org.esa.snap.util.logging.BeamLogManager;
+import org.esa.snap.utils.CollectionHelper;
 
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
