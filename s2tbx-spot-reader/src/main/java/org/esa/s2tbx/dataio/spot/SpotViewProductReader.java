@@ -1,19 +1,17 @@
 /*
- *
  * Copyright (C) 2014-2015 CS SI
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 3 of the License, or (at your option)
  * any later version.
- *  This program is distributed in the hope that it will be useful, but WITHOUT
+ * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  *
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, see http://www.gnu.org/licenses/
- *
+ *  with this program; if not, see http://www.gnu.org/licenses/
  */
 
 package org.esa.s2tbx.dataio.spot;
@@ -29,16 +27,9 @@ import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.SpotViewMetadata;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.framework.datamodel.Band;
-import org.esa.snap.framework.datamodel.CrsGeoCoding;
-import org.esa.snap.framework.datamodel.GeoCoding;
-import org.esa.snap.framework.datamodel.Product;
-import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.framework.datamodel.TiePointGeoCoding;
-import org.esa.snap.framework.datamodel.TiePointGrid;
+import org.esa.snap.framework.datamodel.*;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.TreeNode;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
 import org.geotools.referencing.ReferencingFactoryFinder;
 import org.opengis.referencing.FactoryException;
@@ -48,7 +39,7 @@ import org.opengis.referencing.operation.TransformException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
@@ -79,7 +70,7 @@ public class SpotViewProductReader extends AbstractProductReader {
 
     protected SpotViewProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = Logger.getLogger(SpotViewProductReader.class.getName());
         sharedLock = new Object();
     }
 

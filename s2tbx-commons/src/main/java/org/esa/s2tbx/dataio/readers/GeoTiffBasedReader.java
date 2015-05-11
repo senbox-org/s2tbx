@@ -24,7 +24,7 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.utils.CollectionHelper;
+import org.esa.snap.utils.CollectionHelper;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.DecodeQualification;

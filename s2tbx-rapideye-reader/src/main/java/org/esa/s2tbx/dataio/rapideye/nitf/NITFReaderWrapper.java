@@ -1,19 +1,17 @@
 /*
- *
  * Copyright (C) 2014-2015 CS SI
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 3 of the License, or (at your option)
  * any later version.
- *  This program is distributed in the hope that it will be useful, but WITHOUT
+ * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  *
  * You should have received a copy of the GNU General Public License along
- * with this program; if not, see http://www.gnu.org/licenses/
- *
+ *  with this program; if not, see http://www.gnu.org/licenses/
  */
 
 package org.esa.s2tbx.dataio.rapideye.nitf;
@@ -24,11 +22,10 @@ import nitf.NITFException;
 import nitf.imageio.ImageIOUtils;
 import nitf.imageio.NITFReaderSpi;
 import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.spi.IIORegistry;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.io.File;
@@ -62,7 +59,7 @@ public class NITFReaderWrapper {
     }
 
     public NITFReaderWrapper(File file) throws IOException {
-        logger = BeamLogManager.getSystemLogger();
+        logger = Logger.getLogger(NITFReaderWrapper.class.getName());
         reader = (nitf.imageio.NITFReader) ImageIOUtils.getImageReader("nitf", file);
         try {
             imageWidth = reader.getWidth(0);

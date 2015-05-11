@@ -58,7 +58,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static org.esa.s2tbx.utils.CollectionHelper.*;
+import static org.esa.snap.utils.CollectionHelper.*;
 
 /**
  * This class extends or alters the features of com.bc.ceres.core.VirtualDir class with a Tar/Tgz implementation
