@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2014-2015 CS SI
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~  with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -13,21 +29,31 @@
     <artifactId>snap-sta-ui</artifactId>
     <name>Standalone Tool Adapter GUI</name>
     <description>GUI for Standalone Tool Adapter</description>
-
     <packaging>nbm</packaging>
 
     <dependencies>
 
         <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-binding</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>snap-sta</artifactId>
             <version>${snap.version}</version>
         </dependency>
 
         <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-sta</artifactId>
-            <version>${project.version}</version>
+            <artifactId>ceres-binding</artifactId>
+            <version>${snap.version}</version>
         </dependency>
 
         <dependency>
@@ -121,7 +147,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/../../snap-desktop/snap-application/target/snap/snap/modules/extensions/adapters</outputDirectory>
+                            <outputDirectory>${user.dir}/snap/adapters</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/src/main/resources/sampleAdapters</directory>
@@ -138,7 +164,11 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
+                <version>3.14</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <nbmBuildDir>${project.basedir}/../target/nbm</nbmBuildDir>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

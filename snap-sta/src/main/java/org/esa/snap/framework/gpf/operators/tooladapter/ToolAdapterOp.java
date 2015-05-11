@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2014-2015 CS SI
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ *  with this program; if not, see http://www.gnu.org/licenses/
+ */
 package org.esa.snap.framework.gpf.operators.tooladapter;
 
 import com.bc.ceres.binding.Property;
@@ -34,6 +49,7 @@ import java.util.logging.Level;
  * Tool Adapter operator
  *
  * @author Lucian Barbulescu
+ * @author Cosmin Cara
  */
 @OperatorMetadata(alias = "ToolAdapterOp",
         category = "Tools",
@@ -58,7 +74,7 @@ public class ToolAdapterOp extends Operator {
 
     private ProgressMonitor progressMonitor;
 
-    private File intermediateProductFile;
+    private List<File> intermediateProductFiles;
 
     /**
      * The folder where the tool descriptors reside.
@@ -80,6 +96,7 @@ public class ToolAdapterOp extends Operator {
         Velocity.init();
         //this.progressMonitor = ProgressMonitor.NULL;
         //this.descriptor = ((ToolAdapterOperatorDescriptor) accessibleContext.getOperatorSpi().getOperatorDescriptor());
+        intermediateProductFiles = new ArrayList<>();
     }
 
     /**
@@ -210,41 +227,43 @@ public class ToolAdapterOp extends Operator {
                 ProductIOPlugInManager registry = ProductIOPlugInManager.getInstance();
                 Iterator<ProductWriterPlugIn> writerPlugIns = registry.getWriterPlugIns(sourceFormatName);
                 ProductWriterPlugIn writerPlugIn = writerPlugIns.next();
-                final Product selectedProduct = getSourceProduct();
+                final Product[] selectedProducts = getSourceProducts();
                 String sourceDefaultExtension = writerPlugIn.getDefaultFileExtensions()[0];
-                File outFile = new File(descriptor.getWorkingDir(), INTERMEDIATE_PRODUCT_NAME + sourceDefaultExtension);
-                boolean hasDeleted = false;
-                while (outFile.exists() && !hasDeleted) {
-                    hasDeleted = outFile.canWrite() && outFile.delete();
-                    if (!hasDeleted) {
-                        getLogger().warning(String.format("Could not delete previous temporary image %s", outFile.getName()));
-                        outFile = new File(descriptor.getWorkingDir(), INTERMEDIATE_PRODUCT_NAME + "_" + new Date().getTime() + sourceDefaultExtension);
+                for (Product selectedProduct : selectedProducts) {
+                    File outFile = new File(descriptor.getWorkingDir(), INTERMEDIATE_PRODUCT_NAME + sourceDefaultExtension);
+                    boolean hasDeleted = false;
+                    while (outFile.exists() && !hasDeleted) {
+                        hasDeleted = outFile.canWrite() && outFile.delete();
+                        if (!hasDeleted) {
+                            getLogger().warning(String.format("Could not delete previous temporary image %s", outFile.getName()));
+                            outFile = new File(descriptor.getWorkingDir(), INTERMEDIATE_PRODUCT_NAME + "_" + new Date().getTime() + sourceDefaultExtension);
+                        }
                     }
-                }
-                Product interimProduct = new Product(outFile.getName(), selectedProduct.getProductType(),
-                        selectedProduct.getSceneRasterWidth(), selectedProduct.getSceneRasterHeight());
-                try {
-                    ProductUtils.copyProductNodes(selectedProduct, interimProduct);
-                    for (Band sourceBand : selectedProduct.getBands()) {
-                        ProductUtils.copyBand(sourceBand.getName(), selectedProduct, interimProduct, true);
-                    }
-                    ProductIO.writeProduct(interimProduct, outFile, sourceFormatName, true, SubProgressMonitor.create(progressMonitor, 50));
-                } catch (IOException e) {
-                    getLogger().severe("Cannot write to " + sourceFormatName + " format");
-                    stop();
-                } finally {
+                    Product interimProduct = new Product(outFile.getName(), selectedProduct.getProductType(),
+                            selectedProduct.getSceneRasterWidth(), selectedProduct.getSceneRasterHeight());
                     try {
-                        interimProduct.closeIO();
-                        interimProduct.dispose();
-                    } catch (IOException ignored) {
+                        ProductUtils.copyProductNodes(selectedProduct, interimProduct);
+                        for (Band sourceBand : selectedProduct.getBands()) {
+                            ProductUtils.copyBand(sourceBand.getName(), selectedProduct, interimProduct, true);
+                        }
+                        ProductIO.writeProduct(interimProduct, outFile, sourceFormatName, true, SubProgressMonitor.create(progressMonitor, 50));
+                    } catch (IOException e) {
+                        getLogger().severe("Cannot write to " + sourceFormatName + " format");
+                        stop();
+                    } finally {
+                        try {
+                            interimProduct.closeIO();
+                            interimProduct.dispose();
+                        } catch (IOException ignored) {
+                        }
+                        interimProduct = null;
+                        reportProgress("Product conversion finished");
                     }
-                    interimProduct = null;
-                    reportProgress("Product conversion finished");
-                }
-                if (outFile.exists()) {
-                    intermediateProductFile = outFile;
-                } else {
-                    stop();
+                    if (outFile.exists()) {
+                        intermediateProductFiles.add(outFile);
+                    } else {
+                        stop();
+                    }
                 }
             }
         }
@@ -333,11 +352,11 @@ public class ToolAdapterOp extends Operator {
         File input = (File) getParameter(ToolAdapterConstants.TOOL_TARGET_PRODUCT_FILE);
         if (input != null) {
             try {
-                if (intermediateProductFile != null && intermediateProductFile.exists()) {
-                    if (!(intermediateProductFile.canWrite() && intermediateProductFile.delete())) {
-                        getLogger().warning(String.format("Temporary image %s could not be deleted", intermediateProductFile.getName()));
-                    }
-                }
+                intermediateProductFiles.stream().filter(intermediateProductFile -> intermediateProductFile != null && intermediateProductFile.exists())
+                                                 .filter(intermediateProductFile -> !(intermediateProductFile.canWrite() && intermediateProductFile.delete()))
+                                                 .forEach(intermediateProductFile -> {
+                                                     getLogger().warning(String.format("Temporary image %s could not be deleted", intermediateProductFile.getName()));
+                                                 });
                 Product target = ProductIO.readProduct(input);
                 for (Band band : target.getBands()) {
                     ImageManager.getInstance().getSourceImage(band, 0);
@@ -444,7 +463,9 @@ public class ToolAdapterOp extends Operator {
                 sourceProducts.length == 1 ? sourceProducts[0] : sourceProducts);
         File[] rasterFiles = new File[sourceProducts.length];
         for (int i = 0; i < sourceProducts.length; i++) {
-            File productFile = intermediateProductFile != null ? intermediateProductFile : sourceProducts[i].getFileLocation();
+            File productFile = intermediateProductFiles.size() == sourceProducts.length ?
+                                    intermediateProductFiles.get(i) :
+                                    sourceProducts[i].getFileLocation();
             rasterFiles[i] = productFile.isFile() ? productFile : selectCandidateRasterFile(productFile);
         }
         context.put(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE,

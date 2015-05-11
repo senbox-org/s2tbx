@@ -1,12 +1,27 @@
+/*
+ * Copyright (C) 2014-2015 CS SI
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ *  with this program; if not, see http://www.gnu.org/licenses/
+ */
 package org.esa.s2tbx.dataio.deimos.dimap;
 
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.snap.framework.datamodel.ProductData;
 
-import java.awt.Color;
+import java.awt.*;
 
-import static org.esa.s2tbx.utils.DateHelper.*;
+import static org.esa.snap.utils.DateHelper.parseDate;
 
 /**
  * Holder for DIMAP metadata file.

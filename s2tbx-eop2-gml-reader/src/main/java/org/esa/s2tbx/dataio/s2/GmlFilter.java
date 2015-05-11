@@ -48,21 +48,27 @@ public class GmlFilter {
     /**
      * Parses GML3 using the streaming parser.
      */
-    public static List<Polygon> streamParseGML3(InputStream in) throws ParserConfigurationException, SAXException {
+    public static List<Polygon> streamParseGML3(InputStream in) {
         GMLConfiguration gml = new GMLConfiguration();
-        StreamingParser parser = new StreamingParser( gml, in, Polygon.class );
-
         List<Polygon> polygons = new ArrayList<Polygon>();
 
-        Polygon f = null;
-        while( ( f = (Polygon) parser.parse() ) != null ) {
-            polygons.add(f);
+        try {
+            StreamingParser parser = new StreamingParser( gml, in, Polygon.class );
+
+            Polygon f = null;
+            while( ( f = (Polygon) parser.parse() ) != null ) {
+                polygons.add(f);
+            }
+        } catch (ParserConfigurationException e) {
+            // {@report "classpath problem !"}
+        } catch (SAXException e) {
+            // {@report "classpath problem !"}
         }
 
         return polygons;
     }
 
-    public List<Polygon> parse(InputStream stream) throws JDOMException, IOException, ParserConfigurationException, SAXException {
+    public List<Polygon> parse(InputStream stream) throws JDOMException, IOException {
         SAXBuilder builder = new SAXBuilder();
         Document jdomDoc = builder.build(stream);
 
@@ -100,13 +106,13 @@ public class GmlFilter {
         return recoveredGeometries;
     }
 
-    public List<Polygon> parse(String resource) throws JDOMException, IOException, ParserConfigurationException, SAXException {
+    public List<Polygon> parse(String resource) throws JDOMException, IOException {
         InputStream stream = getClass().getResourceAsStream(resource);
 
         return parse(stream);
     }
 
-    public List<Polygon> parse(File fileName) throws JDOMException, IOException, ParserConfigurationException, SAXException {
+    public List<Polygon> parse(File fileName) throws JDOMException, IOException {
         InputStream stream = new FileInputStream(fileName);
 
         return parse(stream);

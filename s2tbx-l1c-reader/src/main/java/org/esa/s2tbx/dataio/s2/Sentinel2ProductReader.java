@@ -341,9 +341,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         // todo critical create mask here using informations from polygons...
         // CRITICAL todo add mask
 
-        /*
         Mask newMask = new Mask("A-custom-geometry",product.getBand("B2").getRasterWidth(),product.getBand("B2").getRasterHeight(), Mask.VectorDataType.INSTANCE );
-        Mask testMask = Mask.BandMathsType.create("custom-geometry","custom-geometry", product.getBand("B2").getRasterWidth(),product.getBand("B2").getRasterHeight(), "B2.raw > 10", Color.yellow, 0.5 );
 
         final SimpleFeatureType type = Placemark.createGeometryFeatureType();
         Object[] data1 = {polygons.get(0), "Polygon1"};
@@ -354,9 +352,16 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         VectorDataNode vdn = new VectorDataNode("magic", collection);
         Mask.VectorDataType.setVectorData(newMask, vdn);
 
+        // Mask.VectorDataType.INSTANCE.createImage(newMask);
 
-        product.addMask(testMask);
         product.addMask(newMask);
+        product.getVectorDataGroup().add(vdn);
+
+        /*
+        pyramids = new VectorDataNode("pyramids", Placemark.createGeometryFeatureType());
+        product.getVectorDataGroup().add(pyramids);
+
+        image = new VectorDataMultiLevelImage(VectorDataMultiLevelImage.createMaskMultiLevelSource(pyramids), pyramids);
         */
 
         return product;
@@ -478,6 +483,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
                     } catch (Exception e) {
                         // todo CRITICAL Fix this
+                        // {@report "Solar info problem"}
                         e.printStackTrace();
                     }
                 }

@@ -117,6 +117,11 @@
                 <artifactId>snap-engine</artifactId>
                 <version>${snap.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-desktop</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
             <!--<dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-core</artifactId>
@@ -334,14 +339,14 @@
         <profile>
             <id>withSnapDesktopSources</id>
             <modules>
-                <module>../snap-desktop-fork</module>
+                <module>../snap-desktop</module>
             </modules>
         </profile>
         <profile>
             <id>all</id>
             <modules>
                 <module>../snap-engine</module>
-                <module>../snap-desktop-fork</module>
+                <module>../snap-desktop</module>
             </modules>
         </profile>
         <profile>
