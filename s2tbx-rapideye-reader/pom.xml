@@ -12,6 +12,7 @@
 
     <artifactId>s2tbx-rapideye-reader</artifactId>
     <name>RapidEye Reader</name>
+    <packaging>nbm</packaging>
     <description>
         This module enables the Sentinel Toolbox to read RapidEye data products
     </description>
@@ -25,11 +26,6 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-geotiff</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-visat-rcp</artifactId>
             <version>${snap.version}</version>
         </dependency>
         <dependency>
@@ -65,11 +61,6 @@
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-reader-tests</artifactId>
             <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.5</version>
         </dependency>
 
         <dependency>
