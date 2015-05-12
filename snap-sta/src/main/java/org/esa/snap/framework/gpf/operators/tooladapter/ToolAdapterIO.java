@@ -111,7 +111,7 @@ public class ToolAdapterIO {
      * @return
      * @throws IOException
      */
-    public static String readOperatorTemplate(String adapterName) throws IOException {
+    public static String readOperatorTemplate(String adapterName) throws IOException, OperatorException {
         File file = getTemplateFile(adapterName, true);
         byte[] encoded = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
         return new String(encoded, Charset.defaultCharset());
@@ -295,7 +295,7 @@ public class ToolAdapterIO {
         return modules;
     }
 
-    private static File getTemplateFile(String adapterName, boolean forReading) {
+    private static File getTemplateFile(String adapterName, boolean forReading) throws IOException, OperatorException {
         OperatorSpi spi = GPF.getDefaultInstance().getOperatorSpiRegistry().getOperatorSpi(adapterName);
         if (spi == null) {
             throw new OperatorException("Cannot find the operator SPI");

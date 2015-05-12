@@ -224,7 +224,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                     Preferences modulePrefs = NbPreferences.forModule(ToolAdapterIO.class);
                     modulePrefs.put("user.module.path", newPath);
                     modulePrefs.sync();
-                    SnapDialogs.showInformation("The path for user adapters will be considered next time the application is opened.", "Don't show this dialog");
+                    //SnapDialogs.showInformation("The path for user adapters will be considered next time the application is opened.", "Don't show this dialog");
                 } catch (BackingStoreException e1) {
                     SnapDialogs.showError(e1.getMessage());
                 }
