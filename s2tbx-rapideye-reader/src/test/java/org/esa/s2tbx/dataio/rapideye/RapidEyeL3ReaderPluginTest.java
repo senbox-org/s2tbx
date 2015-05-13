@@ -4,14 +4,18 @@ import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductIOPlugInManager;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.util.io.BeamFileFilter;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 
 import static org.junit.Assert.*;
 
@@ -79,11 +83,11 @@ public class RapidEyeL3ReaderPluginTest {
 
     @Test
     public void testProductFileFilter() {
-        final BeamFileFilter beamFileFilter = plugIn.getProductFileFilter();
-        assertNotNull(beamFileFilter);
-        assertArrayEquals(plugIn.getDefaultFileExtensions(), beamFileFilter.getExtensions());
-        assertEquals(plugIn.getFormatNames()[0], beamFileFilter.getFormatName());
-        assertEquals(true, beamFileFilter.getDescription().contains(plugIn.getDescription(Locale.getDefault())));
+        final SnapFileFilter snapFileFilter = plugIn.getProductFileFilter();
+        assertNotNull(snapFileFilter);
+        assertArrayEquals(plugIn.getDefaultFileExtensions(), snapFileFilter.getExtensions());
+        assertEquals(plugIn.getFormatNames()[0], snapFileFilter.getFormatName());
+        assertEquals(true, snapFileFilter.getDescription().contains(plugIn.getDescription(Locale.getDefault())));
     }
 
 }

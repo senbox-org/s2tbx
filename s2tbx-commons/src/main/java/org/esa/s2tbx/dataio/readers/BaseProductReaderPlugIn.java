@@ -4,7 +4,6 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.util.io.BeamFileFilter;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,7 +74,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     public abstract String getDescription(Locale locale);
 
     @Override
-    public BeamFileFilter getProductFileFilter() {
+    public SnapFileFilter getProductFileFilter() {
         return new BaseProductFileFilter(this);
     }
 
@@ -178,7 +177,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     /**
      * Default implementation for a file filter using product naming rules.
      */
-    public class BaseProductFileFilter extends BeamFileFilter {
+    public class BaseProductFileFilter extends SnapFileFilter {
 
         private Map<File, Boolean> processed;
 
