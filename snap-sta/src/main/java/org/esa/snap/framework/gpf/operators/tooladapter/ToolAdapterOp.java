@@ -567,7 +567,7 @@ public class ToolAdapterOp extends Operator {
         @Override
         public void beginTask(String taskName, int totalWork) {
             this.progressHandle.setDisplayName(taskName);
-            this.progressHandle.start();
+            this.progressHandle.start(totalWork, 1);
         }
 
         @Override

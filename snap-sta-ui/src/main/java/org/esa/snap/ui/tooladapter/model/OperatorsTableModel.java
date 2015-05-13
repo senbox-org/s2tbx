@@ -91,4 +91,12 @@ public class OperatorsTableModel extends AbstractTableModel {
         }
         return result;
     }
+
+    public ToolAdapterOperatorDescriptor getObjectAt(int rowIndex) {
+        ToolAdapterOperatorDescriptor result = null;
+        if (rowIndex >= 0 && rowIndex <= this.data.size() - 1) {
+            result = this.data.get(rowIndex);
+        }
+        return result;
+    }
 }
