@@ -62,11 +62,16 @@ import java.util.stream.Collectors;
         "ToolTipEditOperator_Text=Edit the selected operator",
         "ToolTipExecuteOperator_Text=Execute the selected operator",
         "ToolTipDeleteOperator_Text=Delete the selected operator(s)",
-        "Icon_New=/org/esa/snap/resources/images/icons/New24.gif",
-        "Icon_Copy=/org/esa/snap/resources/images/icons/Copy24.gif",
-        "Icon_Edit=/org/esa/snap/resources/images/icons/Edit24.gif",
-        "Icon_Execute=/org/esa/snap/resources/images/icons/Update24.gif",
-        "Icon_Remove=/org/esa/snap/resources/images/icons/Remove16.gif",
+        /*"Icon_New=/org/esa/snap/resources/images/icons/New24.gif",*/
+        "Icon_New=/tango/22x22/actions/document-new.png",
+        /*"Icon_Copy=/org/esa/snap/resources/images/icons/Copy24.gif",*/
+        "Icon_Copy=/tango/22x22/actions/edit-copy.png",
+        /*"Icon_Edit=/org/esa/snap/resources/images/icons/Edit24.gif",*/
+        "Icon_Edit=/tango/22x22/actions/document-open.png",
+        /*"Icon_Execute=/org/esa/snap/resources/images/icons/Update24.gif",*/
+        "Icon_Execute=/tango/22x22/actions/go-jump.png",
+        /*"Icon_Remove=/org/esa/snap/resources/images/icons/Remove16.gif",*/
+        "Icon_Remove=/tango/22x22/actions/edit-delete.png",
         "MessageNoSelection_Text=Please select an adapter first"
 
 })
@@ -79,16 +84,6 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         super(appContext.getApplicationWindow(), title, ID_CLOSE, helpID);
         this.appContext = appContext;
 
-       /* //compute content and other buttons
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-        JPanel buttonsPanel = createButtonsPanel();
-        buttonsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(buttonsPanel);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(createPropertiesPanel());
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(new JScrollPane(createAdaptersPanel()));*/
         setContent(createContentPanel());
     }
 
@@ -158,12 +153,39 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         });
         panel.add(editButton);
 
+        AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Remove()), false);
+        delButton.setToolTipText(Bundle.ToolTipDeleteOperator_Text());
+        delButton.addActionListener(e -> {
+            java.util.List<ToolAdapterOperatorDescriptor> operatorDescriptors = ((OperatorsTableModel) operatorsTable.getModel()).getCheckedOperators();
+            if (operatorDescriptors != null && operatorDescriptors.size() > 0) {
+                if (SnapDialogs.Answer.YES == SnapDialogs.requestDecision("Confirm removal", "Are you sure you want to remove the selected adapter(s)?\nThe operation will delete also the associated folder and files", true, "Don't ask me in the future")) {
+                    operatorDescriptors.stream().filter(descriptor -> descriptor != null).forEach(descriptor -> {
+                        ToolAdapterActionRegistrar.removeOperatorMenu(descriptor);
+                        ToolAdapterIO.removeOperator(descriptor);
+                    });
+                    setContent(createContentPanel());
+                    getContent().repaint();
+                }
+            } else {
+                SnapDialogs.showWarning(Bundle.MessageNoSelection_Text());
+            }
+        });
+        panel.add(delButton);
+
+        panel.add(Box.createHorizontalStrut(22));
+
         AbstractButton runButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Execute()), false);
         runButton.setToolTipText(Bundle.ToolTipExecuteOperator_Text());
         runButton.addActionListener(e -> {
-            close();
-            ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
+            ToolAdapterOperatorDescriptor operatorDesc = null;
+            int[] selectedRows = operatorsTable.getSelectedRows();
+            if (selectedRows != null && selectedRows.length > 0) {
+                operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getObjectAt(selectedRows[0]);
+            } else {
+                operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
+            }
             if (operatorDesc != null) {
+                close();
                 final ToolAdapterExecutionDialog operatorDialog = new ToolAdapterExecutionDialog(
                         operatorDesc,
                         appContext,
@@ -175,19 +197,6 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
             }
         });
         panel.add(runButton);
-
-        AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Remove()), false);
-        delButton.setToolTipText(Bundle.ToolTipDeleteOperator_Text());
-        delButton.addActionListener(e -> {
-            if (SnapDialogs.Answer.YES == SnapDialogs.requestDecision("Confirm removal", "Are you sure you want to remove this adapter?\nThe operation will delete also its folder and files", true, "Don't ask me in the future")) {
-                ToolAdapterOperatorDescriptor descriptor = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-                ToolAdapterActionRegistrar.removeOperatorMenu(descriptor);
-                ToolAdapterIO.removeOperator(descriptor);
-                setContent(createContentPanel());
-                getContent().repaint();
-            }
-        });
-        panel.add(delButton);
 
         return panel;
     }
@@ -215,7 +224,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                     Preferences modulePrefs = NbPreferences.forModule(ToolAdapterIO.class);
                     modulePrefs.put("user.module.path", newPath);
                     modulePrefs.sync();
-                    SnapDialogs.showInformation("The path for user adapters will be considered next time the application is opened.", "Don't show this dialog");
+                    //SnapDialogs.showInformation("The path for user adapters will be considered next time the application is opened.", "Don't show this dialog");
                 } catch (BackingStoreException e1) {
                     SnapDialogs.showError(e1.getMessage());
                 }
