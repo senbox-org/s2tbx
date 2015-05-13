@@ -28,11 +28,9 @@ import com.bc.ceres.swing.binding.internal.TextFieldEditor;
 import org.esa.snap.framework.dataio.ProductIOPlugInManager;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.gpf.GPF;
+import org.esa.snap.framework.gpf.OperatorException;
 import org.esa.snap.framework.gpf.OperatorSpi;
-import org.esa.snap.framework.gpf.descriptor.AnnotationOperatorDescriptor;
-import org.esa.snap.framework.gpf.descriptor.SystemVariable;
-import org.esa.snap.framework.gpf.descriptor.TemplateParameterDescriptor;
-import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
+import org.esa.snap.framework.gpf.descriptor.*;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterConstants;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterIO;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOpSpi;
@@ -56,6 +54,9 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -95,7 +96,13 @@ import java.util.logging.Logger;
         "Icon_Add=/org/esa/snap/resources/images/icons/Add16.png",
         "CTL_Panel_OpParams_Border_TitleText=Operator Parameters",
         "CTL_Button_Export_Text=Export as module",
-        "MSG_Export_Complete_Text=The adapter was exported as a NetBeans module in %s"
+        "MSG_Export_Complete_Text=The adapter was exported as a NetBeans module in %s",
+        "MSG_Inexistent_Tool_Path_Text=The tool executable does not exist.\n" +
+                "Please specify the location of an existing executable.",
+        "MSG_Inexistent_WorkDir_Text=The working directory does not exist.\n" +
+                "Please specify a valid location.",
+        "MSG_Inexistem_Parameter_Value_Text=The file or folder for parameter %s does not exist.\n" +
+                "Please specify a valid location or change the %s property of the parameter."
 })
 public class ToolAdapterEditorDialog extends ModalDialog {
 
@@ -185,6 +192,102 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         setContent(createMainPanel());
     }
 
+    @Override
+    protected boolean verifyUserInput() {
+        Path toolLocation = newOperatorDescriptor.getMainToolFileLocation().toPath();
+        if (!(Files.exists(toolLocation) && Files.isExecutable(toolLocation))) {
+            SnapDialogs.showWarning(Bundle.MSG_Inexistent_Tool_Path_Text());
+            return false;
+        }
+        File workingDir = newOperatorDescriptor.getWorkingDir();
+        if (!(workingDir != null && workingDir.exists() && workingDir.isDirectory())) {
+            SnapDialogs.showWarning(Bundle.MSG_Inexistent_WorkDir_Text());
+            return false;
+        }
+        ParameterDescriptor[] parameterDescriptors = newOperatorDescriptor.getParameterDescriptors();
+        if (parameterDescriptors != null && parameterDescriptors.length > 0) {
+            for (ParameterDescriptor parameterDescriptor : parameterDescriptors) {
+                Class<?> dataType = parameterDescriptor.getDataType();
+                String defaultValue = parameterDescriptor.getDefaultValue();
+                if (File.class.isAssignableFrom(dataType) &&
+                        (parameterDescriptor.isNotNull() || parameterDescriptor.isNotEmpty()) &&
+                        (defaultValue == null || defaultValue.isEmpty() || !Files.exists(Paths.get(defaultValue)))) {
+                    SnapDialogs.showWarning(String.format(Bundle.MSG_Inexistem_Parameter_Value_Text(),
+                            parameterDescriptor.getName(), parameterDescriptor.isNotNull() ? "NotNull" : "NotEmpty"));
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    protected void onOK() {
+        if (!verifyUserInput()) {
+
+            this.getJDialog().requestFocus();
+        } else {
+            super.onOK();
+            if (!this.operatorIsNew) {
+                ToolAdapterActionRegistrar.removeOperatorMenu(oldOperatorDescriptor);
+                ToolAdapterIO.removeOperator(oldOperatorDescriptor);
+            }
+            String oldOperatorName = oldOperatorDescriptor.getName();
+            if (oldOperatorDescriptor.isSystem() && oldOperatorName.equals(newOperatorDescriptor.getName())) {
+                newOperatorDescriptor.setName(newOperatorDescriptor.getName() + ".custom");
+                newOperatorDescriptor.setAlias(newOperatorDescriptor.getAlias() + "-custom");
+            }
+            newOperatorDescriptor.setSystem(false);
+            newOperatorDescriptor.setTemplateFileLocation(newOperatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
+            java.util.List<TemplateParameterDescriptor> toolParameterDescriptors = newOperatorDescriptor.getToolParameterDescriptors();
+            toolParameterDescriptors.stream().filter(param -> paramsTable.getBindingContext().getBinding(param.getName()) != null)
+                    .filter(param -> paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue() != null)
+                    .forEach(param -> param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName())
+                            .getPropertyValue().toString()));
+            try {
+                String menuLocation = newOperatorDescriptor.getMenuLocation();
+                if (menuLocation != null && !menuLocation.startsWith("Menu/")) {
+                    newOperatorDescriptor.setMenuLocation("Menu/" + menuLocation);
+                }
+                String templateContent = this.templateContent.getText();
+                int idx = templateContent.lastIndexOf(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + "[");
+                if (idx > 0) {
+                    String value = templateContent.substring(idx + (ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + "[").length(), templateContent.indexOf("]", idx));
+                    int maxNum = Integer.valueOf(value) + 1;
+                    newOperatorDescriptor.setSourceProductCount(maxNum);
+                } else {
+                    idx = templateContent.lastIndexOf(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE + "[");
+                    if (idx > 0) {
+                        String value = templateContent.substring(idx + (ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE + "[").length(), templateContent.indexOf("]", idx));
+                        int maxNum = Integer.valueOf(value) + 1;
+                        newOperatorDescriptor.setSourceProductCount(maxNum);
+                    }
+                }
+                ToolAdapterIO.saveAndRegisterOperator(newOperatorDescriptor, templateContent);
+                ToolAdapterActionRegistrar.registerOperatorMenu(newOperatorDescriptor);
+            } catch (Exception e) {
+                logger.warning(e.getMessage());
+                SnapDialogs.showError(e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    protected void onOther() {
+        try {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (fileChooser.showOpenDialog(getButton(ID_OTHER)) == JFileChooser.APPROVE_OPTION) {
+                File targetFolder = fileChooser.getSelectedFile();
+                JarPackager.packAdapterJar(newOperatorDescriptor, new File(targetFolder, newOperatorDescriptor.getAlias() + ".jar"), ExecuteToolAdapterAction.class);
+                SnapDialogs.showInformation(String.format(Bundle.MSG_Export_Complete_Text(), targetFolder.getAbsolutePath()), null);
+            }
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+            SnapDialogs.showError(e.getMessage());
+        }
+    }
+
     private JPanel createMainPanel() {
         JPanel toolDescriptorPanel = new JPanel();
         toolDescriptorPanel.setLayout(new BorderLayout());
@@ -195,31 +298,6 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         toolDescriptorPanel.add(createParametersPanel(), BorderLayout.PAGE_END);
 
         return toolDescriptorPanel;
-    }
-
-    private void addTextField(JPanel parent, TextFieldEditor textEditor, String labelText, String propertyName, int row, boolean isRequired) {
-        parent.add(new JLabel(labelText), getConstraints(row, 0));
-        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(propertyName);
-        if (isRequired) {
-            propertyDescriptor.setValidator(new NotEmptyValidator());
-        }
-        JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
-        parent.add(editorComponent, getConstraints(row, 1));
-    }
-
-    private void addComboField(JPanel parent, TextFieldEditor textEditor, String labelText, String propertyName, java.util.List<String> values, boolean sortValues, int row, boolean isRequired) {
-        parent.add(new JLabel(labelText), getConstraints(row, 0));
-        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(propertyName);
-        if (isRequired) {
-            propertyDescriptor.setValidator(new NotEmptyValidator());
-        }
-        if (sortValues) {
-            values.sort(Comparator.<String>naturalOrder());
-        }
-        propertyDescriptor.setValueSet(new ValueSet(values.toArray()));
-        PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
-        JComponent editorComp = editor.createEditorComponent(propertyDescriptor, bindingContext);
-        parent.add(editorComp, getConstraints(row, 1));
     }
 
     private JPanel createOperatorDescriptorPanel() {
@@ -331,7 +409,7 @@ public class ToolAdapterEditorDialog extends ModalDialog {
             } else {
                 templateContent.setText(ToolAdapterIO.readOperatorTemplate(newOperatorDescriptor.getName()));
             }
-        } catch (IOException e) {
+        } catch (IOException | OperatorException e) {
             logger.warning(e.getMessage());
         }
         templateContent.setInputVerifier(new RequiredFieldValidator(MESSAGE_REQUIRED));
@@ -357,20 +435,6 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         addTextField(patternsPanel, textEditor, Bundle.CTL_Label_ErrorPattern(), "errorPattern", 1, false);
 
         return patternsPanel;
-    }
-
-    private JComponent createCheckboxComponent(String memberName, JComponent toogleComponentEnabled, Boolean value) {
-        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(memberName);
-        PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
-        JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
-
-        if (editorComponent instanceof JCheckBox && toogleComponentEnabled != null) {
-            ((JCheckBox) editorComponent).setSelected(value);
-            toogleComponentEnabled.setEnabled(value);
-            ((JCheckBox) editorComponent).addActionListener(e -> toogleComponentEnabled.setEnabled(((JCheckBox) editorComponent).isSelected()));
-        }
-
-        return editorComponent;
     }
 
     private JPanel createDescriptorAndVariablesAndPreprocessingPanel() {
@@ -416,25 +480,6 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         return descriptorAndVariablesPanel;
     }
 
-    private void getAvailableMenuOptions(FileObject current, java.util.List<String> resultList) {
-        if (resultList == null) {
-            resultList = new ArrayList<>();
-        }
-        if (current == null) {
-            current = FileUtil.getConfigRoot().getFileObject("Menu");
-        }
-        FileObject[] children = current.getChildren();
-        for (FileObject child : children) {
-            String entry = child.getPath();
-            if (!(entry.endsWith(".instance") ||
-                    entry.endsWith(".shadow") ||
-                    entry.endsWith(".xml"))) {
-                resultList.add(entry);
-                getAvailableMenuOptions(child, resultList);
-            }
-        }
-    }
-
     private JPanel createParametersPanel() {
         JPanel paramsPanel = new JPanel();
         BoxLayout layout = new BoxLayout(paramsPanel, BoxLayout.PAGE_AXIS);
@@ -453,65 +498,61 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         return paramsPanel;
     }
 
-    @Override
-    protected void onOK() {
-        super.onOK();
-        if(!this.operatorIsNew) {
-            ToolAdapterActionRegistrar.removeOperatorMenu(oldOperatorDescriptor);
-            ToolAdapterIO.removeOperator(oldOperatorDescriptor);
+    private JComponent createCheckboxComponent(String memberName, JComponent toogleComponentEnabled, Boolean value) {
+        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(memberName);
+        PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
+        JComponent editorComponent = editor.createEditorComponent(propertyDescriptor, bindingContext);
+
+        if (editorComponent instanceof JCheckBox && toogleComponentEnabled != null) {
+            ((JCheckBox) editorComponent).setSelected(value);
+            toogleComponentEnabled.setEnabled(value);
+            ((JCheckBox) editorComponent).addActionListener(e -> toogleComponentEnabled.setEnabled(((JCheckBox) editorComponent).isSelected()));
         }
-        String oldOperatorName = oldOperatorDescriptor.getName();
-        if (oldOperatorDescriptor.isSystem() && oldOperatorName.equals(newOperatorDescriptor.getName())) {
-            newOperatorDescriptor.setName(newOperatorDescriptor.getName() + ".custom");
-            newOperatorDescriptor.setAlias(newOperatorDescriptor.getAlias() + "-custom");
-        }
-        newOperatorDescriptor.setSystem(false);
-        newOperatorDescriptor.setTemplateFileLocation(newOperatorDescriptor.getAlias() + ToolAdapterConstants.TOOL_VELO_TEMPLATE_SUFIX);
-        java.util.List<TemplateParameterDescriptor> toolParameterDescriptors = newOperatorDescriptor.getToolParameterDescriptors();
-        toolParameterDescriptors.stream().filter(param -> paramsTable.getBindingContext().getBinding(param.getName()) != null)
-                                         .filter(param -> paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue() != null)
-                                         .forEach(param -> param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName())
-                                                 .getPropertyValue().toString()));
-        try {
-            String menuLocation = newOperatorDescriptor.getMenuLocation();
-            if (menuLocation != null && !menuLocation.startsWith("Menu/")) {
-                newOperatorDescriptor.setMenuLocation("Menu/" + menuLocation);
-            }
-            String templateContent = this.templateContent.getText();
-            int idx = templateContent.lastIndexOf(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + "[");
-            if (idx > 0) {
-                String value = templateContent.substring(idx + (ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID + "[").length(), templateContent.indexOf("]", idx));
-                int maxNum = Integer.valueOf(value) + 1;
-                newOperatorDescriptor.setSourceProductCount(maxNum);
-            } else {
-                idx = templateContent.lastIndexOf(ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE + "[");
-                if (idx > 0) {
-                    String value = templateContent.substring(idx + (ToolAdapterConstants.TOOL_SOURCE_PRODUCT_FILE + "[").length(), templateContent.indexOf("]", idx));
-                    int maxNum = Integer.valueOf(value) + 1;
-                    newOperatorDescriptor.setSourceProductCount(maxNum);
-                }
-            }
-            ToolAdapterIO.saveAndRegisterOperator(newOperatorDescriptor, templateContent);
-			ToolAdapterActionRegistrar.registerOperatorMenu(newOperatorDescriptor);
-        } catch (Exception e) {
-            logger.warning(e.getMessage());
-            SnapDialogs.showError(e.getMessage());
-        }
+
+        return editorComponent;
     }
 
-    @Override
-    protected void onOther() {
-        try {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (fileChooser.showOpenDialog(getButton(ID_OTHER)) == JFileChooser.APPROVE_OPTION) {
-                File targetFolder = fileChooser.getSelectedFile();
-                JarPackager.packAdapterJar(newOperatorDescriptor, new File(targetFolder, newOperatorDescriptor.getAlias() + ".jar"), ExecuteToolAdapterAction.class);
-                SnapDialogs.showInformation(String.format(Bundle.MSG_Export_Complete_Text(), targetFolder.getAbsolutePath()), null);
+    private void addTextField(JPanel parent, TextFieldEditor textEditor, String labelText, String propertyName, int row, boolean isRequired) {
+        parent.add(new JLabel(labelText), getConstraints(row, 0));
+        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(propertyName);
+        if (isRequired) {
+            propertyDescriptor.setValidator(new NotEmptyValidator());
+        }
+        JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+        parent.add(editorComponent, getConstraints(row, 1));
+    }
+
+    private void addComboField(JPanel parent, TextFieldEditor textEditor, String labelText, String propertyName, java.util.List<String> values, boolean sortValues, int row, boolean isRequired) {
+        parent.add(new JLabel(labelText), getConstraints(row, 0));
+        PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(propertyName);
+        if (isRequired) {
+            propertyDescriptor.setValidator(new NotEmptyValidator());
+        }
+        if (sortValues) {
+            values.sort(Comparator.<String>naturalOrder());
+        }
+        propertyDescriptor.setValueSet(new ValueSet(values.toArray()));
+        PropertyEditor editor = PropertyEditorRegistry.getInstance().findPropertyEditor(propertyDescriptor);
+        JComponent editorComp = editor.createEditorComponent(propertyDescriptor, bindingContext);
+        parent.add(editorComp, getConstraints(row, 1));
+    }
+
+    private void getAvailableMenuOptions(FileObject current, java.util.List<String> resultList) {
+        if (resultList == null) {
+            resultList = new ArrayList<>();
+        }
+        if (current == null) {
+            current = FileUtil.getConfigRoot().getFileObject("Menu");
+        }
+        FileObject[] children = current.getChildren();
+        for (FileObject child : children) {
+            String entry = child.getPath();
+            if (!(entry.endsWith(".instance") ||
+                    entry.endsWith(".shadow") ||
+                    entry.endsWith(".xml"))) {
+                resultList.add(entry);
+                getAvailableMenuOptions(child, resultList);
             }
-        } catch (IOException e) {
-            logger.warning(e.getMessage());
-            SnapDialogs.showError(e.getMessage());
         }
     }
 
