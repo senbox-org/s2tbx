@@ -307,14 +307,14 @@
         <profile>
             <id>withSnapDesktopSources</id>
             <modules>
-                <module>../snap-desktop-fork</module>
+                <module>../snap-desktop</module>
             </modules>
         </profile>
         <profile>
             <id>all</id>
             <modules>
                 <module>../snap-engine</module>
-                <module>../snap-desktop-fork</module>
+                <module>../snap-desktop</module>
             </modules>
         </profile>
         <profile>
@@ -333,39 +333,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <profile>
-            <id>instrumented</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.jcabi</groupId>
-                    <artifactId>jcabi-aspects</artifactId>
-                    <version>0.20.4</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.aspectj</groupId>
-                    <artifactId>aspectjrt</artifactId>
-                    <version>1.6.12</version>
-                    <scope>runtime</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>monitored</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.github.jbellis</groupId>
-                    <artifactId>jamm</artifactId>
-                    <version>0.3.0</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>io.dropwizard.metrics</groupId>
-                    <artifactId>metrics-core</artifactId>
-                    <version>3.1.0</version>
-                </dependency>
-            </dependencies>
         </profile>
         <profile>
             <id>netbeans-deps</id>
