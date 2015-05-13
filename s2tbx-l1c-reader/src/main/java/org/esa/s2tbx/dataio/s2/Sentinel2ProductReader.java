@@ -339,35 +339,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
         }
 
-        // todo critical create mask here using informations from polygons...
-        // CRITICAL todo add mask
-
-        Mask newMask = new Mask("A-custom-geometry",product.getBand("B2").getRasterWidth(),product.getBand("B2").getRasterHeight(), Mask.VectorDataType.INSTANCE );
-
-        final SimpleFeatureType type = Placemark.createGeometryFeatureType();
-
-        final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
-        for(int index = 0; index < polygons.size(); index++)
-        {
-            Object[] data1 = {polygons.get(index), String.format("Polygon-%s", index)};
-            SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
-            collection.add(f1);
-        }
-
-        VectorDataNode vdn = new VectorDataNode("polygons", collection);
-        Mask.VectorDataType.setVectorData(newMask, vdn);
-
-        // Mask.VectorDataType.INSTANCE.createImage(newMask);
-
-        product.addMask(newMask);
-        product.getVectorDataGroup().add(vdn);
-
-        /*
-        pyramids = new VectorDataNode("pyramids", Placemark.createGeometryFeatureType());
-        product.getVectorDataGroup().add(pyramids);
-
-        image = new VectorDataMultiLevelImage(VectorDataMultiLevelImage.createMaskMultiLevelSource(pyramids), pyramids);
-        */
+        // CRITICAL todo add mask code when ready here
 
         return product;
     }
