@@ -52,6 +52,7 @@ import org.jdom.JDOMException;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.openjpeg.StackTraceUtils;
 import org.xml.sax.SAXException;
 
 import javax.media.jai.BorderExtender;
@@ -486,9 +487,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                         }
 
                     } catch (Exception e) {
-                        // todo CRITICAL Fix this
                         // {@report "Solar info problem"}
-                        e.printStackTrace();
+                        logger.severe(StackTraceUtils.getStackTrace(e));
                     }
                 }
             }

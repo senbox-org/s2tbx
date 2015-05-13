@@ -1,6 +1,9 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
 AutoUpdate-Essential-Module: true
+OpenIDE-Module: lib.commons
+OpenIDE-Module-Specification-Version: 2.0.0
+OpenIDE-Module-Implementation-Version: 201501011020
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Layer: org/esa/snap/ui/layer.xml
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox

@@ -1,6 +1,9 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
 AutoUpdate-Essential-Module: true
+OpenIDE-Module: org.esa.s2tbx.dataio.s2.2a
+OpenIDE-Module-Specification-Version: 2.0.0
+OpenIDE-Module-Implementation-Version: 201501011020
 OpenIDE-Module-Layer: org/esa/s2tbx/dataio/s2/l2a/layer.xml
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox

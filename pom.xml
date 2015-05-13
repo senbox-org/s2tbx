@@ -21,7 +21,7 @@
         <module>s2tbx-python-lib</module>
         <module>s2tbx-bootstrap</module>
         <module>s2tbx-app</module>
-        <module>s2tbx-kit</module>
+        <!--<module>s2tbx-kit</module>-->
         <module>s2tbx-help</module>
         <module>s2tbx-sen2cor-processor</module>
         <module>s2tbx-sen2three-processor</module>
@@ -307,14 +307,14 @@
         <profile>
             <id>withSnapDesktopSources</id>
             <modules>
-                <module>../snap-desktop</module>
+                <module>../snap-desktop-fork</module>
             </modules>
         </profile>
         <profile>
             <id>all</id>
             <modules>
                 <module>../snap-engine</module>
-                <module>../snap-desktop</module>
+                <module>../snap-desktop-fork</module>
             </modules>
         </profile>
         <profile>
