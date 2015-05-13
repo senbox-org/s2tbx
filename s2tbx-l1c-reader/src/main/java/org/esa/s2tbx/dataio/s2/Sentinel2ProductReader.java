@@ -26,8 +26,6 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -38,14 +36,12 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.datamodel.*;
-import org.esa.snap.framework.dataop.barithm.BandArithmetic;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.Envelope2D;
 import org.jdom.JDOMException;
@@ -53,18 +49,11 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.openjpeg.StackTraceUtils;
-import org.xml.sax.SAXException;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
@@ -72,13 +61,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -339,11 +323,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
         }
 
-        // todo critical create mask here using informations from polygons...
-        // CRITICAL todo add mask
-
-        Mask newMask = new Mask("A-custom-geometry",product.getBand("B2").getRasterWidth(),product.getBand("B2").getRasterHeight(), Mask.VectorDataType.INSTANCE );
-
+        // todo Mask should be a multi-size item
+        Mask newMask = new Mask("A-custom-geometry",product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
         final SimpleFeatureType type = Placemark.createGeometryFeatureType();
 
         final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
@@ -361,13 +342,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         product.addMask(newMask);
         product.getVectorDataGroup().add(vdn);
-
-        /*
-        pyramids = new VectorDataNode("pyramids", Placemark.createGeometryFeatureType());
-        product.getVectorDataGroup().add(pyramids);
-
-        image = new VectorDataMultiLevelImage(VectorDataMultiLevelImage.createMaskMultiLevelSource(pyramids), pyramids);
-        */
 
         return product;
     }
