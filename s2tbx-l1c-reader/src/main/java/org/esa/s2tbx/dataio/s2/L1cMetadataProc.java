@@ -26,6 +26,7 @@ import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -43,12 +44,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by opicas-p on 24/06/2014.
@@ -312,7 +308,15 @@ public class L1cMetadataProc {
 
     public static L1cMetadata.AnglesGrid[] getAnglesGrid(Level1C_Tile product) {
         A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
-        List<AN_INCIDENCE_ANGLE_GRID> incilist = ang.getViewing_Incidence_Angles_Grids();
+        List<AN_INCIDENCE_ANGLE_GRID> filteredListe = ang.getViewing_Incidence_Angles_Grids();
+
+        Map<Pair<String, String>, AN_INCIDENCE_ANGLE_GRID > theMap = new LinkedHashMap<>();
+        for (int index = 0; index < filteredListe.size(); index++) {
+            AN_INCIDENCE_ANGLE_GRID aGrid = filteredListe.get(index);
+            theMap.put(new Pair<String, String>(aGrid.getBandId(), aGrid.getDetectorId()), aGrid);
+        }
+
+        List<AN_INCIDENCE_ANGLE_GRID> incilist = new ArrayList<>(theMap.values());
 
         L1cMetadata.AnglesGrid[] darr = new L1cMetadata.AnglesGrid[incilist.size()];
         for (int index = 0; index < incilist.size(); index++) {

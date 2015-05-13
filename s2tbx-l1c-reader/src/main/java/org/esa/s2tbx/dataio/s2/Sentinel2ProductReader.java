@@ -52,6 +52,7 @@ import org.jdom.JDOMException;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.openjpeg.StackTraceUtils;
 import org.xml.sax.SAXException;
 
 import javax.media.jai.BorderExtender;
@@ -344,12 +345,16 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         Mask newMask = new Mask("A-custom-geometry",product.getBand("B2").getRasterWidth(),product.getBand("B2").getRasterHeight(), Mask.VectorDataType.INSTANCE );
 
         final SimpleFeatureType type = Placemark.createGeometryFeatureType();
-        Object[] data1 = {polygons.get(0), "Polygon1"};
-        SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl("F1"), true);
-        final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
-        collection.add(f1);
 
-        VectorDataNode vdn = new VectorDataNode("magic", collection);
+        final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
+        for(int index = 0; index < polygons.size(); index++)
+        {
+            Object[] data1 = {polygons.get(index), String.format("Polygon-%s", index)};
+            SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+            collection.add(f1);
+        }
+
+        VectorDataNode vdn = new VectorDataNode("polygons", collection);
         Mask.VectorDataType.setVectorData(newMask, vdn);
 
         // Mask.VectorDataType.INSTANCE.createImage(newMask);
@@ -482,9 +487,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                         }
 
                     } catch (Exception e) {
-                        // todo CRITICAL Fix this
                         // {@report "Solar info problem"}
-                        e.printStackTrace();
+                        logger.severe(StackTraceUtils.getStackTrace(e));
                     }
                 }
             }

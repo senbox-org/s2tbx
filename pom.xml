@@ -21,7 +21,7 @@
         <module>s2tbx-python-lib</module>
         <module>s2tbx-bootstrap</module>
         <module>s2tbx-app</module>
-        <module>s2tbx-kit</module>
+        <!--<module>s2tbx-kit</module>-->
         <module>s2tbx-help</module>
         <module>s2tbx-sen2cor-processor</module>
         <module>s2tbx-sen2three-processor</module>
@@ -37,7 +37,7 @@
 
     <properties>
         <snap.version>2.0.0-SNAPSHOT</snap.version>
-    	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <outputdir>../../output</outputdir>
         <netbeans.version>RELEASE802</netbeans.version>
@@ -122,41 +122,6 @@
                 <artifactId>snap-desktop</artifactId>
                 <version>${snap.version}</version>
             </dependency>
-            <!--<dependency>
-                <groupId>org.esa.snap</groupId>
-                <artifactId>snap-core</artifactId>
-                <version>${snap.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.esa.snap</groupId>
-                <artifactId>snap-ui</artifactId>
-                <version>${snap.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.esa.snap</groupId>
-                <artifactId>snap-gpf</artifactId>
-                <version>${snap.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.esa.snap</groupId>
-                <artifactId>snap-gpf-ui</artifactId>
-                <version>${snap.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.esa.snap</groupId>
-                <artifactId>snap-visat-rcp</artifactId>
-                <version>${snap.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.esa.snap</groupId>
-                <artifactId>snap-netcdf</artifactId>
-                <version>${snap.version}</version>
-            </dependency>-->
 
             <dependency>
                 <groupId>net.java.dev.jna</groupId>
@@ -173,21 +138,27 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.11</version>
-                <!-- <scope>test</scope> -->
+                <version>4.12</version>
+                <scope>test</scope>
             </dependency>
 
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-    </dependencies>
-
     <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <debug>true</debug>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -199,6 +170,12 @@
                         <nbmBuildDir>${project.basedir}/../target/nbm</nbmBuildDir>
                         <licenseName>THE BEER-WARE LICENSE</licenseName>
                         <licenseFile>../LICENSE.html</licenseFile>
+                        <brandingToken>${brandingToken}</brandingToken>
+                        <useOSGiDependencies>false</useOSGiDependencies>
+                        <requiresRestart>true</requiresRestart>
+                        <!--<keystore>${project.basedir}/../keystore/s3tbx.ks</keystore>-->
+                        <!--<keystorealias>snap</keystorealias>-->
+                        <!--<keystorepassword>snap-123</keystorepassword>-->
                     </configuration>
                 </plugin>
                 <plugin>
@@ -210,18 +187,9 @@
                         <useDefaultManifestFile>true</useDefaultManifestFile>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.1</version>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                        <debug>true</debug>
-                        <encoding>UTF-8</encoding>
-                    </configuration>
-                </plugin>
             </plugins>
         </pluginManagement>
+
     </build>
 
     <developers>
@@ -339,14 +307,14 @@
         <profile>
             <id>withSnapDesktopSources</id>
             <modules>
-                <module>../snap-desktop</module>
+                <module>../snap-desktop-fork</module>
             </modules>
         </profile>
         <profile>
             <id>all</id>
             <modules>
                 <module>../snap-engine</module>
-                <module>../snap-desktop</module>
+                <module>../snap-desktop-fork</module>
             </modules>
         </profile>
         <profile>
@@ -479,7 +447,8 @@
                                             <message>The modules directory cannot be empty</message>
                                             <regex>.*</regex>
                                             <regexMessage>The modules directory cannot be empty. (add -Ddir=/your/path/to/modules/dir to you
-                                                r MAVEN_OPTS)</regexMessage>
+                                                r MAVEN_OPTS)
+                                            </regexMessage>
                                         </requireProperty>
                                     </rules>
                                     <fail>true</fail>
