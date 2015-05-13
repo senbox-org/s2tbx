@@ -324,6 +324,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             try {
                 polygons.addAll(gmlFilter.parse(aFile));
             } catch (Exception e) {
+                // todo critical remove stacktrace
                 e.printStackTrace();
             }
         }
@@ -612,8 +613,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         public L1cTileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
-                                             L1C_TILE_LAYOUTS[0].width, //todo we must use data from jp2 files to update this
-                                             L1C_TILE_LAYOUTS[0].height)); //todo we must use data from jp2 files to update this
+                                             L1C_TILE_LAYOUTS[0].width, // todo we must use data from jp2 files to update this
+                                             L1C_TILE_LAYOUTS[0].height)); // todo we must use data from jp2 files to update this
             this.bandInfo = bandInfo;
         }
 

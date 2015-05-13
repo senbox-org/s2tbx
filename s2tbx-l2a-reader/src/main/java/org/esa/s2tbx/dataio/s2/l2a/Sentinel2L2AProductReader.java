@@ -44,6 +44,7 @@ import org.geotools.geometry.Envelope2D;
 import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.openjpeg.StackTraceUtils;
 
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
@@ -101,6 +102,8 @@ import static org.esa.s2tbx.dataio.s2.l2a.S2L2AConfig.*;
  */
 public class Sentinel2L2AProductReader extends AbstractProductReader {
 
+    private final boolean forceResize;
+
     private File cacheDir;
     protected final Logger logger;
 
@@ -123,9 +126,10 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
     }
 
 
-    Sentinel2L2AProductReader(Sentinel2L2AProductReaderPlugIn readerPlugIn) {
+    Sentinel2L2AProductReader(Sentinel2L2AProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
+        this.forceResize = forceResize;
     }
 
     @Override
@@ -313,7 +317,9 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         product.setFileLocation(metadataFile.getParentFile());
 
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
-        setGeoCoding(product, sceneDescription.getSceneEnvelope());
+        if(forceResize) {
+            setGeoCoding(product, sceneDescription.getSceneEnvelope());
+        }
 
         //todo look at affine tranformation geocoding info...
         if(!bandInfoMap.isEmpty())
@@ -351,6 +357,11 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
             Band band = addBand(product, bandInfo);
             band.setSourceImage(mlif.createSourceImage(bandInfo));
+        }
+
+        if(!forceResize)
+        {
+            // todo critical, set geocoding per band
         }
     }
 
@@ -406,11 +417,30 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                 sunZeniths[index] = sunAnglesGrid.zenith[y][x];
                 sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
                 for (L2aMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
-                    if (!Float.isNaN(grid.zenith[y][x])) {
-                        viewingZeniths[index] = grid.zenith[y][x];
-                    }
-                    if (!Float.isNaN(grid.azimuth[y][x])) {
-                        viewingAzimuths[index] = grid.azimuth[y][x];
+                    try {
+                        if( y < grid.zenith.length)
+                        {
+                            if( x < grid.zenith[y].length)
+                            {
+                                if (!Float.isNaN(grid.zenith[y][x])) {
+                                    viewingZeniths[index] = grid.zenith[y][x];
+                                }
+                            }
+                        }
+
+                        if( y < grid.azimuth.length)
+                        {
+                            if( x < grid.azimuth[y].length)
+                            {
+                                if (!Float.isNaN(grid.azimuth[y][x])) {
+                                    viewingAzimuths[index] = grid.azimuth[y][x];
+                                }
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        // {@report "Solar info problem"}
+                        logger.severe(StackTraceUtils.getStackTrace(e));
                     }
                 }
             }
@@ -676,7 +706,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             if (this.bandInfo.wavebandInfo.resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = L2aTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level);
+                PlanarImage scaled = L2aTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level, forceResize);
 
                 logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 

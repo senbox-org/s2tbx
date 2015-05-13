@@ -114,6 +114,7 @@ import static org.esa.s2tbx.dataio.s2.l1b.S2L1bConfig.*;
  */
 public class Sentinel2L1BProductReader extends AbstractProductReader {
 
+    private final boolean forceResize;
     private File cacheDir;
     protected final Logger logger;
     // private MemoryMeter meter;
@@ -139,9 +140,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     }
 
 
-    Sentinel2L1BProductReader(Sentinel2L1BProductReaderPlugIn readerPlugIn) {
+    Sentinel2L1BProductReader(Sentinel2L1BProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
+        this.forceResize = forceResize;
         // meter = new MemoryMeter();
     }
 
@@ -374,12 +376,13 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
 
 
-        // critical wait until geocoding is fixed
+        // todo critical wait until geocoding is fixed
         /*
+        if(forceResize){
         if (product.getGeoCoding() == null) {
             // use default geocoding
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
-        }
+        }}
         */
 
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
@@ -491,6 +494,11 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             TileBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
             Band band = addBand(product, tileBandInfo);
             band.setSourceImage(mlif.createSourceImage(tileBandInfo));
+        }
+        
+        if(!forceResize)
+        {
+            // todo CRITICAL add geocoding per band
         }
     }
 
@@ -672,8 +680,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         public L1bTileMultiLevelSource(TileBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(tileBandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
-                                             L1B_TILE_LAYOUTS[0].width, //fixme we must use data from jp2 files to update this
-                                             L1B_TILE_LAYOUTS[0].height)); //fixme we must use data from jp2 files to update this
+                                             L1B_TILE_LAYOUTS[0].width, // todo we must use data from jp2 files to update this
+                                             L1B_TILE_LAYOUTS[0].height)); // todo we must use data from jp2 files to update this
             this.tileBandInfo = tileBandInfo;
         }
 
@@ -819,7 +827,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             }
 
             if (this.tileBandInfo.wavebandInfo.resolution != S2L1bSpatialResolution.R10M) {
-                PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.wavebandInfo.resolution, level);
+                PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.wavebandInfo.resolution, level, forceResize);
 
                 logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 
