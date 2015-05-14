@@ -134,6 +134,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             this.imageLayout = imageLayout;
         }
 
+        public S2L1bWavebandInfo getWavebandInfo() {
+            return wavebandInfo;
+        }
+
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
@@ -503,7 +507,11 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     }
 
     private Band addBand(Product product, TileBandInfo tileBandInfo) {
-        final Band band = product.addBand(tileBandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE);
+        int index = S2L1bSpatialResolution.valueOfId(tileBandInfo.getWavebandInfo().resolution.id).resolution / S2L1bSpatialResolution.R10M.resolution;
+        int defRes = S2L1bSpatialResolution.R10M.resolution;
+
+        final Band band = new Band(tileBandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
+        product.addBand(band);
 
         band.setSpectralBandIndex(tileBandInfo.bandIndex);
         band.setSpectralWavelength((float) tileBandInfo.wavebandInfo.wavelength);
