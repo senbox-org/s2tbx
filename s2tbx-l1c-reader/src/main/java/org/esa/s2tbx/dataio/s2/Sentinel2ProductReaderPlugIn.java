@@ -23,7 +23,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.util.io.BeamFileFilter;
+import org.esa.snap.util.io.SnapFileFilter;
 import org.esa.snap.util.logging.BeamLogManager;
 
 import java.io.File;
@@ -77,8 +77,8 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
     }
 
     @Override
-    public BeamFileFilter getProductFileFilter() {
-        return new BeamFileFilter(S2Config.FORMAT_NAME,
+    public SnapFileFilter getProductFileFilter() {
+        return new SnapFileFilter(S2Config.FORMAT_NAME,
                                   getDefaultFileExtensions(),
                                   "Sentinel-2 MSI L1C product or tile");
     }
