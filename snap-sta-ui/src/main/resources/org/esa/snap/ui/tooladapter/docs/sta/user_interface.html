@@ -34,11 +34,67 @@
 </table>
 
 <h3>The user interface</h3>
+<p>The interface consists in 3 screens which allow the following operations: create new adapter, edit, duplicate and
+    delete an existing adapter, executing an adapter.</p>
 
 <h4>Managing the existing adapters</h4>
-
+<p>This form, having the title <i>'External tools'</i>, lists all the currently defined adapters, with a toolbar which contains
+    the buttons: new adapter, duplicate adapter, edit adapter, execute adapter, delete adapter. Under the toolbar,
+    there is a table containing the adapters where the user can check the adapter to apply the action form the toolbar.
+    If multiple adapters are checked, the action is applied to the first checked one.</p>
+<p>This form can be invoked by using the menu <i>Tools->Manage external tools</i> of the SNAP application.</p>
+<img src="../images/ManageAdapters.JPG"/>
 <h4>Creating a new adapter or modifying an existing one</h4>
-
+<p>The form for creating a new adapter is reused for editing an existing adapter and for duplicating an adapter.</p>
+<img src="../images/EditAdapter.JPG"/>
+<p>The form is structured into multiple areas:</p>
+<ul>
+    <li>descriptor details</li>
+    <li>system variables</li>
+    <li>pre-processing</li>
+    <li>configuration</li>
+    <li>tool output patterns</li>
+    <li>parameters</li>
+</ul>
+<p>For details about the operator structure and what is the use of each member, see <a href="user_interface.html">here</a>.</p>
+<h5><b>Descriptor details</b> consists in folowing fields:</h5>
+<ul>
+    <li>Alias: a short name for the adapter to distinguish from the rest of the adapters, this alias will be used to
+        name the folder on disk where the operator resides, so special characters should not be used (for example,
+        on windows, the folowing characters are not allowed when defining a folder name: <>:"/\|?*). This is a
+        required field.</li>
+    <li>Unique Name: this name is a name which registers the adapter in the toolbox. It must be unique. This is a
+        required field.</li>
+    <li>Label: is the user-friendly name. This field is not required.</li>
+    <li>Version:</li>
+    <li>Copyright:</li>
+    <li>Authors:</li>
+    <li>Description:</li>
+    <li>Menu Location: this represents the path to the menu where the tool shortcut will be placed. Usually,
+        this should be <i>Tool/External tools/ToolAlias</i></li>
+</ul>
+<h5><b>System variables</b> is a table containing the variables that must be set when the tools is executed. A new
+    variable can be added by using the <b>+</b> button and an existing one can be deleted by using the delete button
+    (<b>X</b>) in the left of the desired variable. The key and value of an variable can be edited by double-clicking
+    the corresponding cell.</h5>
+<h5><b>Pre-processing</b> area contains 2 field, each one with a checkbox and a combobox:</h5>
+<ul>
+    <li>Preprocessing tool: when this option is checked and an already defined tool is chosen in the combobox,
+        that tool is executed with the same input parameters values as the current tool, as the first step of the
+        execution of the current adapter.</li>
+    <li>Write before preprocessing: when this option is checked and a writer is selected in the combobox, the product
+        is written to disk as the second step of the execution of the current adapter. The path where the product is
+        saved is given as the value of the parameter <i>sourceProductFile</i></li>	
+</ul>
+<h5><b>Configuration parameters</b> includes:</h5>
+<ul>
+    <li>Tool location: location of the executable file corresponding to the tool.</li>
+    <li>Working directory: the place where the temporary files are saved</li>
+    <li>Command line template: the velocity template to be executed, including the command line arguments of the tool,
+        each one of them on a separate line.</li>
+</ul>
+<h5><b>Tool output patterns</b></h5>
+<h5><b>Operator parameters</b> - special area for template parameters (before/after)</h5>
 <h4>Executing an adapter from SNAP</h4>
 
 </body>
