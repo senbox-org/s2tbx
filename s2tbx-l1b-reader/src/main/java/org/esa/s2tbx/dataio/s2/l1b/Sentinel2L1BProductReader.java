@@ -510,6 +510,9 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         int index = S2L1bSpatialResolution.valueOfId(tileBandInfo.getWavebandInfo().resolution.id).resolution / S2L1bSpatialResolution.R10M.resolution;
         int defRes = S2L1bSpatialResolution.R10M.resolution;
 
+        // todo critical remove this line
+        BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_SCENE), "Welcome Back!!");
+
         final Band band = new Band(tileBandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
         product.addBand(band);
 
