@@ -20,6 +20,7 @@ import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductIOPlugInManager;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
+import org.esa.snap.util.io.SnapFileFilter;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
