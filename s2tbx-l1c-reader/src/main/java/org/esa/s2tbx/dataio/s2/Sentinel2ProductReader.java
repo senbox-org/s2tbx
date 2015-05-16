@@ -336,11 +336,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         VectorDataNode vdn = new VectorDataNode("polygons", collection);
-        Mask.VectorDataType.setVectorData(newMask, vdn);
+        // Mask.VectorDataType.setVectorData(newMask, vdn);
 
         // Mask.VectorDataType.INSTANCE.createImage(newMask);
 
-        product.addMask(newMask);
+        // product.addMask(newMask);
         product.getVectorDataGroup().add(vdn);
 
         return product;
