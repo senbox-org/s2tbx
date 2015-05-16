@@ -330,7 +330,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
         for(int index = 0; index < polygons.size(); index++)
         {
-            Object[] data1 = {polygons.get(index), String.format("Polygon-%s", index)};
+            Polygon pol = polygons.get(index);
+            Object[] data1 = {pol, String.format("Polygon-%s", index)};
             SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
             collection.add(f1);
         }
