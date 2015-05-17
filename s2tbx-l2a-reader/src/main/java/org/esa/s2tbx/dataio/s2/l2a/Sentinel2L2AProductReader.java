@@ -328,7 +328,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         //todo look at affine tranformation geocoding info...
         if(!bandInfoMap.isEmpty())
         {
-            addBands(product, bandInfoMap, new L2aSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+            addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L2aSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
@@ -345,7 +345,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL2aSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
 
-    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
+    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L2A_TILE_LAYOUTS[0].numResolutions);
         product.setAutoGrouping("reflec:radiance:sun:view");
@@ -361,12 +361,28 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
             Band band = addBand(product, bandInfo);
             band.setSourceImage(mlif.createSourceImage(bandInfo));
+
+            if(!forceResize)
+            {
+                // todo critical, set geocoding per band
+                try {
+                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                            band.getRasterWidth(),
+                            band.getRasterHeight(),
+                            envelope.getMinX(),
+                            envelope.getMaxY(),
+                            bandInfo.getWavebandInfo().resolution.resolution,
+                            bandInfo.getWavebandInfo().resolution.resolution,
+                            0.0, 0.0));
+                } catch (FactoryException e) {
+                    logger.severe("Illegal CRS");
+                } catch (TransformException e) {
+                    logger.severe("Illegal projection");
+                }
+            }
         }
 
-        if(!forceResize)
-        {
-            // todo critical, set geocoding per band
-        }
+
     }
 
     private Band addBand(Product product, BandInfo bandInfo) {

@@ -392,7 +392,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
 
-        addDetectorBands(product, bandInfoByKey, new L1bSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+        addDetectorBands(product, bandInfoByKey, sceneDescription.getSceneEnvelope(), new L1bSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
         return product;
     }
@@ -481,7 +481,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         return geoCoding;
     }
 
-    private void addDetectorBands(Product product, Map<String, TileBandInfo> stringBandInfoMap, MultiLevelImageFactory mlif) throws IOException {
+    private void addDetectorBands(Product product, Map<String, TileBandInfo> stringBandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L1B_TILE_LAYOUTS[0].numResolutions);
 
@@ -498,12 +498,28 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             TileBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
             Band band = addBand(product, tileBandInfo);
             band.setSourceImage(mlif.createSourceImage(tileBandInfo));
+
+            if(!forceResize)
+            {
+                try {
+                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                            band.getRasterWidth(),
+                            band.getRasterHeight(),
+                            envelope.getMinX(),
+                            envelope.getMaxY(),
+                            tileBandInfo.getWavebandInfo().resolution.resolution,
+                            tileBandInfo.getWavebandInfo().resolution.resolution,
+                            0.0, 0.0));
+                } catch (FactoryException e) {
+                    logger.severe("Illegal CRS");
+                } catch (TransformException e) {
+                    logger.severe("Illegal projection");
+                }
+                // todo CRITICAL add geocoding per band
+            }
         }
         
-        if(!forceResize)
-        {
-            // todo CRITICAL add geocoding per band
-        }
+
     }
 
     private Band addBand(Product product, TileBandInfo tileBandInfo) {
