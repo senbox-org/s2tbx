@@ -21,6 +21,7 @@ import com.bc.ceres.binding.PropertyContainer;
 import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.ValueSet;
 import com.bc.ceres.binding.validators.NotEmptyValidator;
+import com.bc.ceres.binding.validators.PatternValidator;
 import com.bc.ceres.swing.binding.BindingContext;
 import com.bc.ceres.swing.binding.PropertyEditor;
 import com.bc.ceres.swing.binding.PropertyEditorRegistry;
@@ -62,6 +63,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * A dialog window used to edit an operator, or to create a new operator.
@@ -308,7 +310,7 @@ public class ToolAdapterEditorDialog extends ModalDialog {
 
         TextFieldEditor textEditor = new TextFieldEditor();
 
-        addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Alias_Text(), "alias", 0, true);
+        addValidatedTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Alias_Text(), "alias", 0, "[^\\\\\\?%\\*:\\|\"<>\\.]");
         addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_UniqueName_Text(), "name", 1, true);
         addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Label_Text(), "label", 2, true);
         addTextField(descriptorPanel, textEditor, Bundle.CTL_Label_Version_Text(), "version", 3, true);
@@ -510,6 +512,18 @@ public class ToolAdapterEditorDialog extends ModalDialog {
         }
 
         return editorComponent;
+    }
+
+    private void addValidatedTextField(JPanel parent, TextFieldEditor textEditor, String labelText, String propertyName, int row, String validatorRegex) {
+        if(validatorRegex == null || validatorRegex.isEmpty()){
+            addTextField(parent, textEditor, labelText, propertyName, row, false);
+        } else {
+            parent.add(new JLabel(labelText), getConstraints(row, 0));
+            PropertyDescriptor propertyDescriptor = propertyContainer.getDescriptor(propertyName);
+            propertyDescriptor.setValidator(new PatternValidator(Pattern.compile(validatorRegex)));
+            JComponent editorComponent = textEditor.createEditorComponent(propertyDescriptor, bindingContext);
+            parent.add(editorComponent, getConstraints(row, 1));
+        }
     }
 
     private void addTextField(JPanel parent, TextFieldEditor textEditor, String labelText, String propertyName, int row, boolean isRequired) {
