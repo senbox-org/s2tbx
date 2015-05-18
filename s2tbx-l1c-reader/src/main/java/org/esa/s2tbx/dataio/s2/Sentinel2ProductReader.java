@@ -30,6 +30,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
@@ -306,7 +307,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         for(File aFile: allFiles)
         {
             try {
-                polygons.addAll(gmlFilter.parse(aFile));
+                Pair<String, List<Polygon>> polys = gmlFilter.parse(aFile);
+                // todo critical check for UTM mismatch
+
+
+                polygons.addAll(polys.getSecond());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -331,18 +336,20 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         for(int index = 0; index < polygons.size(); index++)
         {
             Polygon pol = polygons.get(index);
+
+
             Object[] data1 = {pol, String.format("Polygon-%s", index)};
             SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
             collection.add(f1);
         }
 
         VectorDataNode vdn = new VectorDataNode("BigPolygons", collection);
-        // Mask.VectorDataType.setVectorData(newMask, vdn);
-
-        // Mask.VectorDataType.INSTANCE.createImage(newMask);
-
-        // product.addMask(newMask);
+        Mask.VectorDataType.setVectorData(newMask, vdn);
         product.getVectorDataGroup().add(vdn);
+
+        Mask.VectorDataType.INSTANCE.createImage(newMask);
+        product.addMask(newMask);
+
 
         return product;
     }

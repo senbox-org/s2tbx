@@ -20,13 +20,11 @@ package org.esa.s2tbx.dataio.s2;
 
 
 import com.vividsolutions.jts.geom.Polygon;
+import org.apache.commons.math3.util.Pair;
 import org.geotools.gml3.GMLConfiguration;
 import org.geotools.xml.StreamingParser;
-import org.jdom2.Content;
+import org.jdom2.*;
 import org.jdom2.Content.CType;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.util.IteratorIterable;
@@ -68,12 +66,23 @@ public class GmlFilter {
         return polygons;
     }
 
-    public List<Polygon> parse(InputStream stream) throws JDOMException, IOException {
+    public Pair<String, List<Polygon>> parse(InputStream stream) throws JDOMException, IOException {
         SAXBuilder builder = new SAXBuilder();
         Document jdomDoc = builder.build(stream);
 
         //get the root element
         Element web_app = jdomDoc.getRootElement();
+
+        String maskEpsg = null;
+
+        Namespace gml = Namespace.getNamespace("http://www.opengis.net/gml/3.2");
+        List<Element> targeted = web_app.getChildren("boundedBy", gml);
+        if(!targeted.isEmpty()) {
+            Element aEnvelope = targeted.get(0).getChild("Envelope", gml);
+            if(aEnvelope != null) {
+                maskEpsg = aEnvelope.getAttribute("srsName").getValue();
+            }
+        }
 
         List<Polygon> recoveredGeometries = new ArrayList<>();
 
@@ -100,19 +109,20 @@ public class GmlFilter {
                         recoveredGeometries.addAll(streamParseGML3(ois));
                     }
                 }
+
             }
         }
 
-        return recoveredGeometries;
+        return new Pair<String, List<Polygon>>(maskEpsg,recoveredGeometries);
     }
 
-    public List<Polygon> parse(String resource) throws JDOMException, IOException {
+    public Pair<String, List<Polygon>> parse(String resource) throws JDOMException, IOException {
         InputStream stream = getClass().getResourceAsStream(resource);
 
         return parse(stream);
     }
 
-    public List<Polygon> parse(File fileName) throws JDOMException, IOException {
+    public Pair<String, List<Polygon>> parse(File fileName) throws JDOMException, IOException {
         InputStream stream = new FileInputStream(fileName);
 
         return parse(stream);
