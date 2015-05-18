@@ -25,7 +25,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-reader</artifactId>
+            <artifactId>s2tbx-l1c-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

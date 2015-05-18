@@ -11,9 +11,9 @@
     <url>https://github.com/senbox-org/s2tbx</url>
 
     <modules>
-        <module>s2tbx-reader</module>
-        <module>s2tbx-reader-l2a</module>
-        <module>s2tbx-reader-l1b</module>
+        <module>s2tbx-l1c-reader</module>
+        <module>s2tbx-l2a-reader</module>
+        <module>s2tbx-l1b-reader</module>
         <module>lib-openjpeg</module>
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
@@ -21,7 +21,7 @@
         <module>s2tbx-python-lib</module>
         <module>s2tbx-bootstrap</module>
         <module>s2tbx-app</module>
-        <module>s2tbx-kit</module>
+        <!--<module>s2tbx-kit</module>-->
         <module>s2tbx-help</module>
         <module>s2tbx-sen2cor-processor</module>
         <module>s2tbx-sen2three-processor</module>
@@ -29,6 +29,8 @@
         <module>s2tbx-deimos-reader</module>
         <module>snap-sta</module>
         <module>snap-sta-ui</module>
+        <module>s2tbx-eop2-gml-reader</module>
+        <module>s2tbx-hma-gml-reader</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -333,39 +335,6 @@
             </build>
         </profile>
         <profile>
-            <id>instrumented</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.jcabi</groupId>
-                    <artifactId>jcabi-aspects</artifactId>
-                    <version>0.20.4</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.aspectj</groupId>
-                    <artifactId>aspectjrt</artifactId>
-                    <version>1.6.12</version>
-                    <scope>runtime</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>monitored</id>
-            <dependencies>
-                <dependency>
-                    <groupId>com.github.jbellis</groupId>
-                    <artifactId>jamm</artifactId>
-                    <version>0.3.0</version>
-                </dependency>
-
-                <dependency>
-                    <groupId>io.dropwizard.metrics</groupId>
-                    <artifactId>metrics-core</artifactId>
-                    <version>3.1.0</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
             <id>netbeans-deps</id>
             <dependencies>
                 <dependency>
@@ -389,12 +358,6 @@
                     <version>${netbeans.version}</version>
                 </dependency>
             </dependencies>
-        </profile>
-        <profile>
-            <id>installer</id>
-            <modules>
-                <module>s2tbx-installer</module>
-            </modules>
         </profile>
         <profile>
             <id>runAllTests</id>

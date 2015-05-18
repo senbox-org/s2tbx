@@ -1,18 +1,18 @@
 /*
  *
- *  * Copyright (C) 2015 CS SI
- *  *
- *  * This program is free software; you can redistribute it and/or modify it
- *  * under the terms of the GNU General Public License as published by the Free
- *  * Software Foundation; either version 3 of the License, or (at your option)
- *  * any later version.
- *  * This program is distributed in the hope that it will be useful, but WITHOUT
- *  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- *  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- *  * more details.
- *  *
- *  * You should have received a copy of the GNU General Public License along
- *  * with this program; if not, see http://www.gnu.org/licenses/
+ * Copyright (C) 2014-2015 CS SI
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 3 of the License, or (at your option)
+ * any later version.
+ *  This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see http://www.gnu.org/licenses/
  *
  */
 
@@ -46,7 +46,7 @@ public class OpenJpegUtils {
         public void run() {
             String usedPath = null;
 
-            String winPath = "openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
+            String winPath = "openjpeg-2.1.0-win32-x86_dyn/bin/opj_decompress.exe";
             String linuxPath = "openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
             String linux64Path = "openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
             String macPath = "openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
@@ -129,7 +129,7 @@ public class OpenJpegUtils {
     public static String getInfoExtractor() throws IOException, InterruptedException {
         String usedPath = null;
 
-        String winPath = "openjpeg-2.0.0-win32-x86/bin/opj_dump.exe";
+        String winPath = "openjpeg-2.1.0-win32-x86_dyn/bin/opj_dump.exe";
         String linuxPath = "openjpeg-2.1.0-Linux-i386/bin/opj_dump";
         String linux64Path = "openjpeg-2.1.0-Linux-x64/bin/opj_dump";
         String macPath = "openjpeg-2.1.0-Darwin-i386/bin/opj_dump";
@@ -174,7 +174,7 @@ public class OpenJpegUtils {
     public static String getDecompressor() throws InterruptedException, IOException {
         String usedPath = null;
 
-        String winPath = "openjpeg-2.1.0-win32-x86/bin/opj_decompress.exe";
+        String winPath = "openjpeg-2.1.0-win32-x86_dyn/bin/opj_decompress.exe";
         String linuxPath = "openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
         String linux64Path = "openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
         String macPath = "openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
