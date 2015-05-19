@@ -309,11 +309,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                         int indexOfColons = polys.getFirst().indexOf(':');
                         if(indexOfColons != -1)
                         {
-                            String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':'));
+                            String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':')+1);
                             if(polys.getFirst().contains(realCsCode))
                             {
                                 polygons.addAll(polys.getSecond());
-                                logger.warning("Good polygons !");
                             }
                             else
                             {
@@ -338,28 +337,30 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
         }
 
-        // todo Mask should be a multi-size item
-        Mask newMask = new Mask("A-custom-geometry",product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
-        final SimpleFeatureType type = Placemark.createGeometryFeatureType();
-
-        final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
-        for(int index = 0; index < polygons.size(); index++)
+        if(!polygons.isEmpty())
         {
-            Polygon pol = polygons.get(index);
+            // todo Mask should be a multi-size item
+            Mask newMask = new Mask("A-custom-geometry",product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
+            final SimpleFeatureType type = Placemark.createGeometryFeatureType();
 
+            final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
+            for(int index = 0; index < polygons.size(); index++)
+            {
+                Polygon pol = polygons.get(index);
 
-            Object[] data1 = {pol, String.format("Polygon-%s", index)};
-            SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
-            collection.add(f1);
+                Object[] data1 = {pol, String.format("Polygon-%s", index)};
+                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+                collection.add(f1);
+            }
+
+            VectorDataNode vdn = new VectorDataNode("BigPolygons", collection);
+            product.getVectorDataGroup().add(vdn);
+
+            // Test remove A-custom-geometry, keep BigPolygons ?
+            Mask.VectorDataType.setVectorData(newMask, vdn);
+            // Mask.VectorDataType.INSTANCE.createImage(newMask);
+            product.addMask(newMask);
         }
-
-        VectorDataNode vdn = new VectorDataNode("BigPolygons", collection);
-        Mask.VectorDataType.setVectorData(newMask, vdn);
-        product.getVectorDataGroup().add(vdn);
-
-        Mask.VectorDataType.INSTANCE.createImage(newMask);
-        product.addMask(newMask);
-
 
         return product;
     }
