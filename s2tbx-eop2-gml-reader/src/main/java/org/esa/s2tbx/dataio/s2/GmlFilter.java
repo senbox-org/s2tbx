@@ -66,64 +66,80 @@ public class GmlFilter {
         return polygons;
     }
 
-    public Pair<String, List<Polygon>> parse(InputStream stream) throws JDOMException, IOException {
+    public Pair<String, List<Polygon>> parse(InputStream stream) {
         SAXBuilder builder = new SAXBuilder();
-        Document jdomDoc = builder.build(stream);
+        Document jdomDoc = null;
 
-        //get the root element
-        Element web_app = jdomDoc.getRootElement();
+        try {
+            jdomDoc = builder.build(stream);
 
-        String maskEpsg = null;
+            //get the root element
+            Element web_app = jdomDoc.getRootElement();
 
-        Namespace gml = Namespace.getNamespace("http://www.opengis.net/gml/3.2");
-        List<Element> targeted = web_app.getChildren("boundedBy", gml);
-        if(!targeted.isEmpty()) {
-            Element aEnvelope = targeted.get(0).getChild("Envelope", gml);
-            if(aEnvelope != null) {
-                maskEpsg = aEnvelope.getAttribute("srsName").getValue();
-            }
-        }
+            String maskEpsg = "";
 
-        List<Polygon> recoveredGeometries = new ArrayList<>();
-
-        IteratorIterable<Content> contents = web_app.getDescendants();
-        while (contents.hasNext()) {
-            Content web_app_content = contents.next();
-            if (!web_app_content.getCType().equals(CType.Text) && !web_app_content.getCType().equals(CType.Comment))
-            {
-                boolean withGml = (web_app_content.getNamespacesInScope().get(0).getPrefix().contains("gml"));
-                if(withGml)
-                {
-                    boolean parentNotGml = !(web_app_content.getParentElement().getNamespace().getPrefix().contains("gml"));
-                    if(parentNotGml)
-                    {
-                        Element capturedElement = (Element) web_app_content;
-                        Document newDoc = new Document(capturedElement.clone().detach());
-
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        xmlOutput.output(newDoc, baos);
-                        String replacedContent = baos.toString().replace("/www.opengis.net/gml/3.2", "/www.opengis.net/gml");
-
-                        InputStream ois = new ByteArrayInputStream(replacedContent.getBytes());
-
-                        recoveredGeometries.addAll(streamParseGML3(ois));
-                    }
+            Namespace gml = Namespace.getNamespace("http://www.opengis.net/gml/3.2");
+            List<Element> targeted = web_app.getChildren("boundedBy", gml);
+            if(!targeted.isEmpty()) {
+                Element aEnvelope = targeted.get(0).getChild("Envelope", gml);
+                if(aEnvelope != null) {
+                    maskEpsg = aEnvelope.getAttribute("srsName").getValue();
                 }
-
             }
+
+            List<Polygon> recoveredGeometries = new ArrayList<>();
+
+            IteratorIterable<Content> contents = web_app.getDescendants();
+            while (contents.hasNext()) {
+                Content web_app_content = contents.next();
+                if (!web_app_content.getCType().equals(CType.Text) && !web_app_content.getCType().equals(CType.Comment))
+                {
+                    boolean withGml = (web_app_content.getNamespacesInScope().get(0).getPrefix().contains("gml"));
+                    if(withGml)
+                    {
+                        boolean parentNotGml = !(web_app_content.getParentElement().getNamespace().getPrefix().contains("gml"));
+                        if(parentNotGml)
+                        {
+                            Element capturedElement = (Element) web_app_content;
+                            Document newDoc = new Document(capturedElement.clone().detach());
+
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            xmlOutput.output(newDoc, baos);
+                            String replacedContent = baos.toString().replace("/www.opengis.net/gml/3.2", "/www.opengis.net/gml");
+
+                            InputStream ois = new ByteArrayInputStream(replacedContent.getBytes());
+
+                            recoveredGeometries.addAll(streamParseGML3(ois));
+                        }
+                    }
+
+                }
+            }
+
+            return new Pair<String, List<Polygon>>(maskEpsg,recoveredGeometries);
+        } catch (JDOMException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        return new Pair<String, List<Polygon>>(maskEpsg,recoveredGeometries);
+        return new Pair<String, List<Polygon>>("", new ArrayList<>());
     }
 
-    public Pair<String, List<Polygon>> parse(String resource) throws JDOMException, IOException {
+    public Pair<String, List<Polygon>> parse(String resource) {
         InputStream stream = getClass().getResourceAsStream(resource);
 
         return parse(stream);
     }
 
-    public Pair<String, List<Polygon>> parse(File fileName) throws JDOMException, IOException {
-        InputStream stream = new FileInputStream(fileName);
+    public Pair<String, List<Polygon>> parse(File fileName) {
+
+        InputStream stream = null;
+        try {
+            stream = new FileInputStream(fileName);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         return parse(stream);
     }

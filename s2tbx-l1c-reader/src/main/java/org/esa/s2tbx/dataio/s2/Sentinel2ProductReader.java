@@ -290,6 +290,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
         }
 
+        GmlFilter gmlFilter = new GmlFilter();
+        List<Polygon> polygons = new ArrayList<>();
+
         List<MaskFilename> allMasks = new ArrayList<MaskFilename>();
         if(!tileList.isEmpty())
         {
@@ -297,23 +300,30 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             for(L1cMetadata.Tile tile: tileList)
             {
                 MaskFilename[] filenames = tile.maskFilenames;
+                for(MaskFilename aMaskFile: filenames)
+                {
+                    File aFile = aMaskFile.getName();
+                    Pair<String, List<Polygon>> polys = gmlFilter.parse(aFile);
+                    if(!polys.getFirst().isEmpty())
+                    {
+                        int indexOfColons = polys.getFirst().indexOf(':');
+                        if(indexOfColons != -1)
+                        {
+                            String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':'));
+                            if(polys.getFirst().contains(realCsCode))
+                            {
+                                polygons.addAll(polys.getSecond());
+                                logger.warning("Good polygons !");
+                            }
+                            else
+                            {
+                                // todo critical change comments
+                                logger.warning("Wrong polygons !");
+                            }
+                        }
+                    }
+                }
                 allMasks.addAll(Arrays.asList(filenames));
-            }
-        }
-
-        GmlFilter gmlFilter = new GmlFilter();
-        List<Polygon> polygons = new ArrayList<>();
-        List<File> allFiles = allMasks.stream().map(s -> {return s.getName();}).collect(Collectors.toList());
-        for(File aFile: allFiles)
-        {
-            try {
-                Pair<String, List<Polygon>> polys = gmlFilter.parse(aFile);
-                // todo critical check for UTM mismatch
-
-
-                polygons.addAll(polys.getSecond());
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
 
