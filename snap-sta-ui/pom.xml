@@ -64,6 +64,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-tango</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-progress</artifactId>
             <version>${netbeans.version}</version>
@@ -78,6 +84,18 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-filesystems</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-annotations-common</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-javahelp</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
 
@@ -144,19 +162,10 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-                <version>3.14</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <nbmBuildDir>${project.basedir}/../target/nbm</nbmBuildDir>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <useDefaultManifestFile>true</useDefaultManifestFile>
-                </configuration>
             </plugin>
         </plugins>
     </build>

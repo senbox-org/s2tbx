@@ -114,6 +114,7 @@ import static org.esa.s2tbx.dataio.s2.l1b.S2L1bConfig.*;
  */
 public class Sentinel2L1BProductReader extends AbstractProductReader {
 
+    private final boolean forceResize;
     private File cacheDir;
     protected final Logger logger;
     // private MemoryMeter meter;
@@ -133,15 +134,20 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             this.imageLayout = imageLayout;
         }
 
+        public S2L1bWavebandInfo getWavebandInfo() {
+            return wavebandInfo;
+        }
+
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
     }
 
 
-    Sentinel2L1BProductReader(Sentinel2L1BProductReaderPlugIn readerPlugIn) {
+    Sentinel2L1BProductReader(Sentinel2L1BProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
+        this.forceResize = forceResize;
         // meter = new MemoryMeter();
     }
 
@@ -374,18 +380,19 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
 
 
-        // critical wait until geocoding is fixed
+        // todo critical wait until geocoding is fixed
         /*
+        if(forceResize){
         if (product.getGeoCoding() == null) {
             // use default geocoding
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
-        }
+        }}
         */
 
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
 
-        addDetectorBands(product, bandInfoByKey, new L1bSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+        addDetectorBands(product, bandInfoByKey, sceneDescription.getSceneEnvelope(), new L1bSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
         return product;
     }
@@ -474,7 +481,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         return geoCoding;
     }
 
-    private void addDetectorBands(Product product, Map<String, TileBandInfo> stringBandInfoMap, MultiLevelImageFactory mlif) throws IOException {
+    private void addDetectorBands(Product product, Map<String, TileBandInfo> stringBandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L1B_TILE_LAYOUTS[0].numResolutions);
 
@@ -491,11 +498,39 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             TileBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
             Band band = addBand(product, tileBandInfo);
             band.setSourceImage(mlif.createSourceImage(tileBandInfo));
+
+            if(!forceResize)
+            {
+                try {
+                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                            band.getRasterWidth(),
+                            band.getRasterHeight(),
+                            envelope.getMinX(),
+                            envelope.getMaxY(),
+                            tileBandInfo.getWavebandInfo().resolution.resolution,
+                            tileBandInfo.getWavebandInfo().resolution.resolution,
+                            0.0, 0.0));
+                } catch (FactoryException e) {
+                    logger.severe("Illegal CRS");
+                } catch (TransformException e) {
+                    logger.severe("Illegal projection");
+                }
+                // todo CRITICAL add geocoding per band
+            }
         }
+        
+
     }
 
     private Band addBand(Product product, TileBandInfo tileBandInfo) {
-        final Band band = product.addBand(tileBandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE);
+        int index = S2L1bSpatialResolution.valueOfId(tileBandInfo.getWavebandInfo().resolution.id).resolution / S2L1bSpatialResolution.R10M.resolution;
+        int defRes = S2L1bSpatialResolution.R10M.resolution;
+
+        // todo critical remove this line
+        BeamLogManager.getSystemLogger().log(Level.SEVERE, "Welcome Back!!");
+
+        final Band band = new Band(tileBandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
+        product.addBand(band);
 
         band.setSpectralBandIndex(tileBandInfo.bandIndex);
         band.setSpectralWavelength((float) tileBandInfo.wavebandInfo.wavelength);
@@ -672,8 +707,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         public L1bTileMultiLevelSource(TileBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(tileBandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
-                                             L1B_TILE_LAYOUTS[0].width, //fixme we must use data from jp2 files to update this
-                                             L1B_TILE_LAYOUTS[0].height)); //fixme we must use data from jp2 files to update this
+                                             L1B_TILE_LAYOUTS[0].width, // todo we must use data from jp2 files to update this
+                                             L1B_TILE_LAYOUTS[0].height)); // todo we must use data from jp2 files to update this
             this.tileBandInfo = tileBandInfo;
         }
 
@@ -819,7 +854,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             }
 
             if (this.tileBandInfo.wavebandInfo.resolution != S2L1bSpatialResolution.R10M) {
-                PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.wavebandInfo.resolution, level);
+                PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.wavebandInfo.resolution, level, forceResize);
 
                 logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 

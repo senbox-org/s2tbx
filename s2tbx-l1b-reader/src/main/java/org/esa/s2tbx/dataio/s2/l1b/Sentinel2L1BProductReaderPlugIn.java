@@ -58,8 +58,7 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
     @Override
     public ProductReader createReaderInstance() {
         BeamLogManager.getSystemLogger().info("Building product reader...");
-
-        return new Sentinel2L1BProductReader(this);
+        return new Sentinel2L1BProductReader(this, false);
     }
 
     @Override
@@ -74,13 +73,13 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1C";
+        return "Sentinel-2 MSI L1B";
     }
 
     @Override
     public SnapFileFilter getProductFileFilter() {
         return new SnapFileFilter(S2L1bConfig.FORMAT_NAME,
                                   getDefaultFileExtensions(),
-                                  "Sentinel-2 MSI L1C product or tile");
+                                  "Sentinel-2 MSI L1B product or tile");
     }
 }

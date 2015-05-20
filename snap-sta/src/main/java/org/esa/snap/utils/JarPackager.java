@@ -17,13 +17,14 @@ package org.esa.snap.utils;
 
 import org.esa.snap.framework.gpf.descriptor.ToolAdapterOperatorDescriptor;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterIO;
+import org.esa.snap.util.io.FileUtils;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Files;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.jar.*;
 
@@ -37,15 +38,17 @@ public final class JarPackager {
 
     private static final Manifest _manifest;
     private static final Attributes.Name ATTR_DESCRIPTION_NAME;
+    private static final Attributes.Name ATTR_MODULE_NAME;
     private static final File modulesPath;
 
     static {
         _manifest = new Manifest();
         Attributes attributes = _manifest.getMainAttributes();
         ATTR_DESCRIPTION_NAME = new Attributes.Name("OpenIDE-Module-Short-Description");
+        ATTR_MODULE_NAME = new Attributes.Name("OpenIDE-Module");
         attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
         attributes.put(new Attributes.Name("OpenIDE-Module-Java-Dependencies"), "Java > 1.8");
-        attributes.put(new Attributes.Name("OpenIDE-Module-Module-Dependencies"), "org.esa.snap.snap.sta.ui");
+        attributes.put(new Attributes.Name("OpenIDE-Module-Module-Dependencies"), "org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui");
         attributes.put(new Attributes.Name("OpenIDE-Module-Display-Category"), "SNAP");
         attributes.put(new Attributes.Name("OpenIDE-Module-Layer"), "layer.xml");
         attributes.put(ATTR_DESCRIPTION_NAME, "External tool adapter");
@@ -62,8 +65,9 @@ public final class JarPackager {
      */
     public static void packAdapterJar(ToolAdapterOperatorDescriptor descriptor, File jarFile, Class actionClass) throws IOException {
         _manifest.getMainAttributes().put(ATTR_DESCRIPTION_NAME, "<p>" + descriptor.getAlias() + "</p>");
+        _manifest.getMainAttributes().put(ATTR_MODULE_NAME, descriptor.getName());
         File moduleFolder = new File(modulesPath, descriptor.getAlias());
-        try (FileOutputStream fOut = new FileOutputStream(jarFile)) {
+        try (FileOutputStream fOut = new FileOutputStream(jarFile, false)) {
 //            if (actionClass != null) {
 //                _manifest.getMainAttributes().put(new Attributes.Name("OpenIDE-Module-Install"), actionClass.getName().replace('.', '/') + ".class");
 //            }
@@ -77,9 +81,31 @@ public final class JarPackager {
                 if (actionClass != null) {
                     addFile(actionClass, jarOut);
                     try {
-                        File templateFile = new File(new File(JarPackager.class.getProtectionDomain().getCodeSource().getLocation().toURI()), "/META-INF//org/esa/snap/utils/template_layer.xml");
+                        File baseLocation = new File(JarPackager.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                        String contents = null;
+                        if (!baseLocation.getAbsolutePath().endsWith(".jar")) {
+                            File templateFile = new File(baseLocation, "/META-INF/org/esa/snap/utils/template_layer.xml");
+                            contents = FileUtils.readText(templateFile);
+                        } else {
+                            StringBuilder stringBuilder = new StringBuilder();
+                            String line;
+                            String lineSeparator = System.getProperty("line.separator");
+                            try (InputStream stream = JarPackager.class.getResourceAsStream("template_layer.xml")) {
+                                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream));
+                                while (null != (line = bufferedReader.readLine())) {
+                                    stringBuilder.append(line).append(lineSeparator);
+                                }
+                            }
+                            contents = stringBuilder.toString();
+                        }
+                        contents = contents.replace("#NAME#", descriptor.getLabel());
                         Path destination = Paths.get(moduleFolder.getAbsolutePath(), "layer.xml");
-                        Files.copy(templateFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                        FileChannel channel;
+                        try (FileOutputStream outputStream = new FileOutputStream(destination.toFile(), false)) {
+                            channel = outputStream.getChannel();
+                            channel.write(ByteBuffer.wrap(contents.getBytes()));
+                        }
+//                        Files.copy(templateFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
                         addFile(new File(moduleFolder, "layer.xml"), jarOut);
                     } catch (Exception ignored) {
                         ignored.printStackTrace();
@@ -133,30 +159,32 @@ public final class JarPackager {
     private static void addFile(File source, JarOutputStream target) throws IOException {
         String entryName = source.getPath().replace(modulesPath.getAbsolutePath(), "").replace("\\", "/").substring(1);
         entryName = entryName.substring(entryName.indexOf("/") + 1);
-        if (source.isDirectory()) {
-            if (!entryName.isEmpty()) {
-                if (!entryName.endsWith("/")) {
-                    entryName += "/";
+        if (!entryName.toLowerCase().endsWith("manifest.mf")) {
+            if (source.isDirectory()) {
+                if (!entryName.isEmpty()) {
+                    if (!entryName.endsWith("/")) {
+                        entryName += "/";
+                    }
+                    JarEntry entry = new JarEntry(entryName);
+                    entry.setTime(source.lastModified());
+                    target.putNextEntry(entry);
+                    target.closeEntry();
                 }
-                JarEntry entry = new JarEntry(entryName);
-                entry.setTime(source.lastModified());
-                target.putNextEntry(entry);
-                target.closeEntry();
-            }
-            File[] files = source.listFiles();
-            if (files != null) {
-                for (File nestedFile : files) {
-                    addFile(nestedFile, target);
+                File[] files = source.listFiles();
+                if (files != null) {
+                    for (File nestedFile : files) {
+                        addFile(nestedFile, target);
+                    }
                 }
+                return;
             }
-            return;
-        }
 
-        JarEntry entry = new JarEntry(entryName);
-        entry.setTime(source.lastModified());
-        target.putNextEntry(entry);
-        writeBytes(source, target);
-        target.closeEntry();
+            JarEntry entry = new JarEntry(entryName);
+            entry.setTime(source.lastModified());
+            target.putNextEntry(entry);
+            writeBytes(source, target);
+            target.closeEntry();
+        }
     }
 
     /**
@@ -172,8 +200,14 @@ public final class JarPackager {
         if (classURL != null) {
             JarEntry entry = new JarEntry(classEntry);
             target.putNextEntry(entry);
-            String fileName = classURL.getFile();
-            writeBytes(fileName, target);
+            if (!classURL.toString().contains("!")) {
+                String fileName = classURL.getFile();
+                writeBytes(fileName, target);
+            } else {
+                try (InputStream stream = fromClass.getClassLoader().getResourceAsStream(classEntry)) {
+                    writeBytes(stream, target);
+                }
+            }
             target.closeEntry();
         }
     }
@@ -194,6 +228,17 @@ public final class JarPackager {
                     target.write(buffer, 0, count);
                 }
             }
+        }
+    }
+
+    private static void writeBytes(InputStream stream, JarOutputStream target) throws IOException {
+        byte[] buffer = new byte[1024];
+        while (true) {
+            int count = stream.read(buffer);
+            if (count == -1) {
+                break;
+            }
+            target.write(buffer, 0, count);
         }
     }
 
