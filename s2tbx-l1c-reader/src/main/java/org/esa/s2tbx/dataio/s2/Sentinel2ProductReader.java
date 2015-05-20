@@ -27,6 +27,8 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.util.AffineTransformation;
+import javafx.scene.transform.Affine;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -45,6 +47,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.Envelope2D;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jdom.JDOMException;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
@@ -57,6 +60,7 @@ import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -340,13 +344,19 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         if(!polygons.isEmpty())
         {
             // todo Mask should be a multi-size item
-            Mask newMask = new Mask("A-custom-geometry",product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
+            Mask newMask = new Mask("A-60-custom-geometry",product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
             final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+
+            AffineTransformation atrans = AffineTransformation.scaleInstance(0.1, 0.1);
+            AffineTransformation ref = AffineTransformation.translationInstance(-sceneDescription.getSceneEnvelope().getMinX(), -sceneDescription.getSceneEnvelope().getMinY());
 
             final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
             for(int index = 0; index < polygons.size(); index++)
             {
                 Polygon pol = polygons.get(index);
+                pol = (Polygon) ref.transform(pol);
+                pol = (Polygon) atrans.transform(pol);
+
 
                 Object[] data1 = {pol, String.format("Polygon-%s", index)};
                 SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
@@ -403,6 +413,31 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     logger.severe("Illegal CRS");
                 } catch (TransformException e) {
                     logger.severe("Illegal projection");
+                }
+
+                try {
+                    // todo critical add sceneRasterTransform
+                    AffineTransform scale10 = AffineTransform.getScaleInstance(500, 500);
+                    AffineTransform scale10Inv = scale10.createInverse();
+
+                    AffineTransform noTrans = AffineTransform.getScaleInstance(1, 1);
+                    AffineTransform noTransInv = noTrans.createInverse();
+
+                    S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(scale10), new AffineTransform2D(scale10Inv));
+
+                    S2SceneRasterTransform idtransform = new S2SceneRasterTransform(new AffineTransform2D(noTrans), new AffineTransform2D(noTransInv));
+
+                    if(bandInfo.getWavebandInfo().resolution.resolution == 10)
+                    {
+                        band.setSceneRasterTransform(transform);
+                    }
+                    else
+                    {
+                        band.setSceneRasterTransform(idtransform);
+                    }
+
+                } catch (NoninvertibleTransformException e) {
+                    logger.severe("Illegal transform");
                 }
             }
 
