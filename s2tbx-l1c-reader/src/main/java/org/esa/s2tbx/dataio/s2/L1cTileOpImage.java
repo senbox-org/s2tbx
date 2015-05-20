@@ -137,7 +137,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
         float scaleX = targetWidth / ((float) sourceImage.getWidth());
         float scaleY = targetHeight / ((float) sourceImage.getHeight());
 
-        if(forceResize)
+        if(!forceResize)
         {
             scaleX = (float) 1.0;
             scaleY = (float) 1.0;
