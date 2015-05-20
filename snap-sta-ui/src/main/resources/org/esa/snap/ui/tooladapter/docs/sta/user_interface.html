@@ -43,7 +43,7 @@
     there is a table containing the adapters where the user can check the adapter to apply the action form the toolbar.
     If multiple adapters are checked, the action is applied to the first checked one.</p>
 <p>This form can be invoked by using the menu <i>Tools->Manage external tools</i> of the SNAP application.</p>
-<img src="../images/ManageAdapters.JPG"/>
+<img src="../images/ManageAdapters.png"/>
 <h4>Creating a new adapter or modifying an existing one</h4>
 <p>The form for creating a new adapter is reused for editing an existing adapter and for duplicating an adapter.</p>
 <img src="../images/EditAdapter.png"/>
@@ -181,12 +181,66 @@
         sourceProductFile - this is a File or a list of files corresponding to the source products chosed on execution.
         This is used only if 'Write product with' is checked and a writer is chosed. When this happens, all the source
         products are written on disk, in the temporary folder, and the absolute path of the file(s) is stored in
-        this parameter, so it can be used in the velocity template. This parameter cannot be edited or deleted.</li>
+        this parameter, so it can be used in the velocity template. This parameter cannot be edited or deleted.
+    </li>
+    <li>
+        targetProductFile - this is a File corresponding to the target product that will be loaded in SNAP context
+        after the tool execution. This parameter cannot be deleted or edited, but his value can be edited (the default value
+        and also the value on execution).
+    </li>
 </ul>
 <h5>Regular parameters</h5>
+<p>All user-defined parameters that are not default parameters or template parameters are considered as regular
+    parameters. The type of those parameters can be: Integer, Decimal, String, Boolean, List. Those parameters can be
+    edited by pressing the corresponding 'Ellipsis' (...) button. This will open a new form, where the following
+    properties of the parameter can be changed:</p>
+<ul>
+    <li>Name</li>
+    <li>Alias</li>
+    <li>Type</li>
+    <li>Default value</li>
+    <li>Description</li>
+    <li>Label</li>
+    <li>Unit</li>
+    <li>Interval</li>
+    <li>Value set</li>
+    <li>Condition</li>
+    <li>Pattern</li>
+    <li>Format</li>
+    <li>Not null</li>
+    <li>Not empty</li>
+    <li>Alias</li>
+    <li>Deprecated</li>
+</ul>
+<img src="../images/RegularParamEditor.png"/>
 <h5>Template parameters</h5>
-
+<p>The template parameters are parameters that represent a velocity template stored in a file on disk. So this is
+    actually a parameter, having the type File, on which you can pass other regular parameters.</p>
+<p>When editing this type of parameter, first a file must be chosed, and then the template gets loaded in the form and
+    some new parameters can be defined for this template:</p>
+<img src="../images/TemplateParamEditor.png"/>
+<p>This template will be interpreted in 3 key moments of the execution:</p>
+<ul>
+    <li>If the parameter type is <i>Template Before</i>, the template gets interpreted before any of the execution
+        steps of the toll gets started.
+    </li>
+    <li>If the parameter type is <i>Template Parameter</i>, the template gets interpreted on strating the execution
+        of the tool. In this case, the result is saved in the working directory, and the full path to the file gets
+        saved in this parameter's value.
+    </li>
+    <li>If the parameter type is <i>Template After</i>, the template gets interpreted after the execution
+        steps of the toll, as the final step. The result is also saved in the working directory.
+    </li>
+</ul>
 <h4>Executing an adapter from SNAP</h4>
-
+<p>When executing an already defined adapter, some actions are necessary in the execution form:</p>
+<ul>
+    <li>Choosing the source products, eighter by selecting ones from the already loaded products, or by loading new ones</li>
+    <il>Setting parameter values; this step is not necessary and if not executed, the default values of the parameters
+        will be used.</il>
+</ul>
+<img src="../images/ExecuteAdapter.png"/>
+<p>Note: the parameters <i>sourceProduct</i> and <i>sourceProductFile</i> will not be available in the execution form,
+    since those are edited by actually selecting the source product(s)!</p>
 </body>
 </html>
