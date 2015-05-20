@@ -473,7 +473,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
 
         // todo add masks from GML metadata files (gml branch)
-        setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
+        // todo critical uncomment this later...
+        // setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
 
         return band;
     }
