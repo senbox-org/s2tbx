@@ -44,6 +44,10 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
             if (S2ProductFilename.create(file.getName()).fileSemantic.contains("L1C")) {
                 deco = DecodeQualification.INTENDED;
             }
+            else
+            {
+                deco = DecodeQualification.UNABLE;
+            }
         }
 
         return deco;
@@ -56,14 +60,14 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        BeamLogManager.getSystemLogger().info("Building product reader...");
+        BeamLogManager.getSystemLogger().info("Building product reader Multisize...");
 
         return new Sentinel2ProductReader(this, false);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2Config.FORMAT_NAME};
+        return new String[]{S2Config.FORMAT_NAME+"-MS"};
     }
 
     @Override
@@ -73,7 +77,7 @@ public class Sentinel2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1C";
+        return "Sentinel-2 MSI L1C Multisize";
     }
 
     @Override

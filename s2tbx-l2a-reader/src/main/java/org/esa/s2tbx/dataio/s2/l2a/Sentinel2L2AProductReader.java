@@ -44,6 +44,7 @@ import org.geotools.geometry.Envelope2D;
 import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.openjpeg.StackTraceUtils;
 
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
@@ -101,6 +102,8 @@ import static org.esa.s2tbx.dataio.s2.l2a.S2L2AConfig.*;
  */
 public class Sentinel2L2AProductReader extends AbstractProductReader {
 
+    private final boolean forceResize;
+
     private File cacheDir;
     protected final Logger logger;
 
@@ -117,15 +120,20 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
             this.imageLayout = imageLayout;
         }
 
+        public S2L2AWavebandInfo getWavebandInfo() {
+            return wavebandInfo;
+        }
+
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
     }
 
 
-    Sentinel2L2AProductReader(Sentinel2L2AProductReaderPlugIn readerPlugIn) {
+    Sentinel2L2AProductReader(Sentinel2L2AProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
+        this.forceResize = forceResize;
     }
 
     @Override
@@ -313,12 +321,14 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         product.setFileLocation(metadataFile.getParentFile());
 
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
-        setGeoCoding(product, sceneDescription.getSceneEnvelope());
+        if(forceResize) {
+            setGeoCoding(product, sceneDescription.getSceneEnvelope());
+        }
 
         //todo look at affine tranformation geocoding info...
         if(!bandInfoMap.isEmpty())
         {
-            addBands(product, bandInfoMap, new L2aSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+            addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L2aSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
@@ -335,7 +345,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL2aSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
 
-    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, MultiLevelImageFactory mlif) throws IOException {
+    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L2A_TILE_LAYOUTS[0].numResolutions);
         product.setAutoGrouping("reflec:radiance:sun:view");
@@ -351,11 +361,39 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
             Band band = addBand(product, bandInfo);
             band.setSourceImage(mlif.createSourceImage(bandInfo));
+
+            if(!forceResize)
+            {
+                // todo critical, set geocoding per band
+                try {
+                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                            band.getRasterWidth(),
+                            band.getRasterHeight(),
+                            envelope.getMinX(),
+                            envelope.getMaxY(),
+                            bandInfo.getWavebandInfo().resolution.resolution,
+                            bandInfo.getWavebandInfo().resolution.resolution,
+                            0.0, 0.0));
+                } catch (FactoryException e) {
+                    logger.severe("Illegal CRS");
+                } catch (TransformException e) {
+                    logger.severe("Illegal projection");
+                }
+            }
         }
+
+
     }
 
     private Band addBand(Product product, BandInfo bandInfo) {
-        final Band band = product.addBand(bandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE);
+        int index = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
+        int defRes = S2SpatialResolution.R10M.resolution;
+
+        // todo critical remove this line
+        BeamLogManager.getSystemLogger().log(Level.SEVERE, "Welcome Back!!");
+
+        final Band band = new Band(bandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
+        product.addBand(band);
 
         band.setSpectralBandIndex(bandInfo.bandIndex);
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
@@ -406,11 +444,30 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                 sunZeniths[index] = sunAnglesGrid.zenith[y][x];
                 sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
                 for (L2aMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
-                    if (!Float.isNaN(grid.zenith[y][x])) {
-                        viewingZeniths[index] = grid.zenith[y][x];
-                    }
-                    if (!Float.isNaN(grid.azimuth[y][x])) {
-                        viewingAzimuths[index] = grid.azimuth[y][x];
+                    try {
+                        if( y < grid.zenith.length)
+                        {
+                            if( x < grid.zenith[y].length)
+                            {
+                                if (!Float.isNaN(grid.zenith[y][x])) {
+                                    viewingZeniths[index] = grid.zenith[y][x];
+                                }
+                            }
+                        }
+
+                        if( y < grid.azimuth.length)
+                        {
+                            if( x < grid.azimuth[y].length)
+                            {
+                                if (!Float.isNaN(grid.azimuth[y][x])) {
+                                    viewingAzimuths[index] = grid.azimuth[y][x];
+                                }
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        // {@report "Solar info problem"}
+                        logger.severe(StackTraceUtils.getStackTrace(e));
                     }
                 }
             }
@@ -676,7 +733,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             if (this.bandInfo.wavebandInfo.resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = L2aTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level);
+                PlanarImage scaled = L2aTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level, forceResize);
 
                 logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 

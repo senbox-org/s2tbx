@@ -44,6 +44,10 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
             if (S2L2aProductFilename.create(file.getName()).fileSemantic.contains("L2A")) {
                 deco = DecodeQualification.INTENDED;
             }
+            else
+            {
+                deco = DecodeQualification.UNABLE;
+            }
         }
 
         return deco;
@@ -58,7 +62,7 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
     public ProductReader createReaderInstance() {
         BeamLogManager.getSystemLogger().info("Building product reader...");
 
-        return new Sentinel2L2AProductReader(this);
+        return new Sentinel2L2AProductReader(this, false);
     }
 
     @Override
