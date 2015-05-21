@@ -44,6 +44,10 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
             if (S2L2aProductFilename.create(file.getName()).fileSemantic.contains("L2A")) {
                 deco = DecodeQualification.INTENDED;
             }
+            else
+            {
+                deco = DecodeQualification.UNABLE;
+            }
         }
 
         return deco;

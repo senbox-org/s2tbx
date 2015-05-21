@@ -19,26 +19,72 @@
 
 package org.esa.s2tbx.dataio.s2;
 
+import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
+import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
+import org.esa.snap.framework.dataio.ProductReaderPlugIn;
+import org.esa.snap.util.io.SnapFileFilter;
 import org.esa.snap.util.logging.BeamLogManager;
 
+import java.io.File;
 import java.util.Locale;
 
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2Product20MReaderPlugIn extends Sentinel2ProductReaderPlugIn {
+public class Sentinel2Product20MReaderPlugIn implements ProductReaderPlugIn {
+
+    @Override
+    public DecodeQualification getDecodeQualification(Object input) {
+        BeamLogManager.getSystemLogger().fine("Getting decoders...");
+
+        File file = new File(input.toString());
+        DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
+        if (deco.equals(DecodeQualification.SUITABLE)) {
+            if (S2ProductFilename.create(file.getName()).fileSemantic.contains("L1C")) {
+                deco = DecodeQualification.INTENDED;
+            }
+            else
+            {
+                deco = DecodeQualification.UNABLE;
+            }
+        }
+
+        return deco;
+    }
+
+    @Override
+    public Class[] getInputTypes() {
+        return new Class[]{String.class, File.class};
+    }
 
     @Override
     public ProductReader createReaderInstance() {
-        BeamLogManager.getSystemLogger().info("Building product reader 20M ...");
+        BeamLogManager.getSystemLogger().info("Building product reader 20M");
 
-        return new Sentinel2ProductReader(this, true);
+        return new Sentinel2ProductReader(this, false, 20);
+    }
+
+    @Override
+    public String[] getFormatNames() {
+        return new String[]{S2Config.FORMAT_NAME+"-20M"};
+    }
+
+    @Override
+    public String[] getDefaultFileExtensions() {
+        return new String[]{S2Config.MTD_EXT};
     }
 
     @Override
     public String getDescription(Locale locale) {
         return "Sentinel-2 MSI L1C 20M";
+    }
+
+    @Override
+    public SnapFileFilter getProductFileFilter() {
+        return new SnapFileFilter(S2Config.FORMAT_NAME,
+                getDefaultFileExtensions(),
+                "Sentinel-2 MSI L1C product or tile");
     }
 
 }

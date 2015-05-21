@@ -32,18 +32,58 @@ import java.util.Locale;
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2ProductNoMultiSizeReaderPlugIn extends Sentinel2ProductReaderPlugIn {
+public class Sentinel2ProductNoMultiSizeReaderPlugIn implements ProductReaderPlugIn {
+
+    @Override
+    public DecodeQualification getDecodeQualification(Object input) {
+        BeamLogManager.getSystemLogger().fine("Getting decoders...");
+
+        File file = new File(input.toString());
+        DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
+        if (deco.equals(DecodeQualification.SUITABLE)) {
+            if (S2ProductFilename.create(file.getName()).fileSemantic.contains("L1C")) {
+                deco = DecodeQualification.INTENDED;
+            }
+            else
+            {
+                deco = DecodeQualification.UNABLE;
+            }
+        }
+
+        return deco;
+    }
+
+    @Override
+    public Class[] getInputTypes() {
+        return new Class[]{String.class, File.class};
+    }
 
     @Override
     public ProductReader createReaderInstance() {
-        BeamLogManager.getSystemLogger().info("Building product reader No multisize ...");
+        BeamLogManager.getSystemLogger().info("Building product reader No Multisize...");
 
-        return new Sentinel2ProductReader(this, true);
+        return new Sentinel2NMSProductReader(this, true);
+    }
+
+    @Override
+    public String[] getFormatNames() {
+        return new String[]{S2Config.FORMAT_NAME+"-NMS"};
+    }
+
+    @Override
+    public String[] getDefaultFileExtensions() {
+        return new String[]{S2Config.MTD_EXT};
     }
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1C No multisize";
+        return "Sentinel-2 MSI L1C No Multisize";
     }
 
+    @Override
+    public SnapFileFilter getProductFileFilter() {
+        return new SnapFileFilter(S2Config.FORMAT_NAME,
+                getDefaultFileExtensions(),
+                "Sentinel-2 MSI L1C No Multisize product or tile");
+    }
 }

@@ -30,6 +30,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
+import com.vividsolutions.jts.geom.util.NoninvertibleTransformationException;
 import javafx.scene.transform.Affine;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -40,6 +41,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.AbstractProductReader;
+import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.*;
 import org.esa.snap.framework.dataop.barithm.BandArithmetic;
 import org.esa.snap.jai.ImageManager;
@@ -147,11 +149,19 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
     }
 
-
-    Sentinel2ProductReader(Sentinel2ProductReaderPlugIn readerPlugIn, boolean forceResize) {
+    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
         this.forceResize = forceResize;
+        this.filteredResolution = filteredResolution;
+    }
+
+
+    Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
+        super(readerPlugIn);
+        logger = BeamLogManager.getSystemLogger();
+        this.forceResize = forceResize;
+        this.filteredResolution = -1;
     }
 
     @Override
@@ -348,6 +358,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         if(!bandInfoMap.isEmpty())
         {
+            // todo critical filter by band
             addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
             // todo critical use only tiepointgrids instead of bands
@@ -360,10 +371,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         if(!polygons.isEmpty())
         {
             // todo Mask should be a multi-size item
-            Mask newMask = new Mask("A-60-custom-geometry",product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
+            Mask newMask = new Mask(String.format("A-%s-custom-geometry", this.filteredResolution),product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
             final SimpleFeatureType type = Placemark.createGeometryFeatureType();
 
-            AffineTransformation atrans = AffineTransformation.scaleInstance(0.1, 0.1);
+            AffineTransformation atrans = null;
+            try {
+                atrans = AffineTransformation.scaleInstance(this.filteredResolution, this.filteredResolution).getInverse();
+            } catch (NoninvertibleTransformationException e) {
+                logger.warning("Invalid resolution !");
+            }
             AffineTransformation ref = AffineTransformation.translationInstance(-sceneDescription.getSceneEnvelope().getMinX(), -sceneDescription.getSceneEnvelope().getMinY());
 
             final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
@@ -411,26 +427,29 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
-            Band band = addBand(product, bandInfo);
-            band.setSourceImage(mlif.createSourceImage(bandInfo));
-
-            if(!forceResize)
+            if(bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
             {
-                try {
-                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
-                            band.getRasterWidth(),
-                            band.getRasterHeight(),
-                            envelope.getMinX(),
-                            envelope.getMaxY(),
-                            bandInfo.getWavebandInfo().resolution.resolution,
-                            bandInfo.getWavebandInfo().resolution.resolution,
-                            0.0, 0.0));
-                } catch (FactoryException e) {
-                    logger.severe("Illegal CRS");
-                } catch (TransformException e) {
-                    logger.severe("Illegal projection");
-                }
+                Band band = addBand(product, bandInfo);
+                band.setSourceImage(mlif.createSourceImage(bandInfo));
 
+                if(!forceResize)
+                {
+                    try {
+                        band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                                band.getRasterWidth(),
+                                band.getRasterHeight(),
+                                envelope.getMinX(),
+                                envelope.getMaxY(),
+                                bandInfo.getWavebandInfo().resolution.resolution,
+                                bandInfo.getWavebandInfo().resolution.resolution,
+                                0.0, 0.0));
+                    } catch (FactoryException e) {
+                        logger.severe("Illegal CRS");
+                    } catch (TransformException e) {
+                        logger.severe("Illegal projection");
+                    }
+
+                /*
                 try {
                     // todo critical add sceneRasterTransform
                     AffineTransform scale10 = AffineTransform.getScaleInstance(500, 500);
@@ -455,7 +474,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 } catch (NoninvertibleTransformException e) {
                     logger.severe("Illegal transform");
                 }
+                */
+                }
             }
+
 
             // TODO Use the info in bandInfo.getWavebandInfo().resolution to change geocoding
         }
@@ -474,7 +496,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         // todo add masks from GML metadata files (gml branch)
         // todo critical uncomment this later...
-        // setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
+        setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
 
         return band;
     }

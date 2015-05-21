@@ -123,6 +123,8 @@ class L1cTileOpImage extends SingleBandedOpImage {
         BeamLogManager.getSystemLogger().fine("Asking for scaled mosaic image: " + resolution.toString());
         BeamLogManager.getSystemLogger().warning("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
 
+        BeamLogManager.getSystemLogger().severe("ForceResize:" + forceResize);
+
         int targetResolution = resolution.resolution;
 
         if(forceResize)
