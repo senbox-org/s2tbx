@@ -379,8 +379,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         if(!polygons.isEmpty())
         {
-            // todo Mask should be a multi-size item
-            Mask newMask = new Mask(String.format("A-%s-custom-geometry", this.filteredResolution),product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
+            // todo get mask name
+            Mask newMask = new Mask(String.format("MaskTest", this.filteredResolution),product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
             final SimpleFeatureType type = Placemark.createGeometryFeatureType();
 
             AffineTransformation atrans = null;
@@ -398,18 +398,16 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 pol = (Polygon) ref.transform(pol);
                 pol = (Polygon) atrans.transform(pol);
 
-
+                // todo recover id associated to each polygon
                 Object[] data1 = {pol, String.format("Polygon-%s", index)};
                 SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
                 collection.add(f1);
             }
 
-            VectorDataNode vdn = new VectorDataNode("BigPolygons", collection);
+            VectorDataNode vdn = new VectorDataNode("ListOfPolygons", collection);
             product.getVectorDataGroup().add(vdn);
 
-            // Test remove A-custom-geometry, keep BigPolygons ?
             Mask.VectorDataType.setVectorData(newMask, vdn);
-            // Mask.VectorDataType.INSTANCE.createImage(newMask);
             product.addMask(newMask);
         }
 
