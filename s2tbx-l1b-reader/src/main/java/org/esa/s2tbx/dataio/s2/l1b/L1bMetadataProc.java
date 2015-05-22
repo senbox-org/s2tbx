@@ -194,7 +194,6 @@ public class L1bMetadataProc {
 
             List<L1bMetadata.SpectralInformation> aInfo = new ArrayList<L1bMetadata.SpectralInformation>();
 
-            // fixme Spectral_Information_List is optional on L1B ??
             for (A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
                 L1bMetadata.SpectralInformation data = new L1bMetadata.SpectralInformation();
                 data.bandId = Integer.parseInt(sin.getBandId());
@@ -234,7 +233,7 @@ public class L1bMetadataProc {
                 data.physicalBand = band_name.value();
                 data.bandId = index;
 
-                // fixme remove hardcoded resolutions...
+                // warning hardcoded resolutions
                 data.resolution = 10;
                 if (data.physicalBand.equals("B1") || data.physicalBand.equals("B9") || data.physicalBand.equals("B10")) {
                     data.resolution = 60;

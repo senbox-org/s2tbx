@@ -30,7 +30,7 @@
         <module>snap-sta</module>
         <module>snap-sta-ui</module>
         <module>s2tbx-eop2-gml-reader</module>
-        <module>s2tbx-hma-gml-reader</module>
+        <!--<module>s2tbx-hma-gml-reader</module>-->
     </modules>
 
     <packaging>pom</packaging>
