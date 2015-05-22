@@ -44,52 +44,27 @@ public class OpenJpegUtils {
 
         @Override
         public void run() {
-            String usedPath = null;
+            String infoExtractor = getSafeInfoExtractor();
+            String decompressor = getSafeDecompressor();
 
-            String winPath = "openjpeg-2.1.0-win32-x86_dyn/bin/opj_decompress.exe";
-            String linuxPath = "openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
-            String linux64Path = "openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
-            String macPath = "openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
-
-            try {
-
-                if (SystemUtils.IS_OS_LINUX) {
-
-                    Process p = Runtime.getRuntime().exec("uname -m");
-                    p.waitFor();
-                    String output = convertStreamToString(p.getInputStream());
-                    String errorOutput = convertStreamToString(p.getErrorStream());
-
-                    if (output.startsWith("i686")) {
-                        usedPath = linuxPath;
-                    } else {
-                        usedPath = linux64Path;
-                    }
-
-                } else if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
-                {
-                    usedPath = macPath;
-                }
-                else
-                {
-                    usedPath = winPath;
-                }
-
-                String testExtension = "../modules/ext/org.esa.s2tbx.lib-openjpeg/" + usedPath;
-
-                FileObject fo = FileUtil.getConfigRoot();
-                File theFileCandidate = FileUtil.toFile(fo);
-                File relativeToFileCandidate = new File(theFileCandidate, testExtension);
-                relativeToFileCandidate = relativeToFileCandidate.getCanonicalFile();
+            if(!infoExtractor.isEmpty())
+            {
+                File infoExtractorFile = new File(infoExtractor);
 
                 if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
                 {
-                    setExecutable(relativeToFileCandidate, true);
+                    setExecutable(infoExtractorFile, true);
                 }
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-            } catch (InterruptedException e) {
-                ErrorManager.getDefault().notify(e);
+            }
+
+            if(!decompressor.isEmpty())
+            {
+                File decompressorFile = new File(decompressor);
+
+                if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
+                {
+                    setExecutable(decompressorFile, true);
+                }
             }
         }
     }
