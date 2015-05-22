@@ -21,7 +21,7 @@
         <module>s2tbx-python-lib</module>
         <module>s2tbx-bootstrap</module>
         <module>s2tbx-app</module>
-        <!--<module>s2tbx-kit</module>-->
+        <!--module>s2tbx-kit</module-->
         <module>s2tbx-help</module>
         <module>s2tbx-sen2cor-processor</module>
         <module>s2tbx-sen2three-processor</module>
@@ -167,9 +167,11 @@
                     <version>3.14</version>
                     <extensions>true</extensions>
                     <configuration>
+                        <moduleType>normal</moduleType>
+                        <licenseName>GPL 3</licenseName>
+                        <licenseFile>${project.basedir}/../LICENSE.html</licenseFile>
+                        <cluster>${brandingToken}</cluster>
                         <nbmBuildDir>${project.basedir}/../target/nbm</nbmBuildDir>
-                        <licenseName>THE BEER-WARE LICENSE</licenseName>
-                        <licenseFile>../LICENSE.html</licenseFile>
                         <brandingToken>${brandingToken}</brandingToken>
                         <useOSGiDependencies>false</useOSGiDependencies>
                         <requiresRestart>true</requiresRestart>
@@ -192,109 +194,6 @@
 
     </build>
 
-    <developers>
-        <developer>
-            <id>norman</id>
-            <name>Norman Fomferra</name>
-            <email>norman.fomferra@brockmann-consult.de</email>
-            <organization>Brockmann Consult</organization>
-            <roles>
-                <role>Project Manager</role>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>olaf</id>
-            <name>Olaf Danne</name>
-            <email>olaf.danne@brockmann-consult.de</email>
-            <organization>Brockmann Consult</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>tonio</id>
-            <name>Tonio Fincke</name>
-            <email>tonio.fincke@brockmann-consult.de</email>
-            <organization>Brockmann Consult</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>marcop</id>
-            <name>Marco Peters</name>
-            <email>marco.peters@brockmann-consult.de</email>
-            <organization>Brockmann Consult</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>ralf</id>
-            <name>Ralf Quast</name>
-            <email>ralf.quast@brockmann-consult.de</email>
-            <organization>Brockmann Consult</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>nicolas</id>
-            <name>Nicolas Ducoin</name>
-            <email>nicolas.ducoin@c-s.fr</email>
-            <organization>CS</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>oscar</id>
-            <name>Oscar Picas-Puig</name>
-            <email>oscar.picas-puig@c-s.fr</email>
-            <organization>CS</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>julien</id>
-            <name>Julien Malik</name>
-            <email>julien.malik@c-s.fr</email>
-            <organization>CS</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>kraftek</id>
-            <name>Cosmin Cara</name>
-            <email>cosmin.cara@c-s.ro</email>
-            <organization>CS ROMANIA</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>ramonam</id>
-            <name>Ramona Manda</name>
-            <email>ramona.manda@c-s.ro</email>
-            <organization>CS ROMANIA</organization>
-            <roles>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>umwilm</id>
-            <name>Uwe Mueller-Wilm</name>
-            <email>uwe.mueller-wilm@telespazio-vega.de</email>
-            <organization>Telespazio-VEGA</organization>
-            <roles>
-                <role>Python Developer</role>
-                <role>Java Developer</role>
-            </roles>
-        </developer>
-    </developers>
 
 
     <profiles>
@@ -435,7 +334,6 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 
     <reporting>
@@ -459,5 +357,110 @@
             </plugin>
         </plugins>
     </reporting>
+
+
+    <developers>
+        <developer>
+            <id>nicolas</id>
+            <name>Nicolas Ducoin</name>
+            <email>nicolas.ducoin@c-s.fr</email>
+            <organization>CS</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>oscar</id>
+            <name>Oscar Picas-Puig</name>
+            <email>oscar.picas-puig@c-s.fr</email>
+            <organization>CS</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>julien</id>
+            <name>Julien Malik</name>
+            <email>julien.malik@c-s.fr</email>
+            <organization>CS</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>kraftek</id>
+            <name>Cosmin Cara</name>
+            <email>cosmin.cara@c-s.ro</email>
+            <organization>CS ROMANIA</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>ramonam</id>
+            <name>Ramona Manda</name>
+            <email>ramona.manda@c-s.ro</email>
+            <organization>CS ROMANIA</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>umwilm</id>
+            <name>Uwe Mueller-Wilm</name>
+            <email>uwe.mueller-wilm@telespazio-vega.de</email>
+            <organization>Telespazio-VEGA</organization>
+            <roles>
+                <role>Python Developer</role>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>norman</id>
+            <name>Norman Fomferra</name>
+            <email>norman.fomferra@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Project Manager</role>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>olaf</id>
+            <name>Olaf Danne</name>
+            <email>olaf.danne@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>tonio</id>
+            <name>Tonio Fincke</name>
+            <email>tonio.fincke@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>marcop</id>
+            <name>Marco Peters</name>
+            <email>marco.peters@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>ralf</id>
+            <name>Ralf Quast</name>
+            <email>ralf.quast@brockmann-consult.de</email>
+            <organization>Brockmann Consult</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+    </developers>
 
 </project>
