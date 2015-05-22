@@ -97,7 +97,6 @@ import static org.esa.s2tbx.dataio.s2.S2Config.*;
 // todo - set a band's validMaskExpr or no-data value (read from GML)
 // todo - set band's ImageInfo from min,max,histogram found in header (--> L1cMetadata.quicklookDescriptor)
 // todo - viewing incidence tie-point grids contain NaN values - find out how to correctly treat them
-// todo - configure BEAM module / SUHET installer so that OpenJPEG "opj_decompress" executable is accessible on all platforms
 
 // todo - better collect problems during product opening and generate problem report (requires reader API change), see {@report "Problem detected..."} code marks
 
@@ -119,9 +118,11 @@ import static org.esa.s2tbx.dataio.s2.S2Config.*;
 public class Sentinel2ProductReader extends AbstractProductReader {
 
     private final boolean forceResize;
+    private final int filteredResolution;
 
     private File cacheDir;
     protected final Logger logger;
+
 
     static class BandInfo {
         final Map<String, File> tileIdToFileMap;
@@ -427,6 +428,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
+            // todo critical back to multiresolution
             if(bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
             {
                 Band band = addBand(product, bandInfo);
@@ -449,33 +451,26 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                         logger.severe("Illegal projection");
                     }
 
-                /*
+
                 try {
                     // todo critical add sceneRasterTransform
-                    AffineTransform scale10 = AffineTransform.getScaleInstance(500, 500);
-                    AffineTransform scale10Inv = scale10.createInverse();
+                    AffineTransform scale10 = AffineTransform.getScaleInstance(2, 2).createInverse();
+                    AffineTransform translation = AffineTransform.getTranslateInstance(-2000, 0);
+                    AffineTransform chain = new AffineTransform();
+                    chain.concatenate(scale10);
+                    chain.concatenate(translation);
 
-                    AffineTransform noTrans = AffineTransform.getScaleInstance(1, 1);
-                    AffineTransform noTransInv = noTrans.createInverse();
+                    S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(chain), new AffineTransform2D(chain.createInverse()));
 
-                    S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(scale10), new AffineTransform2D(scale10Inv));
-
-                    S2SceneRasterTransform idtransform = new S2SceneRasterTransform(new AffineTransform2D(noTrans), new AffineTransform2D(noTransInv));
-
-                    if(bandInfo.getWavebandInfo().resolution.resolution == 10)
-                    {
-                        band.setSceneRasterTransform(transform);
-                    }
-                    else
-                    {
-                        band.setSceneRasterTransform(idtransform);
-                    }
+                    // band.setSceneRasterTransform(transform);
 
                 } catch (NoninvertibleTransformException e) {
                     logger.severe("Illegal transform");
                 }
-                */
+
+
                 }
+
             }
 
 
