@@ -331,10 +331,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             for(L1cMetadata.Tile tile: tileList)
             {
                 MaskFilename[] filenames = tile.maskFilenames;
+
+
                 for(MaskFilename aMaskFile: filenames)
                 {
                     File aFile = aMaskFile.getName();
                     Pair<String, List<Polygon>> polys = gmlFilter.parse(aFile);
+
+                    boolean warningForPolygonsOutOfUtmZone = false;
+
                     if(!polys.getFirst().isEmpty())
                     {
                         int indexOfColons = polys.getFirst().indexOf(':');
@@ -347,10 +352,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                             }
                             else
                             {
-                                // todo critical change comments
-                                logger.warning("Wrong polygons !");
+                                warningForPolygonsOutOfUtmZone = true;
                             }
                         }
+                    }
+
+                    if(warningForPolygonsOutOfUtmZone)
+                    {
+                        logger.warning(String.format("Polygons detected out of its UTM zone in file [%s] !", aFile.getAbsolutePath()));
                     }
                 }
                 allMasks.addAll(Arrays.asList(filenames));
@@ -453,8 +462,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
 
                 try {
-                    // todo critical add sceneRasterTransform
-                    AffineTransform scale10 = AffineTransform.getScaleInstance(2, 2).createInverse();
+                    // todo critical test sceneRasterTransform
+                    AffineTransform scale10 = AffineTransform.getScaleInstance(bandInfo.getWavebandInfo().resolution.resolution, bandInfo.getWavebandInfo().resolution.resolution).createInverse();
                     AffineTransform translation = AffineTransform.getTranslateInstance(-2000, 0);
                     AffineTransform chain = new AffineTransform();
                     chain.concatenate(scale10);
