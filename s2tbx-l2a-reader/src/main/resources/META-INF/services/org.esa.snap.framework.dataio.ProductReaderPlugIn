@@ -1,1 +1,4 @@
 org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReaderPlugIn
+org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProduct10MReaderPlugIn
+org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProduct20MReaderPlugIn
+org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProduct60MReaderPlugIn

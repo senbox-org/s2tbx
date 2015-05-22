@@ -29,14 +29,19 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.util.AffineTransformation;
+import com.vividsolutions.jts.geom.util.NoninvertibleTransformationException;
+import javafx.scene.transform.Affine;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.AbstractProductReader;
+import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.*;
 import org.esa.snap.framework.dataop.barithm.BandArithmetic;
 import org.esa.snap.jai.ImageManager;
@@ -48,6 +53,7 @@ import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.Envelope2D;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jdom.JDOMException;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
@@ -67,6 +73,7 @@ import javax.media.jai.operator.TranslateDescriptor;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -90,7 +97,6 @@ import static org.esa.s2tbx.dataio.s2.S2Config.*;
 // todo - set a band's validMaskExpr or no-data value (read from GML)
 // todo - set band's ImageInfo from min,max,histogram found in header (--> L1cMetadata.quicklookDescriptor)
 // todo - viewing incidence tie-point grids contain NaN values - find out how to correctly treat them
-// todo - configure BEAM module / SUHET installer so that OpenJPEG "opj_decompress" executable is accessible on all platforms
 
 // todo - better collect problems during product opening and generate problem report (requires reader API change), see {@report "Problem detected..."} code marks
 
@@ -112,9 +118,11 @@ import static org.esa.s2tbx.dataio.s2.S2Config.*;
 public class Sentinel2ProductReader extends AbstractProductReader {
 
     private final boolean forceResize;
+    private final int filteredResolution;
 
     private File cacheDir;
     protected final Logger logger;
+
 
     static class BandInfo {
         final Map<String, File> tileIdToFileMap;
@@ -142,11 +150,19 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
     }
 
-
-    Sentinel2ProductReader(Sentinel2ProductReaderPlugIn readerPlugIn, boolean forceResize) {
+    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
         this.forceResize = forceResize;
+        this.filteredResolution = filteredResolution;
+    }
+
+
+    Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
+        super(readerPlugIn);
+        logger = BeamLogManager.getSystemLogger();
+        this.forceResize = forceResize;
+        this.filteredResolution = -1;
     }
 
     @Override
@@ -184,7 +200,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private void readMasks(Product p) {
-        // todo CRITICAL read geocoding using gml module
+        // todo read geocoding using gml module
         Assert.notNull(p);
     }
 
@@ -305,6 +321,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
         }
 
+        GmlFilter gmlFilter = new GmlFilter();
+        List<Polygon> polygons = new ArrayList<>();
+
         List<MaskFilename> allMasks = new ArrayList<MaskFilename>();
         if(!tileList.isEmpty())
         {
@@ -312,20 +331,38 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             for(L1cMetadata.Tile tile: tileList)
             {
                 MaskFilename[] filenames = tile.maskFilenames;
-                allMasks.addAll(Arrays.asList(filenames));
-            }
-        }
 
-        GmlFilter gmlFilter = new GmlFilter();
-        List<Polygon> polygons = new ArrayList<>();
-        List<File> allFiles = allMasks.stream().map(s -> {return s.getName();}).collect(Collectors.toList());
-        for(File aFile: allFiles)
-        {
-            try {
-                polygons.addAll(gmlFilter.parse(aFile));
-            } catch (Exception e) {
-                // todo critical remove stacktrace
-                e.printStackTrace();
+
+                for(MaskFilename aMaskFile: filenames)
+                {
+                    File aFile = aMaskFile.getName();
+                    Pair<String, List<Polygon>> polys = gmlFilter.parse(aFile);
+
+                    boolean warningForPolygonsOutOfUtmZone = false;
+
+                    if(!polys.getFirst().isEmpty())
+                    {
+                        int indexOfColons = polys.getFirst().indexOf(':');
+                        if(indexOfColons != -1)
+                        {
+                            String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':')+1);
+                            if(polys.getFirst().contains(realCsCode))
+                            {
+                                polygons.addAll(polys.getSecond());
+                            }
+                            else
+                            {
+                                warningForPolygonsOutOfUtmZone = true;
+                            }
+                        }
+                    }
+
+                    if(warningForPolygonsOutOfUtmZone)
+                    {
+                        logger.warning(String.format("Polygons detected out of its UTM zone in file [%s] !", aFile.getAbsolutePath()));
+                    }
+                }
+                allMasks.addAll(Arrays.asList(filenames));
             }
         }
 
@@ -333,14 +370,46 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         {
             addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
-            // todo critical use only tiepointgrids instead of bands
+            // todo use tiepointgrids instead of bands
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
         }
 
-        // CRITICAL todo add mask code when ready here
+        if(!polygons.isEmpty())
+        {
+            // todo get mask name
+            Mask newMask = new Mask(String.format("MaskTest", this.filteredResolution),product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
+            final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+
+            AffineTransformation atrans = null;
+            try {
+                atrans = AffineTransformation.scaleInstance(this.filteredResolution, this.filteredResolution).getInverse();
+            } catch (NoninvertibleTransformationException e) {
+                logger.warning("Invalid resolution !");
+            }
+            AffineTransformation ref = AffineTransformation.translationInstance(-sceneDescription.getSceneEnvelope().getMinX(), -sceneDescription.getSceneEnvelope().getMinY());
+
+            final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
+            for(int index = 0; index < polygons.size(); index++)
+            {
+                Polygon pol = polygons.get(index);
+                pol = (Polygon) ref.transform(pol);
+                pol = (Polygon) atrans.transform(pol);
+
+                // todo recover id associated to each polygon
+                Object[] data1 = {pol, String.format("Polygon-%s", index)};
+                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+                collection.add(f1);
+            }
+
+            VectorDataNode vdn = new VectorDataNode("ListOfPolygons", collection);
+            product.getVectorDataGroup().add(vdn);
+
+            Mask.VectorDataType.setVectorData(newMask, vdn);
+            product.addMask(newMask);
+        }
 
         return product;
     }
@@ -365,26 +434,51 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
-            Band band = addBand(product, bandInfo);
-            band.setSourceImage(mlif.createSourceImage(bandInfo));
 
-            if(!forceResize)
+            if(bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
             {
-                try {
-                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
-                            band.getRasterWidth(),
-                            band.getRasterHeight(),
-                            envelope.getMinX(),
-                            envelope.getMaxY(),
-                            bandInfo.getWavebandInfo().resolution.resolution,
-                            bandInfo.getWavebandInfo().resolution.resolution,
-                            0.0, 0.0));
-                } catch (FactoryException e) {
-                    logger.severe("Illegal CRS");
-                } catch (TransformException e) {
-                    logger.severe("Illegal projection");
+                Band band = addBand(product, bandInfo);
+                band.setSourceImage(mlif.createSourceImage(bandInfo));
+
+                if(!forceResize)
+                {
+                    try {
+                        band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                                band.getRasterWidth(),
+                                band.getRasterHeight(),
+                                envelope.getMinX(),
+                                envelope.getMaxY(),
+                                bandInfo.getWavebandInfo().resolution.resolution,
+                                bandInfo.getWavebandInfo().resolution.resolution,
+                                0.0, 0.0));
+                    } catch (FactoryException e) {
+                        logger.severe("Illegal CRS");
+                    } catch (TransformException e) {
+                        logger.severe("Illegal projection");
+                    }
+
+                    // todo critical uncomment when mutiresolution works using setSceneRasterTransform
+                    /*
+                    try {
+                        AffineTransform scale10 = AffineTransform.getScaleInstance(bandInfo.getWavebandInfo().resolution.resolution, bandInfo.getWavebandInfo().resolution.resolution).createInverse();
+                        AffineTransform translation = AffineTransform.getTranslateInstance(envelope.getMinX(), envelope.getMinY());
+                        AffineTransform chain = new AffineTransform();
+                        chain.concatenate(scale10);
+                        chain.concatenate(translation);
+
+                        S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(chain), new AffineTransform2D(chain.createInverse()));
+
+                        // band.setSceneRasterTransform(transform);
+
+                    } catch (NoninvertibleTransformException e) {
+                        logger.severe("Illegal transform");
+                    }
+                    */
+
                 }
+
             }
+
 
             // TODO Use the info in bandInfo.getWavebandInfo().resolution to change geocoding
         }
@@ -401,7 +495,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
 
-        // todo add masks from GML metadata files (gml branch)
         setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
 
         return band;
@@ -613,8 +706,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         public L1cTileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
-                                             L1C_TILE_LAYOUTS[0].width, // todo we must use data from jp2 files to update this
-                                             L1C_TILE_LAYOUTS[0].height)); // todo we must use data from jp2 files to update this
+                                             L1C_TILE_LAYOUTS[0].width, //todo we must use data from jp2 files to update this
+                                             L1C_TILE_LAYOUTS[0].height)); //todo we must use data from jp2 files to update this
             this.bandInfo = bandInfo;
         }
 

@@ -45,6 +45,10 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
             if (semantic.contains("L1B")) {
                 deco = DecodeQualification.INTENDED;
             }
+            else
+            {
+                deco = DecodeQualification.UNABLE;
+            }
         }
 
         return deco;

@@ -237,7 +237,6 @@ class L1bTileOpImage extends SingleBandedOpImage {
         Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
 
         if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
-            // critical change log level
             logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
             S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
         }
