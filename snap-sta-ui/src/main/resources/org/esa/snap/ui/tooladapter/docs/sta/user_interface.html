@@ -43,10 +43,10 @@
     there is a table containing the adapters where the user can check the adapter to apply the action form the toolbar.
     If multiple adapters are checked, the action is applied to the first checked one.</p>
 <p>This form can be invoked by using the menu <i>Tools->Manage external tools</i> of the SNAP application.</p>
-<img src="../images/ManageAdapters.JPG"/>
+<img src="../images/ManageAdapters.png"/>
 <h4>Creating a new adapter or modifying an existing one</h4>
 <p>The form for creating a new adapter is reused for editing an existing adapter and for duplicating an adapter.</p>
-<img src="../images/EditAdapter.JPG"/>
+<img src="../images/EditAdapter.png"/>
 <p>The form is structured into multiple areas:</p>
 <ul>
     <li>descriptor details</li>
@@ -57,11 +57,12 @@
     <li>parameters</li>
 </ul>
 <p>For details about the operator structure and what is the use of each member, see <a href="user_interface.html">here</a>.</p>
-<h5><b>Descriptor details</b> consists in folowing fields:</h5>
+<h5>Descriptor details</h5>
+<p>This area consists in the following fields:</p>
 <ul>
     <li>Alias: a short name for the adapter to distinguish from the rest of the adapters, this alias will be used to
         name the folder on disk where the operator resides, so special characters should not be used (for example,
-        on windows, the folowing characters are not allowed when defining a folder name: <>:"/\|?*). This is a
+        on windows, the following characters are not allowed when defining a folder name: <>:"/\|?*). This is a
         required field.</li>
     <li>Unique Name: this name is a name which registers the adapter in the toolbox. It must be unique. This is a
         required field.</li>
@@ -73,10 +74,11 @@
     <li>Menu Location: this represents the path to the menu where the tool shortcut will be placed. Usually,
         this should be <i>Tool/External tools/ToolAlias</i></li>
 </ul>
-<h5><b>System variables</b> is a table containing the variables that must be set when the tools is executed. A new
+<h5>System variables</h5>
+<p>System variables is a table containing the variables that must be set when the tools is executed. A new
     variable can be added by using the <b>+</b> button and an existing one can be deleted by using the delete button
     (<b>X</b>) in the left of the desired variable. The key and value of an variable can be edited by double-clicking
-    the corresponding cell.</h5>
+    the corresponding cell.</p>
 <h5><b>Pre-processing</b> area contains 2 field, each one with a checkbox and a combobox:</h5>
 <ul>
     <li>Preprocessing tool: when this option is checked and an already defined tool is chosen in the combobox,
@@ -86,16 +88,159 @@
         is written to disk as the second step of the execution of the current adapter. The path where the product is
         saved is given as the value of the parameter <i>sourceProductFile</i></li>	
 </ul>
-<h5><b>Configuration parameters</b> includes:</h5>
+<h5>Configuration parameters includes:</h5>
 <ul>
     <li>Tool location: location of the executable file corresponding to the tool.</li>
     <li>Working directory: the place where the temporary files are saved</li>
     <li>Command line template: the velocity template to be executed, including the command line arguments of the tool,
-        each one of them on a separate line.</li>
+        each one of them on a separate line. The content of the template is saved in a file called
+        <i>&lt;operator_alias&gt;_template.vm</i> under the folder of the operator.</i></li>
 </ul>
-<h5><b>Tool output patterns</b></h5>
-<h5><b>Operator parameters</b> - special area for template parameters (before/after)</h5>
-<h4>Executing an adapter from SNAP</h4>
+<h5>Tool output patterns</h5>
+<p>Tool output patterns includes 2 defined patterns for determining the progress of the tool and also the
+    error status. When the tool outputs something, the two patterns are checked and if one of them matches the output,
+    this is registered in the log (in SNAP application, when the Console is active, the log messages will appear
+    in the console view)</p>
+<h5>Operator parameters</h5>
+<p>This area consists in a table of parameters necessary for the processing of the velocity template. Each parameter
+    can have the following properties:</p>
+<ul>
+    <li>name</li>
+    <li>description</li>
+    <li>label</li>
+    <li>data type</li>
+    <li>default value</li>
+</ul>
+<p>The data type of a parameter can be as follows:</p>
+<table>
+    <tr>
+        <th>Type</th><th>Description</th><th>Special use-case</th>
+    </tr>
+    <tr>
+        <td>Integer</td><td>Integer values</td><td>N/A</td>
+    </tr>
+    <tr>
+        <td>Decimal</td><td>Float values</td><td>N/A</td>
+    </tr>
+    <tr>
+        <td>String</td><td>A list of characters</td><td>N/A</td>
+    </tr>
+    <tr>
+        <td>Boolean</td><td>The control of this type is a checkbox, so the accepted values are true and false.</td>
+        <td>N/A</td>
+    </tr>
+    <tr>
+        <td>List</td><td>This type represents a list of strings, delimited by comma.</td><td>N/A</td>
+    </tr>
+    <tr>
+        <td>Template Parameter</td>
+        <td>the template parameters are velocity templates that need to be interpreted
+        before the execution of the tool. The interpreted result will be saved on local disk, in the temporary folder
+        of the adapter. The full path of the result file will be saved as this parameter's value, so when the parameter is
+        used in the tool template, it will be replaced with the full path of the interpreted result.</td>
+        <td>N/A</td>
+    </tr>
+    <tr><td>Template Before</td>
+        <td>this is a velocity template which will be interpreted before the execution of the tool.</td>
+        <td>It can be used to create/copy some files necessary for the execution, or to...</td>
+    </tr>
+    <tr>
+        <td>Template After</td><td>this is a velocity template which will be executed after the tool execution.</td>
+        <td>It can be used to delete some temporary files that were used to the actual execution (for example
+            temporary products - see ... parameter type), or to do some operations with the result of the execution
+            (like renaming the file containing the final product)
+        </td>
+    </tr>
+    <tr>
+        <td>Product List</td>
+        <td>Represents a product loaded in SNAP application context (or a list of loaded products)</td>
+        <td>This type is not available in the parameter type combobox, instead only the default parameter called
+            'sourceProduct' has this type (see section <b>Default parameters</b>)</td>
+    </tr>
+    <tr>
+        <td>File List</td>
+        <td>Represents a file or a list of files</td>
+        <td>This type is not available in the parameter type combobox, instead only the default parameter called
+            'sourceProductFile' has this type (see section <b>Default parameters</b>)</td>
+    </tr>
+</table>
 
+<h5>Default parameters</h5>
+<p>An adapter must have 3 parameters. If the descriptor of the adapter does not contain one or all of this parameters,
+    they are added when the editing form is launched. Those parameters are:</p>
+<ul>
+    <li>
+        sourceProduct - represents the product(s) choosed by the user from the ones loaded in SNAP context on the
+        time of the execution (see <b>Executing an adapter</b> for details about how to choose a product). When this
+        parameter is used in the velocity template, for each product the method <b>getFileLocation()</b> is called, and
+        the path returned by the method is passed to the velocity template. If there are multiple source products,
+        each one is accessed by using the syntax sourceProduct[0], sourceProduct[1], ... This parameter cannot be
+        edited or deleted.
+    </li>
+    <li>
+        sourceProductFile - this is a File or a list of files corresponding to the source products chosed on execution.
+        This is used only if 'Write product with' is checked and a writer is chosed. When this happens, all the source
+        products are written on disk, in the temporary folder, and the absolute path of the file(s) is stored in
+        this parameter, so it can be used in the velocity template. This parameter cannot be edited or deleted.
+    </li>
+    <li>
+        targetProductFile - this is a File corresponding to the target product that will be loaded in SNAP context
+        after the tool execution. This parameter cannot be deleted or edited, but his value can be edited (the default value
+        and also the value on execution).
+    </li>
+</ul>
+<h5>Regular parameters</h5>
+<p>All user-defined parameters that are not default parameters or template parameters are considered as regular
+    parameters. The type of those parameters can be: Integer, Decimal, String, Boolean, List. Those parameters can be
+    edited by pressing the corresponding 'Ellipsis' (...) button. This will open a new form, where the following
+    properties of the parameter can be changed:</p>
+<ul>
+    <li>Name</li>
+    <li>Alias</li>
+    <li>Type</li>
+    <li>Default value</li>
+    <li>Description</li>
+    <li>Label</li>
+    <li>Unit</li>
+    <li>Interval</li>
+    <li>Value set</li>
+    <li>Condition</li>
+    <li>Pattern</li>
+    <li>Format</li>
+    <li>Not null</li>
+    <li>Not empty</li>
+    <li>Alias</li>
+    <li>Deprecated</li>
+</ul>
+<img src="../images/RegularParamEditor.png"/>
+<h5>Template parameters</h5>
+<p>The template parameters are parameters that represent a velocity template stored in a file on disk. So this is
+    actually a parameter, having the type File, on which you can pass other regular parameters.</p>
+<p>When editing this type of parameter, first a file must be chosed, and then the template gets loaded in the form and
+    some new parameters can be defined for this template:</p>
+<img src="../images/TemplateParamEditor.png"/>
+<p>This template will be interpreted in 3 key moments of the execution:</p>
+<ul>
+    <li>If the parameter type is <i>Template Before</i>, the template gets interpreted before any of the execution
+        steps of the toll gets started.
+    </li>
+    <li>If the parameter type is <i>Template Parameter</i>, the template gets interpreted on strating the execution
+        of the tool. In this case, the result is saved in the working directory, and the full path to the file gets
+        saved in this parameter's value.
+    </li>
+    <li>If the parameter type is <i>Template After</i>, the template gets interpreted after the execution
+        steps of the toll, as the final step. The result is also saved in the working directory.
+    </li>
+</ul>
+<h4>Executing an adapter from SNAP</h4>
+<p>When executing an already defined adapter, some actions are necessary in the execution form:</p>
+<ul>
+    <li>Choosing the source products, eighter by selecting ones from the already loaded products, or by loading new ones</li>
+    <il>Setting parameter values; this step is not necessary and if not executed, the default values of the parameters
+        will be used.</il>
+</ul>
+<img src="../images/ExecuteAdapter.png"/>
+<p>Note: the parameters <i>sourceProduct</i> and <i>sourceProductFile</i> will not be available in the execution form,
+    since those are edited by actually selecting the source product(s)!</p>
 </body>
 </html>
