@@ -117,8 +117,30 @@ public class OpenJpegUtils {
     public static String getSafeInfoExtractor()
     {
         try {
+            String nbDirs = System.getProperty("netbeans.dirs");
+            String[] dirModuleCandidates = nbDirs.split(SystemUtils.PATH_SEPARATOR);
+            File candidateByIteration = null;
+            for(String aModuleCandidate: dirModuleCandidates)
+            {
+                candidateByIteration = new File(aModuleCandidate, getInfoExtractor());
+                if(candidateByIteration.exists())
+                {
+                    break;
+                }
+            }
+            if(candidateByIteration != null)
+            {
+                return candidateByIteration.getAbsolutePath();
+            }
+
             File candidateByAPI = InstalledFileLocator.getDefault().locate(getInfoExtractor(), null, false);
-            return candidateByAPI.getAbsolutePath();
+            if(candidateByAPI != null) {
+                return candidateByAPI.getAbsolutePath();
+            }
+            else
+            {
+                return "";
+            }
         } catch (IOException e) {
             return null;
         } catch (InterruptedException e) {
@@ -162,8 +184,31 @@ public class OpenJpegUtils {
     public static String getSafeDecompressor()
     {
         try {
+            String nbDirs = System.getProperty("netbeans.dirs");
+            String[] dirModuleCandidates = nbDirs.split(SystemUtils.PATH_SEPARATOR);
+            File candidateByIteration = null;
+            for(String aModuleCandidate: dirModuleCandidates)
+            {
+                candidateByIteration = new File(aModuleCandidate, getDecompressor());
+                if(candidateByIteration.exists())
+                {
+                    break;
+                }
+            }
+            if(candidateByIteration != null)
+            {
+                return candidateByIteration.getAbsolutePath();
+            }
+
             File candidateByAPI = InstalledFileLocator.getDefault().locate(getDecompressor(), null, false);
-            return candidateByAPI.getAbsolutePath();
+            if(candidateByAPI != null)
+            {
+                return candidateByAPI.getAbsolutePath();
+            }
+            else
+            {
+                return "";
+            }
         } catch (InterruptedException e) {
             return null;
         } catch (IOException e) {
