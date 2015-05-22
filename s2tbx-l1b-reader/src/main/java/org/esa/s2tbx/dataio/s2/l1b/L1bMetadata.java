@@ -279,7 +279,6 @@ public class L1bMetadata {
             t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
             t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
 
-            // critical use corner infos
             t.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
 
             tileList.add(t);
@@ -344,8 +343,6 @@ public class L1bMetadata {
         Level1B_Granule product = (Level1B_Granule) casted;
         productCharacteristics = new L1bMetadata.ProductCharacteristics();
 
-        // critical fix tile size
-
         List<File> fullTileNamesList = new ArrayList<File>();
         tileList = new ArrayList<Tile>();
 
@@ -363,7 +360,6 @@ public class L1bMetadata {
             t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
             t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
 
-            // critical use corner infos
             t.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
 
             tileList.add(t);

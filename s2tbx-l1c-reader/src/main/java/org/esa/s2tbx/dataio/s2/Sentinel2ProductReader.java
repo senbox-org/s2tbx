@@ -200,7 +200,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private void readMasks(Product p) {
-        // todo CRITICAL read geocoding using gml module
+        // todo read geocoding using gml module
         Assert.notNull(p);
     }
 
@@ -368,10 +368,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         if(!bandInfoMap.isEmpty())
         {
-            // todo critical filter by band
             addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
-            // todo critical use only tiepointgrids instead of bands
+            // todo use tiepointgrids instead of bands
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
@@ -437,7 +436,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
-            // todo critical back to multiresolution
+
             if(bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
             {
                 Band band = addBand(product, bandInfo);
@@ -460,23 +459,23 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                         logger.severe("Illegal projection");
                     }
 
+                    // todo critical uncomment when mutiresolution works using setSceneRasterTransform
+                    /*
+                    try {
+                        AffineTransform scale10 = AffineTransform.getScaleInstance(bandInfo.getWavebandInfo().resolution.resolution, bandInfo.getWavebandInfo().resolution.resolution).createInverse();
+                        AffineTransform translation = AffineTransform.getTranslateInstance(envelope.getMinX(), envelope.getMinY());
+                        AffineTransform chain = new AffineTransform();
+                        chain.concatenate(scale10);
+                        chain.concatenate(translation);
 
-                try {
-                    // todo critical test sceneRasterTransform
-                    AffineTransform scale10 = AffineTransform.getScaleInstance(bandInfo.getWavebandInfo().resolution.resolution, bandInfo.getWavebandInfo().resolution.resolution).createInverse();
-                    AffineTransform translation = AffineTransform.getTranslateInstance(-2000, 0);
-                    AffineTransform chain = new AffineTransform();
-                    chain.concatenate(scale10);
-                    chain.concatenate(translation);
+                        S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(chain), new AffineTransform2D(chain.createInverse()));
 
-                    S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(chain), new AffineTransform2D(chain.createInverse()));
+                        // band.setSceneRasterTransform(transform);
 
-                    // band.setSceneRasterTransform(transform);
-
-                } catch (NoninvertibleTransformException e) {
-                    logger.severe("Illegal transform");
-                }
-
+                    } catch (NoninvertibleTransformException e) {
+                        logger.severe("Illegal transform");
+                    }
+                    */
 
                 }
 
@@ -498,8 +497,6 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
 
-        // todo add masks from GML metadata files (gml branch)
-        // todo critical uncomment this later...
         setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
 
         return band;

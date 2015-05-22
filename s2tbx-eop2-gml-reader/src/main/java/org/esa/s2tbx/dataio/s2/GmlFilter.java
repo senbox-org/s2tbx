@@ -78,6 +78,8 @@ public class GmlFilter {
 
             String maskEpsg = "";
 
+            // todo critical recover masktype and id
+
             Namespace gml = Namespace.getNamespace("http://www.opengis.net/gml/3.2");
             List<Element> targeted = web_app.getChildren("boundedBy", gml);
             if(!targeted.isEmpty()) {
