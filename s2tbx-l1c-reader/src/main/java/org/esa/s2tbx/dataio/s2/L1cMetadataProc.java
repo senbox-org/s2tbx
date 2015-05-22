@@ -166,6 +166,7 @@ public class L1cMetadataProc {
         }
         else
         {
+            // warning hardcoded resolutions
             aInfo.add(new L1cMetadata.SpectralInformation("B1",0,60));
             aInfo.add(new L1cMetadata.SpectralInformation("B2",1,10));
             aInfo.add(new L1cMetadata.SpectralInformation("B3",2,10));

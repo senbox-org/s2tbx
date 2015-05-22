@@ -32,7 +32,7 @@ import java.util.Locale;
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
+public class Sentinel2L2AProduct60MReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -62,12 +62,12 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
     public ProductReader createReaderInstance() {
         BeamLogManager.getSystemLogger().info("Building product reader...");
 
-        return new Sentinel2L2AProductReader(this, false);
+        return new Sentinel2L2AProductReader(this, false, 60);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L2AConfig.FORMAT_NAME};
+        return new String[]{S2L2AConfig.FORMAT_NAME+"-60M"};
     }
 
     @Override

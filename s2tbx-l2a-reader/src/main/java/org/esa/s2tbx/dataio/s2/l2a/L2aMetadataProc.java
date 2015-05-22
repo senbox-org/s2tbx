@@ -187,11 +187,12 @@ public class L2aMetadataProc {
         characteristics.processingLevel = product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value();
 
         A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List spectralInformationList = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getSpectral_Information_List();
+        List<L2aMetadata.SpectralInformation> aInfo = new ArrayList<L2aMetadata.SpectralInformation>();
 
         if (spectralInformationList != null) {
             List<A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = spectralInformationList.getSpectral_Information();
 
-            List<L2aMetadata.SpectralInformation> aInfo = new ArrayList<L2aMetadata.SpectralInformation>();
+
 
             for (A_PRODUCT_INFO_USERL2A.L2A_Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
                 L2aMetadata.SpectralInformation data = new L2aMetadata.SpectralInformation();
@@ -221,6 +222,23 @@ public class L2aMetadataProc {
 
             int size = aInfo.size();
             characteristics.bandInformations = aInfo.toArray(new L2aMetadata.SpectralInformation[size]);
+        }
+        else
+        {
+            // warning hardcoded resolutions
+            aInfo.add(new L2aMetadata.SpectralInformation("B1",0,60));
+            aInfo.add(new L2aMetadata.SpectralInformation("B2",1,10));
+            aInfo.add(new L2aMetadata.SpectralInformation("B3",2,10));
+            aInfo.add(new L2aMetadata.SpectralInformation("B4",3,10));
+            aInfo.add(new L2aMetadata.SpectralInformation("B5",4,20));
+            aInfo.add(new L2aMetadata.SpectralInformation("B6",5,20));
+            aInfo.add(new L2aMetadata.SpectralInformation("B7",6,20));
+            aInfo.add(new L2aMetadata.SpectralInformation("B8",7,10));
+            aInfo.add(new L2aMetadata.SpectralInformation("B8A",8,20));
+            aInfo.add(new L2aMetadata.SpectralInformation("B9",9,60));
+            aInfo.add(new L2aMetadata.SpectralInformation("B10",10,60));
+            aInfo.add(new L2aMetadata.SpectralInformation("B11",11,20));
+            aInfo.add(new L2aMetadata.SpectralInformation("B12",12,20));
         }
 
         return characteristics;
