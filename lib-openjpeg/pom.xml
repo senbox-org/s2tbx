@@ -72,6 +72,7 @@
                             <targetPath>modules/ext/org.esa.s2tbx.lib-openjpeg</targetPath>
                             <includes>
                                 <include>**/*.*</include>
+                                <include>**/*</include>
                             </includes>
                         </nbmResource>
                     </nbmResources>
