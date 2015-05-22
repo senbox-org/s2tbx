@@ -408,7 +408,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             product.getVectorDataGroup().add(vdn);
 
             Mask.VectorDataType.setVectorData(newMask, vdn);
-            product.addMask(newMask);
+            // product.addMask(newMask);
         }
 
         return product;
