@@ -1,17 +1,16 @@
 package org.esa.s2tbx.dataio.s2;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.snap.util.io.FileUtils;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.UUID;
 
 /**
- * Created by opicas-p on 11/07/2014.
- */
+ * @author opicas-p
+*/
 public class ShortenTest {
 
     /**
@@ -27,10 +26,12 @@ public class ShortenTest {
         {
             String mediumPath = "C:\\5A3AA7c3-475c-42a5-9a25-94d6a93c67b7\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025";
             File directory =  new File(mediumPath);
-            directory.mkdirs();
-            String shortPath = Utils.GetShortPathName(mediumPath);
-            Assert.assertEquals("C:\\5A3AA7~1\\S2A_OP~1", shortPath);
-            FileUtils.deleteTree(directory.getParentFile());
+
+            if(directory.mkdirs()) {
+                String shortPath = Utils.GetShortPathName(mediumPath);
+                Assert.assertEquals("C:\\5A3AA7~1\\S2A_OP~1", shortPath);
+                FileUtils.deleteTree(directory.getParentFile());
+            }
         }
     }
 
@@ -45,8 +46,7 @@ public class ShortenTest {
         if(SystemUtils.IS_OS_WINDOWS) {
             String mediumPath = "C:\\5A3AA7c3-475c-42a5-9a25-94d6a93c67b7\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.JP2";
             File mediumFile =  new File(mediumPath);
-            mediumFile.getParentFile().mkdir();
-            if(mediumFile.createNewFile()) {
+            if(mediumFile.getParentFile().mkdir() && mediumFile.createNewFile()) {
                 String shortPath = Utils.GetShortPathName(mediumPath);
                 Assert.assertEquals("C:\\5A3AA7~1\\S2A_OP~1.JP2", shortPath);
                 FileUtils.deleteTree(mediumFile.getParentFile());
