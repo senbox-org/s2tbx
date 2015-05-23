@@ -471,7 +471,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         coords.add(aList.get(aList.size() - 1).corners.get(1));
         coords.add(aList.get(aList.size() - 1).corners.get(2));
 
-        // critical, look at TiePointGrid construction, clockwise, counterclockwise ?
+        // todo look at TiePointGrid construction, clockwise, counterclockwise ?
         float[] lats = convertDoublesToFloats(getLatitudes(coords));
         float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
@@ -480,7 +480,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         TiePointGrid lonGrid = addTiePointGrid(aList.get(0).tileGeometry10M.numCols, aList.get(0).tileGeometry10M.numRowsDetector, tileBandInfo.wavebandInfo.bandName + ",longitude", lons);
         product.addTiePointGrid(lonGrid);
 
-        // fixme this will fail, only one geocoding per product ?
         GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
         return geoCoding;
     }
@@ -784,9 +783,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
             long preImage = 0;
             long postImage = 0;
-            // long zeroImage = meter.measureDeep(tileImages);
-
-            // fixme here comes the extra filter coming from extra field in Bandinfo
 
             List<String> tiles = sceneDescription.getTileIds().stream().filter(x -> x.contains(tileBandInfo.detectorId)).collect(Collectors.toList());
 
@@ -794,10 +790,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
                 Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
 
-                // fixme look at tiles without associated filename, look at tileId list
                 PlanarImage opImage = createL1bTileImage(tileId, level);
-                // preImage = meter.measureDeep(opImage);
-
                 {
                     double factorX = 1.0 / (Math.pow(2, level) * (this.tileBandInfo.wavebandInfo.resolution.resolution / S2L1bSpatialResolution.R10M.resolution));
                     double factorY = 1.0 / (Math.pow(2, level) * (this.tileBandInfo.wavebandInfo.resolution.resolution / S2L1bSpatialResolution.R10M.resolution));
@@ -808,15 +801,11 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                                                          Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
                     logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
-
-                    // postImage = meter.measureDeep(opImage);
                 }
 
                 logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
                 tileImages.add(opImage);
             }
-
-            // long deadShot = meter.measureDeep(tileImages);
 
             if (tileImages.isEmpty()) {
                 logger.warning("No tile images for mosaic");
