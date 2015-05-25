@@ -447,7 +447,6 @@ class L1bTileOpImage extends SingleBandedOpImage {
                         }
                     }
 
-                    // fixme this part throws an exception
                     for (int y = intersection.height; y < tileHeight; y++) {
                         for (int x = 0; x < tileWidth; x++) {
                             tileData[y * tileWidth + x] = S2L1bConfig.FILL_CODE_OUT_OF_Y_BOUNDS;

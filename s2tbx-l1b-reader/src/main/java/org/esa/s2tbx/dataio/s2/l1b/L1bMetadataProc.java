@@ -334,8 +334,6 @@ public class L1bMetadataProc {
         for (A_GRANULE_DIMENSIONS.Size gpos : sizes) {
             int resolution = gpos.getResolution();
 
-            // fixme retrieve tile layout per granule..
-
             int ratio = resolution / 10;
             L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.numCols = gpos.getNCOLS();
@@ -359,7 +357,6 @@ public class L1bMetadataProc {
     }
 
     public static L1bMetadata.AnglesGrid getSunGrid(Level1B_Granule aGranule) {
-        // fixme implement this...
         A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
         L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
         grid.zenith = geoHeader.getSolar_Angles().getZENITH_ANGLE().getValue();
@@ -368,7 +365,6 @@ public class L1bMetadataProc {
     }
 
     public static L1bMetadata.AnglesGrid getAnglesGrid(Level1B_Granule aGranule) {
-        // fixme implement this...
         A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
         L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
         grid.zenith = geoHeader.getIncidence_Angles().getZENITH_ANGLE().getValue();
