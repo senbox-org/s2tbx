@@ -9,6 +9,8 @@ if __name__ == "__main__":
     packages = set([each[3:].split("/")[0] for each in mod])
     if len(packages) > 0:
         for each in packages:
-            command = "mvn -amd -pl %s compile package -fae -DskipTests=true" % each
+            command = "mvn -pl %s compile package install -fae -DskipTests=true" % each
+            os.system(command)
+            command = "mvn -amd -pl %s compile package install -fae -DskipTests=true" % each
             os.system(command)
         os.system('git commit -a -m "Temporary commit"')

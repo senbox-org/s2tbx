@@ -66,9 +66,6 @@ public interface S2L1bConfig {
 
     //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
     //todo use classes from jp2 package to read the data
-    //todo future improvement: use opj_dump.exe to retrieve the data
-
-    // fixme temporary change to 5 res...
     TileLayout[] L1B_TILE_LAYOUTS = new TileLayout[]{
             new TileLayout(2548, 2304, 1024, 1024, 3, 3, 6), // 10
             new TileLayout(1274, 1152, 1024, 1024, 2, 2, 6), // 20

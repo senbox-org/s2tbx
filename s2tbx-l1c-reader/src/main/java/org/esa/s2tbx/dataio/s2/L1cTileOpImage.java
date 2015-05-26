@@ -123,8 +123,17 @@ class L1cTileOpImage extends SingleBandedOpImage {
         BeamLogManager.getSystemLogger().fine("Asking for scaled mosaic image: " + resolution.toString());
         BeamLogManager.getSystemLogger().warning("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
 
-        int targetWidth = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getWidth() / (resolution.resolution)), level);
-        int targetHeight = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getHeight() / (resolution.resolution)), level);
+        BeamLogManager.getSystemLogger().severe("ForceResize:" + forceResize);
+
+        int targetResolution = resolution.resolution;
+
+        if(forceResize)
+        {
+            targetResolution = S2SpatialResolution.R10M.resolution;
+        }
+
+        int targetWidth = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getWidth() / (targetResolution)), level);
+        int targetHeight = L1cTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getHeight() / (targetResolution)), level);
 
 
         float scaleX = targetWidth / ((float) sourceImage.getWidth());

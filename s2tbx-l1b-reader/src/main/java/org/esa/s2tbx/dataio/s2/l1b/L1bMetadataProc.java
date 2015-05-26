@@ -194,7 +194,6 @@ public class L1bMetadataProc {
 
             List<L1bMetadata.SpectralInformation> aInfo = new ArrayList<L1bMetadata.SpectralInformation>();
 
-            // fixme Spectral_Information_List is optional on L1B ??
             for (A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
                 L1bMetadata.SpectralInformation data = new L1bMetadata.SpectralInformation();
                 data.bandId = Integer.parseInt(sin.getBandId());
@@ -234,7 +233,7 @@ public class L1bMetadataProc {
                 data.physicalBand = band_name.value();
                 data.bandId = index;
 
-                // fixme remove hardcoded resolutions...
+                // warning hardcoded resolutions
                 data.resolution = 10;
                 if (data.physicalBand.equals("B1") || data.physicalBand.equals("B9") || data.physicalBand.equals("B10")) {
                     data.resolution = 60;
@@ -335,8 +334,6 @@ public class L1bMetadataProc {
         for (A_GRANULE_DIMENSIONS.Size gpos : sizes) {
             int resolution = gpos.getResolution();
 
-            // fixme retrieve tile layout per granule..
-
             int ratio = resolution / 10;
             L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.numCols = gpos.getNCOLS();
@@ -360,7 +357,6 @@ public class L1bMetadataProc {
     }
 
     public static L1bMetadata.AnglesGrid getSunGrid(Level1B_Granule aGranule) {
-        // fixme implement this...
         A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
         L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
         grid.zenith = geoHeader.getSolar_Angles().getZENITH_ANGLE().getValue();
@@ -369,7 +365,6 @@ public class L1bMetadataProc {
     }
 
     public static L1bMetadata.AnglesGrid getAnglesGrid(Level1B_Granule aGranule) {
-        // fixme implement this...
         A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
         L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
         grid.zenith = geoHeader.getIncidence_Angles().getZENITH_ANGLE().getValue();

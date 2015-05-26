@@ -237,7 +237,6 @@ class L1bTileOpImage extends SingleBandedOpImage {
         Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
 
         if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
-            // critical change log level
             logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
             S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
         }
@@ -448,7 +447,6 @@ class L1bTileOpImage extends SingleBandedOpImage {
                         }
                     }
 
-                    // fixme this part throws an exception
                     for (int y = intersection.height; y < tileHeight; y++) {
                         for (int x = 0; x < tileWidth; x++) {
                             tileData[y * tileWidth + x] = S2L1bConfig.FILL_CODE_OUT_OF_Y_BOUNDS;

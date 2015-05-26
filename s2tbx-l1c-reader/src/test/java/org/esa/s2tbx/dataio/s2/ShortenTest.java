@@ -1,52 +1,72 @@
 package org.esa.s2tbx.dataio.s2;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.snap.util.io.FileUtils;
 import org.junit.Test;
 
 import java.io.File;
 
 /**
- * Created by opicas-p on 11/07/2014.
- */
+ * @author opicas-p
+*/
 public class ShortenTest {
-    @Test
-    public void testFileName() throws Exception
-    {
-        String visualStudioPath = "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0";
 
+    /**
+     * Test we can shorten a long directory name. Can't test with a very long directory name since
+     * it is not valid on Windows.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testLongDirectoryName() throws Exception
+    {
         if(SystemUtils.IS_OS_WINDOWS)
         {
-            File directory =  new File(visualStudioPath);
-            if(directory.exists())
-            {
-                String shortPath = Utils.GetShortPathName(visualStudioPath);
-                Assert.assertEquals("C:\\PROGRA~2\\MICROS~1.0", shortPath);
+            String mediumPath = "C:\\5A3AA7c3-475c-42a5-9a25-94d6a93c67b7\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025";
+            File directory =  new File(mediumPath);
+
+            if(directory.mkdirs()) {
+                String shortPath = Utils.GetShortPathName(mediumPath);
+                Assert.assertEquals("C:\\5A3AA7~1\\S2A_OP~1", shortPath);
+                FileUtils.deleteTree(directory.getParentFile());
             }
         }
     }
 
+    /**
+     * Test we can shorten a long file name. Can't test with a very long file name since
+     * it is not valid on Windows.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testVeryLongFileName() throws Exception
-    {
-        String visualStudioPath = "D:\\is tmp\\TheDataIsVeryVeryLongHere\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE\\GRANULE\\S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLH_N01.01\\IMG_DATA\\S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLH_B04.jp2";
-
-        if(SystemUtils.IS_OS_WINDOWS)
-        {
-            String shortPath = Utils.GetIterativeShortPathName(visualStudioPath);
-            Assert.assertEquals("D:\\ISTMP~1\\THEDAT~1\\S2A_OP~1.SAF\\GRANULE\\S270DA~1.01\\IMG_DATA\\S2A_OP~4.JP2", shortPath);
+    public void testLongFileName() throws Exception {
+        if(SystemUtils.IS_OS_WINDOWS) {
+            String mediumPath = "C:\\5A3AA7c3-475c-42a5-9a25-94d6a93c67b7\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.JP2";
+            File mediumFile =  new File(mediumPath);
+            if(mediumFile.getParentFile().mkdir() && mediumFile.createNewFile()) {
+                String shortPath = Utils.GetShortPathName(mediumPath);
+                Assert.assertEquals("C:\\5A3AA7~1\\S2A_OP~1.JP2", shortPath);
+                FileUtils.deleteTree(mediumFile.getParentFile());
+            }
         }
     }
 
+    /**
+     * Test GetIterativeShortPathName returns "" when the path does not exist.
+     * It also tests we cleaned well the files created
+     *
+     * @throws Exception
+     */
     @Test
     public void testVeryLongFileName2() throws Exception
     {
-        String visualStudioPath = "D:\\is tmp\\TheDataIsVeryVeryLongHere\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE\\GRANULE\\S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLH_N01.01\\IMG_DATA\\S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLH_B04.jpx";
-
         if(SystemUtils.IS_OS_WINDOWS)
         {
-            String shortPath = Utils.GetIterativeShortPathName(visualStudioPath);
+            String nonExistingPath = "C:\\5a3aa7c3-475c-42a5-9a25-94d6a93c67b7";
+            String shortPath = Utils.GetIterativeShortPathName(nonExistingPath);
             Assert.assertEquals("", shortPath);
         }
     }

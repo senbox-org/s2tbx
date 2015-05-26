@@ -31,6 +31,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aProductFilename;
 import org.esa.snap.framework.dataio.AbstractProductReader;
+import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.Band;
 import org.esa.snap.framework.datamodel.CrsGeoCoding;
 import org.esa.snap.framework.datamodel.Product;
@@ -106,6 +107,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
 
     private File cacheDir;
     protected final Logger logger;
+    private int filteredResolution;
 
     static class BandInfo {
         final Map<String, File> tileIdToFileMap;
@@ -129,11 +131,18 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         }
     }
 
-
-    Sentinel2L2AProductReader(Sentinel2L2AProductReaderPlugIn readerPlugIn, boolean forceResize) {
+    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
         this.forceResize = forceResize;
+        this.filteredResolution = filteredResolution;
+    }
+
+    Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
+        super(readerPlugIn);
+        logger = BeamLogManager.getSystemLogger();
+        this.forceResize = forceResize;
+        this.filteredResolution = -1;
     }
 
     @Override
@@ -359,25 +368,26 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
 
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
-            Band band = addBand(product, bandInfo);
-            band.setSourceImage(mlif.createSourceImage(bandInfo));
-
-            if(!forceResize)
+            if (bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
             {
-                // todo critical, set geocoding per band
-                try {
-                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
-                            band.getRasterWidth(),
-                            band.getRasterHeight(),
-                            envelope.getMinX(),
-                            envelope.getMaxY(),
-                            bandInfo.getWavebandInfo().resolution.resolution,
-                            bandInfo.getWavebandInfo().resolution.resolution,
-                            0.0, 0.0));
-                } catch (FactoryException e) {
-                    logger.severe("Illegal CRS");
-                } catch (TransformException e) {
-                    logger.severe("Illegal projection");
+                Band band = addBand(product, bandInfo);
+                band.setSourceImage(mlif.createSourceImage(bandInfo));
+
+                if (!forceResize) {
+                    try {
+                        band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                                band.getRasterWidth(),
+                                band.getRasterHeight(),
+                                envelope.getMinX(),
+                                envelope.getMaxY(),
+                                bandInfo.getWavebandInfo().resolution.resolution,
+                                bandInfo.getWavebandInfo().resolution.resolution,
+                                0.0, 0.0));
+                    } catch (FactoryException e) {
+                        logger.severe("Illegal CRS");
+                    } catch (TransformException e) {
+                        logger.severe("Illegal projection");
+                    }
                 }
             }
         }
@@ -388,9 +398,6 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
     private Band addBand(Product product, BandInfo bandInfo) {
         int index = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
         int defRes = S2SpatialResolution.R10M.resolution;
-
-        // todo critical remove this line
-        BeamLogManager.getSystemLogger().log(Level.SEVERE, "Welcome Back!!");
 
         final Band band = new Band(bandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
         product.addBand(band);

@@ -36,6 +36,7 @@ import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bGranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bProductFilename;
 import org.esa.snap.framework.dataio.AbstractProductReader;
+import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.Band;
 import org.esa.snap.framework.datamodel.CrsGeoCoding;
 import org.esa.snap.framework.datamodel.GeoCoding;
@@ -93,7 +94,6 @@ import static org.esa.s2tbx.dataio.s2.l1b.S2L1bConfig.*;
 // todo - set a band's validMaskExpr or no-data value (read from GML)
 // todo - set band's ImageInfo from min,max,histogram found in header (--> L1cMetadata.quicklookDescriptor)
 // todo - viewing incidence tie-point grids contain NaN values - find out how to correctly treat them
-// todo - configure BEAM module / SUHET installer so that OpenJPEG "opj_decompress" executable is accessible on all platforms
 
 // todo - better collect problems during product opening and generate problem report (requires reader API change), see {@report "Problem detected..."} code marks
 
@@ -117,6 +117,9 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     private final boolean forceResize;
     private File cacheDir;
     protected final Logger logger;
+    private int filteredResolution;
+
+
     // private MemoryMeter meter;
 
     public static class TileBandInfo {
@@ -143,11 +146,19 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
     }
 
-
-    Sentinel2L1BProductReader(Sentinel2L1BProductReaderPlugIn readerPlugIn, boolean forceResize) {
+    public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
         this.forceResize = forceResize;
+        // meter = new MemoryMeter();
+        this.filteredResolution = filteredResolution;
+    }
+
+    Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
+        super(readerPlugIn);
+        logger = BeamLogManager.getSystemLogger();
+        this.forceResize = forceResize;
+        this.filteredResolution = -1;
         // meter = new MemoryMeter();
     }
 
@@ -308,8 +319,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             logger.warning("There are no spectral information here !");
         }
 
-        // fixme remove hardcoded indexes
-
         String[] detectors = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"};
 
         // Order bands by physicalBand
@@ -347,7 +356,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
             if (!detectorBandInfoMap.isEmpty()) {
                 for (Pair<String, String> key : detectorBandInfoMap.keySet()) {
-                    // critical BandInfo needs its associated TiePointgrid
                     TileBandInfo tileBandInfo = createBandInfoFromHeaderInfo(key.getSecond(), sin.get(key.getFirst()), detectorBandInfoMap.get(key));
 
                     // composite band name : detector + band
@@ -380,7 +388,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
 
 
-        // todo critical wait until geocoding is fixed
+        // todo wait until geocoding is fixed
         /*
         if(forceResize){
         if (product.getGeoCoding() == null) {
@@ -397,7 +405,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         return product;
     }
 
-    // critical use getSimpleGeoCodingFromTileBandInfo instead of getGeoCodingFromTileBandInfo
+    // todo use getSimpleGeoCodingFromTileBandInfo instead of getGeoCodingFromTileBandInfo
     private GeoCoding getSimpleGeoCodingFromTileBandInfo(TileBandInfo tileBandInfo, Map<String, Tile> tileList, Product product) {
         Objects.requireNonNull(tileBandInfo);
         Objects.requireNonNull(tileList);
@@ -421,14 +429,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         coords.add(aList.get(aList.size() - 1).corners.get(1));
         coords.add(aList.get(aList.size() - 1).corners.get(2));
 
-        // critical, look at TiePointGrid construction, clockwise, counterclockwise ?
         float[] lats = convertDoublesToFloats(getLatitudes(coords));
         float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
         // todo create Tiepointgrid add add to product
-        // fixme this will fail, only one geocoding per product ?
-
-        // fixme we should change of each band
         TiePointGrid latGrid = addTiePointGrid(aList.get(0).tileGeometry10M.numCols, aList.get(0).tileGeometry10M.numRowsDetector, tileBandInfo.wavebandInfo.bandName + ",latitude", lats);
         product.addTiePointGrid(latGrid);
         TiePointGrid lonGrid = addTiePointGrid(aList.get(0).tileGeometry10M.numCols, aList.get(0).tileGeometry10M.numRowsDetector, tileBandInfo.wavebandInfo.bandName + ",longitude", lons);
@@ -467,7 +471,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         coords.add(aList.get(aList.size() - 1).corners.get(1));
         coords.add(aList.get(aList.size() - 1).corners.get(2));
 
-        // critical, look at TiePointGrid construction, clockwise, counterclockwise ?
+        // todo look at TiePointGrid construction, clockwise, counterclockwise ?
         float[] lats = convertDoublesToFloats(getLatitudes(coords));
         float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
@@ -476,7 +480,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         TiePointGrid lonGrid = addTiePointGrid(aList.get(0).tileGeometry10M.numCols, aList.get(0).tileGeometry10M.numRowsDetector, tileBandInfo.wavebandInfo.bandName + ",longitude", lons);
         product.addTiePointGrid(lonGrid);
 
-        // fixme this will fail, only one geocoding per product ?
         GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
         return geoCoding;
     }
@@ -496,26 +499,26 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
         for (String bandIndex : bandIndexes) {
             TileBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
-            Band band = addBand(product, tileBandInfo);
-            band.setSourceImage(mlif.createSourceImage(tileBandInfo));
+            if (tileBandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution){
+                Band band = addBand(product, tileBandInfo);
+                band.setSourceImage(mlif.createSourceImage(tileBandInfo));
 
-            if(!forceResize)
-            {
-                try {
-                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
-                            band.getRasterWidth(),
-                            band.getRasterHeight(),
-                            envelope.getMinX(),
-                            envelope.getMaxY(),
-                            tileBandInfo.getWavebandInfo().resolution.resolution,
-                            tileBandInfo.getWavebandInfo().resolution.resolution,
-                            0.0, 0.0));
-                } catch (FactoryException e) {
-                    logger.severe("Illegal CRS");
-                } catch (TransformException e) {
-                    logger.severe("Illegal projection");
+                if (!forceResize) {
+                    try {
+                        band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                                band.getRasterWidth(),
+                                band.getRasterHeight(),
+                                envelope.getMinX(),
+                                envelope.getMaxY(),
+                                tileBandInfo.getWavebandInfo().resolution.resolution,
+                                tileBandInfo.getWavebandInfo().resolution.resolution,
+                                0.0, 0.0));
+                    } catch (FactoryException e) {
+                        logger.severe("Illegal CRS");
+                    } catch (TransformException e) {
+                        logger.severe("Illegal projection");
+                    }
                 }
-                // todo CRITICAL add geocoding per band
             }
         }
         
@@ -525,9 +528,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     private Band addBand(Product product, TileBandInfo tileBandInfo) {
         int index = S2L1bSpatialResolution.valueOfId(tileBandInfo.getWavebandInfo().resolution.id).resolution / S2L1bSpatialResolution.R10M.resolution;
         int defRes = S2L1bSpatialResolution.R10M.resolution;
-
-        // todo critical remove this line
-        BeamLogManager.getSystemLogger().log(Level.SEVERE, "Welcome Back!!");
 
         final Band band = new Band(tileBandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
         product.addBand(band);
@@ -610,7 +610,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         return new TileBandInfo(tileFileMap,
                                 bandInformation.bandId, detector,
                                 new S2L1bWavebandInfo(bandInformation.bandId,
-                                                      detector + bandInformation.physicalBand, // critical text shown to user in menu (detector, band) is evaluated as an expression !!
+                                                      detector + bandInformation.physicalBand, // notice that text shown to user in menu (detector, band) is evaluated as an expression !!
                                                       spatialResolution, bandInformation.wavelenghtCentral,
                                                       Math.abs(bandInformation.wavelenghtMax + bandInformation.wavelenghtMin)),
                                 L1B_TILE_LAYOUTS[spatialResolution.id]);
@@ -750,13 +750,9 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     private final class BandL1bSceneMultiLevelSource extends AbstractL1bSceneMultiLevelSource {
         private final TileBandInfo tileBandInfo;
 
-        // critical remove Memory profilers
-        // private MemoryMeter meter;
-
         public BandL1bSceneMultiLevelSource(L1bSceneDescription sceneDescription, TileBandInfo tileBandInfo, AffineTransform imageToModelTransform) {
             super(sceneDescription, imageToModelTransform, tileBandInfo.imageLayout.numResolutions);
             this.tileBandInfo = tileBandInfo;
-            // this.meter = new MemoryMeter();
         }
 
         @Override
@@ -787,9 +783,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
             long preImage = 0;
             long postImage = 0;
-            // long zeroImage = meter.measureDeep(tileImages);
-
-            // fixme here comes the extra filter coming from extra field in Bandinfo
 
             List<String> tiles = sceneDescription.getTileIds().stream().filter(x -> x.contains(tileBandInfo.detectorId)).collect(Collectors.toList());
 
@@ -797,10 +790,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
                 Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
 
-                // fixme look at tiles without associated filename, look at tileId list
                 PlanarImage opImage = createL1bTileImage(tileId, level);
-                // preImage = meter.measureDeep(opImage);
-
                 {
                     double factorX = 1.0 / (Math.pow(2, level) * (this.tileBandInfo.wavebandInfo.resolution.resolution / S2L1bSpatialResolution.R10M.resolution));
                     double factorY = 1.0 / (Math.pow(2, level) * (this.tileBandInfo.wavebandInfo.resolution.resolution / S2L1bSpatialResolution.R10M.resolution));
@@ -811,15 +801,11 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                                                          Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
                     logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
-
-                    // postImage = meter.measureDeep(opImage);
                 }
 
                 logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
                 tileImages.add(opImage);
             }
-
-            // long deadShot = meter.measureDeep(tileImages);
 
             if (tileImages.isEmpty()) {
                 logger.warning("No tile images for mosaic");
