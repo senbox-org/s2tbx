@@ -336,6 +336,7 @@ public class L1cMetadata {
             t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
             t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
 
+            // counting tiles by UTM zones
             String key = t.horizontalCsCode;
             if (counters.containsKey(key)) {
                 counters.get(key).increment();
@@ -356,7 +357,7 @@ public class L1cMetadata {
             tileList.add(t);
         }
 
-        // todo split by utm zone...
+
         for(String key: counters.keySet())
         {
             List<L1cMetadata.Tile> aUTMZone = tileList.stream().filter(i -> i.horizontalCsCode.equals(key)).collect(Collectors.toList());
@@ -366,11 +367,11 @@ public class L1cMetadata {
         // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
         // todo make sure that tileList and allTileLists.get(maximus) are the same before removing this code
 
-        if (counters.values().size() > 1) {
-            Counter maximus = Collections.max(counters.values());
-            logger.info(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
-            tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
-        }
+        //if (counters.values().size() > 1) {
+        //    Counter maximus = Collections.max(counters.values());
+        //    logger.info(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
+        //    tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
+        //}
 
         S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
         S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);

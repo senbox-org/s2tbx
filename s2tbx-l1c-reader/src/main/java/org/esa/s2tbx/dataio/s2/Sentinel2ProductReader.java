@@ -26,12 +26,7 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
-import com.vividsolutions.jts.geom.Envelope;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.util.AffineTransformation;
-import com.vividsolutions.jts.geom.util.NoninvertibleTransformationException;
-import javafx.scene.transform.Affine;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -40,17 +35,17 @@ import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
+import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
+import org.esa.s2tbx.dataio.s2.gml.GmlFilter;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.*;
-import org.esa.snap.framework.dataop.barithm.BandArithmetic;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
@@ -61,7 +56,6 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.openjpeg.StackTraceUtils;
-import org.xml.sax.SAXException;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -72,7 +66,6 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -330,37 +323,31 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             {
                 MaskFilename[] filenames = tile.maskFilenames;
 
+                if(filenames != null) {
+                    for (MaskFilename aMaskFile : filenames) {
+                        File aFile = aMaskFile.getName();
+                        Pair<String, List<EopPolygon>> polys = gmlFilter.parse(aFile);
 
-                for(MaskFilename aMaskFile: filenames)
-                {
-                    File aFile = aMaskFile.getName();
-                    Pair<String, List<EopPolygon>> polys = gmlFilter.parse(aFile);
+                        boolean warningForPolygonsOutOfUtmZone = false;
 
-                    boolean warningForPolygonsOutOfUtmZone = false;
-
-                    if(!polys.getFirst().isEmpty())
-                    {
-                        int indexOfColons = polys.getFirst().indexOf(':');
-                        if(indexOfColons != -1)
-                        {
-                            String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':')+1);
-                            if(polys.getFirst().contains(realCsCode))
-                            {
-                                polygons.addAll(polys.getSecond());
-                            }
-                            else
-                            {
-                                warningForPolygonsOutOfUtmZone = true;
+                        if (!polys.getFirst().isEmpty()) {
+                            int indexOfColons = polys.getFirst().indexOf(':');
+                            if (indexOfColons != -1) {
+                                String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':') + 1);
+                                if (polys.getFirst().contains(realCsCode)) {
+                                    polygons.addAll(polys.getSecond());
+                                } else {
+                                    warningForPolygonsOutOfUtmZone = true;
+                                }
                             }
                         }
-                    }
 
-                    if(warningForPolygonsOutOfUtmZone)
-                    {
-                        logger.warning(String.format("Polygons detected out of its UTM zone in file [%s] !", aFile.getAbsolutePath()));
+                        if (warningForPolygonsOutOfUtmZone) {
+                            logger.warning(String.format("Polygons detected out of its UTM zone in file [%s] !", aFile.getAbsolutePath()));
+                        }
                     }
+                    allMasks.addAll(Arrays.asList(filenames));
                 }
-                allMasks.addAll(Arrays.asList(filenames));
             }
         }
 
@@ -368,10 +355,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         {
             addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
+//            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
+//            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
+//            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
+//            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
         }
 
         Map<String, List<EopPolygon>> polygonsByType = new HashMap<>();
@@ -428,6 +415,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         return product;
     }
+
 
     private void addTiePointGridBand(Product product, L1cMetadata metadataHeader, L1cSceneDescription sceneDescription, String name, int tiePointGridIndex) {
         final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
@@ -517,13 +505,15 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 bandName, S2Config.RAW_NO_DATA_THRESHOLD));
     }
 
+    /*
     private void addL1cTileTiePointGrids(L1cMetadata metadataHeader, Product product, int tileIndex) {
         final TiePointGrid[] tiePointGrids = createL1cTileTiePointGrids(metadataHeader, tileIndex);
         for (TiePointGrid tiePointGrid : tiePointGrids) {
             product.addTiePointGrid(tiePointGrid);
         }
     }
-
+*/
+    /*
     private TiePointGrid[] createL1cTileTiePointGrids(L1cMetadata metadataHeader, int tileIndex) {
         Tile tile = metadataHeader.getTileList().get(tileIndex);
         int gridHeight = tile.sunAnglesGrid.zenith.length;
@@ -577,6 +567,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 createTiePointGrid("view_azimuth", gridWidth, gridHeight, viewingAzimuths)
         };
     }
+    */
 
     private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, float[] values) {
         final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, values);
@@ -887,8 +878,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             TiePointGrid[] tiePointGrids = tiePointGridsMap.get(tileId);
             if (tiePointGrids == null) {
                 final int tileIndex = sceneDescription.getTileIndex(tileId);
-                tiePointGrids = createL1cTileTiePointGrids(metadata, tileIndex);
-                tiePointGridsMap.put(tileId, tiePointGrids);
+
+                // no tie point grid from angles, images are better
+                // TODO: supress this when confirmed
+                //tiePointGrids = createL1cTileTiePointGrids(metadata, tileIndex);
+                //tiePointGridsMap.put(tileId, tiePointGrids);
             }
             return (PlanarImage) tiePointGrids[tiePointGridIndex].getSourceImage().getImage(level);
         }

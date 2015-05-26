@@ -278,29 +278,33 @@ public class L1cMetadataProc {
 
     public static L1cMetadata.AnglesGrid getSunGrid(Level1C_Tile product) {
         A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
-        A_SUN_INCIDENCE_ANGLE_GRID sun = ang.getSun_Angles_Grid();
 
-        int azrows = sun.getAzimuth().getValues_List().getVALUES().size();
-        int azcolumns = sun.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
+        L1cMetadata.AnglesGrid ag = null;
+        if(ang != null) {
+            A_SUN_INCIDENCE_ANGLE_GRID sun = ang.getSun_Angles_Grid();
 
-        int zenrows = sun.getZenith().getValues_List().getVALUES().size();
-        int zencolumns = sun.getZenith().getValues_List().getVALUES().get(0).getValue().size();
+            int azrows = sun.getAzimuth().getValues_List().getVALUES().size();
+            int azcolumns = sun.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
 
-        L1cMetadata.AnglesGrid ag = new L1cMetadata.AnglesGrid();
-        ag.azimuth = new float[azrows][azcolumns];
-        ag.zenith = new float[zenrows][zencolumns];
+            int zenrows = sun.getZenith().getValues_List().getVALUES().size();
+            int zencolumns = sun.getZenith().getValues_List().getVALUES().get(0).getValue().size();
 
-        for (int rowindex = 0; rowindex < azrows; rowindex++) {
-            List<Float> azimuths = sun.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
-            for (int colindex = 0; colindex < azcolumns; colindex++) {
-                ag.azimuth[rowindex][colindex] = azimuths.get(colindex);
+            ag = new L1cMetadata.AnglesGrid();
+            ag.azimuth = new float[azrows][azcolumns];
+            ag.zenith = new float[zenrows][zencolumns];
+
+            for (int rowindex = 0; rowindex < azrows; rowindex++) {
+                List<Float> azimuths = sun.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
+                for (int colindex = 0; colindex < azcolumns; colindex++) {
+                    ag.azimuth[rowindex][colindex] = azimuths.get(colindex);
+                }
             }
-        }
 
-        for (int rowindex = 0; rowindex < zenrows; rowindex++) {
-            List<Float> zeniths = sun.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
-            for (int colindex = 0; colindex < zencolumns; colindex++) {
-                ag.zenith[rowindex][colindex] = zeniths.get(colindex);
+            for (int rowindex = 0; rowindex < zenrows; rowindex++) {
+                List<Float> zeniths = sun.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
+                for (int colindex = 0; colindex < zencolumns; colindex++) {
+                    ag.zenith[rowindex][colindex] = zeniths.get(colindex);
+                }
             }
         }
 
@@ -309,63 +313,72 @@ public class L1cMetadataProc {
 
     public static L1cMetadata.AnglesGrid[] getAnglesGrid(Level1C_Tile product) {
         A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
-        List<AN_INCIDENCE_ANGLE_GRID> filteredListe = ang.getViewing_Incidence_Angles_Grids();
 
-        Map<Pair<String, String>, AN_INCIDENCE_ANGLE_GRID > theMap = new LinkedHashMap<>();
-        for (int index = 0; index < filteredListe.size(); index++) {
-            AN_INCIDENCE_ANGLE_GRID aGrid = filteredListe.get(index);
-            theMap.put(new Pair<String, String>(aGrid.getBandId(), aGrid.getDetectorId()), aGrid);
-        }
+        L1cMetadata.AnglesGrid[] darr = null;
+        if(ang != null) {
+            List<AN_INCIDENCE_ANGLE_GRID> filteredListe = ang.getViewing_Incidence_Angles_Grids();
 
-        List<AN_INCIDENCE_ANGLE_GRID> incilist = new ArrayList<>(theMap.values());
-
-        L1cMetadata.AnglesGrid[] darr = new L1cMetadata.AnglesGrid[incilist.size()];
-        for (int index = 0; index < incilist.size(); index++) {
-            AN_INCIDENCE_ANGLE_GRID angleGrid = incilist.get(index);
-
-            int azrows2 = angleGrid.getAzimuth().getValues_List().getVALUES().size();
-            int azcolumns2 = angleGrid.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
-
-            int zenrows2 = angleGrid.getZenith().getValues_List().getVALUES().size();
-            int zencolumns2 = angleGrid.getZenith().getValues_List().getVALUES().get(0).getValue().size();
-
-
-            L1cMetadata.AnglesGrid ag2 = new L1cMetadata.AnglesGrid();
-            ag2.azimuth = new float[azrows2][azcolumns2];
-            ag2.zenith = new float[zenrows2][zencolumns2];
-
-            for (int rowindex = 0; rowindex < azrows2; rowindex++) {
-                List<Float> azimuths = angleGrid.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
-                for (int colindex = 0; colindex < azcolumns2; colindex++) {
-                    ag2.azimuth[rowindex][colindex] = azimuths.get(colindex);
-                }
+            Map<Pair<String, String>, AN_INCIDENCE_ANGLE_GRID> theMap = new LinkedHashMap<>();
+            for (int index = 0; index < filteredListe.size(); index++) {
+                AN_INCIDENCE_ANGLE_GRID aGrid = filteredListe.get(index);
+                theMap.put(new Pair<String, String>(aGrid.getBandId(), aGrid.getDetectorId()), aGrid);
             }
 
-            for (int rowindex = 0; rowindex < zenrows2; rowindex++) {
-                List<Float> zeniths = angleGrid.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
-                for (int colindex = 0; colindex < zencolumns2; colindex++) {
-                    ag2.zenith[rowindex][colindex] = zeniths.get(colindex);
-                }
-            }
+            List<AN_INCIDENCE_ANGLE_GRID> incilist = new ArrayList<>(theMap.values());
 
-            ag2.bandId = Integer.parseInt(angleGrid.getBandId());
-            ag2.detectorId = Integer.parseInt(angleGrid.getDetectorId());
-            darr[index] = ag2;
+            darr = new L1cMetadata.AnglesGrid[incilist.size()];
+            for (int index = 0; index < incilist.size(); index++) {
+                AN_INCIDENCE_ANGLE_GRID angleGrid = incilist.get(index);
+
+                int azrows2 = angleGrid.getAzimuth().getValues_List().getVALUES().size();
+                int azcolumns2 = angleGrid.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
+
+                int zenrows2 = angleGrid.getZenith().getValues_List().getVALUES().size();
+                int zencolumns2 = angleGrid.getZenith().getValues_List().getVALUES().get(0).getValue().size();
+
+
+                L1cMetadata.AnglesGrid ag2 = new L1cMetadata.AnglesGrid();
+                ag2.azimuth = new float[azrows2][azcolumns2];
+                ag2.zenith = new float[zenrows2][zencolumns2];
+
+                for (int rowindex = 0; rowindex < azrows2; rowindex++) {
+                    List<Float> azimuths = angleGrid.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
+                    for (int colindex = 0; colindex < azcolumns2; colindex++) {
+                        ag2.azimuth[rowindex][colindex] = azimuths.get(colindex);
+                    }
+                }
+
+                for (int rowindex = 0; rowindex < zenrows2; rowindex++) {
+                    List<Float> zeniths = angleGrid.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
+                    for (int colindex = 0; colindex < zencolumns2; colindex++) {
+                        ag2.zenith[rowindex][colindex] = zeniths.get(colindex);
+                    }
+                }
+
+                ag2.bandId = Integer.parseInt(angleGrid.getBandId());
+                ag2.detectorId = Integer.parseInt(angleGrid.getDetectorId());
+                darr[index] = ag2;
+            }
         }
 
         return darr;
     }
 
     public static L1cMetadata.MaskFilename[] getMasks(Level1C_Tile aTile, File file) {
-        List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getPixel_Level_QI().getMASK_FILENAME();
-        List<L1cMetadata.MaskFilename> aMaskList = new ArrayList<L1cMetadata.MaskFilename>();
-        for(A_MASK_LIST.MASK_FILENAME filename: masks)
-        {
-            File QIData = new File(file.getParent(), "QI_DATA");
-            File GmlData =  new File(QIData, filename.getValue());
-            aMaskList.add(new L1cMetadata.MaskFilename(filename.getBandId(), filename.getType(), GmlData));
-        }
+        A_QUALITY_INDICATORS_INFO_TILE qualityInfo = aTile.getQuality_Indicators_Info();
 
-        return aMaskList.toArray(new L1cMetadata.MaskFilename[aMaskList.size()]);
+        L1cMetadata.MaskFilename[] maskFileNamesArray = null;
+        if(qualityInfo != null) {
+            List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getPixel_Level_QI().getMASK_FILENAME();
+            List<L1cMetadata.MaskFilename> aMaskList = new ArrayList<L1cMetadata.MaskFilename>();
+            for (A_MASK_LIST.MASK_FILENAME filename : masks) {
+                File QIData = new File(file.getParent(), "QI_DATA");
+                File GmlData = new File(QIData, filename.getValue());
+                aMaskList.add(new L1cMetadata.MaskFilename(filename.getBandId(), filename.getType(), GmlData));
+            }
+
+            maskFileNamesArray = aMaskList.toArray(new L1cMetadata.MaskFilename[aMaskList.size()]);
+        }
+        return maskFileNamesArray;
     }
 }
