@@ -118,17 +118,18 @@ public class ToolAdapterEditorDialog extends ModalDialog {
     private JTextArea templateContent;
     private OperatorParametersTable paramsTable;
     private Logger logger;
+    public static final String helpID = "sta_editor";
 
-    private ToolAdapterEditorDialog(AppContext appContext, String title, String helpID) {
-        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, new Object[] { new JButton(Bundle.CTL_Button_Export_Text()) }, helpID);
+    private ToolAdapterEditorDialog(AppContext appContext, String title) {
+        super(appContext.getApplicationWindow(), title, ID_OK_CANCEL_HELP, new Object[] { new JButton(Bundle.CTL_Button_Export_Text()) }, helpID);
         //super(appContext.getApplicationWindow(), title, ID_OK_CANCEL, null, helpID);
         this.logger = Logger.getLogger(ToolAdapterEditorDialog.class.getName());
         getJDialog().setResizable(false);
         this.registerButton(ID_OTHER, new JButton(Bundle.CTL_Button_Export_Text()));
     }
 
-    private ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor) {
-        this(appContext, operatorDescriptor.getAlias(), helpID);
+    private ToolAdapterEditorDialog(AppContext appContext, ToolAdapterOperatorDescriptor operatorDescriptor) {
+        this(appContext, operatorDescriptor.getAlias());
         this.oldOperatorDescriptor = operatorDescriptor;
         this.newOperatorDescriptor = new ToolAdapterOperatorDescriptor(this.oldOperatorDescriptor);
 
@@ -165,12 +166,11 @@ public class ToolAdapterEditorDialog extends ModalDialog {
     /**
      * Constructs a new window for editing the operator
      * @param appContext the application context
-     * @param helpID
      * @param operatorDescriptor the descriptor of the operator to be edited
      * @param operatorIsNew true if the operator was not previously registered (so it is a new operator) and false if the operator was registered and the editing operation is requested
      */
-    public ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
-        this(appContext, helpID, operatorDescriptor);
+    public ToolAdapterEditorDialog(AppContext appContext, ToolAdapterOperatorDescriptor operatorDescriptor, boolean operatorIsNew) {
+        this(appContext, operatorDescriptor);
         this.operatorIsNew = operatorIsNew;
         this.newNameIndex = -1;
         setContent(createMainPanel());
@@ -179,12 +179,11 @@ public class ToolAdapterEditorDialog extends ModalDialog {
     /**
      * Constructs a new window for editing the operator
      * @param appContext the application context
-     * @param helpID
      * @param operatorDescriptor the descriptor of the operator to be edited
      * @param newNameIndex an integer value representing the suffix for the new operator name; if this value is less than 1, the editing operation of the current operator is executed; if the value is equal to or greater than 1, the operator is duplicated and the index value is used to compute the name of the new operator
      */
-    public ToolAdapterEditorDialog(AppContext appContext, String helpID, ToolAdapterOperatorDescriptor operatorDescriptor, int newNameIndex) {
-        this(appContext, helpID, operatorDescriptor);
+    public ToolAdapterEditorDialog(AppContext appContext, ToolAdapterOperatorDescriptor operatorDescriptor, int newNameIndex) {
+        this(appContext, operatorDescriptor);
         this.newNameIndex = newNameIndex;
         this.operatorIsNew = this.newNameIndex >= 1;
         if(this.newNameIndex >= 1) {

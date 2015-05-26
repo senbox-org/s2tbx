@@ -50,6 +50,7 @@ public class ToolParameterEditorDialog extends ModalDialog {
     private PropertyMemberUIWrapper uiWrapper;
     private JComponent editorComponent;
     private JPanel mainPanel;
+    public static final String helpID = "sta_editor";
 
     private static final BidiMap typesMap;
 
@@ -63,7 +64,7 @@ public class ToolParameterEditorDialog extends ModalDialog {
     }
 
 
-    public ToolParameterEditorDialog(AppContext appContext, String title, String helpID, ToolParameterDescriptor parameter, PropertyMemberUIWrapper uiWrapper) {
+    public ToolParameterEditorDialog(AppContext appContext, String title, ToolParameterDescriptor parameter, PropertyMemberUIWrapper uiWrapper) {
         super(appContext.getApplicationWindow(), parameter.getName(), ID_OK_CANCEL, helpID);
         this.oldParameter = parameter;
         this.parameter = new ToolParameterDescriptor(parameter);

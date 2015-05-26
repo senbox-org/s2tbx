@@ -8,6 +8,8 @@
         <tocitem text="Tools">
             <tocitem text="Standalone Tool Adapter" target="sta_overview">
                 <tocitem text="User Interface" target="sta_user_interface"/>
+                <tocitem text="Adapter Editor" target="sta_editor"/>
+                <tocitem text="Adapter Execution" target="sta_execution"/>
                 <tocitem text="Adapter File Structure" target="sta_adapter_structure"/>
             </tocitem>
         </tocitem>

@@ -99,7 +99,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         newButton.setToolTipText(Bundle.ToolTipNewOperator_Text());
         newButton.addActionListener(e -> {
             ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor(ToolAdapterConstants.OPERATOR_NAMESPACE + "DefaultOperatorName", ToolAdapterOp.class, "DefaultOperatorName", null, null, null, null, null, null);
-            ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), newOperatorSpi, true);
+            ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, newOperatorSpi, true);
             dialog.show();
             setContent(createContentPanel());
             getContent().repaint();
@@ -117,7 +117,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                     newNameIndex++;
                     opName = operatorDesc.getName() + ToolAdapterConstants.OPERATOR_GENERATED_NAME_SEPARATOR + newNameIndex;
                 }
-                ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), operatorDesc, newNameIndex);
+                ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, operatorDesc, newNameIndex);
                 dialog.show();
                 setContent(createContentPanel());
                 getContent().repaint();
@@ -132,7 +132,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         editButton.addActionListener(e -> {
             ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
             if (operatorDesc != null) {
-                ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), operatorDesc, false);
+                ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, operatorDesc, false);
                 dialog.show();
                 setContent(createContentPanel());
                 getContent().repaint();
@@ -178,8 +178,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                 final ToolAdapterExecutionDialog operatorDialog = new ToolAdapterExecutionDialog(
                         operatorDesc,
                         appContext,
-                        operatorDesc.getLabel(),
-                        getHelpID());
+                        operatorDesc.getLabel());
                 operatorDialog.show();
             } else {
                 SnapDialogs.showWarning(Bundle.MessageNoSelection_Text());
@@ -265,7 +264,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
                     operatorsTable.getModel().setValueAt(true, selectedRow, 0);
                     operatorsTable.repaint();
                     ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
-                    ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, getHelpID(), operatorDesc, false);
+                    ToolAdapterEditorDialog dialog = new ToolAdapterEditorDialog(appContext, operatorDesc, false);
                     dialog.show();
                     setContent(createContentPanel());
                     getContent().repaint();
