@@ -275,7 +275,6 @@ public class L1bMetadata {
             t.tileGeometry20M = geoms.get(20);
             t.tileGeometry60M = geoms.get(60);
 
-            // fixme get solar and incidence info
             t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
             t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
 
@@ -283,8 +282,6 @@ public class L1bMetadata {
 
             tileList.add(t);
         }
-
-        // fixme get solar and incidence angles from DATASTRIP
 
         S2L1bDatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
         S2L1bDatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
@@ -305,8 +302,6 @@ public class L1bMetadata {
         Level1B_DataStrip theDataStrip = (Level1B_DataStrip) castedStrip;
         int numheaders = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header().size();
 
-        // fixme remove log
-        logger.fine(String.format("Recovered %d geometric headers.", numheaders));
 
         List<AnglesGrid> sunGrid = new ArrayList<AnglesGrid>();
         List<AnglesGrid> incidenceGrid = new ArrayList<AnglesGrid>();
@@ -327,9 +322,6 @@ public class L1bMetadata {
                 incidenceGrid.add(tmpIncidenceGrid);
             }
         }
-
-        // fixme sunGrid and incidenceGrid are now available in sunGrid and incidenceGrid
-        // look at RapidEyeL1Reader:initGeoCoding for lon/lat tiepointgridss
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
             MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
@@ -356,7 +348,6 @@ public class L1bMetadata {
             t.tileGeometry20M = geoms.get(20);
             t.tileGeometry60M = geoms.get(60);
 
-            // fixme get solar and incidence info
             t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
             t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
 

@@ -53,9 +53,11 @@ import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jdom.JDOMException;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.openjpeg.StackTraceUtils;
@@ -79,13 +81,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -322,12 +319,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         GmlFilter gmlFilter = new GmlFilter();
-        List<Polygon> polygons = new ArrayList<>();
 
+        List<EopPolygon> polygons = new ArrayList<>();
+
+        // todo put polygon filter in a function
         List<MaskFilename> allMasks = new ArrayList<MaskFilename>();
         if(!tileList.isEmpty())
         {
-            // todo critical recover mask info from the tilelist
             for(L1cMetadata.Tile tile: tileList)
             {
                 MaskFilename[] filenames = tile.maskFilenames;
@@ -336,7 +334,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 for(MaskFilename aMaskFile: filenames)
                 {
                     File aFile = aMaskFile.getName();
-                    Pair<String, List<Polygon>> polys = gmlFilter.parse(aFile);
+                    Pair<String, List<EopPolygon>> polys = gmlFilter.parse(aFile);
 
                     boolean warningForPolygonsOutOfUtmZone = false;
 
@@ -370,45 +368,62 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         {
             addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
 
-            // todo use tiepointgrids instead of bands
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
         }
 
+        Map<String, List<EopPolygon>> polygonsByType = new HashMap<>();
+
+        // todo put polygon creation in a function
         if(!polygons.isEmpty())
         {
-            // todo get mask name
-            Mask newMask = new Mask(String.format("MaskTest", this.filteredResolution),product.getSceneRasterWidth(),product.getSceneRasterHeight(), Mask.VectorDataType.INSTANCE );
-            final SimpleFeatureType type = Placemark.createGeometryFeatureType();
-
-            AffineTransformation atrans = null;
-            try {
-                atrans = AffineTransformation.scaleInstance(this.filteredResolution, this.filteredResolution).getInverse();
-            } catch (NoninvertibleTransformationException e) {
-                logger.warning("Invalid resolution !");
-            }
-            AffineTransformation ref = AffineTransformation.translationInstance(-sceneDescription.getSceneEnvelope().getMinX(), -sceneDescription.getSceneEnvelope().getMinY());
-
-            final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
-            for(int index = 0; index < polygons.size(); index++)
+            // first collect all types
+            Set<String> polygonTypes = polygons.stream().map(p -> p.getType()).collect(Collectors.toSet());
+            for(String polygonType: polygonTypes)
             {
-                Polygon pol = polygons.get(index);
-                pol = (Polygon) ref.transform(pol);
-                pol = (Polygon) atrans.transform(pol);
-
-                // todo recover id associated to each polygon
-                Object[] data1 = {pol, String.format("Polygon-%s", index)};
-                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
-                collection.add(f1);
+                polygonsByType.put(polygonType, polygons.stream().filter(p -> p.getType().equals(polygonType)).collect(Collectors.toList()) );
             }
 
-            VectorDataNode vdn = new VectorDataNode("ListOfPolygons", collection);
-            product.getVectorDataGroup().add(vdn);
+            try {
+                // Build transformations
+                AffineTransform scaler = AffineTransform.getScaleInstance(this.filteredResolution, this.filteredResolution).createInverse();
+                AffineTransform move = AffineTransform.getTranslateInstance(-sceneDescription.getSceneEnvelope().getMinX(), -sceneDescription.getSceneEnvelope().getMinY());
+                AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, sceneDescription.getSceneEnvelope().getHeight() / this.filteredResolution);
 
-            Mask.VectorDataType.setVectorData(newMask, vdn);
-            // product.addMask(newMask);
+                AffineTransform world2pixel = new AffineTransform(mirror_y);
+                world2pixel.concatenate(scaler);
+                world2pixel.concatenate(move);
+
+                try {
+                    for(String polygonType: polygonTypes)
+                    {
+                        final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+
+                        final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
+                        for(int index = 0; index < polygons.size(); index++)
+                        {
+                            Polygon pol = polygons.get(index).getPolygon();
+                            pol = (Polygon) JTS.transform(pol, new AffineTransform2D(world2pixel));
+
+                            // todo change polygon name
+                            Object[] data1 = {pol, String.format("Polygon-%s", index)};
+                            SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+                            collection.add(f1);
+                        }
+
+                        VectorDataNode vdn = new VectorDataNode(polygonType, collection);
+                        product.getVectorDataGroup().add(vdn);
+                    }
+                } catch (MismatchedDimensionException e) {
+                    // won't happen
+                } catch (TransformException e) {
+                    // won't happen
+                }
+            } catch (NoninvertibleTransformException e) {
+                // won't happen
+            }
         }
 
         return product;
@@ -457,30 +472,26 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                         logger.severe("Illegal projection");
                     }
 
-                    // todo critical uncomment when mutiresolution works using setSceneRasterTransform
-                    /*
                     try {
-                        AffineTransform scale10 = AffineTransform.getScaleInstance(bandInfo.getWavebandInfo().resolution.resolution, bandInfo.getWavebandInfo().resolution.resolution).createInverse();
-                        AffineTransform translation = AffineTransform.getTranslateInstance(envelope.getMinX(), envelope.getMinY());
-                        AffineTransform chain = new AffineTransform();
-                        chain.concatenate(scale10);
-                        chain.concatenate(translation);
+                        AffineTransform scaler = AffineTransform.getScaleInstance(this.filteredResolution, this.filteredResolution).createInverse();
+                        AffineTransform move = AffineTransform.getTranslateInstance(-envelope.getMinX(), -envelope.getMinY());
+                        AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, envelope.getHeight() / this.filteredResolution);
 
-                        S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(chain), new AffineTransform2D(chain.createInverse()));
+                        AffineTransform world2pixel = new AffineTransform(mirror_y);
+                        world2pixel.concatenate(scaler);
+                        world2pixel.concatenate(move);
 
+                        S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(world2pixel), new AffineTransform2D(world2pixel.createInverse()));
+
+                        // todo uncomment when mutiresolution works using setSceneRasterTransform
                         // band.setSceneRasterTransform(transform);
-
                     } catch (NoninvertibleTransformException e) {
                         logger.severe("Illegal transform");
                     }
-                    */
 
                 }
 
             }
-
-
-            // TODO Use the info in bandInfo.getWavebandInfo().resolution to change geocoding
         }
     }
 

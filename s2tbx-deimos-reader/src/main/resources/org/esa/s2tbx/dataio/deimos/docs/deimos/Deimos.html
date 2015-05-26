@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright (C) 2014-2015 CS SI
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~  with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>SPOT Scene Product Reader</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+    <table class="header">
+        <tr class="header">
+            <td class="header">&nbsp; Import Deimos Products</td>
+            <td class="header" align="right">
+                <a href="../general/BeamOverview.html"><img src="../images/snap_header.jpg" border=0></a>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Import Deimos Products</h3>
+
+    <p>This command allows to import the data of Deimos 1 products in DIMAP format.
+        The payload is a three-band multispectral imager system with 22m Ground Sample Distance (GSD) at
+        nominal altitude (663 km) with 625 km swath, 8 or 10 bits radiometric depth available. Imager delivers data
+        in three spectral bands, very close to the Near-Infrared (NIR), Red (R) and Green (G) bands in the Landsat
+        series of US satellites. The satellite payload is a dual bank linear CCD push broom imager, so that banks are
+        mounted at an angle to provide a wide imaging swath, one of the most characteristics DEIMOS-1 features.
+    </p>
+    <p>For more details please see: <a href="https://apollomapping.com/wp-content/user_uploads/2012/10/DEIMOS-1_Product_Guide.pdf">DEIMOS-1 Product Guide</a></p>
+    <p>The spectral bandwidth and profiles of DEIMOS-1 imager, equivalent to those of Landsat ETM+ instrument,
+        are outlined in the next table.</p>
+    <table>
+        <tr><th colspan="3">SLIM-6 Sensor characteristics</th></tr>
+        <tr><th>Bands</th><th>Spectral Range (μm)</th><th>Spatial Resolution (m)</th></tr>
+        <tr><td>Green</td><td>0.52 – 0.60</td><td>22</td></tr>
+        <tr><td>Red</td><td>0.63 – 0.69</td><td>22</td></tr>
+        <tr><td>Near Infra-Red</td><td>0.77 – 0.90</td><td>22</td></tr>
+    </table>
+
+    <p>Images data products are delivered in the TIFF and GeoTIFF image formats by default, as shown in the table
+    </p>
+
+    <table>
+        <tr><th>File extension</th><th>Description</th></tr>
+        <tr>
+            <td>dim</td>
+            <td>DIMAP file contains all information about the image, such as date and time
+            of the acquisition, geolocation information, etc.
+            The L1R product level tie-point used as the model transformation
+            approach to provide a geographic image extension.</td>
+        </tr>
+        <tr>
+            <td>htm</td>
+            <td>HTML file easy to read using a web browser and contains most of the
+                information stored in the DIMAP.</td>
+        </tr>
+        <tr>
+            <td>jpg</td>
+            <td>It is an image of small size, which provides a quick overview of the
+                product shown in htm file.</td>
+        </tr>
+        <tr>
+            <td>sip</td>
+            <td>The SIP is the primary file metadata file of the image. It contains all the
+                information stored in the DIMAP and a rigorous adjustment model
+                coefficients for the image. SIP is a proprietary format developed by
+                Spacemetric AB, SE.</td>
+        </tr>
+        <tr>
+            <td>tif</td>
+            <td>The data of the actual product.</td>
+        </tr>
+        <tr>
+            <td>tfw</td>
+            <td>ESRI Worldfile. Not included in L1R products.</td>
+        </tr>
+    </table>
+
+    <h4>DMI DIMAP</h4>
+    <p>
+    The metadata for image products are contained within the DIMAP (.dim) files. DMI DIMAP is based upon the
+    DIMAP generic profile version 1.1 developed by SpotImage and CNES, and is implemented through the use
+    of XML. A detail description is provided in
+    <a href="https://apollomapping.com/wp-content/user_uploads/2012/10/DEIMOS-1_Product_Guide.pdf">DEIMOS-1 Product Guide</a>.
+    </p>
+    <p>
+    Some elements of the DIMAP are not clearly defined and open for data providers to define their own
+    parameters. For such elements used in the DMC DIMAP, a description of these elements and examples will
+    be given in this section.
+    </p>
+    <p>
+    Documentation on DIMAP version 1.1 and the DIMAP XML implementation can be found at the following
+    URL: <a href="http://www.spotimage.fr/dimap/spec/documentation/refdoc.htm">
+        http://www.spotimage.fr/dimap/spec/documentation/refdoc.htm</a>. The DIMAP elements and their
+    implementation are described in documents RD#02 and RD#03, which can be found at the following
+    URL: <a href="http://www.spotimage.fr/dimap/spec/dictionary/dictionary.htm">
+        http://www.spotimage.fr/dimap/spec/dictionary/dictionary.htm</a>
+    </p>
+    <h4>File Naming Convention</h4>
+    <p>
+    Image files are provided with a standard file naming convention explained below by means of an example.
+    </p>
+    <p>Example:
+    <b>DE01_SL6_22P_1T_20110616T092316_20110616T092427_DMI_0_2e9d</b>
+    </p>
+    <p>Convention meaning:</p>
+    <ul>
+        <li>DE01: Mission</li>
+        <li>SL6: Instrument</li>
+        <li>22: resolution</li>
+        <li>P: imager bank. Can take the following values: P (bank p), S (bank s) or T (two banks merged
+            together)</li>
+        <li>1T: processing level</li>
+        <li>20110616T092316: date and hour of the beginning of the image capture</li>
+        <li>20110616T092427: date and hour of the end of the image capture</li>
+        <li>DMI: Company</li>
+        <li>0: internal code</li>
+        <li>2e9d: Image Identification Code</li>
+    </ul>
+
+</body>
+</html>

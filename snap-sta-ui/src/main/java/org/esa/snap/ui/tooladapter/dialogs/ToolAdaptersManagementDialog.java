@@ -25,9 +25,9 @@ import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOp;
 import org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterRegistry;
 import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.ModalDialog;
-import org.esa.snap.framework.ui.UIUtils;
 import org.esa.snap.framework.ui.tool.ToolButtonFactory;
 import org.esa.snap.rcp.SnapDialogs;
+import org.esa.snap.tango.TangoIcons;
 import org.esa.snap.ui.tooladapter.actions.ToolAdapterActionRegistrar;
 import org.esa.snap.ui.tooladapter.model.OperatorsTableModel;
 import org.openide.util.NbBundle;
@@ -62,16 +62,6 @@ import java.util.stream.Collectors;
         "ToolTipEditOperator_Text=Edit the selected operator",
         "ToolTipExecuteOperator_Text=Execute the selected operator",
         "ToolTipDeleteOperator_Text=Delete the selected operator(s)",
-        /*"Icon_New=/org/esa/snap/resources/images/icons/New24.gif",*/
-        "Icon_New=/tango/22x22/actions/document-new.png",
-        /*"Icon_Copy=/org/esa/snap/resources/images/icons/Copy24.gif",*/
-        "Icon_Copy=/tango/22x22/actions/edit-copy.png",
-        /*"Icon_Edit=/org/esa/snap/resources/images/icons/Edit24.gif",*/
-        "Icon_Edit=/tango/22x22/actions/document-open.png",
-        /*"Icon_Execute=/org/esa/snap/resources/images/icons/Update24.gif",*/
-        "Icon_Execute=/tango/22x22/actions/go-jump.png",
-        /*"Icon_Remove=/org/esa/snap/resources/images/icons/Remove16.gif",*/
-        "Icon_Remove=/tango/22x22/actions/edit-delete.png",
         "MessageNoSelection_Text=Please select an adapter first"
 
 })
@@ -105,7 +95,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-        AbstractButton newButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_New()), false);
+        AbstractButton newButton = ToolButtonFactory.createButton(TangoIcons.actions_document_new(TangoIcons.Res.R22), false);
         newButton.setToolTipText(Bundle.ToolTipNewOperator_Text());
         newButton.addActionListener(e -> {
             ToolAdapterOperatorDescriptor newOperatorSpi = new ToolAdapterOperatorDescriptor(ToolAdapterConstants.OPERATOR_NAMESPACE + "DefaultOperatorName", ToolAdapterOp.class, "DefaultOperatorName", null, null, null, null, null, null);
@@ -116,8 +106,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         });
         panel.add(newButton);
 
-        AbstractButton copyButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Copy()),
-                false);
+        AbstractButton copyButton = ToolButtonFactory.createButton(TangoIcons.actions_edit_copy(TangoIcons.Res.R22), false);
         copyButton.setToolTipText(Bundle.ToolTipCopyOperator_Text());
         copyButton.addActionListener(e -> {
             ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
@@ -138,7 +127,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         });
         panel.add(copyButton);
 
-        AbstractButton editButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Edit()), false);
+        AbstractButton editButton = ToolButtonFactory.createButton(TangoIcons.actions_document_open(TangoIcons.Res.R22), false);
         editButton.setToolTipText(Bundle.ToolTipEditOperator_Text());
         editButton.addActionListener(e -> {
             ToolAdapterOperatorDescriptor operatorDesc = ((OperatorsTableModel) operatorsTable.getModel()).getFirstCheckedOperator();
@@ -153,7 +142,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
         });
         panel.add(editButton);
 
-        AbstractButton delButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Remove()), false);
+        AbstractButton delButton = ToolButtonFactory.createButton(TangoIcons.actions_edit_delete(TangoIcons.Res.R22), false);
         delButton.setToolTipText(Bundle.ToolTipDeleteOperator_Text());
         delButton.addActionListener(e -> {
             java.util.List<ToolAdapterOperatorDescriptor> operatorDescriptors = ((OperatorsTableModel) operatorsTable.getModel()).getCheckedOperators();
@@ -174,7 +163,7 @@ public class ToolAdaptersManagementDialog extends ModalDialog {
 
         panel.add(Box.createHorizontalStrut(22));
 
-        AbstractButton runButton = ToolButtonFactory.createButton(UIUtils.loadImageIcon(Bundle.Icon_Execute()), false);
+        AbstractButton runButton = ToolButtonFactory.createButton(TangoIcons.actions_view_refresh(TangoIcons.Res.R22), false);
         runButton.setToolTipText(Bundle.ToolTipExecuteOperator_Text());
         runButton.addActionListener(e -> {
             ToolAdapterOperatorDescriptor operatorDesc = null;

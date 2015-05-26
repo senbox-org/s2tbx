@@ -244,9 +244,7 @@ public class L1cMetadata {
     }
 
     private List<Tile> tileList;
-
-    // todo CRITICAL Add alternative tileLists
-    private Map<String, List<Tile>> allTileLists;
+    private Map<String, List<Tile>> allTileLists; // Key is UTM zone, values are the tiles associated to a UTM zone
 
     private ProductCharacteristics productCharacteristics;
     private JAXBContext context;
@@ -353,15 +351,12 @@ public class L1cMetadata {
             t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
             t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
 
-            // todo CRITICAL test reading mask info
             t.maskFilenames = L1cMetadataProc.getMasks(aTile, aGranuleMetadataFile);
 
             tileList.add(t);
         }
 
-        // todo CRITICAL add extra band splitting
         // todo split by utm zone...
-
         for(String key: counters.keySet())
         {
             List<L1cMetadata.Tile> aUTMZone = tileList.stream().filter(i -> i.horizontalCsCode.equals(key)).collect(Collectors.toList());

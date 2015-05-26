@@ -66,7 +66,7 @@ public class GmlFilter {
         return polygons;
     }
 
-    public Pair<String, List<Polygon>> parse(InputStream stream) {
+    public Pair<String, List<EopPolygon>> parse(InputStream stream) {
         SAXBuilder builder = new SAXBuilder();
         Document jdomDoc = null;
 
@@ -75,12 +75,11 @@ public class GmlFilter {
 
             //get the root element
             Element web_app = jdomDoc.getRootElement();
-
             String maskEpsg = "";
 
-            // todo critical recover masktype and id
-
             Namespace gml = Namespace.getNamespace("http://www.opengis.net/gml/3.2");
+            Namespace eop = Namespace.getNamespace("http://www.opengis.net/eop/2.0");
+
             List<Element> targeted = web_app.getChildren("boundedBy", gml);
             if(!targeted.isEmpty()) {
                 Element aEnvelope = targeted.get(0).getChild("Envelope", gml);
@@ -89,7 +88,7 @@ public class GmlFilter {
                 }
             }
 
-            List<Polygon> recoveredGeometries = new ArrayList<>();
+            List<EopPolygon> recoveredGeometries = new ArrayList<>();
 
             IteratorIterable<Content> contents = web_app.getDescendants();
             while (contents.hasNext()) {
@@ -103,6 +102,22 @@ public class GmlFilter {
                         if(parentNotGml)
                         {
                             Element capturedElement = (Element) web_app_content;
+                            Attribute attr = null;
+                            String polygonId = "";
+                            String typeId = "";
+                            if(capturedElement.getName().contains("Polygon"))
+                            {
+                                attr = capturedElement.getAttribute("id", gml);
+                                if(attr != null)
+                                {
+                                    polygonId = attr.getValue();
+                                    if(polygonId.indexOf('.') != -1)
+                                    {
+                                        typeId = polygonId.substring(0, polygonId.indexOf('.'));
+                                    }
+                                }
+                            }
+
                             Document newDoc = new Document(capturedElement.clone().detach());
 
                             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -111,30 +126,34 @@ public class GmlFilter {
 
                             InputStream ois = new ByteArrayInputStream(replacedContent.getBytes());
 
-                            recoveredGeometries.addAll(streamParseGML3(ois));
+                            List<Polygon> pols = streamParseGML3(ois);
+                            for(Polygon pol: pols)
+                            {
+                                recoveredGeometries.add(new EopPolygon(polygonId, typeId, pol));
+                            }
                         }
                     }
 
                 }
             }
 
-            return new Pair<String, List<Polygon>>(maskEpsg,recoveredGeometries);
+            return new Pair<String, List<EopPolygon>>(maskEpsg,recoveredGeometries);
         } catch (JDOMException e) {
-            e.printStackTrace();
+            // {@report "parse xml problem !"}
         } catch (IOException e) {
-            e.printStackTrace();
+            // {@report "IO problem !"}
         }
 
-        return new Pair<String, List<Polygon>>("", new ArrayList<>());
+        return new Pair<String, List<EopPolygon>>("", new ArrayList<>());
     }
 
-    public Pair<String, List<Polygon>> parse(String resource) {
+    public Pair<String, List<EopPolygon>> parse(String resource) {
         InputStream stream = getClass().getResourceAsStream(resource);
 
         return parse(stream);
     }
 
-    public Pair<String, List<Polygon>> parse(File fileName) {
+    public Pair<String, List<EopPolygon>> parse(File fileName) {
 
         InputStream stream = null;
         try {

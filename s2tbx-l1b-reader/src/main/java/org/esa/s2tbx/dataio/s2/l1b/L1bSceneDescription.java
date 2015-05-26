@@ -78,8 +78,6 @@ public class L1bSceneDescription {
 
     // @Loggable
     public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index) {
-        // fixme look if Scenedescription object has to be redefined (add a range) or use multiple Scenedescription objects
-
         List<L1bMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = GeometryFactory.getDefaultCrs();
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
