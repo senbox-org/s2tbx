@@ -42,7 +42,7 @@ public class ExecuteToolAdapterAction extends AbstractSnapAction {
     public void actionPerformed(ActionEvent e) {
         ToolAdapterOperatorDescriptor operatorDescriptor = ToolAdapterActionRegistrar.getActionMap().get(getValue(NAME));
         if (operatorDescriptor != null) {
-            final ToolAdapterExecutionDialog operatorDialog = new ToolAdapterExecutionDialog(operatorDescriptor, getAppContext(), operatorDescriptor.getLabel(), getHelpId());
+            final ToolAdapterExecutionDialog operatorDialog = new ToolAdapterExecutionDialog(operatorDescriptor, getAppContext(), operatorDescriptor.getLabel());
             operatorDialog.show();
         }
     }

@@ -7,5 +7,7 @@
 
     <mapID target="sta_overview" url="sta/overview.html"/>
     <mapID target="sta_user_interface" url="sta/user_interface.html"/>
+    <mapID target="sta_editor" url="sta/adapter_editor.html"/>
+    <mapID target="sta_execution" url="sta/adapter_execution.html"/>
     <mapID target="sta_adapter_structure" url="sta/operator_structure.html"/>
 </map>

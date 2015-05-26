@@ -333,7 +333,7 @@ public class OperatorParametersTable extends JTable {
                             SnapDialogs.showError(ex.getMessage());
                         }
                     } else {
-                        ToolParameterEditorDialog editor = new ToolParameterEditorDialog(appContext, "Parameter editor for " + descriptor.getName(), "", descriptor, propertiesValueUIDescriptorMap.get(descriptor));
+                        ToolParameterEditorDialog editor = new ToolParameterEditorDialog(appContext, "Parameter editor for " + descriptor.getName(), descriptor, propertiesValueUIDescriptorMap.get(descriptor));
                         editor.show();
                     }
                     break;

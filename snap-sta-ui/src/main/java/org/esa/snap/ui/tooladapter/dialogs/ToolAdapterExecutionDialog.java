@@ -63,15 +63,16 @@ public class ToolAdapterExecutionDialog extends SingleTargetProductDialog {
 
     private OperatorTask operatorTask;
 
+    public static final String helpID = "sta_execution";
+
     /**
      * Constructor.
      *
      * @param operatorSpi
      * @param appContext
      * @param title
-     * @param helpID
      */
-    public ToolAdapterExecutionDialog(ToolAdapterOperatorDescriptor operatorSpi, AppContext appContext, String title, String helpID) {
+    public ToolAdapterExecutionDialog(ToolAdapterOperatorDescriptor operatorSpi, AppContext appContext, String title) {
         super(appContext, title, helpID);
         this.operatorDescriptor = operatorSpi;
 
