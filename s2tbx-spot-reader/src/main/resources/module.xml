@@ -89,11 +89,11 @@
         </rgbProfile>
     </extension>
 
-    <extension point="snap-ui:helpSets">
+    <!--extension point="snap-ui:helpSets">
         <helpSet>
             <parent>s2tbx-help</parent>
-            <path>doc/help/spotdimap.hs</path>
+            <path>doc/help/help.hs</path>
         </helpSet>
-    </extension>
+    </extension-->
 
 </module>
