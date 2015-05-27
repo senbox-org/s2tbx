@@ -64,6 +64,7 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * A dialog window used to edit an operator, or to create a new operator.
@@ -245,6 +246,9 @@ public class ToolAdapterEditorDialog extends ModalDialog {
                     .filter(param -> paramsTable.getBindingContext().getBinding(param.getName()).getPropertyValue() != null)
                     .forEach(param -> param.setDefaultValue(paramsTable.getBindingContext().getBinding(param.getName())
                             .getPropertyValue().toString()));
+            java.util.List<TemplateParameterDescriptor> remParameters = toolParameterDescriptors.stream().filter(param -> ToolAdapterConstants.TOOL_SOURCE_PRODUCT_ID.equals(param.getName())).
+                    collect(Collectors.toList());
+            newOperatorDescriptor.removeParamDescriptors(remParameters);
             try {
                 String menuLocation = newOperatorDescriptor.getMenuLocation();
                 if (menuLocation != null && !menuLocation.startsWith("Menu/")) {

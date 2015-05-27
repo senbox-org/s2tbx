@@ -170,6 +170,18 @@ public class ToolAdapterOperatorDescriptor implements OperatorDescriptor {
     }
 
     /**
+     * Removes the given descriptors from the internal parameter descriptor list
+     * @param descriptors    The list of descriptors to be removed
+     */
+    public void removeParamDescriptors(List<TemplateParameterDescriptor> descriptors) {
+        if(descriptors != null && descriptors.size() > 0) {
+            for(TemplateParameterDescriptor descriptor : descriptors) {
+                this.toolParameterDescriptors.remove(descriptor);
+            }
+        }
+    }
+
+    /**
      * Gets all the parameter descriptors
      * @return  The list of parameter descriptors
      */
