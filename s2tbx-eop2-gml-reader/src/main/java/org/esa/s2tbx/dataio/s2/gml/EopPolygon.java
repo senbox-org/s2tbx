@@ -14,7 +14,7 @@
  *  with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.gml;
 
 import com.vividsolutions.jts.geom.Polygon;
 

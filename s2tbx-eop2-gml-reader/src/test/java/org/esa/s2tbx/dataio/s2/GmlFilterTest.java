@@ -19,6 +19,7 @@
 package org.esa.s2tbx.dataio.s2;
 
 import junit.framework.Assert;
+import org.esa.s2tbx.dataio.s2.gml.GmlFilter;
 import org.junit.Test;
 
 /**

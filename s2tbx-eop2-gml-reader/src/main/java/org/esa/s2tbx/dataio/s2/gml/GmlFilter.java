@@ -16,7 +16,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.gml;
 
 
 import com.vividsolutions.jts.geom.Polygon;
