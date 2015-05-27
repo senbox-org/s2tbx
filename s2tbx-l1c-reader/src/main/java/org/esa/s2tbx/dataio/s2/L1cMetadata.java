@@ -60,7 +60,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-// todo critical test adding PSD11 product
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
@@ -256,6 +255,14 @@ public class L1cMetadata {
 
     public List<Tile> getTileList() {
         return tileList;
+    }
+
+    public Set<String> getUTMZonesList() {
+        return allTileLists.keySet();
+    }
+
+    public List<Tile> getTileList(String utmZone) {
+        return allTileLists.get(utmZone);
     }
 
     public ProductCharacteristics getProductCharacteristics() {

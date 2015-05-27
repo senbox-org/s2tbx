@@ -21,6 +21,7 @@ package org.esa.s2tbx.dataio.s2;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.CRS;
@@ -90,9 +91,9 @@ public class L1cSceneDescription {
             if (crs == null) {
                 try {
                     crs = CRS.decode(tile.horizontalCsCode);
-                    BeamLogManager.getSystemLogger().fine("crs = " + crs);
+                    SystemUtils.LOG.fine("crs = " + crs);
                 } catch (FactoryException e) {
-                    BeamLogManager.getSystemLogger().severe("Unknown CRS: " + tile.horizontalCsCode);
+                    SystemUtils.LOG.severe("Unknown CRS: " + tile.horizontalCsCode);
                 }
             }
 

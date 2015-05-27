@@ -49,6 +49,7 @@ import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jdom.JDOMException;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -194,22 +195,18 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         Assert.notNull(p);
     }
 
-    private Product getL1cMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException
-    {
+    private Product getL1cMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException {
         Objects.requireNonNull(granuleMetadataFile);
         // first we need to recover parent metadata file...
 
         String filterTileId = null;
         File metadataFile = null;
-        if(isAGranule)
-        {
-            try
-            {
+        if (isAGranule) {
+            try {
                 Objects.requireNonNull(granuleMetadataFile.getParentFile());
                 Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile());
                 Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile().getParentFile());
-            } catch (NullPointerException npe)
-            {
+            } catch (NullPointerException npe) {
                 throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
             }
 
@@ -219,21 +216,16 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             filterTileId = tileIdFilter.getName();
 
             File[] files = up2levels.listFiles();
-            for(File f: files)
-            {
-                if(S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName()))
-                {
+            for (File f : files) {
+                if (S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName())) {
                     metadataFile = f;
                     break;
                 }
             }
-            if(metadataFile == null)
-            {
+            if (metadataFile == null) {
                 throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
             }
-        }
-        else
-        {
+        } else {
             metadataFile = granuleMetadataFile;
         }
 
@@ -256,49 +248,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
-        Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
 
-        List<L1cMetadata.Tile> tileList = metadataHeader.getTileList();
-
-        if(isAGranule)
-        {
-            tileList = metadataHeader.getTileList().stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
-        }
-
-        // todo put spectral information handling in a function
-        for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-            int bandIndex = bandInformation.bandId;
-            if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
-
-                HashMap<String, File> tileFileMap = new HashMap<String, File>();
-                for (Tile tile : tileList) {
-                    S2GranuleDirFilename gf = S2GranuleDirFilename.create(tile.id);
-                    S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.physicalBand);
-
-                    String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFilename.name;
-
-                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
-
-                    File file = new File(productDir, imgFilename);
-                    if (file.exists()) {
-                        tileFileMap.put(tile.id, file);
-                    } else {
-                        logger.warning(String.format("Warning: missing file %s\n", file));
-                    }
-                }
-
-                if (!tileFileMap.isEmpty()) {
-                    BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
-                    bandInfoMap.put(bandIndex, bandInfo);
-                } else {
-                    logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.physicalBand));
-                }
-            } else {
-                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.physicalBand));
-            }
-        }
-
-        //todo change product filename properties...
+        // set the product global geo-coding
         Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile),
                                       "S2_MSI_" + productCharacteristics.processingLevel,
                                       sceneDescription.getSceneRectangle().width,
@@ -311,105 +262,161 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
         }
 
-        GmlFilter gmlFilter = new GmlFilter();
+        product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
+        product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
 
-        List<EopPolygon> polygons = new ArrayList<>();
+        String autoGrouping = "";
 
-        // todo put polygon filter in a function
-        List<MaskFilename> allMasks = new ArrayList<MaskFilename>();
-        if(!tileList.isEmpty())
-        {
-            for(L1cMetadata.Tile tile: tileList)
+        for (String utmZone : metadataHeader.getUTMZonesList()) {
+            autoGrouping += utmZone.replace(':', '_');
+        }
+        autoGrouping += "reflec:radiance:sun:view";
+        product.setAutoGrouping(autoGrouping);
+
+
+        // create the band mosaics per UTM zones
+        for (String utmZone : metadataHeader.getUTMZonesList()) {
+            Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
+
+            // if we selected the granule there is only one UTM zone and we'll get here only once, just extract the granule
+            // otherwise get the list of tiles for this UTM zone
+            List<L1cMetadata.Tile> utmZoneTileList;
+            if (isAGranule) {
+                utmZoneTileList = metadataHeader.getTileList().stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+            } else {
+                utmZoneTileList = metadataHeader.getTileList(utmZone);
+            }
+
+            // for all bands of the UTM zone, store tiles files names
+            for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+                int bandIndex = bandInformation.bandId;
+                if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
+
+                    HashMap<String, File> tileFileMap = new HashMap<String, File>();
+                    for (Tile tile : utmZoneTileList) {
+                        S2GranuleDirFilename gf = S2GranuleDirFilename.create(tile.id);
+                        S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.physicalBand);
+
+                        String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFilename.name;
+
+                        logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
+
+                        File file = new File(productDir, imgFilename);
+                        if (file.exists()) {
+                            tileFileMap.put(tile.id, file);
+                        } else {
+                            logger.warning(String.format("Warning: missing file %s\n", file));
+                        }
+                    }
+
+                    if (!tileFileMap.isEmpty()) {
+                        BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+                        bandInfoMap.put(bandIndex, bandInfo);
+                    } else {
+                        logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.physicalBand));
+                    }
+                } else {
+                    logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.physicalBand));
+                }
+            }
+
+
+            GmlFilter gmlFilter = new GmlFilter();
+
+            List<EopPolygon> polygons = new ArrayList<>();
+
+            // todo put polygon filter in a function
+            List<MaskFilename> allMasks = new ArrayList<MaskFilename>();
+            if(!utmZoneTileList.isEmpty())
             {
-                MaskFilename[] filenames = tile.maskFilenames;
+                for(L1cMetadata.Tile tile: utmZoneTileList)
+                {
+                    MaskFilename[] filenames = tile.maskFilenames;
 
-                if(filenames != null) {
-                    for (MaskFilename aMaskFile : filenames) {
-                        File aFile = aMaskFile.getName();
-                        Pair<String, List<EopPolygon>> polys = gmlFilter.parse(aFile);
+                    if(filenames != null) {
+                        for (MaskFilename aMaskFile : filenames) {
+                            File aFile = aMaskFile.getName();
+                            Pair<String, List<EopPolygon>> polys = gmlFilter.parse(aFile);
 
-                        boolean warningForPolygonsOutOfUtmZone = false;
+                            boolean warningForPolygonsOutOfUtmZone = false;
 
-                        if (!polys.getFirst().isEmpty()) {
-                            int indexOfColons = polys.getFirst().indexOf(':');
-                            if (indexOfColons != -1) {
-                                String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':') + 1);
-                                if (polys.getFirst().contains(realCsCode)) {
-                                    polygons.addAll(polys.getSecond());
-                                } else {
-                                    warningForPolygonsOutOfUtmZone = true;
+                            if (!polys.getFirst().isEmpty()) {
+                                int indexOfColons = polys.getFirst().indexOf(':');
+                                if (indexOfColons != -1) {
+                                    String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':') + 1);
+                                    if (polys.getFirst().contains(realCsCode)) {
+                                        polygons.addAll(polys.getSecond());
+                                    } else {
+                                        warningForPolygonsOutOfUtmZone = true;
+                                    }
                                 }
                             }
-                        }
 
-                        if (warningForPolygonsOutOfUtmZone) {
-                            logger.warning(String.format("Polygons detected out of its UTM zone in file [%s] !", aFile.getAbsolutePath()));
+                            if (warningForPolygonsOutOfUtmZone) {
+                                logger.warning(String.format("Polygons detected out of its UTM zone in file [%s] !", aFile.getAbsolutePath()));
+                            }
                         }
+                        allMasks.addAll(Arrays.asList(filenames));
                     }
-                    allMasks.addAll(Arrays.asList(filenames));
                 }
             }
-        }
 
-        if(!bandInfoMap.isEmpty())
-        {
-            addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
-
-//            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
-//            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
-//            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
-//            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
-        }
-
-        Map<String, List<EopPolygon>> polygonsByType = new HashMap<>();
-
-        // todo put polygon creation in a function
-        if(!polygons.isEmpty())
-        {
-            // first collect all types
-            Set<String> polygonTypes = polygons.stream().map(p -> p.getType()).collect(Collectors.toSet());
-            for(String polygonType: polygonTypes)
+            if(!bandInfoMap.isEmpty())
             {
-                polygonsByType.put(polygonType, polygons.stream().filter(p -> p.getType().equals(polygonType)).collect(Collectors.toList()) );
+                addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())), utmZone);
             }
 
-            try {
-                // Build transformations
-                AffineTransform scaler = AffineTransform.getScaleInstance(this.filteredResolution, this.filteredResolution).createInverse();
-                AffineTransform move = AffineTransform.getTranslateInstance(-sceneDescription.getSceneEnvelope().getMinX(), -sceneDescription.getSceneEnvelope().getMinY());
-                AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, sceneDescription.getSceneEnvelope().getHeight() / this.filteredResolution);
 
-                AffineTransform world2pixel = new AffineTransform(mirror_y);
-                world2pixel.concatenate(scaler);
-                world2pixel.concatenate(move);
+            Map<String, List<EopPolygon>> polygonsByType = new HashMap<>();
+
+            // todo put polygon creation in a function
+            if(!polygons.isEmpty())
+            {
+                // first collect all types
+                Set<String> polygonTypes = polygons.stream().map(p -> p.getType()).collect(Collectors.toSet());
+                for(String polygonType: polygonTypes)
+                {
+                    polygonsByType.put(polygonType, polygons.stream().filter(p -> p.getType().equals(polygonType)).collect(Collectors.toList()) );
+                }
 
                 try {
-                    for(String polygonType: polygonTypes)
-                    {
-                        final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+                    // Build transformations
+                    AffineTransform scaler = AffineTransform.getScaleInstance(this.filteredResolution, this.filteredResolution).createInverse();
+                    AffineTransform move = AffineTransform.getTranslateInstance(-sceneDescription.getSceneEnvelope().getMinX(), -sceneDescription.getSceneEnvelope().getMinY());
+                    AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, sceneDescription.getSceneEnvelope().getHeight() / this.filteredResolution);
 
-                        final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
-                        for(int index = 0; index < polygons.size(); index++)
+                    AffineTransform world2pixel = new AffineTransform(mirror_y);
+                    world2pixel.concatenate(scaler);
+                    world2pixel.concatenate(move);
+
+                    try {
+                        for(String polygonType: polygonTypes)
                         {
-                            Polygon pol = polygons.get(index).getPolygon();
-                            pol = (Polygon) JTS.transform(pol, new AffineTransform2D(world2pixel));
+                            final SimpleFeatureType type = Placemark.createGeometryFeatureType();
 
-                            // todo change polygon name
-                            Object[] data1 = {pol, String.format("Polygon-%s", index)};
-                            SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
-                            collection.add(f1);
+                            final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
+                            for(int index = 0; index < polygons.size(); index++)
+                            {
+                                Polygon pol = polygons.get(index).getPolygon();
+                                pol = (Polygon) JTS.transform(pol, new AffineTransform2D(world2pixel));
+
+                                // todo change polygon name
+                                Object[] data1 = {pol, String.format("Polygon-%s", index)};
+                                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+                                collection.add(f1);
+                            }
+
+                            VectorDataNode vdn = new VectorDataNode(polygonType, collection);
+                            product.getVectorDataGroup().add(vdn);
                         }
-
-                        VectorDataNode vdn = new VectorDataNode(polygonType, collection);
-                        product.getVectorDataGroup().add(vdn);
+                    } catch (MismatchedDimensionException e) {
+                        // won't happen
+                    } catch (TransformException e) {
+                        // won't happen
                     }
-                } catch (MismatchedDimensionException e) {
-                    // won't happen
-                } catch (TransformException e) {
+                } catch (NoninvertibleTransformException e) {
                     // won't happen
                 }
-            } catch (NoninvertibleTransformException e) {
-                // won't happen
             }
         }
 
@@ -422,11 +429,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
 
-    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
-        product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
-
-        product.setAutoGrouping("reflec:radiance:sun:view");
+    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif, String utmZoneMap) throws IOException {
 
         ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
         Collections.sort(bandIndexes);
@@ -440,13 +443,13 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
             if(bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
             {
-                Band band = addBand(product, bandInfo);
+                Band band = addBand(product, bandInfo, utmZoneMap);
                 band.setSourceImage(mlif.createSourceImage(bandInfo));
 
                 if(!forceResize)
                 {
                     try {
-                        band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                        band.setGeoCoding(new CrsGeoCoding(CRS.decode(utmZoneMap),
                                 band.getRasterWidth(),
                                 band.getRasterHeight(),
                                 envelope.getMinX(),
@@ -483,18 +486,20 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
     }
 
-    private Band addBand(Product product, BandInfo bandInfo) {
+    private Band addBand(Product product, BandInfo bandInfo, String utmZoneCode) {
         int index = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
         int defRes = S2SpatialResolution.R10M.resolution;
 
-        final Band band = new Band(bandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
+        String bandName = utmZoneCode + bandInfo.wavebandInfo.bandName;
+        bandName = bandName.replace(':', '_');
+        final Band band = new Band(bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
         product.addBand(band);
 
         band.setSpectralBandIndex(bandInfo.bandIndex);
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
 
-        setValidPixelMask(band, bandInfo.wavebandInfo.bandName);
+        setValidPixelMask(band, bandName);
 
         return band;
     }

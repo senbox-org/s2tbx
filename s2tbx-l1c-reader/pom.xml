@@ -12,7 +12,7 @@
 
     <packaging>nbm</packaging>
     <artifactId>s2tbx-l1c-reader</artifactId>
-    <name>Sentinel-2 Reader</name>
+    <name>Sentinel-2 Reader L1C</name>
     <description>
         This module enables the Sentinel Toolbox to read the following Sentinel-2 data products: L1C
     </description>
@@ -139,35 +139,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-            </plugin>
-
-            <!--
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.4</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <configuration>
-                            <tasks>
-                                <copy todir="C:/Users/Oscar/.snap2/modules" overwrite="true" verbose="true">
-                                    <fileset dir="../target/nbm/netbeans/extra/modules" includes="*l1c*.jar" />
-                                </copy>
-                                <copy todir="C:/Users/Oscar/.snap2/modules/ext" overwrite="true" verbose="true">
-                                    <fileset dir="../target/nbm/netbeans/extra/modules/ext" includes="*l1c*/**" />
-                                </copy>
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
         </plugins>
     </build>
 
