@@ -15,6 +15,8 @@
  */
 package org.esa.snap.framework.gpf.operators.tooladapter;
 
+//import com.bc.ceres.binding.Property;
+
 import com.bc.ceres.binding.Property;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.core.SubProgressMonitor;

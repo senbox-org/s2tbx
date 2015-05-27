@@ -280,6 +280,9 @@ public class OperatorParametersTable extends JTable {
                 case 4:
                     //type editing
                     CustomParameterClass customClass = (CustomParameterClass)typesMap.get(aValue);
+                    if (customClass == null) {
+                        customClass = CustomParameterClass.StringClass;
+                    }
                     descriptor.setParameterType(customClass.getTypeMask());
                     if(descriptor.getDataType() != customClass.getParameterClass()) {
                         descriptor.setDataType(customClass.getParameterClass());
@@ -319,15 +322,8 @@ public class OperatorParametersTable extends JTable {
                 case 6:
                     //edit details
                     if(!descriptor.isParameter() && descriptor.getDataType().equals(File.class)){
-                        TemplateParameterDescriptor parameter;
-                        if (descriptor instanceof TemplateParameterDescriptor){
-                            parameter = (TemplateParameterDescriptor) descriptor;
-                        } else {
-                            parameter = new TemplateParameterDescriptor(descriptor);
-                            //TODO replace also the parameter in the tooldescriptor!!!
-                        }
                         try {
-                            TemplateParameterEditorDialog editor = new TemplateParameterEditorDialog(appContext, "", parameter, propertiesValueUIDescriptorMap.get(descriptor));
+                            TemplateParameterEditorDialog editor = new TemplateParameterEditorDialog(appContext, "", descriptor, propertiesValueUIDescriptorMap.get(descriptor));
                             editor.show();
                         }catch (Exception ex){
                             SnapDialogs.showError(ex.getMessage());

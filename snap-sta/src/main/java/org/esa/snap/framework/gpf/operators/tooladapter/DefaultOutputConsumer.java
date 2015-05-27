@@ -86,9 +86,9 @@ class DefaultOutputConsumer implements ProcessOutputConsumer {
         if (progressMonitor == null) {
             progressMonitor = ProgressMonitor.NULL;
             progressMonitor.beginTask("Starting", 100);
-        } else {
+        }/* else {
             progressMonitor.beginTask("Starting", 100);
-        }
+        }*/
     }
 
     public void close() {
