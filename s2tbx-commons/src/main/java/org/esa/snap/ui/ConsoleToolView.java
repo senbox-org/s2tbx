@@ -19,7 +19,6 @@
 package org.esa.snap.ui;
 
 import org.esa.snap.framework.ui.application.support.AbstractToolView;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.esa.snap.utils.CollectionHelper;
 
 import javax.swing.*;
@@ -33,6 +32,7 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 
@@ -64,8 +64,8 @@ public class ConsoleToolView extends AbstractToolView {
     Level currentFilter;
 
     public ConsoleToolView() {
-        this.filterMasks = new LinkedHashMap<String, List<Level>>();
-        this.filterIcons = new LinkedHashMap<String, String>();
+        this.filterMasks = new LinkedHashMap<>();
+        this.filterIcons = new LinkedHashMap<>();
         this.reverseFilterMask = new HashMap<Level, String>() {{
             put(Level.FINE, INFO);
             put(Level.FINER, INFO);
@@ -81,29 +81,26 @@ public class ConsoleToolView extends AbstractToolView {
         this.filterMasks.put(ERROR, new ArrayList<Level>() {{ add(Level.SEVERE); }});
         this.filterIcons.put(ERROR, String.format(ICON_PATH, "error.gif"));
         currentFilter = Level.ALL;
-        rowFilterMap = new HashMap<String, RowFilter<DefaultTableModel, Object>>();
+        rowFilterMap = new HashMap<>();
         createRowFilters();
         logHandler = new Handler() {
             @Override
             public void publish(LogRecord record) {
                 final LogRecord copy = record;
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        //noinspection ThrowableResultOfMethodCallIgnored
-                        Throwable e = copy.getThrown();
-                        if (e != null) {
-                            logTableModel.insertRow(logTableModel.getRowCount(), new Object[]{
-                                    dateFormat.format(new Date(copy.getMillis())), reverseFilterMask.get(copy.getLevel()), e
-                            });
-                        } else {
-                            logTableModel.insertRow(logTableModel.getRowCount(), new Object[]{
-                                    dateFormat.format(new Date(copy.getMillis())), reverseFilterMask.get(copy.getLevel()), copy.getMessage()
-                            });
-                        }
-                        logTableModel.fireTableDataChanged();
-                        logTable.scrollRectToVisible(logTable.getCellRect(logTable.getRowCount() - 1, logTable.getColumnCount() - 1, true));
+                SwingUtilities.invokeLater(() -> {
+                    //noinspection ThrowableResultOfMethodCallIgnored
+                    Throwable e = copy.getThrown();
+                    if (e != null) {
+                        logTableModel.insertRow(logTableModel.getRowCount(), new Object[]{
+                                dateFormat.format(new Date(copy.getMillis())), reverseFilterMask.get(copy.getLevel()), e
+                        });
+                    } else {
+                        logTableModel.insertRow(logTableModel.getRowCount(), new Object[]{
+                                dateFormat.format(new Date(copy.getMillis())), reverseFilterMask.get(copy.getLevel()), copy.getMessage()
+                        });
                     }
+                    logTableModel.fireTableDataChanged();
+                    logTable.scrollRectToVisible(logTable.getCellRect(logTable.getRowCount() - 1, logTable.getColumnCount() - 1, true));
                 });
             }
 
@@ -158,13 +155,14 @@ public class ConsoleToolView extends AbstractToolView {
         toolbar.add(createToolbarButton(String.format(ICON_PATH, "clear.png"), CLEAR));
         consoleViewPanel.add(toolbar, BorderLayout.WEST);
         consoleViewPanel.add(scrollPane, BorderLayout.CENTER);
-        BeamLogManager.getSystemLogger().addHandler(logHandler);
+        LogManager.getLogManager().getLogger(this.getClass().getName()).getParent().addHandler(logHandler);
+        //BeamLogManager.getSystemLogger().addHandler(logHandler);
         return consoleViewPanel;
     }
 
     @Override
     public void dispose() {
-        BeamLogManager.getSystemLogger().removeHandler(logHandler);
+        LogManager.getLogManager().getLogger(this.getClass().getName()).getParent().removeHandler(logHandler);
         super.dispose();
     }
 
