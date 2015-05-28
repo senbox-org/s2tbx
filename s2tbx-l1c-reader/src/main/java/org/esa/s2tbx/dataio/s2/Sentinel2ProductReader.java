@@ -108,8 +108,12 @@ import static org.esa.s2tbx.dataio.s2.S2Config.*;
  */
 public class Sentinel2ProductReader extends AbstractProductReader {
 
+
+    public static final int DEFAULT_RESOLUTION = 10;
+
     private final boolean forceResize;
-    private final int filteredResolution;
+    private final int productResolution;
+    private final boolean isMultiResolution;
 
     private File cacheDir;
     protected final Logger logger;
@@ -141,19 +145,21 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         }
     }
 
-    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution) {
+    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = SystemUtils.LOG;
         this.forceResize = forceResize;
-        this.filteredResolution = filteredResolution;
+        isMultiResolution = false;
+        this.productResolution = productResolution;
     }
 
 
     Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = SystemUtils.LOG;
         this.forceResize = forceResize;
-        this.filteredResolution = -1;
+        this.productResolution = DEFAULT_RESOLUTION;
+        isMultiResolution = true;
     }
 
     @Override
@@ -270,7 +276,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         for (String utmZone : metadataHeader.getUTMZonesList()) {
             autoGrouping += utmZone.replace(':', '_');
         }
-        autoGrouping += "reflec:radiance:sun:view";
+        autoGrouping += ":reflec:radiance:sun:view";
         product.setAutoGrouping(autoGrouping);
 
 
@@ -321,51 +327,12 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
 
 
-            GmlFilter gmlFilter = new GmlFilter();
-
-            List<EopPolygon> polygons = new ArrayList<>();
-
-            // todo put polygon filter in a function
-            List<MaskFilename> allMasks = new ArrayList<MaskFilename>();
-            if(!utmZoneTileList.isEmpty())
-            {
-                for(L1cMetadata.Tile tile: utmZoneTileList)
-                {
-                    MaskFilename[] filenames = tile.maskFilenames;
-
-                    if(filenames != null) {
-                        for (MaskFilename aMaskFile : filenames) {
-                            File aFile = aMaskFile.getName();
-                            Pair<String, List<EopPolygon>> polys = gmlFilter.parse(aFile);
-
-                            boolean warningForPolygonsOutOfUtmZone = false;
-
-                            if (!polys.getFirst().isEmpty()) {
-                                int indexOfColons = polys.getFirst().indexOf(':');
-                                if (indexOfColons != -1) {
-                                    String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':') + 1);
-                                    if (polys.getFirst().contains(realCsCode)) {
-                                        polygons.addAll(polys.getSecond());
-                                    } else {
-                                        warningForPolygonsOutOfUtmZone = true;
-                                    }
-                                }
-                            }
-
-                            if (warningForPolygonsOutOfUtmZone) {
-                                logger.warning(String.format("Polygons detected out of its UTM zone in file [%s] !", aFile.getAbsolutePath()));
-                            }
-                        }
-                        allMasks.addAll(Arrays.asList(filenames));
-                    }
-                }
-            }
-
             if(!bandInfoMap.isEmpty())
             {
                 addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())), utmZone);
             }
 
+            List<EopPolygon> polygons = filterMasksInUTMZones(utmZoneTileList);
 
             Map<String, List<EopPolygon>> polygonsByType = new HashMap<>();
 
@@ -381,9 +348,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
                 try {
                     // Build transformations
-                    AffineTransform scaler = AffineTransform.getScaleInstance(this.filteredResolution, this.filteredResolution).createInverse();
+                    AffineTransform scaler = AffineTransform.getScaleInstance(this.productResolution, this.productResolution).createInverse();
                     AffineTransform move = AffineTransform.getTranslateInstance(-sceneDescription.getSceneEnvelope().getMinX(), -sceneDescription.getSceneEnvelope().getMinY());
-                    AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, sceneDescription.getSceneEnvelope().getHeight() / this.filteredResolution);
+                    AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, sceneDescription.getSceneEnvelope().getHeight() / this.productResolution);
 
                     AffineTransform world2pixel = new AffineTransform(mirror_y);
                     world2pixel.concatenate(scaler);
@@ -395,12 +362,12 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                             final SimpleFeatureType type = Placemark.createGeometryFeatureType();
 
                             final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
-                            for(int index = 0; index < polygons.size(); index++)
-                            {
-                                Polygon pol = polygons.get(index).getPolygon();
+
+                            List<EopPolygon> typedPolygon = polygonsByType.get(polygonType);
+                            for(int index = 0; index < typedPolygon.size(); index++) {
+                                Polygon pol = typedPolygon.get(index).getPolygon();
                                 pol = (Polygon) JTS.transform(pol, new AffineTransform2D(world2pixel));
 
-                                // todo change polygon name
                                 Object[] data1 = {pol, String.format("Polygon-%s", index)};
                                 SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
                                 collection.add(f1);
@@ -423,6 +390,46 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         return product;
     }
 
+    private  List<EopPolygon> filterMasksInUTMZones(List<L1cMetadata.Tile> utmZoneTileList) {
+        List<EopPolygon> polygons = new ArrayList<EopPolygon>();
+
+        GmlFilter gmlFilter = new GmlFilter();
+        if(!utmZoneTileList.isEmpty())
+        {
+            for(L1cMetadata.Tile tile: utmZoneTileList)
+            {
+                MaskFilename[] filenames = tile.maskFilenames;
+
+                if(filenames != null) {
+                    for (MaskFilename aMaskFile : filenames) {
+                        File aFile = aMaskFile.getName();
+                        Pair<String, List<EopPolygon>> polys = gmlFilter.parse(aFile);
+
+                        boolean warningForPolygonsOutOfUtmZone = false;
+
+                        if (!polys.getFirst().isEmpty()) {
+                            int indexOfColons = polys.getFirst().indexOf(':');
+                            if (indexOfColons != -1) {
+                                String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':') + 1);
+                                if (polys.getFirst().contains(realCsCode)) {
+                                    polygons.addAll(polys.getSecond());
+                                } else {
+                                    warningForPolygonsOutOfUtmZone = true;
+                                }
+                            }
+                        }
+
+                        if (warningForPolygonsOutOfUtmZone) {
+                            logger.warning(String.format("Polygons detected out of its UTM zone in file [%s] !", aFile.getAbsolutePath()));
+                        }
+                    }
+                }
+            }
+        }
+
+        return polygons;
+    }
+
 
     private void addTiePointGridBand(Product product, L1cMetadata metadataHeader, L1cSceneDescription sceneDescription, String name, int tiePointGridIndex) {
         final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
@@ -441,7 +448,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
 
-            if(bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
+            if(isMultiResolution || bandInfo.getWavebandInfo().resolution.resolution == this.productResolution)
             {
                 Band band = addBand(product, bandInfo, utmZoneMap);
                 band.setSourceImage(mlif.createSourceImage(bandInfo));
@@ -464,9 +471,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                     }
 
                     try {
-                        AffineTransform scaler = AffineTransform.getScaleInstance(this.filteredResolution, this.filteredResolution).createInverse();
+                        AffineTransform scaler = AffineTransform.getScaleInstance(this.productResolution, this.productResolution).createInverse();
                         AffineTransform move = AffineTransform.getTranslateInstance(-envelope.getMinX(), -envelope.getMinY());
-                        AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, envelope.getHeight() / this.filteredResolution);
+                        AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, envelope.getHeight() / this.productResolution);
 
                         AffineTransform world2pixel = new AffineTransform(mirror_y);
                         world2pixel.concatenate(scaler);
@@ -691,7 +698,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         public L1cSceneMultiLevelImageFactory(L1cSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
             super(imageToModelTransform);
 
-            BeamLogManager.getSystemLogger().fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
+            SystemUtils.LOG.fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
 
             this.sceneDescription = sceneDescription;
         }
