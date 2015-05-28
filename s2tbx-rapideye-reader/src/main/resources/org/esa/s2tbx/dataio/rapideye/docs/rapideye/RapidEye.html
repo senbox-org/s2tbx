@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright (C) 2014-2015 CS SI
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~  with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>RapidEye Product Reader</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+    <table class="header">
+        <tr class="header">
+            <td class="header">&nbsp; Import RapidEye Products</td>
+            <td class="header" align="right">
+                <a href="../general/BeamOverview.html"><img src="../images/snap_header.jpg" border=0></a>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Import RapidEye Products</h3>
+
+    <p>This command allows to import the data of RapidEye products in GeoTIFF format.
+        RapidEye Satellite Imagery Products are offered at three different processing types to support the varied needs
+        of the customer:
+    </p>
+    <ul>
+        <li>RapidEye Basic (Level 1B) products are sensor level products with a minimal amount of processing
+            (geometrically uncorrected) for customers who prefer to geo-correct the images themselves;</li>
+        <li>RapidEye Ortho (Level 3A) are orthorectified tile products with radiometric, geometric and terrain
+            corrections in a map projection;</li>
+        <li>RapidEye Ortho Take (Level 3B) are orthorectified, bundle adjusted image takes that are larger than the
+            Level 3A products.</li>
+    </ul>
+    </p>
+    <p>For more details please see: <a href="http://www.blackbridge.com/rapideye/upload/RE_Product_Specifications_ENG.pdf">
+        RapidEye Product Guide</a></p>
+    <p>RapidEye System Mission Characteristics are outlined in the next table.</p>
+    <table>
+        <tr><th>MISSION CHARACTERISTIC</th><th colspan="2">INFORMATION</th></tr>
+        <tr><td>Number of Satellites</td><td  colspan="2">5</td></tr>
+        <tr><td>Spacecraft Lifetime</td><td  colspan="2">Over 7 years</td></tr>
+        <tr><td>Orbit Altitude</td><td  colspan="2">630 km in Sun-synchronous orbit</td></tr>
+        <tr><td>Equator Crossing Time</td><td  colspan="2">11:00 am local time (approximately)</td></tr>
+        <tr><td>Sensor Type</td><td  colspan="2">Multi-spectral push broom imager</td></tr>
+        <tr><td rowspan="7">Spectral Bands</td><td  colspan="2">Capable of capturing all of the following spectral bands:</td></tr>
+        <tr><td>Band name</td><td>Spectral Range (nm)</td></tr>
+        <tr><td>Blue</td><td>440 – 510</td></tr>
+        <tr><td>Green</td><td>520 – 590</td></tr>
+        <tr><td>Red</td><td>630 – 685</td></tr>
+        <tr><td>Red Edge</td><td>690 – 730</td></tr>
+        <tr><td>NIR</td><td>760 – 850</td></tr>
+        <tr><td>Ground sampling distance (nadir)</td><td  colspan="2">6.5 m</td></tr>
+        <tr><td>Pixel size (orthorectified)</td><td  colspan="2">5 m</td></tr>
+        <tr><td>Pixel size (orthorectified)</td><td  colspan="2">5 m</td></tr>
+    </table>
+
+    <h4>RAPIDEYE BASIC – LEVEL 1B PRODUCT SPECIFICATION</h4>
+    <p>
+        The RapidEye Basic product is the least processed of the available RapidEye image products. This product is
+        designed for customers with advanced image processing capabilities and a desire to geometrically correct the
+        product themselves.
+    </p>
+    <p>
+        The RapidEye Basic product is radiometric and sensor corrected, providing imagery as seen from the spacecraft
+        without correction for any geometric distortions inherent in the imaging process, and is not mapped to a
+        cartographic projection. The imagery data is accompanied by all spacecraft telemetry necessary for the
+        processing of the data into a geo-corrected form, or when matched with a stereo pair, for the generation of
+        digital elevation data. Resolution of the images is 6.5 meters GSD at nadir. The images are resampled to a
+        coordinate system defined by an ideal basic camera model for band alignment.
+    </p>
+    <p>
+        RapidEye Basic image product consists of the following file components:
+        </p>
+    <ul>
+        <li>Image File – Image product delivered as a group of single-band NITF 2.0 or GeoTIFF files with associated
+            RPC values. Bands are co-registered.
+        </li>
+        <li>Metadata File – XML format metadata file. Metadata file contains additional information related to spacecraft
+            attitude, spacecraft ephemeris, spacecraft temperature measurements, line imaging times, camera geometry,
+            and radiometric calibration data.
+        </li>
+        <li>Browse Image File – GeoTIFF format
+        </li>
+        <li>Unusable Data Mask (UDM) file – GeoTIFF format
+        </li>
+    </ul>
+
+    <h4>RAPIDEYE ORTHO – LEVEL 3A PRODUCT SPECIFICATION</h4>
+    <p>
+        The RapidEye Ortho product offers RapidEye Satellite imagery orthorectified as individual 25 by 25 kilometer
+        tiles. This product was designed for a wide variety of applications that require imagery with an accurate
+        geolocation and cartographic projection. It has been processed to remove distortions caused by terrain and can
+        be used for many cartographic purposes.
+    </p>
+    <p>
+        The RapidEye Ortho product is radiometric, sensor and geometrically corrected and aligned to a cartographic
+        map projection. The geometric correction uses fine DEMs with a post spacing of between 30 and 90 meters. Ground
+        Control Points (GCPs) are used in the creation of every image and the accuracy of the product will vary from
+        region to region based on available GCPs. RapidEye Ortho image products are output as 25 by 25 kilometer tiles
+        referenced to a fixed, standard RapidEye image tile grid system (see Appendix B). All Ortho image products
+        (Level 3A) are black-filled 1000 meters (200 pixels) beyond the order polygon used to place the product order,
+        except for when the order is tile-based. The Browse Image and Unusable Data Mask (UDM) files of an Ortho product
+        show the full extent of valid imagery available for the given image tile regardless of the black-fill applied
+        to an order.
+    </p>
+    <p>RapidEye Ortho image product consists of the following file components:</p>
+    <ul>
+        <li>Image File – GeoTIFF file that contains image data and geolocation information</li>
+        <li>Metadata File – XML format metadata file</li>
+        <li>Browse Image File – GeoTIFF format</li>
+        <li>Unusable Data Mask (UDM) file – GeoTIFF format</li>
+    </ul>
+
+    <h4>RAPIDEYE ORTHO TAKE– LEVEL 3B PRODUCT SPECIFICATION</h4>
+    <p>
+        The RapidEye Ortho Take product extends the usability of orthorectified RapidEye products by leveraging full
+        image takes and adjusts multiple images together to cover larger areas with fewer files. These products are
+        radiometric, sensor and geometrically corrected and aligned to a cartographic map projection. The geometric
+        correction uses fine DEMs with a post spacing of between 30 and 90 meters. Ground Control Points (GCPs) and
+        DEM are used in the creation of every image.
+    </p>
+    <p>
+        Multiple images may be used to cover the desired order polygon and those images will be bundle adjusted together
+        before orthorectification, but each image will be produced and delivered as a separate standalone file with
+        no mosaicking or color balancing being performed.
+    </p>
+    <p>RapidEye Ortho Take image product consists of the following file components:</p>
+    <ul>
+        <li>Image File – GeoTIFF file that contains image data and geolocation information</li>
+        <li>Metadata File – XML format metadata file.</li>
+        <li>Browse Image File – GeoTIFF format</li>
+        <li>Unusable Data Mask (UDM) file – GeoTIFF format</li>
+    </ul>
+
+    <h3>PRODUCT NAMING</h3>
+    <p>
+        The naming of RapidEye Satellite Imagery Products provides important information related to the image.
+        The naming of the product depends on the product type and is different between the product levels.
+        The name of each product is designed to be unique and allow for easier recognition and sorting of the imagery.
+    </p>
+
+    <h4>1B – BASIC PRODUCT NAMING</h4>
+    <p>The information provided in the 1B – Basic product name includes acquisition date and time, satellite that
+        acquired the image, product level, product description, product and order identification and file type with
+        format. The name of each 1B product is composed of the following elements:
+    </p>
+    <p><b>&lt;acquisition time&gt;_&lt;satellite&gt;_&lt;product ID&gt;_&lt;RE catalog ID&gt;_&lt;order number&gt;_
+        &lt;file type&gt;.&lt;file extension&gt;
+    </b></p>
+    <p>
+        For example:
+        <br/>
+        1B Product File Name = 2008-10-26T012345_RE3_1B-NAC_0123456789_9876543210_band1.ntf
+        <br/>
+        where:
+    </p>
+    <table>
+        <tr><td>&lt;acquisition time&gt;</td><td>= 2008-10-26 (date) T012345 (time in UTC)</td></tr>
+        <tr><td>&lt;satellite&gt;</td><td>= RE3</td></tr>
+        <tr><td>&lt;product ID&gt;</td><td>= 1B (processing level) -NAC (product description)</td></tr>
+        <tr><td>&lt;RE catalog ID&gt;</td><td>= 0123456789</td></tr>
+        <tr><td>&lt;order number&gt;</td><td>= 9876543210</td></tr>
+        <tr><td>&lt;file type&gt;</td><td>= band1 (only for L1B images)</td></tr>
+        <tr><td>&lt;file extension&gt;</td><td>= ntf (NITF 2.0)</td></tr>
+    </table>
+    <p>The expected values for the satellite, product ID (processing level + product description), file type and file
+        extension fields are listed below:
+    </p>
+    <table>
+        <tr><th rowspan="2">SATELLITE</th><th colspan="2">PRODUCT ID</th><th colspan="2">FILE FORMATS</th></tr>
+        <tr><th>PROCESSING LEVEL</th><th>PRODUCT DESCRIPTION</th><th>FILE TYPE</th><th>FILE EXTENSIONS</th></tr>
+        <tr><td rowspan="8">1 - 5</td><td rowspan="8">1B = RE Basic</td><td rowspan="8">NAC = Non-atmospherically corrected</td>
+        <td>For Images : bandn for 1B images (where n = 1..5)</td><td>.ntf = NITF2.0<br/>.tif = GeoTIFF</td></tr>
+        <tr><td>browse</td><td>.tif</td></tr>
+        <tr><td>license</td><td>.txt</td></tr>
+        <tr><td>metadata</td><td>.xml</td></tr>
+        <tr><td>sci (spacecraft metadata)</td><td>.xml</td></tr>
+        <tr><td>rpc (rpc metadata)</td><td>.xml</td></tr>
+        <tr><td>readme</td><td>.txt</td></tr>
+        <tr><td>udm</td><td>.tif</td></tr>
+    </table>
+
+
+    <h4>3A – ORTHO PRODUCT NAMING</h4>
+    <p>
+        The information provided in the 3A – Ortho product name includes acquisition date, RapidEye Tile ID, satellite
+        that acquired the image, processing level, order identification and file type with format. The name of each
+        3A product is composed of the following elements:
+    </p>
+    <p><b>&lt;RapidEye Tile ID&gt;_&lt;acquisition date&gt;_&lt;satellite&gt;_&lt;processing level&gt;_
+        &lt;order number&gt;.&lt;file extension&gt;
+    </b></p>
+    <p>
+        For example:
+        <br/>
+        3A Product File Name = 3949726_ 2012-01-16_RE3_3A_9876543210.tif
+        <br/>
+        where:
+    </p>
+
+    <table>
+        <tr><td>&lt;Rapid Tile ID&gt;</td><td>= 3949726 (See Appendix B – Tile Grid Definition for more information)</td></tr>
+        <tr><td>&lt;acquisition date&gt;</td><td>= 2008-10-26</td></tr>
+        <tr><td>&lt;satellite&gt;</td><td>= RE3</td></tr>
+        <tr><td>&lt;processing level&gt;</td><td>= 3A</td></tr>
+        <tr><td>&lt;order number&gt;</td><td>= 9876543210</td></tr>
+        <tr><td>&lt;file extension&gt;</td><td>= tif (GeoTIFF 6.0)</td></tr>
+    </table>
+
+    <p>The expected values for the satellite, processing level, file type and file extension fields are listed below:
+    </p>
+    <table>
+        <tr><th rowspan="2">SATELLITE</th><th rowspan="2">PROCESSING LEVEL</th><th colspan="2">FILE FORMATS</th></tr>
+        <tr><th>FILE TYPE</th><th>FILE EXTENSIONS</th></tr>
+        <tr><td rowspan="6">1 - 5</td><td rowspan="6">3A = RE Ortho</td><td>For Images : none for 3A GeoTIFF images</td>
+            <td>.tif = GeoTIFF</td></tr>
+        <tr><td>browse</td><td>.tif</td></tr>
+        <tr><td>license</td><td>.txt</td></tr>
+        <tr><td>metadata</td><td>.xml</td></tr>
+        <tr><td>readme</td><td>.txt</td></tr>
+        <tr><td>udm</td><td>.tif</td></tr>
+    </table>
+
+    <h4>3B – ORTHO TAKE PRODUCT NAMING</h4>
+    <p>
+        The information provided in the 3B – Ortho Take product name includes acquisition date and time, satellite
+        that acquired the image, product level, product description, product and order identification and file format.
+        The name of each 3B product is composed of the following elements:
+    </p>
+    <p><b>&lt;acquisition time&gt;_&lt;satellite&gt;_&lt;product ID&gt;_&lt;RE catalog ID&gt;_&lt;order number&gt;_
+        &lt;file type&gt;.&lt;file extension&gt;
+    </b></p>
+    <p>
+        For example:
+        <br/>
+        3B Product File Name = 2008-10-26T012345_RE3_3B-NAC_0123456789_9876543210.tif
+        <br/>
+        where:
+    </p>
+    <table>
+        <tr><td>&lt;acquisition time&gt;</td><td>= 2008-10-26 (date) T012345 (time in UTC)</td></tr>
+        <tr><td>&lt;satellite&gt;</td><td>= RE3</td></tr>
+        <tr><td>&lt;product ID&gt;</td><td>= 3B (processing level) -NAC (product description)</td></tr>
+        <tr><td>&lt;RE catalog ID&gt;</td><td>= 0123456789</td></tr>
+        <tr><td>&lt;order number&gt;</td><td>= 9876543210</td></tr>
+        <tr><td>&lt;file type&gt;</td><td>= none of 3B GeoTIFF images</td></tr>
+        <tr><td>&lt;file extension&gt;</td><td>= tif (GeoTIFF 6.0)</td></tr>
+    </table>
+    <p>The expected values for the satellite, product ID (processing level + product description), file type and file
+        extension fields are listed below:
+    </p>
+    <table>
+        <tr><th rowspan="2">SATELLITE</th><th colspan="2">PRODUCT ID</th><th colspan="2">FILE FORMATS</th></tr>
+        <tr><th>PROCESSING LEVEL</th><th>PRODUCT DESCRIPTION</th><th>FILE TYPE</th><th>FILE EXTENSIONS</th></tr>
+        <tr><td rowspan="6">1 - 5</td><td rowspan="6">1B = RE Basic</td><td rowspan="6">NAC = Non-atmospherically corrected</td>
+            <td>For Images : none for 3B GeoTIFF images</td><td>.tif = GeoTIFF</td></tr>
+        <tr><td>browse</td><td>.tif</td></tr>
+        <tr><td>license</td><td>.txt</td></tr>
+        <tr><td>metadata</td><td>.xml</td></tr>
+        <tr><td>readme</td><td>.txt</td></tr>
+        <tr><td>udm</td><td>.tif</td></tr>
+    </table>
+</body>
+</html>
