@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1'  ?>
+<?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
   ~ Copyright (C) 2014-2015 CS SI
   ~
@@ -15,20 +15,10 @@
   ~  with this program; if not, see http://www.gnu.org/licenses/
   -->
 
-<!DOCTYPE toc
-        PUBLIC
-        "-//Sun Microsystems Inc.//DTD
-     JavaHelp TOC Version 2.0//EN"
-        "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+<!DOCTYPE map
+        PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+        "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
-<toc version="2.0" categoryclosedimage="folder" categoryopenimage="folder" topicimage="doc">
-    <tocitem text="Sentinel Toolbox Application">
-        <tocitem text="Tools">
-            <tocitem text="Import and Export Tools">
-                <tocitem text="Import Raster Data">
-                    <tocitem text="DEIMOS" target="reader_deimos"/>
-                </tocitem>
-            </tocitem>
-        </tocitem>
-    </tocitem>
-</toc>
+<map version="2.0">
+    <mapID target="reader_rapideye" url="rapideye/RapidEye.html"/>
+</map>

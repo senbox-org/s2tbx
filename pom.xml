@@ -27,8 +27,8 @@
         <module>s2tbx-sen2three-processor</module>
         <module>s2tbx-r2r-converter</module>
         <module>s2tbx-deimos-reader</module>
-        <module>snap-sta</module>
-        <module>snap-sta-ui</module>
+        <!--<module>snap-sta</module>-->
+        <!--<module>snap-sta-ui</module>-->
         <module>s2tbx-eop2-gml-reader</module>
     </modules>
 

@@ -22,13 +22,15 @@
         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0" categoryclosedimage="folder" categoryopenimage="folder" topicimage="doc">
-    <tocitem text="VISAT">
+    <tocitem text="Sentinel Toolbox Application">
         <tocitem text="Tools">
             <tocitem text="Import and Export Tools">
                 <tocitem text="Import Raster Data">
-                    <tocitem text="Spot Scene" target="mySPOTDimapProduct"/>
-                    <tocitem text="Spot View" target="mySPOTViewProduct"/>
-                    <tocitem text="Spot-4 Take5" target="mySPOTTake5Product"/>
+                    <tocitem text="SPOT">
+                        <tocitem text="SPOT Scene" target="mySPOTDimapProduct"/>
+                        <tocitem text="SPOT View" target="mySPOTViewProduct"/>
+                        <tocitem text="SPOT-4 Take5" target="mySPOTTake5Product"/>
+                    </tocitem>
                 </tocitem>
             </tocitem>
         </tocitem>
