@@ -1,14 +1,14 @@
 <module>
     <manifestVersion>2.0.0</manifestVersion>
     <symbolicName>s2tbx-sen2cor-processor</symbolicName>
-    <version>2.0.0</version>
+    <version>2.0.3</version>
     <name>Sentinel 2 Level 2A Processor</name>
 
     <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products</description>
 
     <vendor>Telespazio VEGA Deutschland GmbH</vendor>
     <contactAddress>Europaplatz 5, 64293 Darmstadt (Germany)</contactAddress>
-    <copyright>(C) 2014 Telespazio VEGA Deutschland GmbH</copyright>
+    <copyright>(C) 2015 Telespazio VEGA Deutschland GmbH</copyright>
     <url>https://github.com/senbox-org/s2tbx</url>
     <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
 

@@ -27,8 +27,7 @@ public class AtmCorrProcessBuilder {
             command.add("--sc_only");
         }
 
-        String apphome = System.getenv("S2L2APPHOME");
-        String applicationPath = apphome + "/src";
+        String applicationPath = System.getenv("SEN2COR_BIN");
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.directory(new File(applicationPath));
         Process process = processBuilder.start();
@@ -47,8 +46,7 @@ public class AtmCorrProcessBuilder {
         if (scOnly) {
             command.add("--sc_only");
         }
-        String apphome = System.getenv("S2L2APPHOME");
-        String applicationPath = apphome + "/src";
+        String applicationPath = System.getenv("SEN2COR_BIN");
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.directory(new File(applicationPath));
         Process start = processBuilder.start();
