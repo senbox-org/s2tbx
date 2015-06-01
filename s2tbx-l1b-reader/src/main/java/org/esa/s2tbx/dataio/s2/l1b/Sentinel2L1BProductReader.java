@@ -115,9 +115,11 @@ import static org.esa.s2tbx.dataio.s2.l1b.S2L1bConfig.*;
 public class Sentinel2L1BProductReader extends AbstractProductReader {
 
     private final boolean forceResize;
+    private final boolean isMultiResolution;
+
     private File cacheDir;
     protected final Logger logger;
-    private int filteredResolution;
+    private int productResolution;
 
 
     // private MemoryMeter meter;
@@ -146,20 +148,20 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         }
     }
 
-    public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution) {
+    public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
         this.forceResize = forceResize;
-        // meter = new MemoryMeter();
-        this.filteredResolution = filteredResolution;
+        this.productResolution = productResolution;
+        isMultiResolution = false;
     }
 
     Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn);
         logger = BeamLogManager.getSystemLogger();
         this.forceResize = forceResize;
-        this.filteredResolution = -1;
-        // meter = new MemoryMeter();
+        this.productResolution = -1;
+        isMultiResolution = true;
     }
 
     @Override
@@ -387,16 +389,6 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             }
         }
 
-
-        // todo wait until geocoding is fixed
-        /*
-        if(forceResize){
-        if (product.getGeoCoding() == null) {
-            // use default geocoding
-            setGeoCoding(product, sceneDescription.getSceneEnvelope());
-        }}
-        */
-
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
 
@@ -499,7 +491,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
         for (String bandIndex : bandIndexes) {
             TileBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
-            if (tileBandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution){
+            if (isMultiResolution || tileBandInfo.getWavebandInfo().resolution.resolution == this.productResolution){
                 Band band = addBand(product, tileBandInfo);
                 band.setSourceImage(mlif.createSourceImage(tileBandInfo));
 
@@ -536,16 +528,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         band.setSpectralWavelength((float) tileBandInfo.wavebandInfo.wavelength);
         band.setSpectralBandwidth((float) tileBandInfo.wavebandInfo.bandwidth);
 
-
-        //todo add masks from GML metadata files (gml branch)
         setValidPixelMask(band, tileBandInfo.wavebandInfo.bandName);
-
-        // todo - We don't use the scaling factor because we want to stay with 16bit unsigned short samples due to the large
-        // amounts of data when saving the images. We provide virtual reflectance bands for this reason. We can use the
-        // scaling factor again, once we have product writer parameters, so that users can decide to write data as
-        // 16bit samples.
-        //
-        //band.setScalingFactor(bandInfo.wavebandInfo.scalingFactor);
 
         return band;
     }

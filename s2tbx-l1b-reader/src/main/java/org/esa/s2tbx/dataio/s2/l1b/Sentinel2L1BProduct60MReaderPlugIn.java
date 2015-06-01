@@ -77,7 +77,7 @@ public class Sentinel2L1BProduct60MReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1B";
+        return "Sentinel-2 MSI L1B 60M";
     }
 
     @Override
