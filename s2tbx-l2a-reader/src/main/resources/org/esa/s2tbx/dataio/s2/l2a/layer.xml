@@ -16,10 +16,12 @@
         <folder name="File">
             <folder name="Import">
                 <folder name="Optical Sensors">
-                    <file name="org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.shadow">
-                        <attr name="originalFile"
-                              stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.instance"/>
-                    </file>
+                    <folder name="Sentinel-2">
+                        <file name="org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.shadow">
+                            <attr name="originalFile"
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.instance"/>
+                        </file>
+                    </folder>
                 </folder>
             </folder>
         </folder>
