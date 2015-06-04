@@ -368,7 +368,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
 
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
-            if (bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
+            if (this.filteredResolution == -1 || bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
             {
                 Band band = addBand(product, bandInfo);
                 band.setSourceImage(mlif.createSourceImage(bandInfo));
