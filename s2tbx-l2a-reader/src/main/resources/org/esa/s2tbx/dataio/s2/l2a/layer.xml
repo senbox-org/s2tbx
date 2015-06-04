@@ -6,7 +6,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="S2-L2A"/>
-                <attr name="formatName" stringvalue="S2-L2A"/>
+                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L2A"/>
                 <attr name="useAllFileFilter" boolvalue="true"/>
             </file>
         </folder>
@@ -15,7 +15,7 @@
     <folder name="Menu">
         <folder name="File">
             <folder name="Import">
-                <folder name="Generic Formats">
+                <folder name="Optical Sensors">
                     <file name="org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.shadow">
                         <attr name="originalFile"
                               stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.instance"/>
