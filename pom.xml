@@ -167,9 +167,9 @@
                         <brandingToken>${brandingToken}</brandingToken>
                         <useOSGiDependencies>false</useOSGiDependencies>
                         <requiresRestart>true</requiresRestart>
-                        <!--<keystore>${project.basedir}/../keystore/s3tbx.ks</keystore>-->
-                        <!--<keystorealias>snap</keystorealias>-->
-                        <!--<keystorepassword>snap-123</keystorepassword>-->
+                        <keystore>${project.basedir}/../keystore/s2tbx.ks</keystore>
+                        <keystorealias>snap</keystorealias>
+                        <keystorepassword>snap-123</keystorepassword>
                     </configuration>
                 </plugin>
                 <plugin>
