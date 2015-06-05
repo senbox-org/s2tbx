@@ -18,8 +18,12 @@
 
 package org.esa.snap.ui;
 
-import org.esa.snap.framework.ui.application.support.AbstractToolView;
+import org.esa.snap.rcp.windows.ToolTopComponent;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.utils.CollectionHelper;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import javax.swing.table.*;
@@ -32,7 +36,6 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 
@@ -41,7 +44,21 @@ import java.util.stream.Collectors;
  *
  * @author  Cosmin Cara
  */
-public class ConsoleToolView extends AbstractToolView {
+@TopComponent.Description(
+        preferredID = "ConsoleToolViewTopComponent",
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS
+)
+@TopComponent.Registration(mode = "explorer",
+        openAtStartup = true,
+        position = 4
+)
+@ActionID(category = "Window", id = "org.esa.snap.ui.ConsoleToolView")
+@ActionReference(path = "Menu/Window/Tool Windows", position = 0)
+@TopComponent.OpenActionRegistration(
+        displayName = "Console",
+        preferredID = "ConsoleToolViewTopComponent"
+)
+public class ConsoleToolView extends ToolTopComponent {
 
     public static final String ID = ConsoleToolView.class.getName();
 
@@ -49,7 +66,7 @@ public class ConsoleToolView extends AbstractToolView {
     private static final String INFO = "Informational";
     private static final String ERROR = "Error";
     private static final String CLEAR = "Clear";
-    private static final String ICON_PATH = "org/esa/s2tbx/ui/%s";
+    private static final String ICON_PATH = "org/esa/snap/ui/%s";
     private static final String COLUMNS[] = {"Timestamp","Message Type", "Message"};
     private static final int COLUMN_WIDTHS[] = { 50, 50, 800};
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -64,6 +81,10 @@ public class ConsoleToolView extends AbstractToolView {
     Level currentFilter;
 
     public ConsoleToolView() {
+        setLayout(new BorderLayout());
+        setName("Console");
+        putClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED, Boolean.TRUE);
+        putClientProperty(TopComponent.PROP_KEEP_PREFERRED_SIZE_WHEN_SLIDED_IN, Boolean.TRUE);
         this.filterMasks = new LinkedHashMap<>();
         this.filterIcons = new LinkedHashMap<>();
         this.reverseFilterMask = new HashMap<Level, String>() {{
@@ -114,9 +135,9 @@ public class ConsoleToolView extends AbstractToolView {
 
             }
         };
+        add(createControl(), BorderLayout.CENTER);
     }
 
-    @Override
     protected JComponent createControl() {
         BorderLayout borderLayout = new BorderLayout();
         final JPanel consoleViewPanel = new JPanel(borderLayout);
@@ -155,15 +176,15 @@ public class ConsoleToolView extends AbstractToolView {
         toolbar.add(createToolbarButton(String.format(ICON_PATH, "clear.png"), CLEAR));
         consoleViewPanel.add(toolbar, BorderLayout.WEST);
         consoleViewPanel.add(scrollPane, BorderLayout.CENTER);
-        LogManager.getLogManager().getLogger(this.getClass().getName()).getParent().addHandler(logHandler);
+        SystemUtils.LOG.addHandler(logHandler);
         //BeamLogManager.getSystemLogger().addHandler(logHandler);
         return consoleViewPanel;
     }
 
     @Override
-    public void dispose() {
-        LogManager.getLogManager().getLogger(this.getClass().getName()).getParent().removeHandler(logHandler);
-        super.dispose();
+    protected void componentClosed() {
+        SystemUtils.LOG.removeHandler(logHandler);
+        super.componentClosed();
     }
 
     private JToggleButton createTextlessToolbarButton(String iconPath, boolean pressed, final String messageLevel) {
