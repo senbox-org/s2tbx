@@ -57,39 +57,10 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-r2r-converter</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-python-lib</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-sen2cor-processor</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-sen2three-processor</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-app</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-help</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -122,6 +93,26 @@
             <artifactId>lib-openjpeg</artifactId>
             <version>2.1.0</version>
         </dependency>
+
+
+        <!--<dependency>-->
+        <!--<groupId>org.esa.s2tbx</groupId>-->
+        <!--<artifactId>s2tbx-r2r-converter</artifactId>-->
+        <!--<version>${project.version}</version>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+        <!--<groupId>org.esa.s2tbx</groupId>-->
+        <!--<artifactId>s2tbx-sen2cor-processor</artifactId>-->
+        <!--<version>${project.version}</version>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+        <!--<groupId>org.esa.s2tbx</groupId>-->
+        <!--<artifactId>s2tbx-sen2three-processor</artifactId>-->
+        <!--<version>${project.version}</version>-->
+        <!--</dependency>-->
+
 
     </dependencies>
 
