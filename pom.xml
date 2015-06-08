@@ -21,6 +21,7 @@
         <module>s2tbx-python-lib</module>
         <module>s2tbx-bootstrap</module>
         <!--module>s2tbx-kit</module-->
+        <!--module>s2tbx-sen2cor-processor</module-->
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-eop2-gml-reader</module>
     </modules>
@@ -147,6 +148,38 @@
                     <target>1.8</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/s3tbx-zip.xml</descriptor>
+                    </descriptors>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <finalName>${project.artifactId}-${project.version}</finalName>
                 </configuration>
             </plugin>
         </plugins>

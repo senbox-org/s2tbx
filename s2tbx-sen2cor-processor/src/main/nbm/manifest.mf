@@ -1,9 +1,12 @@
 Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: true
+AutoUpdate-Show-In-Client: false
 AutoUpdate-Essential-Module: true
-OpenIDE-Module-Layer: org/esa/s2tbx/dataio/atmcorr/layer.xml
 OpenIDE-Module-Java-Dependencies: Java > 1.8
-OpenIDE-Module-Display-Category: Sentinel-2 Toolbox Sen2Cor Processor
-OpenIDE-Module-Long-Description: <p>TBD
- </p><p><b>Vendor:</b> VEGA</p>
-
+OpenIDE-Module-Display-Category: SNAP
+OpenIDE-Module-Long-Description: <p>Performs atmospheric correction on
+  Sentinel 2 L1C products, thereby creating L2A products<p><b>Vendor:<
+ /b> Telespazio VEGA Deutschland GmbH<p><b>Contact address:</b> Europa
+ platz 5, 64293 Darmstadt (Germany)<p><b>Copyright:</b> (C) 2015 Teles
+ pazio VEGA Deutschland GmbH<p><b>Vendor:</b> Telespazio VEGA Deutschl
+ and GmbH<p><b>License:</b> http://www.gnu.org/licenses/gpl.html<p><b>
+ Changelog:</b> 

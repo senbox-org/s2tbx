@@ -9,6 +9,7 @@ import com.bc.ceres.swing.progress.ProgressMonitorSwingWorker;
 import org.esa.s2tbx.dataio.atmcorr.AtmCorrProcessBuilder;
 import org.esa.snap.framework.dataio.ProductIO;
 import org.esa.snap.framework.datamodel.Product;
+import org.esa.snap.framework.gpf.ui.SingleTargetProductDialog;
 import org.esa.snap.framework.ui.AppContext;
 import org.esa.snap.framework.ui.ModelessDialog;
 
@@ -25,10 +26,8 @@ import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * @author Tonio Fincke
- */
-public class AtmosphericCorrectionDialog extends ModelessDialog {
+/
+public class AtmosphericCorrectionDialog extends SingleTargetProductDialog {
 
     private JCheckBox scOnlyBox;
     private JComboBox resolutionBox;

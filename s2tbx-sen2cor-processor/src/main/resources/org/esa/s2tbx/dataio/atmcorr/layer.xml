@@ -1,18 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
-
 <filesystem>
+
     <folder name="Actions">
         <folder name="Operators">
-            <file name="org-esa-s2tbx-dataio-atmcor-AtmosphericCorrectionAction.instance">
+            <file name="org-esa-s2tbx-sen2cor-AtmCorAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.DefaultOperatorAction.create"/>
-                <attr name="displayName" stringvalue="SEN2COR Level 2A Processor"/>
-                <attr name="operatorName" stringvalue="SEN2COR"/>
-                <attr name="dialogTitle" stringvalue="SEN2COR Level 2A Processor"/>
-                <attr name="targetProductNameSuffix" stringvalue="_sen2cor"/>
+                <attr name="displayName" stringvalue="Sentinel 2 Level 2A Processor"/>
+                <attr name="operatorName" stringvalue="Sen2CorOp"/>
+                <attr name="dialogTitle" stringvalue="Sentinel 2 Level 2A Processor"/>
+                <attr name="targetProductNameSuffix" stringvalue="_smac"/>
+                <attr name="helpId" stringvalue="sen2CorProcessor"/>
                 <attr name="ShortDescription"
-                      stringvalue="Performs atmospheric correction on Sentinel-2 L1C products"/>
+                      stringvalue="Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products"/>
             </file>
         </folder>
     </folder>
@@ -20,8 +19,8 @@
     <folder name="Menu">
         <folder name="Processing">
             <folder name="Thematic Land Processing">
-                <file name="org-esa-s2tbx-dataio-atmcor-AtmosphericCorrectionAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-dataio-atmcor-AtmosphericCorrectionAction.instance"/>
+                <file name="org-esa-s2tbx-sen2cor-AtmCorAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-sen2cor-AtmCorAction.instance"/>
                     <attr name="position" intvalue="1000"/>
                 </file>
             </folder>

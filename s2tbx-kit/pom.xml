@@ -13,7 +13,8 @@
 
     <name>Sentinel-2 Toolbox Kit Module</name>
     <description>
-        TODO
+        The Sentinel-2 Toolbox is a SNAP extension dedicated to the exploitation of Sentinel-2 MSI data and
+        data of other optical, medium resolution sensors.
     </description>
 
     <build>
@@ -59,37 +60,7 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-r2r-converter</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-python-lib</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-sen2cor-processor</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-sen2three-processor</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-app</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-help</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -111,42 +82,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-tooladapter</artifactId>
-            <version>${project.version}</version>
-        </dependency>-->
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-sta</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-sta-ui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-deimos-reader</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-sta</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-sta-ui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-deimos-reader</artifactId>
@@ -157,78 +92,6 @@
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>lib-openjpeg</artifactId>
             <version>2.1.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-core</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-core</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-jai</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-ui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-ui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-geotiff</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-gpf</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-api-progress</artifactId>
-            <version>RELEASE802</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>3.2.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.xml.parsers</groupId>
-            <artifactId>jaxp-api</artifactId>
-            <version>1.4.5</version>
         </dependency>
 
     </dependencies>
