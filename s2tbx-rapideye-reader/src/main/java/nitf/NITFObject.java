@@ -24,9 +24,6 @@ package nitf;
 
 import org.esa.s2tbx.dataio.NativeLibraryLoader;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-
 /**
  * The Base NITF Object
  * <p>
@@ -45,19 +42,10 @@ public abstract class NITFObject {
     /* Load the library */
     static {
         try {
-            NativeLibraryLoader.loadLibraryFromJar("/resources/lib/" + NativeLibraryLoader.getOSFamily() + "/" + NITF_LIBRARY_NAME);
-            //System.loadLibrary(NITF_LIBRARY_NAME);
+            String path = NITFObject.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            NativeLibraryLoader.loadLibrary(path, NITF_LIBRARY_NAME);
         } catch (Throwable e) {
-            /* Try to load the library in the lib directory */
-            String path;
-            try {
-                path = NITFObject.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-                path = URLDecoder.decode(path, "UTF-8");
-            } catch (UnsupportedEncodingException x) {
-                throw new UnsatisfiedLinkError();
-            }
-
-            System.load(path + "../lib/" + NativeLibraryLoader.getOSFamily() + "/" + System.mapLibraryName(NITF_LIBRARY_NAME));
+            throw new UnsatisfiedLinkError(e.getMessage());
         }
     }
 

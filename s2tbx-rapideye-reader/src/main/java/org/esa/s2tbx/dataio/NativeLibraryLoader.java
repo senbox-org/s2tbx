@@ -16,23 +16,21 @@
 
 package org.esa.s2tbx.dataio;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
-import java.util.logging.Logger;
 
 /**
  * Simple library class for working with JNI (Java Native Interface)
  *
  * @author Adam Heirnich <adam@adamh.cz>, http://www.adamh.cz
- * @author Slightly modified by Cosmin Cara <cosmin.cara@c-s.ro> to work with file system libraries,
+ * @author Modified by Cosmin Cara <cosmin.cara@c-s.ro> to work with file system libraries,
  *         and also to detect the OS and processor type.
  * @see "http://frommyplayground.com/how-to-load-native-jni-library-from-jar"
  */
@@ -47,98 +45,32 @@ public class NativeLibraryLoader {
     /**
      * Loads library either from the current JAR archive, or from file system
      * <p>
-     * The file from JAR is copied into system temporary directory and then loaded. The temporary file is deleted after exiting.
-     * Method uses String as filename because the pathname is "abstract", not system-dependent.
+     * The file from JAR is copied into system temporary directory and then loaded.
      *
-     * @param path The filename inside JAR as absolute path (beginning with '/'), e.g. /package/File.ext
+     * @param path          The path from which the load is attempted
+     * @param libraryName   The name of the library to be loaded (without extension)
      * @throws IOException              If temporary file creation or read/write operation fails
-     * @throws IllegalArgumentException If source file (param path) does not exist
-     * @throws IllegalArgumentException If the filename is shorter than three characters (restriction of {@see File#createTempFile(java.lang.String, java.lang.String)}).
      */
-    public static void loadLibraryFromJar(String path) throws IOException {
-        if (!path.startsWith("/")) {
-            path = "/" + path;
-        }
-        // Obtain filename from path
-        String[] parts = path.split("/");
-        String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
-
-        // Split filename to prefix and suffix (extension)
-        String prefix = "";
-        String suffix = null;
-        if (filename != null) {
-            parts = filename.split("\\.", 2);
-            prefix = parts[0];
-            suffix = (parts.length > 1) ? "." + parts[parts.length - 1] : null; // Thanks, davs! :-)
-        }
-        // Check if the filename is okay
-        if (filename == null || prefix.length() < 3) {
-            throw new IllegalArgumentException("The filename has to be at least 3 characters long.");
-        }
-        // Open and check input stream
-        InputStream is = NativeLibraryLoader.class.getResourceAsStream(path);
+    public static void loadLibrary(String path, String libraryName) throws IOException {
+        path = URLDecoder.decode(path, "UTF-8");
         String extension = getExtension();
         // for Linux/Solaris, the file name has to begin with "lib*".
-        if (extension.contains("so"))
-            path = path.replace(filename, "lib" + filename);
-        path += getExtension();
-        if (is == null) {
-            // maybe we are not inside a JAR
-            try {
-                String parentPath = URLDecoder.decode(NativeLibraryLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "UTF-8");
-                File test = new File(parentPath + "/lib");
-
-                if (test.exists())
-                    path = parentPath + path.replace("/resources/", "");
-                System.load(path);
-            } catch (Exception e) {
-                Logger.getLogger(NativeLibraryLoader.class.getName()).severe(e.getMessage());
+        if (extension.contains("so")) {
+            libraryName = "lib" + libraryName;
+        }
+        String libPath = "/lib/" + NativeLibraryLoader.getOSFamily() + "/" + System.mapLibraryName(libraryName);
+        if (path.contains(".jar!")) {
+            try (InputStream in = NativeLibraryLoader.class.getResourceAsStream(libPath)) {
+                File fileOut = new File(System.getProperty("java.io.tmpdir"), libPath);
+                try (OutputStream out = FileUtils.openOutputStream(fileOut)) {
+                    IOUtils.copy(in, out);
+                }
+                path = fileOut.getAbsolutePath();
             }
         } else {
-            // Prepare temporary file
-            File temp = File.createTempFile(prefix, suffix);
-            temp.deleteOnExit();
-            if (!temp.exists()) {
-                throw new FileNotFoundException("File " + temp.getAbsolutePath() + " does not exist.");
-            }
-            // Prepare buffer for data copying
-            byte[] buffer = new byte[1024];
-            int readBytes;
-            // Open output stream and copy data between source file in JAR and the temporary file
-            try (OutputStream os = new FileOutputStream(temp)) {
-                while ((readBytes = is.read(buffer)) != -1) {
-                    os.write(buffer, 0, readBytes);
-                }
-            } finally {
-                // If read/write fails, close streams safely before throwing an exception
-                is.close();
-            }
-            // Finally, load the library
-            System.load(temp.getAbsolutePath());
-            final String libraryPrefix = prefix;
-            final String lockSuffix = ".lock";
-            // create lock file
-            final File lock = new File(temp.getAbsolutePath() + lockSuffix);
-            //noinspection ResultOfMethodCallIgnored
-            lock.createNewFile();
-            lock.deleteOnExit();
-            // file filter for library file (without .lock files)
-            FileFilter tmpDirFilter = pathname -> pathname.getName().startsWith(libraryPrefix) && !pathname.getName().endsWith(lockSuffix);
-
-            // get all library files from temp folder
-            String tmpDirName = System.getProperty("java.io.tmpdir");
-            File tmpDir = new File(tmpDirName);
-            File[] tmpFiles = tmpDir.listFiles(tmpDirFilter);
-            // delete all files which don't have n accompanying lock file
-            for (File tmpFile : tmpFiles) {
-                // Create a file to represent the lock and test.
-                File lockFile = new File(tmpFile.getAbsolutePath() + lockSuffix);
-                if (!lockFile.exists()) {
-                    //noinspection ResultOfMethodCallIgnored
-                    tmpFile.delete();
-                }
-            }
+            path = new File(path, libPath).getAbsolutePath();
         }
+        System.load(path);
     }
 
     public static String getExtension() {
