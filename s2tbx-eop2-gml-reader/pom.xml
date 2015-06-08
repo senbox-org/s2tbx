@@ -16,7 +16,7 @@
   <!--     Module Description                                      -->
   <!-- =========================================================== -->
   <artifactId>s2tbx-eop2-gml-reader</artifactId>
-  <packaging>jar</packaging>
+  <packaging>nbm</packaging>
   <name>Sentinel-2 GML EOP 2 Reader</name>
 
   <!-- =========================================================== -->
@@ -42,6 +42,12 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-math3</artifactId>
       <version>3.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.xml.parsers</groupId>
+      <artifactId>jaxp-api</artifactId>
+      <version>1.4.5</version>
     </dependency>
 
     <dependency>
