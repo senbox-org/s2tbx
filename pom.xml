@@ -20,9 +20,9 @@
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-python-lib</module>
         <module>s2tbx-bootstrap</module>
-        <!--module>s2tbx-kit</module-->
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-eop2-gml-reader</module>
+        <module>s2tbx-kit</module>
     </modules>
 
     <packaging>pom</packaging>
