@@ -20,11 +20,25 @@
 
     <folder name="Actions">
         <folder name="Readers">
-            <file name="org-esa-s2tbx-dataio-spot-ImportSpotProduct.instance">
+            <file name="org-esa-s2tbx-dataio-spot-ImportSpotTake5Product.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
-                <attr name="displayName" stringvalue="Spot"/>
-                <attr name="formatName" stringvalue="Spot"/>
+                <attr name="displayName" stringvalue="Spot Take5"/>
+                <attr name="formatName" stringvalue="SPOTTake5"/>
+                <attr name="useAllFileFilter" boolvalue="true"/>
+            </file>
+            <file name="org-esa-s2tbx-dataio-spot-ImportSpotDimapProduct.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
+                <attr name="displayName" stringvalue="Spot Dimap"/>
+                <attr name="formatName" stringvalue="SPOTDimap"/>
+                <attr name="useAllFileFilter" boolvalue="true"/>
+            </file>
+            <file name="org-esa-s2tbx-dataio-spot-ImportSpotDimapProduct.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
+                <attr name="displayName" stringvalue="Spot View"/>
+                <attr name="formatName" stringvalue="SPOTView"/>
                 <attr name="useAllFileFilter" boolvalue="true"/>
             </file>
         </folder>
@@ -33,11 +47,21 @@
     <folder name="Menu">
         <folder name="File">
             <folder name="Import">
-                <folder name="Generic Formats">
-                    <file name="org-esa-s2tbx-dataio-spot-ImportSpotProduct.shadow">
-                        <attr name="originalFile"
-                              stringvalue="Actions/Readers/org-esa-s2tbx-dataio-spot-ImportSpotProduct.instance"/>
-                    </file>
+                <folder name="Optical Sensors">
+                    <folder name="Spot">
+                        <file name="org-esa-s2tbx-dataio-spot-ImportSpotTake5Product.shadow">
+                            <attr name="originalFile"
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-spot-ImportSpotTake5Product.instance"/>
+                        </file>
+                        <file name="org-esa-s2tbx-dataio-spot-ImportSpotDimapProduct.shadow">
+                            <attr name="originalFile"
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-spot-ImportSpotDimapProduct.instance"/>
+                        </file>
+                        <file name="org-esa-s2tbx-dataio-spot-ImportSpotViewProduct.shadow">
+                            <attr name="originalFile"
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-spot-ImportSpotViewProduct.instance"/>
+                        </file>
+                    </folder>
                 </folder>
             </folder>
         </folder>

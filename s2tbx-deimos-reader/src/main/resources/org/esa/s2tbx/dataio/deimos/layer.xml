@@ -24,7 +24,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="Deimos"/>
-                <attr name="formatName" stringvalue="Deimos"/>
+                <attr name="formatName" stringvalue="DEIMOSDimap"/>
                 <attr name="useAllFileFilter" boolvalue="true"/>
             </file>
         </folder>
