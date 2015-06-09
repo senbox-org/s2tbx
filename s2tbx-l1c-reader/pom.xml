@@ -25,7 +25,28 @@
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-core</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-glayer</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-jai</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.snap</groupId>
             <artifactId>snap-core</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-ui</artifactId>
             <version>${snap.version}</version>
         </dependency>
 
@@ -33,18 +54,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>3.2.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
         </dependency>
 
         <dependency>
@@ -58,11 +67,11 @@
             <artifactId>jaxp-api</artifactId>
             <version>1.4.5</version>
         </dependency>
-        <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis-xerces</artifactId>
-            <version>2.7.1</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>xml-apis</groupId>-->
+            <!--<artifactId>xml-apis-xerces</artifactId>-->
+            <!--<version>2.7.1</version>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
@@ -75,30 +84,6 @@
             <artifactId>lib-openjpeg</artifactId>
             <version>2.1.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-core</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-glayer</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-jai</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-ui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-eop2-gml-reader</artifactId>
@@ -149,6 +134,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <useDefaultManifestFile>true</useDefaultManifestFile>
+                </configuration>
             </plugin>
         </plugins>
     </build>
