@@ -387,6 +387,23 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
 
+        if(metadataHeader.getTileList().get(0).sunAnglesGrid != null) {
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
+        }
+
+        if(metadataHeader.getTileList().get(1).sunAnglesGrid != null) {
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
+        }
+
+        if(metadataHeader.getTileList().get(2).sunAnglesGrid != null) {
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
+        }
+
+        if(metadataHeader.getTileList().get(3).sunAnglesGrid != null) {
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
+        }
+
+
         return product;
     }
 
@@ -517,69 +534,67 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 bandName, S2Config.RAW_NO_DATA_THRESHOLD));
     }
 
-    /*
-    private void addL1cTileTiePointGrids(L1cMetadata metadataHeader, Product product, int tileIndex) {
+    /*private void addL1cTileTiePointGrids(L1cMetadata metadataHeader, Product product, int tileIndex) {
         final TiePointGrid[] tiePointGrids = createL1cTileTiePointGrids(metadataHeader, tileIndex);
         for (TiePointGrid tiePointGrid : tiePointGrids) {
             product.addTiePointGrid(tiePointGrid);
         }
-    }
-*/
-    /*
+    }*/
+
     private TiePointGrid[] createL1cTileTiePointGrids(L1cMetadata metadataHeader, int tileIndex) {
+        TiePointGrid[] tiePointGrid = null;
         Tile tile = metadataHeader.getTileList().get(tileIndex);
-        int gridHeight = tile.sunAnglesGrid.zenith.length;
-        int gridWidth = tile.sunAnglesGrid.zenith[0].length;
-        float[] sunZeniths = new float[gridWidth * gridHeight];
-        float[] sunAzimuths = new float[gridWidth * gridHeight];
-        float[] viewingZeniths = new float[gridWidth * gridHeight];
-        float[] viewingAzimuths = new float[gridWidth * gridHeight];
-        Arrays.fill(viewingZeniths, Float.NaN);
-        Arrays.fill(viewingAzimuths, Float.NaN);
-        L1cMetadata.AnglesGrid sunAnglesGrid = tile.sunAnglesGrid;
-        L1cMetadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.viewingIncidenceAnglesGrids;
-        for (int y = 0; y < gridHeight; y++) {
-            for (int x = 0; x < gridWidth; x++) {
-                final int index = y * gridWidth + x;
-                sunZeniths[index] = sunAnglesGrid.zenith[y][x];
-                sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
-                for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
-                    try {
-                        if( y < grid.zenith.length)
-                        {
-                            if( x < grid.zenith[y].length)
-                            {
-                                if (!Float.isNaN(grid.zenith[y][x])) {
-                                    viewingZeniths[index] = grid.zenith[y][x];
+        L1cMetadata.AnglesGrid anglesGrid = tile.sunAnglesGrid;
+        if(anglesGrid != null) {
+            int gridHeight = tile.sunAnglesGrid.zenith.length;
+            int gridWidth = tile.sunAnglesGrid.zenith[0].length;
+            float[] sunZeniths = new float[gridWidth * gridHeight];
+            float[] sunAzimuths = new float[gridWidth * gridHeight];
+            float[] viewingZeniths = new float[gridWidth * gridHeight];
+            float[] viewingAzimuths = new float[gridWidth * gridHeight];
+            Arrays.fill(viewingZeniths, Float.NaN);
+            Arrays.fill(viewingAzimuths, Float.NaN);
+            L1cMetadata.AnglesGrid sunAnglesGrid = tile.sunAnglesGrid;
+            L1cMetadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.viewingIncidenceAnglesGrids;
+            for (int y = 0; y < gridHeight; y++) {
+                for (int x = 0; x < gridWidth; x++) {
+                    final int index = y * gridWidth + x;
+                    sunZeniths[index] = sunAnglesGrid.zenith[y][x];
+                    sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
+                    for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
+                        try {
+                            if (y < grid.zenith.length) {
+                                if (x < grid.zenith[y].length) {
+                                    if (!Float.isNaN(grid.zenith[y][x])) {
+                                        viewingZeniths[index] = grid.zenith[y][x];
+                                    }
                                 }
                             }
-                        }
 
-                        if( y < grid.azimuth.length)
-                        {
-                            if( x < grid.azimuth[y].length)
-                            {
-                                if (!Float.isNaN(grid.azimuth[y][x])) {
-                                    viewingAzimuths[index] = grid.azimuth[y][x];
+                            if (y < grid.azimuth.length) {
+                                if (x < grid.azimuth[y].length) {
+                                    if (!Float.isNaN(grid.azimuth[y][x])) {
+                                        viewingAzimuths[index] = grid.azimuth[y][x];
+                                    }
                                 }
                             }
-                        }
 
-                    } catch (Exception e) {
-                        // {@report "Solar info problem"}
-                        logger.severe(StackTraceUtils.getStackTrace(e));
+                        } catch (Exception e) {
+                            // {@report "Solar info problem"}
+                            logger.severe(StackTraceUtils.getStackTrace(e));
+                        }
                     }
                 }
             }
+            tiePointGrid = new TiePointGrid[]{
+                    createTiePointGrid("sun_zenith", gridWidth, gridHeight, sunZeniths),
+                    createTiePointGrid("sun_azimuth", gridWidth, gridHeight, sunAzimuths),
+                    createTiePointGrid("view_zenith", gridWidth, gridHeight, viewingZeniths),
+                    createTiePointGrid("view_azimuth", gridWidth, gridHeight, viewingAzimuths)
+            };
         }
-        return new TiePointGrid[]{
-                createTiePointGrid("sun_zenith", gridWidth, gridHeight, sunZeniths),
-                createTiePointGrid("sun_azimuth", gridWidth, gridHeight, sunAzimuths),
-                createTiePointGrid("view_zenith", gridWidth, gridHeight, viewingZeniths),
-                createTiePointGrid("view_azimuth", gridWidth, gridHeight, viewingAzimuths)
-        };
+        return tiePointGrid;
     }
-    */
 
     private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, float[] values) {
         final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, values);
@@ -609,12 +624,9 @@ public class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private BandInfo createBandInfoFromDefaults(int bandIndex, S2WavebandInfo wavebandInfo, String tileId, File imageFile) {
-        // TileLayout aLayout = CodeStreamUtils.getTileLayout(imageFile.toURI().toString(), null);
         return new BandInfo(createFileMap(tileId, imageFile),
                             bandIndex,
                             wavebandInfo,
-                            // aLayout);
-                            //todo test this
                             L1C_TILE_LAYOUTS[wavebandInfo.resolution.id]);
 
     }
@@ -887,16 +899,22 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         @Override
         protected PlanarImage createL1cTileImage(String tileId, int level) {
+            PlanarImage tiePointGridL1CTileImage = null;
             TiePointGrid[] tiePointGrids = tiePointGridsMap.get(tileId);
             if (tiePointGrids == null) {
                 final int tileIndex = sceneDescription.getTileIndex(tileId);
 
-                // no tie point grid from angles, images are better
-                // TODO: supress this when confirmed
-                //tiePointGrids = createL1cTileTiePointGrids(metadata, tileIndex);
-                //tiePointGridsMap.put(tileId, tiePointGrids);
+                tiePointGrids = createL1cTileTiePointGrids(metadata, tileIndex);
+                if(tiePointGrids != null) {
+                    tiePointGridsMap.put(tileId, tiePointGrids);
+                }
             }
-            return (PlanarImage) tiePointGrids[tiePointGridIndex].getSourceImage().getImage(level);
+
+            if(tiePointGrids != null) {
+                tiePointGridL1CTileImage = (PlanarImage) tiePointGrids[tiePointGridIndex].getSourceImage().getImage(level);
+            }
+
+            return tiePointGridL1CTileImage;
         }
 
         @Override
@@ -913,14 +931,16 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 // todo - This translation step is actually not required because we can create L1cTileOpImages
                 // with minX, minY set as it is required by the MosaicDescriptor and indicated by its API doc.
                 // But if we do it like that, we get lots of weird visual artifacts in the resulting mosaic.
-                opImage = TranslateDescriptor.create(opImage,
-                                                     (float) (tileRectangle.x >> level),
-                                                     (float) (tileRectangle.y >> level),
-                                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                if (opImage != null) {
+                    opImage = TranslateDescriptor.create(opImage,
+                                                         (float) (tileRectangle.x >> level),
+                                                         (float) (tileRectangle.y >> level),
+                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
 
-                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY()));
-                tileImages.add(opImage);
+                    logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY()));
+                    tileImages.add(opImage);
+                }
             }
 
             if (tileImages.isEmpty()) {
