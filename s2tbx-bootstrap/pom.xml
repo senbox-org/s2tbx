@@ -19,11 +19,6 @@
     <dependencies>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-app</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-l1c-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
