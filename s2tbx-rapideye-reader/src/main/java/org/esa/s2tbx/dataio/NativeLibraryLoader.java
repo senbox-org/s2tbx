@@ -53,11 +53,6 @@ public class NativeLibraryLoader {
      */
     public static void loadLibrary(String path, String libraryName) throws IOException {
         path = URLDecoder.decode(path, "UTF-8");
-        String extension = getExtension();
-        // for Linux/Solaris, the file name has to begin with "lib*".
-        if (extension.contains("so")) {
-            libraryName = "lib" + libraryName;
-        }
         String libPath = "/lib/" + NativeLibraryLoader.getOSFamily() + "/" + System.mapLibraryName(libraryName);
         if (path.contains(".jar!")) {
             try (InputStream in = NativeLibraryLoader.class.getResourceAsStream(libPath)) {
@@ -71,12 +66,6 @@ public class NativeLibraryLoader {
             path = new File(path, libPath).getAbsolutePath();
         }
         System.load(path);
-    }
-
-    public static String getExtension() {
-        String os = getOSFamily();
-        if (os.startsWith("win")) return ".dll";
-        else return ".so";
     }
 
     public static String getOSFamily() {
