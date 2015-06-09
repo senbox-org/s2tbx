@@ -20,11 +20,18 @@
 
     <folder name="Actions">
         <folder name="Readers">
-            <file name="org-esa-s2tbx-dataio-rapideye-ImportRapidEyeProduct.instance">
+            <file name="org-esa-s2tbx-dataio-rapideye-ImportRapidEyeL1Product.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
-                <attr name="displayName" stringvalue="RapidEye"/>
-                <attr name="formatName" stringvalue="RapidEye"/>
+                <attr name="displayName" stringvalue="RapidEye L1"/>
+                <attr name="formatName" stringvalue="RapidEyeNITF"/>
+                <attr name="useAllFileFilter" boolvalue="true"/>
+            </file>
+            <file name="org-esa-s2tbx-dataio-rapideye-ImportRapidEyeL3Product.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
+                <attr name="displayName" stringvalue="RapidEye L3"/>
+                <attr name="formatName" stringvalue="RapidEyeGeoTIFF"/>
                 <attr name="useAllFileFilter" boolvalue="true"/>
             </file>
         </folder>
@@ -33,11 +40,17 @@
     <folder name="Menu">
         <folder name="File">
             <folder name="Import">
-                <folder name="Generic Formats">
-                    <file name="org-esa-s2tbx-dataio-rapideye-ImportRapidEyeProduct.shadow">
-                        <attr name="originalFile"
-                              stringvalue="Actions/Readers/org-esa-s2tbx-dataio-rapideye-ImportRapidEyeProduct.instance"/>
-                    </file>
+                <folder name="Optical Sensors">
+                    <folder name="RapidEye">
+                        <file name="org-esa-s2tbx-dataio-rapideye-ImportRapidEyeL1Product.shadow">
+                            <attr name="originalFile"
+                              stringvalue="Actions/Readers/org-esa-s2tbx-dataio-rapideye-ImportRapidEyeL1Product.instance"/>
+                        </file>
+                        <file name="org-esa-s2tbx-dataio-rapideye-ImportRapidEyeL3Product.shadow">
+                            <attr name="originalFile"
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-rapideye-ImportRapidEyeL3Product.instance"/>
+                        </file>
+                    </folder>
                 </folder>
             </folder>
         </folder>

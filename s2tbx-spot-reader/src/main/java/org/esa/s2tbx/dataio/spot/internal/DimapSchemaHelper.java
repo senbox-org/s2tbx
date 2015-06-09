@@ -122,30 +122,34 @@ public class DimapSchemaHelper {
     }
 
     private static ProductData createInstance(int type, String value) {
-        ProductData retVal;
-        switch (type) {
-            case ProductData.TYPE_UINT8:
-                retVal = ProductData.createInstance(type);
-                retVal.setElemUInt(Byte.parseByte(value));
-                break;
-            case ProductData.TYPE_INT32:
-                retVal = ProductData.createInstance(type);
-                retVal.setElemInt(Integer.parseInt(value));
-                break;
-            case ProductData.TYPE_FLOAT32:
-                retVal = ProductData.createInstance(type);
-                retVal.setElemFloat(Float.parseFloat(value));
-                break;
-            case ProductData.TYPE_UTC:
-                try {
-                    retVal = ProductData.UTC.parse(value);
-                } catch (ParseException e) {
+        ProductData retVal = null;
+        try {
+            switch (type) {
+                case ProductData.TYPE_UINT8:
+                    retVal = ProductData.createInstance(type);
+                    retVal.setElemUInt(Byte.parseByte(value));
+                    break;
+                case ProductData.TYPE_INT32:
+                    retVal = ProductData.createInstance(type);
+                    retVal.setElemInt(Integer.parseInt(value));
+                    break;
+                case ProductData.TYPE_FLOAT32:
+                    retVal = ProductData.createInstance(type);
+                    retVal.setElemFloat(Float.parseFloat(value));
+                    break;
+                case ProductData.TYPE_UTC:
+                    try {
+                        retVal = ProductData.UTC.parse(value);
+                    } catch (ParseException e) {
+                        retVal = new ProductData.ASCII(value);
+                    }
+                    break;
+                default:
                     retVal = new ProductData.ASCII(value);
-                }
-                break;
-            default:
-                retVal = new ProductData.ASCII(value);
-                break;
+                    break;
+            }
+        } catch (Exception e) {
+            retVal = new ProductData.ASCII(value);
         }
         return retVal;
     }
