@@ -19,8 +19,7 @@
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-python-lib</module>
-        <module>s2tbx-bootstrap</module>
-        <!--module>s2tbx-kit</module-->
+        <module>s2tbx-kit</module>
         <!--module>s2tbx-sen2cor-processor</module-->
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-eop2-gml-reader</module>
