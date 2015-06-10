@@ -30,7 +30,7 @@
     <name>RapidEye Reader</name>
     <packaging>nbm</packaging>
     <description>
-        This module enables the Sentinel Toolbox to read RapidEye data products
+        This module enables the Sentinel Toolbox to read RapidEye products
     </description>
 
     <dependencies>

@@ -12,9 +12,9 @@
 
     <packaging>nbm</packaging>
     <artifactId>s2tbx-l1c-reader</artifactId>
-    <name>Sentinel-2 Reader L1C</name>
+    <name>Sentinel-2 L1C Reader</name>
     <description>
-        This module enables the Sentinel Toolbox to read the following Sentinel-2 data products: L1C
+        This module enables the Sentinel Toolbox to read S2-MSI L1C products
     </description>
 
     <properties>

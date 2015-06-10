@@ -12,9 +12,9 @@
 
     <packaging>nbm</packaging>
     <artifactId>s2tbx-l1b-reader</artifactId>
-    <name>Sentinel-2 Reader L1B PSD12</name>
+    <name>Sentinel-2 L1B Reader</name>
     <description>
-        This module enables the Sentinel Toolbox to read the following Sentinel-2 data products: L1B
+        This module enables the Sentinel Toolbox to read S2-MSI L1B products
     </description>
 
     <properties>

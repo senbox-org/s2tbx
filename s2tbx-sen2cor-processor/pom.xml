@@ -11,6 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>s2tbx-sen2cor-processor</artifactId>
     <name>Sentinel-2 Sen2cor processor</name>
+    <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products</description>
     <packaging>nbm</packaging>
 
     <dependencies>

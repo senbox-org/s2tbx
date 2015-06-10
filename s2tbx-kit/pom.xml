@@ -14,7 +14,7 @@
     <name>Sentinel-2 Toolbox Kit Module</name>
     <description>
         The Sentinel-2 Toolbox is a SNAP extension dedicated to the exploitation of Sentinel-2 MSI data and
-        data of other optical, medium resolution sensors.
+        data of other optical high resolution resolution sensors.
     </description>
 
     <build>
