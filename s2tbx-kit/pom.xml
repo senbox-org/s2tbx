@@ -58,13 +58,6 @@
             <version>${project.version}</version>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-python-lib</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-rapideye-reader</artifactId>
