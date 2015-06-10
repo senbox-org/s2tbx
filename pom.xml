@@ -18,7 +18,6 @@
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-rapideye-reader</module>
-        <module>s2tbx-python-lib</module>
         <!--module>s2tbx-sen2cor-processor</module-->
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-eop2-gml-reader</module>
@@ -35,7 +34,7 @@
         <netbeans.version>RELEASE802</netbeans.version>
         <javahelp.version>2.0.05</javahelp.version>
         <brandingToken>s2tbx</brandingToken>
-        <openjpeg.version>2.1.0-1</openjpeg.version>
+        <openjpeg.version>2.1.0.1</openjpeg.version>
     </properties>
 
     <repositories>
