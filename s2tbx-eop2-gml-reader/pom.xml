@@ -18,6 +18,9 @@
     <artifactId>s2tbx-eop2-gml-reader</artifactId>
     <packaging>nbm</packaging>
     <name>Sentinel-2 GML EOP 2 Reader</name>
+    <description>
+        Helper module for reading the Sentinel-2 masks
+    </description>
 
     <!-- =========================================================== -->
     <!--     Dependency Management                                   -->

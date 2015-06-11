@@ -16,7 +16,7 @@
                     "x": 2000,
                     "y": 2500,
                     "lat": 13.8926563,
-                    "lon": 41.5904579
+                    "lon": 41.59045894210214
                 }
             ]
         },
@@ -25,8 +25,8 @@
                 "name": "blue",
                 "noDataValue": "0.0",
                 "noDataValueUsed": "false",
-                "spectralWavelength": "440.0",
-                "spectralBandwidth": "70.0",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
                 "expectedPixels": [
                     {
                         "x": 1374,
@@ -44,8 +44,8 @@
                 "name": "green",
                 "noDataValue": "0.0",
                 "noDataValueUsed": "false",
-                "spectralWavelength": "520.0",
-                "spectralBandwidth": "70.0",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
                 "expectedPixels": [
                     {
                         "x": 1374,
@@ -63,8 +63,8 @@
                 "name": "red",
                 "noDataValue": "0.0",
                 "noDataValueUsed": "false",
-                "spectralWavelength": "630.0",
-                "spectralBandwidth": "55.0",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
                 "expectedPixels": [
                     {
                         "x": 1374,

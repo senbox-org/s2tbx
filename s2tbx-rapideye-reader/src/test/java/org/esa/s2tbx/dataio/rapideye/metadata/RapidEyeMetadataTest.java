@@ -76,13 +76,13 @@ public class RapidEyeMetadataTest extends TestCase {
 
     @Test
     public void testGetProductStartTime() throws Exception {
-        ProductData.UTC expected = ProductData.UTC.parse("2009-04-16 07:54:05.290", "yyyy-MM-dd HH:mm:ss");
+        ProductData.UTC expected = ProductData.UTC.parse("2009-04-16 10:54:05.290", "yyyy-MM-dd HH:mm:ss");
         assertEquals(expected.getAsDate().getTime(), metadata.getProductStartTime().getAsDate().getTime());
     }
 
     @Test
     public void testGetProductEndTime() throws Exception {
-        ProductData.UTC expected = ProductData.UTC.parse("2009-04-16 07:53:26.244", "yyyy-MM-dd HH:mm:ss");
+        ProductData.UTC expected = ProductData.UTC.parse("2009-04-16 10:53:26.244", "yyyy-MM-dd HH:mm:ss");
         assertEquals(expected.getAsDate().getTime(), metadata.getProductEndTime().getAsDate().getTime());
     }
 

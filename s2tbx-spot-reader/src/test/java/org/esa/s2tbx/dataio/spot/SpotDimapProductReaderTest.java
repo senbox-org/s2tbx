@@ -147,27 +147,6 @@ public class SpotDimapProductReaderTest {
     }
 
     @Test
-    public void testConfigurePreferredTileSizeBySimpleProductReader(){
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
-        System.setProperty("snap.reader.tileWidth", "200");
-        System.setProperty("snap.reader.tileHeight", "200");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
-            System.setProperty("snap.reader.tileWidth", "300");
-            System.setProperty("snap.reader.tileHeight", "100");
-            reader.configurePreferredTileSize(finalProduct);
-            Dimension size = finalProduct.getPreferredTileSize();
-            assertEquals(100, size.height);
-            assertEquals(300, size.width);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
-
-    @Test
     public void testReadProductNodesByVolumeProductReader(){
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
@@ -266,26 +245,5 @@ public class SpotDimapProductReaderTest {
             assertTrue(e.getMessage(), false);
         }
         */
-    }
-
-    @Test
-    public void testConfigurePreferredTileSizeByVolumeProductReader(){
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
-        System.setProperty("snap.reader.tileWidth", "200");
-        System.setProperty("snap.reader.tileHeight", "200");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            assertEquals(SpotDimapVolumeProductReader.class, finalProduct.getProductReader().getClass());
-            System.setProperty("snap.reader.tileWidth", "300");
-            System.setProperty("snap.reader.tileHeight", "100");
-            reader.configurePreferredTileSize(finalProduct);
-            Dimension size = finalProduct.getPreferredTileSize();
-            assertEquals(100, size.height);
-            assertEquals(300, size.width);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
     }
 }

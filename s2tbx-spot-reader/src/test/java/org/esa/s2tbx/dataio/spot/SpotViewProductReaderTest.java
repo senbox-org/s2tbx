@@ -142,24 +142,4 @@ public class SpotViewProductReaderTest {
             assertTrue(e.getMessage(), false);
         }
     }
-
-    @Test
-    public void testConfigurePreferredTileSize() {
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
-        System.setProperty("snap.reader.tileWidth", "200");
-        System.setProperty("snap.reader.tileHeight", "200");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            System.setProperty("snap.reader.tileWidth", "300");
-            System.setProperty("snap.reader.tileHeight", "100");
-            reader.configurePreferredTileSize(finalProduct);
-            Dimension size = finalProduct.getPreferredTileSize();
-            assertEquals(100, size.height);
-            assertEquals(300, size.width);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
 }

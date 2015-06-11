@@ -29,7 +29,7 @@
                 "description": "XS1",
                 "geophysicalUnit": "N/A",
                 "noDataValue": "0.0",
-                "noDataValueUsed": "false",
+                "noDataValueUsed": "true",
                 "spectralWavelength": "0.0",
                 "spectralBandwidth": "0.0",
                 "expectedPixels": [
@@ -50,7 +50,7 @@
                 "description": "XS2",
                 "geophysicalUnit": "N/A",
                 "noDataValue": "0.0",
-                "noDataValueUsed": "false",
+                "noDataValueUsed": "true",
                 "spectralWavelength": "0.0",
                 "spectralBandwidth": "0.0",
                 "expectedPixels": [
@@ -71,7 +71,7 @@
                 "description": "XS3",
                 "geophysicalUnit": "N/A",
                 "noDataValue": "0.0",
-                "noDataValueUsed": "false",
+                "noDataValueUsed": "true",
                 "spectralWavelength": "0.0",
                 "spectralBandwidth": "0.0",
                 "expectedPixels": [
@@ -92,7 +92,7 @@
                 "description": "SWIR",
                 "geophysicalUnit": "N/A",
                 "noDataValue": "0.0",
-                "noDataValueUsed": "false",
+                "noDataValueUsed": "true",
                 "spectralWavelength": "0.0",
                 "spectralBandwidth": "0.0",
                 "expectedPixels": [

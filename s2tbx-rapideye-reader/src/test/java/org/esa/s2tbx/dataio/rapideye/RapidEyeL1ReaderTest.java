@@ -135,22 +135,4 @@ public class RapidEyeL1ReaderTest {
             assertTrue(e.getMessage(), false);
         }
     }
-
-    @Test
-    public void testConfigurePreferredTileSize() {
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("Demo05_1B.zip");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            System.setProperty("snap.reader.tileWidth", "300");
-            System.setProperty("snap.reader.tileHeight", "100");
-            reader.configurePreferredTileSize(finalProduct);
-            Dimension size = finalProduct.getPreferredTileSize();
-            assertEquals(100, size.height);
-            assertEquals(300, size.width);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
 }

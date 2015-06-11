@@ -134,24 +134,4 @@ public class SpotTake5ProductReaderTest {
             assertTrue(e.getMessage(), false);
         }
     }
-
-    @Test
-    public void testConfigurePreferredTileSize() {
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.tgz");
-        System.setProperty("snap.reader.tileWidth", "200");
-        System.setProperty("snap.reader.tileHeight", "200");
-        try {
-            Product finalProduct = reader.readProductNodes(file, null);
-            System.setProperty("snap.reader.tileWidth", "300");
-            System.setProperty("snap.reader.tileHeight", "100");
-            reader.configurePreferredTileSize(finalProduct);
-            Dimension size = finalProduct.getPreferredTileSize();
-            assertEquals(100, size.height);
-            assertEquals(300, size.width);
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertTrue(e.getMessage(), false);
-        }
-    }
 }
