@@ -71,11 +71,9 @@ public class RapidEyeL1ReaderPluginTest {
         final String[] fileExtensions = plugIn.getDefaultFileExtensions();
         assertNotNull(fileExtensions);
         final List<String> extensionList = Arrays.asList(fileExtensions);
-        assertEquals(4, extensionList.size());
-        assertEquals(".xml", extensionList.get(0));
-        assertEquals(".XML", extensionList.get(1));
-        assertEquals(".zip", extensionList.get(2));
-        assertEquals(".ZIP", extensionList.get(3));
+        assertEquals(2, extensionList.size());
+        assertEquals(".xml", extensionList.get(0).toLowerCase());
+        assertEquals(".zip", extensionList.get(1).toLowerCase());
     }
 
     @Test

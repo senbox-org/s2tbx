@@ -59,7 +59,7 @@ public class DeimosProductReaderPluginTest {
     public void testDecodeQualificationForXML() throws IOException {
         Date startDate = Calendar.getInstance().getTime();
         DecodeQualification decodeQualification = plugIn.getDecodeQualification(
-                TestUtil.getTestFile("2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
+                TestUtil.getTestFile("tests_dm/2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
         assertEquals(DecodeQualification.UNABLE, decodeQualification);
         decodeQualification = plugIn.getDecodeQualification(
                 TestUtil.getTestFile("small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim"));
