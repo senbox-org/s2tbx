@@ -67,6 +67,7 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
+import javax.xml.bind.UnmarshalException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -239,10 +240,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         L1cMetadata metadataHeader = null;
 
+
         try {
             metadataHeader = parseHeader(metadataFile);
-        } catch (JDOMException e) {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+        } catch (JDOMException|UnmarshalException e) {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 

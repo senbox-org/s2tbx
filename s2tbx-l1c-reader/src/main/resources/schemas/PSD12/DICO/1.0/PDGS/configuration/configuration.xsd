@@ -2,7 +2,7 @@
 <!-- edited with XMLSpy v2006 U (http://www.altova.com) by user (EMBRACE) -->
 <xs:schema xmlns:configuration="http://gs2.esa.int/DICO/1.0/PDGS/configuration/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:date_time="http://gs2.esa.int/DICO/1.0/SY/date_time/" xmlns:base="http://gs2.esa.int/DICO/1.0/PDGS/base/" targetNamespace="http://gs2.esa.int/DICO/1.0/PDGS/configuration/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
 	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/date_time/" schemaLocation="../../SY/date_time/date_time.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/base/" schemaLocation="../../PDGS/base/base.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/base/" schemaLocation="../base/base.xsd"/>
 	<xs:complexType name="TimePlan">
 		<xs:annotation>
 			<xs:documentation>A Scheduled Time Plan</xs:documentation>

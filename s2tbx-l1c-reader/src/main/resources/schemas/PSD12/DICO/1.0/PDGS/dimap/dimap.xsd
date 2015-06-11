@@ -2625,11 +2625,11 @@ Considering the length of the S2 segments, each datum should be computed at poin
 						</xs:element>
 						<xs:element name="Connect_Col_List">
 							<xs:annotation>
-								<xs:documentation>The 12 detectors are assembled  and resampled in a monolithic quicklook image. This block gives, in the quicklook geometry,  the connection columns number (last column) for each detectors (the first 11 detectors for compressed mode and 4 for uncompressed mode).</xs:documentation>
+								<xs:documentation>The 12 detectors are assembled  and resampled in a monolithic quicklook image. This block gives, in the quicklook geometry,  the connection columns number (last column) for each detectors (the first PSD11 detectors for compressed mode and 4 for uncompressed mode).</xs:documentation>
 							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="CONNECT_COL" minOccurs="11" maxOccurs="11">
+									<xs:element name="CONNECT_COL" minOccurs="PSD11" maxOccurs="PSD11">
 										<xs:complexType>
 											<xs:simpleContent>
 												<xs:extension base="xs:int">

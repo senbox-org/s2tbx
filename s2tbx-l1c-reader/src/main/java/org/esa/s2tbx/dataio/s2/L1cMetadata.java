@@ -31,6 +31,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
@@ -41,6 +42,7 @@ import org.jdom.input.SAXBuilder;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,7 +77,7 @@ public class L1cMetadata {
 
 
     private MetadataElement metadataElement;
-    protected Logger logger = BeamLogManager.getSystemLogger();
+    protected Logger logger = SystemUtils.LOG;
 
 
     static class Tile {
@@ -249,7 +251,7 @@ public class L1cMetadata {
     private JAXBContext context;
     private Unmarshaller unmarshaller;
 
-    public static L1cMetadata parseHeader(File file) throws JDOMException, IOException {
+    public static L1cMetadata parseHeader(File file) throws JDOMException, IOException, UnmarshalException {
         return new L1cMetadata(new FileInputStream(file), file, file.getParent());
     }
 
@@ -274,7 +276,7 @@ public class L1cMetadata {
         return metadataElement;
     }
 
-    private L1cMetadata(InputStream stream, File file, String parent) throws DataConversionException {
+    private L1cMetadata(InputStream stream, File file, String parent) throws JDOMException, UnmarshalException {
         try {
             context = L1cMetadataProc.getJaxbContext();
             unmarshaller = context.createUnmarshaller();
@@ -290,13 +292,14 @@ public class L1cMetadata {
             {
                 initTile(stream, file, parent, casted);
             }
+        } catch (UnmarshalException|JDOMException e) {
+            logger.severe(String.format("Product is not conform to PSD: ", e.getMessage()));
+            throw e;
         } catch (JAXBException e) {
             logger.severe(Utils.getStackTrace(e));
         } catch (FileNotFoundException e) {
             logger.severe(Utils.getStackTrace(e));
-        } catch (JDOMException e) {
-            logger.severe(Utils.getStackTrace(e));
-        } catch (IOException e) {
+        }  catch (IOException e) {
             logger.severe(Utils.getStackTrace(e));
         }
     }

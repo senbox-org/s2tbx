@@ -3,7 +3,7 @@
 <xs:schema xmlns:archive="http://gs2.esa.int/DICO/1.0/PDGS/archive/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:center="http://gs2.esa.int/DICO/1.0/PDGS/center/" xmlns:image="http://gs2.esa.int/DICO/1.0/SY/image/" xmlns:item="http://gs2.esa.int/DICO/1.0/DataAccess/item/" xmlns:userProduct="http://gs2.esa.int/DICO/1.0/DataAccess/userProduct/" xmlns:ns1="http://gs2.esa.int/DICO/1.0/PDGS/header/" targetNamespace="http://gs2.esa.int/DICO/1.0/PDGS/archive/" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
 	<!-- IMPORT and INCLUDE -->
 	<xs:import namespace="http://gs2.esa.int/DICO/1.0/SY/image/" schemaLocation="../../SY/image/image.xsd"/>
-	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/center/" schemaLocation="../../PDGS/center/center.xsd"/>
+	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/center/" schemaLocation="../center/center.xsd"/>
 	<xs:import namespace="http://gs2.esa.int/DICO/1.0/DataAccess/userProduct/" schemaLocation="../../DataAccess/userProduct/userProduct.xsd"/>
 	<xs:import namespace="http://gs2.esa.int/DICO/1.0/DataAccess/item/" schemaLocation="../../DataAccess/item/item.xsd"/>
 	<xs:import namespace="http://gs2.esa.int/DICO/1.0/PDGS/header/" schemaLocation="..\header\EOF_Header.xsd"/>
