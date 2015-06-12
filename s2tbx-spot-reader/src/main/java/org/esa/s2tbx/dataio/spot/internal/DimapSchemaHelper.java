@@ -68,9 +68,9 @@ public class DimapSchemaHelper {
             XSSchemaSet schemaSet;
             XSSchema schema;
             Map<String, XSElementDecl> elementDecls;
+            elementTypes = new HashMap<String, XSType>();
             if ((schemaSet = schemaParser.getResult()) != null && (schema = schemaSet.getSchema(1)) != null) {
                 elementDecls = schema.getElementDecls();
-                elementTypes = new HashMap<String, XSType>(elementDecls.size());
                 for (String elementName : elementDecls.keySet()) {
                     XSElementDecl xsElementDecl = elementDecls.get(elementName);
                     XSType xsType = xsElementDecl.getType();
