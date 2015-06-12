@@ -112,6 +112,12 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     public static final int DEFAULT_RESOLUTION = 10;
 
+
+    static final int SUN_ZENITH_GRID_INDEX = 0;
+    static final int SUN_AZIMUTH_GRID_INDEX = 1;
+    static final int VIEW_ZENITH_GRID_INDEX = 2;
+    static final int VIEW_AZIMUTH_GRID_INDEX = 3;
+
     private final boolean forceResize;
     private final int productResolution;
     private final boolean isMultiResolution;
@@ -287,13 +293,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
             // if we selected the granule there is only one UTM zone and we'll get here only once, just extract the granule
             // otherwise get the list of tiles for this UTM zone
-            List<L1cMetadata.Tile> utmZoneTileList;
+            List<L1cMetadata.Tile> utmZoneTileList = metadataHeader.getTileList(utmZone);
             if (isAGranule) {
-                utmZoneTileList = metadataHeader.getTileList().stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
-            } else {
-                utmZoneTileList = metadataHeader.getTileList(utmZone);
+                utmZoneTileList =utmZoneTileList.stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
             }
-
             // for all bands of the UTM zone, store tiles files names
             for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
                 int bandIndex = bandInformation.bandId;
@@ -388,20 +391,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
 
-        if(metadataHeader.getTileList().get(0).sunAnglesGrid != null) {
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", 0);
-        }
-
-        if(metadataHeader.getTileList().get(1).sunAnglesGrid != null) {
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", 1);
-        }
-
-        if(metadataHeader.getTileList().get(2).sunAnglesGrid != null) {
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", 2);
-        }
-
-        if(metadataHeader.getTileList().get(3).sunAnglesGrid != null) {
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", 3);
+        if(!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", SUN_ZENITH_GRID_INDEX);
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", SUN_AZIMUTH_GRID_INDEX);
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", VIEW_ZENITH_GRID_INDEX);
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", VIEW_AZIMUTH_GRID_INDEX);
         }
 
 

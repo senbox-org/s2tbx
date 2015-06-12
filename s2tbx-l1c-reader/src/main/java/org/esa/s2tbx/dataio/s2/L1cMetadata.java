@@ -184,6 +184,16 @@ public class L1cMetadata {
         String processingLevel;
         SpectralInformation[] bandInformations;
 
+        public String getMetaDataLevel() {
+            return metaDataLevel;
+        }
+
+        public void setMetaDataLevel(String metaDataLevel) {
+            this.metaDataLevel = metaDataLevel;
+        }
+
+        private String metaDataLevel;
+
         public ProductCharacteristics() {
             bandInformations = new SpectralInformation[]{};
         }
