@@ -24,7 +24,6 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.snap.utils.CollectionHelper;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.DecodeQualification;
@@ -36,7 +35,6 @@ import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.StringUtils;
 import org.esa.snap.util.TreeNode;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.esa.snap.utils.CollectionHelper;
 
 import javax.imageio.spi.IIORegistry;
@@ -68,7 +66,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
     protected GeoTiffBasedReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = Logger.getLogger(GeoTiffBasedReader.class.getName());
         this.metadataClass = getTypeArgument();
         registerMetadataParser();
         registerSpi();
@@ -289,7 +287,17 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
         product = new Product((metadataFile != null && metadataFile.getProductName() != null) ? metadataFile.getProductName() : getProductGenericName(),
                               getReaderPlugIn().getFormatNames()[0],
                               width, height);
-        product.setFileLocation(new File(productDirectory.getBasePath()));
+        File fileLocation = null;
+        try {
+            // in case of zip products, getTempDir returns the temporary location of the uncompressed product
+            fileLocation = productDirectory.getTempDir();
+        } catch (IOException e) {
+            logger.warning(e.getMessage());
+        }
+        if (fileLocation == null) {
+            fileLocation = new File(productDirectory.getBasePath());
+        }
+        product.setFileLocation(fileLocation);
         if (metadataFile != null) {
             product.getMetadataRoot().addElement(metadataFile.getRootElement());
             ProductData.UTC centerTime = metadataFile.getCenterTime();
