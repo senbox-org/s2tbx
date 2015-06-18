@@ -14,7 +14,7 @@
  *  with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.s2tbx.dataio.rapideye.nitf;
+package org.esa.s2tbx.dataio.nitf;
 
 import com.bc.ceres.core.ProgressMonitor;
 import nitf.ImageSegment;
@@ -26,7 +26,7 @@ import org.esa.snap.framework.datamodel.ProductData;
 import javax.imageio.ImageReadParam;
 import javax.imageio.spi.IIORegistry;
 import java.awt.*;
-import java.awt.image.DataBufferUShort;
+import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
@@ -82,9 +82,7 @@ public class NITFReaderWrapper {
                     numBands = numImages;
                     hasBandPerImage = true;
                 }
-            } catch (NITFException e) {
-                logger.severe(e.getMessage());
-            } catch (IOException e) {
+            } catch (NITFException | IOException e) {
                 logger.severe(e.getMessage());
             }
         }
@@ -125,14 +123,45 @@ public class NITFReaderWrapper {
             synchronized (lock) {
                 raster = reader.readRaster(0, readParam);
             }
-            DataBufferUShort dataBuffer = (DataBufferUShort) raster.getDataBuffer();
-            if (destBuffer.getType() == ProductData.TYPE_UINT16) {
-                for (int i = 0; i < dataBuffer.getSize(); i++) {
-                    if (pm.isCanceled()) {
-                        break;
+
+            DataBuffer dataBuffer = raster.getDataBuffer();
+            int bufferSize = dataBuffer.getSize();
+            switch (destBuffer.getType()) {
+                case ProductData.TYPE_UINT8:
+                case ProductData.TYPE_INT8:
+                case ProductData.TYPE_INT32:
+                    for (int i = 0; i < bufferSize; i++) {
+                        if (pm.isCanceled()) {
+                            break;
+                        }
+                        destBuffer.setElemIntAt(i, dataBuffer.getElem(i));
                     }
-                    destBuffer.setElemUIntAt(i, swapBytes((short) dataBuffer.getElem(i)));
-                }
+                    break;
+                case ProductData.TYPE_UINT16:
+                case ProductData.TYPE_INT16:
+                    for (int i = 0; i < bufferSize; i++) {
+                        if (pm.isCanceled()) {
+                            break;
+                        }
+                        destBuffer.setElemUIntAt(i, swapBytes((short) dataBuffer.getElem(i)));
+                    }
+                    break;
+                case ProductData.TYPE_UINT32:
+                    for (int i = 0; i < bufferSize; i++) {
+                        if (pm.isCanceled()) {
+                            break;
+                        }
+                        destBuffer.setElemUIntAt(i, dataBuffer.getElem(i));
+                    }
+                    break;
+                case ProductData.TYPE_FLOAT32:
+                    for (int i = 0; i < bufferSize; i++) {
+                        if (pm.isCanceled()) {
+                            break;
+                        }
+                        destBuffer.setElemFloatAt(i, dataBuffer.getElemFloat(i));
+                    }
+                    break;
             }
             pm.worked(1);
         } catch (IOException e) {

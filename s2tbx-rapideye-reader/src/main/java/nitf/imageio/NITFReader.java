@@ -692,4 +692,19 @@ public class NITFReader extends ImageReader {
         readHeader();
         return record;
     }
+
+    @Override
+    public void dispose() {
+        try {
+            if (this.handle != null) {
+                this.handle.close();
+                NITFResourceManager.getInstance().destroy(handle);
+            }
+            if (reader != null) {
+                NITFResourceManager.getInstance().destroy(reader);
+            }
+        } catch (NITFException ignored) {
+        }
+        super.dispose();
+    }
 }

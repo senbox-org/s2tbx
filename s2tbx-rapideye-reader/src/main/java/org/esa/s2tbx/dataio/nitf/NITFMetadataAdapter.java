@@ -14,18 +14,9 @@
  *  with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.s2tbx.dataio.rapideye.nitf;
+package org.esa.s2tbx.dataio.nitf;
 
-import nitf.BandInfo;
-import nitf.DESegment;
-import nitf.DESubheader;
-import nitf.Field;
-import nitf.FileHeader;
-import nitf.ImageSegment;
-import nitf.ImageSubheader;
-import nitf.NITFException;
-import nitf.Record;
-import nitf.TRE;
+import nitf.*;
 import nitf.imageio.NITFReader;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;

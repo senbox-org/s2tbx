@@ -142,6 +142,10 @@ public final class NITFResourceManager {
         }
     }
 
+    public void destroy(DestructibleObject object) {
+        decrementRefCount(object.getAddress(), true);
+    }
+
     /**
      * Decrements the reference count of an object, and destructs the object if
      * the count is now < 1

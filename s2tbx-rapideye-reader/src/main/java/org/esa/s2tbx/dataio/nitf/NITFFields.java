@@ -14,7 +14,7 @@
  *  with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.s2tbx.dataio.rapideye.nitf;
+package org.esa.s2tbx.dataio.nitf;
 
 /**
  * Utility class for holding NITF constant string values
