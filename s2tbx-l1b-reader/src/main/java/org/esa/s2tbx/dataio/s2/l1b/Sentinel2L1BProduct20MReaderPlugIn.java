@@ -19,13 +19,13 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.SnapFileFilter;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.util.Locale;
@@ -42,13 +42,14 @@ public class Sentinel2L1BProduct20MReaderPlugIn implements ProductReaderPlugIn {
         File file = new File(input.toString());
         DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
         if (deco.equals(DecodeQualification.SUITABLE)) {
-            String semantic = S2ProductFilename.create(file.getName()).fileSemantic;
-            if (semantic.contains("L1B")) {
-                deco = DecodeQualification.INTENDED;
-            }
-            else
-            {
-                deco = DecodeQualification.UNABLE;
+            S2ProductFilename productFileName = S2ProductFilename.create(file.getName());
+            if(productFileName != null) {
+                String semantic =productFileName.fileSemantic;
+                if (semantic.contains("L1B")) {
+                    deco = DecodeQualification.INTENDED;
+                } else {
+                    deco = DecodeQualification.UNABLE;
+                }
             }
         }
 
@@ -73,7 +74,7 @@ public class Sentinel2L1BProduct20MReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[]{S2L1bConfig.MTD_EXT};
+        return new String[]{S2Config.MTD_EXT};
     }
 
     @Override

@@ -34,13 +34,14 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.s2.MetadataType;
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.openjpeg.StackTraceUtils;
 
 import javax.xml.bind.JAXBContext;
@@ -66,7 +67,7 @@ import java.util.logging.Level;
 import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
 
 /**
- * Created by opicas-p on 24/06/2014.
+ * @author opicas-p
  */
 public class L1bMetadataProc {
 
@@ -342,7 +343,7 @@ public class L1bMetadataProc {
 
             tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
             if ((gpos.getNROWS() - (pos / ratio)) < S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height) {
-                SystemUtils.LOG.log(Level.parse(S2L1bConfig.LOG_DEBUG), "Test if we need extra processing here");
+                SystemUtils.LOG.log(Level.parse(S2Config.LOG_DEBUG), "Test if we need extra processing here");
             }
 
             tgeox.numRowsDetector = gpos.getNROWS();

@@ -17,15 +17,15 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l1c;
 
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.SnapFileFilter;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.util.Locale;
@@ -42,7 +42,8 @@ public class Sentinel2Product10MReaderPlugIn implements ProductReaderPlugIn {
         File file = new File(input.toString());
         DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
         if (deco.equals(DecodeQualification.SUITABLE)) {
-            if (S2ProductFilename.create(file.getName()).fileSemantic.contains("L1C")) {
+            S2ProductFilename productFilename = S2ProductFilename.create(file.getName());
+            if (productFilename != null && productFilename.fileSemantic.contains("L1C")) {
                 deco = DecodeQualification.INTENDED;
             }
             else
@@ -68,7 +69,7 @@ public class Sentinel2Product10MReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2Config.FORMAT_NAME+"-10M"};
+        return new String[]{S2L1CConfig.FORMAT_NAME+"-10M"};
     }
 
     @Override
@@ -83,7 +84,7 @@ public class Sentinel2Product10MReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2Config.FORMAT_NAME,
+        return new SnapFileFilter(S2L1CConfig.FORMAT_NAME,
                 getDefaultFileExtensions(),
                 "Sentinel-2 MSI L1C product or tile");
     }

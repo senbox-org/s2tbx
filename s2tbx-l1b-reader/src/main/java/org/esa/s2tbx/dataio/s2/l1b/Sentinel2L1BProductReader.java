@@ -32,6 +32,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
@@ -50,7 +51,6 @@ import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
 import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
@@ -479,7 +479,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     }
 
     private void addDetectorBands(Product product, Map<String, TileBandInfo> stringBandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
-        product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
+        product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(L1B_TILE_LAYOUTS[0].numResolutions);
 
         product.setAutoGrouping("D01:D02:D03:D04:D05:D06:D07:D08:D09:D10:D11:D12");
@@ -523,7 +523,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         int index = S2L1bSpatialResolution.valueOfId(tileBandInfo.getWavebandInfo().resolution.id).resolution / S2L1bSpatialResolution.R10M.resolution;
         int defRes = S2L1bSpatialResolution.R10M.resolution;
 
-        final Band band = new Band(tileBandInfo.wavebandInfo.bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
+        final Band band = new Band(tileBandInfo.wavebandInfo.bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
         product.addBand(band);
 
         band.setSpectralBandIndex(tileBandInfo.bandIndex);
@@ -538,7 +538,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
     private void setValidPixelMask(Band band, String bandName) {
         band.setNoDataValue(0);
         band.setValidPixelExpression(String.format("%s.raw > %s",
-                                                   bandName, S2L1bConfig.RAW_NO_DATA_THRESHOLD));
+                                                   bandName, S2Config.RAW_NO_DATA_THRESHOLD));
     }
 
     private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, float[] values) {
@@ -678,7 +678,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         // @Loggable
         public MultiLevelImage createSourceImage(TileBandInfo tileBandInfo) {
             BandL1bSceneMultiLevelSource bandScene = new BandL1bSceneMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
-            SystemUtils.LOG.log(Level.parse(S2L1bConfig.LOG_SCENE), "BandScene: " + bandScene);
+            SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), "BandScene: " + bandScene);
             return new DefaultMultiLevelImage(bandScene);
         }
     }
@@ -785,10 +785,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
                                                          (float) Math.floor((tileRectangle.y * factorY)),
                                                          Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
-                    logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
+                    logger.log(Level.parse(S2Config.LOG_SCENE), String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
                 }
 
-                logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
+                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
                 tileImages.add(opImage);
             }
 
@@ -800,14 +800,14 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             ImageLayout imageLayout = new ImageLayout();
             imageLayout.setMinX(0);
             imageLayout.setMinY(0);
-            imageLayout.setTileWidth(DEFAULT_JAI_TILE_SIZE);
-            imageLayout.setTileHeight(DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                          null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
+                                                          null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             // todo add crop or extend here to ensure "right" size...
@@ -819,7 +819,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
                 int rightPad = destBounds.width - mosaicOp.getWidth();
                 int bottomPad = destBounds.height - mosaicOp.getHeight();
-                SystemUtils.LOG.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
+                SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
 
                 mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
             }
@@ -827,13 +827,13 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             if (this.tileBandInfo.wavebandInfo.resolution != S2L1bSpatialResolution.R10M) {
                 PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.wavebandInfo.resolution, level, forceResize);
 
-                logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
+                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 
                 return scaled;
             }
             // todo add crop ?
 
-            logger.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY(), mosaicOp.getWidth(), mosaicOp.getHeight()));
+            logger.log(Level.parse(S2Config.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY(), mosaicOp.getWidth(), mosaicOp.getHeight()));
 
             return mosaicOp;
         }

@@ -17,15 +17,15 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l1c;
 
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.SnapFileFilter;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.util.Locale;
@@ -33,7 +33,7 @@ import java.util.Locale;
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2Product20MReaderPlugIn implements ProductReaderPlugIn {
+public class Sentinel2ProductNoMultiSizeReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -61,14 +61,14 @@ public class Sentinel2Product20MReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        SystemUtils.LOG.info("Building product reader 20M");
+        SystemUtils.LOG.info("Building product reader No Multisize...");
 
-        return new Sentinel2ProductReader(this, false, 20);
+        return new Sentinel2NMSProductReader(this, true);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2Config.FORMAT_NAME+"-20M"};
+        return new String[]{S2L1CConfig.FORMAT_NAME+"-NMS"};
     }
 
     @Override
@@ -78,14 +78,13 @@ public class Sentinel2Product20MReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1C 20M";
+        return "Sentinel-2 MSI L1C No Multisize";
     }
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2Config.FORMAT_NAME,
+        return new SnapFileFilter(S2L1CConfig.FORMAT_NAME,
                 getDefaultFileExtensions(),
-                "Sentinel-2 MSI L1C product or tile");
+                "Sentinel-2 MSI L1C No Multisize product or tile");
     }
-
 }

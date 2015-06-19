@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by opicas-p on 11/02/2015.
+ * @author opicas-p
  */
 public class CoordinateUtils {
 

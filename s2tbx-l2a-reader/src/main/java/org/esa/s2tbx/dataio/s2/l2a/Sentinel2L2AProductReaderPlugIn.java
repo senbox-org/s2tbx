@@ -25,7 +25,6 @@ import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.SnapFileFilter;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.util.Locale;
@@ -42,11 +41,10 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
         File file = new File(input.toString());
         DecodeQualification deco = S2L2aProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
         if (deco.equals(DecodeQualification.SUITABLE)) {
-            if (S2L2aProductFilename.create(file.getName()).fileSemantic.contains("L2A")) {
+            S2L2aProductFilename productFilename = S2L2aProductFilename.create(file.getName());
+            if (productFilename!= null && productFilename.fileSemantic.contains("L2A")) {
                 deco = DecodeQualification.INTENDED;
-            }
-            else
-            {
+            } else {
                 deco = DecodeQualification.UNABLE;
             }
         }

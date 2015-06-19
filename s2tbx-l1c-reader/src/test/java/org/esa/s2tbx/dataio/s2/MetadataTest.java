@@ -6,7 +6,9 @@ import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZA
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import junit.framework.Assert;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1c.L1cMetadata;
+import org.esa.s2tbx.dataio.s2.l1c.L1cMetadataProc;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
@@ -74,10 +76,10 @@ public class MetadataTest {
         Assert.assertNotNull(o);
 
         L1cMetadata.ProductCharacteristics pchar = L1cMetadataProc.parseCharacteristics(o);
-        assertEquals("Sentinel-2A", pchar.spacecraft);
-        assertEquals("2013-06-21T12:00:00Z", pchar.datasetProductionDate);
-        assertEquals("LEVEL___1_C", pchar.processingLevel);
-        assertEquals(0.0000082, pchar.bandInformations[0].spectralResponseValues[1], 1e-15);
+        assertEquals("Sentinel-2A", pchar.getSpacecraft());
+        assertEquals("2013-06-21T12:00:00Z", pchar.getDatasetProductionDate());
+        assertEquals("LEVEL___1_C", pchar.getProcessingLevel());
+        assertEquals(0.0000082, pchar.getBandInformations()[0].getSpectralResponseValues()[1], 1e-15);
     }
 
     @Test
@@ -161,7 +163,7 @@ public class MetadataTest {
 
         Assert.assertNotNull(product);
 
-        Map<Integer, L1cMetadata.TileGeometry> geoms = L1cMetadataProc.getTileGeometries(product);
+        L1cMetadataProc.getTileGeometries(product);
     }
 
 
@@ -172,9 +174,8 @@ public class MetadataTest {
 
         Assert.assertNotNull(product);
 
-        L1cMetadata.AnglesGrid sunGrid = L1cMetadataProc.getSunGrid(product);
-
-        L1cMetadata.AnglesGrid[] otherGrid = L1cMetadataProc.getAnglesGrid(product);
+        L1cMetadataProc.getSunGrid(product);
+        L1cMetadataProc.getAnglesGrid(product);
     }
 
 }

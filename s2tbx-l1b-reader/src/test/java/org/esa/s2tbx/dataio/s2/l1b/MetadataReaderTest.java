@@ -5,6 +5,7 @@ import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_datastrip_metadata.
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import junit.framework.Assert;
+import org.esa.s2tbx.dataio.s2.MetadataType;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
@@ -15,7 +16,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
 
 /**
- * Created by opicas-p on 24/06/2014.
+ * @author  opicas-p
  */
 public class MetadataReaderTest {
 

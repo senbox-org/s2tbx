@@ -17,7 +17,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l1c;
 
 
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
@@ -27,11 +27,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math3.util.Pair;
+import org.esa.s2tbx.dataio.s2.MetadataType;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
 import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.openjpeg.StackTraceUtils;
 
 import javax.xml.bind.JAXBContext;

@@ -1,6 +1,6 @@
 package org.esa.s2tbx.dataio.s2;
 
-import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleMetadataFilename;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleMetadataFilename;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

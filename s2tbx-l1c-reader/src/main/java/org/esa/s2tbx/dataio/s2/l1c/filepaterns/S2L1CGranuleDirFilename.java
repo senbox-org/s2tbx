@@ -17,10 +17,12 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2.filepatterns;
+package org.esa.s2tbx.dataio.s2.l1c.filepaterns;
 
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleMetadataFilename;
 import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

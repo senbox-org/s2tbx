@@ -16,7 +16,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l1c;
 
 public class Counter implements Comparable<Counter> {
 

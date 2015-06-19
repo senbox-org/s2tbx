@@ -17,7 +17,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l1c;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
@@ -25,12 +25,12 @@ import jp2.AEmptyListener;
 import jp2.CodeStreamUtils;
 import jp2.TileLayout;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.snap.jai.ResolutionLevel;
 import org.esa.snap.jai.SingleBandedOpImage;
 import org.esa.snap.util.ImageUtils;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
 import org.openjpeg.CommandOutput;
 import org.openjpeg.JpegUtils;
@@ -60,8 +60,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-
-import static org.esa.s2tbx.dataio.s2.S2Config.*;
 
 // todo - better log problems during read process, see {@report "Problem detected..."} code marks
 
@@ -107,9 +105,9 @@ class L1cTileOpImage extends SingleBandedOpImage {
         } else {
             SystemUtils.LOG.fine("Using empty image !");
 
-            int targetWidth = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].width, level);
-            int targetHeight = getSizeAtResolutionLevel(L1C_TILE_LAYOUTS[0].height, level);
-            Dimension targetTileDim = getTileDimAtResolutionLevel(L1C_TILE_LAYOUTS[0].tileWidth, L1C_TILE_LAYOUTS[0].tileHeight, level);
+            int targetWidth = getSizeAtResolutionLevel(S2L1CConfig.L1C_TILE_LAYOUTS[0].width, level);
+            int targetHeight = getSizeAtResolutionLevel(S2L1CConfig.L1C_TILE_LAYOUTS[0].height, level);
+            Dimension targetTileDim = getTileDimAtResolutionLevel(S2L1CConfig.L1C_TILE_LAYOUTS[0].tileWidth, S2L1CConfig.L1C_TILE_LAYOUTS[0].tileHeight, level);
             SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),

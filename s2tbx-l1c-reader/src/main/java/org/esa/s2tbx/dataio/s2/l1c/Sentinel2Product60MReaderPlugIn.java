@@ -17,15 +17,15 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l1c;
 
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.SnapFileFilter;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.util.Locale;
@@ -33,7 +33,7 @@ import java.util.Locale;
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2ProductNoMultiSizeReaderPlugIn implements ProductReaderPlugIn {
+public class Sentinel2Product60MReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -42,7 +42,8 @@ public class Sentinel2ProductNoMultiSizeReaderPlugIn implements ProductReaderPlu
         File file = new File(input.toString());
         DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
         if (deco.equals(DecodeQualification.SUITABLE)) {
-            if (S2ProductFilename.create(file.getName()).fileSemantic.contains("L1C")) {
+            S2ProductFilename productFilename = S2ProductFilename.create(file.getName());
+            if (productFilename != null && productFilename.fileSemantic.contains("L1C")) {
                 deco = DecodeQualification.INTENDED;
             }
             else
@@ -61,14 +62,14 @@ public class Sentinel2ProductNoMultiSizeReaderPlugIn implements ProductReaderPlu
 
     @Override
     public ProductReader createReaderInstance() {
-        SystemUtils.LOG.info("Building product reader No Multisize...");
+        SystemUtils.LOG.info("Building product reader 60M");
 
-        return new Sentinel2NMSProductReader(this, true);
+        return new Sentinel2ProductReader(this, false, 60);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2Config.FORMAT_NAME+"-NMS"};
+        return new String[]{S2L1CConfig.FORMAT_NAME+"-60M"};
     }
 
     @Override
@@ -78,13 +79,14 @@ public class Sentinel2ProductNoMultiSizeReaderPlugIn implements ProductReaderPlu
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1C No Multisize";
+        return "Sentinel-2 MSI L1C 60M";
     }
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2Config.FORMAT_NAME,
+        return new SnapFileFilter(S2L1CConfig.FORMAT_NAME,
                 getDefaultFileExtensions(),
-                "Sentinel-2 MSI L1C No Multisize product or tile");
+                "Sentinel-2 MSI L1C product or tile");
     }
+
 }

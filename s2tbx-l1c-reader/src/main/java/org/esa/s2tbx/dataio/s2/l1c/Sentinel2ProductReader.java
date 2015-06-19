@@ -17,7 +17,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l1c;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
@@ -31,9 +31,10 @@ import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleMetadataFilename;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleMetadataFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.gml.GmlFilter;
@@ -43,7 +44,6 @@ import org.esa.snap.framework.datamodel.*;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
@@ -81,9 +81,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static org.esa.s2tbx.dataio.s2.L1cMetadata.*;
-import static org.esa.s2tbx.dataio.s2.S2Config.*;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)
@@ -248,18 +245,18 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
 
         try {
-            metadataHeader = parseHeader(metadataFile);
+            metadataHeader = L1cMetadata.parseHeader(metadataFile);
         } catch (JDOMException|UnmarshalException e) {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
-        L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader, Tile.idGeom.G10M);
+        L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader, L1cMetadata.Tile.idGeom.G10M);
         logger.fine("Scene Description: " + sceneDescription);
 
         File productDir = getProductDir(metadataFile);
         initCacheDir(productDir);
 
-        ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
+        L1cMetadata.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
 
         // set the product global geo-coding
@@ -275,8 +272,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             setGeoCoding(product, sceneDescription.getSceneEnvelope());
         }
 
-        product.setPreferredTileSize(DEFAULT_JAI_TILE_SIZE, DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(L1C_TILE_LAYOUTS[0].numResolutions);
+        product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
+        product.setNumResolutionsMax(S2L1CConfig.L1C_TILE_LAYOUTS[0].numResolutions);
 
         String autoGrouping = "";
 
@@ -298,12 +295,12 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                 utmZoneTileList =utmZoneTileList.stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
             }
             // for all bands of the UTM zone, store tiles files names
-            for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+            for (L1cMetadata.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
                 int bandIndex = bandInformation.bandId;
                 if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
 
                     HashMap<String, File> tileFileMap = new HashMap<String, File>();
-                    for (Tile tile : utmZoneTileList) {
+                    for (L1cMetadata.Tile tile : utmZoneTileList) {
                         S2L1CGranuleDirFilename gf = S2L1CGranuleDirFilename.create(tile.id);
                         S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.physicalBand);
 
@@ -410,10 +407,10 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         {
             for(L1cMetadata.Tile tile: utmZoneTileList)
             {
-                MaskFilename[] filenames = tile.maskFilenames;
+                L1cMetadata.MaskFilename[] filenames = tile.maskFilenames;
 
                 if(filenames != null) {
-                    for (MaskFilename aMaskFile : filenames) {
+                    for (L1cMetadata.MaskFilename aMaskFile : filenames) {
                         File aFile = aMaskFile.getName();
                         Pair<String, List<EopPolygon>> polys = gmlFilter.parse(aFile);
 
@@ -511,7 +508,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         String bandName = utmZoneCode + bandInfo.wavebandInfo.bandName;
         bandName = bandName.replace(':', '_');
-        final Band band = new Band(bandName, SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
+        final Band band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
         product.addBand(band);
 
         band.setSpectralBandIndex(bandInfo.bandIndex);
@@ -538,7 +535,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
     private TiePointGrid[] createL1cTileTiePointGrids(L1cMetadata metadataHeader, int tileIndex) {
         TiePointGrid[] tiePointGrid = null;
-        Tile tile = metadataHeader.getTileList().get(tileIndex);
+        L1cMetadata.Tile tile = metadataHeader.getTileList().get(tileIndex);
         L1cMetadata.AnglesGrid anglesGrid = tile.sunAnglesGrid;
         if(anglesGrid != null) {
             int gridHeight = tile.sunAnglesGrid.zenith.length;
@@ -622,11 +619,11 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         return new BandInfo(createFileMap(tileId, imageFile),
                             bandIndex,
                             wavebandInfo,
-                            L1C_TILE_LAYOUTS[wavebandInfo.resolution.id]);
+                            S2L1CConfig.L1C_TILE_LAYOUTS[wavebandInfo.resolution.id]);
 
     }
 
-    private BandInfo createBandInfoFromHeaderInfo(SpectralInformation bandInformation, Map<String, File> tileFileMap) {
+    private BandInfo createBandInfoFromHeaderInfo(L1cMetadata.SpectralInformation bandInformation, Map<String, File> tileFileMap) {
         S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.resolution);
         return new BandInfo(tileFileMap,
                             bandInformation.bandId,
@@ -634,7 +631,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
                                                bandInformation.physicalBand,
                                                spatialResolution, bandInformation.wavelenghtCentral,
                                                Math.abs(bandInformation.wavelenghtMax + bandInformation.wavelenghtMin)),
-                            L1C_TILE_LAYOUTS[spatialResolution.id]);
+                            S2L1CConfig.L1C_TILE_LAYOUTS[spatialResolution.id]);
     }
 
     private void setGeoCoding(Product product, Envelope2D envelope) {
@@ -727,8 +724,8 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         public L1cTileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
-                                             L1C_TILE_LAYOUTS[0].width, //todo we must use data from jp2 files to update this
-                                             L1C_TILE_LAYOUTS[0].height)); //todo we must use data from jp2 files to update this
+                                             S2L1CConfig.L1C_TILE_LAYOUTS[0].width, //todo we must use data from jp2 files to update this
+                                             S2L1CConfig.L1C_TILE_LAYOUTS[0].height)); //todo we must use data from jp2 files to update this
             this.bandInfo = bandInfo;
         }
 
@@ -830,14 +827,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             ImageLayout imageLayout = new ImageLayout();
             imageLayout.setMinX(0);
             imageLayout.setMinY(0);
-            imageLayout.setTileWidth(DEFAULT_JAI_TILE_SIZE);
-            imageLayout.setTileHeight(DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                          null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
+                                                          null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             // todo add crop or extend here to ensure "right" size...
@@ -946,14 +943,14 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             ImageLayout imageLayout = new ImageLayout();
             imageLayout.setMinX(0);
             imageLayout.setMinY(0);
-            imageLayout.setTileWidth(DEFAULT_JAI_TILE_SIZE);
-            imageLayout.setTileHeight(DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                          null, null, new double[][]{{1.0}}, new double[]{FILL_CODE_MOSAIC_BG},
+                                                          null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             logger.fine(String.format("mosaicOp created for level %d at (%d,%d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY()));

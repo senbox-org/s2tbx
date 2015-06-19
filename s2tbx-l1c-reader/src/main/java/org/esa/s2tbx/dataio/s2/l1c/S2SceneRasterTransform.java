@@ -16,7 +16,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l1c;
 
 import org.esa.snap.framework.datamodel.SceneRasterTransform;
 import org.opengis.referencing.operation.MathTransform2D;

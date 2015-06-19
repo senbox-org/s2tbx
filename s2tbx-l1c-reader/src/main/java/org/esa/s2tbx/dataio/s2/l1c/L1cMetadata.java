@@ -17,7 +17,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2;
+package org.esa.s2tbx.dataio.s2.l1c;
 
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
@@ -26,7 +26,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
@@ -71,6 +71,7 @@ public class L1cMetadata {
 
     static Element NULL_ELEM = new Element("null") {
     };
+
 
 
     private MetadataElement metadataElement;
@@ -174,12 +175,30 @@ public class L1cMetadata {
         }
     }
 
-    static class ProductCharacteristics
+    public static class ProductCharacteristics
     {
         String spacecraft;
         String datasetProductionDate;
         String processingLevel;
         SpectralInformation[] bandInformations;
+
+
+        public String getSpacecraft() {
+            return spacecraft;
+        }
+
+        public String getDatasetProductionDate() {
+            return datasetProductionDate;
+        }
+
+        public String getProcessingLevel() {
+            return processingLevel;
+        }
+
+        public SpectralInformation[] getBandInformations() {
+            return bandInformations;
+        }
+
 
         public String getMetaDataLevel() {
             return metaDataLevel;
@@ -200,7 +219,7 @@ public class L1cMetadata {
         }
     }
 
-    static class SpectralInformation {
+    public static class SpectralInformation {
         int bandId;
         String physicalBand;
         int resolution;
@@ -208,6 +227,7 @@ public class L1cMetadata {
         double wavelenghtMax;
         double wavelenghtCentral;
         double spectralResponseStep;
+
         double[] spectralResponseValues;
 
         public SpectralInformation() {
@@ -220,6 +240,12 @@ public class L1cMetadata {
             this.bandId = bandId;
             this.resolution = resolution;
             spectralResponseValues = new double[]{};
+        }
+
+
+
+        public double[] getSpectralResponseValues() {
+            return spectralResponseValues;
         }
 
         public String toString() {
