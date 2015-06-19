@@ -34,13 +34,14 @@
                 <attr name="formatName" stringvalue="RapidEyeGeoTIFF"/>
                 <attr name="useAllFileFilter" boolvalue="true"/>
             </file>
+            <!-- Leaving out for now the NITF action
             <file name="org-esa-s2tbx-dataio-nitf-ImportNITFProduct.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="NITF Image"/>
                 <attr name="formatName" stringvalue="GenericNITF"/>
                 <attr name="useAllFileFilter" boolvalue="true"/>
-            </file>
+            </file>-->
         </folder>
     </folder>
 
@@ -59,12 +60,13 @@
                         </file>
                     </folder>
                 </folder>
+                <!-- Leaving out for now the NITF action
                 <folder name="Generic Formats">
                     <file name="org-esa-s2tbx-dataio-nitf-ImportNITFProduct.shadow">
                         <attr name="originalFile"
                               stringvalue="Actions/Readers/org-esa-s2tbx-dataio-nitf-ImportNITFProduct.instance"/>
                     </file>
-                </folder>
+                </folder>-->
             </folder>
         </folder>
     </folder>

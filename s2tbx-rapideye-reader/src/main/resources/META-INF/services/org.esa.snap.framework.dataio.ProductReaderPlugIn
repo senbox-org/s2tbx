@@ -16,4 +16,5 @@
 
 org.esa.s2tbx.dataio.rapideye.RapidEyeL1ReaderPlugin
 org.esa.s2tbx.dataio.rapideye.RapidEyeL3ReaderPlugin
-org.esa.s2tbx.dataio.nitf.NITFReaderPlugin
+# Leaving out for now the NITF plugin
+# org.esa.s2tbx.dataio.nitf.NITFReaderPlugin
