@@ -27,9 +27,10 @@ import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bDatastripDirFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bDatastripFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
@@ -246,7 +247,7 @@ public class L1bMetadata {
 
             if (nestedMetadata.exists()) {
                 logger.log(Level.FINE, "File found: " + nestedMetadata.getAbsolutePath());
-                S2L1bGranuleDirFilename aGranuleDir = S2L1bGranuleDirFilename.create(granuleName);
+                S2GranuleDirFilename aGranuleDir = S2L1BGranuleDirFilename.create(granuleName);
                 Guardian.assertNotNull("aGranuleDir", aGranuleDir);
                 String theName = aGranuleDir.getMetadataFilename().name;
 
@@ -283,8 +284,8 @@ public class L1bMetadata {
             tileList.add(t);
         }
 
-        S2L1bDatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
-        S2L1bDatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
+        S2DatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
+        S2DatastripDirFilename dirStripName = L1bMetadataProc.getDatastripDir(product);
 
         File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 

@@ -32,9 +32,11 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bGranuleDirFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bGranuleImageFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bProductFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
+import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.Band;
@@ -180,8 +182,8 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             throw new FileNotFoundException(inputFile.getPath());
         }
 
-        if (S2L1bProductFilename.isProductFilename(inputFile.getName())) {
-            boolean isAGranule = S2L1bProductFilename.isGranuleFilename(inputFile.getName());
+        if (S2ProductFilename.isProductFilename(inputFile.getName())) {
+            boolean isAGranule = S2L1BGranuleMetadataFilename.isGranuleFilename(inputFile.getName());
             if(isAGranule)
             {
                 logger.fine("Reading a granule");
@@ -236,7 +238,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             File[] files = up2levels.listFiles();
             for(File f: files)
             {
-                if(S2L1bProductFilename.isProductFilename(f.getName()) && S2L1bProductFilename.isMetadataFilename(f.getName()))
+                if(S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName()))
                 {
                     metadataFile = f;
                     break;
@@ -292,10 +294,10 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
                     HashMap<String, File> tileFileMap = new HashMap<String, File>();
                     for (Tile tile : tileList) {
-                        S2L1bGranuleDirFilename gf = S2L1bGranuleDirFilename.create(tile.id);
+                        S2GranuleDirFilename gf = S2L1BGranuleDirFilename.create(tile.id);
                         Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
-                        S2L1bGranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.physicalBand);
+                        S2GranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.physicalBand);
                         String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + granuleFileName.name;
                         logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
 
@@ -333,11 +335,11 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         Map<String, TileBandInfo> bandInfoByKey = new HashMap<String, TileBandInfo>();
         if (productCharacteristics.bandInformations != null) {
             for (Tile tile : tileList) {
-                S2L1bGranuleDirFilename gf = S2L1bGranuleDirFilename.create(tile.id);
+                S2L1BGranuleDirFilename gf = (S2L1BGranuleDirFilename) S2L1BGranuleDirFilename.create(tile.id);
                 Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
                 for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-                    S2L1bGranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.physicalBand);
+                    S2GranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.physicalBand);
                     String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + granuleFileName.name;
 
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand + ", and detector: " + gf.getDetectorId());

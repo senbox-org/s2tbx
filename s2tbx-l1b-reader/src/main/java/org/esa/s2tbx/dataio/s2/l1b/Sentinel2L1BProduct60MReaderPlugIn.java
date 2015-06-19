@@ -19,7 +19,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bProductFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
@@ -39,9 +39,9 @@ public class Sentinel2L1BProduct60MReaderPlugIn implements ProductReaderPlugIn {
         BeamLogManager.getSystemLogger().fine("Getting decoders...");
 
         File file = new File(input.toString());
-        DecodeQualification deco = S2L1bProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
+        DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
         if (deco.equals(DecodeQualification.SUITABLE)) {
-            String semantic = S2L1bProductFilename.create(file.getName()).fileSemantic;
+            String semantic = S2ProductFilename.create(file.getName()).fileSemantic;
             if (semantic.contains("L1B")) {
                 deco = DecodeQualification.INTENDED;
             }

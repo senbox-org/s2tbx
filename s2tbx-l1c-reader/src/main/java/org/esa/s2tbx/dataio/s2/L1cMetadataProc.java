@@ -29,7 +29,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleDirFilename;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.openjpeg.StackTraceUtils;
 
@@ -220,7 +220,7 @@ public class L1cMetadataProc {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2GranuleDirFilename grafile = S2GranuleDirFilename.create(granule);
+        S2L1CGranuleDirFilename grafile = S2L1CGranuleDirFilename.create(granule);
         String fileCategory = grafile.fileCategory;
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();

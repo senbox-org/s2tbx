@@ -27,7 +27,7 @@ public class MetadataTest1B {
         Marshaller marshaller = jaxbContext.createMarshaller();
 
 
-        InputStream stream = getClass().getResourceAsStream("l1b/S2A_OPER_MTD_SAFL1B_PDMC_20140926T120000_R069_V20130707T171925_20130707T172037.xml");
+        InputStream stream = getClass().getResourceAsStream("S2A_OPER_MTD_SAFL1B_PDMC_20140926T120000_R069_V20130707T171925_20130707T172037.xml");
 
         Object ob =  unmarshaller.unmarshal(stream);
 
@@ -46,7 +46,7 @@ public class MetadataTest1B {
         Marshaller marshaller = jaxbContext.createMarshaller();
 
 
-        InputStream stream = getClass().getResourceAsStream("l1b/S2A_OPER_MTD_L1B_GR_MPS__20140926T120000_S20130707T171927_D06.xml");
+        InputStream stream = getClass().getResourceAsStream("S2A_OPER_MTD_L1B_GR_MPS__20140926T120000_S20130707T171927_D06.xml");
 
         Object ob =  unmarshaller.unmarshal(stream);
 

@@ -31,9 +31,9 @@ import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
-import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleMetadataFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.gml.GmlFilter;
@@ -185,7 +185,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
         if (S2ProductFilename.isProductFilename(inputFile.getName())) {
 
-            boolean isAGranule = S2ProductFilename.isGranuleFilename(inputFile.getName());
+            boolean isAGranule = S2L1CGranuleMetadataFilename.isGranuleFilename(inputFile.getName());
             if(isAGranule)
             {
                 logger.fine("Reading a granule");
@@ -304,7 +304,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
 
                     HashMap<String, File> tileFileMap = new HashMap<String, File>();
                     for (Tile tile : utmZoneTileList) {
-                        S2GranuleDirFilename gf = S2GranuleDirFilename.create(tile.id);
+                        S2L1CGranuleDirFilename gf = S2L1CGranuleDirFilename.create(tile.id);
                         S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.physicalBand);
 
                         String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFilename.name;

@@ -19,7 +19,6 @@
 
 package org.esa.s2tbx.dataio.s2;
 
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_MASK_LIST;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -27,12 +26,11 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleDirFilename;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
@@ -52,7 +50,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -331,7 +328,7 @@ public class L1cMetadata {
             FileInputStream fi = (FileInputStream) stream;
             File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
 
-            S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+            S2L1CGranuleDirFilename aGranuleDir = S2L1CGranuleDirFilename.create(granuleName);
             String theName = aGranuleDir.getMetadataFilename().name;
 
             File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);

@@ -499,16 +499,3 @@ class L2aTileOpImage extends SingleBandedOpImage {
                              height < S2L2AConfig.DEFAULT_JAI_TILE_SIZE ? height : S2L2AConfig.DEFAULT_JAI_TILE_SIZE);
     }
 }
-
-class BoxListener implements BoxReader.Listener {
-
-    @Override
-    public void knownBoxSeen(Box box) {
-        BeamLogManager.getSystemLogger().warning("KNOWN: " + box.toString());
-    }
-
-    @Override
-    public void unknownBoxSeen(Box box) {
-        BeamLogManager.getSystemLogger().warning("UNKNOWN: " + box.toString());
-    }
-}

@@ -34,9 +34,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bDatastripDirFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bDatastripFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.openjpeg.StackTraceUtils;
@@ -271,29 +272,29 @@ public class L1bMetadataProc {
         return col;
     }
 
-    public static S2L1bDatastripFilename getDatastrip(Level1B_User_Product product) {
+    public static S2DatastripFilename getDatastrip(Level1B_User_Product product) {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2L1bGranuleDirFilename grafile = S2L1bGranuleDirFilename.create(granule);
+        S2GranuleDirFilename grafile = S2L1BGranuleDirFilename.create(granule);
         Guardian.assertNotNull("Product files don't match regular expressions", grafile);
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
-        S2L1bDatastripDirFilename dirDatastrip = S2L1bDatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
+        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
         return dirDatastrip.getDatastripFilename(null);
     }
 
-    public static S2L1bDatastripDirFilename getDatastripDir(Level1B_User_Product product) {
+    public static S2DatastripDirFilename getDatastripDir(Level1B_User_Product product) {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2L1bGranuleDirFilename grafile = S2L1bGranuleDirFilename.create(granule);
+        S2GranuleDirFilename grafile = S2L1BGranuleDirFilename.create(granule);
         Guardian.assertNotNull("Product files don't match regular expressions", grafile);
 
         String fileCategory = grafile.fileCategory;
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
-        S2L1bDatastripDirFilename dirDatastrip = S2L1bDatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
+        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
         return dirDatastrip;
     }
 

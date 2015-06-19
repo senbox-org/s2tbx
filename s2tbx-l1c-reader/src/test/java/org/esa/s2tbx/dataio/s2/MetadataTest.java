@@ -6,7 +6,7 @@ import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZA
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import junit.framework.Assert;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleDirFilename;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
@@ -94,7 +94,7 @@ public class MetadataTest {
 
         assertEquals("S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_N01.01", granuleId);
 
-        S2GranuleDirFilename gdir = S2GranuleDirFilename.create(granuleId);
+        S2L1CGranuleDirFilename gdir = S2L1CGranuleDirFilename.create(granuleId);
 
         Assert.assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", gdir.getMetadataFilename().name);
     }
@@ -142,7 +142,7 @@ public class MetadataTest {
                     assertTrue(nestedMetadata.exists());
                     assertTrue(nestedMetadata.isDirectory());
 
-                    S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+                    S2L1CGranuleDirFilename aGranuleDir = S2L1CGranuleDirFilename.create(granuleName);
                     String theName = aGranuleDir.getMetadataFilename().name;
 
                     File nestedGranuleMetadata = new File(baseDir, "GRANULE\\" + granuleName + "\\" + theName);
