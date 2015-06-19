@@ -152,7 +152,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
     public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.productResolution = productResolution;
         isMultiResolution = false;
@@ -160,7 +160,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
 
     Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.productResolution = -1;
         isMultiResolution = true;
@@ -261,7 +261,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         try {
             metadataHeader = parseHeader(metadataFile);
         } catch (JDOMException e) {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+            SystemUtils.LOG.severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
@@ -669,7 +669,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         public L1bSceneMultiLevelImageFactory(L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
             super(imageToModelTransform);
 
-            BeamLogManager.getSystemLogger().fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
+            SystemUtils.LOG.fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
 
             this.sceneDescription = sceneDescription;
         }
@@ -678,7 +678,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
         // @Loggable
         public MultiLevelImage createSourceImage(TileBandInfo tileBandInfo) {
             BandL1bSceneMultiLevelSource bandScene = new BandL1bSceneMultiLevelSource(sceneDescription, tileBandInfo, imageToModelTransform);
-            BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_SCENE), "BandScene: " + bandScene);
+            SystemUtils.LOG.log(Level.parse(S2L1bConfig.LOG_SCENE), "BandScene: " + bandScene);
             return new DefaultMultiLevelImage(bandScene);
         }
     }
@@ -819,7 +819,7 @@ public class Sentinel2L1BProductReader extends AbstractProductReader {
             if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
                 int rightPad = destBounds.width - mosaicOp.getWidth();
                 int bottomPad = destBounds.height - mosaicOp.getHeight();
-                BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
+                SystemUtils.LOG.log(Level.parse(S2L1bConfig.LOG_SCENE), String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
 
                 mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
             }

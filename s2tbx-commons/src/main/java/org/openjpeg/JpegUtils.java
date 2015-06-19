@@ -19,9 +19,8 @@
 package org.openjpeg;
 
 import jp2.TileLayout;
-import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.snap.util.logging.BeamLogManager;
+import org.esa.snap.util.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +58,7 @@ public class JpegUtils {
             String output = convertStreamToString(p.getInputStream());
             String errorOutput = convertStreamToString(p.getErrorStream());
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+            SystemUtils.LOG.severe(Utils.getStackTrace(e));
         }
     }
 
@@ -71,15 +70,15 @@ public class JpegUtils {
 
         String target = "opj_decompress";
 
-        if (SystemUtils.IS_OS_LINUX) {
+        if (org.apache.commons.lang.SystemUtils.IS_OS_LINUX) {
             try {
                 Process p = Runtime.getRuntime().exec("uname -m");
                 p.waitFor();
                 String output = convertStreamToString(p.getInputStream());
                 String errorOutput = convertStreamToString(p.getErrorStream());
 
-                BeamLogManager.getSystemLogger().fine(output);
-                BeamLogManager.getSystemLogger().severe(errorOutput);
+                SystemUtils.LOG.fine(output);
+                SystemUtils.LOG.severe(errorOutput);
 
                 if (output.startsWith("i686")) {
                     target = modulesDir + linuxPath;
@@ -87,14 +86,14 @@ public class JpegUtils {
                     target = modulesDir + linux64Path;
                 }
             } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+                SystemUtils.LOG.severe(Utils.getStackTrace(e));
             }
-        } else if (SystemUtils.IS_OS_MAC) {
+        } else if (org.apache.commons.lang.SystemUtils.IS_OS_MAC) {
             try {
                 target = modulesDir + macPath;
                 setExecutable(new File(target), true);
             } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+                SystemUtils.LOG.severe(Utils.getStackTrace(e));
             }
         } else {
             try {
@@ -105,7 +104,7 @@ public class JpegUtils {
                 }
 
             } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+                SystemUtils.LOG.severe(Utils.getStackTrace(e));
                 target = target + ".exe";
             }
         }
@@ -126,15 +125,15 @@ public class JpegUtils {
 
         String target = "opj_decompress";
 
-        if (SystemUtils.IS_OS_LINUX) {
+        if (org.apache.commons.lang.SystemUtils.IS_OS_LINUX) {
             try {
                 Process p = Runtime.getRuntime().exec("uname -m");
                 p.waitFor();
                 String output = convertStreamToString(p.getInputStream());
                 String errorOutput = convertStreamToString(p.getErrorStream());
 
-                BeamLogManager.getSystemLogger().fine(output);
-                BeamLogManager.getSystemLogger().severe(errorOutput);
+                SystemUtils.LOG.fine(output);
+                SystemUtils.LOG.severe(errorOutput);
 
                 if (output.startsWith("i686")) {
                     target = modulesDir + linuxPath;
@@ -142,14 +141,14 @@ public class JpegUtils {
                     target = modulesDir + linux64Path;
                 }
             } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+                SystemUtils.LOG.severe(Utils.getStackTrace(e));
             }
-        } else if (SystemUtils.IS_OS_MAC) {
+        } else if (org.apache.commons.lang.SystemUtils.IS_OS_MAC) {
             try {
                 target = modulesDir + macPath;
                 setExecutable(new File(target), true);
             } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+                SystemUtils.LOG.severe(Utils.getStackTrace(e));
             }
         } else {
             try {
@@ -159,7 +158,7 @@ public class JpegUtils {
                     target = modulesDir + winPath;
                 }
             } catch (Exception e) {
-                BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+                SystemUtils.LOG.severe(Utils.getStackTrace(e));
                 target = target + ".exe";
             }
         }

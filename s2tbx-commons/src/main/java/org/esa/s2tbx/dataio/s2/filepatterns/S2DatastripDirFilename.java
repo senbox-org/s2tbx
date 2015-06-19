@@ -20,6 +20,7 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 
 import java.util.regex.Matcher;
@@ -89,8 +90,7 @@ public class S2DatastripDirFilename {
             );
 
         } else {
-            // todo add a warning message too
-            BeamLogManager.getSystemLogger().warning(String.format("%s DatastripDirFilename didn't match regexp %s", fileName, PATTERN.toString()));
+            SystemUtils.LOG.warning(String.format("%s DatastripDirFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

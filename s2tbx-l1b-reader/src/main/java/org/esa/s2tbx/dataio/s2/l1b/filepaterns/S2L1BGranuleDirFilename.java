@@ -22,6 +22,7 @@ package org.esa.s2tbx.dataio.s2.l1b.filepaterns;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleMetadataFilename;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 
 import java.util.regex.Matcher;
@@ -122,7 +123,7 @@ public class S2L1BGranuleDirFilename extends S2GranuleDirFilename {
                                             matcher.group(9)
             );
         } else {
-            BeamLogManager.getSystemLogger().warning(String.format("%s S2L1BGranuleDirFilename didn't match regexp %s", fileName, PATTERN.toString()));
+            SystemUtils.LOG.warning(String.format("%s S2L1BGranuleDirFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

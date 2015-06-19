@@ -713,7 +713,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
         @Override
         public MultiLevelImage createSourceImage(BandInfo bandInfo) {
             BandL1cSceneMultiLevelSource bandScene = new BandL1cSceneMultiLevelSource(sceneDescription, bandInfo, imageToModelTransform);
-            BeamLogManager.getSystemLogger().fine("BandScene: " + bandScene);
+            SystemUtils.LOG.fine("BandScene: " + bandScene);
             return new DefaultMultiLevelImage(bandScene);
         }
     }
@@ -849,7 +849,7 @@ public class Sentinel2ProductReader extends AbstractProductReader {
             if (mosaicOp.getWidth() < destBounds.width || mosaicOp.getHeight() < destBounds.height) {
                 int rightPad = destBounds.width - mosaicOp.getWidth();
                 int bottomPad = destBounds.height - mosaicOp.getHeight();
-                BeamLogManager.getSystemLogger().fine(String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
+                SystemUtils.LOG.fine(String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
 
                 mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
             }

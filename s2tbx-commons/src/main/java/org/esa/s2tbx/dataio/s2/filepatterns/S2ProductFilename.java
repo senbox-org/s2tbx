@@ -19,6 +19,7 @@
 
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 
 import java.util.regex.Matcher;
@@ -110,8 +111,7 @@ public class S2ProductFilename {
                                             matcher.group(6),
                                             matcher.group(7));
         } else {
-            // todo add a warning message too
-            BeamLogManager.getSystemLogger().warning(String.format("%s ProductFilename didn't match regexp %s", fileName, PATTERN.toString()));
+            SystemUtils.LOG.warning(String.format("%s ProductFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

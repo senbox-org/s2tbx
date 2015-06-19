@@ -19,7 +19,7 @@
 package org.openjpeg;
 
 /**
- * Created by Oscar on 16/02/2015.
+ *  @author Oscar
  */
 public class CommandOutput {
     private int errorCode;

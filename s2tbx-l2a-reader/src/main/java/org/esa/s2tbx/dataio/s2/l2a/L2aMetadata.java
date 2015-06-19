@@ -30,6 +30,7 @@ import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aGranuleDirFilename;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
@@ -70,7 +71,7 @@ public class L2aMetadata {
 
 
     private MetadataElement metadataElement;
-    protected Logger logger = BeamLogManager.getSystemLogger();
+    protected Logger logger = SystemUtils.LOG;
 
 
     static class Tile {

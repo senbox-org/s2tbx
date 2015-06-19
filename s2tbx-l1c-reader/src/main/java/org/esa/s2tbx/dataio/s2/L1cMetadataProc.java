@@ -30,6 +30,7 @@ import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2L1CGranuleDirFilename;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.openjpeg.StackTraceUtils;
 
@@ -81,7 +82,7 @@ public class L1cMetadataProc {
         try {
             theDir = getModulesDir();
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(StackTraceUtils.getStackTrace(e));
+            SystemUtils.LOG.severe(StackTraceUtils.getStackTrace(e));
         }
         return theDir;
     }

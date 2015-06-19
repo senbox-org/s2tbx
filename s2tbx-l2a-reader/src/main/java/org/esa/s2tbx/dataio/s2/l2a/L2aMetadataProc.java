@@ -35,6 +35,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripFilename;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.openjpeg.StackTraceUtils;
 
@@ -90,7 +91,7 @@ public class L2aMetadataProc {
         try {
             theDir = getModulesDir();
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(StackTraceUtils.getStackTrace(e));
+            SystemUtils.LOG.severe(StackTraceUtils.getStackTrace(e));
         }
         return theDir;
     }
@@ -112,7 +113,7 @@ public class L2aMetadataProc {
             String output = convertStreamToString(p.getInputStream());
             String errorOutput = convertStreamToString(p.getErrorStream());
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+            SystemUtils.LOG.severe(Utils.getStackTrace(e));
         }
     }
 

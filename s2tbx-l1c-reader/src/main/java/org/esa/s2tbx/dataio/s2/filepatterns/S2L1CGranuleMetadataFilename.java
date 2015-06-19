@@ -19,6 +19,7 @@
 
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 
 import java.util.regex.Matcher;
@@ -67,7 +68,7 @@ public class S2L1CGranuleMetadataFilename extends S2GranuleMetadataFilename {
                                                  matcher.group(8)
             );
         } else {
-            BeamLogManager.getSystemLogger().warning(String.format("%s S2GranuleMetadataFilename didn't match regexp %s", fileName, PATTERN.toString()));
+            SystemUtils.LOG.warning(String.format("%s S2GranuleMetadataFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

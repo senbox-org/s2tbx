@@ -526,7 +526,7 @@ public abstract class VirtualDirEx extends VirtualDir {
 
         public void ensureUnpacked(File unpackFolder) throws IOException {
             if (extractDir == null) {
-                //BeamLogManager.getSystemLogger().info("Unpacking archive contents");
+                //SystemUtils.LOG.info("Unpacking archive contents");
                 extractDir = unpackFolder != null ? unpackFolder : VirtualDir.createUniqueTempDir();
                 TarInputStream tis = null;
                 OutputStream outStream = null;

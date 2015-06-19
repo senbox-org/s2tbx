@@ -23,6 +23,7 @@ import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.SnapFileFilter;
 import org.esa.snap.util.logging.BeamLogManager;
 
@@ -36,7 +37,7 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        BeamLogManager.getSystemLogger().fine("Getting decoders...");
+        SystemUtils.LOG.fine("Getting decoders...");
 
         File file = new File(input.toString());
         DecodeQualification deco = S2L2aProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
@@ -60,7 +61,7 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        BeamLogManager.getSystemLogger().info("Building product reader...");
+        SystemUtils.LOG.info("Building product reader...");
 
         return new Sentinel2L2AProductReader(this, false);
     }

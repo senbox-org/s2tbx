@@ -20,6 +20,7 @@
 package org.esa.s2tbx.dataio.s2.l1b.filepaterns;
 
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 
 import java.util.regex.Matcher;
@@ -77,7 +78,7 @@ public class S2L1BGranuleImageFilename extends S2GranuleImageFilename {
                                               matcher.group(9),
                                               matcher.group(10));
         } else {
-            BeamLogManager.getSystemLogger().warning(String.format("%s S2GranuleImageFilename didn't match regexp %s", fileName, PATTERN.toString()));
+            SystemUtils.LOG.warning(String.format("%s S2GranuleImageFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

@@ -35,6 +35,7 @@ import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.util.Guardian;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
@@ -82,7 +83,7 @@ public class L1bMetadata {
 
 
     private MetadataElement metadataElement;
-    protected Logger logger = BeamLogManager.getSystemLogger();
+    protected Logger logger = SystemUtils.LOG;
 
 
     static class Tile {

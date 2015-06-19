@@ -39,6 +39,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.snap.util.Guardian;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 import org.openjpeg.StackTraceUtils;
 
@@ -99,7 +100,7 @@ public class L1bMetadataProc {
         try {
             theDir = getModulesDir();
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(StackTraceUtils.getStackTrace(e));
+            SystemUtils.LOG.severe(StackTraceUtils.getStackTrace(e));
         }
         return theDir;
     }
@@ -120,7 +121,7 @@ public class L1bMetadataProc {
             String output = convertStreamToString(p.getInputStream());
             String errorOutput = convertStreamToString(p.getErrorStream());
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+            SystemUtils.LOG.severe(Utils.getStackTrace(e));
         }
     }
 
@@ -214,7 +215,7 @@ public class L1bMetadataProc {
             int size = aInfo.size();
             characteristics.bandInformations = aInfo.toArray(new L1bMetadata.SpectralInformation[size]);
         } else {
-            BeamLogManager.getSystemLogger().warning("Empty spectral info !");
+            SystemUtils.LOG.warning("Empty spectral info !");
 
             // fixme If there is no spectral info, get band names from Query_Options/Band_List
             List<A_PHYSICAL_BAND_NAME> bandList = product.getGeneral_Info().getProduct_Info().getQuery_Options().getBand_List().getBAND_NAME();
@@ -341,7 +342,7 @@ public class L1bMetadataProc {
 
             tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
             if ((gpos.getNROWS() - (pos / ratio)) < S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height) {
-                BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_DEBUG), "Test if we need extra processing here");
+                SystemUtils.LOG.log(Level.parse(S2L1bConfig.LOG_DEBUG), "Test if we need extra processing here");
             }
 
             tgeox.numRowsDetector = gpos.getNROWS();

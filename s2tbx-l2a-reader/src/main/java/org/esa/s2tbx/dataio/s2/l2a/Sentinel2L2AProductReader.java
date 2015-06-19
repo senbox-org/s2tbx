@@ -133,14 +133,14 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
 
     public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.filteredResolution = filteredResolution;
     }
 
     Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn);
-        logger = BeamLogManager.getSystemLogger();
+        logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.filteredResolution = -1;
     }
@@ -241,7 +241,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         try {
             metadataHeader = parseHeader(metadataFile);
         } catch (JDOMException e) {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+            SystemUtils.LOG.severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
@@ -604,7 +604,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         public L2aSceneMultiLevelImageFactory(L2aSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
             super(imageToModelTransform);
 
-            BeamLogManager.getSystemLogger().fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
+            SystemUtils.LOG.fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
 
             this.sceneDescription = sceneDescription;
         }
@@ -612,7 +612,7 @@ public class Sentinel2L2AProductReader extends AbstractProductReader {
         @Override
         public MultiLevelImage createSourceImage(BandInfo bandInfo) {
             BandL2aSceneMultiLevelSource bandScene = new BandL2aSceneMultiLevelSource(sceneDescription, bandInfo, imageToModelTransform);
-            BeamLogManager.getSystemLogger().log(Level.parse(S2L2AConfig.LOG_SCENE), "BandScene: " + bandScene);
+            SystemUtils.LOG.log(Level.parse(S2L2AConfig.LOG_SCENE), "BandScene: " + bandScene);
             return new DefaultMultiLevelImage(bandScene);
         }
     }
