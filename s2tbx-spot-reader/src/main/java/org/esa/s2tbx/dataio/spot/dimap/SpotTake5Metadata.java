@@ -21,6 +21,7 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.utils.DateHelper;
 
 import java.text.ParseException;
 import java.util.HashMap;
@@ -318,11 +319,7 @@ public class SpotTake5Metadata extends XmlMetadata {
             dateStr = currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_DATE_PDV);
         }
         if (dateStr != null) {
-            try {
-                dateValue = ProductData.UTC.parse(dateStr, SpotConstants.SPOT4_TAKE5_UTC_DATE_FORMAT);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            dateValue = DateHelper.parseDate(dateStr, SpotConstants.SPOT4_TAKE5_UTC_DATE_FORMAT);
         }
         return dateValue;
     }

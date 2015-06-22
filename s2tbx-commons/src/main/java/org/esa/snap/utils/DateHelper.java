@@ -69,13 +69,18 @@ public class DateHelper {
             try {
                 if (stringData.endsWith("Z"))
                     stringData = stringData.substring(0,stringData.length() - 1);
-                if (!stringData.contains("."))
+                if (!stringData.contains(".") && dateFormat.contains("."))
                     stringData = stringData + ".000000";
-                String microseconds = stringData.substring(stringData.indexOf(".") + 1);
+                Long microseconds = 0L;
+                if(dateFormat.contains(".")) {
+                    microseconds = Long.parseLong(stringData.substring(stringData.indexOf(".") + 1));
+                    stringData = stringData.substring(0, stringData.lastIndexOf("."));
+                    dateFormat = dateFormat.substring(0, dateFormat.lastIndexOf("."));
+                }
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormat);
                 simpleDateFormat.setCalendar(Calendar.getInstance(TimeZone.getTimeZone("UTC")));
                 Date date = simpleDateFormat.parse(stringData);
-                parsedDate = ProductData.UTC.create(date, Long.parseLong(microseconds));
+                parsedDate = ProductData.UTC.create(date, microseconds);
             } catch (ParseException e) {
                 Logger.getLogger(DateHelper.class.getName()).warning(String.format("Date not in expected format. Found %s, expected %s",
                         stringData,

@@ -21,6 +21,7 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.spot.internal.DimapSchemaHelper;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.utils.DateHelper;
 import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
 
 import java.awt.Color;
@@ -350,16 +351,7 @@ public class SpotDimapMetadata extends XmlMetadata {
                 ((currentElement = currentElement.getElement(SpotConstants.TAG_SENSOR_CONFIGURATION)) != null) &&
                 ((currentElement = currentElement.getElement(SpotConstants.TAG_TIME_STAMP)) != null)) {
             String stringData = currentElement.getAttributeString(SpotConstants.TAG_SCENE_CENTER_TIME);
-            if (stringData != null) {
-                String milliseconds = stringData.substring(stringData.indexOf(".") + 1);
-                stringData = stringData.substring(0, stringData.indexOf(".")) + ".000000";
-                try {
-                    Date date = new SimpleDateFormat(SpotConstants.UTC_DATE_FORMAT).parse(stringData);
-                    centerTime = ProductData.UTC.create(date, Long.parseLong(milliseconds));
-                } catch (ParseException pEx) {
-                    logger.warning(String.format(MISSING_ELEMENT_WARNING, SpotConstants.TAG_SCENE_CENTER_TIME));
-                }
-            }
+            centerTime = DateHelper.parseDate(stringData, SpotConstants.UTC_DATE_FORMAT);
         } else {
             logger.warning(String.format(MISSING_ELEMENT_WARNING, SpotConstants.TAG_SCENE_CENTER_TIME));
         }

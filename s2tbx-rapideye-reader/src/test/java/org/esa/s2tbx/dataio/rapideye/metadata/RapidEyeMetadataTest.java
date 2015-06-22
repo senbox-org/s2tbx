@@ -27,6 +27,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 /**
  * @author Ramona Manda
  */
@@ -76,14 +80,20 @@ public class RapidEyeMetadataTest extends TestCase {
 
     @Test
     public void testGetProductStartTime() throws Exception {
-        ProductData.UTC expected = ProductData.UTC.parse("2009-04-16 10:54:05.290", "yyyy-MM-dd HH:mm:ss");
-        assertEquals(expected.getAsDate().getTime(), metadata.getProductStartTime().getAsDate().getTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");//the SimplaDateFormat knows only miliseconds, not microseconds!
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date expectedDate = sdf.parse("2009-04-16 10:49:15.290");
+        assertEquals(expectedDate.getTime(), metadata.getProductStartTime().getAsDate().getTime());
+        assertEquals(290423, metadata.getProductStartTime().getMicroSecondsFraction());//the SimplaDateFormat knows only miliseconds, not microseconds!
     }
 
     @Test
     public void testGetProductEndTime() throws Exception {
-        ProductData.UTC expected = ProductData.UTC.parse("2009-04-16 10:53:26.244", "yyyy-MM-dd HH:mm:ss");
-        assertEquals(expected.getAsDate().getTime(), metadata.getProductEndTime().getAsDate().getTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");//the SimplaDateFormat knows only miliseconds, not microseconds!
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date expectedDate = sdf.parse("2009-04-16 10:49:22.244");
+        assertEquals(expectedDate.getTime(), metadata.getProductEndTime().getAsDate().getTime());
+        assertEquals(244296, metadata.getProductEndTime().getMicroSecondsFraction());//the SimplaDateFormat knows only miliseconds, not microseconds!
     }
 
     @Test

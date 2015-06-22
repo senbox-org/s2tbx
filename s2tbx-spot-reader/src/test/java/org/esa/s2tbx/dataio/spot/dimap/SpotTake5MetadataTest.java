@@ -24,6 +24,10 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -41,8 +45,10 @@ public class SpotTake5MetadataTest {
 
     @Test
     public void testGetDatePdv() throws Exception {
-        ProductData.UTC expected = ProductData.UTC.parse("2013-06-16 06:40:34", "yyyy-MM-dd HH:mm:ss");
-        assertEquals(expected.getAsDate().getTime(), metadata.getDatePdv().getAsDate().getTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date expected = sdf.parse("2013-06-16 06:40:34");
+        assertEquals(expected.getTime(), metadata.getDatePdv().getAsDate().getTime());
     }
 
     @Test

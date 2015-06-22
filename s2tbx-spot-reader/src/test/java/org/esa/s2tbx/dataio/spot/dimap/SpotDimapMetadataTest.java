@@ -26,6 +26,7 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -145,8 +146,11 @@ public class SpotDimapMetadataTest {
 
     @Test
     public void testGetCenterTime() throws Exception {
-        Date expected = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")).parse("2007-05-04 10:18:44.370");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");//the SimplaDateFormat knows only miliseconds, not microseconds!
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date expected = sdf.parse("2007-05-04 10:18:44.370");
         assertEquals(expected.getTime(), metadata.getCenterTime().getAsDate().getTime());
+        assertEquals(370000, metadata.getCenterTime().getMicroSecondsFraction());//the SimplaDateFormat knows only miliseconds, not microseconds!
     }
 
     @Test

@@ -27,6 +27,9 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Unit test class for Deimos Metadata
@@ -113,8 +116,10 @@ public class DeimosMetadataTest extends TestCase {
     }
 
     public void testGetCenterTime() throws Exception {
-        ProductData.UTC time = DateHelper.parseDate("2012-09-05 17:06:09", DeimosConstants.DEIMOS_DATE_FORMAT);
-        assertEquals(time.getAsDate(), metadata.getCenterTime().getAsDate());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date time = sdf.parse("2012-09-05 17:06:09");
+        assertEquals(time.getTime(), metadata.getCenterTime().getAsDate().getTime());
     }
 
     public void testGetProcessingLevel() throws Exception {
