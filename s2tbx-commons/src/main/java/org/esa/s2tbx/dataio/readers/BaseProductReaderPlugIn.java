@@ -26,19 +26,9 @@ import org.esa.snap.util.io.SnapFileFilter;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -57,6 +47,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
      */
     public BaseProductReaderPlugIn() {
         enforcer = ProductContentEnforcer.create(getMinimalPatternList(), getExclusionPatternList());
+        registerRGBProfile();
     }
 
     @Override
@@ -151,6 +142,11 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         }
         return outFile;
     }
+
+    /**
+     * Registers a RGB profile for the reader plugin.
+     */
+    protected abstract void registerRGBProfile();
 
     /**
      * Returns the list of files in a folder, up to the given depth of the folder,

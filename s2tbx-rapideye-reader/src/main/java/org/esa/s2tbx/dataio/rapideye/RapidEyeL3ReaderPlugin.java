@@ -19,6 +19,8 @@ package org.esa.s2tbx.dataio.rapideye;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.framework.dataio.ProductReader;
+import org.esa.snap.framework.datamodel.RGBImageProfile;
+import org.esa.snap.framework.datamodel.RGBImageProfileManager;
 
 import java.util.Locale;
 
@@ -59,4 +61,8 @@ public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected String[] getExclusionPatternList() { return RapidEyeConstants.NOT_L3_FILENAME_PATTERNS; }
 
+    @Override
+    protected void registerRGBProfile() {
+        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("RapidEye L3", new String[] { "red", "green", "blue" }));
+    }
 }

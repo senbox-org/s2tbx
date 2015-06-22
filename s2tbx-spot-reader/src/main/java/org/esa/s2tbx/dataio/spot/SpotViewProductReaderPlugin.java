@@ -19,6 +19,8 @@ package org.esa.s2tbx.dataio.spot;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.snap.framework.dataio.ProductReader;
+import org.esa.snap.framework.datamodel.RGBImageProfile;
+import org.esa.snap.framework.datamodel.RGBImageProfileManager;
 
 import java.util.Locale;
 
@@ -62,4 +64,8 @@ public class SpotViewProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected String[] getExclusionPatternList() { return new String[0]; }
 
+    @Override
+    protected void registerRGBProfile() {
+        RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("SPOT", new String[] { "XS1", "XS2", "XS3" }));
+    }
 }
