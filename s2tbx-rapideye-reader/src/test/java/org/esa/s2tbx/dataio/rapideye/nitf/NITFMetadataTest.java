@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * @author Ramona Manda
@@ -46,7 +47,9 @@ public class NITFMetadataTest extends TestCase {
 
     @Test
     public void testGetFileDate() throws Exception {
-        Date expectedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2010-06-09 11:57:19");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date expectedDate = sdf.parse("2010-06-09 08:57:19");
         assertEquals(expectedDate.getTime(), metadata.getFileDate().getAsDate().getTime());
     }
 

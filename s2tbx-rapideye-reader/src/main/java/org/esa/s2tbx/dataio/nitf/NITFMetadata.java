@@ -18,6 +18,7 @@ package org.esa.s2tbx.dataio.nitf;
 
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.utils.DateHelper;
 
 import java.text.ParseException;
 
@@ -47,8 +48,8 @@ public class NITFMetadata {
         MetadataElement currentElement = root.getElement(NITFFields.TAG_FILE_HEADER);
         if (currentElement != null) {
             try {
-                fileDate = ProductData.UTC.parse(currentElement.getAttributeString(NITFFields.FDT, ""), "ddHHmmss'Z'MMMyy");
-            } catch (ParseException e) {
+                fileDate = DateHelper.parseDate(currentElement.getAttributeString(NITFFields.FDT, ""), "ddHHmmss'Z'MMMyy");
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
