@@ -19,10 +19,13 @@
 
 package org.esa.s2tbx.dataio.s2;
 
+import jp2.TileLayout;
 import org.esa.s2tbx.openjpeg.OpenJpegUtils;
 import org.esa.snap.framework.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Norman Fomferra
@@ -58,4 +61,16 @@ public interface S2Config {
     short RAW_NO_DATA_THRESHOLD = DEBUG ? (short) 4 : (short) 1;
 
     String MTD_EXT = ".xml";
+
+    Map<Integer, Integer> LAYOUTMAP = new HashMap<Integer, Integer>() {
+        {
+            put(10, 0);
+            put(20, 1);
+            put(60, 2);
+        }
+    };
+
+    TileLayout[] getTileLayouts();
+
+    String getFormatName();
 }

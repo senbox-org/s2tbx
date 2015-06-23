@@ -27,7 +27,7 @@ public class MetadataReaderTest {
 
     public Object readJaxbFromStreamResource(String streamResource) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1C);
+                .newInstance(S2MetadataType.L1C);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -55,7 +55,7 @@ public class MetadataReaderTest {
 
         try {
             JAXBContext jaxbContext = JAXBContext
-                    .newInstance(MetadataType.L1C);
+                    .newInstance(S2MetadataType.L1C);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -78,7 +78,7 @@ public class MetadataReaderTest {
 
         try {
             JAXBContext jaxbContext = JAXBContext
-                    .newInstance(MetadataType.L1C);
+                    .newInstance(S2MetadataType.L1C);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             Marshaller marshaller = jaxbContext.createMarshaller();
 

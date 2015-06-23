@@ -19,6 +19,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.geotools.geometry.Envelope2D;
 
 import java.awt.Rectangle;
@@ -55,14 +56,14 @@ L1cTileInfo getL1cTileInfo(int tileIndex);
 
     public class BandInfo {
         public final int index;
-        public final S2L1bSpatialResolution resolution;
+        public final S2SpatialResolution resolution;
         public final double wavelength;
         public final double solarFlux;
         public final double wavelengthMin;
         public final double wavelengthMax;
         public final Jp2ImageInfo jp2ImageLayout;
 
-        public BandInfo(int index, S2L1bSpatialResolution resolution, double wavelength, double wavelengthMin, double wavelengthMax, double solarFlux, Jp2ImageInfo jp2ImageLayout) {
+        public BandInfo(int index, S2SpatialResolution resolution, double wavelength, double wavelengthMin, double wavelengthMax, double solarFlux, Jp2ImageInfo jp2ImageLayout) {
             this.index = index;
             this.resolution = resolution;
             this.wavelength = wavelength;

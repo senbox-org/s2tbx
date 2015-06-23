@@ -37,7 +37,15 @@ public class S2L1CGranuleMetadataFilename extends S2GranuleMetadataFilename {
     public final String absoluteOrbit;
     public final String tileNumber;
 
-    private S2L1CGranuleMetadataFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String absoluteOrbit, String tileNumber) {
+    private S2L1CGranuleMetadataFilename(String name,
+                                         String missionID,
+                                         String fileClass,
+                                         String fileCategory,
+                                         String fileSemantic,
+                                         String siteCentre,
+                                         String creationDate,
+                                         String absoluteOrbit,
+                                         String tileNumber) {
         super(name,
               missionID,
               fileClass,

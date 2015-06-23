@@ -57,11 +57,6 @@ public class S2L1CGranuleImageFilename extends S2GranuleImageFilename {
                 bandIndex);
     }
 
-    public static boolean isImageFilename(String name) {
-        return PATTERN.matcher(name).matches();
-    }
-
-
     public static S2GranuleImageFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {

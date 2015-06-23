@@ -33,59 +33,22 @@ import java.util.Locale;
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2L1BProduct20MReaderPlugIn implements ProductReaderPlugIn {
+public class Sentinel2L1BProduct20MReaderPlugIn extends Sentinel2L1BProductReaderPlugin {
 
-    @Override
-    public DecodeQualification getDecodeQualification(Object input) {
-        SystemUtils.LOG.fine("Getting decoders...");
-
-        File file = new File(input.toString());
-        DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
-        if (deco.equals(DecodeQualification.SUITABLE)) {
-            S2ProductFilename productFileName = S2ProductFilename.create(file.getName());
-            if(productFileName != null) {
-                String semantic =productFileName.fileSemantic;
-                if (semantic.contains("L1B")) {
-                    deco = DecodeQualification.INTENDED;
-                } else {
-                    deco = DecodeQualification.UNABLE;
-                }
-            }
-        }
-
-        return deco;
-    }
-
-    @Override
-    public Class[] getInputTypes() {
-        return new Class[]{String.class, File.class};
-    }
 
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader...");
-        return new Sentinel2L1BProductReader(this, false, 20);
+        return new Sentinel2L1BProductReader(this, false, 20, getReaderFactory());
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1bConfig.FORMAT_NAME+"-20M"};
-    }
-
-    @Override
-    public String[] getDefaultFileExtensions() {
-        return new String[]{S2Config.MTD_EXT};
+        return new String[]{getConfig().getFormatName()+"-20M"};
     }
 
     @Override
     public String getDescription(Locale locale) {
         return "Sentinel-2 MSI L1B 20M";
-    }
-
-    @Override
-    public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2L1bConfig.FORMAT_NAME,
-                                  getDefaultFileExtensions(),
-                                  "Sentinel-2 MSI L1B product or tile");
     }
 }

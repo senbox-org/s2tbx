@@ -22,7 +22,7 @@ public class MetadataTest1B {
         Level1B_User_Product o = null;
 
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1B);
+                .newInstance(S2MetadataType.L1B);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -41,7 +41,7 @@ public class MetadataTest1B {
         Level1B_Granule o = null;
 
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1B);
+                .newInstance(S2MetadataType.L1B);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 

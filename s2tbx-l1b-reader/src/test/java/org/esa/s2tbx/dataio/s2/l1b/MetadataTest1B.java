@@ -4,7 +4,7 @@ package org.esa.s2tbx.dataio.s2.l1b;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import junit.framework.Assert;
-import org.esa.s2tbx.dataio.s2.MetadataType;
+import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
@@ -20,7 +20,7 @@ public class MetadataTest1B {
     public Level1B_User_Product getUserProduct() throws Exception
     {
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1B);
+                .newInstance(S2MetadataType.L1B);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         InputStream stream = getClass().getResourceAsStream("S2A_OPER_MTD_SAFL1B_PDMC_20140926T120000_R069_V20130707T171925_20130707T172037.xml");
@@ -35,7 +35,7 @@ public class MetadataTest1B {
     {
 
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1B);
+                .newInstance(S2MetadataType.L1B);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         InputStream stream = getClass().getResourceAsStream("S2A_OPER_MTD_L1B_GR_MPS__20140926T120000_S20130707T171927_D06.xml");

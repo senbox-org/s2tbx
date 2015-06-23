@@ -5,7 +5,7 @@ import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_datastrip_metadata.
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import junit.framework.Assert;
-import org.esa.s2tbx.dataio.s2.MetadataType;
+import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
@@ -28,7 +28,7 @@ public class MetadataReaderTest {
 
     public Object readJaxbFromStreamResource(String streamResource) throws JAXBException {
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1B);
+                .newInstance(S2MetadataType.L1B);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         InputStream stream = getClass().getResourceAsStream(streamResource);
@@ -54,7 +54,7 @@ public class MetadataReaderTest {
 
         try {
             JAXBContext jaxbContext = JAXBContext
-                    .newInstance(MetadataType.L1B);
+                    .newInstance(S2MetadataType.L1B);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -76,7 +76,7 @@ public class MetadataReaderTest {
 
         try {
             JAXBContext jaxbContext = JAXBContext
-                    .newInstance(MetadataType.L1B);
+                    .newInstance(S2MetadataType.L1B);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             Marshaller marshaller = jaxbContext.createMarshaller();
 

@@ -21,6 +21,8 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.snap.util.SystemUtils;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.CRS;
@@ -41,11 +43,7 @@ import java.util.Map;
 /**
  * @author Norman Fomferra
  */
-public class L1cSceneDescription {
-
-    private static final double PIXEL_RESOLUTION_10M = S2SpatialResolution.R10M.resolution;
-    private static final int TILE_SIZE_10M = S2L1CConfig.L1C_TILE_LAYOUTS[0].width;
-    private static final double TILE_RESOLUTION_10M = PIXEL_RESOLUTION_10M * TILE_SIZE_10M;
+public class L1cSceneDescription extends S2SceneDescription {
 
     private final TileInfo[] tileInfos;
     private final Envelope2D sceneEnvelope;
@@ -75,7 +73,7 @@ public class L1cSceneDescription {
         }
     }
 
-    public static L1cSceneDescription create(L1cMetadata header, L1cMetadata.Tile.idGeom index) {
+    public static L1cSceneDescription create(L1cMetadata header, L1cMetadata.Tile.idGeom index, S2Config config) {
         List<L1cMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
@@ -136,10 +134,16 @@ public class L1cSceneDescription {
             tileInfos[i] = new TileInfo(i, tile.id, tileEnvelope, rectangle);
         }
 
-        return new L1cSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index);
+        return new L1cSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index, config);
     }
 
-    private L1cSceneDescription(TileInfo[] tileInfos, Envelope2D sceneEnvelope, Rectangle sceneRectangle, L1cMetadata.Tile.idGeom geometry) {
+    private L1cSceneDescription(TileInfo[] tileInfos,
+                                Envelope2D sceneEnvelope,
+                                Rectangle sceneRectangle,
+                                L1cMetadata.Tile.idGeom geometry,
+                                S2Config config) {
+        super(config);
+
         this.tileInfos = tileInfos;
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;
@@ -185,14 +189,6 @@ public class L1cSceneDescription {
 
     public Rectangle getTileRectangle(int tileIndex) {
         return tileInfos[tileIndex].rectangle;
-    }
-
-    public int getTileGridWidth() {
-        return (int) Math.round(sceneEnvelope.getWidth() / TILE_RESOLUTION_10M);
-    }
-
-    public int getTileGridHeight() {
-        return (int) Math.round(sceneEnvelope.getHeight() / TILE_RESOLUTION_10M);
     }
 
     public BufferedImage createTilePicture(int width) {

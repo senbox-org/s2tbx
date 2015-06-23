@@ -1,8 +1,8 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import org.esa.s2tbx.dataio.s2.l2a.structure.S2ProductStructure;
-import org.esa.s2tbx.dataio.s2.l2a.structure.S2ProductStructureFactory;
-import org.esa.s2tbx.dataio.s2.l2a.structure.StructuralItemMatcher;
+import org.esa.s2tbx.dataio.s2.structure.S2ProductStructure;
+import org.esa.s2tbx.dataio.s2.structure.S2ProductStructureFactory;
+import org.esa.s2tbx.dataio.s2.structure.StructuralItemMatcher;
 import org.junit.Before;
 import org.junit.Test;
 

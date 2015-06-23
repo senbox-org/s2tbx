@@ -53,14 +53,12 @@ public class S2DatastripDirFilename {
         this.processingBaseline = processingBaseline;
     }
 
-    public S2DatastripFilename getDatastripFilename(String fileCategory) {
+    public String getFileName(String fileCategory) {
         String defaultFileCategory = "MTD_";
         if (fileCategory != null) {
             defaultFileCategory = fileCategory;
         }
-
-        String tmp = String.format("%s_%s_%s%s_%s_%s_%s.xml", missionID, fileClass, defaultFileCategory, fileSemantic, siteCentre, creationDate, applicabilityStart);
-        return S2DatastripFilename.create(tmp);
+        return  String.format("%s_%s_%s%s_%s_%s_%s.xml", missionID, fileClass, defaultFileCategory, fileSemantic, siteCentre, creationDate, applicabilityStart);
     }
 
     public static S2DatastripDirFilename create(String fileName, String fileCategory) {

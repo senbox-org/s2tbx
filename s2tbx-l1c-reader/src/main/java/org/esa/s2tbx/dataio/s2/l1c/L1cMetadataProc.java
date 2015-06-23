@@ -27,9 +27,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math3.util.Pair;
-import org.esa.s2tbx.dataio.s2.MetadataType;
+import org.esa.s2tbx.dataio.s2.S2MetadataProc;
+import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CDatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
 import org.esa.snap.util.SystemUtils;
 import org.openjpeg.StackTraceUtils;
@@ -48,14 +50,14 @@ import java.net.URLClassLoader;
 import java.util.*;
 
 /**
- * Created by opicas-p on 24/06/2014.
+ * @author  opicas-p
  */
-public class L1cMetadataProc {
+public class L1cMetadataProc extends S2MetadataProc {
 
     public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
         String subStr = "s2tbx-reader";
 
-        ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
+        ClassLoader s2c = Sentinel2L1CProductReader.class.getClassLoader();
         URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
 
         URL[] theURLs = s2ClassLoader.getURLs();
@@ -89,8 +91,8 @@ public class L1cMetadataProc {
 
     @Deprecated
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
-        ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
+        ClassLoader s2c = Sentinel2L1CProductReader.class.getClassLoader();
+        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1C + S2MetadataType.SEPARATOR + S2MetadataType.L1B + S2MetadataType.SEPARATOR + S2MetadataType.L2A, s2c);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         Object ob = unmarshaller.unmarshal(stream);
@@ -100,8 +102,8 @@ public class L1cMetadataProc {
     }
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
-        ClassLoader s2c = Sentinel2ProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1C + MetadataType.SEPARATOR + MetadataType.L1B + MetadataType.SEPARATOR + MetadataType.L1A, s2c);
+        ClassLoader s2c = Sentinel2L1CProductReader.class.getClassLoader();
+        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1C + S2MetadataType.SEPARATOR + S2MetadataType.L1B + S2MetadataType.SEPARATOR + S2MetadataType.L2A, s2c);
         return jaxbContext;
     }
 
@@ -214,7 +216,8 @@ public class L1cMetadataProc {
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-        return dirDatastrip.getDatastripFilename(null);
+        String fileName = dirDatastrip.getFileName(null);
+        return S2L1CDatastripFilename.create(fileName);
     }
 
     public static S2DatastripDirFilename getDatastripDir(Level1C_User_Product product) {

@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -33,7 +32,7 @@ public class MetadataTest {
         Level1C_User_Product o = null;
 
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1C);
+                .newInstance(S2MetadataType.L1C);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -52,7 +51,7 @@ public class MetadataTest {
         Level1C_Tile o = null;
 
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1C);
+                .newInstance(S2MetadataType.L1C);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 

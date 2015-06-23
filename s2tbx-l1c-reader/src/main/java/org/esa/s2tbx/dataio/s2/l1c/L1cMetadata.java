@@ -21,9 +21,11 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
+import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
@@ -67,7 +69,7 @@ import java.util.stream.Collectors;
  *
  * @author Norman Fomferra
  */
-public class L1cMetadata {
+public class L1cMetadata extends S2Metadata {
 
     static Element NULL_ELEM = new Element("null") {
     };
@@ -89,9 +91,7 @@ public class L1cMetadata {
         AnglesGrid[] viewingIncidenceAnglesGrids;
         MaskFilename[] maskFilenames;
 
-        public static enum idGeom {G10M, G20M, G60M}
-
-        ;
+        public enum idGeom {G10M, G20M, G60M}
 
         public Tile(String id) {
             this.id = id;
@@ -284,8 +284,8 @@ public class L1cMetadata {
     private JAXBContext context;
     private Unmarshaller unmarshaller;
 
-    public static L1cMetadata parseHeader(File file) throws JDOMException, IOException, UnmarshalException {
-        return new L1cMetadata(new FileInputStream(file), file, file.getParent());
+    public static L1cMetadata parseHeader(File file, TileLayout[] tileLayouts) throws JDOMException, IOException, UnmarshalException {
+        return new L1cMetadata(new FileInputStream(file), file, file.getParent(), tileLayouts);
     }
 
     public List<Tile> getTileList() {
@@ -309,7 +309,9 @@ public class L1cMetadata {
         return metadataElement;
     }
 
-    private L1cMetadata(InputStream stream, File file, String parent) throws JDOMException, UnmarshalException {
+    private L1cMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts) throws JDOMException, UnmarshalException {
+        super(tileLayouts);
+
         try {
             context = L1cMetadataProc.getJaxbContext();
             unmarshaller = context.createUnmarshaller();

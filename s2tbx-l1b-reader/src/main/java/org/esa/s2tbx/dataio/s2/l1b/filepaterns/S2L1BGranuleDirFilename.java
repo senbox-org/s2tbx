@@ -23,7 +23,6 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleMetadataFilename;
 import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,10 +64,6 @@ public class S2L1BGranuleDirFilename extends S2GranuleDirFilename {
         this.detectorId = detectorId;
     }
 
-    public static boolean isGranuleFilename(String name) {
-        return PATTERN.matcher(name).matches();
-    }
-
     public String getDetectorId() {
         return detectorId;
     }
@@ -82,30 +77,12 @@ public class S2L1BGranuleDirFilename extends S2GranuleDirFilename {
         String newBandId = bandId;
 
         if (newBandId.length() == 2) {
-            newBandId = new String(bandId.charAt(0) + "0" + bandId.charAt(1));
+            newBandId = bandId.charAt(0) + "0" + bandId.charAt(1);
         }
 
         String tmp = String.format("%s_%s_%s%s_%s_%s_S%s_%s_%s.jp2", missionID, fileClass, fileCategory, fileSemantic, siteCentre, creationDate, startDate, detectorId, newBandId);
         return S2L1BGranuleImageFilename.create(tmp);
     }
-
-    public S2GranuleImageFilename getImageFilenameByDetector(String detectorId, String bandId) {
-        String newDetectorId = detectorId;
-
-        if (newDetectorId.length() == 2) {
-            newDetectorId = new String(detectorId.charAt(0) + "0" + detectorId.charAt(1));
-        }
-
-        String newBandId = bandId;
-
-        if (newBandId.length() == 2) {
-            newBandId = new String(bandId.charAt(0) + "0" + bandId.charAt(1));
-        }
-
-        String tmp = String.format("%s_%s_%s%s_%s_%s_%s%s_%s.jp2", missionID, fileClass, fileCategory, fileSemantic, siteCentre, creationDate, startDate, newDetectorId, newBandId);
-        return S2L1BGranuleImageFilename.create(tmp);
-    }
-
 
 
     public static S2GranuleDirFilename create(String fileName) {

@@ -30,15 +30,18 @@ import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZA
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
+import jp2.TileLayout;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.s2.MetadataType;
+import org.esa.s2tbx.dataio.s2.S2MetadataProc;
+import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BDatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.SystemUtils;
@@ -69,7 +72,7 @@ import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
 /**
  * @author opicas-p
  */
-public class L1bMetadataProc {
+public class L1bMetadataProc extends S2MetadataProc {
 
     public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
         String subStr = "s2tbx-l1b-reader";
@@ -129,7 +132,7 @@ public class L1bMetadataProc {
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
 
         ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1B, s2c);
+        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1B, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
@@ -142,7 +145,7 @@ public class L1bMetadataProc {
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
 
         ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1B, s2c);
+        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1B, s2c);
         return jaxbContext;
     }
 
@@ -283,7 +286,8 @@ public class L1bMetadataProc {
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-        return dirDatastrip.getDatastripFilename(null);
+        String fileName = dirDatastrip.getFileName(null);
+        return S2L1BDatastripFilename.create(fileName);
     }
 
     public static S2DatastripDirFilename getDatastripDir(Level1B_User_Product product) {
@@ -327,8 +331,9 @@ public class L1bMetadataProc {
         return thePoints;
     }
 
-    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule) {
-        Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<Integer, L1bMetadata.TileGeometry>();
+    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule,
+                                                                              TileLayout[] tileLayouts) {
+        Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<>();
 
         List<A_GRANULE_DIMENSIONS.Size> sizes = granule.getGeometric_Info().getGranule_Dimensions().getSize();
         int pos = granule.getGeometric_Info().getGranule_Position().getPOSITION();
@@ -341,8 +346,8 @@ public class L1bMetadataProc {
             L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.numCols = gpos.getNCOLS();
 
-            tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
-            if ((gpos.getNROWS() - (pos / ratio)) < S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height) {
+            tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), tileLayouts[S2Config.LAYOUTMAP.get(resolution)].height);
+            if ((gpos.getNROWS() - (pos / ratio)) < tileLayouts[S2Config.LAYOUTMAP.get(resolution)].height) {
                 SystemUtils.LOG.log(Level.parse(S2Config.LOG_DEBUG), "Test if we need extra processing here");
             }
 

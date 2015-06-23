@@ -19,7 +19,9 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aProductFilename;
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2ReaderFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
@@ -34,14 +36,25 @@ import java.util.Locale;
  */
 public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
 
+    private S2ReaderFactory readerFactory = new S2L2AReaderFactory();
+    private final S2Config config = readerFactory.getConfigInstance();
+
+    public S2ReaderFactory getReaderFactory() {
+        return readerFactory;
+    }
+
+    public S2Config getConfig() {
+        return config;
+    }
+
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         SystemUtils.LOG.fine("Getting decoders...");
 
         File file = new File(input.toString());
-        DecodeQualification deco = S2L2aProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
+        DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
         if (deco.equals(DecodeQualification.SUITABLE)) {
-            S2L2aProductFilename productFilename = S2L2aProductFilename.create(file.getName());
+            S2ProductFilename productFilename = S2ProductFilename.create(file.getName());
             if (productFilename!= null && productFilename.fileSemantic.contains("L2A")) {
                 deco = DecodeQualification.INTENDED;
             } else {
@@ -61,17 +74,17 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader...");
 
-        return new Sentinel2L2AProductReader(this, false);
+        return new Sentinel2L2AProductReader(this, false, getReaderFactory());
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L2AConfig.FORMAT_NAME};
+        return new String[]{getConfig().getFormatName()};
     }
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return new String[]{S2L2AConfig.MTD_EXT};
+        return new String[]{S2Config.MTD_EXT};
     }
 
     @Override
@@ -81,7 +94,7 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2L2AConfig.FORMAT_NAME,
+        return new SnapFileFilter(getConfig().getFormatName(),
                                   getDefaultFileExtensions(),
                                   "Sentinel-2 MSI L2A product or tile");
     }

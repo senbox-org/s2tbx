@@ -1,6 +1,5 @@
 /*
  *
- * Copyright (C) 2013-2014 Brockmann Consult GmbH (info@brockmann-consult.de)
  * Copyright (C) 2014-2015 CS SI
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -20,6 +19,7 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2ReaderFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
@@ -31,9 +31,21 @@ import java.io.File;
 import java.util.Locale;
 
 /**
- * @author Norman Fomferra
+ * @author nducoin
  */
-public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
+public class Sentinel2L1BProductReaderPlugin implements ProductReaderPlugIn {
+
+     private S2ReaderFactory readerFactory = new S2L1bReaderFactory();
+    private final S2Config config = readerFactory.getConfigInstance();
+
+    public S2ReaderFactory getReaderFactory() {
+        return readerFactory;
+    }
+
+    public S2Config getConfig() {
+        return config;
+    }
+
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -62,30 +74,31 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
     }
 
     @Override
+    public String[] getDefaultFileExtensions() {
+        return new String[]{S2Config.MTD_EXT};
+    }
+
+
+    @Override
+    public SnapFileFilter getProductFileFilter() {
+        return new SnapFileFilter(config.getFormatName(),
+                                  getDefaultFileExtensions(),
+                                  "Sentinel-2 MSI L1B product or tile");
+    }
+
+    @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader...");
-        return new Sentinel2L1BProductReader(this, false);
+        return new Sentinel2L1BProductReader(this, false, getReaderFactory());
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1bConfig.FORMAT_NAME};
-    }
-
-    @Override
-    public String[] getDefaultFileExtensions() {
-        return new String[]{S2Config.MTD_EXT};
+        return new String[]{getConfig().getFormatName()};
     }
 
     @Override
     public String getDescription(Locale locale) {
         return "Sentinel-2 MSI L1B Multisize";
-    }
-
-    @Override
-    public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2L1bConfig.FORMAT_NAME,
-                                  getDefaultFileExtensions(),
-                                  "Sentinel-2 MSI L1B product or tile");
     }
 }

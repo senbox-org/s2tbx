@@ -26,13 +26,12 @@ import jp2.CodeStreamUtils;
 import jp2.TileLayout;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.snap.jai.ResolutionLevel;
-import org.esa.snap.jai.SingleBandedOpImage;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.S2TileOpImage;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.ImageUtils;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
 import org.openjpeg.CommandOutput;
 import org.openjpeg.JpegUtils;
@@ -67,14 +66,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.s2.l1b.S2L1bConfig.*;
-
 // todo - better log problems during read process, see {@report "Problem detected..."} code marks
 
 /**
  * @author Norman Fomferra
  */
-class L1bTileOpImage extends SingleBandedOpImage {
+class L1bTileOpImage extends S2TileOpImage {
 
     private static class Jp2File {
         File file;
@@ -96,8 +93,9 @@ class L1bTileOpImage extends SingleBandedOpImage {
                               File cacheDir,
                               Point imagePos,
                               TileLayout l1bTileLayout,
+                              TileLayout[] tileLayouts,
                               MultiLevelModel imageModel,
-                              S2L1bSpatialResolution spatialResolution,
+                              S2SpatialResolution spatialResolution,
                               int level) {
 
         Assert.notNull(cacheDir, "cacheDir");
@@ -107,15 +105,14 @@ class L1bTileOpImage extends SingleBandedOpImage {
 
         if (imageFile != null) {
             SystemUtils.LOG.fine("Image layout: " + l1bTileLayout);
-            PlanarImage opImage = new L1bTileOpImage(imageFile, cacheDir, imagePos, l1bTileLayout, imageModel, level);
 
-            return opImage;
+            return new L1bTileOpImage(imageFile, cacheDir, imagePos, l1bTileLayout, imageModel, level);
         } else {
             SystemUtils.LOG.warning("Using empty image !");
 
-            int targetWidth = getSizeAtResolutionLevel(L1B_TILE_LAYOUTS[0].width, level);
-            int targetHeight = getSizeAtResolutionLevel(L1B_TILE_LAYOUTS[0].height, level);
-            Dimension targetTileDim = getTileDimAtResolutionLevel(L1B_TILE_LAYOUTS[0].tileWidth, L1B_TILE_LAYOUTS[0].tileHeight, level);
+            int targetWidth = getSizeAtResolutionLevel(tileLayouts[0].width, level);
+            int targetHeight = getSizeAtResolutionLevel(tileLayouts[0].height, level);
+            Dimension targetTileDim = getTileDimAtResolutionLevel(tileLayouts[0].tileWidth,tileLayouts[0].tileHeight, level);
             SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
@@ -125,7 +122,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         }
     }
 
-    static PlanarImage createGenericScaledImage(PlanarImage sourceImage, Envelope2D sceneEnvelope, S2L1bSpatialResolution resolution, int level, boolean forceResize) {
+    static PlanarImage createGenericScaledImage(PlanarImage sourceImage, Envelope2D sceneEnvelope, S2SpatialResolution resolution, int level, boolean forceResize) {
         SystemUtils.LOG.fine("Asking for scaled mosaic image: " + resolution.toString());
         SystemUtils.LOG.fine("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
         SystemUtils.LOG.fine("TargetImage:" + sceneEnvelope.getWidth() + ", " + sceneEnvelope.getHeight());
@@ -185,13 +182,10 @@ class L1bTileOpImage extends SingleBandedOpImage {
                    TileLayout l1bTileLayout,
                    MultiLevelModel imageModel,
                    int level) {
-        super(S2Config.SAMPLE_DATA_BUFFER_TYPE,
-              imagePos,
-              l1bTileLayout.width,
-              l1bTileLayout.height,
-              getTileDimAtResolutionLevel(l1bTileLayout.tileWidth, l1bTileLayout.tileHeight, level),
-              null,
-              ResolutionLevel.create(imageModel, level));
+        super(imagePos,
+              l1bTileLayout,
+              imageModel,
+              level);
 
         Assert.notNull(imageFile, "imageFile");
         Assert.notNull(cacheDir, "cacheDir");
@@ -201,8 +195,8 @@ class L1bTileOpImage extends SingleBandedOpImage {
         this.imageFile = imageFile;
         this.cacheDir = cacheDir;
         this.l1bTileLayout = l1bTileLayout;
-        this.openFiles = new HashMap<File, Jp2File>();
-        this.locks = new HashMap<File, Object>();
+        this.openFiles = new HashMap<>();
+        this.locks = new HashMap<>();
         this.logger = SystemUtils.LOG;
     }
 
@@ -216,15 +210,15 @@ class L1bTileOpImage extends SingleBandedOpImage {
         final int tileX = destRect.x / tileWidth;
         final int tileY = destRect.y / tileHeight;
 
-        int realInternalJpegIndex = l1bTileLayout.numXTiles * l1bTileLayout.numYTiles;
 
         if (tileWidth * tileHeight != tileData.length) {
             throw new IllegalStateException(String.format("tileWidth (=%d) * tileHeight (=%d) != tileData.length (=%d)",
                                                           tileWidth, tileHeight, tileData.length));
         }
 
-        TileLayout myLayout = null;
+        TileLayout myLayout;
 
+        int realInternalJpegIndex;
         try {
             myLayout = CodeStreamUtils.getTileLayout(S2Config.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener(), S2Config.NODUMP);
             realInternalJpegIndex = myLayout.numXTiles * myLayout.numYTiles;
@@ -233,9 +227,9 @@ class L1bTileOpImage extends SingleBandedOpImage {
             return;
         }
 
-        Set<TileLayout> typeTiles = new HashSet<TileLayout>();
-        Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
-        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
+        Set<TileLayout> typeTiles = new HashSet<>();
+        Collections.addAll(typeTiles, l1bTileLayout);
+        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, l1bTileLayout);
 
         if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
             logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
@@ -308,7 +302,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = l1bTileLayout.numXTiles * jp2TileY + jp2TileX;
 
-        ProcessBuilder builder = null;
+        ProcessBuilder builder;
         if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
             String outputFileName = outputFile.getPath();

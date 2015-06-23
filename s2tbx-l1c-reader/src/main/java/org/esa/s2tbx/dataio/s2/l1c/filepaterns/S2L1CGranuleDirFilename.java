@@ -63,10 +63,6 @@ public class S2L1CGranuleDirFilename extends S2GranuleDirFilename {
         this.tileNumber = tileNumber;
     }
 
-    public static boolean isGranuleFilename(String name) {
-        return PATTERN.matcher(name).matches();
-    }
-
     public S2GranuleMetadataFilename getMetadataFilename() {
         String tmp = String.format("%s_%s_%s%s_%s_%s%s%s.xml", missionID, fileClass, "MTD_", fileSemantic, siteCentre, creationDate, absoluteOrbit, tileNumber);
         return S2L1CGranuleMetadataFilename.create(tmp);

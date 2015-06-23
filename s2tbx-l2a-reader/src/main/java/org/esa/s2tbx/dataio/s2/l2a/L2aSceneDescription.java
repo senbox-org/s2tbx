@@ -21,8 +21,9 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
@@ -42,11 +43,7 @@ import java.util.Map;
 /**
  * @author Norman Fomferra
  */
-public class L2aSceneDescription {
-
-    private static final double PIXEL_RESOLUTION_10M = S2SpatialResolution.R10M.resolution;
-    private static final int TILE_SIZE_10M = S2L2AConfig.L2A_TILE_LAYOUTS[0].width;
-    private static final double TILE_RESOLUTION_10M = PIXEL_RESOLUTION_10M * TILE_SIZE_10M;
+public class L2aSceneDescription extends S2SceneDescription {
 
     private final TileInfo[] tileInfos;
     private final Envelope2D sceneEnvelope;
@@ -61,13 +58,11 @@ public class L2aSceneDescription {
     private static class TileInfo {
         private final int index;
         private final String id;
-        private final Envelope2D envelope;
         private final Rectangle rectangle;
 
-        public TileInfo(int index, String id, Envelope2D envelope, Rectangle rectangle) {
+        public TileInfo(int index, String id, Rectangle rectangle) {
             this.index = index;
             this.id = id;
-            this.envelope = envelope;
             this.rectangle = rectangle;
         }
 
@@ -76,7 +71,7 @@ public class L2aSceneDescription {
         }
     }
 
-    public static L2aSceneDescription create(L2aMetadata header, L2aMetadata.Tile.idGeom index) {
+    public static L2aSceneDescription create(L2aMetadata header, L2aMetadata.Tile.idGeom index, S2Config config) {
         List<L2aMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
@@ -110,7 +105,7 @@ public class L2aSceneDescription {
             } else {
                 sceneEnvelope.add(envelope);
             }
-            tileInfos[i] = new TileInfo(i, tile.id, envelope, new Rectangle());
+            tileInfos[i] = new TileInfo(i, tile.id, new Rectangle());
         }
 
         if (sceneEnvelope == null) {
@@ -134,18 +129,24 @@ public class L2aSceneDescription {
             } else {
                 sceneBounds.add(rectangle);
             }
-            tileInfos[i] = new TileInfo(i, tile.id, tileEnvelope, rectangle);
+            tileInfos[i] = new TileInfo(i, tile.id, rectangle);
         }
 
-        return new L2aSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index);
+        return new L2aSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index, config);
     }
 
-    private L2aSceneDescription(TileInfo[] tileInfos, Envelope2D sceneEnvelope, Rectangle sceneRectangle, L2aMetadata.Tile.idGeom geometry) {
+    private L2aSceneDescription(TileInfo[] tileInfos,
+                                Envelope2D sceneEnvelope,
+                                Rectangle sceneRectangle,
+                                L2aMetadata.Tile.idGeom geometry,
+                                S2Config config) {
+        super(config);
+
         this.tileInfos = tileInfos;
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;
         this.geometry = geometry;
-        this.tileInfoMap = new HashMap<String, TileInfo>();
+        this.tileInfoMap = new HashMap<>();
         for (TileInfo tileInfo : tileInfos) {
             tileInfoMap.put(tileInfo.id, tileInfo);
         }
@@ -159,9 +160,6 @@ public class L2aSceneDescription {
         return sceneEnvelope;
     }
 
-    public int getTileCount() {
-        return tileInfos.length;
-    }
 
     public String[] getTileIds() {
         final String[] tileIds = new String[tileInfos.length];
@@ -176,67 +174,8 @@ public class L2aSceneDescription {
         return tileInfo != null ? tileInfo.index : -1;
     }
 
-    public String getTileId(int tileIndex) {
-        return tileInfos[tileIndex].id;
-    }
-
-    public Envelope2D getTileEnvelope(int tileIndex) {
-        return tileInfos[tileIndex].envelope;
-    }
-
     public Rectangle getTileRectangle(int tileIndex) {
         return tileInfos[tileIndex].rectangle;
-    }
-
-    public int getTileGridWidth() {
-        return (int) Math.round(sceneEnvelope.getWidth() / TILE_RESOLUTION_10M);
-    }
-
-    public int getTileGridHeight() {
-        return (int) Math.round(sceneEnvelope.getHeight() / TILE_RESOLUTION_10M);
-    }
-
-    public BufferedImage createTilePicture(int width) {
-
-        Color[] colors = new Color[]{
-                Color.GREEN,
-                Color.RED,
-                Color.BLUE,
-                Color.YELLOW};
-
-        double scale = width / sceneRectangle.getWidth();
-        int height = (int) Math.round(sceneRectangle.getHeight() * scale);
-
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics = image.createGraphics();
-        graphics.scale(scale, scale);
-        graphics.translate(-sceneRectangle.getX(), -sceneRectangle.getY());
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        graphics.setPaint(Color.WHITE);
-        graphics.fill(sceneRectangle);
-        graphics.setStroke(new BasicStroke(100F));
-        graphics.setFont(new Font("Arial", Font.PLAIN, 800));
-
-        for (int i = 0; i < tileInfos.length; i++) {
-            Rectangle rect = tileInfos[i].rectangle;
-            graphics.setPaint(addAlpha(colors[i % colors.length].brighter(), 100));
-            graphics.fill(rect);
-        }
-        for (int i = 0; i < tileInfos.length; i++) {
-            Rectangle rect = tileInfos[i].rectangle;
-            graphics.setPaint(addAlpha(colors[i % colors.length].darker(), 100));
-            graphics.draw(rect);
-            graphics.setPaint(colors[i % colors.length].darker().darker());
-            graphics.drawString("Tile " + (i + 1) + ": " + tileInfos[i].id,
-                                rect.x + 1200F,
-                                rect.y + 2200F);
-        }
-        return image;
-    }
-
-    private static Color addAlpha(Color color, int alpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 
     public String toString() {

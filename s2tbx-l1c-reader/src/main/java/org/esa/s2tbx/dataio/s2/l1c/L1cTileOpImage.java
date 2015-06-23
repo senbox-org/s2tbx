@@ -26,8 +26,8 @@ import jp2.CodeStreamUtils;
 import jp2.TileLayout;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.snap.jai.ResolutionLevel;
-import org.esa.snap.jai.SingleBandedOpImage;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.S2TileOpImage;
 import org.esa.snap.util.ImageUtils;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
@@ -66,7 +66,7 @@ import java.util.logging.Logger;
 /**
  * @author Norman Fomferra
  */
-class L1cTileOpImage extends SingleBandedOpImage {
+class L1cTileOpImage extends S2TileOpImage  {
 
     private static class Jp2File {
         File file;
@@ -88,6 +88,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
                               File cacheDir,
                               Point imagePos,
                               TileLayout l1cTileLayout,
+                              TileLayout[] tileLayouts,
                               MultiLevelModel imageModel,
                               S2SpatialResolution spatialResolution,
                               int level) {
@@ -99,15 +100,14 @@ class L1cTileOpImage extends SingleBandedOpImage {
 
         if (imageFile != null) {
             SystemUtils.LOG.fine("Image layout: " + l1cTileLayout);
-            PlanarImage opImage = new L1cTileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
 
-            return opImage;
+            return new L1cTileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
         } else {
             SystemUtils.LOG.fine("Using empty image !");
 
-            int targetWidth = getSizeAtResolutionLevel(S2L1CConfig.L1C_TILE_LAYOUTS[0].width, level);
-            int targetHeight = getSizeAtResolutionLevel(S2L1CConfig.L1C_TILE_LAYOUTS[0].height, level);
-            Dimension targetTileDim = getTileDimAtResolutionLevel(S2L1CConfig.L1C_TILE_LAYOUTS[0].tileWidth, S2L1CConfig.L1C_TILE_LAYOUTS[0].tileHeight, level);
+            int targetWidth = getSizeAtResolutionLevel(tileLayouts[0].width, level);
+            int targetHeight = getSizeAtResolutionLevel(tileLayouts[0].height, level);
+            Dimension targetTileDim = getTileDimAtResolutionLevel(tileLayouts[0].tileWidth, tileLayouts[0].tileHeight, level);
             SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
@@ -185,13 +185,10 @@ class L1cTileOpImage extends SingleBandedOpImage {
                    TileLayout l1cTileLayout,
                    MultiLevelModel imageModel,
                    int level) {
-        super(S2Config.SAMPLE_DATA_BUFFER_TYPE,
-              imagePos,
-              l1cTileLayout.width,
-              l1cTileLayout.height,
-              getTileDimAtResolutionLevel(l1cTileLayout.tileWidth, l1cTileLayout.tileHeight, level),
-              null,
-              ResolutionLevel.create(imageModel, level));
+        super(imagePos,
+              l1cTileLayout,
+              imageModel,
+              level);
 
         Assert.notNull(imageFile, "imageFile");
         Assert.notNull(cacheDir, "cacheDir");
@@ -201,8 +198,8 @@ class L1cTileOpImage extends SingleBandedOpImage {
         this.imageFile = imageFile;
         this.cacheDir = cacheDir;
         this.l1cTileLayout = l1cTileLayout;
-        this.openFiles = new HashMap<File, Jp2File>();
-        this.locks = new HashMap<File, Object>();
+        this.openFiles = new HashMap<>();
+        this.locks = new HashMap<>();
         this.logger = SystemUtils.LOG;
     }
 
@@ -289,7 +286,7 @@ class L1cTileOpImage extends SingleBandedOpImage {
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = l1cTileLayout.numXTiles * jp2TileY + jp2TileX;
 
-        ProcessBuilder builder = null;
+        ProcessBuilder builder;
         if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
             String outputFileName = outputFile.getPath();

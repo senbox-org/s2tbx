@@ -24,9 +24,11 @@ import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_HEADER
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_datastrip_metadata.Level1B_DataStrip;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
+import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -36,7 +38,6 @@ import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
@@ -70,7 +71,8 @@ import java.util.logging.Logger;
  *
  * @author Norman Fomferra
  */
-public class L1bMetadata {
+public class L1bMetadata extends S2Metadata {
+
 
     public String getCrs() {
         return crs;
@@ -186,8 +188,8 @@ public class L1bMetadata {
     private JAXBContext context;
     private Unmarshaller unmarshaller;
 
-    public static L1bMetadata parseHeader(File file) throws JDOMException, IOException {
-        return new L1bMetadata(new FileInputStream(file), file, file.getParent());
+    public static L1bMetadata parseHeader(File file, TileLayout[] tileLayouts) throws JDOMException, IOException {
+        return new L1bMetadata(new FileInputStream(file), file, file.getParent(), tileLayouts);
     }
 
     public List<Tile> getTileList() {
@@ -203,7 +205,9 @@ public class L1bMetadata {
         return metadataElement;
     }
 
-    private L1bMetadata(InputStream stream, File file, String parent) throws DataConversionException {
+    private L1bMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts) throws DataConversionException {
+        super(tileLayouts);
+
         try {
             context = L1bMetadataProc.getJaxbContext();
             unmarshaller = context.createUnmarshaller();
@@ -232,7 +236,8 @@ public class L1bMetadata {
     }
 
 
-    private void initProduct(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+    private void initProduct(InputStream stream, File file, String parent, Object casted
+                             ) throws IOException, JAXBException, JDOMException {
         Level1B_User_Product product = (Level1B_User_Product) casted;
         productCharacteristics = L1bMetadataProc.getProductOrganization(product);
 
@@ -269,7 +274,7 @@ public class L1bMetadata {
             Object acasted = ((JAXBElement) aob).getValue();
 
             Level1B_Granule aGranule = (Level1B_Granule) acasted;
-            Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule);
+            Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getTileLayouts());
 
             Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
 
@@ -342,7 +347,7 @@ public class L1bMetadata {
 
         {
             Level1B_Granule aGranule = product;
-            Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule);
+            Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getTileLayouts());
 
             Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
 

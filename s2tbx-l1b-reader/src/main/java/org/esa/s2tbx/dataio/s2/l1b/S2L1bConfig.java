@@ -20,6 +20,7 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
 import jp2.TileLayout;
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.s2tbx.openjpeg.OpenJpegUtils;
 
@@ -32,27 +33,27 @@ import java.util.Set;
 /**
  * @author Norman Fomferra
  */
-public interface S2L1bConfig {
+public class S2L1bConfig implements S2Config {
 
     //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
     //todo use classes from jp2 package to read the data
-    TileLayout[] L1B_TILE_LAYOUTS = new TileLayout[]{
+    private TileLayout[] L1B_TILE_LAYOUTS = new TileLayout[]{
             new TileLayout(2548, 2304, 1024, 1024, 3, 3, 6), // 10
             new TileLayout(1274, 1152, 1024, 1024, 2, 2, 6), // 20
             new TileLayout(424, 384, 424, 384, 1, 1, 6), // 60
     };
 
-    Set<TileLayout> REAL_TILE_LAYOUT = new HashSet<>();
-
-    Map<Integer, Integer> LAYOUTMAP = new HashMap<Integer, Integer>() {
-        {
-            put(10, 0);
-            put(20, 1);
-            put(60, 2);
-        }
-
-        ;
-    };
+    static Set<TileLayout> REAL_TILE_LAYOUT = new HashSet<>();
 
     String FORMAT_NAME = "SENTINEL-2-MSI-L1B";
+
+    @Override
+    public TileLayout[] getTileLayouts() {
+        return L1B_TILE_LAYOUTS;
+    }
+
+    @Override
+    public String getFormatName() {
+        return FORMAT_NAME;
+    }
 }
