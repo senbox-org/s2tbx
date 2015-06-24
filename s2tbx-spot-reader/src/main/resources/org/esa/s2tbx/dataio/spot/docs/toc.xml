@@ -25,11 +25,13 @@
     <tocitem text="Sentinel Toolbox Application">
         <tocitem text="Import and Export">
             <tocitem text="Import Raster Data">
-                <tocitem text="SPOT">
-                    <tocitem text="SPOT Scene" target="mySPOTDimapProduct"/>
-                    <tocitem text="SPOT View" target="mySPOTViewProduct"/>
-                    <tocitem text="SPOT-4 Take5" target="mySPOTTake5Product"/>
-                </tocitem>
+				<tocitem text="Optical Sensors">
+					<tocitem text="SPOT">
+						<tocitem text="SPOT Scene" target="mySPOTDimapProduct"/>
+						<tocitem text="SPOT View" target="mySPOTViewProduct"/>
+						<tocitem text="SPOT-4 Take5" target="mySPOTTake5Product"/>
+					</tocitem>
+				</tocitem>
             </tocitem>
         </tocitem>
     </tocitem>
