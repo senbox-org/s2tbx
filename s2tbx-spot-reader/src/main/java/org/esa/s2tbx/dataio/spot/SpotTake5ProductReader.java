@@ -123,6 +123,9 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             }
         } else {
             imageMetadataFile = new File(getInput().toString());
+            if (!imageMetadataFile.isFile()) {
+                imageMetadataFile = new File(input.getBasePath(), input.findFirst(SpotConstants.SPOT4_TAKE5_METADATA_FILE_EXTENSION));
+            }
         }
         if (imageMetadataFile != null) {
             imageMetadata = XmlMetadata.create(SpotTake5Metadata.class, imageMetadataFile);
