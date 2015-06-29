@@ -39,12 +39,12 @@ public class Sentinel2L1BProduct60MReaderPlugIn extends Sentinel2L1BProductReade
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader...");
-        return new Sentinel2L1BProductReader(this, false, 60, getReaderFactory());
+        return new Sentinel2L1BProductReader(this, false, 60);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{getConfig().getFormatName()+"-60M"};
+        return new String[]{S2L1bConfig.getInstance().getFormatName()+"-60M"};
     }
 
     @Override

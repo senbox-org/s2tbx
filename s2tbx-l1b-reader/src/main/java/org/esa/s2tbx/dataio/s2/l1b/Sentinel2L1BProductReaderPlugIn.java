@@ -19,7 +19,6 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2ReaderFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
@@ -35,16 +34,6 @@ import java.util.Locale;
  */
 public class Sentinel2L1BProductReaderPlugin implements ProductReaderPlugIn {
 
-     private S2ReaderFactory readerFactory = new S2L1bReaderFactory();
-    private final S2Config config = readerFactory.getConfigInstance();
-
-    public S2ReaderFactory getReaderFactory() {
-        return readerFactory;
-    }
-
-    public S2Config getConfig() {
-        return config;
-    }
 
 
     @Override
@@ -81,7 +70,7 @@ public class Sentinel2L1BProductReaderPlugin implements ProductReaderPlugIn {
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(config.getFormatName(),
+        return new SnapFileFilter(S2L1bConfig.getInstance().getFormatName(),
                                   getDefaultFileExtensions(),
                                   "Sentinel-2 MSI L1B product or tile");
     }
@@ -89,12 +78,12 @@ public class Sentinel2L1BProductReaderPlugin implements ProductReaderPlugIn {
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader...");
-        return new Sentinel2L1BProductReader(this, false, getReaderFactory());
+        return new Sentinel2L1BProductReader(this, false);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{getConfig().getFormatName()};
+        return new String[]{S2L1bConfig.getInstance().getFormatName()};
     }
 
     @Override

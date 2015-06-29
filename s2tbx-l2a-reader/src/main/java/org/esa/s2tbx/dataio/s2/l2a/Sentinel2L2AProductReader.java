@@ -30,7 +30,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2ReaderFactory;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
@@ -58,6 +57,7 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
+import javax.xml.bind.JAXBException;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -134,15 +134,15 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
         }
     }
 
-    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution, S2ReaderFactory readerFactory) {
-        super(readerPlugIn, readerFactory);
+    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution) {
+        super(readerPlugIn, S2L2AConfig.getInstance());
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.filteredResolution = filteredResolution;
     }
 
-    Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, S2ReaderFactory readerFactory) {
-        super(readerPlugIn, readerFactory);
+    Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
+        super(readerPlugIn, S2L2AConfig.getInstance());
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.filteredResolution = -1;
@@ -243,7 +243,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
         try {
             metadataHeader = parseHeader(metadataFile, getConfig().getTileLayouts());
-        } catch (JDOMException e) {
+        } catch (JDOMException|JAXBException e) {
             SystemUtils.LOG.severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }

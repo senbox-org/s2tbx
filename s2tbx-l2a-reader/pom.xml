@@ -12,7 +12,7 @@
 
     <packaging>nbm</packaging>
     <artifactId>s2tbx-l2a-reader</artifactId>
-    <name>Sentinel-2 Reader L2A PSD12</name>
+    <name>Sentinel-2 Reader L2A</name>
     <description>
         This module enables the Sentinel Toolbox to read S2-MSI L2A products
     </description>

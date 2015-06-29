@@ -32,12 +32,12 @@ public class Sentinel2L1CProduct10MReaderPlugIn extends Sentinel2L1CProductReade
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader 10M");
 
-        return new Sentinel2L1CProductReader(this, false, 10, getReaderFactory());
+        return new Sentinel2L1CProductReader(this, false, 10);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{getConfig().getFormatName()+"-10M"};
+        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-10M"};
     }
 
     @Override

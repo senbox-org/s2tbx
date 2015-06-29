@@ -39,12 +39,12 @@ public class Sentinel2L2AProduct20MReaderPlugIn extends Sentinel2L2AProductReade
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader...");
 
-        return new Sentinel2L2AProductReader(this, false, 20, getReaderFactory());
+        return new Sentinel2L2AProductReader(this, false, 20);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{getConfig().getFormatName()+"-20M"};
+        return new String[]{S2L2AConfig.getInstance().getFormatName()+"-20M"};
     }
 
     @Override

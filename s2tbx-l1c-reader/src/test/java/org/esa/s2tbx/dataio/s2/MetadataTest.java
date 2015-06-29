@@ -1,10 +1,10 @@
 package org.esa.s2tbx.dataio.s2;
 
 
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
+import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import junit.framework.Assert;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1c.L1cMetadata;
@@ -13,9 +13,12 @@ import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
@@ -26,6 +29,36 @@ import static org.junit.Assert.*;
  * Created by opicas-p on 24/06/2014.
  */
 public class MetadataTest {
+
+
+    /**
+     * Test that if we have the (old) psd 12 root xml file, we can still unmarshall it after update
+     */
+    @Test
+    public void testUpdatePSD12RootXML() {
+        String psd12RootXmlFileName =
+                "l1c/metadata/S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928.xml";
+        try {
+            InputStream inputStream = getClass().getResourceAsStream(psd12RootXmlFileName);
+            InputStream updatedInputStream = S2Metadata.changePSDIfRequired(inputStream);
+
+            JAXBContext jaxbContext = L1cMetadataProc.getJaxbContext();
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
+            Object unmarshalled =  unmarshaller.unmarshal(updatedInputStream);
+            Object castedUnmarshalled = ((JAXBElement) unmarshalled).getValue();
+            assertTrue(Level1C_User_Product.class.isInstance(castedUnmarshalled));
+
+        } catch (FileNotFoundException e) {
+            org.junit.Assert.fail("The file was not found: " + psd12RootXmlFileName);
+            e.printStackTrace();
+        } catch (IOException e) {
+            org.junit.Assert.fail(e.getMessage());
+            e.printStackTrace();
+        } catch (JAXBException e) {
+            org.junit.Assert.fail("Could not unmarshall PSD12 Root XML: " + e.getMessage());
+        }
+    }
 
     public Level1C_User_Product getUserProduct() throws Exception
     {
@@ -126,7 +159,8 @@ public class MetadataTest {
 
         Collection<String> tiles = L1cMetadataProc.getTiles(product);
 
-        URL aUrl = getClass().getResource("l1c/data/S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
+        URL aUrl = getClass().getResource(
+                "l1c/data/S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
 
         if(aUrl != null)
         {

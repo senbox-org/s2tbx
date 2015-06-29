@@ -87,41 +87,51 @@ public class L1bSceneDescription extends S2SceneDescription {
             // fixme Add help text
             throw new IllegalStateException();
         }
-        for (int i = 0; i < tileList.size(); i++) {
-            L1bMetadata.Tile tile = tileList.get(i);
 
-            L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
-            // Envelope2D envelope = new Envelope2D(selectedGeometry.envelope);
+        if (tileList.size() > 0) {
 
-            Envelope2D envelope = null;
 
-            // fixme Change the position using tiepointgrids
-            int detectorId = Integer.valueOf(selectedGeometry.detector);
 
-            // data is referenced through 1 based indexes
-            TileLayout[] tileLayouts = config.getTileLayouts();
-            int xOffset = (detectorId - 1) * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].width * selectedGeometry.resolution;
-            int yOffsetIndex = (selectedGeometry.position - 1) / tileLayouts[S2L1bConfig.LAYOUTMAP.get(10)].height;
-            int yWidth = yOffsetIndex * selectedGeometry.yDim * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].height;
+            int firstPosition = tileList.get(0).getGeometry(index).position;
 
-            // fixme check memory usage when xOffset is 0...
-            xOffset = 0;
+            for (int i = 0; i < tileList.size(); i++) {
+                L1bMetadata.Tile tile = tileList.get(i);
 
-            envelope = new Envelope2D(crs,
-                                      xOffset,
-                                      yWidth + selectedGeometry.numRows * selectedGeometry.yDim,
-                                      selectedGeometry.numCols * selectedGeometry.xDim,
-                                      -selectedGeometry.numRows * selectedGeometry.yDim);
+                L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
 
-            tileEnvelopes[i] = envelope;
 
-            if (sceneEnvelope == null) {
-                sceneEnvelope = new Envelope2D(crs, envelope);
-            } else {
-                sceneEnvelope.add(envelope);
+                // Envelope2D envelope = new Envelope2D(selectedGeometry.envelope);
+
+                Envelope2D envelope = null;
+
+                int detectorId = Integer.valueOf(selectedGeometry.detector);
+
+                // data is referenced through 1 based indexes
+                TileLayout[] tileLayouts = config.getTileLayouts();
+                //int xOffset = (detectorId - 1) * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].width * selectedGeometry.resolution;
+                int yOffsetIndex = (selectedGeometry.position - firstPosition) / tileLayouts[S2L1bConfig.LAYOUTMAP.get(10)].height;
+                int yWidth = yOffsetIndex * selectedGeometry.yDim * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].height;
+
+
+                int xOffset = 0;
+
+                envelope = new Envelope2D(crs,
+                                          xOffset,
+                                          yWidth + selectedGeometry.numRows * selectedGeometry.yDim,
+                                          selectedGeometry.numCols * selectedGeometry.xDim,
+                                          -selectedGeometry.numRows * selectedGeometry.yDim);
+
+                tileEnvelopes[i] = envelope;
+
+                if (sceneEnvelope == null) {
+                    sceneEnvelope = new Envelope2D(crs, envelope);
+                } else {
+                    sceneEnvelope.add(envelope);
+                }
+                tileInfos[i] = new TileInfo(i, tile.id, envelope, new Rectangle());
             }
-            tileInfos[i] = new TileInfo(i, tile.id, envelope, new Rectangle());
         }
+
 
         if (sceneEnvelope == null) {
             throw new IllegalStateException();
@@ -166,7 +176,7 @@ public class L1bSceneDescription extends S2SceneDescription {
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;
         this.geometry = geometry;
-        this.tileInfoMap = new HashMap<String, TileInfo>();
+        this.tileInfoMap = new HashMap<>();
         for (TileInfo tileInfo : tileInfos) {
             tileInfoMap.put(tileInfo.id, tileInfo);
         }

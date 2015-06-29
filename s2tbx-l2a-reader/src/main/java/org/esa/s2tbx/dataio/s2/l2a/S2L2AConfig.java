@@ -31,6 +31,17 @@ import java.awt.image.DataBuffer;
  */
 public class S2L2AConfig implements S2Config {
 
+    private static S2L2AConfig instance;
+
+    private S2L2AConfig() {}
+
+    public static S2L2AConfig getInstance() {
+        if(instance == null) {
+            instance = new S2L2AConfig();
+        }
+        return instance;
+    }
+
     //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
     //todo use classes from jp2 package to read the data
     //todo future improvement: use opj_dump.exe to retrieve the data

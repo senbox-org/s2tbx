@@ -35,6 +35,18 @@ import java.util.Set;
  */
 public class S2L1bConfig implements S2Config {
 
+    private static S2L1bConfig instance;
+
+    private S2L1bConfig() {}
+
+    public static S2L1bConfig getInstance() {
+        if(instance == null) {
+            instance = new S2L1bConfig();
+        }
+        return instance;
+    }
+
+
     //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
     //todo use classes from jp2 package to read the data
     private TileLayout[] L1B_TILE_LAYOUTS = new TileLayout[]{

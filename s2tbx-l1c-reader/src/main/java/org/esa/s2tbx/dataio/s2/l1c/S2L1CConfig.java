@@ -31,6 +31,17 @@ import java.awt.image.DataBuffer;
  */
 public class S2L1CConfig implements S2Config {
 
+    private static S2L1CConfig instance;
+
+    private S2L1CConfig() {}
+
+    public static S2L1CConfig getInstance() {
+        if(instance == null) {
+            instance = new S2L1CConfig();
+        }
+        return instance;
+    }
+
     TileLayout[] L1C_TILE_LAYOUTS = new TileLayout[]{
             new TileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
             new TileLayout(5490, 5490, 2048, 2048, 3, 3, 6),

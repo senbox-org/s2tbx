@@ -20,9 +20,9 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
 
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
+import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
@@ -102,8 +102,8 @@ public class L1cMetadataProc extends S2MetadataProc {
     }
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
-        ClassLoader s2c = Sentinel2L1CProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1C + S2MetadataType.SEPARATOR + S2MetadataType.L1B + S2MetadataType.SEPARATOR + S2MetadataType.L2A, s2c);
+        ClassLoader s2c = Level1C_User_Product.class.getClassLoader();
+        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1C, s2c);
         return jaxbContext;
     }
 

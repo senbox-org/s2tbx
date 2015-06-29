@@ -19,8 +19,8 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
+import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -29,31 +29,22 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
-import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
-import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.util.SystemUtils;
-import org.jdom.Attribute;
-import org.jdom.DataConversionException;
-import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,11 +61,6 @@ import java.util.stream.Collectors;
  * @author Norman Fomferra
  */
 public class L1cMetadata extends S2Metadata {
-
-    static Element NULL_ELEM = new Element("null") {
-    };
-
-
 
     private MetadataElement metadataElement;
     protected Logger logger = SystemUtils.LOG;
@@ -157,18 +143,6 @@ public class L1cMetadata extends S2Metadata {
         double upperLeftY;
         double xDim;
         double yDim;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
-    static class ReflectanceConversion {
-        double u;
-        /**
-         * Unit: W/m²/µm
-         */
-        double[] solarIrradiances;
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
@@ -281,10 +255,8 @@ public class L1cMetadata extends S2Metadata {
     private Map<String, List<Tile>> allTileLists; // Key is UTM zone, values are the tiles associated to a UTM zone
 
     private ProductCharacteristics productCharacteristics;
-    private JAXBContext context;
-    private Unmarshaller unmarshaller;
 
-    public static L1cMetadata parseHeader(File file, TileLayout[] tileLayouts) throws JDOMException, IOException, UnmarshalException {
+    public static L1cMetadata parseHeader(File file, TileLayout[] tileLayouts) throws JDOMException, IOException, JAXBException {
         return new L1cMetadata(new FileInputStream(file), file, file.getParent(), tileLayouts);
     }
 
@@ -309,23 +281,19 @@ public class L1cMetadata extends S2Metadata {
         return metadataElement;
     }
 
-    private L1cMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts) throws JDOMException, UnmarshalException {
-        super(tileLayouts);
+    private L1cMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts) throws JDOMException, JAXBException, FileNotFoundException {
+        super(tileLayouts, L1cMetadataProc.getJaxbContext());
 
         try {
-            context = L1cMetadataProc.getJaxbContext();
-            unmarshaller = context.createUnmarshaller();
+            Object userProduct = updateAndUnmarshal(stream);
 
-            Object ob = unmarshaller.unmarshal(stream);
-            Object casted = ((JAXBElement) ob).getValue();
-
-            if(casted instanceof Level1C_User_Product)
+            if(userProduct instanceof Level1C_User_Product)
             {
-                initProduct(stream, file, parent, casted);
+                initProduct(stream, file, parent, userProduct);
             }
             else
             {
-                initTile(stream, file, parent, casted);
+                initTile(stream, file, parent, userProduct);
             }
         } catch (UnmarshalException|JDOMException e) {
             logger.severe(String.format("Product is not conform to PSD: ", e.getMessage()));
@@ -371,10 +339,8 @@ public class L1cMetadata extends S2Metadata {
         Map<String, Counter> counters = new HashMap<String, Counter>();
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
-
-            Object ob = unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
-            Object tmp = ((JAXBElement) ob).getValue();
-            Level1C_Tile aTile = (Level1C_Tile) tmp;
+            FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
+            Level1C_Tile aTile = (Level1C_Tile) updateAndUnmarshal(granuleStream);
             Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
             Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
@@ -442,8 +408,8 @@ public class L1cMetadata extends S2Metadata {
         Level1C_Tile product = (Level1C_Tile) casted;
         productCharacteristics = new L1cMetadata.ProductCharacteristics();
 
-        tileList = new ArrayList<Tile>();
-        allTileLists = new HashMap<String, List<Tile>>();
+        tileList = new ArrayList<>();
+        allTileLists = new HashMap<>();
 
         // todo move this code to a common function
         {
@@ -453,7 +419,6 @@ public class L1cMetadata extends S2Metadata {
             Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
             t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
             t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
-            String key = t.horizontalCsCode;
 
             t.tileGeometry10M = geoms.get(10);
             t.tileGeometry20M = geoms.get(20);
@@ -468,69 +433,6 @@ public class L1cMetadata extends S2Metadata {
             tileList.add(t);
 
             allTileLists.put(t.horizontalCsCode, tileList);
-        }
-    }
-
-    private MetadataElement parseAll(Element parent) {
-        return parseTree(parent, null, new HashSet<String>(Arrays.asList("Viewing_Incidence_Angles_Grids", "Sun_Angles_Grid")));
-    }
-
-    private MetadataElement parseTree(Element element, MetadataElement mdParent, Set<String> excludes) {
-
-        MetadataElement mdElement = new MetadataElement(element.getName());
-
-        List attributes = element.getAttributes();
-        for (Object a : attributes) {
-            Attribute attribute = (Attribute) a;
-            MetadataAttribute mdAttribute = new MetadataAttribute(attribute.getName().toUpperCase(), ProductData.createInstance(attribute.getValue()), true);
-            mdElement.addAttribute(mdAttribute);
-        }
-
-        for (Object c : element.getChildren()) {
-            Element child = (Element) c;
-            String childName = child.getName();
-            String childValue = child.getValue();
-            if (!excludes.contains(childName)) {
-                if (childValue != null && !childValue.isEmpty() && childName.equals(childName.toUpperCase())) {
-                    MetadataAttribute mdAttribute = new MetadataAttribute(childName, ProductData.createInstance(childValue), true);
-                    String unit = child.getAttributeValue("unit");
-                    if (unit != null) {
-                        mdAttribute.setUnit(unit);
-                    }
-                    mdElement.addAttribute(mdAttribute);
-                } else {
-                    parseTree(child, mdElement, excludes);
-                }
-            }
-        }
-
-        if (mdParent != null) {
-            mdParent.addElement(mdElement);
-        }
-
-        return mdElement;
-    }
-
-
-    private static Element getChild(Element parent, String... path) {
-        Element child = parent;
-        if (child == null) {
-            return NULL_ELEM;
-        }
-        for (String name : path) {
-            child = child.getChild(name);
-            if (child == null) {
-                return NULL_ELEM;
-            }
-        }
-        return child;
-    }
-
-    private static double getElementValueDouble(String elementValue, String name) throws DataConversionException {
-        try {
-            return Double.parseDouble(elementValue);
-        } catch (NumberFormatException e) {
-            throw new DataConversionException(name, "double");
         }
     }
 }

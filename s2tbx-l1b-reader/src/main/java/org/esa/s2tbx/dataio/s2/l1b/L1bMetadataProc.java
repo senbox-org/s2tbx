@@ -21,15 +21,15 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_DATATAKE_IDENTIFICATION;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_DIMENSIONS;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_POSITION;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1B;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_DATATAKE_IDENTIFICATION;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_DIMENSIONS;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_POSITION;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1B;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
+import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
+import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import jp2.TileLayout;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
@@ -144,7 +144,7 @@ public class L1bMetadataProc extends S2MetadataProc {
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
 
-        ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
+        ClassLoader s2c = Level1B_User_Product.class.getClassLoader();
         JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1B, s2c);
         return jaxbContext;
     }

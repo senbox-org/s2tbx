@@ -23,8 +23,8 @@ package org.esa.s2tbx.dataio.s2;
  * @author opicas-p
  */
 public interface S2MetadataType {
-    String L1C = "https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap";
-    String L1B = "https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata:https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_datastrip_metadata:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap";
-    String L2A = "https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata:https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a:https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a:_int.esa.s2.pdgs.psd.s2_pdi_level_2a_datastrip_structure:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap";
+    String L1C = "https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c:https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata:https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata:https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap";
+    String L1B = "https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b:https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata:https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_datastrip_metadata:https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap";
+    String L2A = "https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata:https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_2a:https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_2a:_int.esa.s2.pdgs.psd.s2_pdi_level_2a_datastrip_structure:https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap";
     String SEPARATOR = ":";
 }

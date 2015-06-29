@@ -10,13 +10,11 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
     private S2Config config;
 
-    private S2ReaderFactory readerFactory;
 
-    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, S2ReaderFactory readerFactory) {
+    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, S2Config config) {
         super(readerPlugIn);
 
-        this.readerFactory = readerFactory;
-        this.config = readerFactory.getConfigInstance();
+        this.config = config;
     }
 
     public S2Config getConfig() {

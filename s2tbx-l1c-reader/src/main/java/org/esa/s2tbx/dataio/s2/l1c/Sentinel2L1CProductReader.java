@@ -32,7 +32,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2ReaderFactory;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
@@ -70,6 +69,7 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -150,8 +150,8 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         }
     }
 
-    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution, S2ReaderFactory readerFactory) {
-        super(readerPlugIn, readerFactory);
+    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution) {
+        super(readerPlugIn, S2L1CConfig.getInstance());
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         isMultiResolution = false;
@@ -159,8 +159,8 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     }
 
 
-    Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, S2ReaderFactory readerFactory) {
-        super(readerPlugIn, readerFactory);
+    Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
+        super(readerPlugIn, S2L1CConfig.getInstance());
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.productResolution = DEFAULT_RESOLUTION;
@@ -247,7 +247,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
         try {
             metadataHeader = L1cMetadata.parseHeader(metadataFile, getConfig().getTileLayouts());
-        } catch (JDOMException|UnmarshalException e) {
+        } catch (JDOMException|JAXBException e) {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
 
