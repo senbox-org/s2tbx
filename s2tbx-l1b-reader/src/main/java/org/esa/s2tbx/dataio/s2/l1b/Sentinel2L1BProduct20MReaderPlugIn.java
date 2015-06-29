@@ -19,21 +19,15 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
-import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
-import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.io.SnapFileFilter;
 
-import java.io.File;
 import java.util.Locale;
 
 /**
- * @author Norman Fomferra
+ * @author Nicolas Ducoin
  */
-public class Sentinel2L1BProduct20MReaderPlugIn extends Sentinel2L1BProductReaderPlugin {
+public class Sentinel2L1BProduct20MReaderPlugIn extends Sentinel2L1BProductReaderPlugIn {
 
 
     @Override

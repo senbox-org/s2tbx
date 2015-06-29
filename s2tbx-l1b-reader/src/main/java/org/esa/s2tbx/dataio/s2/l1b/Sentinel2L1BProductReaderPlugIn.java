@@ -32,7 +32,7 @@ import java.util.Locale;
 /**
  * @author nducoin
  */
-public class Sentinel2L1BProductReaderPlugin implements ProductReaderPlugIn {
+public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
 
 
 
