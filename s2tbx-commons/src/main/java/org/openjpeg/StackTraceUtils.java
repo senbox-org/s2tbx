@@ -23,7 +23,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 /**
- * Created by opicas-p on 26/02/2015.
+ * @author opicas-p
  */
 public class StackTraceUtils {
     public static String getStackTrace(Throwable aThrowable) {

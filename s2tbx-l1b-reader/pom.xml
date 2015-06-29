@@ -93,9 +93,9 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/resources/L01/</schemaDirectory>
+                            <schemaDirectory>src/main/resources/schemas/PSD13/</schemaDirectory>
                             <schemaIncludes>
-                                <include>*.xsd</include>
+                                <include>*_Metadata.xsd</include>
                             </schemaIncludes>
                             <generateDirectory>target/generated-sources/xjc</generateDirectory>
                             <forceRegenerate>true</forceRegenerate>

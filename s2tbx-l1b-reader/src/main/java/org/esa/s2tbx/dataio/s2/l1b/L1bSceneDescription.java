@@ -21,8 +21,11 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 // import com.jcabi.aspects.Loggable;
 
+import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.geotools.geometry.Envelope2D;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -42,11 +45,7 @@ import java.util.Map;
 /**
  * @author Norman Fomferra
  */
-public class L1bSceneDescription {
-
-    private static final double PIXEL_RESOLUTION_10M = S2L1bSpatialResolution.R10M.resolution;
-    private static final int TILE_SIZE_10M = S2L1bConfig.L1B_TILE_LAYOUTS[0].width;
-    private static final double TILE_RESOLUTION_10M = PIXEL_RESOLUTION_10M * TILE_SIZE_10M;
+public class L1bSceneDescription extends S2SceneDescription {
 
     private final TileInfo[] tileInfos;
     private final Envelope2D sceneEnvelope;
@@ -77,7 +76,7 @@ public class L1bSceneDescription {
     }
 
     // @Loggable
-    public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index) {
+    public static L1bSceneDescription create(L1bMetadata header, L1bMetadata.Tile.idGeom index, S2Config config) {
         List<L1bMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = GeometryFactory.getDefaultCrs();
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
@@ -88,40 +87,51 @@ public class L1bSceneDescription {
             // fixme Add help text
             throw new IllegalStateException();
         }
-        for (int i = 0; i < tileList.size(); i++) {
-            L1bMetadata.Tile tile = tileList.get(i);
 
-            L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
-            // Envelope2D envelope = new Envelope2D(selectedGeometry.envelope);
+        if (tileList.size() > 0) {
 
-            Envelope2D envelope = null;
 
-            // fixme Change the position using tiepointgrids
-            int detectorId = Integer.valueOf(selectedGeometry.detector);
 
-            // data is referenced through 1 based indexes
-            int xOffset = (detectorId - 1) * S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].width * selectedGeometry.resolution;
-            int yOffsetIndex = (selectedGeometry.position - 1) / S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(10)].height;
-            int yWidth = yOffsetIndex * selectedGeometry.yDim * S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].height;
+            int firstPosition = tileList.get(0).getGeometry(index).position;
 
-            // fixme check memory usage when xOffset is 0...
-            xOffset = 0;
+            for (int i = 0; i < tileList.size(); i++) {
+                L1bMetadata.Tile tile = tileList.get(i);
 
-            envelope = new Envelope2D(crs,
-                                      xOffset,
-                                      yWidth + selectedGeometry.numRows * selectedGeometry.yDim,
-                                      selectedGeometry.numCols * selectedGeometry.xDim,
-                                      -selectedGeometry.numRows * selectedGeometry.yDim);
+                L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
 
-            tileEnvelopes[i] = envelope;
 
-            if (sceneEnvelope == null) {
-                sceneEnvelope = new Envelope2D(crs, envelope);
-            } else {
-                sceneEnvelope.add(envelope);
+                // Envelope2D envelope = new Envelope2D(selectedGeometry.envelope);
+
+                Envelope2D envelope = null;
+
+                int detectorId = Integer.valueOf(selectedGeometry.detector);
+
+                // data is referenced through 1 based indexes
+                TileLayout[] tileLayouts = config.getTileLayouts();
+                //int xOffset = (detectorId - 1) * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].width * selectedGeometry.resolution;
+                int yOffsetIndex = (selectedGeometry.position - firstPosition) / tileLayouts[S2L1bConfig.LAYOUTMAP.get(10)].height;
+                int yWidth = yOffsetIndex * selectedGeometry.yDim * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].height;
+
+
+                int xOffset = 0;
+
+                envelope = new Envelope2D(crs,
+                                          xOffset,
+                                          yWidth + selectedGeometry.numRows * selectedGeometry.yDim,
+                                          selectedGeometry.numCols * selectedGeometry.xDim,
+                                          -selectedGeometry.numRows * selectedGeometry.yDim);
+
+                tileEnvelopes[i] = envelope;
+
+                if (sceneEnvelope == null) {
+                    sceneEnvelope = new Envelope2D(crs, envelope);
+                } else {
+                    sceneEnvelope.add(envelope);
+                }
+                tileInfos[i] = new TileInfo(i, tile.id, envelope, new Rectangle());
             }
-            tileInfos[i] = new TileInfo(i, tile.id, envelope, new Rectangle());
         }
+
 
         if (sceneEnvelope == null) {
             throw new IllegalStateException();
@@ -152,15 +162,21 @@ public class L1bSceneDescription {
             tileInfos[i] = new TileInfo(i, tile.id, tileEnvelope, rectangle);
         }
 
-        return new L1bSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index);
+        return new L1bSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index, config);
     }
 
-    private L1bSceneDescription(TileInfo[] tileInfos, Envelope2D sceneEnvelope, Rectangle sceneRectangle, L1bMetadata.Tile.idGeom geometry) {
+    private L1bSceneDescription(TileInfo[] tileInfos,
+                                Envelope2D sceneEnvelope,
+                                Rectangle sceneRectangle,
+                                L1bMetadata.Tile.idGeom geometry,
+                                S2Config config) {
+        super(config);
+
         this.tileInfos = tileInfos;
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;
         this.geometry = geometry;
-        this.tileInfoMap = new HashMap<String, TileInfo>();
+        this.tileInfoMap = new HashMap<>();
         for (TileInfo tileInfo : tileInfos) {
             tileInfoMap.put(tileInfo.id, tileInfo);
         }
@@ -206,11 +222,11 @@ public class L1bSceneDescription {
     }
 
     public int getTileGridWidth() {
-        return (int) Math.round(sceneEnvelope.getWidth() / TILE_RESOLUTION_10M);
+        return (int) Math.round(sceneEnvelope.getWidth() / getTileResolution10M());
     }
 
     public int getTileGridHeight() {
-        return (int) Math.round(sceneEnvelope.getHeight() / TILE_RESOLUTION_10M);
+        return (int) Math.round(sceneEnvelope.getHeight() / getTileResolution10M());
     }
 
     public BufferedImage createTilePicture(int width) {

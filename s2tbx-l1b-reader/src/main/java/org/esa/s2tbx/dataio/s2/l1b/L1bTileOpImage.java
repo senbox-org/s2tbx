@@ -24,14 +24,14 @@ import com.bc.ceres.glevel.MultiLevelModel;
 import jp2.AEmptyListener;
 import jp2.CodeStreamUtils;
 import jp2.TileLayout;
-import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.snap.jai.ResolutionLevel;
-import org.esa.snap.jai.SingleBandedOpImage;
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.S2TileOpImage;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.ImageUtils;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
-import org.esa.snap.util.logging.BeamLogManager;
 import org.geotools.geometry.Envelope2D;
 import org.openjpeg.CommandOutput;
 import org.openjpeg.JpegUtils;
@@ -66,14 +66,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.s2.l1b.S2L1bConfig.*;
-
 // todo - better log problems during read process, see {@report "Problem detected..."} code marks
 
 /**
  * @author Norman Fomferra
  */
-class L1bTileOpImage extends SingleBandedOpImage {
+class L1bTileOpImage extends S2TileOpImage {
 
     private static class Jp2File {
         File file;
@@ -95,8 +93,9 @@ class L1bTileOpImage extends SingleBandedOpImage {
                               File cacheDir,
                               Point imagePos,
                               TileLayout l1bTileLayout,
+                              TileLayout[] tileLayouts,
                               MultiLevelModel imageModel,
-                              S2L1bSpatialResolution spatialResolution,
+                              S2SpatialResolution spatialResolution,
                               int level) {
 
         Assert.notNull(cacheDir, "cacheDir");
@@ -105,29 +104,28 @@ class L1bTileOpImage extends SingleBandedOpImage {
         Assert.notNull(spatialResolution, "spatialResolution");
 
         if (imageFile != null) {
-            BeamLogManager.getSystemLogger().fine("Image layout: " + l1bTileLayout);
-            PlanarImage opImage = new L1bTileOpImage(imageFile, cacheDir, imagePos, l1bTileLayout, imageModel, level);
+            SystemUtils.LOG.fine("Image layout: " + l1bTileLayout);
 
-            return opImage;
+            return new L1bTileOpImage(imageFile, cacheDir, imagePos, l1bTileLayout, imageModel, level);
         } else {
-            BeamLogManager.getSystemLogger().warning("Using empty image !");
+            SystemUtils.LOG.warning("Using empty image !");
 
-            int targetWidth = getSizeAtResolutionLevel(L1B_TILE_LAYOUTS[0].width, level);
-            int targetHeight = getSizeAtResolutionLevel(L1B_TILE_LAYOUTS[0].height, level);
-            Dimension targetTileDim = getTileDimAtResolutionLevel(L1B_TILE_LAYOUTS[0].tileWidth, L1B_TILE_LAYOUTS[0].tileHeight, level);
-            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2L1bConfig.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
+            int targetWidth = getSizeAtResolutionLevel(tileLayouts[0].width, level);
+            int targetHeight = getSizeAtResolutionLevel(tileLayouts[0].height, level);
+            Dimension targetTileDim = getTileDimAtResolutionLevel(tileLayouts[0].tileWidth,tileLayouts[0].tileHeight, level);
+            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
                                              (float) imageLayout.getHeight(null),
-                                             new Short[]{S2L1bConfig.FILL_CODE_NO_FILE},
+                                             new Short[]{S2Config.FILL_CODE_NO_FILE},
                                              new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
         }
     }
 
-    static PlanarImage createGenericScaledImage(PlanarImage sourceImage, Envelope2D sceneEnvelope, S2L1bSpatialResolution resolution, int level, boolean forceResize) {
-        BeamLogManager.getSystemLogger().fine("Asking for scaled mosaic image: " + resolution.toString());
-        BeamLogManager.getSystemLogger().fine("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
-        BeamLogManager.getSystemLogger().fine("TargetImage:" + sceneEnvelope.getWidth() + ", " + sceneEnvelope.getHeight());
+    static PlanarImage createGenericScaledImage(PlanarImage sourceImage, Envelope2D sceneEnvelope, S2SpatialResolution resolution, int level, boolean forceResize) {
+        SystemUtils.LOG.fine("Asking for scaled mosaic image: " + resolution.toString());
+        SystemUtils.LOG.fine("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
+        SystemUtils.LOG.fine("TargetImage:" + sceneEnvelope.getWidth() + ", " + sceneEnvelope.getHeight());
 
         int targetWidth = L1bTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getWidth() / (resolution.resolution)), level);
         int targetHeight = L1bTileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getHeight() / (resolution.resolution)), level);
@@ -154,12 +152,12 @@ class L1bTileOpImage extends SingleBandedOpImage {
                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST),
                                                         renderingHints);
 
-        BeamLogManager.getSystemLogger().fine(String.format("After scaling: (%d, %d)", scaledImage.getWidth(), scaledImage.getHeight()));
+        SystemUtils.LOG.fine(String.format("After scaling: (%d, %d)", scaledImage.getWidth(), scaledImage.getHeight()));
 
         if (scaledImage.getWidth() == targetWidth && scaledImage.getHeight() == targetHeight) {
             return scaledImage;
         } else if (scaledImage.getWidth() >= targetWidth || scaledImage.getHeight() >= targetHeight) {
-            BeamLogManager.getSystemLogger().fine(String.format("Cropping: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
+            SystemUtils.LOG.fine(String.format("Cropping: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
 
             return CropDescriptor.create(scaledImage,
                                          (float) sourceImage.getMinX(),
@@ -170,7 +168,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
         } else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
             int rightPad = targetWidth - scaledImage.getWidth();
             int bottomPad = targetHeight - scaledImage.getHeight();
-            BeamLogManager.getSystemLogger().fine(String.format("Border: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
+            SystemUtils.LOG.fine(String.format("Border: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
 
             return BorderDescriptor.create(scaledImage, 0, rightPad, 0, bottomPad, borderExtender, null);
         } else {
@@ -184,13 +182,10 @@ class L1bTileOpImage extends SingleBandedOpImage {
                    TileLayout l1bTileLayout,
                    MultiLevelModel imageModel,
                    int level) {
-        super(S2L1bConfig.SAMPLE_DATA_BUFFER_TYPE,
-              imagePos,
-              l1bTileLayout.width,
-              l1bTileLayout.height,
-              getTileDimAtResolutionLevel(l1bTileLayout.tileWidth, l1bTileLayout.tileHeight, level),
-              null,
-              ResolutionLevel.create(imageModel, level));
+        super(imagePos,
+              l1bTileLayout,
+              imageModel,
+              level);
 
         Assert.notNull(imageFile, "imageFile");
         Assert.notNull(cacheDir, "cacheDir");
@@ -200,9 +195,9 @@ class L1bTileOpImage extends SingleBandedOpImage {
         this.imageFile = imageFile;
         this.cacheDir = cacheDir;
         this.l1bTileLayout = l1bTileLayout;
-        this.openFiles = new HashMap<File, Jp2File>();
-        this.locks = new HashMap<File, Object>();
-        this.logger = BeamLogManager.getSystemLogger();
+        this.openFiles = new HashMap<>();
+        this.locks = new HashMap<>();
+        this.logger = SystemUtils.LOG;
     }
 
     @Override
@@ -215,26 +210,26 @@ class L1bTileOpImage extends SingleBandedOpImage {
         final int tileX = destRect.x / tileWidth;
         final int tileY = destRect.y / tileHeight;
 
-        int realInternalJpegIndex = l1bTileLayout.numXTiles * l1bTileLayout.numYTiles;
 
         if (tileWidth * tileHeight != tileData.length) {
             throw new IllegalStateException(String.format("tileWidth (=%d) * tileHeight (=%d) != tileData.length (=%d)",
                                                           tileWidth, tileHeight, tileData.length));
         }
 
-        TileLayout myLayout = null;
+        TileLayout myLayout;
 
+        int realInternalJpegIndex;
         try {
-            myLayout = CodeStreamUtils.getTileLayout(S2L1bConfig.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener(), S2L1bConfig.NODUMP);
+            myLayout = CodeStreamUtils.getTileLayout(S2Config.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener(), S2Config.NODUMP);
             realInternalJpegIndex = myLayout.numXTiles * myLayout.numYTiles;
         } catch (Exception iae) {
-            Arrays.fill(tileData, S2L1bConfig.FILL_CODE_MOSAIC_BG);
+            Arrays.fill(tileData, S2Config.FILL_CODE_MOSAIC_BG);
             return;
         }
 
-        Set<TileLayout> typeTiles = new HashSet<TileLayout>();
-        Collections.addAll(typeTiles, S2L1bConfig.L1B_TILE_LAYOUTS);
-        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, S2L1bConfig.L1B_TILE_LAYOUTS);
+        Set<TileLayout> typeTiles = new HashSet<>();
+        Collections.addAll(typeTiles, l1bTileLayout);
+        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, l1bTileLayout);
 
         if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
             logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
@@ -273,11 +268,11 @@ class L1bTileOpImage extends SingleBandedOpImage {
         if (!outputFile0.exists()) {
             int tileIndex = l1bTileLayout.numXTiles * jp2TileY + jp2TileX;
             if (tileIndex >= realInternalJpegIndex) {
-                Arrays.fill(tileData, S2L1bConfig.FILL_CODE_MOSAIC_BG);
+                Arrays.fill(tileData, S2Config.FILL_CODE_MOSAIC_BG);
                 return;
             }
 
-            logger.log(Level.parse(S2L1bConfig.LOG_JPEG), String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
+            logger.log(Level.parse(S2Config.LOG_JPEG), String.format("Jp2ExeImage.readTileData(): recomputing res=%d, tile=(%d,%d)\n", getLevel(), jp2TileX, jp2TileY));
             try {
                 decompressTile(outputFile, jp2TileX, jp2TileY);
             } catch (IOException e) {
@@ -287,7 +282,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
                 }
             }
             if (!outputFile0.exists()) {
-                Arrays.fill(tileData, S2L1bConfig.FILL_CODE_NO_FILE);
+                Arrays.fill(tileData, S2Config.FILL_CODE_NO_FILE);
                 return;
             }
         }
@@ -307,8 +302,8 @@ class L1bTileOpImage extends SingleBandedOpImage {
     private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
         final int tileIndex = l1bTileLayout.numXTiles * jp2TileY + jp2TileX;
 
-        ProcessBuilder builder = null;
-        if (SystemUtils.IS_OS_WINDOWS) {
+        ProcessBuilder builder;
+        if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
             String outputFileName = outputFile.getPath();
 
@@ -318,7 +313,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
 
             Guardian.assertTrue("Image file exists", new File(inputFileName).exists());
 
-            builder = new ProcessBuilder(S2L1bConfig.OPJ_DECOMPRESSOR_EXE,
+            builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
                                          "-i", inputFileName,
                                          "-o", outputFileName,
                                          "-r", getLevel() + "",
@@ -328,7 +323,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
 
             Guardian.assertTrue("Image file exists", imageFile.exists());
 
-            builder = new ProcessBuilder(S2L1bConfig.OPJ_DECOMPRESSOR_EXE,
+            builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
                                          "-i", imageFile.getPath(),
                                          "-o", outputFile.getPath(),
                                          "-r", getLevel() + "",
@@ -435,25 +430,25 @@ class L1bTileOpImage extends SingleBandedOpImage {
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
                 if (!intersection.isEmpty()) {
                     logger.fine(String.format("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection));
-                    long seekPos = jp2File.dataPos + S2L1bConfig.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
+                    long seekPos = jp2File.dataPos + S2Config.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;
                     for (int y = 0; y < intersection.height; y++) {
                         stream.seek(seekPos);
                         stream.readFully(tileData, tilePos, intersection.width);
-                        seekPos += S2L1bConfig.SAMPLE_BYTE_COUNT * jp2Width;
+                        seekPos += S2Config.SAMPLE_BYTE_COUNT * jp2Width;
                         tilePos += tileWidth;
                         for (int x = intersection.width; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = S2L1bConfig.FILL_CODE_OUT_OF_X_BOUNDS;
+                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_X_BOUNDS;
                         }
                     }
 
                     for (int y = intersection.height; y < tileHeight; y++) {
                         for (int x = 0; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = S2L1bConfig.FILL_CODE_OUT_OF_Y_BOUNDS;
+                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_Y_BOUNDS;
                         }
                     }
                 } else {
-                    Arrays.fill(tileData, S2L1bConfig.FILL_CODE_NO_INTERSECTION);
+                    Arrays.fill(tileData, S2Config.FILL_CODE_NO_INTERSECTION);
                 }
             }
         }
@@ -520,7 +515,7 @@ class L1bTileOpImage extends SingleBandedOpImage {
     }
 
     static Dimension getTileDim(int width, int height) {
-        return new Dimension(width < S2L1bConfig.DEFAULT_JAI_TILE_SIZE ? width : S2L1bConfig.DEFAULT_JAI_TILE_SIZE,
-                             height < S2L1bConfig.DEFAULT_JAI_TILE_SIZE ? height : S2L1bConfig.DEFAULT_JAI_TILE_SIZE);
+        return new Dimension(width < S2Config.DEFAULT_JAI_TILE_SIZE ? width : S2Config.DEFAULT_JAI_TILE_SIZE,
+                             height < S2Config.DEFAULT_JAI_TILE_SIZE ? height : S2Config.DEFAULT_JAI_TILE_SIZE);
     }
 }

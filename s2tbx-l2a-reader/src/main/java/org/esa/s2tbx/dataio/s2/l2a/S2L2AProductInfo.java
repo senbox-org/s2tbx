@@ -19,6 +19,7 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.geotools.geometry.Envelope2D;
 
 import java.awt.Rectangle;

@@ -19,12 +19,13 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bProductFilename;
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.SnapFileFilter;
-import org.esa.snap.util.logging.BeamLogManager;
 
 import java.io.File;
 import java.util.Locale;
@@ -32,58 +33,22 @@ import java.util.Locale;
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2L1BProduct60MReaderPlugIn implements ProductReaderPlugIn {
+public class Sentinel2L1BProduct60MReaderPlugIn extends Sentinel2L1BProductReaderPlugin {
 
-    @Override
-    public DecodeQualification getDecodeQualification(Object input) {
-        BeamLogManager.getSystemLogger().fine("Getting decoders...");
-
-        File file = new File(input.toString());
-        DecodeQualification deco = S2L1bProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
-        if (deco.equals(DecodeQualification.SUITABLE)) {
-            String semantic = S2L1bProductFilename.create(file.getName()).fileSemantic;
-            if (semantic.contains("L1B")) {
-                deco = DecodeQualification.INTENDED;
-            }
-            else
-            {
-                deco = DecodeQualification.UNABLE;
-            }
-        }
-
-        return deco;
-    }
-
-    @Override
-    public Class[] getInputTypes() {
-        return new Class[]{String.class, File.class};
-    }
 
     @Override
     public ProductReader createReaderInstance() {
-        BeamLogManager.getSystemLogger().info("Building product reader...");
+        SystemUtils.LOG.info("Building product reader...");
         return new Sentinel2L1BProductReader(this, false, 60);
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1bConfig.FORMAT_NAME+"-60M"};
-    }
-
-    @Override
-    public String[] getDefaultFileExtensions() {
-        return new String[]{S2L1bConfig.MTD_EXT};
+        return new String[]{S2L1bConfig.getInstance().getFormatName()+"-60M"};
     }
 
     @Override
     public String getDescription(Locale locale) {
         return "Sentinel-2 MSI L1B 60M";
-    }
-
-    @Override
-    public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2L1bConfig.FORMAT_NAME,
-                                  getDefaultFileExtensions(),
-                                  "Sentinel-2 MSI L1B product or tile");
     }
 }

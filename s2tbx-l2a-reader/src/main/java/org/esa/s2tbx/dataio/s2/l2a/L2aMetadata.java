@@ -21,38 +21,32 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
+import jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripDirFilename;
-import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripFilename;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aGranuleDirFilename;
-import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
-import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.util.logging.BeamLogManager;
-import org.jdom.Attribute;
+import org.esa.snap.util.SystemUtils;
 import org.jdom.DataConversionException;
-import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,14 +57,11 @@ import java.util.logging.Logger;
  *
  * @author Norman Fomferra
  */
-public class L2aMetadata {
-
-    static Element NULL_ELEM = new Element("null") {
-    };
+public class L2aMetadata extends S2Metadata {
 
 
     private MetadataElement metadataElement;
-    protected Logger logger = BeamLogManager.getSystemLogger();
+    protected Logger logger = SystemUtils.LOG;
 
 
     static class Tile {
@@ -83,9 +74,8 @@ public class L2aMetadata {
         AnglesGrid sunAnglesGrid;
         AnglesGrid[] viewingIncidenceAnglesGrids;
 
-        public static enum idGeom {G10M, G20M, G60M}
+        public enum idGeom {G10M, G20M, G60M}
 
-        ;
 
         public Tile(String id) {
             this.id = id;
@@ -136,18 +126,6 @@ public class L2aMetadata {
         }
     }
 
-    static class ReflectanceConversion {
-        double u;
-        /**
-         * Unit: W/m²/µm
-         */
-        double[] solarIrradiances;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
     static class ProductCharacteristics {
         String spacecraft;
         String datasetProductionDate;
@@ -186,16 +164,6 @@ public class L2aMetadata {
         }
     }
 
-    static class QuicklookDescriptor {
-        int imageNCols;
-        int imageNRows;
-        Histogram[] histogramList;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
     static class Histogram {
         public int bandId;
         int[] values;
@@ -213,11 +181,9 @@ public class L2aMetadata {
     private List<Tile> tileList;
     private Collection<ImageInfo> imageList;
     private ProductCharacteristics productCharacteristics;
-    private JAXBContext context;
-    private Unmarshaller unmarshaller;
 
-    public static L2aMetadata parseHeader(File file) throws JDOMException, IOException {
-        return new L2aMetadata(new FileInputStream(file), file, file.getParent());
+    public static L2aMetadata parseHeader(File file, TileLayout[] tileLayouts) throws JDOMException, IOException, JAXBException {
+        return new L2aMetadata(new FileInputStream(file), file, file.getParent(), tileLayouts);
     }
 
     public List<Tile> getTileList() {
@@ -237,29 +203,18 @@ public class L2aMetadata {
         return metadataElement;
     }
 
-    private L2aMetadata(InputStream stream, File file, String parent) throws DataConversionException {
+    private L2aMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts) throws DataConversionException, JAXBException, FileNotFoundException {
+        super(tileLayouts, L2aMetadataProc.getJaxbContext());
+
         try {
-            context = L2aMetadataProc.getJaxbContext();
-            unmarshaller = context.createUnmarshaller();
+            Object userProductOrTile = updateAndUnmarshal(stream);
 
-            Object ob = unmarshaller.unmarshal(stream);
-            Object casted = ((JAXBElement) ob).getValue();
-
-            if(casted instanceof Level2A_User_Product)
-            {
-                initProduct(stream, file, parent, casted);
+            if(userProductOrTile instanceof Level2A_User_Product) {
+                initProduct(stream, file, parent, userProductOrTile);
+            } else {
+                initTile(stream, file, parent, userProductOrTile);
             }
-            else
-            {
-                initTile(stream, file, parent, casted);
-            }
-        } catch (JAXBException e) {
-            logger.severe(Utils.getStackTrace(e));
-        } catch (FileNotFoundException e) {
-            logger.severe(Utils.getStackTrace(e));
-        } catch (JDOMException e) {
-            logger.severe(Utils.getStackTrace(e));
-        } catch (IOException e) {
+        } catch (JAXBException | JDOMException | IOException e) {
             logger.severe(Utils.getStackTrace(e));
         }
     }
@@ -275,7 +230,7 @@ public class L2aMetadata {
         tileList = new ArrayList<Tile>();
 
         for (String granuleName : tileNames) {
-            S2L2aGranuleDirFilename aGranuleDir = S2L2aGranuleDirFilename.create(granuleName);
+            S2GranuleDirFilename aGranuleDir = S2L2aGranuleDirFilename.create(granuleName);
             String theName = aGranuleDir.getMetadataFilename().name;
 
             File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
@@ -288,9 +243,8 @@ public class L2aMetadata {
         }
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
-            Object ob = unmarshaller.unmarshal(new FileInputStream(aGranuleMetadataFile));
-            Object tmp = ((JAXBElement) ob).getValue();
-            Level2A_Tile aTile = (Level2A_Tile) tmp;
+            FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
+            Level2A_Tile aTile = (Level2A_Tile) updateAndUnmarshal(granuleStream);
 
             Map<Integer, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
 
@@ -308,8 +262,8 @@ public class L2aMetadata {
             tileList.add(t);
         }
 
-        S2L2aDatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
-        S2L2aDatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
+        S2DatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
+        S2DatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
 
         File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 
@@ -346,69 +300,6 @@ public class L2aMetadata {
             t.viewingIncidenceAnglesGrids = L2aMetadataProc.getAnglesGrid(aTile);
 
             tileList.add(t);
-        }
-    }
-
-    private MetadataElement parseAll(Element parent) {
-        return parseTree(parent, null, new HashSet<String>(Arrays.asList("Viewing_Incidence_Angles_Grids", "Sun_Angles_Grid")));
-    }
-
-    private MetadataElement parseTree(Element element, MetadataElement mdParent, Set<String> excludes) {
-
-        MetadataElement mdElement = new MetadataElement(element.getName());
-
-        List attributes = element.getAttributes();
-        for (Object a : attributes) {
-            Attribute attribute = (Attribute) a;
-            MetadataAttribute mdAttribute = new MetadataAttribute(attribute.getName().toUpperCase(), ProductData.createInstance(attribute.getValue()), true);
-            mdElement.addAttribute(mdAttribute);
-        }
-
-        for (Object c : element.getChildren()) {
-            Element child = (Element) c;
-            String childName = child.getName();
-            String childValue = child.getValue();
-            if (!excludes.contains(childName)) {
-                if (childValue != null && !childValue.isEmpty() && childName.equals(childName.toUpperCase())) {
-                    MetadataAttribute mdAttribute = new MetadataAttribute(childName, ProductData.createInstance(childValue), true);
-                    String unit = child.getAttributeValue("unit");
-                    if (unit != null) {
-                        mdAttribute.setUnit(unit);
-                    }
-                    mdElement.addAttribute(mdAttribute);
-                } else {
-                    parseTree(child, mdElement, excludes);
-                }
-            }
-        }
-
-        if (mdParent != null) {
-            mdParent.addElement(mdElement);
-        }
-
-        return mdElement;
-    }
-
-
-    private static Element getChild(Element parent, String... path) {
-        Element child = parent;
-        if (child == null) {
-            return NULL_ELEM;
-        }
-        for (String name : path) {
-            child = child.getChild(name);
-            if (child == null) {
-                return NULL_ELEM;
-            }
-        }
-        return child;
-    }
-
-    private static double getElementValueDouble(String elementValue, String name) throws DataConversionException {
-        try {
-            return Double.parseDouble(elementValue);
-        } catch (NumberFormatException e) {
-            throw new DataConversionException(name, "double");
         }
     }
 }

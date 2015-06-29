@@ -1,23 +1,27 @@
 package org.esa.s2tbx.dataio.s2;
 
 
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
+import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
+import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import junit.framework.Assert;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1c.L1cMetadata;
+import org.esa.s2tbx.dataio.s2.l1c.L1cMetadataProc;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -26,12 +30,42 @@ import static org.junit.Assert.*;
  */
 public class MetadataTest {
 
+
+    /**
+     * Test that if we have the (old) psd 12 root xml file, we can still unmarshall it after update
+     */
+    @Test
+    public void testUpdatePSD12RootXML() {
+        String psd12RootXmlFileName =
+                "l1c/metadata/S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928.xml";
+        try {
+            InputStream inputStream = getClass().getResourceAsStream(psd12RootXmlFileName);
+            InputStream updatedInputStream = S2Metadata.changePSDIfRequired(inputStream);
+
+            JAXBContext jaxbContext = L1cMetadataProc.getJaxbContext();
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
+            Object unmarshalled =  unmarshaller.unmarshal(updatedInputStream);
+            Object castedUnmarshalled = ((JAXBElement) unmarshalled).getValue();
+            assertTrue(Level1C_User_Product.class.isInstance(castedUnmarshalled));
+
+        } catch (FileNotFoundException e) {
+            org.junit.Assert.fail("The file was not found: " + psd12RootXmlFileName);
+            e.printStackTrace();
+        } catch (IOException e) {
+            org.junit.Assert.fail(e.getMessage());
+            e.printStackTrace();
+        } catch (JAXBException e) {
+            org.junit.Assert.fail("Could not unmarshall PSD12 Root XML: " + e.getMessage());
+        }
+    }
+
     public Level1C_User_Product getUserProduct() throws Exception
     {
         Level1C_User_Product o = null;
 
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1C);
+                .newInstance(S2MetadataType.L1C);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -50,7 +84,7 @@ public class MetadataTest {
         Level1C_Tile o = null;
 
         JAXBContext jaxbContext = JAXBContext
-                .newInstance(MetadataType.L1C);
+                .newInstance(S2MetadataType.L1C);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         Marshaller marshaller = jaxbContext.createMarshaller();
 
@@ -74,10 +108,10 @@ public class MetadataTest {
         Assert.assertNotNull(o);
 
         L1cMetadata.ProductCharacteristics pchar = L1cMetadataProc.parseCharacteristics(o);
-        assertEquals("Sentinel-2A", pchar.spacecraft);
-        assertEquals("2013-06-21T12:00:00Z", pchar.datasetProductionDate);
-        assertEquals("LEVEL___1_C", pchar.processingLevel);
-        assertEquals(0.0000082, pchar.bandInformations[0].spectralResponseValues[1], 1e-15);
+        assertEquals("Sentinel-2A", pchar.getSpacecraft());
+        assertEquals("2013-06-21T12:00:00Z", pchar.getDatasetProductionDate());
+        assertEquals("LEVEL___1_C", pchar.getProcessingLevel());
+        assertEquals(0.0000082, pchar.getBandInformations()[0].getSpectralResponseValues()[1], 1e-15);
     }
 
     @Test
@@ -94,7 +128,7 @@ public class MetadataTest {
 
         assertEquals("S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_N01.01", granuleId);
 
-        S2GranuleDirFilename gdir = S2GranuleDirFilename.create(granuleId);
+        S2L1CGranuleDirFilename gdir = S2L1CGranuleDirFilename.create(granuleId);
 
         Assert.assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", gdir.getMetadataFilename().name);
     }
@@ -125,7 +159,8 @@ public class MetadataTest {
 
         Collection<String> tiles = L1cMetadataProc.getTiles(product);
 
-        URL aUrl = getClass().getResource("l1c/data/S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
+        URL aUrl = getClass().getResource(
+                "l1c/data/S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
 
         if(aUrl != null)
         {
@@ -142,7 +177,7 @@ public class MetadataTest {
                     assertTrue(nestedMetadata.exists());
                     assertTrue(nestedMetadata.isDirectory());
 
-                    S2GranuleDirFilename aGranuleDir = S2GranuleDirFilename.create(granuleName);
+                    S2L1CGranuleDirFilename aGranuleDir = S2L1CGranuleDirFilename.create(granuleName);
                     String theName = aGranuleDir.getMetadataFilename().name;
 
                     File nestedGranuleMetadata = new File(baseDir, "GRANULE\\" + granuleName + "\\" + theName);
@@ -161,7 +196,7 @@ public class MetadataTest {
 
         Assert.assertNotNull(product);
 
-        Map<Integer, L1cMetadata.TileGeometry> geoms = L1cMetadataProc.getTileGeometries(product);
+        L1cMetadataProc.getTileGeometries(product);
     }
 
 
@@ -172,9 +207,8 @@ public class MetadataTest {
 
         Assert.assertNotNull(product);
 
-        L1cMetadata.AnglesGrid sunGrid = L1cMetadataProc.getSunGrid(product);
-
-        L1cMetadata.AnglesGrid[] otherGrid = L1cMetadataProc.getAnglesGrid(product);
+        L1cMetadataProc.getSunGrid(product);
+        L1cMetadataProc.getAnglesGrid(product);
     }
 
 }

@@ -33,9 +33,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripDirFilename;
+import org.esa.s2tbx.dataio.s2.S2MetadataProc;
+import org.esa.s2tbx.dataio.s2.S2MetadataType;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripFilename;
-import org.esa.snap.util.logging.BeamLogManager;
+import org.esa.snap.util.SystemUtils;
 import org.openjpeg.StackTraceUtils;
 
 import javax.xml.bind.JAXBContext;
@@ -58,7 +61,7 @@ import java.util.Map;
 /**
  * Created by opicas-p on 24/06/2014.
  */
-public class L2aMetadataProc {
+public class L2aMetadataProc extends S2MetadataProc {
 
     public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
         String subStr = "s2tbx-l2a-reader";
@@ -90,7 +93,7 @@ public class L2aMetadataProc {
         try {
             theDir = getModulesDir();
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(StackTraceUtils.getStackTrace(e));
+            SystemUtils.LOG.severe(StackTraceUtils.getStackTrace(e));
         }
         return theDir;
     }
@@ -112,7 +115,7 @@ public class L2aMetadataProc {
             String output = convertStreamToString(p.getInputStream());
             String errorOutput = convertStreamToString(p.getErrorStream());
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+            SystemUtils.LOG.severe(Utils.getStackTrace(e));
         }
     }
 
@@ -120,7 +123,7 @@ public class L2aMetadataProc {
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
 
         ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(L2AMetadataType.L2A, s2c);
+        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L2A, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
@@ -132,7 +135,7 @@ public class L2aMetadataProc {
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(L2AMetadataType.L2A, s2c);
+        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L2A, s2c);
         return jaxbContext;
     }
 
@@ -262,20 +265,20 @@ public class L2aMetadataProc {
         return col;
     }
 
-    public static S2L2aDatastripFilename getDatastrip(Level2A_User_Product product) {
+    public static S2DatastripFilename getDatastrip(Level2A_User_Product product) {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
-        S2L2aDatastripDirFilename dirDatastrip = S2L2aDatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-        return dirDatastrip.getDatastripFilename(null);
+        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
+        String fileName = dirDatastrip.getFileName(null);
+        return S2L2aDatastripFilename.create(fileName);
     }
 
-    public static S2L2aDatastripDirFilename getDatastripDir(Level2A_User_Product product) {
+    public static S2DatastripDirFilename getDatastripDir(Level2A_User_Product product) {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
 
-        S2L2aDatastripDirFilename dirDatastrip = S2L2aDatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-        return dirDatastrip;
+        return S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
     }
 
     public static Collection<ImageInfo> getImages(Level2A_User_Product product) {

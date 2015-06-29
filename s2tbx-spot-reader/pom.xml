@@ -73,20 +73,6 @@
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
         </dependency>
-        <!--dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-reader-tests</artifactId>
-            <scope>test</scope>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-reader-tests</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-            <version>${snap.version}</version>
-        </dependency-->
 
         <dependency>
             <groupId>org.esa.snap</groupId>
@@ -120,6 +106,10 @@
 
     </dependencies>
 
+    <properties>
+        <skipTests>true</skipTests>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -127,7 +117,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.17</version>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <skipTests>${skipTests}</skipTests>
                 </configuration>
             </plugin>
             <plugin>

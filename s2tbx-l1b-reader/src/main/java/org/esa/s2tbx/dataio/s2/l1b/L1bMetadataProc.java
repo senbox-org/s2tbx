@@ -21,24 +21,30 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_DATATAKE_IDENTIFICATION;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_DIMENSIONS;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_POSITION;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1B;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_DATATAKE_IDENTIFICATION;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_DIMENSIONS;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_POSITION;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1B;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
+import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
+import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
+import jp2.TileLayout;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bDatastripDirFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bDatastripFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepatterns.S2L1bGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.S2MetadataProc;
+import org.esa.s2tbx.dataio.s2.S2MetadataType;
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BDatastripFilename;
+import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.snap.util.Guardian;
-import org.esa.snap.util.logging.BeamLogManager;
+import org.esa.snap.util.SystemUtils;
 import org.openjpeg.StackTraceUtils;
 
 import javax.xml.bind.JAXBContext;
@@ -64,9 +70,9 @@ import java.util.logging.Level;
 import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
 
 /**
- * Created by opicas-p on 24/06/2014.
+ * @author opicas-p
  */
-public class L1bMetadataProc {
+public class L1bMetadataProc extends S2MetadataProc {
 
     public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
         String subStr = "s2tbx-l1b-reader";
@@ -98,7 +104,7 @@ public class L1bMetadataProc {
         try {
             theDir = getModulesDir();
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(StackTraceUtils.getStackTrace(e));
+            SystemUtils.LOG.severe(StackTraceUtils.getStackTrace(e));
         }
         return theDir;
     }
@@ -119,14 +125,14 @@ public class L1bMetadataProc {
             String output = convertStreamToString(p.getInputStream());
             String errorOutput = convertStreamToString(p.getErrorStream());
         } catch (Exception e) {
-            BeamLogManager.getSystemLogger().severe(Utils.getStackTrace(e));
+            SystemUtils.LOG.severe(Utils.getStackTrace(e));
         }
     }
 
     public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
 
         ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1B, s2c);
+        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1B, s2c);
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
@@ -138,8 +144,8 @@ public class L1bMetadataProc {
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
 
-        ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(MetadataType.L1B, s2c);
+        ClassLoader s2c = Level1B_User_Product.class.getClassLoader();
+        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1B, s2c);
         return jaxbContext;
     }
 
@@ -213,7 +219,7 @@ public class L1bMetadataProc {
             int size = aInfo.size();
             characteristics.bandInformations = aInfo.toArray(new L1bMetadata.SpectralInformation[size]);
         } else {
-            BeamLogManager.getSystemLogger().warning("Empty spectral info !");
+            SystemUtils.LOG.warning("Empty spectral info !");
 
             // fixme If there is no spectral info, get band names from Query_Options/Band_List
             List<A_PHYSICAL_BAND_NAME> bandList = product.getGeneral_Info().getProduct_Info().getQuery_Options().getBand_List().getBAND_NAME();
@@ -271,29 +277,30 @@ public class L1bMetadataProc {
         return col;
     }
 
-    public static S2L1bDatastripFilename getDatastrip(Level1B_User_Product product) {
+    public static S2DatastripFilename getDatastrip(Level1B_User_Product product) {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2L1bGranuleDirFilename grafile = S2L1bGranuleDirFilename.create(granule);
+        S2GranuleDirFilename grafile = S2L1BGranuleDirFilename.create(granule);
         Guardian.assertNotNull("Product files don't match regular expressions", grafile);
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
-        S2L1bDatastripDirFilename dirDatastrip = S2L1bDatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-        return dirDatastrip.getDatastripFilename(null);
+        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
+        String fileName = dirDatastrip.getFileName(null);
+        return S2L1BDatastripFilename.create(fileName);
     }
 
-    public static S2L1bDatastripDirFilename getDatastripDir(Level1B_User_Product product) {
+    public static S2DatastripDirFilename getDatastripDir(Level1B_User_Product product) {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2L1bGranuleDirFilename grafile = S2L1bGranuleDirFilename.create(granule);
+        S2GranuleDirFilename grafile = S2L1BGranuleDirFilename.create(granule);
         Guardian.assertNotNull("Product files don't match regular expressions", grafile);
 
         String fileCategory = grafile.fileCategory;
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
-        S2L1bDatastripDirFilename dirDatastrip = S2L1bDatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
+        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
         return dirDatastrip;
     }
 
@@ -324,8 +331,9 @@ public class L1bMetadataProc {
         return thePoints;
     }
 
-    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule) {
-        Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<Integer, L1bMetadata.TileGeometry>();
+    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule,
+                                                                              TileLayout[] tileLayouts) {
+        Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<>();
 
         List<A_GRANULE_DIMENSIONS.Size> sizes = granule.getGeometric_Info().getGranule_Dimensions().getSize();
         int pos = granule.getGeometric_Info().getGranule_Position().getPOSITION();
@@ -338,9 +346,9 @@ public class L1bMetadataProc {
             L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.numCols = gpos.getNCOLS();
 
-            tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height);
-            if ((gpos.getNROWS() - (pos / ratio)) < S2L1bConfig.L1B_TILE_LAYOUTS[S2L1bConfig.LAYOUTMAP.get(resolution)].height) {
-                BeamLogManager.getSystemLogger().log(Level.parse(S2L1bConfig.LOG_DEBUG), "Test if we need extra processing here");
+            tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), tileLayouts[S2Config.LAYOUTMAP.get(resolution)].height);
+            if ((gpos.getNROWS() - (pos / ratio)) < tileLayouts[S2Config.LAYOUTMAP.get(resolution)].height) {
+                SystemUtils.LOG.log(Level.parse(S2Config.LOG_DEBUG), "Test if we need extra processing here");
             }
 
             tgeox.numRowsDetector = gpos.getNROWS();
