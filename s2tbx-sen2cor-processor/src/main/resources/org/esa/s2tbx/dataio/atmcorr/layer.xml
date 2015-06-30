@@ -17,7 +17,7 @@
     </folder>
 
     <folder name="Menu">
-        <folder name="Processing">
+        <folder name="Optical">
             <folder name="Thematic Land Processing">
                 <file name="org-esa-s2tbx-sen2cor-AtmCorAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-sen2cor-AtmCorAction.instance"/>
