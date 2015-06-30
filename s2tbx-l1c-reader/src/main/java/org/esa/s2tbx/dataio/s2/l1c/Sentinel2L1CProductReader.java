@@ -70,7 +70,6 @@ import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -281,9 +280,9 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         String autoGrouping = "";
 
         for (String utmZone : metadataHeader.getUTMZonesList()) {
-            autoGrouping += utmZone.replace(':', '_');
+            autoGrouping += utmZone.replace(':', '_') + ":";
         }
-        autoGrouping += ":reflec:radiance:sun:view";
+        autoGrouping += "reflec:radiance:sun:view";
         product.setAutoGrouping(autoGrouping);
 
 
@@ -509,7 +508,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         int index = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
         int defRes = S2SpatialResolution.R10M.resolution;
 
-        String bandName = utmZoneCode + bandInfo.wavebandInfo.bandName;
+        String bandName = utmZoneCode + "_" + bandInfo.wavebandInfo.bandName;
         bandName = bandName.replace(':', '_');
         final Band band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
         product.addBand(band);

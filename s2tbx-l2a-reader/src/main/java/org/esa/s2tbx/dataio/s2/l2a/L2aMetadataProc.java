@@ -134,7 +134,7 @@ public class L2aMetadataProc extends S2MetadataProc {
     }
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
-        ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
+        ClassLoader s2c = Level2A_User_Product.class.getClassLoader();
         JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L2A, s2c);
         return jaxbContext;
     }

@@ -15,16 +15,16 @@ public class S2L1bDatastripFilenameTest {
     @Test
     public void testFileName() throws Exception
     {
-        S2DatastripFilename s2gf = S2L1BDatastripFilename.create("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928");
+        S2DatastripFilename s2gf = S2L1BDatastripFilename.create("S2A_OPER_MTD_L1B_DS_CGS1_20130621T120000_S20091211T165928");
         assertNotNull(s2gf);
-        assertEquals("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928", s2gf.name);
+        assertEquals("S2A_OPER_MTD_L1B_DS_CGS1_20130621T120000_S20091211T165928", s2gf.name);
         assertEquals("S2A", s2gf.missionID);
         assertEquals("OPER", s2gf.fileClass);
         assertEquals("MTD_", s2gf.fileCategory);
-        assertEquals("L1C_DS", s2gf.fileSemantic);
+        assertEquals("L1B_DS", s2gf.fileSemantic);
         assertEquals("CGS1", s2gf.siteCentre);
         assertEquals("20130621T120000", s2gf.creationDate);
-        assertEquals("S20091211T165928", s2gf.applicabilityStart);
+        assertEquals("20091211T165928", s2gf.applicabilityStart);
     }
 
     @Test

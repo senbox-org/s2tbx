@@ -34,7 +34,6 @@ import org.esa.snap.util.SystemUtils;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import java.io.File;
@@ -61,6 +60,8 @@ import java.util.stream.Collectors;
  * @author Norman Fomferra
  */
 public class L1cMetadata extends S2Metadata {
+
+    private static final String PSD_STRING = "13";
 
     private MetadataElement metadataElement;
     protected Logger logger = SystemUtils.LOG;
@@ -282,7 +283,7 @@ public class L1cMetadata extends S2Metadata {
     }
 
     private L1cMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts) throws JDOMException, JAXBException, FileNotFoundException {
-        super(tileLayouts, L1cMetadataProc.getJaxbContext());
+        super(tileLayouts, L1cMetadataProc.getJaxbContext(), PSD_STRING);
 
         try {
             Object userProduct = updateAndUnmarshal(stream);
