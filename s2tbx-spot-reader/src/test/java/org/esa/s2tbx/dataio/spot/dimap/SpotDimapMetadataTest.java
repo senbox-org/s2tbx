@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -36,11 +37,12 @@ import static org.junit.Assert.assertNotNull;
  */
 public class SpotDimapMetadataTest {
     private SpotDimapMetadata metadata;
+    private String productsFolder = "_spot" + File.separator;
 
     @Before
     public void setUp() throws Exception {
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new SpotDimapMetadata.SpotDimapMetadataParser(SpotDimapMetadata.class));
-        metadata = XmlMetadata.create(SpotDimapMetadata.class, TestUtil.getTestFile("metadata.dim"));
+        metadata = XmlMetadata.create(SpotDimapMetadata.class, TestUtil.getTestFile(productsFolder + "metadata.dim"));
     }
 
     @Test
@@ -231,7 +233,7 @@ public class SpotDimapMetadataTest {
 
     @Test
     public void testGetPath() throws Exception {
-        assertEquals(TestUtil.getTestFile("metadata.dim").getAbsolutePath(), metadata.getPath());
+        assertEquals(TestUtil.getTestFile(productsFolder + "metadata.dim").getAbsolutePath(), metadata.getPath());
     }
 
     @Test

@@ -42,6 +42,7 @@ import static org.junit.Assert.*;
 public class SpotTake5ProductReaderPluginTest {
 
     private SpotTake5ProductReaderPlugin plugIn;
+    private String productsFolder = "_spot" + File.separator;
 
     @Before
     public void setup() {
@@ -58,9 +59,9 @@ public class SpotTake5ProductReaderPluginTest {
     @Test
     public void testDecodeQualificationForXML() throws IOException {
         Date startDate = Calendar.getInstance().getTime();
-        DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("dimap/test_ST4_MT.xml"));
+        DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "dimap/test_ST4_MT.xml"));
         assertEquals(DecodeQualification.UNABLE, decodeQualification);
-        decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.tgz"));
+        decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.tgz"));
         assertEquals(DecodeQualification.INTENDED, decodeQualification);
         Date endDate = Calendar.getInstance().getTime();
         assertTrue("The decoding time for the file is too big!", (endDate.getTime() - startDate.getTime()) / 1000 < 30);//30 sec

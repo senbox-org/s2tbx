@@ -38,6 +38,7 @@ import static org.junit.Assert.*;
 public class RapidEyeL3ReaderTest {
 
     private RapidEyeL3Reader reader;
+    private String productsFolder = "_rapideye" + File.separator;
 
     @Before
     public void setup() {
@@ -53,8 +54,8 @@ public class RapidEyeL3ReaderTest {
     @Test
     public void testReadProductNodes() {
         Date startDate = Calendar.getInstance().getTime();
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("Eritrea/1234567890_metadata.xml");
+        //Product product = new Product("name", "desc", 100, 100);
+        File file = TestUtil.getTestFile(productsFolder + "Eritrea/1234567890_metadata.xml");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -76,9 +77,9 @@ public class RapidEyeL3ReaderTest {
     @Test
     public void testReadBandRasterData() {
         Date startDate = Calendar.getInstance().getTime();
-        Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile("Eritrea/1234567890_metadata.xml");
-        File rasterFile = TestUtil.getTestFile("mediumImage.tif");
+        //Product product = new Product("name", "desc", 100, 200);
+        File file = TestUtil.getTestFile(productsFolder + "Eritrea/1234567890_metadata.xml");
+        //File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "200");
         try {
@@ -102,8 +103,8 @@ public class RapidEyeL3ReaderTest {
 
     @Test
     public void testGetProductComponentsOnFileInput() {
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("Eritrea/1234567890_metadata.xml");
+        //Product product = new Product("name", "desc", 100, 100);
+        File file = TestUtil.getTestFile(productsFolder + "Eritrea/1234567890_metadata.xml");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
@@ -118,8 +119,8 @@ public class RapidEyeL3ReaderTest {
 
     @Test
     public void testGetProductComponentsOnArchiveInput() {
-        Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("Demo26_3A.zip");
+        //Product product = new Product("name", "desc", 100, 100);
+        File file = TestUtil.getTestFile(productsFolder + "Demo26_3A.zip");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();

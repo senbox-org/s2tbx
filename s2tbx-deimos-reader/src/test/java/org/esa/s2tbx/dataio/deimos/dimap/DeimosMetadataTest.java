@@ -27,6 +27,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.awt.*;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -37,12 +38,14 @@ import java.util.TimeZone;
  *
  */
 public class DeimosMetadataTest extends TestCase {
+
     private DeimosMetadata metadata;
+    private String productsFolder = "_deimos" + File.separator;
 
     @Before
     public void setUp() throws Exception {
         XmlMetadataParserFactory.registerParser(DeimosMetadata.class, new XmlMetadataParser<>(DeimosMetadata.class));
-        metadata = XmlMetadata.create(DeimosMetadata.class, TestUtil.getTestFile("DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502/DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502.dim"));
+        metadata = XmlMetadata.create(DeimosMetadata.class, TestUtil.getTestFile(productsFolder + "DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502/DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502.dim"));
     }
 
     @After

@@ -24,6 +24,7 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -33,10 +34,11 @@ import java.util.TimeZone;
  */
 public class NITFMetadataTest extends TestCase {
     private NITFMetadata metadata;
+    private String productsFolder = "_rapideye" + File.separator;
 
     @Before
     public void setUp() throws Exception {
-        NITFReaderWrapper reader = new NITFReaderWrapper(TestUtil.getTestFile("2009-04-16T104920_RE4_1B-NAC_3436599_84303_band2.ntf"));
+        NITFReaderWrapper reader = new NITFReaderWrapper(TestUtil.getTestFile(productsFolder + "2009-04-16T104920_RE4_1B-NAC_3436599_84303_band2.ntf"));
         metadata = reader.getMetadata();
     }
 

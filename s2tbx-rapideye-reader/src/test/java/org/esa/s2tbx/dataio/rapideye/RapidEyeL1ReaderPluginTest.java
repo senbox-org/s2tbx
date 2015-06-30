@@ -42,6 +42,7 @@ import static org.junit.Assert.*;
 public class RapidEyeL1ReaderPluginTest {
 
     private RapidEyeL1ReaderPlugin plugIn;
+    private String productsFolder = "_rapideye" + File.separator;
 
     @Before
     public void setup() {
@@ -58,9 +59,9 @@ public class RapidEyeL1ReaderPluginTest {
     @Test
     public void testDecodeQualificationForXML() throws IOException {
         Date startDate = Calendar.getInstance().getTime();
-        DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("dimap/test_ST4_MT.xml"));
+        DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "dimap/test_ST4_MT.xml"));
         assertEquals(DecodeQualification.UNABLE, decodeQualification);
-        decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile("Demo03_1B/2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
+        decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "Demo03_1B/2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
         assertEquals(DecodeQualification.INTENDED, decodeQualification);
         Date endDate = Calendar.getInstance().getTime();
         assertTrue("The decoding time for the file is too big!", (endDate.getTime() - startDate.getTime()) / 1000 < 30);//30 sec
