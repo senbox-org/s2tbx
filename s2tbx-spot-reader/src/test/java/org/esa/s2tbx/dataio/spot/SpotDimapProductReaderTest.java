@@ -38,6 +38,7 @@ import static org.junit.Assert.*;
 public class SpotDimapProductReaderTest {
 
     private SpotDimapProductReader reader;
+    private String productsFolder = "_spot" + File.separator;
 
     @Before
     public void setup() {
@@ -54,7 +55,7 @@ public class SpotDimapProductReaderTest {
     public void testReadProductNodesBySimpleProductReader(){
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
+        File file = TestUtil.getTestFile(productsFolder + "30382639609301123571X0_1A_NETWORK.ZIP");
         //System.setProperty("snap.reader.tileWidth", "100");
         //System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -78,7 +79,7 @@ public class SpotDimapProductReaderTest {
     public void testReadBandRasterDataBySimpleProductReader(){
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
+        File file = TestUtil.getTestFile(productsFolder + "30382639609301123571X0_1A_NETWORK.ZIP");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "200");
         try {
@@ -104,7 +105,7 @@ public class SpotDimapProductReaderTest {
     @Test
     public void testGetProductComponentsOnVolumeFileInputBySimpleProductReader(){
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("vol_list.dim");
+        File file = TestUtil.getTestFile(productsFolder + "vol_list.dim");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -131,7 +132,7 @@ public class SpotDimapProductReaderTest {
     @Test
     public void testGetProductComponentsOnArchiveInputBySimpleProductReader(){
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("30382639609301123571X0_1A_NETWORK.ZIP");
+        File file = TestUtil.getTestFile(productsFolder + "30382639609301123571X0_1A_NETWORK.ZIP");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -150,7 +151,7 @@ public class SpotDimapProductReaderTest {
     public void testReadProductNodesByVolumeProductReader(){
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
         //System.setProperty("snap.reader.tileWidth", "100");
         //System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -174,7 +175,7 @@ public class SpotDimapProductReaderTest {
     public void testReadBandRasterDataByVolumeProductReader(){
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "200");
         try {
@@ -200,7 +201,7 @@ public class SpotDimapProductReaderTest {
     @Test
     public void testGetProductComponentsOnVolumeFileInputByVolumeProductReader(){
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -231,7 +232,7 @@ public class SpotDimapProductReaderTest {
         //no archive to input this method!
         /*
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SPOT-5_2.5mc_3\\VOL_LIST.DIM");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {

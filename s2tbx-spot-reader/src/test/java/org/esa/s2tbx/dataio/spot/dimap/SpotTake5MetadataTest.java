@@ -24,6 +24,7 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -36,11 +37,12 @@ import static org.junit.Assert.assertEquals;
 public class SpotTake5MetadataTest {
 
     private SpotTake5Metadata metadata;
+    private String productsFolder = "_spot" + File.separator;
 
     @Before
     public void setUp() throws Exception {
         XmlMetadataParserFactory.registerParser(SpotTake5Metadata.class, new XmlMetadataParser<SpotTake5Metadata>(SpotTake5Metadata.class));
-        metadata = XmlMetadata.create(SpotTake5Metadata.class, TestUtil.getTestFile("SPOT4_HRVIR1_XS_20130616_N2A_JTanzanieD0000B0000.xml"));
+        metadata = XmlMetadata.create(SpotTake5Metadata.class, TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_20130616_N2A_JTanzanieD0000B0000.xml"));
     }
 
     @Test

@@ -37,6 +37,7 @@ import static org.junit.Assert.*;
 public class DeimosProductReaderTest {
 
     private DeimosProductReader reader;
+    private String productsFolder = "_deimos" + File.separator;
 
     @Before
     public void setup() {
@@ -52,7 +53,7 @@ public class DeimosProductReaderTest {
     @Test
     public void testReadProductNodes() {
         Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile("small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
+        File file = TestUtil.getTestFile(productsFolder + "small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -75,7 +76,7 @@ public class DeimosProductReaderTest {
     @Test
     public void testReadBandRasterData() {
         Date startDate = Calendar.getInstance().getTime();
-        File file = TestUtil.getTestFile("small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
+        File file = TestUtil.getTestFile(productsFolder + "small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
         try {
 
             Product finalProduct = reader.readProductNodes(file, null);
@@ -97,7 +98,7 @@ public class DeimosProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnFileInput() {
-        File file = TestUtil.getTestFile("small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
+        File file = TestUtil.getTestFile(productsFolder + "small_deimos/DE01_SL6_22P_1T_20110228T092316_20110616T092427_DMI_0_2e9d.dim");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -114,7 +115,7 @@ public class DeimosProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnArchiveInput() {
-        File file = TestUtil.getTestFile("small_deimos.zip");
+        File file = TestUtil.getTestFile(productsFolder + "small_deimos.zip");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {

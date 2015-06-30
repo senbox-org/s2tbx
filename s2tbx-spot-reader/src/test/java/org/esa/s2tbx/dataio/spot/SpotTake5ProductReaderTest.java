@@ -38,6 +38,7 @@ import static org.junit.Assert.*;
 public class SpotTake5ProductReaderTest {
 
     private SpotTake5ProductReader reader;
+    private String productsFolder = "_spot" + File.separator;
 
     @Before
     public void setup() {
@@ -54,7 +55,7 @@ public class SpotTake5ProductReaderTest {
     public void testReadProductNodes() {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.xml");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -77,8 +78,8 @@ public class SpotTake5ProductReaderTest {
     public void testReadBandRasterData() {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.xml");
-        File rasterFile = TestUtil.getTestFile("mediumImage.tif");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
+        File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "200");
         try {
@@ -103,7 +104,7 @@ public class SpotTake5ProductReaderTest {
     @Test
     public void testGetProductComponentsOnFileInput() {
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.xml");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -121,7 +122,7 @@ public class SpotTake5ProductReaderTest {
     @Test
     public void testGetProductComponentsOnArchiveInput() {
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SPOT4_HRVIR1_XS_88888888_N1A.tgz");
+        File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.tgz");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {

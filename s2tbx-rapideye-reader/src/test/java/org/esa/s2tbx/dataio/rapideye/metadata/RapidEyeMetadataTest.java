@@ -27,6 +27,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -36,6 +37,7 @@ import java.util.TimeZone;
  */
 public class RapidEyeMetadataTest extends TestCase {
     private RapidEyeMetadata metadata;
+    private String productsFolder = "_rapideye" + File.separator;
 
     @After
     public void tearDown(){
@@ -46,7 +48,7 @@ public class RapidEyeMetadataTest extends TestCase {
     @Before
     public void setUp() throws Exception {
         XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<RapidEyeMetadata>(RapidEyeMetadata.class));
-        metadata = XmlMetadata.create(RapidEyeMetadata.class, TestUtil.getTestFile("2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
+        metadata = XmlMetadata.create(RapidEyeMetadata.class, TestUtil.getTestFile(productsFolder + "2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
     }
 
     @Test
@@ -179,7 +181,7 @@ public class RapidEyeMetadataTest extends TestCase {
     @Test
     public void testGetPath() throws Exception {
         String root = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
-        String partialPath = root + "\\2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml";
+        String partialPath = root + File.separator + productsFolder + "2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml";
         if(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_MAC_OSX)
         {
             partialPath = partialPath.replaceAll("\\\\", "/");

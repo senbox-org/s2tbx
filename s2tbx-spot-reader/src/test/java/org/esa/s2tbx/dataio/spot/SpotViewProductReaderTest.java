@@ -38,6 +38,7 @@ import static org.junit.Assert.*;
 public class SpotViewProductReaderTest {
 
     private SpotViewProductReader reader;
+    private String productsFolder = "_spot" + File.separator;
 
     @Before
     public void setup() {
@@ -54,7 +55,7 @@ public class SpotViewProductReaderTest {
     public void testReadProductNodes() {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
+        File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -77,8 +78,8 @@ public class SpotViewProductReaderTest {
     public void testReadBandRasterData() {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
-        File rasterFile = TestUtil.getTestFile("mediumImage.tif");
+        File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
+        File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "200");
         try {
@@ -103,7 +104,7 @@ public class SpotViewProductReaderTest {
     @Test
     public void testGetProductComponentsOnFileInput() {
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml");
+        File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
@@ -129,7 +130,7 @@ public class SpotViewProductReaderTest {
     @Test
     public void testGetProductComponentsOnArchiveInput() {
         Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
+        File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
         System.setProperty("snap.reader.tileWidth", "100");
         System.setProperty("snap.reader.tileHeight", "100");
         try {
