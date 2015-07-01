@@ -31,6 +31,8 @@ import org.esa.snap.util.io.SnapFileFilter;
 import java.io.File;
 import java.util.Locale;
 
+import static org.esa.s2tbx.dataio.s2.S2CRSHelper.*;
+
 /**
  * @author Norman Fomferra
  */
@@ -54,7 +56,6 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
                 else {
                     deco = DecodeQualification.UNABLE;
                 }
-                // deco = DecodeQualification.INTENDED;
             }
             else
             {
@@ -81,7 +82,7 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-MultiRes-" + S2CRSHelper.epsgToShortDisplayName(getEPSG())};
+        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-MultiRes-" + epsgToShortDisplayName(getEPSG())};
     }
 
     @Override
@@ -91,7 +92,7 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
 
     @Override
     public String getDescription(Locale locale) {
-        return String.format("Sentinel-2 MSI L1C - all resolutions - %s", S2CRSHelper.epsgToDisplayName(getEPSG()));
+        return String.format("Sentinel-2 MSI L1C - all resolutions - %s", epsgToDisplayName(getEPSG()));
     }
 
     @Override

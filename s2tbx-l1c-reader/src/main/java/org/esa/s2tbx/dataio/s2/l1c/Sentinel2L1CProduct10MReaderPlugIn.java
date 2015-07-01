@@ -18,11 +18,13 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
-import org.esa.s2tbx.dataio.s2.S2CRSHelper;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.util.SystemUtils;
 
 import java.util.Locale;
+
+import static org.esa.s2tbx.dataio.s2.S2CRSHelper.epsgToDisplayName;
+import static org.esa.s2tbx.dataio.s2.S2CRSHelper.epsgToShortDisplayName;
 
 /**
  * @author Nicolas Ducoin
@@ -37,11 +39,11 @@ public abstract class Sentinel2L1CProduct10MReaderPlugIn extends Sentinel2L1CPro
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-10M-" + S2CRSHelper.epsgToShortDisplayName(getEPSG())};
+        return new String[]{String.format("%s-10M-%s", S2L1CConfig.getInstance().getFormatName(), epsgToShortDisplayName(getEPSG()))};
     }
 
     @Override
     public String getDescription(Locale locale) {
-        return String.format("Sentinel-2 MSI L1C - 1Om bands - %s", S2CRSHelper.epsgToDisplayName(getEPSG()));
+        return String.format("Sentinel-2 MSI L1C - 1Om bands - %s", epsgToDisplayName(getEPSG()));
     }
 }
