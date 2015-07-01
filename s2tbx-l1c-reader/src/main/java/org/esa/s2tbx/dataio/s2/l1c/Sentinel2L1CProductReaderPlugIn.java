@@ -25,6 +25,8 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
+import org.esa.snap.framework.datamodel.RGBImageProfile;
+import org.esa.snap.framework.datamodel.RGBImageProfileManager;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.SnapFileFilter;
 
@@ -39,6 +41,11 @@ import static org.esa.s2tbx.dataio.s2.S2CRSHelper.*;
 public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPlugIn {
 
     static private L1cProductCRSCache crsCache = new L1cProductCRSCache();
+
+    public Sentinel2L1CProductReaderPlugIn() {
+        RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Natural Colors", new String[]{"B4", "B3", "B2"}));
+    }
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
