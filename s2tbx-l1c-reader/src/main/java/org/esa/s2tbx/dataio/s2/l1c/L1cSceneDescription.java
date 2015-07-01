@@ -74,6 +74,8 @@ public class L1cSceneDescription extends S2SceneDescription {
     }
 
     public static L1cSceneDescription create(L1cMetadata header, L1cMetadata.Tile.idGeom index, S2Config config) {
+        // TODO update for single UTM zones
+        // TODO update
         List<L1cMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];

@@ -19,6 +19,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
+import org.esa.s2tbx.dataio.s2.S2CRSHelper;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
@@ -33,7 +34,9 @@ import java.util.Locale;
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2L1CProductReaderPlugIn implements ProductReaderPlugIn {
+public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPlugIn {
+
+    static private L1cProductCRSCache crsCache = new L1cProductCRSCache();
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -44,7 +47,14 @@ public class Sentinel2L1CProductReaderPlugIn implements ProductReaderPlugIn {
         if (deco.equals(DecodeQualification.SUITABLE)) {
             S2ProductFilename productFilename = S2ProductFilename.create(file.getName());
             if (productFilename != null && productFilename.fileSemantic.contains("L1C")) {
-                deco = DecodeQualification.INTENDED;
+                crsCache.ensureIsCached(file.getAbsolutePath());
+                if (crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
+                    deco = DecodeQualification.INTENDED;
+                }
+                else {
+                    deco = DecodeQualification.UNABLE;
+                }
+                // deco = DecodeQualification.INTENDED;
             }
             else
             {
@@ -55,6 +65,8 @@ public class Sentinel2L1CProductReaderPlugIn implements ProductReaderPlugIn {
         return deco;
     }
 
+    abstract public String getEPSG();
+
     @Override
     public Class[] getInputTypes() {
         return new Class[]{String.class, File.class};
@@ -64,7 +76,7 @@ public class Sentinel2L1CProductReaderPlugIn implements ProductReaderPlugIn {
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader Multisize...");
 
-        return new Sentinel2L1CProductReader(this, false);
+        return new Sentinel2L1CProductReader(this, false, 10, true, getEPSG());
     }
 
     @Override
@@ -79,7 +91,7 @@ public class Sentinel2L1CProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1C Multisize";
+        return String.format("Sentinel-2 MSI L1C - all resolutions - %s", S2CRSHelper.epsgToDisplayName(getEPSG()));
     }
 
     @Override

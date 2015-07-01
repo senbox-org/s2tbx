@@ -18,6 +18,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
+import org.esa.s2tbx.dataio.s2.S2CRSHelper;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.util.SystemUtils;
 
@@ -27,13 +28,13 @@ import java.util.Locale;
 /**
  * @author Nicolas Ducoin
  */
-public class Sentinel2L1CProduct60MReaderPlugIn extends Sentinel2L1CProductReaderPlugIn {
+public abstract class Sentinel2L1CProduct60MReaderPlugIn extends Sentinel2L1CProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader 60M");
 
-        return new Sentinel2L1CProductReader(this, false, 60);
+        return new Sentinel2L1CProductReader(this, false, 60, false, getEPSG());
     }
 
     @Override
@@ -43,7 +44,6 @@ public class Sentinel2L1CProduct60MReaderPlugIn extends Sentinel2L1CProductReade
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1C 60M";
+        return String.format("Sentinel-2 MSI L1C - 6Om bands - %s", S2CRSHelper.epsgToDisplayName(getEPSG()));
     }
-
 }

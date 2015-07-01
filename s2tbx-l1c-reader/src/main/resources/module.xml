@@ -39,15 +39,6 @@
             <useAllFileFilter>true</useAllFileFilter>
             <parent>importMultispectral</parent>
         </action>
-        <!-- Mock-up reader
-                <action>
-                    <id>importSentinel3Product</id>
-                    <helpId>importSentinel3Product</helpId>
-                    <class>org.esa.snap.visat.actions.ProductImportAction</class>
-                    <formatName>SENTINEL-3-SLSTR</formatName>
-                    <useAllFileFilter>true</useAllFileFilter>
-                </action>
-        -->
     </extension>
 
     <extension point="snap-core:rgbProfiles">

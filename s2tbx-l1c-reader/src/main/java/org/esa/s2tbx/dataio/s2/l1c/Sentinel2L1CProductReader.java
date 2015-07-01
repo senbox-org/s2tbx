@@ -118,6 +118,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     private final boolean forceResize;
     private final int productResolution;
     private final boolean isMultiResolution;
+    private final String epsgCode;
 
     private File cacheDir;
     protected final Logger logger;
@@ -149,21 +150,13 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         }
     }
 
-    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution) {
+    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution, boolean isMultiResolution, String epsgCode) {
         super(readerPlugIn, S2L1CConfig.getInstance());
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
-        isMultiResolution = false;
+        this.isMultiResolution = isMultiResolution;
         this.productResolution = productResolution;
-    }
-
-
-    Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
-        super(readerPlugIn, S2L1CConfig.getInstance());
-        logger = SystemUtils.LOG;
-        this.forceResize = forceResize;
-        this.productResolution = DEFAULT_RESOLUTION;
-        isMultiResolution = true;
+        this.epsgCode = epsgCode;
     }
 
     @Override
@@ -279,6 +272,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
         String autoGrouping = "";
 
+        // TODO update autogrouping
         for (String utmZone : metadataHeader.getUTMZonesList()) {
             autoGrouping += utmZone.replace(':', '_') + ":";
         }
@@ -286,6 +280,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         product.setAutoGrouping(autoGrouping);
 
 
+        // TODO : only a single UTM zone
         // create the band mosaics per UTM zones
         for (String utmZone : metadataHeader.getUTMZonesList()) {
             Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();

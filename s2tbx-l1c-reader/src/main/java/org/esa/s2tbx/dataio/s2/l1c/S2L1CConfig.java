@@ -48,7 +48,7 @@ public class S2L1CConfig implements S2Config {
             new TileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
     };
 
-    String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
+    final String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
 
     @Override
     public TileLayout[] getTileLayouts() {

@@ -297,7 +297,7 @@ public class L1cMetadata extends S2Metadata {
                 initTile(stream, file, parent, userProduct);
             }
         } catch (UnmarshalException|JDOMException e) {
-            logger.severe(String.format("Product is not conform to PSD: ", e.getMessage()));
+            logger.severe(String.format("Product is not conform to PSD: %s", e.getMessage()));
             throw e;
         } catch (JAXBException e) {
             logger.severe(Utils.getStackTrace(e));
