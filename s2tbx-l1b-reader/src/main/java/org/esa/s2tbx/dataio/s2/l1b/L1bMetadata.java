@@ -63,6 +63,8 @@ import java.util.logging.Logger;
  */
 public class L1bMetadata extends S2Metadata {
 
+    private static final String PSD_STRING = "13";
+
     private MetadataElement metadataElement;
     protected Logger logger = SystemUtils.LOG;
 
@@ -181,7 +183,7 @@ public class L1bMetadata extends S2Metadata {
     }
 
     private L1bMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts) throws DataConversionException, JAXBException, FileNotFoundException {
-        super(tileLayouts, L1bMetadataProc.getJaxbContext());
+        super(tileLayouts, L1bMetadataProc.getJaxbContext(), PSD_STRING);
 
         try {
             Object userProductOrTile = updateAndUnmarshal(stream);

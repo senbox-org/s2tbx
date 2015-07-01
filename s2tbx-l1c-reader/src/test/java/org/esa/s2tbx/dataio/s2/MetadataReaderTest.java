@@ -5,6 +5,7 @@ import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_datastrip_metadata.
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import junit.framework.Assert;
+import org.esa.s2tbx.dataio.s2.l1c.L1cMetadata;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
@@ -15,7 +16,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
 
 /**
- * Created by opicas-p on 24/06/2014.
+ * @author opicas-p
  */
 public class MetadataReaderTest {
 
@@ -33,6 +34,8 @@ public class MetadataReaderTest {
 
 
         InputStream stream = getClass().getResourceAsStream(streamResource);
+
+
 
         Object ob =  unmarshaller.unmarshal(stream);
         Object casted = ((JAXBElement)ob).getValue();

@@ -1,5 +1,5 @@
 <?xml version ="1.0" encoding="UTF-8"?>
-   <n1:Level-1B_User_Product xsi:schemaLocation="https://psd-12.sentinel2.eo.esa.int/PSD/User_Product_Level-1B.xsd S2_User_Product_Level-1B_Metadata.xsd" xmlns:n1="https://psd-12.sentinel2.eo.esa.int/PSD/User_Product_Level-1B.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <n1:Level-1B_User_Product xsi:schemaLocation="https://psd-13.sentinel2.eo.esa.int/PSD/User_Product_Level-1B.xsd S2_User_Product_Level-1B_Metadata.xsd" xmlns:n1="https://psd-13.sentinel2.eo.esa.int/PSD/User_Product_Level-1B.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <n1:General_Info>
          <Product_Info>
             <PRODUCT_START_TIME>2013-07-07T17:19:25Z</PRODUCT_START_TIME>

@@ -36,7 +36,6 @@ import org.jdom.DataConversionException;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,6 +58,7 @@ import java.util.logging.Logger;
  */
 public class L2aMetadata extends S2Metadata {
 
+    private static final String PSD_STRING = "12";
 
     private MetadataElement metadataElement;
     protected Logger logger = SystemUtils.LOG;
@@ -204,7 +204,7 @@ public class L2aMetadata extends S2Metadata {
     }
 
     private L2aMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts) throws DataConversionException, JAXBException, FileNotFoundException {
-        super(tileLayouts, L2aMetadataProc.getJaxbContext());
+        super(tileLayouts, L2aMetadataProc.getJaxbContext(), PSD_STRING);
 
         try {
             Object userProductOrTile = updateAndUnmarshal(stream);

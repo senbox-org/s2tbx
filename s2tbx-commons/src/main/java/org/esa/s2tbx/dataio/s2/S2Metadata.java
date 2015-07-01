@@ -51,10 +51,12 @@ public abstract class S2Metadata {
 
     private Unmarshaller unmarshaller;
 
-    public S2Metadata(TileLayout[] tileLayouts, JAXBContext context) throws JAXBException {
-        this.tileLayouts = tileLayouts;
+    private String psdString;
 
-        unmarshaller = context.createUnmarshaller();
+    public S2Metadata(TileLayout[] tileLayouts, JAXBContext context, String psdString) throws JAXBException {
+        this.tileLayouts = tileLayouts;
+        this.unmarshaller = context.createUnmarshaller();
+        this.psdString = psdString;
     }
 
     public TileLayout[] getTileLayouts() {
@@ -63,7 +65,7 @@ public abstract class S2Metadata {
 
 
     protected Object updateAndUnmarshal(InputStream xmlStream) throws IOException, JAXBException {
-        InputStream updatedStream = changePSDIfRequired(xmlStream);
+        InputStream updatedStream = changePSDIfRequired(xmlStream, psdString);
         Object ob = unmarshaller.unmarshal(updatedStream);
         return ((JAXBElement) ob).getValue();
     }
@@ -73,12 +75,12 @@ public abstract class S2Metadata {
      * xsd files. This allows to open product with psd different from the reference one
      * for small changes.
      */
-    static InputStream changePSDIfRequired(InputStream xmlStream) throws IOException {
+    static InputStream changePSDIfRequired(InputStream xmlStream, String psdNumber) throws IOException {
         InputStream updatedXmlStream;
 
         String xmlStreamAsString = IOUtils.toString(xmlStream);
 
-        final String psd13String = "psd-13.sentinel2.eo.esa.int";
+        final String psd13String = "psd-" + psdNumber + ".sentinel2.eo.esa.int";
         if (!xmlStreamAsString.contains(psd13String)) {
             String regex="psd-\\d{2,}.sentinel2.eo.esa.int";
             String updatedXmlStreamAsString =
