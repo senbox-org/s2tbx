@@ -268,18 +268,8 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayouts()[0].numResolutions);
+        product.setAutoGrouping("sun:view");
 
-        String autoGrouping = "";
-
-        // TODO update autogrouping
-        for (String utmZone : metadataHeader.getUTMZonesList()) {
-            autoGrouping += utmZone.replace(':', '_') + ":";
-        }
-        autoGrouping += "reflec:radiance:sun:view";
-        product.setAutoGrouping(autoGrouping);
-
-
-        // TODO : only a single UTM zone
         // create the band mosaics per UTM zones
         for (String utmZone : metadataHeader.getUTMZonesList()) {
             Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
@@ -288,7 +278,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             // otherwise get the list of tiles for this UTM zone
             List<L1cMetadata.Tile> utmZoneTileList = metadataHeader.getTileList(utmZone);
             if (isAGranule) {
-                utmZoneTileList =utmZoneTileList.stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+                utmZoneTileList = utmZoneTileList.stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
             }
             // for all bands of the UTM zone, store tiles files names
             for (L1cMetadata.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
@@ -326,7 +316,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
             if(!bandInfoMap.isEmpty())
             {
-                addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())), utmZone);
+                addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
             }
 
             List<EopPolygon> polygons = filterMasksInUTMZones(utmZoneTileList);
@@ -441,8 +431,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
 
-    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif, String utmZoneMap) throws IOException {
-
+    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
         Collections.sort(bandIndexes);
 
@@ -455,13 +444,13 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
             if(isMultiResolution || bandInfo.getWavebandInfo().resolution.resolution == this.productResolution)
             {
-                Band band = addBand(product, bandInfo, utmZoneMap);
+                Band band = addBand(product, bandInfo);
                 band.setSourceImage(mlif.createSourceImage(bandInfo));
 
                 if(!forceResize)
                 {
                     try {
-                        band.setGeoCoding(new CrsGeoCoding(CRS.decode(utmZoneMap),
+                        band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
                                 band.getRasterWidth(),
                                 band.getRasterHeight(),
                                 envelope.getMinX(),
@@ -491,19 +480,15 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                     } catch (NoninvertibleTransformException e) {
                         logger.severe("Illegal transform");
                     }
-
                 }
-
             }
         }
     }
 
-    private Band addBand(Product product, BandInfo bandInfo, String utmZoneCode) {
+    private Band addBand(Product product, BandInfo bandInfo) {
         int index = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
-        int defRes = S2SpatialResolution.R10M.resolution;
 
-        String bandName = utmZoneCode + "_" + bandInfo.wavebandInfo.bandName;
-        bandName = bandName.replace(':', '_');
+        String bandName = bandInfo.wavebandInfo.bandName;
         final Band band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
         product.addBand(band);
 
