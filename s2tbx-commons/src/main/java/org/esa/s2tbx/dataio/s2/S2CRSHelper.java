@@ -37,9 +37,23 @@ public class S2CRSHelper {
         if (matcher.matches()) {
             char hemisphereIdentifier = matcher.group(1).charAt(0);
             String zone = matcher.group(2);
-
-            char hemisphere = (hemisphereIdentifier == '6' ? 'N' : 'S');
+            char hemisphere = (('6' == hemisphereIdentifier) ? 'N' : 'S');
             displayName = String.format("WGS84 / UTM zone %s%s", zone, hemisphere);
+        }
+        else {
+            throw new IllegalArgumentException(String.format("Illegal UTM EPSG code identifier %s", epsg));
+        }
+        return displayName;
+    }
+
+    static public String epsgToShortDisplayName(String epsg) {
+        String displayName;
+        final Matcher matcher = EPSG_PATTERN.matcher(epsg);
+        if (matcher.matches()) {
+            char hemisphereIdentifier = matcher.group(1).charAt(0);
+            String zone = matcher.group(2);
+            char hemisphere = (('6' == hemisphereIdentifier) ? 'N' : 'S');
+            displayName = String.format("UTM%s%s", zone, hemisphere);
         }
         else {
             throw new IllegalArgumentException(String.format("Illegal UTM EPSG code identifier %s", epsg));

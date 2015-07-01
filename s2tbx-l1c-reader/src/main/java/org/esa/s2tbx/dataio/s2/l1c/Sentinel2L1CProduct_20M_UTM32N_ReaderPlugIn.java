@@ -7,12 +7,10 @@ import java.util.Locale;
  */
 public class Sentinel2L1CProduct_20M_UTM32N_ReaderPlugIn extends Sentinel2L1CProduct20MReaderPlugIn {
 
-    final String EPSG = "EPSG:32632";
-
     @Override
     public String getEPSG()
     {
-        return EPSG;
+        return "EPSG:32632";
     }
 
 }

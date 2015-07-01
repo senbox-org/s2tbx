@@ -257,8 +257,8 @@ public class L1cMetadata extends S2Metadata {
 
     private ProductCharacteristics productCharacteristics;
 
-    public static L1cMetadata parseHeader(File file, TileLayout[] tileLayouts) throws JDOMException, IOException, JAXBException {
-        return new L1cMetadata(new FileInputStream(file), file, file.getParent(), tileLayouts);
+    public static L1cMetadata parseHeader(File file, TileLayout[] tileLayouts, String epsg) throws JDOMException, IOException, JAXBException {
+        return new L1cMetadata(new FileInputStream(file), file, file.getParent(), tileLayouts, epsg);
     }
 
     public List<Tile> getTileList() {
@@ -282,7 +282,7 @@ public class L1cMetadata extends S2Metadata {
         return metadataElement;
     }
 
-    private L1cMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts) throws JDOMException, JAXBException, FileNotFoundException {
+    private L1cMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts, String epsg) throws JDOMException, JAXBException, FileNotFoundException {
         super(tileLayouts, L1cMetadataProc.getJaxbContext(), PSD_STRING);
 
         try {
@@ -290,7 +290,7 @@ public class L1cMetadata extends S2Metadata {
 
             if(userProduct instanceof Level1C_User_Product)
             {
-                initProduct(stream, file, parent, userProduct);
+                initProduct(stream, file, parent, userProduct, epsg);
             }
             else
             {
@@ -308,7 +308,7 @@ public class L1cMetadata extends S2Metadata {
         }
     }
 
-    private void initProduct(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+    private void initProduct(InputStream stream, File file, String parent, Object casted, String epsg) throws IOException, JAXBException, JDOMException {
         Level1C_User_Product product = (Level1C_User_Product) casted;
         productCharacteristics = L1cMetadataProc.getProductOrganization(product);
 
@@ -347,6 +347,12 @@ public class L1cMetadata extends S2Metadata {
             Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
             t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
             t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
+
+            if (! t.horizontalCsCode.equals(epsg)) {
+                // skip tiles that are not in the desired UTM zone
+                logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", aGranuleMetadataFile.getName(), t.horizontalCsCode, epsg));
+                continue;
+            }
 
             // counting tiles by UTM zones
             String key = t.horizontalCsCode;

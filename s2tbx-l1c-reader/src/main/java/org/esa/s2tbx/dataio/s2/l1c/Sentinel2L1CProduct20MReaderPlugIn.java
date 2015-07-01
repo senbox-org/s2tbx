@@ -38,7 +38,7 @@ public abstract class Sentinel2L1CProduct20MReaderPlugIn extends Sentinel2L1CPro
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-20M"};
+        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-20M-" + S2CRSHelper.epsgToShortDisplayName(getEPSG())};
     }
 
     @Override

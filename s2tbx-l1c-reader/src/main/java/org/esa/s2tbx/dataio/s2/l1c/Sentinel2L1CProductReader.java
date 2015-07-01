@@ -123,7 +123,6 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     private File cacheDir;
     protected final Logger logger;
 
-
     static class BandInfo {
         final Map<String, File> tileIdToFileMap;
         final int bandIndex;
@@ -238,7 +237,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
 
         try {
-            metadataHeader = L1cMetadata.parseHeader(metadataFile, getConfig().getTileLayouts());
+            metadataHeader = L1cMetadata.parseHeader(metadataFile, getConfig().getTileLayouts(), epsgCode);
         } catch (JDOMException|JAXBException e) {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }

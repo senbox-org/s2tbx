@@ -81,7 +81,7 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-MS"};
+        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-MultiRes-" + S2CRSHelper.epsgToShortDisplayName(getEPSG())};
     }
 
     @Override
