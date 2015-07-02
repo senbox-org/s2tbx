@@ -115,6 +115,8 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     static final int VIEW_ZENITH_GRID_INDEX = 2;
     static final int VIEW_AZIMUTH_GRID_INDEX = 3;
 
+    static final String USER_CACHE_DIR = "s2tbx/l1c-reader/cache";
+
     private final int productResolution;
     private final boolean isMultiResolution;
     private final String epsgCode;
@@ -639,7 +641,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     }
 
     void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), "beam-sentinel2-reader/cache"),
+        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), USER_CACHE_DIR),
                             productDir.getName());
         //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();
