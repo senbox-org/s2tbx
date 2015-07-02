@@ -34,7 +34,7 @@ public abstract class Sentinel2L1CProduct10MReaderPlugIn extends Sentinel2L1CPro
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info(String.format("Building product reader 10M - %s", getEPSG()));
-        return new Sentinel2L1CProductReader(this, false, 10, false, getEPSG());
+        return new Sentinel2L1CProductReader(this, 10, false, getEPSG());
     }
 
     @Override
