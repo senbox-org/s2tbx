@@ -19,6 +19,7 @@
 
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.logging.BeamLogManager;
 
 import java.util.regex.Matcher;
@@ -53,8 +54,19 @@ public class S2GranuleImageFilename {
         this.bandIndex = bandIndex;
     }
 
+    /**
+     *
+     * @return the band index, or -1 if the band index couldn't be parsed
+     */
     public int getBandIndex() {
-        return Integer.parseInt(bandIndex);
+        int bandIndexAsInt = -1;
+        try {
+            Integer.parseInt(bandIndex);
+        } catch (NumberFormatException ex) {
+            SystemUtils.LOG.severe(String.format("Band index \"%s\" extracted from file name should be an integer", bandIndex));
+        }
+
+        return bandIndexAsInt;
     }
 
     public String getTileNumber() {
