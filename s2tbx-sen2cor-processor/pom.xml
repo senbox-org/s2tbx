@@ -4,84 +4,38 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>s2tbx</artifactId>
-        <groupId>org.esa.s2tbx</groupId>
+        <groupId>org.esa.snap</groupId>
         <version>2.0.0-SNAPSHOT</version>
     </parent>
-
     <modelVersion>4.0.0</modelVersion>
+
     <artifactId>s2tbx-sen2cor-processor</artifactId>
-    <name>Sentinel-2 Sen2cor processor</name>
-    <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products</description>
     <packaging>nbm</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-visat-rcp</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-l1c-reader</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-core</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-ui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-core</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-binding</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>ceres-ui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-gpf-ui</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-awt</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-util</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-api-annotations-common</artifactId>
-        </dependency>
-
-    </dependencies>
+    <name>Sentinel-2 Sen2cor processor</name>
+    <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products</description>
 
     <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.17</version>
+                <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <includes>
+                        <include>**/**</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <useDefaultManifestFile>true</useDefaultManifestFile>
                 </configuration>
             </plugin>
             <plugin>
@@ -90,13 +44,21 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <configuration>
+                    <tasks>
+                        <copy file="target/nbm/${project.artifactId}-${project.version}.nbm" tofile="../target/nbm/${project.artifactId}-${project.version}.nbm"/>
+                    </tasks>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
-
 </project>
