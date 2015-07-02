@@ -270,7 +270,11 @@ public abstract class VirtualDirEx extends VirtualDir {
             try {
                 file = wrapped.getFile(relativePath);
             } catch (IOException e) {
-                file = new File(wrapped.getTempDir(), relativePath);
+                try {
+                    file = wrapped.getFile(relativePath.toUpperCase());
+                } catch (IOException ex) {
+                    file = new File(wrapped.getTempDir(), relativePath);
+                }
             }
             if (file == null || !file.exists()) {
                 String key = FileUtils.getFileNameFromPath(relativePath).toLowerCase();
