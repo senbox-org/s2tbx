@@ -56,8 +56,8 @@ public class SpotViewProductReaderTest {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
-        System.setProperty("snap.reader.tileWidth", "100");
-        System.setProperty("snap.reader.tileHeight", "100");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(4, finalProduct.getBands().length);
@@ -80,8 +80,8 @@ public class SpotViewProductReaderTest {
         Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
         File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
-        System.setProperty("snap.reader.tileWidth", "100");
-        System.setProperty("snap.reader.tileHeight", "200");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "200");
         try {
 
             Product finalProduct = reader.readProductNodes(file, null);
@@ -105,8 +105,8 @@ public class SpotViewProductReaderTest {
     public void testGetProductComponentsOnFileInput() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml");
-        System.setProperty("snap.reader.tileWidth", "100");
-        System.setProperty("snap.reader.tileHeight", "100");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
@@ -131,8 +131,8 @@ public class SpotViewProductReaderTest {
     public void testGetProductComponentsOnArchiveInput() {
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
-        System.setProperty("snap.reader.tileWidth", "100");
-        System.setProperty("snap.reader.tileHeight", "100");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();

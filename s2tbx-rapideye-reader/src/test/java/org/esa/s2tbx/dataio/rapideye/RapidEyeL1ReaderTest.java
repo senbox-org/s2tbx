@@ -56,8 +56,8 @@ public class RapidEyeL1ReaderTest {
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "Demo03_1B/2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml");
-        System.setProperty("snap.reader.tileWidth", "100");
-        System.setProperty("snap.reader.tileHeight", "100");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(6, finalProduct.getBands().length);
@@ -80,8 +80,8 @@ public class RapidEyeL1ReaderTest {
         //Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile(productsFolder + "Demo05_1B.zip");
         //File rasterFile = TestUtil.getTestFile("mediumImage.tif");
-        System.setProperty("snap.reader.tileWidth", "100");
-        System.setProperty("snap.reader.tileHeight", "200");
+        System.setProperty("snap.dataio.reader.tileWidth", "100");
+        System.setProperty("snap.dataio.reader.tileHeight", "200");
         try {
 
             Product finalProduct = reader.readProductNodes(file, null);
