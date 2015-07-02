@@ -118,6 +118,8 @@ import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadata.*;
  */
 public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
+    static final String USER_CACHE_DIR = "s2tbx/l1b-reader/cache";
+
     private final boolean forceResize;
     private final boolean isMultiResolution;
 
@@ -633,7 +635,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), "beam-sentinel2-reader/cache"),
+        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), USER_CACHE_DIR),
                             productDir.getName());
         //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();
