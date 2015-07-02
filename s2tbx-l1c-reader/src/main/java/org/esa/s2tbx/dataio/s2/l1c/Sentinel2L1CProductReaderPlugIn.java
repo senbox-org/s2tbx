@@ -84,7 +84,7 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader Multisize...");
 
-        return new Sentinel2L1CProductReader(this, false, 10, true, getEPSG());
+        return new Sentinel2L1CProductReader(this, 10, true, getEPSG());
     }
 
     @Override
