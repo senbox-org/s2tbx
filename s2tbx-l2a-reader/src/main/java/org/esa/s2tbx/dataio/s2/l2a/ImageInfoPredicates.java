@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 public class ImageInfoPredicates {
 
     public static Predicate<ImageInfo> isBand(String band) {
+
         return p -> p.getFileName().contains(band);
     }
 

@@ -140,7 +140,6 @@ public class L2aMetadata extends S2Metadata {
     static class SpectralInformation {
         int bandId;
         String physicalBand;
-        int resolution;
         double wavelenghtMin;
         double wavelenghtMax;
         double wavelenghtCentral;
@@ -151,11 +150,10 @@ public class L2aMetadata extends S2Metadata {
             spectralResponseValues = new double[]{};
         }
 
-        public SpectralInformation(String physicalBand, int bandId, int resolution)
+        public SpectralInformation(String physicalBand, int bandId)
         {
             this.physicalBand = physicalBand;
             this.bandId = bandId;
-            this.resolution = resolution;
             spectralResponseValues = new double[]{};
         }
 

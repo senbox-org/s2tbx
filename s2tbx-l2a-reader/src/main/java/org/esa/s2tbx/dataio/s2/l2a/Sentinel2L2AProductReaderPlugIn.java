@@ -33,7 +33,7 @@ import java.util.Locale;
 /**
  * @author Norman Fomferra
  */
-public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
+public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -59,25 +59,8 @@ public class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
     }
 
     @Override
-    public ProductReader createReaderInstance() {
-        SystemUtils.LOG.info("Building product reader...");
-
-        return new Sentinel2L2AProductReader(this, false);
-    }
-
-    @Override
-    public String[] getFormatNames() {
-        return new String[]{S2L2AConfig.getInstance().getFormatName()};
-    }
-
-    @Override
     public String[] getDefaultFileExtensions() {
         return new String[]{S2Config.MTD_EXT};
-    }
-
-    @Override
-    public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L2A Multisize";
     }
 
     @Override

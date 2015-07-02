@@ -272,6 +272,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
         if (tileList.isEmpty()) {
             logger.warning("Empty tile list !");
         }
+
         for (final SpectralInformation bandInformation : productCharacteristics.bandInformations) {
             int bandIndex = bandInformation.bandId;
             if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
@@ -282,30 +283,29 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                     List<ImageInfo> filteredImages = filterImageInfo(imageList, isBand(bandInformation.physicalBand), isGranule(tile.id), isJPEG2000());
 
                     for (ImageInfo imageFound : filteredImages) {
-                        // todo what if files are "binary" ?
-                        String dependantFilePath = "";
-                        if (imageFound.getFileName().contains("10m")) {
-                            dependantFilePath = "R10m" + File.separator;
-                        } else if (imageFound.getFileName().contains("20m")) {
-                            dependantFilePath = "R20m" + File.separator;
-                        } else if (imageFound.getFileName().contains("60m")) {
-                            dependantFilePath = "R60m" + File.separator;
-                        }
 
-                        String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + dependantFilePath + imageFound.getFileName() + ".jp2";
-                        String fallbackImgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFound.getFileName() + ".jp2";
+                        String imageFileName = imageFound.getFileName();
+                        if ( (filteredResolution == 10 && imageFileName.contains("10m")) ||
+                                (filteredResolution == 20 && imageFileName.contains("20m"))||
+                                (filteredResolution == 60 && imageFileName.contains("60m"))  ) {
 
 
-                        File file = new File(productDir, imgFilename);
-                        if (file.exists()) {
-                            logger.fine("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
-                            tileFileMap.put(tile.id, file);
-                        } else {
-                            File fallback = new File(productDir, fallbackImgFilename);
-                            if (fallback.exists()) {
+                            String resolutionFolder = String.format("R%sm", filteredResolution);
+
+                            String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + resolutionFolder+ File.separator + imageFileName + ".jp2";
+                            String fallbackImgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFound.getFileName() + ".jp2";
+
+                            File file = new File(productDir, imgFilename);
+                            if (file.exists()) {
+                                logger.fine("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
                                 tileFileMap.put(tile.id, file);
                             } else {
-                                logger.warning(String.format("Warning: missing file %s\n", file));
+                                File fallback = new File(productDir, fallbackImgFilename);
+                                if (fallback.exists()) {
+                                    tileFileMap.put(tile.id, file);
+                                } else {
+                                    logger.warning(String.format("Warning: missing file %s\n", file));
+                                }
                             }
                         }
                     }
@@ -529,7 +529,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     }
 
     private BandInfo createBandInfoFromHeaderInfo(SpectralInformation bandInformation, Map<String, File> tileFileMap) {
-        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.resolution);
+        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(filteredResolution);
         return new BandInfo(tileFileMap,
                             bandInformation.bandId,
                             new S2WavebandInfo(bandInformation.bandId,
