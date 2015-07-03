@@ -171,19 +171,19 @@ public class L1cMetadataProc extends S2MetadataProc {
         else
         {
             // warning hardcoded resolutions
-            aInfo.add(new L1cMetadata.SpectralInformation("B1",0,60));
-            aInfo.add(new L1cMetadata.SpectralInformation("B2",1,10));
-            aInfo.add(new L1cMetadata.SpectralInformation("B3",2,10));
-            aInfo.add(new L1cMetadata.SpectralInformation("B4",3,10));
-            aInfo.add(new L1cMetadata.SpectralInformation("B5",4,20));
-            aInfo.add(new L1cMetadata.SpectralInformation("B6",5,20));
-            aInfo.add(new L1cMetadata.SpectralInformation("B7",6,20));
-            aInfo.add(new L1cMetadata.SpectralInformation("B8",7,10));
-            aInfo.add(new L1cMetadata.SpectralInformation("B8A",8,20));
-            aInfo.add(new L1cMetadata.SpectralInformation("B9",9,60));
-            aInfo.add(new L1cMetadata.SpectralInformation("B10",10,60));
-            aInfo.add(new L1cMetadata.SpectralInformation("B11",11,20));
-            aInfo.add(new L1cMetadata.SpectralInformation("B12",12,20));
+            aInfo.add(new L1cMetadata.SpectralInformation("B1",0,60, 414, 472, 490));
+            aInfo.add(new L1cMetadata.SpectralInformation("B2",1,10, 425, 555, 490));
+            aInfo.add(new L1cMetadata.SpectralInformation("B3",2,10, 510, 610, 560));
+            aInfo.add(new L1cMetadata.SpectralInformation("B4",3,10, 617, 707, 665));
+            aInfo.add(new L1cMetadata.SpectralInformation("B5",4,20, 625, 722, 705));
+            aInfo.add(new L1cMetadata.SpectralInformation("B6",5,20, 720, 760, 740));
+            aInfo.add(new L1cMetadata.SpectralInformation("B7",6,20, 741, 812, 783));
+            aInfo.add(new L1cMetadata.SpectralInformation("B8",7,10, 752, 927, 842));
+            aInfo.add(new L1cMetadata.SpectralInformation("B8A",8,20, 823, 902, 865));
+            aInfo.add(new L1cMetadata.SpectralInformation("B9",9,60, 903, 982, 945));
+            aInfo.add(new L1cMetadata.SpectralInformation("B10",10,60, 1338, 1413, 1375));
+            aInfo.add(new L1cMetadata.SpectralInformation("B11",11,20, 1532, 1704, 1610));
+            aInfo.add(new L1cMetadata.SpectralInformation("B12",12,20, 2035, 2311, 2190));
         }
 
         int size = aInfo.size();

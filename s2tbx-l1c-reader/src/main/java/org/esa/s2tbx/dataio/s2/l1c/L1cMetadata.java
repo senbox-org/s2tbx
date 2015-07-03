@@ -209,12 +209,20 @@ public class L1cMetadata extends S2Metadata {
             spectralResponseValues = new double[]{};
         }
 
-        public SpectralInformation(String physicalBand, int bandId, int resolution)
+        public SpectralInformation(String physicalBand,
+                                   int bandId,
+                                   int resolution,
+                                   double wavelenghtMin,
+                                   double wevelengthMax,
+                                   double wavelenghtCentral)
         {
             this.physicalBand = physicalBand;
             this.bandId = bandId;
             this.resolution = resolution;
             spectralResponseValues = new double[]{};
+            this.wavelenghtMin = wavelenghtMin;
+            this.wavelenghtMax = wavelenghtMax;
+            this.wavelenghtCentral = wavelenghtCentral;
         }
 
 
