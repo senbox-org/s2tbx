@@ -32,9 +32,9 @@ import java.util.regex.Pattern;
  */
 public class S2L1CGranuleDirFilename extends S2GranuleDirFilename {
 
-    final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})(_A[0-9]{6})(_T[A-Z|0-9]{5})(_N[0-9]{2}\\.[0-9]{2})(\\.[A-Z|a-z|0-9]{3,4})?";
+    // example :                 S2A          _OPER          _MSI_            L1C_TL          _MTI_            _20150627T180307    _A000062    _T32SMH         _N01.00
+    final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(A[0-9]{6})_(T[A-Z|0-9]{5})(_N[0-9]{2}\\.[0-9]{2})(\\.[A-Z|a-z|0-9]{3,4})?";
     final static Pattern PATTERN = Pattern.compile(REGEX);
-
 
     public final String absoluteOrbit;
     public final String tileNumber;
@@ -64,7 +64,7 @@ public class S2L1CGranuleDirFilename extends S2GranuleDirFilename {
     }
 
     public S2GranuleMetadataFilename getMetadataFilename() {
-        String tmp = String.format("%s_%s_%s%s_%s_%s%s%s.xml", missionID, fileClass, "MTD_", fileSemantic, siteCentre, creationDate, absoluteOrbit, tileNumber);
+        String tmp = String.format("%s_%s_%s%s_%s_%s_%s_%s.xml", missionID, fileClass, "MTD_", fileSemantic, siteCentre, creationDate, absoluteOrbit, tileNumber);
         return S2L1CGranuleMetadataFilename.create(tmp);
     }
 
@@ -75,7 +75,7 @@ public class S2L1CGranuleDirFilename extends S2GranuleDirFilename {
             newBandId = new String(bandId.charAt(0) + "0" + bandId.charAt(1));
         }
 
-        String tmp = String.format("%s_%s_%s%s_%s_%s%s%s_%s.jp2", missionID, fileClass, fileCategory, fileSemantic, siteCentre, creationDate, absoluteOrbit, tileNumber, newBandId);
+        String tmp = String.format("%s_%s_%s%s_%s_%s_%s_%s_%s.jp2", missionID, fileClass, fileCategory, fileSemantic, siteCentre, creationDate, absoluteOrbit, tileNumber, newBandId);
         return S2L1CGranuleImageFilename.create(tmp);
     }
 

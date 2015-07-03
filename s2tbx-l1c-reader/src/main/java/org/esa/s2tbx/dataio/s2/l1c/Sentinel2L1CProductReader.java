@@ -115,13 +115,14 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     static final int VIEW_ZENITH_GRID_INDEX = 2;
     static final int VIEW_AZIMUTH_GRID_INDEX = 3;
 
-    private final boolean forceResize;
+    static final String USER_CACHE_DIR = "s2tbx/l1c-reader/cache";
+
     private final int productResolution;
     private final boolean isMultiResolution;
+    private final String epsgCode;
 
     private File cacheDir;
     protected final Logger logger;
-
 
     static class BandInfo {
         final Map<String, File> tileIdToFileMap;
@@ -149,21 +150,12 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         }
     }
 
-    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution) {
+    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, int productResolution, boolean isMultiResolution, String epsgCode) {
         super(readerPlugIn, S2L1CConfig.getInstance());
         logger = SystemUtils.LOG;
-        this.forceResize = forceResize;
-        isMultiResolution = false;
+        this.isMultiResolution = isMultiResolution;
         this.productResolution = productResolution;
-    }
-
-
-    Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
-        super(readerPlugIn, S2L1CConfig.getInstance());
-        logger = SystemUtils.LOG;
-        this.forceResize = forceResize;
-        this.productResolution = DEFAULT_RESOLUTION;
-        isMultiResolution = true;
+        this.epsgCode = epsgCode;
     }
 
     @Override
@@ -245,7 +237,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
 
         try {
-            metadataHeader = L1cMetadata.parseHeader(metadataFile, getConfig().getTileLayouts());
+            metadataHeader = L1cMetadata.parseHeader(metadataFile, getConfig().getTileLayouts(), epsgCode);
         } catch (JDOMException|JAXBException e) {
             throw new IOException("Failed to parse metadata in " + metadataFile.getName());
         }
@@ -270,21 +262,26 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
         product.setFileLocation(metadataFile.getParentFile());
 
-        if(forceResize) {
-            setGeoCoding(product, sceneDescription.getSceneEnvelope());
+        Envelope2D sceneEnvelope = sceneDescription.getSceneEnvelope();
+
+        try {
+            product.setGeoCoding(new CrsGeoCoding(sceneEnvelope.getCoordinateReferenceSystem(),
+                    product.getSceneRasterWidth(),
+                    product.getSceneRasterHeight(),
+                    sceneEnvelope.getMinX(),
+                    sceneEnvelope.getMaxY(),
+                    this.productResolution,
+                    this.productResolution,
+                    0.0, 0.0));
+        } catch (TransformException e) {
+            logger.severe("Error caught during product geo coding");
+        } catch (FactoryException e) {
+            logger.severe("Error caught during product geo coding");
         }
 
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayouts()[0].numResolutions);
-
-        String autoGrouping = "";
-
-        for (String utmZone : metadataHeader.getUTMZonesList()) {
-            autoGrouping += utmZone.replace(':', '_') + ":";
-        }
-        autoGrouping += "reflec:radiance:sun:view";
-        product.setAutoGrouping(autoGrouping);
-
+        product.setAutoGrouping("sun:view");
 
         // create the band mosaics per UTM zones
         for (String utmZone : metadataHeader.getUTMZonesList()) {
@@ -294,7 +291,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             // otherwise get the list of tiles for this UTM zone
             List<L1cMetadata.Tile> utmZoneTileList = metadataHeader.getTileList(utmZone);
             if (isAGranule) {
-                utmZoneTileList =utmZoneTileList.stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+                utmZoneTileList = utmZoneTileList.stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
             }
             // for all bands of the UTM zone, store tiles files names
             for (L1cMetadata.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
@@ -332,7 +329,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
             if(!bandInfoMap.isEmpty())
             {
-                addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())), utmZone);
+                addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
             }
 
             List<EopPolygon> polygons = filterMasksInUTMZones(utmZoneTileList);
@@ -447,8 +444,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
 
-    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif, String utmZoneMap) throws IOException {
-
+    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
         Collections.sort(bandIndexes);
 
@@ -461,55 +457,50 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
             if(isMultiResolution || bandInfo.getWavebandInfo().resolution.resolution == this.productResolution)
             {
-                Band band = addBand(product, bandInfo, utmZoneMap);
+                Band band = addBand(product, bandInfo);
                 band.setSourceImage(mlif.createSourceImage(bandInfo));
 
-                if(!forceResize)
-                {
-                    try {
-                        band.setGeoCoding(new CrsGeoCoding(CRS.decode(utmZoneMap),
-                                band.getRasterWidth(),
-                                band.getRasterHeight(),
-                                envelope.getMinX(),
-                                envelope.getMaxY(),
-                                bandInfo.getWavebandInfo().resolution.resolution,
-                                bandInfo.getWavebandInfo().resolution.resolution,
-                                0.0, 0.0));
-                    } catch (FactoryException e) {
-                        logger.severe("Illegal CRS");
-                    } catch (TransformException e) {
-                        logger.severe("Illegal projection");
-                    }
-
-                    try {
-                        AffineTransform scaler = AffineTransform.getScaleInstance(this.productResolution, this.productResolution).createInverse();
-                        AffineTransform move = AffineTransform.getTranslateInstance(-envelope.getMinX(), -envelope.getMinY());
-                        AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, envelope.getHeight() / this.productResolution);
-
-                        AffineTransform world2pixel = new AffineTransform(mirror_y);
-                        world2pixel.concatenate(scaler);
-                        world2pixel.concatenate(move);
-
-                        S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(world2pixel), new AffineTransform2D(world2pixel.createInverse()));
-
-                        // todo uncomment when mutiresolution works using setSceneRasterTransform
-                        // band.setSceneRasterTransform(transform);
-                    } catch (NoninvertibleTransformException e) {
-                        logger.severe("Illegal transform");
-                    }
-
+                try {
+                    band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
+                            band.getRasterWidth(),
+                            band.getRasterHeight(),
+                            envelope.getMinX(),
+                            envelope.getMaxY(),
+                            bandInfo.getWavebandInfo().resolution.resolution,
+                            bandInfo.getWavebandInfo().resolution.resolution,
+                            0.0, 0.0));
+                } catch (FactoryException e) {
+                    logger.severe("Illegal CRS");
+                } catch (TransformException e) {
+                    logger.severe("Illegal projection");
                 }
 
+                /*
+                try {
+                    AffineTransform scaler = AffineTransform.getScaleInstance(this.productResolution, this.productResolution).createInverse();
+                    AffineTransform move = AffineTransform.getTranslateInstance(-envelope.getMinX(), -envelope.getMinY());
+                    AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, envelope.getHeight() / this.productResolution);
+
+                    AffineTransform world2pixel = new AffineTransform(mirror_y);
+                    world2pixel.concatenate(scaler);
+                    world2pixel.concatenate(move);
+
+                    S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(world2pixel), new AffineTransform2D(world2pixel.createInverse()));
+
+                    // todo uncomment when mutiresolution works using setSceneRasterTransform
+                    // band.setSceneRasterTransform(transform);
+                } catch (NoninvertibleTransformException e) {
+                    logger.severe("Illegal transform");
+                }
+                */
             }
         }
     }
 
-    private Band addBand(Product product, BandInfo bandInfo, String utmZoneCode) {
+    private Band addBand(Product product, BandInfo bandInfo) {
         int index = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
-        int defRes = S2SpatialResolution.R10M.resolution;
 
-        String bandName = utmZoneCode + "_" + bandInfo.wavebandInfo.bandName;
-        bandName = bandName.replace(':', '_');
+        String bandName = bandInfo.wavebandInfo.bandName;
         final Band band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
         product.addBand(band);
 
@@ -636,23 +627,6 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                             getConfig().getTileLayouts()[spatialResolution.id]);
     }
 
-    private void setGeoCoding(Product product, Envelope2D envelope) {
-        try {
-            product.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
-                                                  product.getSceneRasterWidth(),
-                                                  product.getSceneRasterHeight(),
-                                                  envelope.getMinX(),
-                                                  envelope.getMaxY(),
-                                                  S2SpatialResolution.R10M.resolution,
-                                                  S2SpatialResolution.R10M.resolution,
-                                                  0.0, 0.0));
-        } catch (FactoryException e) {
-            logger.severe("Illegal CRS");
-        } catch (TransformException e) {
-            logger.severe("Illegal projection");
-        }
-    }
-
     static File getProductDir(File productFile) throws IOException {
         final File resolvedFile = productFile.getCanonicalFile();
         if (!resolvedFile.exists()) {
@@ -667,7 +641,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     }
 
     void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), "beam-sentinel2-reader/cache"),
+        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), USER_CACHE_DIR),
                             productDir.getName());
         //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();
@@ -675,7 +649,6 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             throw new IOException("Can't access package cache directory");
         }
     }
-
 
     private abstract class MultiLevelImageFactory {
         protected final AffineTransform imageToModelTransform;
@@ -857,7 +830,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
 
             if (this.bandInfo.wavebandInfo.resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = L1cTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level, forceResize);
+                PlanarImage scaled = L1cTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level);
 
                 logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 

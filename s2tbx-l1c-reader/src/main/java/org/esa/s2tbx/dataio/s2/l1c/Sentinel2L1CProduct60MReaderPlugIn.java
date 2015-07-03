@@ -23,27 +23,29 @@ import org.esa.snap.util.SystemUtils;
 
 import java.util.Locale;
 
+import static org.esa.s2tbx.dataio.s2.S2CRSHelper.epsgToDisplayName;
+import static org.esa.s2tbx.dataio.s2.S2CRSHelper.epsgToShortDisplayName;
+
 
 /**
  * @author Nicolas Ducoin
  */
-public class Sentinel2L1CProduct60MReaderPlugIn extends Sentinel2L1CProductReaderPlugIn {
+public abstract class Sentinel2L1CProduct60MReaderPlugIn extends Sentinel2L1CProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader 60M");
 
-        return new Sentinel2L1CProductReader(this, false, 60);
+        return new Sentinel2L1CProductReader(this, 60, false, getEPSG());
     }
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-60M"};
+        return new String[]{String.format("%s-60M-%s", S2L1CConfig.getInstance().getFormatName(), epsgToShortDisplayName(getEPSG()))};
     }
 
     @Override
     public String getDescription(Locale locale) {
-        return "Sentinel-2 MSI L1C 60M";
+        return String.format("Sentinel-2 MSI L1C - 6Om bands - %s", epsgToDisplayName(getEPSG()));
     }
-
 }
