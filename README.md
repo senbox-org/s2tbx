@@ -35,6 +35,6 @@ Use the following configuration to run DAT:
     * VM parameters: -Dsun.java2d.noddraw=true -Dsun.awt.nopixfmt=true -Dsun.java2d.dpiaware=false -Dorg.netbeans.level=INFO -Xmx4G
     * Program parameters: --clusters "~/SNAP/s2tbx/target/nbm/netbeans/extra"
     * Working directory: ~/SNAP/snap-desktop/snap-application/target/snap
-    * Use classpath of module: nbexec
+    * Use classpath of module: snap-main
 
 Enjoy!
