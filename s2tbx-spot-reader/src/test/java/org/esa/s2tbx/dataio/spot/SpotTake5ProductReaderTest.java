@@ -77,9 +77,9 @@ public class SpotTake5ProductReaderTest {
     @Test
     public void testReadBandRasterData() {
         Date startDate = Calendar.getInstance().getTime();
-        Product product = new Product("name", "desc", 100, 200);
+        //Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
-        File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
+        //File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "200");
         try {
