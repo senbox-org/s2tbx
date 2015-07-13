@@ -77,9 +77,9 @@ public class SpotViewProductReaderTest {
     @Test
     public void testReadBandRasterData() {
         Date startDate = Calendar.getInstance().getTime();
-        Product product = new Product("name", "desc", 100, 200);
+        //Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
-        File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
+        //File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "200");
         try {
