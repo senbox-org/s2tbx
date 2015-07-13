@@ -38,6 +38,7 @@ import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -157,26 +158,25 @@ public class L1bMetadataProc extends S2MetadataProc {
         characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString();
         characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString();
 
-        List<L1bMetadata.SpectralInformation> targetList = new ArrayList<L1bMetadata.SpectralInformation>();
+        List<S2SpectralInformation> targetList = new ArrayList<S2SpectralInformation>();
 
         List<A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> aList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
         for (A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
-            L1bMetadata.SpectralInformation newInfo = new L1bMetadata.SpectralInformation();
-            newInfo.bandId = Integer.parseInt(si.getBandId());
-            newInfo.physicalBand = si.getPhysicalBand().value();
-            newInfo.resolution = si.getRESOLUTION();
-            newInfo.spectralResponseStep = si.getSpectral_Response().getSTEP().getValue();
-            newInfo.wavelenghtCentral = si.getWavelength().getCENTRAL().getValue();
-            newInfo.wavelenghtMax = si.getWavelength().getMAX().getValue();
-            newInfo.wavelenghtMin = si.getWavelength().getMIN().getValue();
+            S2SpectralInformation newInfo = new S2SpectralInformation();
+            newInfo.setBandId(Integer.parseInt(si.getBandId()));
+            newInfo.setPhysicalBand(si.getPhysicalBand().value());
+            newInfo.setResolution(si.getRESOLUTION());
+            newInfo.setWavelenghtCentral(si.getWavelength().getCENTRAL().getValue());
+            newInfo.setWavelenghtMax(si.getWavelength().getMAX().getValue());
+            newInfo.setWavelenghtMin(si.getWavelength().getMIN().getValue());
 
             int size = si.getSpectral_Response().getVALUES().size();
-            newInfo.spectralResponseValues = ArrayUtils.toPrimitive(si.getSpectral_Response().getVALUES().toArray(new Double[size]));
+            newInfo.setSpectralResponseValues(ArrayUtils.toPrimitive(si.getSpectral_Response().getVALUES().toArray(new Double[size])));
             targetList.add(newInfo);
         }
 
         int size = targetList.size();
-        characteristics.bandInformations = targetList.toArray(new L1bMetadata.SpectralInformation[size]);
+        characteristics.bandInformations = targetList.toArray(new S2SpectralInformation[size]);
 
         return characteristics;
     }
@@ -193,68 +193,48 @@ public class L1bMetadataProc extends S2MetadataProc {
         characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString();
         characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value();
 
+        List<S2SpectralInformation> aInfo = new ArrayList<>();
         Object spectral_list = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List();
         if (spectral_list != null) {
 
             List<A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
 
-            List<L1bMetadata.SpectralInformation> aInfo = new ArrayList<L1bMetadata.SpectralInformation>();
 
             for (A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
-                L1bMetadata.SpectralInformation data = new L1bMetadata.SpectralInformation();
-                data.bandId = Integer.parseInt(sin.getBandId());
-                data.physicalBand = sin.getPhysicalBand().value();
-                data.resolution = sin.getRESOLUTION();
-                data.spectralResponseStep = sin.getSpectral_Response().getSTEP().getValue();
+                S2SpectralInformation data = new S2SpectralInformation();
+                data.setBandId(Integer.parseInt(sin.getBandId()));
+                data.setPhysicalBand(sin.getPhysicalBand().value());
+                data.setResolution(sin.getRESOLUTION());
 
                 int size = sin.getSpectral_Response().getVALUES().size();
-                data.spectralResponseValues = ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size]));
-                data.wavelenghtCentral = sin.getWavelength().getCENTRAL().getValue();
-                data.wavelenghtMax = sin.getWavelength().getMAX().getValue();
-                data.wavelenghtMin = sin.getWavelength().getMIN().getValue();
+                data.setSpectralResponseValues(ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size])));
+                data.setWavelenghtCentral(sin.getWavelength().getCENTRAL().getValue());
+                data.setWavelenghtMax(sin.getWavelength().getMAX().getValue());
+                data.setWavelenghtMin(sin.getWavelength().getMIN().getValue());
 
                 aInfo.add(data);
             }
-
-            int size = aInfo.size();
-            characteristics.bandInformations = aInfo.toArray(new L1bMetadata.SpectralInformation[size]);
         } else {
             SystemUtils.LOG.warning("Empty spectral info !");
 
-            // fixme If there is no spectral info, get band names from Query_Options/Band_List
-            List<A_PHYSICAL_BAND_NAME> bandList = product.getGeneral_Info().getProduct_Info().getQuery_Options().getBand_List().getBAND_NAME();
-            // assume 0 based index for bands just retrieved...
-
-            List<L1bMetadata.SpectralInformation> aInfo = new ArrayList<L1bMetadata.SpectralInformation>();
-            aInfo.sort(new Comparator<L1bMetadata.SpectralInformation>() {
-                @Override
-                public int compare(L1bMetadata.SpectralInformation o1, L1bMetadata.SpectralInformation o2) {
-                    return o1.physicalBand.compareTo(o2.physicalBand);
-                }
-            });
-
-            int index = 0;
-            for (A_PHYSICAL_BAND_NAME band_name : bandList) {
-                L1bMetadata.SpectralInformation data = new L1bMetadata.SpectralInformation();
-                data.physicalBand = band_name.value();
-                data.bandId = index;
-
-                // warning hardcoded resolutions
-                data.resolution = 10;
-                if (data.physicalBand.equals("B1") || data.physicalBand.equals("B9") || data.physicalBand.equals("B10")) {
-                    data.resolution = 60;
-                } else if (data.physicalBand.equals("B5") || data.physicalBand.equals("B6") || data.physicalBand.equals("B7") || data.physicalBand.equals("B8A") || data.physicalBand.equals("B11") || data.physicalBand.equals("B12")) {
-                    data.resolution = 20;
-                }
-
-                index = index + 1;
-
-                aInfo.add(data);
-            }
-
-            int size = aInfo.size();
-            characteristics.bandInformations = aInfo.toArray(new L1bMetadata.SpectralInformation[size]);
+            // warning hardcoded resolutions
+            aInfo.add(new S2SpectralInformation("B1",0,60, 414, 472, 490));
+            aInfo.add(new S2SpectralInformation("B2",1,10, 425, 555, 490));
+            aInfo.add(new S2SpectralInformation("B3",2,10, 510, 610, 560));
+            aInfo.add(new S2SpectralInformation("B4",3,10, 617, 707, 665));
+            aInfo.add(new S2SpectralInformation("B5",4,20, 625, 722, 705));
+            aInfo.add(new S2SpectralInformation("B6",5,20, 720, 760, 740));
+            aInfo.add(new S2SpectralInformation("B7",6,20, 741, 812, 783));
+            aInfo.add(new S2SpectralInformation("B8",7,10, 752, 927, 842));
+            aInfo.add(new S2SpectralInformation("B8A",8,20, 823, 902, 865));
+            aInfo.add(new S2SpectralInformation("B9", 9, 60, 903, 982, 945));
+            aInfo.add(new S2SpectralInformation("B10",10,60, 1338, 1413, 1375));
+            aInfo.add(new S2SpectralInformation("B11",11,20, 1532, 1704, 1610));
+            aInfo.add(new S2SpectralInformation("B12",12,20, 2035, 2311, 2190));
         }
+
+        int size = aInfo.size();
+        characteristics.bandInformations = aInfo.toArray(new S2SpectralInformation[size]);
 
         return characteristics;
     }

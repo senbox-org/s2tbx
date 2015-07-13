@@ -19,7 +19,6 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
-import org.esa.s2tbx.dataio.s2.S2CRSHelper;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
@@ -40,7 +39,12 @@ import static org.esa.s2tbx.dataio.s2.S2CRSHelper.*;
  */
 public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPlugIn {
 
-    static private L1cProductCRSCache crsCache = new L1cProductCRSCache();
+    private static L1cProductCRSCache crsCache = new L1cProductCRSCache();
+
+    /**
+     * true if the file filter for L1C products was already added
+     */
+    private static boolean fileFilterAdded = false;
 
     public Sentinel2L1CProductReaderPlugIn() {
         RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
@@ -104,8 +108,7 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2L1CConfig.getInstance().getFormatName(),
-                                  getDefaultFileExtensions(),
-                                  "Sentinel-2 MSI L1C product or tile");
+
+            return null;
     }
 }

@@ -31,6 +31,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
@@ -275,14 +276,14 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
             logger.warning("Empty tile list !");
         }
 
-        for (final SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-            int bandIndex = bandInformation.bandId;
+        for (final S2SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+            int bandIndex = bandInformation.getBandId();
             if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
 
                 HashMap<String, File> tileFileMap = new HashMap<String, File>();
                 for (Tile tile : tileList) {
                     // todo filter by band and by tile.id imageList
-                    List<ImageInfo> filteredImages = filterImageInfo(imageList, isBand(bandInformation.physicalBand), isGranule(tile.id), isJPEG2000());
+                    List<ImageInfo> filteredImages = filterImageInfo(imageList, isBand(bandInformation.getPhysicalBand()), isGranule(tile.id), isJPEG2000());
 
                     for (ImageInfo imageFound : filteredImages) {
 
@@ -299,7 +300,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
                             File file = new File(productDir, imgFilename);
                             if (file.exists()) {
-                                logger.fine("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
+                                logger.fine("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
                                 tileFileMap.put(tile.id, file);
                             } else {
                                 File fallback = new File(productDir, fallbackImgFilename);
@@ -317,10 +318,10 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                     BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
                     bandInfoMap.put(bandIndex, bandInfo);
                 } else {
-                    logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.physicalBand));
+                    logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
                 }
             } else {
-                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.physicalBand));
+                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
             }
         }
 
@@ -530,14 +531,14 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
     }
 
-    private BandInfo createBandInfoFromHeaderInfo(SpectralInformation bandInformation, Map<String, File> tileFileMap) {
+    private BandInfo createBandInfoFromHeaderInfo(S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
         S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(filteredResolution);
         return new BandInfo(tileFileMap,
-                            bandInformation.bandId,
-                            new S2WavebandInfo(bandInformation.bandId,
-                                                  bandInformation.physicalBand,
-                                                  spatialResolution, bandInformation.wavelenghtCentral,
-                                                  Math.abs(bandInformation.wavelenghtMax + bandInformation.wavelenghtMin)),
+                            bandInformation.getBandId(),
+                            new S2WavebandInfo(bandInformation.getBandId(),
+                                               bandInformation.getPhysicalBand(),
+                                               spatialResolution, bandInformation.getWavelenghtCentral(),
+                                               Math.abs(bandInformation.getWavelenghtMax() + bandInformation.getWavelenghtMin())),
                             getConfig().getTileLayouts()[spatialResolution.id]);
     }
 

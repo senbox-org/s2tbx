@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by opicas-p on 08/12/2014.
+ * @author opicas-p
  */
 public class ImageInfo {
     String fileName;
@@ -31,7 +31,7 @@ public class ImageInfo {
 
     public ImageInfo(String fileName) {
         this.fileName = fileName;
-        attributes = new HashMap<String, String>();
+        attributes = new HashMap<>();
     }
 
     public String put(String key, String value) {

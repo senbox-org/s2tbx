@@ -26,6 +26,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -130,37 +131,13 @@ public class L2aMetadata extends S2Metadata {
         String spacecraft;
         String datasetProductionDate;
         String processingLevel;
-        SpectralInformation[] bandInformations;
+        S2SpectralInformation[] bandInformations;
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
     }
 
-    static class SpectralInformation {
-        int bandId;
-        String physicalBand;
-        double wavelenghtMin;
-        double wavelenghtMax;
-        double wavelenghtCentral;
-        double spectralResponseStep;
-        double[] spectralResponseValues;
-
-        public SpectralInformation() {
-            spectralResponseValues = new double[]{};
-        }
-
-        public SpectralInformation(String physicalBand, int bandId)
-        {
-            this.physicalBand = physicalBand;
-            this.bandId = bandId;
-            spectralResponseValues = new double[]{};
-        }
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
 
     static class Histogram {
         public int bandId;

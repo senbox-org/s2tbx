@@ -34,6 +34,7 @@ import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -179,7 +180,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     protected Product readProductNodesImpl() throws IOException {
         logger.fine("readProductNodeImpl, " + getInput().toString());
 
-        Product p = null;
+        Product p;
 
         final File inputFile = new File(getInput().toString());
         if (!inputFile.exists()) {
@@ -292,8 +293,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         if (productCharacteristics.bandInformations != null) {
-            for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-                int bandIndex = bandInformation.bandId;
+            for (S2SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+                int bandIndex = bandInformation.getBandId();
                 if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
 
                     HashMap<String, File> tileFileMap = new HashMap<String, File>();
@@ -301,9 +302,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                         S2GranuleDirFilename gf = S2L1BGranuleDirFilename.create(tile.id);
                         Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
-                        S2GranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.physicalBand);
+                        S2GranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.getPhysicalBand());
                         String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + granuleFileName.name;
-                        logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
+                        logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
                         File file = new File(productDir, imgFilename);
                         if (file.exists()) {
@@ -317,10 +318,14 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                         TileBandInfo tileBandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
                         bandInfoMap.put(bandIndex, tileBandInfo);
                     } else {
-                        logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.physicalBand));
+                        logger.warning(
+                                String.format("Warning: no image files found for band %s\n",
+                                              bandInformation.getPhysicalBand()));
                     }
                 } else {
-                    logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.physicalBand));
+                    logger.warning(
+                            String.format("Warning: illegal band index detected for band %s\n",
+                                          bandInformation.getPhysicalBand()));
                 }
             }
         } else {
@@ -330,9 +335,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         String[] detectors = {"01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"};
 
         // Order bands by physicalBand
-        Map<String, SpectralInformation> sin = new HashMap<String, SpectralInformation>();
-        for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-            sin.put(bandInformation.physicalBand, bandInformation);
+        Map<String, S2SpectralInformation> sin = new HashMap<String, S2SpectralInformation>();
+        for (S2SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+            sin.put(bandInformation.getPhysicalBand(), bandInformation);
         }
 
         Map<Pair<String, String>, Map<String, File>> detectorBandInfoMap = new HashMap<Pair<String, String>, Map<String, File>>();
@@ -342,15 +347,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 S2L1BGranuleDirFilename gf = (S2L1BGranuleDirFilename) S2L1BGranuleDirFilename.create(tile.id);
                 Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
-                for (SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-                    S2GranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.physicalBand);
+                for (S2SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+                    S2GranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.getPhysicalBand());
                     String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + granuleFileName.name;
 
-                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand + ", and detector: " + gf.getDetectorId());
+                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand() + ", and detector: " + gf.getDetectorId());
 
                     File file = new File(productDir, imgFilename);
                     if (file.exists()) {
-                        Pair<String, String> key = new Pair<String, String>(bandInformation.physicalBand, gf.getDetectorId());
+                        Pair<String, String> key = new Pair<String, String>(bandInformation.getPhysicalBand(), gf.getDetectorId());
                         Map<String, File> fileMapper = detectorBandInfoMap.getOrDefault(key, new HashMap<String, File>());
                         fileMapper.put(tile.id, file);
                         if (!detectorBandInfoMap.containsKey(key)) {
@@ -364,7 +369,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
             if (!detectorBandInfoMap.isEmpty()) {
                 for (Pair<String, String> key : detectorBandInfoMap.keySet()) {
-                    TileBandInfo tileBandInfo = createBandInfoFromHeaderInfo(key.getSecond(), sin.get(key.getFirst()), detectorBandInfoMap.get(key));
+                    TileBandInfo tileBandInfo = createBandInfoFromHeaderInfo(
+                            key.getSecond(), sin.get(key.getFirst()), detectorBandInfoMap.get(key));
 
                     // composite band name : detector + band
                     String keyMix = key.getSecond() + key.getFirst();
@@ -582,25 +588,25 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                 getConfig().getTileLayouts()[wavebandInfo.resolution.id]);
     }
 
-    private TileBandInfo createBandInfoFromHeaderInfo(SpectralInformation bandInformation, Map<String, File> tileFileMap) {
-        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.resolution);
+    private TileBandInfo createBandInfoFromHeaderInfo(S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
+        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.getResolution());
         return new TileBandInfo(tileFileMap,
-                                bandInformation.bandId, null,
-                                new S2WavebandInfo(bandInformation.bandId,
-                                                      bandInformation.physicalBand,
-                                                      spatialResolution, bandInformation.wavelenghtCentral,
-                                                      Math.abs(bandInformation.wavelenghtMax + bandInformation.wavelenghtMin)),
+                                bandInformation.getBandId(), null,
+                                new S2WavebandInfo(bandInformation.getBandId(),
+                                                   bandInformation.getPhysicalBand(),
+                                                      spatialResolution, bandInformation.getWavelenghtCentral(),
+                                                      Math.abs(bandInformation.getWavelenghtMax() + bandInformation.getWavelenghtMin())),
                                 getConfig().getTileLayouts()[spatialResolution.id]);
     }
 
-    private TileBandInfo createBandInfoFromHeaderInfo(String detector, SpectralInformation bandInformation, Map<String, File> tileFileMap) {
-        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.resolution);
+    private TileBandInfo createBandInfoFromHeaderInfo(String detector, S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
+        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.getResolution());
         return new TileBandInfo(tileFileMap,
-                                bandInformation.bandId, detector,
-                                new S2WavebandInfo(bandInformation.bandId,
-                                                      detector + bandInformation.physicalBand, // notice that text shown to user in menu (detector, band) is evaluated as an expression !!
-                                                      spatialResolution, bandInformation.wavelenghtCentral,
-                                                      Math.abs(bandInformation.wavelenghtMax + bandInformation.wavelenghtMin)),
+                                bandInformation.getBandId(), detector,
+                                new S2WavebandInfo(bandInformation.getBandId(),
+                                                      detector + bandInformation.getPhysicalBand(), // notice that text shown to user in menu (detector, band) is evaluated as an expression !!
+                                                      spatialResolution, bandInformation.getWavelenghtCentral(),
+                                                      Math.abs(bandInformation.getWavelenghtMax() + bandInformation.getWavelenghtMin())),
                                 getConfig().getTileLayouts()[spatialResolution.id]);
     }
 

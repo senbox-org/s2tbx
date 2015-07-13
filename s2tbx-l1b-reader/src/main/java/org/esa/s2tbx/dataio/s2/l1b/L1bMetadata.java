@@ -29,6 +29,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -139,22 +140,7 @@ public class L1bMetadata extends S2Metadata {
         String spacecraft;
         String datasetProductionDate;
         String processingLevel;
-        SpectralInformation[] bandInformations;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
-    static class SpectralInformation {
-        int bandId;
-        String physicalBand;
-        int resolution;
-        double wavelenghtMin;
-        double wavelenghtMax;
-        double wavelenghtCentral;
-        double spectralResponseStep;
-        double[] spectralResponseValues;
+        S2SpectralInformation[] bandInformations;
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);

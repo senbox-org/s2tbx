@@ -33,6 +33,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
@@ -294,18 +295,18 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                 utmZoneTileList = utmZoneTileList.stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
             }
             // for all bands of the UTM zone, store tiles files names
-            for (L1cMetadata.SpectralInformation bandInformation : productCharacteristics.bandInformations) {
-                int bandIndex = bandInformation.bandId;
+            for (S2SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+                int bandIndex = bandInformation.getBandId();
                 if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
 
                     HashMap<String, File> tileFileMap = new HashMap<String, File>();
                     for (L1cMetadata.Tile tile : utmZoneTileList) {
                         S2L1CGranuleDirFilename gf = S2L1CGranuleDirFilename.create(tile.id);
-                        S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.physicalBand);
+                        S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
 
                         String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFilename.name;
 
-                        logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.physicalBand);
+                        logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
                         File file = new File(productDir, imgFilename);
                         if (file.exists()) {
@@ -319,10 +320,10 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                         BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
                         bandInfoMap.put(bandIndex, bandInfo);
                     } else {
-                        logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.physicalBand));
+                        logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
                     }
                 } else {
-                    logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.physicalBand));
+                    logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
                 }
             }
 
@@ -346,43 +347,22 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                     polygonsByType.put(polygonType, polygons.stream().filter(p -> p.getType().equals(polygonType)).collect(Collectors.toList()) );
                 }
 
-                try {
-                    // Build transformations
-                    AffineTransform scaler = AffineTransform.getScaleInstance(this.productResolution, this.productResolution).createInverse();
-                    AffineTransform move = AffineTransform.getTranslateInstance(-sceneDescription.getSceneEnvelope().getMinX(), -sceneDescription.getSceneEnvelope().getMinY());
-                    AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, sceneDescription.getSceneEnvelope().getHeight() / this.productResolution);
+                for (String polygonType : polygonTypes) {
+                    final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+                    final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
 
-                    AffineTransform world2pixel = new AffineTransform(mirror_y);
-                    world2pixel.concatenate(scaler);
-                    world2pixel.concatenate(move);
+                    List<EopPolygon> typedPolygon = polygonsByType.get(polygonType);
+                    for (int index = 0; index < typedPolygon.size(); index++) {
+                        Polygon pol = typedPolygon.get(index).getPolygon();
 
-                    try {
-                        for(String polygonType: polygonTypes)
-                        {
-                            final SimpleFeatureType type = Placemark.createGeometryFeatureType();
-
-                            final DefaultFeatureCollection collection = new DefaultFeatureCollection("testID", type);
-
-                            List<EopPolygon> typedPolygon = polygonsByType.get(polygonType);
-                            for(int index = 0; index < typedPolygon.size(); index++) {
-                                Polygon pol = typedPolygon.get(index).getPolygon();
-                                pol = (Polygon) JTS.transform(pol, new AffineTransform2D(world2pixel));
-
-                                Object[] data1 = {pol, String.format("Polygon-%s", index)};
-                                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
-                                collection.add(f1);
-                            }
-
-                            VectorDataNode vdn = new VectorDataNode(polygonType, collection);
-                            product.getVectorDataGroup().add(vdn);
-                        }
-                    } catch (MismatchedDimensionException e) {
-                        // won't happen
-                    } catch (TransformException e) {
-                        // won't happen
+                        Object[] data1 = {pol, String.format("Polygon-%s", index)};
+                        SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+                        collection.add(f1);
                     }
-                } catch (NoninvertibleTransformException e) {
-                    // won't happen
+
+                    VectorDataNode vdn = new VectorDataNode(polygonType, collection);
+                    vdn.setStyleCss("fill-opacity:1");
+                    product.getVectorDataGroup().add(vdn);
                 }
             }
         }
@@ -588,42 +568,14 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         return tiePointGrid;
     }
 
-    private static Map<String, File> createFileMap(String tileId, File imageFile) {
-        Map<String, File> tileIdToFileMap = new HashMap<String, File>();
-        tileIdToFileMap.put(tileId, imageFile);
-        return tileIdToFileMap;
-    }
-
-    private void setStartStopTime(Product product, String start, String stop) {
-        try {
-            product.setStartTime(ProductData.UTC.parse(start, "yyyyMMddHHmmss"));
-        } catch (ParseException e) {
-            // {@report "illegal start date"}
-        }
-
-        try {
-            product.setEndTime(ProductData.UTC.parse(stop, "yyyyMMddHHmmss"));
-        } catch (ParseException e) {
-            // {@report "illegal stop date"}
-        }
-    }
-
-    private BandInfo createBandInfoFromDefaults(int bandIndex, S2WavebandInfo wavebandInfo, String tileId, File imageFile) {
-        return new BandInfo(createFileMap(tileId, imageFile),
-                            bandIndex,
-                            wavebandInfo,
-                            getConfig().getTileLayouts()[wavebandInfo.resolution.id]);
-
-    }
-
-    private BandInfo createBandInfoFromHeaderInfo(L1cMetadata.SpectralInformation bandInformation, Map<String, File> tileFileMap) {
-        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.resolution);
+    private BandInfo createBandInfoFromHeaderInfo(S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
+        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.getResolution());
         return new BandInfo(tileFileMap,
-                            bandInformation.bandId,
-                            new S2WavebandInfo(bandInformation.bandId,
-                                               bandInformation.physicalBand,
-                                               spatialResolution, bandInformation.wavelenghtCentral,
-                                               Math.abs(bandInformation.wavelenghtMax + bandInformation.wavelenghtMin)),
+                            bandInformation.getBandId(),
+                            new S2WavebandInfo(bandInformation.getBandId(),
+                                               bandInformation.getPhysicalBand(),
+                                               spatialResolution, bandInformation.getWavelenghtCentral(),
+                                               Math.abs(bandInformation.getWavelenghtMax() + bandInformation.getWavelenghtMin())),
                             getConfig().getTileLayouts()[spatialResolution.id]);
     }
 
@@ -660,16 +612,6 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         public abstract MultiLevelImage createSourceImage(BandInfo bandInfo);
     }
 
-    private class L1cTileMultiLevelImageFactory extends MultiLevelImageFactory {
-        private L1cTileMultiLevelImageFactory(AffineTransform imageToModelTransform) {
-            super(imageToModelTransform);
-        }
-
-        public MultiLevelImage createSourceImage(BandInfo bandInfo) {
-            return new DefaultMultiLevelImage(new L1cTileMultiLevelSource(bandInfo, imageToModelTransform));
-        }
-    }
-
     private class L1cSceneMultiLevelImageFactory extends MultiLevelImageFactory {
 
         private final L1cSceneDescription sceneDescription;
@@ -690,34 +632,6 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         }
     }
 
-    /**
-     * A MultiLevelSource for single L1C tiles.
-     */
-    private class L1cTileMultiLevelSource extends AbstractMultiLevelSource {
-        final BandInfo bandInfo;
-
-        public L1cTileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
-            super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
-                                             imageToModelTransform,
-                                             getConfig().getTileLayouts()[0].width, //todo we must use data from jp2 files to update this
-                                             getConfig().getTileLayouts()[0].height)); //todo we must use data from jp2 files to update this
-            this.bandInfo = bandInfo;
-        }
-
-        @Override
-        protected RenderedImage createImage(int level) {
-            File imageFile = bandInfo.tileIdToFileMap.values().iterator().next();
-            return L1cTileOpImage.create(imageFile,
-                                         cacheDir,
-                                         null,
-                                         bandInfo.imageLayout,
-                                         getConfig().getTileLayouts(),
-                                         getModel(),
-                                         bandInfo.wavebandInfo.resolution,
-                                         level);
-        }
-
-    }
 
     /**
      * A MultiLevelSource for a scene made of multiple L1C tiles.

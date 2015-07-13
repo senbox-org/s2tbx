@@ -26,6 +26,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
@@ -155,7 +156,7 @@ public class L1cMetadata extends S2Metadata {
         String spacecraft;
         String datasetProductionDate;
         String processingLevel;
-        SpectralInformation[] bandInformations;
+        S2SpectralInformation[] bandInformations;
 
 
         public String getSpacecraft() {
@@ -170,7 +171,7 @@ public class L1cMetadata extends S2Metadata {
             return processingLevel;
         }
 
-        public SpectralInformation[] getBandInformations() {
+        public S2SpectralInformation[] getBandInformations() {
             return bandInformations;
         }
 
@@ -186,49 +187,7 @@ public class L1cMetadata extends S2Metadata {
         private String metaDataLevel;
 
         public ProductCharacteristics() {
-            bandInformations = new SpectralInformation[]{};
-        }
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
-    public static class SpectralInformation {
-        int bandId;
-        String physicalBand;
-        int resolution;
-        double wavelenghtMin;
-        double wavelenghtMax;
-        double wavelenghtCentral;
-        double spectralResponseStep;
-
-        double[] spectralResponseValues;
-
-        public SpectralInformation() {
-            spectralResponseValues = new double[]{};
-        }
-
-        public SpectralInformation(String physicalBand,
-                                   int bandId,
-                                   int resolution,
-                                   double wavelenghtMin,
-                                   double wevelengthMax,
-                                   double wavelenghtCentral)
-        {
-            this.physicalBand = physicalBand;
-            this.bandId = bandId;
-            this.resolution = resolution;
-            spectralResponseValues = new double[]{};
-            this.wavelenghtMin = wavelenghtMin;
-            this.wavelenghtMax = wavelenghtMax;
-            this.wavelenghtCentral = wavelenghtCentral;
-        }
-
-
-
-        public double[] getSpectralResponseValues() {
-            return spectralResponseValues;
+            bandInformations = new S2SpectralInformation[]{};
         }
 
         public String toString() {
