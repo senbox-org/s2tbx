@@ -362,7 +362,8 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
                     VectorDataNode vdn = new VectorDataNode(polygonType, collection);
                     vdn.setStyleCss("fill-opacity:1");
-                    product.getVectorDataGroup().add(vdn);
+                    vdn.setOwner(product);
+                    product.addMask(polygonType, vdn, "GML Mask", Color.BLUE, 0.1);
                 }
             }
         }
