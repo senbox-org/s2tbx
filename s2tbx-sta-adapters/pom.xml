@@ -12,7 +12,7 @@
     <artifactId>s2tbx-sta-adapters</artifactId>
     <packaging>pom</packaging>
 
-    <name>Sentinel-2 Tools Adapters</name>
+    <name>Sentinel-2 Toolbox Adapters</name>
     <description>Adapters for the Standalone Tools of the Sentinel-2 Toolbox</description>
 
     <modules>
