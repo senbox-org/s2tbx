@@ -1,0 +1,77 @@
+<operator>
+  <name>org.esa.snap.framework.gpf.operators.tooladapter.Sen2Cor</name>
+  <operatorClass>org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
+  <alias>SEN2COR</alias>
+  <label>Sen2Cor</label>
+  <version>2.0.3</version>
+  <description>Sen2Cor Atmospheric Correction Processor</description>
+  <authors></authors>
+  <copyright></copyright>
+  <internal>false</internal>
+  <autoWriteSuppressed>false</autoWriteSuppressed>
+  <menuLocation>Menu/Optical/Thematic Land Processing</menuLocation>
+  <preprocessTool>false</preprocessTool>
+  <writeForProcessing>false</writeForProcessing>
+  <mainToolFileLocation>$PYTHON_BIN</mainToolFileLocation>
+  <workingDir>$SEN2COR_HOME</workingDir>
+  <templateFileLocation>SEN2COR-template.vm</templateFileLocation>
+  <progressPattern>(?:.+)Progress\[%\]: (\d{1,3})\.(?:.+)</progressPattern>
+  <errorPattern>[\s\S]+(?:UserWarning|Error): (.+)</errorPattern>
+  <variables>
+    <variable>
+      <key>SEN2COR_HOME</key>
+      <value>C:\Users\kraftek\documents\sen2cor</value>
+    </variable>
+    <variable>
+      <key>SEN2COR_BIN</key>
+      <value>C:\Anaconda\Lib\site-packages\sen2cor-2.0.3-py2.7.egg\sen2cor</value>
+    </variable>
+    <osvariable>
+      <key>PYTHON_BIN</key>
+      <value></value>
+      <windows>python.exe</windows>
+      <linux>python</linux>
+      <macosx>python</macosx>
+    </osvariable>
+  </variables>
+  <parameters>
+    <parameter>
+      <name>targetProductFile</name>
+      <dataType>java.io.File</dataType>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>resolution</name>
+      <dataType>java.lang.Integer</dataType>
+      <defaultValue>60</defaultValue>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>postExecuteTemplate</name>
+      <dataType>java.io.File</dataType>
+      <defaultValue>Sen2Cor-post-template.vm</defaultValue>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>TemplateAfterExecution</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+  </parameters>
+  <source>user</source>
+  <isSystem>false</isSystem>
+  <sourceProductDescriptors>
+    <org.esa.snap.framework.gpf.descriptor.DefaultSourceProductDescriptor>
+      <name>sourceProduct</name>
+    </org.esa.snap.framework.gpf.descriptor.DefaultSourceProductDescriptor>
+  </sourceProductDescriptors>
+  <targetPropertyDescriptors/>
+  <numSourceProducts>1</numSourceProducts>
+</operator>
