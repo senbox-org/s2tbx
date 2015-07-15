@@ -43,6 +43,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -224,8 +225,8 @@ public class L1cMetadata extends S2Metadata {
 
     private ProductCharacteristics productCharacteristics;
 
-    public static L1cMetadata parseHeader(File file, TileLayout[] tileLayouts, String epsg) throws JDOMException, IOException, JAXBException {
-        return new L1cMetadata(new FileInputStream(file), file, file.getParent(), tileLayouts, epsg);
+    public static L1cMetadata parseHeader(File file, String granuleName, TileLayout[] tileLayouts, String epsg) throws JDOMException, IOException, JAXBException {
+        return new L1cMetadata(new FileInputStream(file), file, file.getParent(), granuleName, tileLayouts, epsg);
     }
 
     public List<Tile> getTileList() {
@@ -249,7 +250,7 @@ public class L1cMetadata extends S2Metadata {
         return metadataElement;
     }
 
-    private L1cMetadata(InputStream stream, File file, String parent, TileLayout[] tileLayouts, String epsg) throws JDOMException, JAXBException, FileNotFoundException {
+    private L1cMetadata(InputStream stream, File file, String parent, String granuleName, TileLayout[] tileLayouts, String epsg) throws JDOMException, JAXBException, FileNotFoundException {
         super(tileLayouts, L1cMetadataProc.getJaxbContext(), PSD_STRING);
 
         try {
@@ -257,7 +258,7 @@ public class L1cMetadata extends S2Metadata {
 
             if(userProduct instanceof Level1C_User_Product)
             {
-                initProduct(stream, file, parent, userProduct, epsg);
+                initProduct(stream, file, parent, granuleName, userProduct, epsg);
             }
             else
             {
@@ -275,11 +276,17 @@ public class L1cMetadata extends S2Metadata {
         }
     }
 
-    private void initProduct(InputStream stream, File file, String parent, Object casted, String epsg) throws IOException, JAXBException, JDOMException {
+    private void initProduct(InputStream stream, File file, String parent, String granuleName, Object casted, String epsg) throws IOException, JAXBException, JDOMException {
         Level1C_User_Product product = (Level1C_User_Product) casted;
         productCharacteristics = L1cMetadataProc.getProductOrganization(product);
 
-        Collection<String> tileNames = L1cMetadataProc.getTiles(product);
+        Collection<String> tileNames;
+
+        if(granuleName == null ) {
+            tileNames = L1cMetadataProc.getTiles(product);
+        } else {
+            tileNames = Arrays.asList(granuleName);
+        }
         List<File> fullTileNamesList = new ArrayList<File>();
 
 
@@ -288,18 +295,18 @@ public class L1cMetadata extends S2Metadata {
 
         tileList = new ArrayList<Tile>();
 
-        for (String granuleName : tileNames) {
+        for (String tileName : tileNames) {
             FileInputStream fi = (FileInputStream) stream;
-            File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
+            File nestedMetadata = new File(parent, "GRANULE" + File.separator + tileName);
 
-            S2L1CGranuleDirFilename aGranuleDir = S2L1CGranuleDirFilename.create(granuleName);
+            S2L1CGranuleDirFilename aGranuleDir = S2L1CGranuleDirFilename.create(tileName);
             String theName = aGranuleDir.getMetadataFilename().name;
 
-            File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
+            File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + tileName + File.separator + theName);
             if (nestedGranuleMetadata.exists()) {
                 fullTileNamesList.add(nestedGranuleMetadata);
             } else {
-                String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
+                String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
                 logger.log(Level.WARNING, errorMessage);
             }
         }
