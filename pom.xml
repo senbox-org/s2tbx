@@ -37,6 +37,7 @@
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-eop2-gml-reader</module>
         <module>s2tbx-kit</module>
+        <module>s2tbx-sta-adapters</module>
     </modules>
 
     <packaging>pom</packaging>
