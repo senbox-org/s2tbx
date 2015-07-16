@@ -54,25 +54,28 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
         DecodeQualification decodeQualification = DecodeQualification.UNABLE;
 
         if(input instanceof File) {
-            File file = (File)input;
-            String fileName = file.getName();
+            File file = (File) input;
 
-            // test for granule filename first as it is more restrictive
-            if (S2L1CGranuleMetadataFilename.isGranuleFilename(fileName)) {
-                S2L1CGranuleMetadataFilename granuleMetadataFilename = S2L1CGranuleMetadataFilename.create(fileName);
-                if( granuleMetadataFilename != null && granuleMetadataFilename.fileSemantic.contains("L1C")) {
-                    String tileId = granuleMetadataFilename.tileNumber;
-                    String epsg = tileIdentifierToEPSG(tileId);
-                    if (getEPSG().equalsIgnoreCase(epsg)) {
-                        decodeQualification = DecodeQualification.INTENDED;
+            if (file.isFile()) {
+                String fileName = file.getName();
+
+                // test for granule filename first as it is more restrictive
+                if (S2L1CGranuleMetadataFilename.isGranuleFilename(fileName)) {
+                    S2L1CGranuleMetadataFilename granuleMetadataFilename = S2L1CGranuleMetadataFilename.create(fileName);
+                    if (granuleMetadataFilename != null && granuleMetadataFilename.fileSemantic.contains("L1C")) {
+                        String tileId = granuleMetadataFilename.tileNumber;
+                        String epsg = tileIdentifierToEPSG(tileId);
+                        if (getEPSG().equalsIgnoreCase(epsg)) {
+                            decodeQualification = DecodeQualification.INTENDED;
+                        }
                     }
-                }
-            } else if (S2ProductFilename.isProductFilename(fileName)) {
-                S2ProductFilename productFilename = S2ProductFilename.create(fileName);
-                if (productFilename != null && productFilename.fileSemantic.contains("L1C")) {
-                    crsCache.ensureIsCached(file.getAbsolutePath());
-                    if (crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
-                        decodeQualification = DecodeQualification.INTENDED;
+                } else if (S2ProductFilename.isProductFilename(fileName)) {
+                    S2ProductFilename productFilename = S2ProductFilename.create(fileName);
+                    if (productFilename != null && productFilename.fileSemantic.contains("L1C")) {
+                        crsCache.ensureIsCached(file.getAbsolutePath());
+                        if (crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
+                            decodeQualification = DecodeQualification.INTENDED;
+                        }
                     }
                 }
             }
