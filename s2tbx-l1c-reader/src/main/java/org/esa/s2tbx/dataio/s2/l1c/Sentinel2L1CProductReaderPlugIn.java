@@ -21,6 +21,7 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
@@ -41,11 +42,6 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
 
     private static L1cProductCRSCache crsCache = new L1cProductCRSCache();
 
-    /**
-     * true if the file filter for L1C products was already added
-     */
-    private static boolean fileFilterAdded = false;
-
     public Sentinel2L1CProductReaderPlugIn() {
         RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Natural Colors", new String[]{"B4", "B3", "B2"}));
@@ -55,26 +51,37 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
     public DecodeQualification getDecodeQualification(Object input) {
         SystemUtils.LOG.fine("Getting decoders...");
 
-        File file = new File(input.toString());
-        DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
-        if (deco.equals(DecodeQualification.SUITABLE)) {
-            S2ProductFilename productFilename = S2ProductFilename.create(file.getName());
-            if (productFilename != null && productFilename.fileSemantic.contains("L1C")) {
-                crsCache.ensureIsCached(file.getAbsolutePath());
-                if (crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
-                    deco = DecodeQualification.INTENDED;
+        DecodeQualification decodeQualification = DecodeQualification.UNABLE;
+
+        if(input instanceof File) {
+            File file = (File) input;
+
+            if (file.isFile()) {
+                String fileName = file.getName();
+
+                // test for granule filename first as it is more restrictive
+                if (S2L1CGranuleMetadataFilename.isGranuleFilename(fileName)) {
+                    S2L1CGranuleMetadataFilename granuleMetadataFilename = S2L1CGranuleMetadataFilename.create(fileName);
+                    if (granuleMetadataFilename != null && granuleMetadataFilename.fileSemantic.contains("L1C")) {
+                        String tileId = granuleMetadataFilename.tileNumber;
+                        String epsg = tileIdentifierToEPSG(tileId);
+                        if (getEPSG().equalsIgnoreCase(epsg)) {
+                            decodeQualification = DecodeQualification.INTENDED;
+                        }
+                    }
+                } else if (S2ProductFilename.isProductFilename(fileName)) {
+                    S2ProductFilename productFilename = S2ProductFilename.create(fileName);
+                    if (productFilename != null && productFilename.fileSemantic.contains("L1C")) {
+                        crsCache.ensureIsCached(file.getAbsolutePath());
+                        if (crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
+                            decodeQualification = DecodeQualification.INTENDED;
+                        }
+                    }
                 }
-                else {
-                    deco = DecodeQualification.UNABLE;
-                }
-            }
-            else
-            {
-                deco = DecodeQualification.UNABLE;
             }
         }
 
-        return deco;
+        return decodeQualification;
     }
 
     abstract public String getEPSG();

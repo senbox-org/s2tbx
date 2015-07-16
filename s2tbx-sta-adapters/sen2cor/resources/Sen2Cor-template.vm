@@ -1,0 +1,4 @@
+$SEN2COR_BIN/L2A_Process.py
+--resolution
+$resolution
+$sourceProduct.FileLocation.AbsolutePath

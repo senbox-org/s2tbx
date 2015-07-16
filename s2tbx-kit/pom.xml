@@ -104,6 +104,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-sta-adapters-help</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-modules</artifactId>
             <version>${netbeans.version}</version>

@@ -198,38 +198,40 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         Assert.notNull(p);
     }
 
-    private Product getL1cMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException {
-        Objects.requireNonNull(granuleMetadataFile);
+    private Product getL1cMosaicProduct(File metadataFile, boolean isAGranule) throws IOException {
+        Objects.requireNonNull(metadataFile);
         // first we need to recover parent metadata file...
 
         String filterTileId = null;
-        File metadataFile = null;
+        File rootMetaDataFile = null;
+        String granuleDirName = null;
         if (isAGranule) {
+            granuleDirName = metadataFile.getParentFile().getName();
             try {
-                Objects.requireNonNull(granuleMetadataFile.getParentFile());
-                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile());
-                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile().getParentFile());
+                Objects.requireNonNull(metadataFile.getParentFile());
+                Objects.requireNonNull(metadataFile.getParentFile().getParentFile());
+                Objects.requireNonNull(metadataFile.getParentFile().getParentFile().getParentFile());
             } catch (NullPointerException npe) {
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
             }
 
-            File up2levels = granuleMetadataFile.getParentFile().getParentFile().getParentFile();
-            File tileIdFilter = granuleMetadataFile.getParentFile();
+            File up2levels = metadataFile.getParentFile().getParentFile().getParentFile();
+            File tileIdFilter = metadataFile.getParentFile();
 
             filterTileId = tileIdFilter.getName();
 
             File[] files = up2levels.listFiles();
             for (File f : files) {
                 if (S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName())) {
-                    metadataFile = f;
+                    rootMetaDataFile = f;
                     break;
                 }
             }
-            if (metadataFile == null) {
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+            if (rootMetaDataFile == null) {
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
             }
         } else {
-            metadataFile = granuleMetadataFile;
+            rootMetaDataFile = metadataFile;
         }
 
         final String aFilter = filterTileId;
@@ -238,9 +240,9 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
 
         try {
-            metadataHeader = L1cMetadata.parseHeader(metadataFile, getConfig().getTileLayouts(), epsgCode);
+            metadataHeader = L1cMetadata.parseHeader(rootMetaDataFile, granuleDirName, getConfig().getTileLayouts(), epsgCode);
         } catch (JDOMException|JAXBException e) {
-            throw new IOException("Failed to parse metadata in " + metadataFile.getName());
+            throw new IOException("Failed to parse metadata in " + rootMetaDataFile.getName());
         }
 
         L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader,
@@ -248,20 +250,20 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                                                                           getConfig());
         logger.fine("Scene Description: " + sceneDescription);
 
-        File productDir = getProductDir(metadataFile);
+        File productDir = getProductDir(rootMetaDataFile);
         initCacheDir(productDir);
 
         L1cMetadata.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
 
         // set the product global geo-coding
-        Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile),
+        Product product = new Product(FileUtils.getFilenameWithoutExtension(rootMetaDataFile),
                                       "S2_MSI_" + productCharacteristics.processingLevel,
                                       sceneDescription.getSceneRectangle().width,
                                       sceneDescription.getSceneRectangle().height);
 
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
-        product.setFileLocation(metadataFile.getParentFile());
+        product.setFileLocation(rootMetaDataFile.getParentFile());
 
         Envelope2D sceneEnvelope = sceneDescription.getSceneEnvelope();
 

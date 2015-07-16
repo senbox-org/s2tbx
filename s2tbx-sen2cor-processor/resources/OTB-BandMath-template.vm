@@ -1,7 +1,0 @@
-BandMath
--il
-$sourceProductFile.getAbsolutePath()
--exp
-"$expression"
--out
-$targetProductFile.getAbsolutePath()

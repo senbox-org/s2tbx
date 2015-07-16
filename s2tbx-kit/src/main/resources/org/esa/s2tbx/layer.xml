@@ -14,6 +14,14 @@ SNAP autoupdate extensions
                 <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider"/>
                 <attr name="url" urlvalue="http://step.esa.int/updatecenter/2.0/s2tbx/updates.xml.gz"/>
             </file>
+            <file name="s2tbx_adapters_update_center.instance">
+                <attr name="displayName" stringvalue="Sentinel-2 Toolbox Adapters Update Center"/>
+                <attr name="enabled" boolvalue="true"/>
+                <attr name="instanceCreate"
+                      methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider"/>
+                <attr name="url" urlvalue="http://step.esa.int/updatecenter/2.0/s2tbx/adapters/updates.xml.gz"/>
+            </file>
         </folder>
     </folder>
 
