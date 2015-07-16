@@ -23,9 +23,7 @@ import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +68,31 @@ public abstract class XmlMetadata {
                 //noinspection unchecked
                 result = (T) XmlMetadataParserFactory.getParser(clazz).parse(stream);
                 result.setPath(inputFile.getPath());
+                String metadataProfile = result.getMetadataProfile();
+                if (metadataProfile != null)
+                    result.setName(metadataProfile);
+            }
+        } catch (Exception e) {
+            Logger.getLogger(XmlMetadata.class.getName()).severe(e.getMessage());
+        } finally {
+            if (stream != null) try {
+                stream.close();
+            } catch (IOException e) {
+                // swallowed exception
+            }
+        }
+        return result;
+    }
+
+    public static <T extends XmlMetadata> T create(Class<T> clazz, String input) {
+        Assert.notNull(input);
+        T result = null;
+        InputStream stream = null;
+        try {
+            if (!input.isEmpty()) {
+                stream = new ByteArrayInputStream(input.getBytes());
+                //noinspection unchecked
+                result = (T) XmlMetadataParserFactory.getParser(clazz).parse(stream);
                 String metadataProfile = result.getMetadataProfile();
                 if (metadataProfile != null)
                     result.setName(metadataProfile);

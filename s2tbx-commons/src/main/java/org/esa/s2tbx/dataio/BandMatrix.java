@@ -24,7 +24,7 @@ import org.esa.snap.framework.datamodel.GeoCoding;
 import org.esa.snap.framework.datamodel.GeoPos;
 import org.esa.snap.framework.datamodel.PixelPos;
 
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -173,8 +173,8 @@ public class BandMatrix {
             Rectangle overlap = overlap2D.getBounds();
             return new Rectangle((int) (overlap.getX() - origin.getX()),
                                  (int) (overlap.getY() - origin.getY()),
-                                 (int) (overlap.getWidth() - 1),         // subtract 1 because for cells continuing each other width is 1
-                                 (int) (overlap.getHeight() - 1));
+                                 overlap.getWidth() > 0 ? (int) (overlap.getWidth() - 1) : 0,         // subtract 1 because for cells continuing each other width is 1
+                                 overlap.getHeight() > 0 ? (int) (overlap.getHeight() - 1) : 0);
         }
 
         /**
@@ -351,9 +351,9 @@ public class BandMatrix {
      * Given the input rectangle, it returns all cells which are intersected by this rectangle.
      * For example:
      * Given a matrix 3 x 3 cells like:
-     * [   (0,0,100,100)   (100,0,100,100)     (200,0,100,100)
-     * (0,100,100,100) (100,100,100,100)   (200,100,100,100)
-     * (0,200,100,100) (100,200,100,100)   (200,200,100,100)   ]
+     * [    (0,0,100,100)   (100,0,100,100)     (200,0,100,100)
+     *      (0,100,100,100) (100,100,100,100)   (200,100,100,100)
+     *      (0,200,100,100) (100,200,100,100)   (200,200,100,100)   ]
      * and the rectangle (75,75,50,50),
      * the intersecting cells returned would be (in this order):
      * { (0,0,100,100), (100,0,100,100), (0,100,100,100), (100,100,100,100) }
