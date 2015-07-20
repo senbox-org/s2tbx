@@ -1,0 +1,4 @@
+﻿Developed under contract to ESA by 
+CS SI (prime contractor), Brockmann Consult GmbH, VEGA, INRA, UCL
+
+© 2014-2017 by CS SI and contributors
