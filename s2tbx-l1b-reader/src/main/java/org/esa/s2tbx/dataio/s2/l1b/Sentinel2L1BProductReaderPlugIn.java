@@ -70,9 +70,11 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2L1bConfig.getInstance().getFormatName(),
+        // returning a null formatName so that the user can further select between
+        // all the intended readers for the product (different resolutions)
+        return new SnapFileFilter(null,
                                   getDefaultFileExtensions(),
-                                  "Sentinel-2 MSI L1B product or tile");
+                                  "Sentinel-2 MSI L1B product or granule");
     }
 
     @Override

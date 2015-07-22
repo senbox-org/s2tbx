@@ -115,7 +115,10 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-
-            return null;
+        // returning a null formatName so that the user can further select between
+        // all the intended readers for the product (different resolutions and UTM zones)
+        return new SnapFileFilter(null,
+                                  getDefaultFileExtensions(),
+                                  "Sentinel-2 MSI L1C product or tile");
     }
 }
