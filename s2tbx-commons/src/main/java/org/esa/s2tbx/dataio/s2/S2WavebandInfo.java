@@ -33,8 +33,8 @@ public class S2WavebandInfo {
                    double bandwidth) {
         this.bandId = bandId;
         this.bandName = bandName;
+        this.resolution = resolution;
         this.wavelength = wavelength;
         this.bandwidth = bandwidth;
-        this.resolution = resolution;
     }
 }
