@@ -5,9 +5,9 @@
             <file name="org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
-                <attr name="displayName" stringvalue="S2-L2A"/>
+                <attr name="displayName" stringvalue="S2-MSI L2A"/>
                 <attr name="formatName" stringvalue="SENTINEL-2-MSI-L2A"/>
-                <attr name="useAllFileFilter" boolvalue="true"/>
+                <attr name="useAllFileFilter" boolvalue="false"/>
             </file>
         </folder>
     </folder>
