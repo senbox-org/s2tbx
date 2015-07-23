@@ -263,7 +263,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                                       sceneDescription.getSceneRectangle().height);
 
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
-        product.setFileLocation(rootMetaDataFile.getParentFile());
+        product.setFileLocation(metadataFile);
 
         Envelope2D sceneEnvelope = sceneDescription.getSceneEnvelope();
 
