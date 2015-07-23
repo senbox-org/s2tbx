@@ -5,7 +5,7 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="S2-MSI L1C"/>
-                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1C-MS"/>
+                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1C-MultiRes-UTM31N"/>
                 <attr name="useAllFileFilter" boolvalue="false"/>
             </file>
         </folder>
