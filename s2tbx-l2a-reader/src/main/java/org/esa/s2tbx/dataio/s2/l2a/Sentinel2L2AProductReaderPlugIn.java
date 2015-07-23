@@ -65,7 +65,10 @@ public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPl
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(S2L2AConfig.getInstance().getFormatName(),
+        // returning a null formatName so that the user can further select between
+        // all the intended readers for the product (different resolutions and UTM zones)
+
+        return new SnapFileFilter(null,
                                   getDefaultFileExtensions(),
                                   "Sentinel-2 MSI L2A product or tile");
     }
