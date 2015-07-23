@@ -537,8 +537,8 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                             bandInformation.getBandId(),
                             new S2WavebandInfo(bandInformation.getBandId(),
                                                bandInformation.getPhysicalBand(),
-                                               spatialResolution, bandInformation.getWavelenghtCentral(),
-                                               Math.abs(bandInformation.getWavelenghtMax() + bandInformation.getWavelenghtMin())),
+                                               spatialResolution, bandInformation.getWavelengthCentral(),
+                                               Math.abs(bandInformation.getWavelengthMax() + bandInformation.getWavelengthMin())),
                             getConfig().getTileLayouts()[spatialResolution.id]);
     }
 

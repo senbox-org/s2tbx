@@ -27,7 +27,6 @@ import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_POSITION
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1B;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
-import https.psd_13_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import jp2.TileLayout;
@@ -62,7 +61,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,9 +164,9 @@ public class L1bMetadataProc extends S2MetadataProc {
             newInfo.setBandId(Integer.parseInt(si.getBandId()));
             newInfo.setPhysicalBand(si.getPhysicalBand().value());
             newInfo.setResolution(si.getRESOLUTION());
-            newInfo.setWavelenghtCentral(si.getWavelength().getCENTRAL().getValue());
-            newInfo.setWavelenghtMax(si.getWavelength().getMAX().getValue());
-            newInfo.setWavelenghtMin(si.getWavelength().getMIN().getValue());
+            newInfo.setWavelengthCentral(si.getWavelength().getCENTRAL().getValue());
+            newInfo.setWavelengthMax(si.getWavelength().getMAX().getValue());
+            newInfo.setWavelengthMin(si.getWavelength().getMIN().getValue());
 
             int size = si.getSpectral_Response().getVALUES().size();
             newInfo.setSpectralResponseValues(ArrayUtils.toPrimitive(si.getSpectral_Response().getVALUES().toArray(new Double[size])));
@@ -208,9 +206,9 @@ public class L1bMetadataProc extends S2MetadataProc {
 
                 int size = sin.getSpectral_Response().getVALUES().size();
                 data.setSpectralResponseValues(ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size])));
-                data.setWavelenghtCentral(sin.getWavelength().getCENTRAL().getValue());
-                data.setWavelenghtMax(sin.getWavelength().getMAX().getValue());
-                data.setWavelenghtMin(sin.getWavelength().getMIN().getValue());
+                data.setWavelengthCentral(sin.getWavelength().getCENTRAL().getValue());
+                data.setWavelengthMax(sin.getWavelength().getMAX().getValue());
+                data.setWavelengthMin(sin.getWavelength().getMIN().getValue());
 
                 aInfo.add(data);
             }
