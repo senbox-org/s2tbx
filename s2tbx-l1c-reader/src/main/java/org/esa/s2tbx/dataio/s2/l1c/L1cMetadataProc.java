@@ -170,7 +170,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         else
         {
             // warning hardcoded resolutions
-            aInfo.add(new S2SpectralInformation("B1",0,60, 414, 472, 490));
+            aInfo.add(new S2SpectralInformation("B1",0,60, 414, 472, 443));
             aInfo.add(new S2SpectralInformation("B2",1,10, 425, 555, 490));
             aInfo.add(new S2SpectralInformation("B3",2,10, 510, 610, 560));
             aInfo.add(new S2SpectralInformation("B4",3,10, 617, 707, 665));
