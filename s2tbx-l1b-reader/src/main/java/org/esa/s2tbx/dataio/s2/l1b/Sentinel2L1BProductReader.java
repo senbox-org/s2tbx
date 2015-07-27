@@ -594,8 +594,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                 bandInformation.getBandId(), null,
                                 new S2WavebandInfo(bandInformation.getBandId(),
                                                    bandInformation.getPhysicalBand(),
-                                                      spatialResolution, bandInformation.getWavelengthCentral(),
-                                                      Math.abs(bandInformation.getWavelengthMax() + bandInformation.getWavelengthMin())),
+                                                   spatialResolution, bandInformation.getWavelengthCentral(),
+                                                   bandInformation.getWavelengthMax() - bandInformation.getWavelengthMin()),
                                 getConfig().getTileLayouts()[spatialResolution.id]);
     }
 
@@ -606,7 +606,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                 new S2WavebandInfo(bandInformation.getBandId(),
                                                       detector + bandInformation.getPhysicalBand(), // notice that text shown to user in menu (detector, band) is evaluated as an expression !!
                                                       spatialResolution, bandInformation.getWavelengthCentral(),
-                                                      Math.abs(bandInformation.getWavelengthMax() + bandInformation.getWavelengthMin())),
+                                                      bandInformation.getWavelengthMax() - bandInformation.getWavelengthMin()),
                                 getConfig().getTileLayouts()[spatialResolution.id]);
     }
 
