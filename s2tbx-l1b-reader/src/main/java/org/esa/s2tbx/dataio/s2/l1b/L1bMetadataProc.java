@@ -214,9 +214,7 @@ public class L1bMetadataProc extends S2MetadataProc {
             }
         } else {
             SystemUtils.LOG.warning("Empty spectral info !");
-
-            // warning hardcoded resolutions
-            aInfo.add(new S2SpectralInformation("B1",0,60, 414, 472, 490));
+            aInfo.add(new S2SpectralInformation("B1",0,60, 414, 472, 443));
             aInfo.add(new S2SpectralInformation("B2",1,10, 425, 555, 490));
             aInfo.add(new S2SpectralInformation("B3",2,10, 510, 610, 560));
             aInfo.add(new S2SpectralInformation("B4",3,10, 617, 707, 665));
@@ -225,7 +223,7 @@ public class L1bMetadataProc extends S2MetadataProc {
             aInfo.add(new S2SpectralInformation("B7",6,20, 741, 812, 783));
             aInfo.add(new S2SpectralInformation("B8",7,10, 752, 927, 842));
             aInfo.add(new S2SpectralInformation("B8A",8,20, 823, 902, 865));
-            aInfo.add(new S2SpectralInformation("B9", 9, 60, 903, 982, 945));
+            aInfo.add(new S2SpectralInformation("B9",9,60, 903, 982, 945));
             aInfo.add(new S2SpectralInformation("B10",10,60, 1338, 1413, 1375));
             aInfo.add(new S2SpectralInformation("B11",11,20, 1532, 1704, 1610));
             aInfo.add(new S2SpectralInformation("B12",12,20, 2035, 2311, 2190));
