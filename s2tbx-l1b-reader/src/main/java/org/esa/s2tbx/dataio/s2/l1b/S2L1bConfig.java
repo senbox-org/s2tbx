@@ -50,8 +50,8 @@ public class S2L1bConfig implements S2Config {
     //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
     //todo use classes from jp2 package to read the data
     private TileLayout[] L1B_TILE_LAYOUTS = new TileLayout[]{
-            new TileLayout(2548, 2304, 1024, 1024, 3, 3, 5), // 10
-            new TileLayout(1274, 1152, 1024, 1024, 2, 2, 5), // 20
+            new TileLayout(2552, 2304, 2552, 2304, 1, 1, 5), // 10
+            new TileLayout(1274, 1152, 1274, 1152, 1, 1, 5), // 20
             new TileLayout(424, 384, 424, 384, 1, 1, 5), // 60
     };
 
