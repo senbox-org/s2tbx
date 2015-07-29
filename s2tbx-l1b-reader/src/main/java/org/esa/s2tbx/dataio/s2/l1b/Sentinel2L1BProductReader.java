@@ -187,7 +187,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             throw new FileNotFoundException(inputFile.getPath());
         }
 
-        if (S2ProductFilename.isProductFilename(inputFile.getName())) {
+        if (S2ProductFilename.isMetadataFilename(inputFile.getName())) {
             boolean isAGranule = S2L1BGranuleMetadataFilename.isGranuleFilename(inputFile.getName());
             if(isAGranule)
             {
