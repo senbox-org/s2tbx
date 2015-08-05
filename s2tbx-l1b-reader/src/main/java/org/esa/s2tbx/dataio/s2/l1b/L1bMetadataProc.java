@@ -27,7 +27,6 @@ import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_POSITION
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1B;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
-import https.psd_13_sentinel2_eo_esa_int.dico._1_0.sy.image.A_PHYSICAL_BAND_NAME;
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import jp2.TileLayout;
@@ -62,7 +61,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,9 +164,9 @@ public class L1bMetadataProc extends S2MetadataProc {
             newInfo.setBandId(Integer.parseInt(si.getBandId()));
             newInfo.setPhysicalBand(si.getPhysicalBand().value());
             newInfo.setResolution(si.getRESOLUTION());
-            newInfo.setWavelenghtCentral(si.getWavelength().getCENTRAL().getValue());
-            newInfo.setWavelenghtMax(si.getWavelength().getMAX().getValue());
-            newInfo.setWavelenghtMin(si.getWavelength().getMIN().getValue());
+            newInfo.setWavelengthCentral(si.getWavelength().getCENTRAL().getValue());
+            newInfo.setWavelengthMax(si.getWavelength().getMAX().getValue());
+            newInfo.setWavelengthMin(si.getWavelength().getMIN().getValue());
 
             int size = si.getSpectral_Response().getVALUES().size();
             newInfo.setSpectralResponseValues(ArrayUtils.toPrimitive(si.getSpectral_Response().getVALUES().toArray(new Double[size])));
@@ -208,17 +206,15 @@ public class L1bMetadataProc extends S2MetadataProc {
 
                 int size = sin.getSpectral_Response().getVALUES().size();
                 data.setSpectralResponseValues(ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size])));
-                data.setWavelenghtCentral(sin.getWavelength().getCENTRAL().getValue());
-                data.setWavelenghtMax(sin.getWavelength().getMAX().getValue());
-                data.setWavelenghtMin(sin.getWavelength().getMIN().getValue());
+                data.setWavelengthCentral(sin.getWavelength().getCENTRAL().getValue());
+                data.setWavelengthMax(sin.getWavelength().getMAX().getValue());
+                data.setWavelengthMin(sin.getWavelength().getMIN().getValue());
 
                 aInfo.add(data);
             }
         } else {
             SystemUtils.LOG.warning("Empty spectral info !");
-
-            // warning hardcoded resolutions
-            aInfo.add(new S2SpectralInformation("B1",0,60, 414, 472, 490));
+            aInfo.add(new S2SpectralInformation("B1",0,60, 414, 472, 443));
             aInfo.add(new S2SpectralInformation("B2",1,10, 425, 555, 490));
             aInfo.add(new S2SpectralInformation("B3",2,10, 510, 610, 560));
             aInfo.add(new S2SpectralInformation("B4",3,10, 617, 707, 665));
@@ -227,7 +223,7 @@ public class L1bMetadataProc extends S2MetadataProc {
             aInfo.add(new S2SpectralInformation("B7",6,20, 741, 812, 783));
             aInfo.add(new S2SpectralInformation("B8",7,10, 752, 927, 842));
             aInfo.add(new S2SpectralInformation("B8A",8,20, 823, 902, 865));
-            aInfo.add(new S2SpectralInformation("B9", 9, 60, 903, 982, 945));
+            aInfo.add(new S2SpectralInformation("B9",9,60, 903, 982, 945));
             aInfo.add(new S2SpectralInformation("B10",10,60, 1338, 1413, 1375));
             aInfo.add(new S2SpectralInformation("B11",11,20, 1532, 1704, 1610));
             aInfo.add(new S2SpectralInformation("B12",12,20, 2035, 2311, 2190));

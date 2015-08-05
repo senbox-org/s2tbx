@@ -28,9 +28,9 @@ public class S2SpectralInformation {
     private int bandId;
     private String physicalBand;
     private int resolution;
-    private double wavelenghtMin;
-    private double wavelenghtMax;
-    private double wavelenghtCentral;
+    private double wavelengthMin;
+    private double wavelengthMax;
+    private double wavelengthCentral;
 
     private double[] spectralResponseValues;
 
@@ -47,17 +47,17 @@ public class S2SpectralInformation {
     public S2SpectralInformation(String physicalBand,
                                  int bandId,
                                  int resolution,
-                                 double wavelenghtMin,
-                                 double wavelenghtMax,
-                                 double wavelenghtCentral)
+                                 double wavelengthMin,
+                                 double wavelengthMax,
+                                 double wavelengthCentral)
     {
         this.physicalBand = physicalBand;
         this.bandId = bandId;
         this.resolution = resolution;
         spectralResponseValues = new double[]{};
-        this.wavelenghtMin = wavelenghtMin;
-        this.wavelenghtMax = wavelenghtMax;
-        this.wavelenghtCentral = wavelenghtCentral;
+        this.wavelengthMin = wavelengthMin;
+        this.wavelengthMax = wavelengthMax;
+        this.wavelengthCentral = wavelengthCentral;
     }
 
     public int getBandId() {
@@ -84,28 +84,28 @@ public class S2SpectralInformation {
         this.resolution = resolution;
     }
 
-    public double getWavelenghtMin() {
-        return wavelenghtMin;
+    public double getWavelengthMin() {
+        return wavelengthMin;
     }
 
-    public void setWavelenghtMin(double wavelenghtMin) {
-        this.wavelenghtMin = wavelenghtMin;
+    public void setWavelengthMin(double wavelengthMin) {
+        this.wavelengthMin = wavelengthMin;
     }
 
-    public double getWavelenghtMax() {
-        return wavelenghtMax;
+    public double getWavelengthMax() {
+        return wavelengthMax;
     }
 
-    public void setWavelenghtMax(double wavelenghtMax) {
-        this.wavelenghtMax = wavelenghtMax;
+    public void setWavelengthMax(double wavelengthMax) {
+        this.wavelengthMax = wavelengthMax;
     }
 
-    public double getWavelenghtCentral() {
-        return wavelenghtCentral;
+    public double getWavelengthCentral() {
+        return wavelengthCentral;
     }
 
-    public void setWavelenghtCentral(double wavelenghtCentral) {
-        this.wavelenghtCentral = wavelenghtCentral;
+    public void setWavelengthCentral(double wavelengthCentral) {
+        this.wavelengthCentral = wavelengthCentral;
     }
 
     public double[] getSpectralResponseValues() {

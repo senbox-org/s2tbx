@@ -40,7 +40,7 @@ public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPl
         SystemUtils.LOG.fine("Getting decoders...");
 
         File file = new File(input.toString());
-        DecodeQualification deco = S2ProductFilename.isProductFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
+        DecodeQualification deco = S2ProductFilename.isMetadataFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
         if (deco.equals(DecodeQualification.SUITABLE)) {
             S2ProductFilename productFilename = S2ProductFilename.create(file.getName());
             if (productFilename!= null && productFilename.fileSemantic.contains("L2A")) {

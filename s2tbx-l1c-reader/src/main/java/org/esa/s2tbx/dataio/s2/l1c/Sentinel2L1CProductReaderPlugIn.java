@@ -69,7 +69,7 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
                             decodeQualification = DecodeQualification.INTENDED;
                         }
                     }
-                } else if (S2ProductFilename.isProductFilename(fileName)) {
+                } else if (S2ProductFilename.isMetadataFilename(fileName)) {
                     S2ProductFilename productFilename = S2ProductFilename.create(fileName);
                     if (productFilename != null && productFilename.fileSemantic.contains("L1C")) {
                         crsCache.ensureIsCached(file.getAbsolutePath());

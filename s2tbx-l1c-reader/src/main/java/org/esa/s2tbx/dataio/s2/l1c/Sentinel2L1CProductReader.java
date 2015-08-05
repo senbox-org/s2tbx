@@ -51,12 +51,9 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.geometry.Envelope2D;
-import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jdom.JDOMException;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.openjpeg.StackTraceUtils;
@@ -73,12 +70,10 @@ import javax.media.jai.operator.TranslateDescriptor;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
@@ -576,8 +571,8 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                             bandInformation.getBandId(),
                             new S2WavebandInfo(bandInformation.getBandId(),
                                                bandInformation.getPhysicalBand(),
-                                               spatialResolution, bandInformation.getWavelenghtCentral(),
-                                               Math.abs(bandInformation.getWavelenghtMax() + bandInformation.getWavelenghtMin())),
+                                               spatialResolution, bandInformation.getWavelengthCentral(),
+                                               bandInformation.getWavelengthMax() - bandInformation.getWavelengthMin()),
                             getConfig().getTileLayouts()[spatialResolution.id]);
     }
 

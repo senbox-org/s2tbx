@@ -187,7 +187,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             throw new FileNotFoundException(inputFile.getPath());
         }
 
-        if (S2ProductFilename.isProductFilename(inputFile.getName())) {
+        if (S2ProductFilename.isMetadataFilename(inputFile.getName())) {
             boolean isAGranule = S2L1BGranuleMetadataFilename.isGranuleFilename(inputFile.getName());
             if(isAGranule)
             {
@@ -594,8 +594,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                 bandInformation.getBandId(), null,
                                 new S2WavebandInfo(bandInformation.getBandId(),
                                                    bandInformation.getPhysicalBand(),
-                                                      spatialResolution, bandInformation.getWavelenghtCentral(),
-                                                      Math.abs(bandInformation.getWavelenghtMax() + bandInformation.getWavelenghtMin())),
+                                                   spatialResolution, bandInformation.getWavelengthCentral(),
+                                                   bandInformation.getWavelengthMax() - bandInformation.getWavelengthMin()),
                                 getConfig().getTileLayouts()[spatialResolution.id]);
     }
 
@@ -605,8 +605,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                 bandInformation.getBandId(), detector,
                                 new S2WavebandInfo(bandInformation.getBandId(),
                                                       detector + bandInformation.getPhysicalBand(), // notice that text shown to user in menu (detector, band) is evaluated as an expression !!
-                                                      spatialResolution, bandInformation.getWavelenghtCentral(),
-                                                      Math.abs(bandInformation.getWavelenghtMax() + bandInformation.getWavelenghtMin())),
+                                                      spatialResolution, bandInformation.getWavelengthCentral(),
+                                                      bandInformation.getWavelengthMax() - bandInformation.getWavelengthMin()),
                                 getConfig().getTileLayouts()[spatialResolution.id]);
     }
 

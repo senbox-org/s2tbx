@@ -124,9 +124,9 @@ public class L1cMetadataProc extends S2MetadataProc {
             newInfo.setBandId(Integer.parseInt(si.getBandId()));
             newInfo.setPhysicalBand(si.getPhysicalBand().value());
             newInfo.setResolution(si.getRESOLUTION());
-            newInfo.setWavelenghtCentral(si.getWavelength().getCENTRAL().getValue());
-            newInfo.setWavelenghtMax(si.getWavelength().getMAX().getValue());
-            newInfo.setWavelenghtMin(si.getWavelength().getMIN().getValue());
+            newInfo.setWavelengthCentral(si.getWavelength().getCENTRAL().getValue());
+            newInfo.setWavelengthMax(si.getWavelength().getMAX().getValue());
+            newInfo.setWavelengthMin(si.getWavelength().getMIN().getValue());
 
             int size = si.getSpectral_Response().getVALUES().size();
             newInfo.setSpectralResponseValues(ArrayUtils.toPrimitive(si.getSpectral_Response().getVALUES().toArray(new Double[size])));
@@ -160,9 +160,9 @@ public class L1cMetadataProc extends S2MetadataProc {
 
                 int size = sin.getSpectral_Response().getVALUES().size();
                 data.setSpectralResponseValues(ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size])));
-                data.setWavelenghtCentral(sin.getWavelength().getCENTRAL().getValue());
-                data.setWavelenghtMax(sin.getWavelength().getMAX().getValue());
-                data.setWavelenghtMin(sin.getWavelength().getMIN().getValue());
+                data.setWavelengthCentral(sin.getWavelength().getCENTRAL().getValue());
+                data.setWavelengthMax(sin.getWavelength().getMAX().getValue());
+                data.setWavelengthMin(sin.getWavelength().getMIN().getValue());
 
                 aInfo.add(data);
             }
@@ -170,7 +170,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         else
         {
             // warning hardcoded resolutions
-            aInfo.add(new S2SpectralInformation("B1",0,60, 414, 472, 490));
+            aInfo.add(new S2SpectralInformation("B1",0,60, 414, 472, 443));
             aInfo.add(new S2SpectralInformation("B2",1,10, 425, 555, 490));
             aInfo.add(new S2SpectralInformation("B3",2,10, 510, 610, 560));
             aInfo.add(new S2SpectralInformation("B4",3,10, 617, 707, 665));

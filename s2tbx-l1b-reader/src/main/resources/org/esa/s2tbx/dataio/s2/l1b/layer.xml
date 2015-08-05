@@ -23,30 +23,9 @@
             <file name="org-esa-s2tbx-dataio-s2-ImportS2L1BProduct.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
-                <attr name="displayName" stringvalue="S2 MSI L1B"/>
+                <attr name="displayName" stringvalue="S2-MSI L1B"/>
                 <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1B"/>
-                <attr name="useAllFileFilter" boolvalue="true"/>
-            </file>
-            <file name="org-esa-s2tbx-dataio-s2-ImportS2L1B10MProduct.instance">
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
-                <attr name="displayName" stringvalue="S2 MSI L1B 10 Meter"/>
-                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1B-10M"/>
-                <attr name="useAllFileFilter" boolvalue="true"/>
-            </file>
-            <file name="org-esa-s2tbx-dataio-s2-ImportS2L1B20MProduct.instance">
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
-                <attr name="displayName" stringvalue="S2 MSI L1B 20 Meter"/>
-                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1B-20M"/>
-                <attr name="useAllFileFilter" boolvalue="true"/>
-            </file>
-            <file name="org-esa-s2tbx-dataio-s2-ImportS2L1B60MProduct.instance">
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
-                <attr name="displayName" stringvalue="S2 MSI L1B 60 Meter"/>
-                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1B-60M"/>
-                <attr name="useAllFileFilter" boolvalue="true"/>
+                <attr name="useAllFileFilter" boolvalue="false"/>
             </file>
         </folder>
     </folder>
@@ -59,18 +38,6 @@
                         <file name="org-esa-s2tbx-dataio-s2-ImportS2L1BProduct.shadow">
                             <attr name="originalFile"
                                   stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2L1BProduct.instance"/>
-                        </file>
-                        <file name="org-esa-s2tbx-dataio-s2-ImportS2L1B10MProduct.shadow">
-                            <attr name="originalFile"
-                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2L1B10MProduct.instance"/>
-                        </file>
-                        <file name="org-esa-s2tbx-dataio-s2-ImportS2L1B20MProduct.shadow">
-                            <attr name="originalFile"
-                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2L1B20MProduct.instance"/>
-                        </file>
-                        <file name="org-esa-s2tbx-dataio-s2-ImportS2L1B60MProduct.shadow">
-                            <attr name="originalFile"
-                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2L1B60MProduct.instance"/>
                         </file>
                     </folder>
                 </folder>
