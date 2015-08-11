@@ -6,7 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Created by opicas-p on 24/06/2014.
+ * @author Oscar Picas-Puig
  */
 public class S2GranuleMetadataFilenameTest {
 
