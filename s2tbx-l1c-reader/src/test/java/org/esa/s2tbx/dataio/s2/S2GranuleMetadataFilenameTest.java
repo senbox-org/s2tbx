@@ -22,7 +22,7 @@ public class S2GranuleMetadataFilenameTest {
         assertEquals("L1C_TL", s2gf.fileSemantic);
         assertEquals("CGS1", s2gf.siteCentre);
         assertEquals("20130621T120000", s2gf.creationDate);
-        assertEquals("_A000065", s2gf.absoluteOrbit);
+        assertEquals("A000065", s2gf.absoluteOrbit);
 
         assertEquals("_T14SLD", s2gf.tileNumber);
     }
