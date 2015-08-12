@@ -24,11 +24,13 @@ import org.esa.snap.framework.datamodel.GeoCoding;
 import org.esa.snap.framework.datamodel.GeoPos;
 import org.esa.snap.framework.datamodel.PixelPos;
 
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class represents a matrix arrangement of multiple images (tiles) that make up
@@ -41,8 +43,6 @@ public class BandMatrix {
 
     private int numRows;
     private int numCols;
-    private boolean isChecked;
-    private boolean isConsistent;
 
     private int currentRow;
     private int currentCol;
@@ -173,8 +173,8 @@ public class BandMatrix {
             Rectangle overlap = overlap2D.getBounds();
             return new Rectangle((int) (overlap.getX() - origin.getX()),
                                  (int) (overlap.getY() - origin.getY()),
-                                 (int) (overlap.getWidth() - 1),         // subtract 1 because for cells continuing each other width is 1
-                                 (int) (overlap.getHeight() - 1));
+                                 overlap.getWidth() > 0 ? (int) (overlap.getWidth() - 1) : 0,         // subtract 1 because for cells continuing each other width is 1
+                                 overlap.getHeight() > 0 ? (int) (overlap.getHeight() - 1) : 0);
         }
 
         /**
@@ -348,16 +348,40 @@ public class BandMatrix {
     }
 
     /**
-     * Given the input rectangle, it returns all cells which are intersected by this rectangle.
+     * Given the input rectangle given by its origin coordinates, width and height,
+     * it returns all cells which are intersected by this rectangle.
      * For example:
      * Given a matrix 3 x 3 cells like:
-     * [   (0,0,100,100)   (100,0,100,100)     (200,0,100,100)
-     * (0,100,100,100) (100,100,100,100)   (200,100,100,100)
-     * (0,200,100,100) (100,200,100,100)   (200,200,100,100)   ]
+     * [    (0,0,100,100)   (100,0,100,100)     (200,0,100,100)
+     *      (0,100,100,100) (100,100,100,100)   (200,100,100,100)
+     *      (0,200,100,100) (100,200,100,100)   (200,200,100,100)   ]
      * and the rectangle (75,75,50,50),
      * the intersecting cells returned would be (in this order):
      * { (0,0,100,100), (100,0,100,100), (0,100,100,100), (100,100,100,100) }
-     * <p>
+     *
+     * If this matrix contains at least one unassigned cell, an exception is thrown.
+     *
+     * @param originX   The abscissa of the area origin
+     * @param originY   The ordinate of the area origin
+     * @param width     THe width of the area
+     * @param height    The height of the area
+     * @return Array of matrix cells
+     */
+    public BandMatrixCell[] findIntersectingCells(int originX, int originY, int width, int height) {
+        return findIntersectingCells(new Rectangle(originX, originY, width, height));
+    }
+
+    /**
+     * Given the input rectangle, it returns all cells which are intersected by this rectangle.
+     * For example:
+     * Given a matrix 3 x 3 cells like:
+     * [    (0,0,100,100)   (100,0,100,100)     (200,0,100,100)
+     *      (0,100,100,100) (100,100,100,100)   (200,100,100,100)
+     *      (0,200,100,100) (100,200,100,100)   (200,200,100,100)   ]
+     * and the rectangle (75,75,50,50),
+     * the intersecting cells returned would be (in this order):
+     * { (0,0,100,100), (100,0,100,100), (0,100,100,100), (100,100,100,100) }
+     *
      * If this matrix contains at least one unassigned cell, an exception is thrown.
      *
      * @param rectangle The rectangle for which to compute the list of intersecting cells.
@@ -381,19 +405,57 @@ public class BandMatrix {
     }
 
     /**
+     * Determines the cells of this matrix that intersect the rectangle area given by its
+     * origin coordinates (bottom-left), width and height.
+     *
+     * @param originX   The abscissa of the area origin
+     * @param originY   The ordinate of the area origin
+     * @param width     THe width of the area
+     * @param height    The height of the area
+     * @return          A (not-null) map of the cells intersecting the rectangle together with
+     *                  the intersecting area of each cell.
+     */
+    public Map<BandMatrixCell, Rectangle> computeIntersection(int originX, int originY, int width, int height) {
+        return computeIntersection(new Rectangle(originX, originY, width, height));
+    }
+
+    /**
+     * Determines the cells of this matrix that intersect the given rectangle.
+     *
+     * @param rectangle The rectangle to intersect with
+     * @return          A (not-null) map of the cells intersecting the rectangle together with
+     *                  the intersecting area of each cell.
+     */
+    public Map<BandMatrixCell, Rectangle> computeIntersection(Rectangle rectangle) {
+        if (!isConsistent()) {
+            throw new UnsupportedOperationException("Current matrix is not consistent!");
+        }
+        Map<BandMatrixCell, Rectangle> cells = new LinkedHashMap<>();
+        if (rectangle != null && rectangle.width > 0 && rectangle.height > 0) {
+            Rectangle intersection;
+            for (int col = 0; col < numCols; col++) {
+                for (int row = 0; row < numRows; row++) {
+                    if ((intersection = this.internal[row][col].intersection(rectangle)) != null) {
+                        cells.put(this.internal[row][col], intersection);
+                    }
+                }
+            }
+        }
+        return cells;
+    }
+
+    /**
      * Checks if there are unassigned cells inside this matrix.
      * A matrix with at least one unassigned cell is considered not to be consistent.
      */
     private boolean isConsistent() {
-        if (!this.isChecked) {
-            this.isConsistent = true;
-            for (int i = 0; i < numRows; i++) {
-                for (int j = 0; j < numCols; j++) {
-                    this.isConsistent &= (this.internal[i][j] != null);
-                }
+        boolean isConsistent = true;
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                if (!(isConsistent &= (this.internal[i][j] != null)))
+                    break;
             }
-            this.isChecked = true;
         }
-        return this.isConsistent;
+        return isConsistent;
     }
 }
