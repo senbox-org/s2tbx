@@ -1,9 +1,10 @@
 package org.esa.s2tbx.dataio.j2k.metadata;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 /**
  * Reader for decoding JP2 XML blocks into Metadata elements.
@@ -31,11 +32,13 @@ public class Jp2XmlMetadataReader {
     public Jp2XmlMetadata read() {
         Jp2XmlMetadata metadata = null;
         if (jp2File != null && jp2File.canRead()) {
-            try (DataInputStream stream = new DataInputStream(new FileInputStream(jp2File))) {
+            try (FileInputStream stream = new FileInputStream(jp2File)) {
+                FileChannel channel = stream.getChannel();
+                MappedByteBuffer mappedByteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0L, channel.size());
                 int currentByte;
-                while (!jp2cMatcher.matches((currentByte = stream.readUnsignedByte()))) {
+                while (mappedByteBuffer.hasRemaining() && !jp2cMatcher.matches((currentByte = mappedByteBuffer.get()))) {
                     if (xmlTagMatcher.matches(currentByte)) {
-                        String xmlString = extractBlock(stream);
+                        String xmlString = extractBlock(mappedByteBuffer);
                         if (metadata == null) {
                             metadata = Jp2XmlMetadata.create(Jp2XmlMetadata.class, xmlString);
                             metadata.setName("XML Metadata");
@@ -52,10 +55,10 @@ public class Jp2XmlMetadataReader {
         return metadata;
     }
 
-    private String extractBlock(DataInputStream inputStream) throws IOException {
+    private String extractBlock(MappedByteBuffer buffer) throws IOException {
         StringBuilder builder = new StringBuilder();
         int current;
-        while ((current = inputStream.readUnsignedByte()) != 0) {
+        while ((current = buffer.get()) != 0) {
             builder.append(Character.toString((char) current));
         }
         return builder.toString();

@@ -26,6 +26,7 @@ import java.awt.geom.Point2D;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,10 +88,10 @@ public class J2KProductReader extends AbstractProductReader {
         File[] files = tmpFolder.listFiles();
         if (files != null) {
             for (File file : files) {
-                file.deleteOnExit();
+                file.delete();
             }
         }
-        tmpFolder.deleteOnExit();
+        tmpFolder.delete();
         super.close();
     }
 
@@ -115,34 +116,40 @@ public class J2KProductReader extends AbstractProductReader {
                 dumpFile.parse();
                 imageInfo = dumpFile.getImageInfo();
                 csInfo = dumpFile.getCodeStreamInfo();
-                product = new Product(inputFile.getName(), "J2K", imageInfo.getWidth(), imageInfo.getHeight());
-                product.getMetadataRoot().addElement(imageInfo.toMetadataElement());
-                product.getMetadataRoot().addElement(csInfo.toMetadataElement());
+                int imageWidth = imageInfo.getWidth();
+                int imageHeight = imageInfo.getHeight();
+                product = new Product(inputFile.getName(), "J2K", imageWidth, imageHeight);
+                MetadataElement metadataRoot = product.getMetadataRoot();
+                metadataRoot.addElement(imageInfo.toMetadataElement());
+                metadataRoot.addElement(csInfo.toMetadataElement());
                 metadata = new Jp2XmlMetadataReader(inputFile).read();
                 if (metadata != null) {
                     metadata.setFileName(inputFile.getName());
-                    product.getMetadataRoot().addElement(metadata.getRootElement());
+                    metadataRoot.addElement(metadata.getRootElement());
                     String crsGeocoding = metadata.getCrsGeocoding();
                     Point2D origin = metadata.getOrigin();
                     if (crsGeocoding != null && origin != null) {
                         GeoCoding geoCoding = null;
                         try {
                             geoCoding = new CrsGeoCoding(CRS.decode(crsGeocoding.replace("::", ":")),
-                                    imageInfo.getWidth(), imageInfo.getHeight(),
+                                    imageWidth, imageHeight,
                                     origin.getX(), origin.getY(),
                                     metadata.getStepX(), -metadata.getStepY());
                         } catch (Exception gEx) {
-                            float oX = (float)origin.getX();
-                            float oY = (float)origin.getY();
-                            float h = (float)imageInfo.getHeight() * (float)metadata.getStepY();
-                            float w = (float)imageInfo.getWidth() * (float)metadata.getStepX();
-                            float[] latPoints = new float[] { oY + h, oY + h, oY, oY };
-                            float[] lonPoints = new float[] { oX, oX + w, oX, oX + w};
-                            TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, product.getSceneRasterWidth(), product.getSceneRasterHeight(), latPoints);
-                            TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, product.getSceneRasterWidth(), product.getSceneRasterHeight(), lonPoints);
-                            geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-                            product.addTiePointGrid(latGrid);
-                            product.addTiePointGrid(lonGrid);
+                            try {
+                                float oX = (float) origin.getX();
+                                float oY = (float) origin.getY();
+                                float h = (float) imageHeight * (float) metadata.getStepY();
+                                float w = (float) imageWidth * (float) metadata.getStepX();
+                                float[] latPoints = new float[]{oY + h, oY + h, oY, oY};
+                                float[] lonPoints = new float[]{oX, oX + w, oX, oX + w};
+                                TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, imageWidth, imageHeight, latPoints);
+                                TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, imageWidth, imageHeight, lonPoints);
+                                geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
+                                product.addTiePointGrid(latGrid);
+                                product.addTiePointGrid(lonGrid);
+                            } catch (Exception ignored) {
+                            }
                         }
                         if (geoCoding != null) {
                             product.setGeoCoding(geoCoding);
@@ -154,8 +161,8 @@ public class J2KProductReader extends AbstractProductReader {
                 for (int i = 0; i < numBands; i++) {
                     Band virtualBand = new Band("band_" + String.valueOf(i + 1),
                                                 precisionTypeMap.get(imageInfo.getComponents().get(i).getPrecision()),
-                                                imageInfo.getWidth(),
-                                                imageInfo.getHeight());
+                                                imageWidth,
+                                                imageHeight);
                     product.addBand(virtualBand);
                     bandMap.put(virtualBand, new BandMatrix(csInfo.getNumTilesY(), csInfo.getNumTilesX()));
                 }
@@ -182,50 +189,44 @@ public class J2KProductReader extends AbstractProductReader {
                 Thread.sleep(50);
             } catch (InterruptedException ignored) {
             }
-        };
+        }
         int[] key = new int[] { sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY };
-        if (!readLines.containsKey(key)) {
+        if (readLines.containsKey(key)) {
+            destBuffer = readLines.get(key);
+        } else {
             BandMatrix bandMatrix = bandMap.get(destBand);
-            BandMatrix.BandMatrixCell[] cells = bandMatrix.getCells();
             int readWidth = 0;
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            for (BandMatrix.BandMatrixCell cell : cells) {
-                Rectangle readArea = cell.intersection(destOffsetX, destOffsetY, destWidth, destHeight);
-                if (readArea != null) {
-                    ProductReader reader = cell.band.getProductReader();
-                    if (reader == null) {
-                        logger.severe("No reader found for band data");
-                    } else {
-                        int bandDestOffsetX = readArea.x - cell.cellStartPixelX;
-                        int bandDestOffsetY = readArea.y - cell.cellStartPixelY;
-                        int bandDestWidth = readArea.width;
-                        int bandDestHeight = readArea.height;
-                        ProductData bandBuffer = createProductData(destBuffer.getType(), bandDestWidth * bandDestHeight);
-                        reader.readBandRasterData(cell.band, bandDestOffsetX, bandDestOffsetY, bandDestWidth, bandDestHeight, bandBuffer, pm);
-                        MemoryCacheImageOutputStream writeStream = null;
-                        ImageInputStream readStream = null;
-                        try {
-                            byteArrayOutputStream.reset();
-                            writeStream = new MemoryCacheImageOutputStream(byteArrayOutputStream);
-                            bandBuffer.writeTo(writeStream);
-                            writeStream.flush();
-                            readStream = new MemoryCacheImageInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
-
+            Map<BandMatrix.BandMatrixCell, Rectangle> rectangleMap = bandMatrix.computeIntersection(destOffsetX, destOffsetY, destWidth, destHeight);
+            for (BandMatrix.BandMatrixCell cell : rectangleMap.keySet()) {
+                Rectangle readArea = rectangleMap.get(cell);
+                GeoTiffReader reader = (GeoTiffReader) cell.band.getProductReader();
+                if (reader == null) {
+                    logger.severe("No reader found for band data");
+                } else {
+                    int bandDestOffsetX = readArea.x - cell.cellStartPixelX;
+                    int bandDestOffsetY = readArea.y - cell.cellStartPixelY;
+                    int bandDestWidth = readArea.width;
+                    int bandDestHeight = readArea.height;
+                    ProductData bandBuffer = createProductData(destBuffer.getType(), bandDestWidth * bandDestHeight);
+                    reader.readBandRasterDataImpl(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY,
+                            cell.band, bandDestOffsetX, bandDestOffsetY, bandDestWidth, bandDestHeight, bandBuffer, pm);
+                    byteArrayOutputStream.reset();
+                    try (MemoryCacheImageOutputStream writeStream = new MemoryCacheImageOutputStream(byteArrayOutputStream)) {
+                        bandBuffer.writeTo(writeStream);
+                        writeStream.flush();
+                        try (ImageInputStream readStream = new MemoryCacheImageInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))) {
                             for (int y = 0; y < destHeight; y++) {
                                 destBuffer.readFrom(y * destWidth + readWidth, bandDestWidth, readStream);
                             }
                             readWidth += bandDestWidth;
-                        } finally {
-                            if (writeStream != null) writeStream.close();
-                            if (readStream != null) readStream.close();
+                            readStream.close();
                         }
+                        writeStream.close();
                     }
                 }
             }
             readLines.put(key, destBuffer);
-        } else {
-            logger.info("Line already read");
-            destBuffer = readLines.get(key);
         }
     }
 
@@ -249,9 +250,7 @@ public class J2KProductReader extends AbstractProductReader {
 
     void addBands(Product product, File tileFile, int row, int col) {
         try {
-            //String tileName = tileFile.getName().replace(".tif", "");
-            //int tileIndex = Integer.parseInt(tileName.substring(tileName.indexOf("_") + 1));
-            GeoTiffProductReader tiffReader = new GeoTiffProductReader(getReaderPlugIn());
+            GeoTiffReader tiffReader = new GeoTiffReader(getReaderPlugIn());
             Product tiffProduct = tiffReader.readProductNodes(tileFile, null);
             if (tiffProduct != null) {
                 int numTiffBands = tiffProduct.getNumBands();
@@ -305,36 +304,47 @@ public class J2KProductReader extends AbstractProductReader {
 
     private void uncompressTiles() {
         final File[][] tiles = new File[csInfo.getNumTilesY()][csInfo.getNumTilesY()];
-        for (int x = 0; x < csInfo.getNumTilesY(); x++) {
-            final int finalX = x;
-            Parallel.For(0, csInfo.getNumTilesX(), i -> {
-                int tileIndex = i + finalX * csInfo.getNumTilesX();
-                File tileFile = new File(tmpFolder, "tile_" + String.valueOf(tileIndex) + ".tif");
-                if (!tileFile.exists()) {
-                    final OpjExecutor decompress = new OpjExecutor(S2Config.OPJ_DECOMPRESSOR_EXE);
-                    final Map<String, String> params = new HashMap<String, String>() {{
-                        put("-i", getFileInput(getInput()).getAbsolutePath());
-                        put("-r", "0");
-                        put("-l", "60");
-                    }};
-                    params.put("-o", tileFile.getAbsolutePath());
-                    params.put("-t", String.valueOf(tileIndex));
-                    if (decompress.execute(params) != 0) {
-                        logger.severe(decompress.getLastError());
-                    } else {
-                        logger.info("Decompressed tile #" + String.valueOf(tileIndex));
+        List<int[]> unprocessed = new ArrayList<>();
+        Parallel.For(0, csInfo.getNumTilesY(), x -> {
+            for (int y = 0; y < csInfo.getNumTilesX(); y++) {
+                int tileIndex = y + x * csInfo.getNumTilesX();
+                tiles[x][y] = decompressTile(tileIndex);
+                if (!tiles[x][y].exists()) {
+                    synchronized (unprocessed) {
+                        unprocessed.add(new int[] { x, y, tileIndex });
                     }
-                } else {
-                    logger.info("Tile #" + String.valueOf(tileIndex) + " already decompressed");
                 }
-                tiles[finalX][i] = tileFile;
-            });
-        }
+            }
+        });
+        Parallel.ForEach(unprocessed, ints -> {
+            tiles[ints[0]][ints[1]] = decompressTile(ints[2]);
+        });
+
         for (int x = 0; x < tiles.length; x++) {
             for (int y = 0; y < tiles[x].length; y++) {
                 addBands(product, tiles[x][y], x, y);
             }
         }
+    }
+
+    private File decompressTile(int index) {
+        File tileFile = new File(tmpFolder, "tile_" + String.valueOf(index) + ".tif");
+        if (!tileFile.exists()) {
+            final OpjExecutor decompress = new OpjExecutor(S2Config.OPJ_DECOMPRESSOR_EXE);
+            final Map<String, String> params = new HashMap<String, String>() {{
+                put("-i", getFileInput(getInput()).getAbsolutePath());
+                put("-r", "0");
+                put("-l", String.valueOf(csInfo.getNumLayers()));
+            }};
+            params.put("-o", tileFile.getAbsolutePath());
+            params.put("-t", String.valueOf(index));
+            if (decompress.execute(params) != 0) {
+                logger.severe(decompress.getLastError());
+            } else {
+                logger.info("Decompressed tile #" + String.valueOf(index));
+            }
+        }
+        return tileFile;
     }
 
     private class UnpackProcess implements Callable<Void> {
@@ -347,6 +357,18 @@ public class J2KProductReader extends AbstractProductReader {
                 tilesUncompressed = true;
             }
             return null;
+        }
+    }
+
+    class GeoTiffReader extends GeoTiffProductReader {
+
+        public GeoTiffReader(ProductReaderPlugIn readerPlugIn) {
+            super(readerPlugIn);
+        }
+
+        @Override
+        protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
+            super.readBandRasterDataImpl(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY, destBand, destOffsetX, destOffsetY, destWidth, destHeight, destBuffer, pm);
         }
     }
 }
