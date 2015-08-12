@@ -39,7 +39,7 @@ public class Sentinel2L2AProduct20MReaderPlugIn extends Sentinel2L2AProductReade
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader...");
 
-        return new Sentinel2L2AProductReader(this, false, 20);
+        return new Sentinel2L2AProductReader(this, false, getReaderResolution());
     }
 
     @Override
@@ -50,5 +50,10 @@ public class Sentinel2L2AProduct20MReaderPlugIn extends Sentinel2L2AProductReade
     @Override
     public String getDescription(Locale locale) {
         return "Sentinel-2 MSI L2A 20M";
+    }
+
+    @Override
+    protected int getReaderResolution() {
+        return 20;
     }
 }

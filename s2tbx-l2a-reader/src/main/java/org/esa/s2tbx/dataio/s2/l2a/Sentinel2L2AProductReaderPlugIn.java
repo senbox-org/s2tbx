@@ -22,16 +22,16 @@ package org.esa.s2tbx.dataio.s2.l2a;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
-import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.SnapFileFilter;
 
 import java.io.File;
-import java.util.Locale;
+import java.io.FileFilter;
 
 /**
  * @author Norman Fomferra
+ * @author Nicolas Ducoin
  */
 public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
 
@@ -43,14 +43,90 @@ public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPl
         DecodeQualification deco = S2ProductFilename.isMetadataFilename(file.getName()) ? DecodeQualification.SUITABLE : DecodeQualification.UNABLE;
         if (deco.equals(DecodeQualification.SUITABLE)) {
             S2ProductFilename productFilename = S2ProductFilename.create(file.getName());
-            if (productFilename!= null && productFilename.fileSemantic.contains("L2A")) {
-                deco = DecodeQualification.INTENDED;
+            if ( productFilename!= null &&
+                    productFilename.fileSemantic.contains("L2A")) {
+                deco = getDecodeQualificationFromResolution(file, getReaderResolution());
             } else {
                 deco = DecodeQualification.UNABLE;
             }
         }
 
         return deco;
+    }
+
+    protected abstract int getReaderResolution();
+
+    protected DecodeQualification getDecodeQualificationFromResolution(File productFile, int resolution) {
+        DecodeQualification decodeQualification = DecodeQualification.UNABLE;
+
+        File parentFolder = productFile.getParentFile();
+        File granulesFolder = new File(parentFolder, "GRANULE");
+
+
+        String folderNameFor10m="R10m";
+        FileFilter fileFilterFor10m = pathname -> pathname.getAbsolutePath().endsWith(folderNameFor10m);
+        boolean contains10mFiles = false;
+
+        String folderNameFor20m="R20m";
+        FileFilter fileFilterFor60m = pathname -> pathname.getAbsolutePath().endsWith(folderNameFor20m);
+        boolean contains20mFiles = false;
+
+        String folderNameFor60m="R60m";
+        FileFilter fileFilterFor20m = pathname -> pathname.getAbsolutePath().endsWith(folderNameFor60m);
+        boolean contains60mFiles = false;
+
+
+        File[] filesFromGranulesFolder = granulesFolder.listFiles();
+        if(filesFromGranulesFolder != null) {
+            for (File granuleFolder :filesFromGranulesFolder) {
+                File imageFolder = new File(granuleFolder, "IMG_DATA");
+
+                File[] imageFolderContentFor10m = imageFolder.listFiles(fileFilterFor10m);
+                if (imageFolderContentFor10m != null && imageFolderContentFor10m.length > 0) {
+                    contains10mFiles = true;
+                }
+                File[] imageFolderContentFor20m = imageFolder.listFiles(fileFilterFor20m);
+                if (imageFolderContentFor20m != null && imageFolderContentFor20m.length > 0) {
+                    contains20mFiles = true;
+                }
+                File[] imageFolderContentFor60m = imageFolder.listFiles(fileFilterFor60m);
+                if (imageFolderContentFor60m != null && imageFolderContentFor60m.length > 0) {
+                    contains60mFiles = true;
+                }
+
+                if (contains10mFiles && contains20mFiles && contains60mFiles) {
+                    break;
+                }
+            }
+        }
+
+        switch (resolution) {
+            case 10:
+                if(contains10mFiles) {
+                    decodeQualification = DecodeQualification.INTENDED;
+                }
+                break;
+            case 20:
+                if(contains20mFiles) {
+                    if(contains10mFiles) {
+                        decodeQualification = DecodeQualification.SUITABLE;
+                    } else {
+                        decodeQualification = DecodeQualification.INTENDED;
+                    }
+                }
+                break;
+            case 60:
+                if(contains60mFiles) {
+                    if (contains10mFiles || contains20mFiles) {
+                        decodeQualification = DecodeQualification.SUITABLE;
+                    } else {
+                        decodeQualification = DecodeQualification.INTENDED;
+                    }
+                }
+                break;
+        }
+
+        return decodeQualification;
     }
 
     @Override
