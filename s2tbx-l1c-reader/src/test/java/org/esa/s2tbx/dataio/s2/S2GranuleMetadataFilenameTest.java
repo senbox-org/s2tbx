@@ -24,6 +24,6 @@ public class S2GranuleMetadataFilenameTest {
         assertEquals("20130621T120000", s2gf.creationDate);
         assertEquals("A000065", s2gf.absoluteOrbit);
 
-        assertEquals("_T14SLD", s2gf.tileNumber);
+        assertEquals("T14SLD", s2gf.tileNumber);
     }
 }
