@@ -11,7 +11,7 @@ import java.util.concurrent.Future;
  * Helper class to execute loops in parallel.
  */
 public class Parallel {
-    static final int PARALLELISM = Runtime.getRuntime().availableProcessors();
+    static final int PARALLELISM = Math.min(Runtime.getRuntime().availableProcessors() - 1, 2);
     /**
      * The loop code wrapper
      */
@@ -27,7 +27,20 @@ public class Parallel {
      * @param <T>       The type of items
      */
     public static <T> void ForEach(Iterable <T> params, final Runnable<T> code) {
-        ExecutorService executor = Executors.newFixedThreadPool(PARALLELISM);
+        ForEach(params, PARALLELISM, code);
+    }
+
+    /**
+     * Iterates an Iterable collection in parallel with the given
+     * degree of parallelism
+     *
+     * @param params    The items to iterate
+     * @param parallelism The degree of parallelism
+     * @param code      The loop code
+     * @param <T>       The type of items
+     */
+    public static <T> void ForEach(Iterable <T> params, int parallelism, final Runnable<T> code) {
+        ExecutorService executor = Executors.newFixedThreadPool(parallelism);
         List<Future<?>> tasks  = new LinkedList<>();
         for (final T param : params) {
             tasks.add(executor.submit(() -> code.run(param)));
@@ -47,7 +60,19 @@ public class Parallel {
      * @param code      The loop code
      */
     public static void For(int start, int stop, final Runnable<Integer> code) {
-        ExecutorService executor = Executors.newFixedThreadPool(PARALLELISM);
+        For(start, stop, PARALLELISM, code);
+    }
+
+    /**
+     * Runs a for-loop in parallel with the given degree of parallelism
+     *
+     * @param start     The start index
+     * @param stop      The end index
+     * @param parallelism The degree of parallelism
+     * @param code      The loop code
+     */
+    public static void For(int start, int stop, int parallelism, final Runnable<Integer> code) {
+        ExecutorService executor = Executors.newFixedThreadPool(parallelism);
         List<Future<?>> tasks  = new LinkedList<>();
         for (int i = start; i < stop; i++) {
             final Integer index = i;

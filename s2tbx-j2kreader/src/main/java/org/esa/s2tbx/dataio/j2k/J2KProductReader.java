@@ -212,17 +212,24 @@ public class J2KProductReader extends AbstractProductReader {
                     reader.readBandRasterDataImpl(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, sourceStepX, sourceStepY,
                             cell.band, bandDestOffsetX, bandDestOffsetY, bandDestWidth, bandDestHeight, bandBuffer, pm);
                     byteArrayOutputStream.reset();
-                    try (MemoryCacheImageOutputStream writeStream = new MemoryCacheImageOutputStream(byteArrayOutputStream)) {
+                    MemoryCacheImageOutputStream writeStream = null;
+                    ImageInputStream readStream = null;
+                    try {
+                        writeStream = new MemoryCacheImageOutputStream(byteArrayOutputStream);
                         bandBuffer.writeTo(writeStream);
                         writeStream.flush();
-                        try (ImageInputStream readStream = new MemoryCacheImageInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))) {
-                            for (int y = 0; y < destHeight; y++) {
-                                destBuffer.readFrom(y * destWidth + readWidth, bandDestWidth, readStream);
-                            }
-                            readWidth += bandDestWidth;
+                        readStream = new MemoryCacheImageInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+                        for (int y = 0; y < destHeight; y++) {
+                            destBuffer.readFrom(y * destWidth + readWidth, bandDestWidth, readStream);
+                        }
+                        readWidth += bandDestWidth;
+                    } finally {
+                        if (readStream != null) {
                             readStream.close();
                         }
-                        writeStream.close();
+                        if (writeStream != null) {
+                            writeStream.close();
+                        }
                     }
                 }
             }
@@ -303,19 +310,36 @@ public class J2KProductReader extends AbstractProductReader {
     }
 
     private void uncompressTiles() {
-        final File[][] tiles = new File[csInfo.getNumTilesY()][csInfo.getNumTilesY()];
+        final int cols = csInfo.getNumTilesX();
+        final int rows = csInfo.getNumTilesY();
+        final File[][] tiles = new File[rows][cols];
         List<int[]> unprocessed = new ArrayList<>();
-        Parallel.For(0, csInfo.getNumTilesY(), x -> {
-            for (int y = 0; y < csInfo.getNumTilesX(); y++) {
-                int tileIndex = y + x * csInfo.getNumTilesX();
-                tiles[x][y] = decompressTile(tileIndex);
-                if (!tiles[x][y].exists()) {
-                    synchronized (unprocessed) {
-                        unprocessed.add(new int[] { x, y, tileIndex });
+        boolean rowsFirst = rows >= cols;
+        if (rowsFirst) {
+            Parallel.For(0, rows, x -> {
+                for (int y = 0; y < cols; y++) {
+                    int tileIndex = y + x * cols;
+                    tiles[x][y] = decompressTile(tileIndex);
+                    if (!tiles[x][y].exists()) {
+                        synchronized (unprocessed) {
+                            unprocessed.add(new int[]{x, y, tileIndex});
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            Parallel.For(0, cols, y -> {
+                for (int x = 0; x < rows; x++) {
+                    int tileIndex = y + x * cols;
+                    tiles[x][y] = decompressTile(tileIndex);
+                    if (!tiles[x][y].exists()) {
+                        synchronized (unprocessed) {
+                            unprocessed.add(new int[]{x, y, tileIndex});
+                        }
+                    }
+                }
+            });
+        }
         Parallel.ForEach(unprocessed, ints -> {
             tiles[ints[0]][ints[1]] = decompressTile(ints[2]);
         });
