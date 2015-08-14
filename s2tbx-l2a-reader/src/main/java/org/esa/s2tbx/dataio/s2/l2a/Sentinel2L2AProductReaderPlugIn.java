@@ -68,11 +68,11 @@ public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPl
         boolean contains10mFiles = false;
 
         String folderNameFor20m="R20m";
-        FileFilter fileFilterFor60m = pathname -> pathname.getAbsolutePath().endsWith(folderNameFor20m);
+        FileFilter fileFilterFor20m = pathname -> pathname.getAbsolutePath().endsWith(folderNameFor20m);
         boolean contains20mFiles = false;
 
         String folderNameFor60m="R60m";
-        FileFilter fileFilterFor20m = pathname -> pathname.getAbsolutePath().endsWith(folderNameFor60m);
+        FileFilter fileFilterFor60m = pathname -> pathname.getAbsolutePath().endsWith(folderNameFor60m);
         boolean contains60mFiles = false;
 
 
