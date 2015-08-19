@@ -20,12 +20,14 @@
 package org.esa.s2tbx.dataio.s2;
 
 import jp2.TileLayout;
-import org.esa.s2tbx.openjpeg.OpenJpegUtils;
 import org.esa.snap.framework.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
 import java.util.HashMap;
 import java.util.Map;
+
+import static jp2.OpenJpegUtils.getSafeDecompressorAndUpdatePermissions;
+import static jp2.OpenJpegUtils.getSafeInfoExtractorAndUpdatePermissions;
 
 /**
  * @author Norman Fomferra
@@ -43,8 +45,8 @@ public interface S2Config {
     String LOG_SCENE = DEBUG ? "INFO" : "FINEST";
     String LOG_DEBUG = DEBUG ? "WARNING" : "FINEST";
 
-    String OPJ_DECOMPRESSOR_EXE = OpenJpegUtils.getSafeDecompressor();
-    String OPJ_INFO_EXE = OpenJpegUtils.getSafeInfoExtractor();
+    String OPJ_DECOMPRESSOR_EXE = getSafeDecompressorAndUpdatePermissions();
+    String OPJ_INFO_EXE = getSafeInfoExtractorAndUpdatePermissions();
 
     int DEFAULT_JAI_TILE_SIZE = 512;
 

@@ -21,13 +21,8 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.s2tbx.openjpeg.OpenJpegUtils;
 
-import java.awt.image.DataBuffer;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**

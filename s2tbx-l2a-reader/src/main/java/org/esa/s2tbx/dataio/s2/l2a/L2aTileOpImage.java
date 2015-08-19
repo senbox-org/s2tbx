@@ -28,17 +28,11 @@ import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2TileOpImage;
-import org.esa.snap.jai.ResolutionLevel;
-import org.esa.snap.jai.SingleBandedOpImage;
 import org.esa.snap.util.ImageUtils;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
 import org.geotools.geometry.Envelope2D;
-import org.openjpeg.CommandOutput;
-import org.openjpeg.JpegUtils;
 
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
@@ -49,21 +43,14 @@ import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
-
-import static org.esa.s2tbx.dataio.s2.l2a.S2L2AConfig.*;
 
 // todo - better log problems during read process, see {@report "Problem detected..."} code marks
 
@@ -72,21 +59,8 @@ import static org.esa.s2tbx.dataio.s2.l2a.S2L2AConfig.*;
  */
 class L2aTileOpImage extends S2TileOpImage {
 
-    private static class Jp2File {
-        File file;
-        String header;
-        ImageInputStream stream;
-        long dataPos;
-        int width;
-        int height;
-    }
 
     protected final Logger logger;
-    private final File imageFile;
-    private final File cacheDir;
-    private final TileLayout l2aTileLayout;
-    private Map<File, Jp2File> openFiles;
-    private Map<File, Object> locks;
 
     static PlanarImage create(File imageFile,
                               File cacheDir,
@@ -104,9 +78,8 @@ class L2aTileOpImage extends S2TileOpImage {
 
         if (imageFile != null) {
             org.esa.snap.util.SystemUtils.LOG.fine("Image layout: " + l2aTileLayout);
-            PlanarImage opImage = new L2aTileOpImage(imageFile, cacheDir, imagePos, l2aTileLayout, imageModel, level);
 
-            return opImage;
+            return new L2aTileOpImage(imageFile, cacheDir, imagePos, l2aTileLayout, imageModel, level);
         } else {
             org.esa.snap.util.SystemUtils.LOG.warning("Using empty image !");
 
@@ -182,7 +155,9 @@ class L2aTileOpImage extends S2TileOpImage {
                    TileLayout l2aTileLayout,
                    MultiLevelModel imageModel,
                    int level) {
-        super(imagePos,
+        super(imageFile,
+              cacheDir,
+              imagePos,
               l2aTileLayout,
               imageModel,
               level);
@@ -192,11 +167,6 @@ class L2aTileOpImage extends S2TileOpImage {
         Assert.notNull(l2aTileLayout, "l1cTileLayout");
         Assert.notNull(imageModel, "imageModel");
 
-        this.imageFile = imageFile;
-        this.cacheDir = cacheDir;
-        this.l2aTileLayout = l2aTileLayout;
-        this.openFiles = new HashMap<>();
-        this.locks = new HashMap<>();
         this.logger = SystemUtils.LOG;
     }
 
@@ -215,7 +185,7 @@ class L2aTileOpImage extends S2TileOpImage {
                                                           tileWidth, tileHeight, tileData.length));
         }
 
-        final Dimension jp2TileDim = getDimAtResolutionLevel(l2aTileLayout.tileWidth, l2aTileLayout.tileHeight, getLevel());
+        final Dimension jp2TileDim = getDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, getLevel());
 
         final int jp2TileWidth = jp2TileDim.width;
         final int jp2TileHeight = jp2TileDim.height;
@@ -280,220 +250,5 @@ class L2aTileOpImage extends S2TileOpImage {
 
     private File getFirstComponentOutputFile(File outputFile) {
         return FileUtils.exchangeExtension(outputFile, "_0.pgx");
-    }
-
-    private void decompressTile(final File outputFile, int jp2TileX, int jp2TileY) throws IOException {
-        final int tileIndex = l2aTileLayout.numXTiles * jp2TileY + jp2TileX;
-
-        ProcessBuilder builder;
-        if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
-            String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
-            String outputFileName = outputFile.getPath();
-
-            if (inputFileName.length() == 0) {
-                inputFileName = imageFile.getPath();
-            }
-
-            builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
-                                         "-i", inputFileName,
-                                         "-o", outputFileName,
-                                         "-r", getLevel() + "",
-                                         "-t", tileIndex + "");
-        } else {
-            logger.fine("Writing to " + outputFile.getPath());
-
-            builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
-                                         "-i", imageFile.getPath(),
-                                         "-o", outputFile.getPath(),
-                                         "-r", getLevel() + "",
-                                         "-t", tileIndex + "");
-        }
-
-        builder = builder.directory(cacheDir);
-
-        try {
-            CommandOutput result = JpegUtils.runProcess(builder);
-
-            final int exitCode = result.getErrorCode();
-            if (exitCode != 0) {
-                logger.severe(String.format("Failed to uncompress tile: %s, exitCode = %d, command = [%s], command stdoutput = [%s], command stderr = [%s]", imageFile.getPath(), exitCode, builder.command().toString(), result.getTextOutput(), result.getErrorOutput()));
-            }
-        } catch (InterruptedException e) {
-            logger.severe("Process was interrupted, InterruptedException: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public synchronized void dispose() {
-
-        for (Map.Entry<File, Jp2File> entry : openFiles.entrySet()) {
-            logger.finest("closing " + entry.getKey());
-            try {
-                final Jp2File jp2File = entry.getValue();
-                if (jp2File.stream != null) {
-                    jp2File.stream.close();
-                    jp2File.stream = null;
-                }
-            } catch (IOException e) {
-                logger.severe("Failed to close stream: " + Utils.getStackTrace(e));
-            }
-        }
-
-        for (File file : openFiles.keySet()) {
-            logger.fine("Deleting " + file);
-            if (!file.delete()) {
-                logger.severe("Failed to delete file! :" + file.getAbsolutePath());
-            }
-        }
-
-        openFiles.clear();
-
-        if (!cacheDir.delete()) {
-            logger.severe("Failed to delete cache dir! :" + cacheDir.getAbsolutePath());
-        }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        dispose();
-    }
-
-    private void readTileData(File outputFile,
-                              int tileX, int tileY,
-                              int tileWidth, int tileHeight,
-                              int jp2TileX, int jp2TileY,
-                              int jp2TileWidth, int jp2TileHeight,
-                              short[] tileData,
-                              Rectangle destRect) throws IOException {
-
-        synchronized (this) {
-            if (!locks.containsKey(outputFile)) {
-                locks.put(outputFile, new Object());
-            }
-        }
-
-        // todo - we still have a synchronisation problem here: often zero areas are generated in a tile.
-        // This does not happen, if we synchronise entire computeRect() on the instance, but it is less efficient.
-        final Object lock = locks.get(outputFile);
-        synchronized (lock) {
-
-            Jp2File jp2File = getOpenJ2pFile(outputFile);
-
-            int jp2Width = jp2File.width;
-            int jp2Height = jp2File.height;
-            if (jp2Width > jp2TileWidth || jp2Height > jp2TileHeight) {
-                throw new IllegalStateException(String.format("width (=%d) > tileWidth (=%d) || height (=%d) > tileHeight (=%d)",
-                                                              jp2Width, jp2TileWidth, jp2Height, jp2TileHeight));
-            }
-
-            int jp2X = destRect.x - jp2TileX * jp2TileWidth;
-            int jp2Y = destRect.y - jp2TileY * jp2TileHeight;
-            if (jp2X < 0 || jp2Y < 0) {
-                throw new IllegalStateException(String.format("jp2X (=%d) < 0 || jp2Y (=%d) < 0",
-                                                              jp2X, jp2Y));
-            }
-
-            final ImageInputStream stream = jp2File.stream;
-
-            if (jp2X == 0 && jp2Width == tileWidth
-                    && jp2Y == 0 && jp2Height == tileHeight
-                    && tileWidth * tileHeight == tileData.length) {
-                stream.seek(jp2File.dataPos);
-                stream.readFully(tileData, 0, tileData.length);
-            } else {
-                final Rectangle jp2FileRect = new Rectangle(0, 0, jp2Width, jp2Height);
-                final Rectangle tileRect = new Rectangle(jp2X,
-                                                         jp2Y,
-                                                         tileWidth, tileHeight);
-                final Rectangle intersection = jp2FileRect.intersection(tileRect);
-                logger.fine(String.format("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection));
-                if (!intersection.isEmpty()) {
-                    long seekPos = jp2File.dataPos + S2Config.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
-                    int tilePos = 0;
-                    for (int y = 0; y < intersection.height; y++) {
-                        stream.seek(seekPos);
-                        stream.readFully(tileData, tilePos, intersection.width);
-                        seekPos += S2Config.SAMPLE_BYTE_COUNT * jp2Width;
-                        tilePos += tileWidth;
-                        for (int x = intersection.width; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_X_BOUNDS;
-                        }
-                    }
-                    for (int y = intersection.height; y < tileHeight; y++) {
-                        for (int x = 0; x < tileWidth; x++) {
-                            tileData[y * tileWidth + x] = S2Config.FILL_CODE_OUT_OF_Y_BOUNDS;
-                        }
-                    }
-                } else {
-                    Arrays.fill(tileData, S2Config.FILL_CODE_NO_INTERSECTION);
-                }
-            }
-        }
-    }
-
-    private Jp2File getOpenJ2pFile(File outputFile) throws IOException {
-        Jp2File jp2File = openFiles.get(outputFile);
-        if (jp2File == null) {
-            jp2File = new Jp2File();
-            jp2File.file = outputFile;
-            jp2File.stream = new FileImageInputStream(outputFile);
-            jp2File.header = jp2File.stream.readLine();
-            jp2File.dataPos = jp2File.stream.getStreamPosition();
-
-            final String[] tokens = jp2File.header.split(" ");
-            if (tokens.length != 6) {
-                throw new IOException("Unexpected PGX tile image format");
-            }
-
-            // String pg = tokens[0];   // PG
-            // String ml = tokens[1];   // ML
-            // String plus = tokens[2]; // +
-            try {
-                // int jp2File.nbits = Integer.parseInt(tokens[3]);
-                jp2File.width = Integer.parseInt(tokens[4]);
-                jp2File.height = Integer.parseInt(tokens[5]);
-            } catch (NumberFormatException e) {
-                throw new IOException("Unexpected PGX tile image format");
-            }
-
-            openFiles.put(outputFile, jp2File);
-        }
-
-        return jp2File;
-    }
-
-    static Dimension getTileDimAtResolutionLevel(int fullTileWidth, int fullTileHeight, int level) {
-        int width = getSizeAtResolutionLevel(fullTileWidth, level);
-        int height = getSizeAtResolutionLevel(fullTileHeight, level);
-        return getTileDim(width, height);
-    }
-
-    static Dimension getDimAtResolutionLevel(int fullWidth, int fullHeight, int level) {
-        int width = getSizeAtResolutionLevel(fullWidth, level);
-        int height = getSizeAtResolutionLevel(fullHeight, level);
-        return new Dimension(width, height);
-    }
-
-    /**
-     * Computes a new size at a given resolution level in the style of JPEG2000.
-     *
-     * @param fullSize the full size
-     * @param level    the resolution level
-     * @return the reduced size at the given level
-     */
-    static int getSizeAtResolutionLevel(int fullSize, int level) {
-        int size = fullSize >> level;
-        int sizeTest = size << level;
-        if (sizeTest < fullSize) {
-            size++;
-        }
-
-        return size;
-    }
-
-    static Dimension getTileDim(int width, int height) {
-        return new Dimension(width < S2Config.DEFAULT_JAI_TILE_SIZE ? width : S2Config.DEFAULT_JAI_TILE_SIZE,
-                             height < S2Config.DEFAULT_JAI_TILE_SIZE ? height : S2Config.DEFAULT_JAI_TILE_SIZE);
     }
 }
