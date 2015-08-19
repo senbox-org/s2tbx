@@ -1,8 +1,8 @@
 <operator>
-  <name>org.esa.snap.framework.gpf.operators.tooladapter.Sen2Cor</name>
+  <name>org.esa.s2tbx.sen2cor</name>
   <operatorClass>org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
-  <alias>SEN2COR</alias>
-  <label>Sen2Cor</label>
+  <alias>Sen2Cor</alias>
+  <label>SEN2COR</label>
   <version>2.0.3</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
   <authors></authors>
@@ -14,8 +14,8 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$PYTHON_BIN</mainToolFileLocation>
   <workingDir>$SEN2COR_HOME</workingDir>
-  <templateFileLocation>SEN2COR-template.vm</templateFileLocation>
-  <progressPattern>(?:.+)Progress\[%\]: (\d{1,3})\.(?:.+)</progressPattern>
+  <templateFileLocation>Sen2Cor-template.vm</templateFileLocation>
+  <progressPattern>Progress\[%\]: (\d{1,3})\.(?:.+)</progressPattern>
   <errorPattern>[\s\S]+(?:UserWarning|Error): (.+)</errorPattern>
   <variables>
     <variable>

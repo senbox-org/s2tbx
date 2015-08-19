@@ -4,7 +4,8 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Type: STA
 OpenIDE-Module-Short-Description: Sen2Cor
-OpenIDE-Module: org.esa.snap.framework.gpf.operators.tooladapter.Sen2Cor
+OpenIDE-Module: org.esa.s2tbx.sen2cor
+OpenIDE-Module-Alias: SEN2COR
 OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.sna
  p.snap.sta.ui
 OpenIDE-Module-Install: org/esa/snap/utils/ModuleInstaller.class
