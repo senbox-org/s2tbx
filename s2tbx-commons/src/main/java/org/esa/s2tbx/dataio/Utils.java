@@ -43,9 +43,8 @@ public class Utils {
         byte[] shortt = new byte[sizeBuffer];
 
         //Call CKernel32 interface to execute GetShortPathNameA method
-        int a = CKernel32.INSTANCE.GetShortPathNameA(path, shortt, sizeBuffer);
-        String shortPath = Native.toString(shortt);
-        return shortPath;
+        CKernel32.INSTANCE.GetShortPathNameA(path, shortt, sizeBuffer);
+        return Native.toString(shortt);
     }
 
     public static String GetIterativeShortPathName(String path) {
@@ -67,10 +66,12 @@ public class Utils {
 
         String[] shortenedFragments = GetShortPathName(workingPath).split(Pattern.quote(File.separator));
         String[] fragments = path.split(Pattern.quote(File.separator));
-
-        for (int index = 0; index < shortenedFragments.length; index++) {
-            fragments[index] = shortenedFragments[index];
+        // if the path did not split, we didn't have the system separator but '/'
+        if(fragments.length == 1) {
+            fragments = path.split(Pattern.quote("/"));
         }
+
+        System.arraycopy(shortenedFragments, 0, fragments, 0, shortenedFragments.length);
 
         String complete = String.join(File.separator, fragments);
         String shortComplete = GetShortPathName(complete);

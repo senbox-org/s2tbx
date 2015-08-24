@@ -35,7 +35,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CDatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
 import org.esa.snap.util.SystemUtils;
-import org.openjpeg.StackTraceUtils;
+import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;

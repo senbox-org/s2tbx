@@ -21,10 +21,10 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
-import jp2.AEmptyListener;
-import jp2.CodeStreamUtils;
-import jp2.TileLayout;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.jp2.AEmptyListener;
+import org.esa.s2tbx.dataio.jp2.CodeStreamUtils;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2TileOpImage;
@@ -51,12 +51,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// todo - better log problems during read process, see {@report "Problem detected..."} code marks
 
 /**
  * @author Norman Fomferra
@@ -200,8 +197,6 @@ class L1bTileOpImage extends S2TileOpImage {
             return;
         }
 
-        Set<TileLayout> typeTiles = new HashSet<>();
-        Collections.addAll(typeTiles, tileLayout);
         Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, tileLayout);
 
         if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {

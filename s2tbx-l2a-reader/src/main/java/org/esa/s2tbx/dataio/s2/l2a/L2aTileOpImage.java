@@ -21,9 +21,9 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
-import jp2.AEmptyListener;
-import jp2.CodeStreamUtils;
-import jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.AEmptyListener;
+import org.esa.s2tbx.dataio.jp2.CodeStreamUtils;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;

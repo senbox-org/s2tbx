@@ -29,14 +29,13 @@ import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USE
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
-import jp2.TileLayout;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
-import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
-import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
@@ -45,101 +44,23 @@ import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BDatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.SystemUtils;
-import org.openjpeg.StackTraceUtils;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
+import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.as3DCoordinates;
 
 /**
  * @author opicas-p
  */
 public class L1bMetadataProc extends S2MetadataProc {
-
-    public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
-        String subStr = "s2tbx-l1b-reader";
-
-        ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
-        URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
-
-        URL[] theURLs = s2ClassLoader.getURLs();
-        for (URL url : theURLs) {
-            if (url.getPath().contains(subStr) && url.getPath().contains(".jar")) {
-                URI uri = url.toURI();
-                URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
-                return parent.getPath();
-            } else {
-                //todo please note that in dev, all the module jar files are unzipped in modules folder, so SNAP only reaches this code in dev environments
-                if (url.getPath().contains(subStr)) {
-                    URI uri = url.toURI();
-                    URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
-                    return parent.getPath();
-                }
-            }
-        }
-
-        throw new FileNotFoundException("Module " + subStr + " not found !");
-    }
-
-    public static String tryGetModulesDir() {
-        String theDir = "./";
-        try {
-            theDir = getModulesDir();
-        } catch (Exception e) {
-            SystemUtils.LOG.severe(StackTraceUtils.getStackTrace(e));
-        }
-        return theDir;
-    }
-
-    public static String convertStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
-    }
-
-    public static void setExecutable(File file, boolean executable) {
-        try {
-            Process p = Runtime.getRuntime().exec(new String[]{
-                    "chmod",
-                    "u" + (executable ? '+' : '-') + "x",
-                    file.getAbsolutePath(),
-            });
-            p.waitFor();
-            String output = convertStreamToString(p.getInputStream());
-            String errorOutput = convertStreamToString(p.getErrorStream());
-        } catch (Exception e) {
-            SystemUtils.LOG.severe(Utils.getStackTrace(e));
-        }
-    }
-
-    public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
-
-        ClassLoader s2c = Sentinel2L1BProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1B, s2c);
-
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-        Object ob = unmarshaller.unmarshal(stream);
-        Object casted = ((JAXBElement) ob).getValue();
-
-        return casted;
-    }
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
 
@@ -177,10 +98,6 @@ public class L1bMetadataProc extends S2MetadataProc {
         characteristics.bandInformations = targetList.toArray(new S2SpectralInformation[size]);
 
         return characteristics;
-    }
-
-    public static String getCrs(Level1B_User_Product product) {
-        return product.getGeometric_Info().getCoordinate_Reference_System().getHorizontal_CS().getHORIZONTAL_CS_CODE();
     }
 
     public static L1bMetadata.ProductCharacteristics getProductOrganization(Level1B_User_Product product) {
@@ -240,13 +157,10 @@ public class L1bMetadataProc extends S2MetadataProc {
 
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
 
-        Transformer tileSelector = new Transformer() {
-            @Override
-            public Object transform(Object o) {
-                A_PRODUCT_INFO.Product_Organisation.Granule_List ali = (A_PRODUCT_INFO.Product_Organisation.Granule_List) o;
-                A_PRODUCT_ORGANIZATION.Granules gr = ali.getGranules();
-                return gr.getGranuleIdentifier();
-            }
+        Transformer tileSelector = o -> {
+            A_PRODUCT_INFO.Product_Organisation.Granule_List ali = (A_PRODUCT_INFO.Product_Organisation.Granule_List) o;
+            A_PRODUCT_ORGANIZATION.Granules gr = ali.getGranules();
+            return gr.getGranuleIdentifier();
         };
 
         Collection col = CollectionUtils.collect(aGranuleList, tileSelector);
@@ -276,35 +190,14 @@ public class L1bMetadataProc extends S2MetadataProc {
         String fileCategory = grafile.fileCategory;
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
-        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
-        return dirDatastrip;
-    }
-
-    public static Collection<String> getImages(Level1B_User_Product product) {
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
-
-        List<A_PRODUCT_INFO.Product_Organisation.Granule_List> granulesList = info.getGranule_List();
-        List<String> imagesList = new ArrayList<String>();
-
-        for (A_PRODUCT_INFO.Product_Organisation.Granule_List aGranule : granulesList) {
-            A_PRODUCT_ORGANIZATION.Granules gr = aGranule.getGranules();
-            String dir_id = gr.getGranuleIdentifier();
-            List<A_PRODUCT_ORGANIZATION.Granules.IMAGE_ID> imageid = gr.getIMAGE_ID();
-            for (A_PRODUCT_ORGANIZATION.Granules.IMAGE_ID aImageName : imageid) {
-                imagesList.add(dir_id + File.separator + aImageName.getValue() + ".jp2");
-            }
-        }
-
-        Collections.sort(imagesList);
-        return imagesList;
+        return S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
     }
 
 
     public static List<Coordinate> getGranuleCorners(Level1B_Granule granule) {
         List<Double> polygon = granule.getGeometric_Info().getGranule_Footprint().getGranule_Footprint().getFootprint().getEXT_POS_LIST();
-        List<Coordinate> thePoints = as3DCoordinates(polygon);
 
-        return thePoints;
+        return as3DCoordinates(polygon);
     }
 
     public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule,

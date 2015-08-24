@@ -20,14 +20,14 @@
 package org.esa.s2tbx.dataio.s2;
 
 import com.bc.ceres.glevel.MultiLevelModel;
-import jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.snap.jai.ResolutionLevel;
 import org.esa.snap.jai.SingleBandedOpImage;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.SystemUtils;
-import org.openjpeg.CommandOutput;
-import org.openjpeg.JpegUtils;
+import org.esa.s2tbx.dataio.openjpeg.CommandOutput;
+import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -159,7 +159,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
         builder = builder.directory(cacheDir);
 
         try {
-            CommandOutput result = JpegUtils.runProcess(builder);
+            CommandOutput result = OpenJpegUtils.runProcess(builder);
 
             final int exitCode = result.getErrorCode();
             if (exitCode != 0) {

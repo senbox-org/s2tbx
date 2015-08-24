@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.snap.util.io.FileUtils;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Assume;
 
 import java.io.File;
 
@@ -17,7 +17,7 @@ public class ShortenTest {
 
     @Before
     public void beforeMethod() {
-        org.junit.Assume.assumeTrue(SystemUtils.IS_OS_WINDOWS);
+        Assume.assumeTrue(SystemUtils.IS_OS_WINDOWS);
     }
 
     /**

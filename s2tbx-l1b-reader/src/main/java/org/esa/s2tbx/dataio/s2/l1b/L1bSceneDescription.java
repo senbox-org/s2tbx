@@ -21,7 +21,7 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 // import com.jcabi.aspects.Loggable;
 
-import jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.s2.S2Config;
@@ -103,10 +103,11 @@ public class L1bSceneDescription extends S2SceneDescription {
             int detectorId = Integer.valueOf(selectedGeometry.detector);
 
             // data is referenced through 1 based indexes
-            TileLayout[] tileLayouts = config.getTileLayouts();
+            TileLayout tileLayoutFor10m = config.getTileLayout(10);
+            TileLayout tileLayoutForThis = config.getTileLayout(selectedGeometry.resolution);
             //int xOffset = (detectorId - 1) * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].width * selectedGeometry.resolution;
-            int yOffsetIndex = (selectedGeometry.position - firstPosition) / tileLayouts[S2L1bConfig.LAYOUTMAP.get(10)].height;
-            int yWidth = yOffsetIndex * selectedGeometry.yDim * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].height;
+            int yOffsetIndex = (selectedGeometry.position - firstPosition) / tileLayoutFor10m.height;
+            int yWidth = yOffsetIndex * selectedGeometry.yDim * tileLayoutForThis.height;
 
 
             int xOffset = 0;

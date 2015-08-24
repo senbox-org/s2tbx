@@ -19,7 +19,7 @@
 package org.esa.s2tbx.dataio.s2;
 
 
-import jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.apache.commons.io.IOUtils;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;

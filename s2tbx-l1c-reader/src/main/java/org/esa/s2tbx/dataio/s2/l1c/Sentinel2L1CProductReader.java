@@ -27,7 +27,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Polygon;
-import jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
@@ -56,7 +56,7 @@ import org.jdom.JDOMException;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.openjpeg.StackTraceUtils;
+import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -160,46 +160,24 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     }
 
     @Override
-    protected Product readProductNodesImpl() throws IOException {
-        Product p = null;
-
-        final File inputFile = new File(getInput().toString());
-        if (!inputFile.exists()) {
-            throw new FileNotFoundException(inputFile.getPath());
-        }
-
-        if (S2ProductFilename.isProductFilename(inputFile.getName())) {
-
-            boolean isAGranule = S2L1CGranuleMetadataFilename.isGranuleFilename(inputFile.getName());
-            if(isAGranule)
-            {
-                logger.fine("Reading a granule");
-            }
-            p = getL1cMosaicProduct(inputFile, isAGranule);
-
-            if (p != null) {
-                readMasks(p);
-                p.setModified(false);
-            }
-        } else {
-            throw new IOException("Unhandled file type.");
-        }
-
-        return p;
-    }
-
-    private void readMasks(Product p) {
-        // todo read geocoding using gml module
-        Assert.notNull(p);
-    }
-
-    private Product getL1cMosaicProduct(File metadataFile, boolean isAGranule) throws IOException {
+    protected Product getMosaicProduct(File metadataFile) throws IOException {
         Objects.requireNonNull(metadataFile);
-        // first we need to recover parent metadata file...
+
+        boolean isAGranule = S2L1CGranuleMetadataFilename.isGranuleFilename(metadataFile.getName());
+
+        if(isAGranule) {
+            logger.fine("Reading a granule");
+        }
+
+        // update the tile layout
+        updateTileLayout(metadataFile.toPath(), isAGranule, productResolution);
+
 
         String filterTileId = null;
         File rootMetaDataFile = null;
         String granuleDirName = null;
+
+        // we need to recover parent metadata file if we have a granule
         if (isAGranule) {
             granuleDirName = metadataFile.getParentFile().getName();
             try {
@@ -278,7 +256,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         }
 
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(getConfig().getTileLayouts()[0].numResolutions);
+        product.setNumResolutionsMax(getConfig().getTileLayout(10).numResolutions);
         product.setAutoGrouping("sun:view");
 
         // create the band mosaics per UTM zones
@@ -573,7 +551,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                                                bandInformation.getPhysicalBand(),
                                                spatialResolution, bandInformation.getWavelengthCentral(),
                                                bandInformation.getWavelengthMax() - bandInformation.getWavelengthMin()),
-                            getConfig().getTileLayouts()[spatialResolution.id]);
+                            getConfig().getTileLayout(spatialResolution.resolution));
     }
 
     static File getProductDir(File productFile) throws IOException {
@@ -846,5 +824,30 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
             return mosaicOp;
         }
+    }
+
+
+
+    @Override
+    protected String[] getBandNames(int resolution) {
+        String[] bandNames;
+
+        switch (resolution) {
+            case 10:
+                bandNames = new String[] {"B02", "B03", "B04", "B08"};
+                break;
+            case 20:
+                bandNames = new String[] {"B05", "B06", "B07", "B8A", "B09", "B11", "B12"};
+                break;
+            case 60:
+                bandNames = new String[] {"B01", "B09", "B10"};
+                break;
+            default:
+                SystemUtils.LOG.warning("Invalid resolution: " + resolution);
+                bandNames = null;
+                break;
+        }
+
+        return bandNames;
     }
 }

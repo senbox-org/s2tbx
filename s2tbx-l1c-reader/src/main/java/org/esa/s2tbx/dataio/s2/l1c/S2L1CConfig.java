@@ -19,13 +19,13 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
-import jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2Config;
 
 /**
  * @author Norman Fomferra
  */
-public class S2L1CConfig implements S2Config {
+public class S2L1CConfig extends S2Config {
 
     private static S2L1CConfig instance;
 
@@ -38,7 +38,7 @@ public class S2L1CConfig implements S2Config {
         return instance;
     }
 
-    TileLayout[] L1C_TILE_LAYOUTS = new TileLayout[]{
+    TileLayout[] L1C_DEFAULT_TILE_LAYOUTS = new TileLayout[]{
             new TileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
             new TileLayout(5490, 5490, 2048, 2048, 3, 3, 6),
             new TileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
@@ -47,8 +47,9 @@ public class S2L1CConfig implements S2Config {
     final String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
 
     @Override
-    public TileLayout[] getTileLayouts() {
-        return L1C_TILE_LAYOUTS;
+    public TileLayout getDefaultTileLayout(int resolution) {
+        int tileIndex = LAYOUTMAP.get(resolution);
+        return L1C_DEFAULT_TILE_LAYOUTS[tileIndex];
     }
 
     @Override

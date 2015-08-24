@@ -19,13 +19,13 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2Config;
 
 /**
  * @author Norman Fomferra
  */
-public class S2L2AConfig implements S2Config {
+public class S2L2AConfig extends S2Config {
 
     private static S2L2AConfig instance;
 
@@ -41,7 +41,7 @@ public class S2L2AConfig implements S2Config {
     //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
     //todo use classes from jp2 package to read the data
     //todo future improvement: use opj_dump.exe to retrieve the data
-    private TileLayout[] L2A_TILE_LAYOUTS = new TileLayout[]{
+    private TileLayout[] L2A_DEFAULT_TILE_LAYOUTS = new TileLayout[]{
             new TileLayout(10980, 10980, 2048, 2048, 6, 6, 6),
             new TileLayout(5490, 5490, 2048, 2048, 3, 3, 6),
             new TileLayout(1830, 1830, 2048, 2048, 1, 1, 6),
@@ -49,10 +49,10 @@ public class S2L2AConfig implements S2Config {
 
     String FORMAT_NAME = "SENTINEL-2-MSI-L2A";
 
-
     @Override
-    public TileLayout[] getTileLayouts() {
-        return L2A_TILE_LAYOUTS;
+    public TileLayout getDefaultTileLayout(int resolution) {
+        int tileIndex = LAYOUTMAP.get(resolution);
+        return L2A_DEFAULT_TILE_LAYOUTS[tileIndex];
     }
 
     @Override

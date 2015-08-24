@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.j2k.internal;
 
-import org.openjpeg.CommandOutput;
-import org.openjpeg.JpegUtils;
+import org.esa.s2tbx.dataio.openjpeg.CommandOutput;
+import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class OpjExecutor {
         ProcessBuilder builder = new ProcessBuilder(args);
         builder.redirectErrorStream(true);
         try {
-            CommandOutput commandOutput = JpegUtils.runProcess(builder);
+            CommandOutput commandOutput = OpenJpegUtils.runProcess(builder);
             lastOutput = commandOutput.getTextOutput();
             lastError = commandOutput.getErrorOutput();
             exitCode = commandOutput.getErrorCode();

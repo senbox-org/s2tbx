@@ -19,7 +19,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2Config;
 
 import java.util.HashSet;
@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author Norman Fomferra
  */
-public class S2L1bConfig implements S2Config {
+public class S2L1bConfig extends S2Config {
 
     private static S2L1bConfig instance;
 
@@ -42,12 +42,10 @@ public class S2L1bConfig implements S2Config {
     }
 
 
-    //todo these numbers should actually been read from the JP2 files, because they are likely to change if prod. spec. changes
-    //todo use classes from jp2 package to read the data
-    private TileLayout[] L1B_TILE_LAYOUTS = new TileLayout[]{
-            new TileLayout(2552, 2304, 2552, 2304, 1, 1, 5), // 10
-            new TileLayout(1274, 1152, 1274, 1152, 1, 1, 5), // 20
-            new TileLayout(424, 384, 424, 384, 1, 1, 5), // 60
+    private TileLayout[] L1B_DEFAULT_TILE_LAYOUTS = new TileLayout[]{
+            new TileLayout(2552, 36864, 2592, 2304, 1, 1, 5), // 10
+            new TileLayout(1276, 18432, 1296, 1152, 1, 1, 5), // 20
+            new TileLayout(1276, 6144, 1296, 384, 1, 1, 5), // 60
     };
 
     static Set<TileLayout> REAL_TILE_LAYOUT = new HashSet<>();
@@ -55,8 +53,9 @@ public class S2L1bConfig implements S2Config {
     String FORMAT_NAME = "SENTINEL-2-MSI-L1B";
 
     @Override
-    public TileLayout[] getTileLayouts() {
-        return L1B_TILE_LAYOUTS;
+    public TileLayout getDefaultTileLayout(int resolution) {
+        int tileIndex = LAYOUTMAP.get(resolution);
+        return L1B_DEFAULT_TILE_LAYOUTS[tileIndex];
     }
 
     @Override

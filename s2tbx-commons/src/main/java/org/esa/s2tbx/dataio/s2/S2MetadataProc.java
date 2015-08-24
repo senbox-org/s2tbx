@@ -19,8 +19,6 @@
 package org.esa.s2tbx.dataio.s2;
 
 
-import jp2.TileLayout;
-
 /**
  *  @author Nicolas Ducoin
  */

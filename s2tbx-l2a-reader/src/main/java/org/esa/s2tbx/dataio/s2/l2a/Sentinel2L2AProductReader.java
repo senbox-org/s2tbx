@@ -19,13 +19,12 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
-import jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
@@ -49,7 +48,7 @@ import org.geotools.geometry.Envelope2D;
 import org.jdom.JDOMException;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.openjpeg.StackTraceUtils;
+import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 
 import javax.media.jai.ImageLayout;
 import javax.media.jai.Interpolation;
@@ -113,7 +112,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
     private File cacheDir;
     protected final Logger logger;
-    private int filteredResolution;
+    private int productResolution;
 
     static class BandInfo {
         final Map<String, File> tileIdToFileMap;
@@ -137,18 +136,18 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
         }
     }
 
-    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int filteredResolution) {
+    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution) {
         super(readerPlugIn, S2L2AConfig.getInstance());
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
-        this.filteredResolution = filteredResolution;
+        this.productResolution = productResolution;
     }
 
     Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
         super(readerPlugIn, S2L2AConfig.getInstance());
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
-        this.filteredResolution = -1;
+        this.productResolution = -1;
     }
 
     @Override
@@ -157,67 +156,35 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     }
 
     @Override
-    protected Product readProductNodesImpl() throws IOException {
-        logger.fine("readProductNodeImpl, " + getInput().toString());
+    protected Product getMosaicProduct(File metadataFile) throws IOException {
+        Objects.requireNonNull(metadataFile);
 
-        Product p;
+        boolean isAGranule = S2L2aGranuleMetadataFilename.isGranuleFilename(metadataFile.getName());
 
-        final File inputFile = new File(getInput().toString());
-        if (!inputFile.exists()) {
-            throw new FileNotFoundException(inputFile.getPath());
+        if(isAGranule) {
+            logger.fine("Reading a granule");
         }
 
-        if (S2ProductFilename.isProductFilename(inputFile.getName())) {
-            boolean isAGranule = S2L2aGranuleMetadataFilename.isGranuleFilename(inputFile.getName());
-            if(isAGranule)
-            {
-                logger.fine("Reading a granule");
-            }
+        // update the tile layout
+        updateTileLayout(metadataFile.toPath(), isAGranule, productResolution);
 
-            p = getL1cMosaicProduct(inputFile, isAGranule);
-
-            if (p != null) {
-                readMasks(p);
-                initGeoCoding(p);
-                p.setModified(false);
-            }
-        } else {
-            throw new IOException("Unhandled file type.");
-        }
-
-        return p;
-    }
-
-    private void initGeoCoding(Product p) {
-        Assert.notNull(p);
-        // fixme Implement this
-    }
-
-    private void readMasks(Product p) {
-        Assert.notNull(p);
-        // fixme Implement this
-    }
-
-    private Product getL1cMosaicProduct(File granuleMetadataFile, boolean isAGranule) throws IOException {
-        Objects.requireNonNull(granuleMetadataFile);
-        // first we need to recover parent metadata file...
 
         String filterTileId = null;
-        File metadataFile = null;
+        File productMetadataFile = null;
         if(isAGranule)
         {
             try
             {
-                Objects.requireNonNull(granuleMetadataFile.getParentFile());
-                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile());
-                Objects.requireNonNull(granuleMetadataFile.getParentFile().getParentFile().getParentFile());
+                Objects.requireNonNull(metadataFile.getParentFile());
+                Objects.requireNonNull(metadataFile.getParentFile().getParentFile());
+                Objects.requireNonNull(metadataFile.getParentFile().getParentFile().getParentFile());
             } catch (NullPointerException npe)
             {
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
             }
 
-            File up2levels = granuleMetadataFile.getParentFile().getParentFile().getParentFile();
-            File tileIdFilter = granuleMetadataFile.getParentFile();
+            File up2levels = metadataFile.getParentFile().getParentFile().getParentFile();
+            File tileIdFilter = metadataFile.getParentFile();
 
             filterTileId = tileIdFilter.getName();
 
@@ -226,18 +193,18 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
             {
                 if(S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName()))
                 {
-                    metadataFile = f;
+                    productMetadataFile = f;
                     break;
                 }
             }
-            if(metadataFile == null)
+            if(productMetadataFile == null)
             {
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", granuleMetadataFile.getName()));
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
             }
         }
         else
         {
-            metadataFile = granuleMetadataFile;
+            productMetadataFile = metadataFile;
         }
 
         final String aFilter = filterTileId;
@@ -245,16 +212,16 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
         L2aMetadata metadataHeader;
 
         try {
-            metadataHeader = parseHeader(metadataFile, getConfig().getTileLayouts());
+            metadataHeader = parseHeader(productMetadataFile, getConfig().getTileLayouts());
         } catch (JDOMException|JAXBException e) {
             SystemUtils.LOG.severe(Utils.getStackTrace(e));
-            throw new IOException("Failed to parse metadata in " + metadataFile.getName());
+            throw new IOException("Failed to parse metadata in " + productMetadataFile.getName());
         }
 
         L2aSceneDescription sceneDescription = L2aSceneDescription.create(metadataHeader, Tile.idGeom.G10M, getConfig());
         logger.fine("Scene Description: " + sceneDescription);
 
-        File productDir = getProductDir(metadataFile);
+        File productDir = getProductDir(productMetadataFile);
         initCacheDir(productDir);
 
         ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
@@ -288,12 +255,12 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                     for (ImageInfo imageFound : filteredImages) {
 
                         String imageFileName = imageFound.getFileName();
-                        if ( (filteredResolution == 10 && imageFileName.contains("10m")) ||
-                                (filteredResolution == 20 && imageFileName.contains("20m"))||
-                                (filteredResolution == 60 && imageFileName.contains("60m"))  ) {
+                        if ( (productResolution == 10 && imageFileName.contains("10m")) ||
+                                (productResolution == 20 && imageFileName.contains("20m"))||
+                                (productResolution == 60 && imageFileName.contains("60m"))  ) {
 
 
-                            String resolutionFolder = String.format("R%sm", filteredResolution);
+                            String resolutionFolder = String.format("R%sm", productResolution);
 
                             String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + resolutionFolder+ File.separator + imageFileName + ".jp2";
                             String fallbackImgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFound.getFileName() + ".jp2";
@@ -327,13 +294,13 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
         //todo change product filename properties...
         //todo test saving modified product...
-        Product product = new Product(FileUtils.getFilenameWithoutExtension(metadataFile),
+        Product product = new Product(FileUtils.getFilenameWithoutExtension(productMetadataFile),
                                       "S2_MSI_" + productCharacteristics.processingLevel,
                                       sceneDescription.getSceneRectangle().width,
                                       sceneDescription.getSceneRectangle().height);
 
         product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
-        product.setFileLocation(metadataFile.getParentFile());
+        product.setFileLocation(productMetadataFile.getParentFile());
 
         // setStartStopTime(product, mtdFilename.start, mtdFilename.stop);
         if(forceResize) {
@@ -362,7 +329,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(getConfig().getTileLayouts()[0].numResolutions);
+        product.setNumResolutionsMax(getConfig().getTileLayout(10).numResolutions);
         product.setAutoGrouping("reflec:radiance:sun:view");
 
         ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
@@ -374,7 +341,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
-            if (this.filteredResolution == -1 || bandInfo.getWavebandInfo().resolution.resolution == this.filteredResolution)
+            if (this.productResolution == -1 || bandInfo.getWavebandInfo().resolution.resolution == this.productResolution)
             {
                 Band band = addBand(product, bandInfo);
                 band.setSourceImage(mlif.createSourceImage(bandInfo));
@@ -521,25 +488,25 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     }
 
     private BandInfo createBandInfoFromDefaults(int bandIndex, S2WavebandInfo wavebandInfo, String tileId, File imageFile) {
-        // TileLayout aLayout = CodeStreamUtils.getTileLayouts(imageFile.toURI().toString(), null);
+        // TileLayout aLayout = CodeStreamUtils.getDefaultTileLayouts(imageFile.toURI().toString(), null);
         return new BandInfo(createFileMap(tileId, imageFile),
                             bandIndex,
                             wavebandInfo,
                             // aLayout);
                             //todo test this
-                            getConfig().getTileLayouts()[wavebandInfo.resolution.id]);
+                            getConfig().getTileLayout(wavebandInfo.resolution.id));
 
     }
 
     private BandInfo createBandInfoFromHeaderInfo(S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
-        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(filteredResolution);
+        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(productResolution);
         return new BandInfo(tileFileMap,
                             bandInformation.getBandId(),
                             new S2WavebandInfo(bandInformation.getBandId(),
                                                bandInformation.getPhysicalBand(),
                                                spatialResolution, bandInformation.getWavelengthCentral(),
                                                bandInformation.getWavelengthMax() - bandInformation.getWavelengthMin()),
-                            getConfig().getTileLayouts()[spatialResolution.id]);
+                            getConfig().getTileLayout(spatialResolution.resolution));
     }
 
     private void setGeoCoding(Product product, Envelope2D envelope) {
@@ -632,8 +599,8 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
         public L1cTileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
-                                             getConfig().getTileLayouts()[0].width, //todo we must use data from jp2 files to update this
-                                             getConfig().getTileLayouts()[0].height)); //todo we must use data from jp2 files to update this
+                                             getConfig().getTileLayout(10).width, //todo we must use data from jp2 files to update this
+                                             getConfig().getTileLayout(10).height)); //todo we must use data from jp2 files to update this
             this.bandInfo = bandInfo;
         }
 
@@ -841,5 +808,13 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
             return mosaicOp;
         }
+    }
+
+
+
+    @Override
+    protected String[] getBandNames(int resolution) {
+
+        return null;
     }
 }
