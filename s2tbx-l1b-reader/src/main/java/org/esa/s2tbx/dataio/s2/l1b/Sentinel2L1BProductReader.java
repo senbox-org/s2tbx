@@ -167,7 +167,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         super(readerPlugIn, S2L1bConfig.getInstance());
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
-        this.productResolution = -1;
+        this.productResolution = S2SpatialResolution.R10M.resolution;
         isMultiResolution = true;
     }
 
@@ -190,7 +190,11 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         // update the tile layout
-        updateTileLayout(metadataFile.toPath(), isAGranule, productResolution);
+        if(isMultiResolution) {
+            updateTileLayout(metadataFile.toPath(), isAGranule, -1);
+        } else {
+            updateTileLayout(metadataFile.toPath(), isAGranule, productResolution);
+        }
 
         Objects.requireNonNull(metadataFile);
 
@@ -375,7 +379,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
     private void addDetectorBands(Product product, Map<String, TileBandInfo> stringBandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(getConfig().getTileLayout(10).numResolutions);
+        product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
 
         product.setAutoGrouping("D01:D02:D03:D04:D05:D06:D07:D08:D09:D10:D11:D12");
 

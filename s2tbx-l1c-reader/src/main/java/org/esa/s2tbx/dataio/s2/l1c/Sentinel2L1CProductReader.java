@@ -104,8 +104,6 @@ import java.util.stream.Collectors;
  */
 public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
-    public static final int DEFAULT_RESOLUTION = 10;
-
     static final int SUN_ZENITH_GRID_INDEX = 0;
     static final int SUN_AZIMUTH_GRID_INDEX = 1;
     static final int VIEW_ZENITH_GRID_INDEX = 2;
@@ -256,12 +254,12 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         }
 
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(getConfig().getTileLayout(10).numResolutions);
+        product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
         product.setAutoGrouping("sun:view");
 
         // create the band mosaics per UTM zones
         for (String utmZone : metadataHeader.getUTMZonesList()) {
-            Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
+            Map<Integer, BandInfo> bandInfoMap = new HashMap<>();
 
             // if we selected the granule there is only one UTM zone and we'll get here only once, just extract the granule
             // otherwise get the list of tiles for this UTM zone

@@ -20,6 +20,7 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
@@ -95,7 +96,7 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader Multisize...");
 
-        return new Sentinel2L1CProductReader(this, 10, true, getEPSG());
+        return new Sentinel2L1CProductReader(this, S2SpatialResolution.R10M.resolution, true, getEPSG());
     }
 
     @Override

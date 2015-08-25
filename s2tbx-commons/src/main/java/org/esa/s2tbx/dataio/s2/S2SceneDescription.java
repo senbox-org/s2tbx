@@ -26,7 +26,7 @@ public abstract class S2SceneDescription {
     private final double tileResolution10M;
 
     public S2SceneDescription(S2Config config) {
-        int tileSize10M = config.getTileLayout(10).width;
+        int tileSize10M = config.getTileLayout(S2SpatialResolution.R10M.resolution).width;
         int pixelResolution10M = S2SpatialResolution.R10M.resolution;
         tileResolution10M = pixelResolution10M * tileSize10M;
     }

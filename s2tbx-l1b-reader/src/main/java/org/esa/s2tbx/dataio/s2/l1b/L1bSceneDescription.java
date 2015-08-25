@@ -26,6 +26,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.geotools.geometry.Envelope2D;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -103,7 +105,7 @@ public class L1bSceneDescription extends S2SceneDescription {
             int detectorId = Integer.valueOf(selectedGeometry.detector);
 
             // data is referenced through 1 based indexes
-            TileLayout tileLayoutFor10m = config.getTileLayout(10);
+            TileLayout tileLayoutFor10m = config.getTileLayout(S2SpatialResolution.R10M.resolution);
             TileLayout tileLayoutForThis = config.getTileLayout(selectedGeometry.resolution);
             //int xOffset = (detectorId - 1) * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].width * selectedGeometry.resolution;
             int yOffsetIndex = (selectedGeometry.position - firstPosition) / tileLayoutFor10m.height;

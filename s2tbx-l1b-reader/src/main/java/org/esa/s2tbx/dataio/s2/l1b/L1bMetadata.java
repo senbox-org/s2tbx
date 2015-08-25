@@ -29,6 +29,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
@@ -126,8 +127,6 @@ public class L1bMetadata extends S2Metadata {
     }
 
     static class AnglesGrid {
-        int bandId;
-        int detectorId;
         double zenith;
         double azimuth;
 
@@ -148,7 +147,6 @@ public class L1bMetadata extends S2Metadata {
     }
 
     private List<Tile> tileList;
-    private List<String> imageList; //todo populate imagelist
     private ProductCharacteristics productCharacteristics;
 
     public static L1bMetadata parseHeader(File file, TileLayout[] tileLayouts) throws JDOMException, IOException, JAXBException {
@@ -176,11 +174,11 @@ public class L1bMetadata extends S2Metadata {
 
             if(userProductOrTile instanceof Level1B_User_Product)
             {
-                initProduct(stream, file, parent, userProductOrTile);
+                initProduct(file, parent, userProductOrTile);
             }
             else
             {
-                initTile(stream, file, parent, userProductOrTile);
+                initTile(userProductOrTile);
             }
 
         } catch (JAXBException | JDOMException | IOException e) {
@@ -189,7 +187,7 @@ public class L1bMetadata extends S2Metadata {
     }
 
 
-    private void initProduct(InputStream stream, File file, String parent, Object casted
+    private void initProduct(File file, String parent, Object casted
                              ) throws IOException, JAXBException, JDOMException {
         Level1B_User_Product product = (Level1B_User_Product) casted;
         productCharacteristics = L1bMetadataProc.getProductOrganization(product);
@@ -228,9 +226,9 @@ public class L1bMetadata extends S2Metadata {
 
             Tile t = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
 
-            t.tileGeometry10M = geoms.get(10);
-            t.tileGeometry20M = geoms.get(20);
-            t.tileGeometry60M = geoms.get(60);
+            t.tileGeometry10M = geoms.get(S2SpatialResolution.R10M.resolution);
+            t.tileGeometry20M = geoms.get(S2SpatialResolution.R20M.resolution);
+            t.tileGeometry60M = geoms.get(S2SpatialResolution.R60M.resolution);
 
             t.sunAnglesGrid = L1bMetadataProc.getSunGrid(aGranule);
             t.viewingIncidenceAnglesGrids = L1bMetadataProc.getAnglesGrid(aGranule);
@@ -286,7 +284,7 @@ public class L1bMetadata extends S2Metadata {
         metadataElement.addElement(granulesMetaData);
     }
 
-    private void initTile(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+    private void initTile(Object casted) throws IOException, JAXBException, JDOMException {
         Level1B_Granule product = (Level1B_Granule) casted;
         productCharacteristics = new L1bMetadata.ProductCharacteristics();
 

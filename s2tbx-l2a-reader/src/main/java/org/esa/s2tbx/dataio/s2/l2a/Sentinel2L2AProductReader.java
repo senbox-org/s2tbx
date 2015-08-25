@@ -255,9 +255,9 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                     for (ImageInfo imageFound : filteredImages) {
 
                         String imageFileName = imageFound.getFileName();
-                        if ( (productResolution == 10 && imageFileName.contains("10m")) ||
-                                (productResolution == 20 && imageFileName.contains("20m"))||
-                                (productResolution == 60 && imageFileName.contains("60m"))  ) {
+                        if ( (productResolution == S2SpatialResolution.R10M.resolution && imageFileName.contains("10m")) ||
+                                (productResolution == S2SpatialResolution.R20M.resolution && imageFileName.contains("20m"))||
+                                (productResolution == S2SpatialResolution.R60M.resolution && imageFileName.contains("60m"))  ) {
 
 
                             String resolutionFolder = String.format("R%sm", productResolution);
@@ -329,7 +329,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(getConfig().getTileLayout(10).numResolutions);
+        product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
         product.setAutoGrouping("reflec:radiance:sun:view");
 
         ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
@@ -599,8 +599,8 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
         public L1cTileMultiLevelSource(BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(new DefaultMultiLevelModel(bandInfo.imageLayout.numResolutions,
                                              imageToModelTransform,
-                                             getConfig().getTileLayout(10).width, //todo we must use data from jp2 files to update this
-                                             getConfig().getTileLayout(10).height)); //todo we must use data from jp2 files to update this
+                                             getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).width, //todo we must use data from jp2 files to update this
+                                             getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).height)); //todo we must use data from jp2 files to update this
             this.bandInfo = bandInfo;
         }
 

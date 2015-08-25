@@ -26,6 +26,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
@@ -337,9 +338,9 @@ public class L1cMetadata extends S2Metadata {
                 counters.get(key).increment();
             }
 
-            t.tileGeometry10M = geoms.get(10);
-            t.tileGeometry20M = geoms.get(20);
-            t.tileGeometry60M = geoms.get(60);
+            t.tileGeometry10M = geoms.get(S2SpatialResolution.R10M.resolution);
+            t.tileGeometry20M = geoms.get(S2SpatialResolution.R20M.resolution);
+            t.tileGeometry60M = geoms.get(S2SpatialResolution.R60M.resolution);
 
             t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
             t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);

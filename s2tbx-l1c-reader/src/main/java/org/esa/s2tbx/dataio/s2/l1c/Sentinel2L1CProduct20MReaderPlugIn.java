@@ -18,6 +18,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.util.SystemUtils;
 
@@ -35,7 +36,7 @@ public abstract class Sentinel2L1CProduct20MReaderPlugIn extends Sentinel2L1CPro
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader 20M");
 
-        return new Sentinel2L1CProductReader(this, 20, false, getEPSG());
+        return new Sentinel2L1CProductReader(this, S2SpatialResolution.R20M.resolution, false, getEPSG());
     }
 
     @Override

@@ -36,7 +36,9 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
+import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -211,7 +213,7 @@ public class L1bMetadataProc extends S2MetadataProc {
         for (A_GRANULE_DIMENSIONS.Size gpos : sizes) {
             int resolution = gpos.getResolution();
 
-            int ratio = resolution / 10;
+            int ratio = resolution / S2SpatialResolution.R10M.resolution;
             L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.numCols = gpos.getNCOLS();
 
