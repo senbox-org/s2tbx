@@ -28,7 +28,7 @@ public class J2kProductReaderPlugin implements ProductReaderPlugIn {
             }
             if (fileInput != null) {
                 final String ext = FileUtils.getExtension(fileInput);
-                if (ext.equalsIgnoreCase(".jp2")) {
+                if (".jp2".equalsIgnoreCase(ext)) {
                     result = DecodeQualification.SUITABLE;
                 }
             }
