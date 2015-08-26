@@ -43,6 +43,8 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
 
     private static L1cProductCRSCache crsCache = new L1cProductCRSCache();
 
+    protected final String FORMAT_NAME = "SENTINEL-2-MSI-L1C";
+
     public Sentinel2L1CProductReaderPlugIn() {
         RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Natural Colors", new String[]{"B4", "B3", "B2"}));
@@ -101,7 +103,7 @@ public abstract class Sentinel2L1CProductReaderPlugIn implements ProductReaderPl
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1CConfig.getInstance().getFormatName()+"-MultiRes-" + epsgToShortDisplayName(getEPSG())};
+        return new String[]{FORMAT_NAME+"-MultiRes-" + epsgToShortDisplayName(getEPSG())};
     }
 
     @Override

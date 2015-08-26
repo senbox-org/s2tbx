@@ -145,7 +145,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     }
 
     public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, int productResolution, boolean isMultiResolution, String epsgCode) {
-        super(readerPlugIn, S2L1CConfig.getInstance());
+        super(readerPlugIn);
         logger = SystemUtils.LOG;
         this.isMultiResolution = isMultiResolution;
         this.productResolution = productResolution;
@@ -192,10 +192,12 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             filterTileId = tileIdFilter.getName();
 
             File[] files = up2levels.listFiles();
-            for (File f : files) {
-                if (S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName())) {
-                    rootMetaDataFile = f;
-                    break;
+            if(files != null) {
+                for (File f : files) {
+                    if (S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName())) {
+                        rootMetaDataFile = f;
+                        break;
+                    }
                 }
             }
             if (rootMetaDataFile == null) {
@@ -207,7 +209,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
         final String aFilter = filterTileId;
 
-        L1cMetadata metadataHeader = null;
+        L1cMetadata metadataHeader;
 
 
         try {
@@ -247,9 +249,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                     this.productResolution,
                     this.productResolution,
                     0.0, 0.0));
-        } catch (TransformException e) {
-            logger.severe("Error caught during product geo coding");
-        } catch (FactoryException e) {
+        } catch (FactoryException | TransformException e) {
             logger.severe("Error caught during product geo coding");
         }
 
@@ -272,20 +272,22 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                 int bandIndex = bandInformation.getBandId();
                 if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
 
-                    HashMap<String, File> tileFileMap = new HashMap<String, File>();
+                    HashMap<String, File> tileFileMap = new HashMap<>();
                     for (L1cMetadata.Tile tile : utmZoneTileList) {
                         S2L1CGranuleDirFilename gf = S2L1CGranuleDirFilename.create(tile.id);
-                        S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
+                        if (gf != null) {
+                            S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
 
-                        String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFilename.name;
+                            String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFilename.name;
 
-                        logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
+                            logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
-                        File file = new File(productDir, imgFilename);
-                        if (file.exists()) {
-                            tileFileMap.put(tile.id, file);
-                        } else {
-                            logger.warning(String.format("Warning: missing file %s\n", file));
+                            File file = new File(productDir, imgFilename);
+                            if (file.exists()) {
+                                tileFileMap.put(tile.id, file);
+                            } else {
+                                logger.warning(String.format("Warning: missing file %s\n", file));
+                            }
                         }
                     }
 
@@ -352,7 +354,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     }
 
     private  List<EopPolygon> filterMasksInUTMZones(List<L1cMetadata.Tile> utmZoneTileList) {
-        List<EopPolygon> polygons = new ArrayList<EopPolygon>();
+        List<EopPolygon> polygons = new ArrayList<>();
 
         GmlFilter gmlFilter = new GmlFilter();
         if(!utmZoneTileList.isEmpty())
@@ -398,7 +400,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     }
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
-        ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
+        ArrayList<Integer> bandIndexes = new ArrayList<>(bandInfoMap.keySet());
         Collections.sort(bandIndexes);
 
         if (bandIndexes.isEmpty()) {
@@ -659,7 +661,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
         @Override
         protected RenderedImage createImage(int level) {
-            ArrayList<RenderedImage> tileImages = new ArrayList<RenderedImage>();
+            ArrayList<RenderedImage> tileImages = new ArrayList<>();
 
             for (String tileId : sceneDescription.getTileIds()) {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
@@ -750,7 +752,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             super(sceneDescription, imageToModelTransform, numResolutions);
             this.metadata = metadata;
             this.tiePointGridIndex = tiePointGridIndex;
-            tiePointGridsMap = new HashMap<String, TiePointGrid[]>();
+            tiePointGridsMap = new HashMap<>();
         }
 
         @Override
@@ -775,7 +777,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
         @Override
         protected RenderedImage createImage(int level) {
-            ArrayList<RenderedImage> tileImages = new ArrayList<RenderedImage>();
+            ArrayList<RenderedImage> tileImages = new ArrayList<>();
 
             for (String tileId : sceneDescription.getTileIds()) {
 

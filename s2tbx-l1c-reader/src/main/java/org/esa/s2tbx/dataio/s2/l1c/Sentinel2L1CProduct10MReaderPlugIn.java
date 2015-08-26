@@ -40,7 +40,7 @@ public abstract class Sentinel2L1CProduct10MReaderPlugIn extends Sentinel2L1CPro
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{String.format("%s-10M-%s", S2L1CConfig.getInstance().getFormatName(), epsgToShortDisplayName(getEPSG()))};
+        return new String[]{String.format("%s-10M-%s", FORMAT_NAME, epsgToShortDisplayName(getEPSG()))};
     }
 
     @Override

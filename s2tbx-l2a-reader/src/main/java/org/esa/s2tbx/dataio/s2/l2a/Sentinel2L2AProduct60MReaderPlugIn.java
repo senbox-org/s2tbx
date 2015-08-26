@@ -19,16 +19,10 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
-import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
-import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.io.SnapFileFilter;
 
-import java.io.File;
 import java.util.Locale;
 
 /**
@@ -45,7 +39,7 @@ public class Sentinel2L2AProduct60MReaderPlugIn extends Sentinel2L2AProductReade
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L2AConfig.getInstance().getFormatName()+"-60M"};
+        return new String[]{FORMAT_NAME+"-60M"};
     }
 
     @Override

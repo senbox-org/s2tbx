@@ -34,7 +34,7 @@ import java.util.Locale;
  */
 public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
 
-
+    String FORMAT_NAME = "SENTINEL-2-MSI-L1B";
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
@@ -85,7 +85,7 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1bConfig.getInstance().getFormatName()};
+        return new String[]{FORMAT_NAME};
     }
 
     @Override

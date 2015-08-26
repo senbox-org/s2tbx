@@ -137,17 +137,10 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     }
 
     public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution) {
-        super(readerPlugIn, S2L2AConfig.getInstance());
+        super(readerPlugIn);
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.productResolution = productResolution;
-    }
-
-    Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
-        super(readerPlugIn, S2L2AConfig.getInstance());
-        logger = SystemUtils.LOG;
-        this.forceResize = forceResize;
-        this.productResolution = -1;
     }
 
     @Override
@@ -189,16 +182,15 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
             filterTileId = tileIdFilter.getName();
 
             File[] files = up2levels.listFiles();
-            for(File f: files)
-            {
-                if(S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName()))
-                {
-                    productMetadataFile = f;
-                    break;
+            if(files != null) {
+                for (File f : files) {
+                    if (S2ProductFilename.isProductFilename(f.getName()) && S2ProductFilename.isMetadataFilename(f.getName())) {
+                        productMetadataFile = f;
+                        break;
+                    }
                 }
             }
-            if(productMetadataFile == null)
-            {
+            if(productMetadataFile == null) {
                 throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
             }
         }
@@ -226,7 +218,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
         ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
-        Map<Integer, BandInfo> bandInfoMap = new HashMap<Integer, BandInfo>();
+        Map<Integer, BandInfo> bandInfoMap = new HashMap<>();
 
         List<L2aMetadata.Tile> tileList = metadataHeader.getTileList();
         if(isAGranule)
@@ -247,7 +239,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
             int bandIndex = bandInformation.getBandId();
             if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
 
-                HashMap<String, File> tileFileMap = new HashMap<String, File>();
+                HashMap<String, File> tileFileMap = new HashMap<>();
                 for (Tile tile : tileList) {
                     // todo filter by band and by tile.id imageList
                     List<ImageInfo> filteredImages = filterImageInfo(imageList, isBand(bandInformation.getPhysicalBand()), isGranule(tile.id), isJPEG2000());
@@ -332,7 +324,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
         product.setAutoGrouping("reflec:radiance:sun:view");
 
-        ArrayList<Integer> bandIndexes = new ArrayList<Integer>(bandInfoMap.keySet());
+        ArrayList<Integer> bandIndexes = new ArrayList<>(bandInfoMap.keySet());
         Collections.sort(bandIndexes);
 
         if (bandIndexes.isEmpty()) {
@@ -468,7 +460,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     }
 
     private static Map<String, File> createFileMap(String tileId, File imageFile) {
-        Map<String, File> tileIdToFileMap = new HashMap<String, File>();
+        Map<String, File> tileIdToFileMap = new HashMap<>();
         tileIdToFileMap.put(tileId, imageFile);
         return tileIdToFileMap;
     }
@@ -672,7 +664,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
         @Override
         protected RenderedImage createImage(int level) {
-            ArrayList<RenderedImage> tileImages = new ArrayList<RenderedImage>();
+            ArrayList<RenderedImage> tileImages = new ArrayList<>();
 
             for (String tileId : sceneDescription.getTileIds()) {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
@@ -747,7 +739,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
             super(sceneDescription, imageToModelTransform, numResolutions);
             this.metadata = metadata;
             this.tiePointGridIndex = tiePointGridIndex;
-            tiePointGridsMap = new HashMap<String, TiePointGrid[]>();
+            tiePointGridsMap = new HashMap<>();
         }
 
         @Override
@@ -763,7 +755,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
         @Override
         protected RenderedImage createImage(int level) {
-            ArrayList<RenderedImage> tileImages = new ArrayList<RenderedImage>();
+            ArrayList<RenderedImage> tileImages = new ArrayList<>();
 
             for (String tileId : sceneDescription.getTileIds()) {
 

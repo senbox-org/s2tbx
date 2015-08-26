@@ -32,7 +32,7 @@ import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.getSafeInfoExt
 /**
  * @author Norman Fomferra
  */
-public abstract class S2Config {
+public class S2Config {
     public static final boolean DEBUG = Boolean.getBoolean("org.esa.s2tbx.dataio.s2.l1c.S2Config.DEBUG");
     public static final boolean NODUMP = Boolean.getBoolean("org.esa.s2tbx.dataio.s2.l1c.S2Config.NODUMP");
 
@@ -85,7 +85,30 @@ public abstract class S2Config {
         tileLayoutForResolution = tileLayouts[tileIndex];
 
         if(tileLayoutForResolution == null) {
-            tileLayoutForResolution = getDefaultTileLayout(resolution);
+            TileLayout nonNullTileLayout = null;
+            int resolutionForNonNullTileLayout = 0;
+            if(resolution == S2SpatialResolution.R10M.resolution) {
+                if(tileLayouts[S2SpatialResolution.R20M.id] != null) {
+                    nonNullTileLayout = tileLayouts[S2SpatialResolution.R20M.id];
+                    resolutionForNonNullTileLayout = S2SpatialResolution.R20M.resolution;
+                } else if(tileLayouts[S2SpatialResolution.R60M.id] != null) {
+                    nonNullTileLayout = tileLayouts[S2SpatialResolution.R60M.id];
+                    resolutionForNonNullTileLayout = S2SpatialResolution.R60M.resolution;
+                }
+
+                if(nonNullTileLayout != null) {
+                    float factor = resolutionForNonNullTileLayout / resolution;
+                    int width = Math.round(nonNullTileLayout.width * factor);
+                    int height = Math.round(nonNullTileLayout.height * factor);
+                    int tileWidth = Math.round(nonNullTileLayout.tileWidth * factor);
+                    int tileHeight = Math.round(nonNullTileLayout.tileHeight * factor);
+                    tileLayoutForResolution =
+                            new TileLayout(width, height,
+                                           tileWidth, tileHeight,
+                                           nonNullTileLayout.numXTiles, nonNullTileLayout.numYTiles,
+                                           nonNullTileLayout.numResolutions);
+                }
+            }
         }
 
         return tileLayoutForResolution;
@@ -107,14 +130,10 @@ public abstract class S2Config {
     public TileLayout[] getTileLayouts(){
         TileLayout[] tileLayoutsToReturn = new TileLayout[3];
 
-        tileLayoutsToReturn[0] = (tileLayouts[0] != null ? tileLayouts[0] : getDefaultTileLayout(10));
-        tileLayoutsToReturn[1] = (tileLayouts[1] != null ? tileLayouts[1] : getDefaultTileLayout(20));
-        tileLayoutsToReturn[2] = (tileLayouts[2] != null ? tileLayouts[2] : getDefaultTileLayout(60));
+        tileLayoutsToReturn[S2SpatialResolution.R10M.id] = getTileLayout(S2SpatialResolution.R10M.resolution);
+        tileLayoutsToReturn[S2SpatialResolution.R20M.id] = getTileLayout(S2SpatialResolution.R20M.resolution);
+        tileLayoutsToReturn[S2SpatialResolution.R60M.id] = getTileLayout(S2SpatialResolution.R60M.resolution);
 
         return tileLayoutsToReturn;
     }
-
-    public abstract TileLayout getDefaultTileLayout(int resolution);
-
-    public abstract String getFormatName();
 }

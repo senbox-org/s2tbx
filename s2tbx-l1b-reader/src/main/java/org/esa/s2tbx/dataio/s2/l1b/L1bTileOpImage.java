@@ -197,13 +197,6 @@ class L1bTileOpImage extends S2TileOpImage {
             return;
         }
 
-        Collections.addAll(S2L1bConfig.REAL_TILE_LAYOUT, tileLayout);
-
-        if (!S2L1bConfig.REAL_TILE_LAYOUT.contains(myLayout)) {
-            logger.severe(String.format("Unexpected signature of %s : %s", imageFile.getName(), myLayout.toString()));
-            S2L1bConfig.REAL_TILE_LAYOUT.add(myLayout);
-        }
-
         final Dimension jp2TileDim = S2TileOpImage.getDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, getLevel());
 
         final int jp2TileWidth = jp2TileDim.width;

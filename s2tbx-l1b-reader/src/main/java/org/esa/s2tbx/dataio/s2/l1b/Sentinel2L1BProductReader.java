@@ -156,7 +156,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, int productResolution) {
-        super(readerPlugIn, S2L1bConfig.getInstance());
+        super(readerPlugIn);
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.productResolution = productResolution;
@@ -164,7 +164,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
-        super(readerPlugIn, S2L1bConfig.getInstance());
+        super(readerPlugIn);
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
         this.productResolution = S2SpatialResolution.R10M.resolution;

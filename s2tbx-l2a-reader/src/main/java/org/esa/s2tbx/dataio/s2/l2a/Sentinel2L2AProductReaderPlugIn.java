@@ -35,6 +35,8 @@ import java.io.FileFilter;
  */
 public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPlugIn {
 
+    static final String FORMAT_NAME = "SENTINEL-2-MSI-L2A";
+
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         SystemUtils.LOG.fine("Getting decoders...");

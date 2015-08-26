@@ -38,7 +38,7 @@ public class Sentinel2L1BProduct10MReaderPlugIn extends Sentinel2L1BProductReade
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{S2L1bConfig.getInstance().getFormatName()+"-10M"};
+        return new String[]{FORMAT_NAME+"-10M"};
     }
 
     @Override
