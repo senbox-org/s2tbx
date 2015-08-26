@@ -97,15 +97,13 @@ public class L1cMetadataProc extends S2MetadataProc {
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         Object ob = unmarshaller.unmarshal(stream);
-        Object casted = ((JAXBElement) ob).getValue();
 
-        return casted;
+        return ((JAXBElement) ob).getValue();
     }
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level1C_User_Product.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1C, s2c);
-        return jaxbContext;
+        return  JAXBContext.newInstance(S2MetadataType.L1C, s2c);
     }
 
     public static L1cMetadata.ProductCharacteristics parseCharacteristics(Level1C_User_Product product) {
@@ -116,7 +114,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString();
         characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString();
 
-        List<S2SpectralInformation> targetList = new ArrayList<S2SpectralInformation>();
+        List<S2SpectralInformation> targetList = new ArrayList<>();
 
         List<A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> aList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
         for (A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
@@ -196,17 +194,14 @@ public class L1cMetadataProc extends S2MetadataProc {
 
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
 
-        Transformer tileSelector = new Transformer() {
-            @Override
-            public Object transform(Object o) {
-                A_PRODUCT_INFO.Product_Organisation.Granule_List ali = (A_PRODUCT_INFO.Product_Organisation.Granule_List) o;
-                A_PRODUCT_ORGANIZATION.Granules gr = ali.getGranules();
-                return gr.getGranuleIdentifier();
-            }
+        Transformer tileSelector;
+        tileSelector = o -> {
+            A_PRODUCT_INFO.Product_Organisation.Granule_List ali = (A_PRODUCT_INFO.Product_Organisation.Granule_List) o;
+            A_PRODUCT_ORGANIZATION.Granules gr = ali.getGranules();
+            return gr.getGranuleIdentifier();
         };
 
-        Collection col = CollectionUtils.collect(aGranuleList, tileSelector);
-        return col;
+        return CollectionUtils.collect(aGranuleList, tileSelector);
     }
 
     public static S2DatastripFilename getDatastrip(Level1C_User_Product product) {
@@ -216,7 +211,13 @@ public class L1cMetadataProc extends S2MetadataProc {
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
         String fileName = dirDatastrip.getFileName(null);
-        return S2L1CDatastripFilename.create(fileName);
+
+        S2DatastripFilename datastripFilename = null;
+        if(fileName != null) {
+            datastripFilename = S2L1CDatastripFilename.create(fileName);
+        }
+
+        return datastripFilename;
     }
 
     public static S2DatastripDirFilename getDatastripDir(Level1C_User_Product product) {
@@ -224,30 +225,15 @@ public class L1cMetadataProc extends S2MetadataProc {
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
         S2L1CGranuleDirFilename grafile = S2L1CGranuleDirFilename.create(granule);
-        String fileCategory = grafile.fileCategory;
 
-        String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
-        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
-        return dirDatastrip;
-    }
+        S2DatastripDirFilename datastripDirFilename = null;
+        if(grafile != null) {
+            String fileCategory = grafile.fileCategory;
+            String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
+            datastripDirFilename = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
 
-    public static Collection<String> getImages(Level1C_User_Product product) {
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
-
-        List<A_PRODUCT_INFO.Product_Organisation.Granule_List> granulesList = info.getGranule_List();
-        List<String> imagesList = new ArrayList<String>();
-
-        for (A_PRODUCT_INFO.Product_Organisation.Granule_List aGranule : granulesList) {
-            A_PRODUCT_ORGANIZATION.Granules gr = aGranule.getGranules();
-            String dir_id = gr.getGranuleIdentifier();
-            List<A_PRODUCT_ORGANIZATION.Granules.IMAGE_ID> imageid = gr.getIMAGE_ID();
-            for (A_PRODUCT_ORGANIZATION.Granules.IMAGE_ID aImageName : imageid) {
-                imagesList.add(dir_id + File.separator + aImageName.getValue() + ".jp2");
-            }
         }
-
-        Collections.sort(imagesList);
-        return imagesList;
+        return datastripDirFilename;
     }
 
     public static Map<Integer, L1cMetadata.TileGeometry> getTileGeometries(Level1C_Tile product) {
@@ -258,7 +244,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         List<A_TILE_DESCRIPTION.Geoposition> poss = tgeo.getGeoposition();
         List<A_TILE_DESCRIPTION.Size> sizz = tgeo.getSize();
 
-        Map<Integer, L1cMetadata.TileGeometry> resolutions = new HashMap<Integer, L1cMetadata.TileGeometry>();
+        Map<Integer, L1cMetadata.TileGeometry> resolutions = new HashMap<>();
 
         for (A_TILE_DESCRIPTION.Geoposition gpos : poss) {
             int index = gpos.getResolution();
@@ -323,9 +309,8 @@ public class L1cMetadataProc extends S2MetadataProc {
             List<AN_INCIDENCE_ANGLE_GRID> filteredListe = ang.getViewing_Incidence_Angles_Grids();
 
             Map<Pair<String, String>, AN_INCIDENCE_ANGLE_GRID> theMap = new LinkedHashMap<>();
-            for (int index = 0; index < filteredListe.size(); index++) {
-                AN_INCIDENCE_ANGLE_GRID aGrid = filteredListe.get(index);
-                theMap.put(new Pair<String, String>(aGrid.getBandId(), aGrid.getDetectorId()), aGrid);
+            for (AN_INCIDENCE_ANGLE_GRID aGrid : filteredListe) {
+                theMap.put(new Pair<>(aGrid.getBandId(), aGrid.getDetectorId()), aGrid);
             }
 
             List<AN_INCIDENCE_ANGLE_GRID> incilist = new ArrayList<>(theMap.values());
@@ -374,7 +359,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         L1cMetadata.MaskFilename[] maskFileNamesArray = null;
         if(qualityInfo != null) {
             List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getPixel_Level_QI().getMASK_FILENAME();
-            List<L1cMetadata.MaskFilename> aMaskList = new ArrayList<L1cMetadata.MaskFilename>();
+            List<L1cMetadata.MaskFilename> aMaskList = new ArrayList<>();
             for (A_MASK_LIST.MASK_FILENAME filename : masks) {
                 File QIData = new File(file.getParent(), "QI_DATA");
                 File GmlData = new File(QIData, filename.getValue());

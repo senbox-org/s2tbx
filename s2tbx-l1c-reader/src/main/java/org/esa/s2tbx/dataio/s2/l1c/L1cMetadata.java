@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,19 @@ public class L1cMetadata extends S2Metadata {
                 case G20M:
                     return tileGeometry20M;
                 case G60M:
+                    return tileGeometry60M;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+
+        public TileGeometry getGeometry(S2SpatialResolution spacialResolution) {
+            switch (spacialResolution.resolution) {
+                case 10:
+                    return tileGeometry10M;
+                case 20:
+                    return tileGeometry20M;
+                case 60:
                     return tileGeometry60M;
                 default:
                     throw new IllegalStateException();
@@ -268,11 +282,7 @@ public class L1cMetadata extends S2Metadata {
         } catch (UnmarshalException|JDOMException e) {
             logger.severe(String.format("Product is not conform to PSD: %s", e.getMessage()));
             throw e;
-        } catch (JAXBException e) {
-            logger.severe(Utils.getStackTrace(e));
-        } catch (FileNotFoundException e) {
-            logger.severe(Utils.getStackTrace(e));
-        }  catch (IOException e) {
+        } catch (JAXBException | IOException e) {
             logger.severe(Utils.getStackTrace(e));
         }
     }
@@ -286,33 +296,36 @@ public class L1cMetadata extends S2Metadata {
         if(granuleName == null ) {
             tileNames = L1cMetadataProc.getTiles(product);
         } else {
-            tileNames = Arrays.asList(granuleName);
+            tileNames = Collections.singletonList(granuleName);
         }
-        List<File> fullTileNamesList = new ArrayList<File>();
+        List<File> fullTileNamesList = new ArrayList<>();
 
 
         // todo populate allTileLists
-        allTileLists = new HashMap<String, List<Tile>>();
+        allTileLists = new HashMap<>();
 
-        tileList = new ArrayList<Tile>();
+        tileList = new ArrayList<>();
 
         for (String tileName : tileNames) {
             FileInputStream fi = (FileInputStream) stream;
             File nestedMetadata = new File(parent, "GRANULE" + File.separator + tileName);
 
             S2L1CGranuleDirFilename aGranuleDir = S2L1CGranuleDirFilename.create(tileName);
-            String theName = aGranuleDir.getMetadataFilename().name;
 
-            File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + tileName + File.separator + theName);
-            if (nestedGranuleMetadata.exists()) {
-                fullTileNamesList.add(nestedGranuleMetadata);
-            } else {
-                String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
-                logger.log(Level.WARNING, errorMessage);
+            if(aGranuleDir != null) {
+                String theName = aGranuleDir.getMetadataFilename().name;
+
+                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + tileName + File.separator + theName);
+                if (nestedGranuleMetadata.exists()) {
+                    fullTileNamesList.add(nestedGranuleMetadata);
+                } else {
+                    String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
+                    logger.log(Level.WARNING, errorMessage);
+                }
             }
         }
 
-        Map<String, Counter> counters = new HashMap<String, Counter>();
+        Map<String, Counter> counters = new HashMap<>();
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
             FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
@@ -395,22 +408,21 @@ public class L1cMetadata extends S2Metadata {
 
         // todo move this code to a common function
         {
-            Level1C_Tile aTile = product;
-            Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
+            Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(product);
 
-            Tile t = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
-            t.horizontalCsCode = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
-            t.horizontalCsName = aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
+            Tile t = new Tile(product.getGeneral_Info().getTILE_ID().getValue());
+            t.horizontalCsCode = product.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE();
+            t.horizontalCsName = product.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME();
 
             t.tileGeometry10M = geoms.get(10);
             t.tileGeometry20M = geoms.get(20);
             t.tileGeometry60M = geoms.get(60);
 
-            t.sunAnglesGrid = L1cMetadataProc.getSunGrid(aTile);
-            t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(aTile);
+            t.sunAnglesGrid = L1cMetadataProc.getSunGrid(product);
+            t.viewingIncidenceAnglesGrids = L1cMetadataProc.getAnglesGrid(product);
 
-            L1cMetadataProc.getMasks(aTile, file);
-            t.maskFilenames = L1cMetadataProc.getMasks(aTile, file);
+            L1cMetadataProc.getMasks(product, file);
+            t.maskFilenames = L1cMetadataProc.getMasks(product, file);
 
             tileList.add(t);
 

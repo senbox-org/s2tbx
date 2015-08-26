@@ -36,7 +36,7 @@ public abstract class Sentinel2L1CProduct20MReaderPlugIn extends Sentinel2L1CPro
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader 20M");
 
-        return new Sentinel2L1CProductReader(this, S2SpatialResolution.R20M.resolution, false, getEPSG());
+        return new Sentinel2L1CProductReader(this, S2SpatialResolution.R20M, false, getEPSG());
     }
 
     @Override

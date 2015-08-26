@@ -110,7 +110,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
     static final String USER_CACHE_DIR = "s2tbx/l1c-reader/cache";
 
-    private final int productResolution;
+    private final S2SpatialResolution productResolution;
     private final boolean isMultiResolution;
     private final String epsgCode;
 
@@ -143,7 +143,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         }
     }
 
-    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, int productResolution, boolean isMultiResolution, String epsgCode) {
+    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution, boolean isMultiResolution, String epsgCode) {
         super(readerPlugIn);
         logger = SystemUtils.LOG;
         this.isMultiResolution = isMultiResolution;
@@ -170,7 +170,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         if(isMultiResolution) {
             updateTileLayout(metadataFile.toPath(), isAGranule, -1);
         } else {
-            updateTileLayout(metadataFile.toPath(), isAGranule, productResolution);
+            updateTileLayout(metadataFile.toPath(), isAGranule, productResolution.resolution);
         }
 
         String filterTileId = null;
@@ -220,8 +220,10 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             throw new IOException("Failed to parse metadata in " + rootMetaDataFile.getName());
         }
 
+
+
         L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader,
-                                                                          L1cMetadata.Tile.idGeom.G10M,
+                                                                          productResolution,
                                                                           getConfig());
         logger.fine("Scene Description: " + sceneDescription);
 
@@ -248,8 +250,8 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                     product.getSceneRasterHeight(),
                     sceneEnvelope.getMinX(),
                     sceneEnvelope.getMaxY(),
-                    this.productResolution,
-                    this.productResolution,
+                    this.productResolution.resolution,
+                    this.productResolution.resolution,
                     0.0, 0.0));
         } catch (FactoryException | TransformException e) {
             logger.severe("Error caught during product geo coding");
@@ -412,7 +414,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
 
-            if(isMultiResolution || bandInfo.getWavebandInfo().resolution.resolution == this.productResolution)
+            if(isMultiResolution || bandInfo.getWavebandInfo().resolution == this.productResolution)
             {
                 Band band = addBand(product, bandInfo);
                 band.setSourceImage(mlif.createSourceImage(bandInfo));
@@ -455,10 +457,15 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     }
 
     private Band addBand(Product product, BandInfo bandInfo) {
-        int index = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
+        int scaleFactor = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
 
         String bandName = bandInfo.wavebandInfo.bandName;
-        final Band band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
+        Band band;
+        if(isMultiResolution) {
+            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth() / scaleFactor, product.getSceneRasterHeight() / scaleFactor);
+        } else {
+            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
+        }
         product.addBand(band);
 
         band.setSpectralBandIndex(bandInfo.bandIndex);

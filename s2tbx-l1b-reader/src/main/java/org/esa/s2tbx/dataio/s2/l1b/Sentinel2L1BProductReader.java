@@ -620,7 +620,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
                 return scaled;
             }
-            // todo add crop ?
 
             logger.log(Level.parse(S2Config.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY(), mosaicOp.getWidth(), mosaicOp.getHeight()));
 

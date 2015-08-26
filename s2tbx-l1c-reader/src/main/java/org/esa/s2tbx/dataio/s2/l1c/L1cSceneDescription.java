@@ -23,6 +23,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.util.SystemUtils;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.CRS;
@@ -49,10 +50,10 @@ public class L1cSceneDescription extends S2SceneDescription {
     private final Envelope2D sceneEnvelope;
     private final Rectangle sceneRectangle;
     private final Map<String, TileInfo> tileInfoMap;
-    private final L1cMetadata.Tile.idGeom geometry;
+    private final S2SpatialResolution productResolution;
 
-    public L1cMetadata.Tile.idGeom getGeometry() {
-        return geometry;
+    public S2SpatialResolution getProductResolution() {
+        return productResolution;
     }
 
     private static class TileInfo {
@@ -73,9 +74,7 @@ public class L1cSceneDescription extends S2SceneDescription {
         }
     }
 
-    public static L1cSceneDescription create(L1cMetadata header, L1cMetadata.Tile.idGeom index, S2Config config) {
-        // TODO update for single UTM zones
-        // TODO update
+    public static L1cSceneDescription create(L1cMetadata header, S2SpatialResolution productResolution, S2Config config) {
         List<L1cMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
@@ -96,7 +95,7 @@ public class L1cSceneDescription extends S2SceneDescription {
                 }
             }
 
-            L1cMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
+            L1cMetadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
             Envelope2D envelope = new Envelope2D(crs,
                                                  selectedGeometry.upperLeftX,
                                                  selectedGeometry.upperLeftY + selectedGeometry.numRows * selectedGeometry.yDim,
@@ -120,7 +119,7 @@ public class L1cSceneDescription extends S2SceneDescription {
         Rectangle sceneBounds = null;
         for (int i = 0; i < tileEnvelopes.length; i++) {
             L1cMetadata.Tile tile = tileList.get(i);
-            L1cMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
+            L1cMetadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
             Envelope2D tileEnvelope = tileEnvelopes[i];
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
@@ -136,21 +135,21 @@ public class L1cSceneDescription extends S2SceneDescription {
             tileInfos[i] = new TileInfo(i, tile.id, tileEnvelope, rectangle);
         }
 
-        return new L1cSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index, config);
+        return new L1cSceneDescription(tileInfos, sceneEnvelope, sceneBounds, productResolution, config);
     }
 
     private L1cSceneDescription(TileInfo[] tileInfos,
                                 Envelope2D sceneEnvelope,
                                 Rectangle sceneRectangle,
-                                L1cMetadata.Tile.idGeom geometry,
+                                S2SpatialResolution productResolution,
                                 S2Config config) {
         super(config);
 
         this.tileInfos = tileInfos;
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;
-        this.geometry = geometry;
-        this.tileInfoMap = new HashMap<String, TileInfo>();
+        this.productResolution = productResolution;
+        this.tileInfoMap = new HashMap<>();
         for (TileInfo tileInfo : tileInfos) {
             tileInfoMap.put(tileInfo.id, tileInfo);
         }
