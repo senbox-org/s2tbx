@@ -65,6 +65,9 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -806,7 +809,22 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
     @Override
     protected String[] getBandNames(int resolution) {
-
         return null;
+    }
+
+    @Override
+    protected DirectoryStream<Path> getImageDirectories(Path pathToImages, int resolution) throws IOException {
+        String resolutionFolder = "R" + Integer.toString(resolution) + "m";
+
+        return Files.newDirectoryStream(pathToImages, entry -> {
+            Path pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
+
+            if (Files.exists(pathToImagesOfResolution)) {
+                if (entry.toString().endsWith(".jp2")) {
+                    return true;
+                }
+            }
+            return false;
+        });
     }
 }

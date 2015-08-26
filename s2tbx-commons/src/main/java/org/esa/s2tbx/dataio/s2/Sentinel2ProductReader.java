@@ -164,21 +164,9 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
         Path pathToImages = granuleMetadataPath.resolve("IMG_DATA");
 
-        String[] bandNames = getBandNames(resolution);
-
         try {
-            DirectoryStream<Path> imageFilesStream = Files.newDirectoryStream(pathToImages, entry -> {
-                if(bandNames != null) {
-                    for (String bandName : bandNames) {
-                        if (entry.toString().endsWith(bandName + ".jp2")) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            });
 
-            for (Path imageFilePath : imageFilesStream) {
+            for (Path imageFilePath : getImageDirectories(pathToImages, resolution)) {
                 try {
                     tileLayoutForResolution =
                             CodeStreamUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath.toUri());
@@ -217,4 +205,28 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
      * @return then band names or {@code null} if not applicable.
      */
     protected abstract String[] getBandNames(int resolution);
-}
+
+    /**
+     *  get an iterator to image files in pathToImages containing files for the given resolution
+     *
+     *  This method is based on band names, if resolution can't be based on band names or if image files are not in
+     *  pathToImages (like for L2A products), this method has to be overriden
+     *
+     * @param pathToImages the path to the directory containing the images
+     * @param resolution the resolution for which we want to get images
+     * @return a {@link DirectoryStream<Path>}, iterator on the list of image path
+     * @throws IOException if an I/O error occurs
+     */
+    protected DirectoryStream<Path> getImageDirectories(Path pathToImages, int resolution) throws IOException {
+        return Files.newDirectoryStream(pathToImages, entry -> {
+            String[] bandNames = getBandNames(resolution);
+            if (bandNames != null) {
+                for (String bandName : bandNames) {
+                    if (entry.toString().endsWith(bandName + ".jp2")) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+    }}

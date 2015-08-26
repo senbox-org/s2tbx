@@ -19,7 +19,6 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
-import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
@@ -168,8 +167,11 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         }
 
         // update the tile layout
-        updateTileLayout(metadataFile.toPath(), isAGranule, productResolution);
-
+        if(isMultiResolution) {
+            updateTileLayout(metadataFile.toPath(), isAGranule, -1);
+        } else {
+            updateTileLayout(metadataFile.toPath(), isAGranule, productResolution);
+        }
 
         String filterTileId = null;
         File rootMetaDataFile = null;
