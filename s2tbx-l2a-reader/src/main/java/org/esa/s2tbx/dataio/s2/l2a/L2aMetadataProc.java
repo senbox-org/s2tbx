@@ -142,9 +142,9 @@ public class L2aMetadataProc extends S2MetadataProc {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
         L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
-        characteristics.spacecraft = product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME();
-        characteristics.datasetProductionDate = product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString();
-        characteristics.processingLevel = product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value();
+        characteristics.setSpacecraft(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME());
+        characteristics.setDatasetProductionDate(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString());
+        characteristics.setProcessingLevel(product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value());
 
         List<S2SpectralInformation> aInfo = new ArrayList<>();
 
@@ -163,7 +163,7 @@ public class L2aMetadataProc extends S2MetadataProc {
         aInfo.add(new S2SpectralInformation("B12",12,20, 2035, 2311, 2190));
 
         int size = aInfo.size();
-        characteristics.bandInformations = aInfo.toArray(new S2SpectralInformation[size]);
+        characteristics.setBandInformations(aInfo.toArray(new S2SpectralInformation[size]));
 
         return characteristics;
     }
@@ -238,18 +238,18 @@ public class L2aMetadataProc extends S2MetadataProc {
         for (A_TILE_DESCRIPTION.Geoposition gpos : poss) {
             int index = gpos.getResolution();
             L2aMetadata.TileGeometry tgeox = new L2aMetadata.TileGeometry();
-            tgeox.upperLeftX = gpos.getULX();
-            tgeox.upperLeftY = gpos.getULY();
-            tgeox.xDim = gpos.getXDIM();
-            tgeox.yDim = gpos.getYDIM();
+            tgeox.setUpperLeftX(gpos.getULX());
+            tgeox.setUpperLeftY(gpos.getULY());
+            tgeox.setxDim(gpos.getXDIM());
+            tgeox.setyDim(gpos.getYDIM());
             resolutions.put(index, tgeox);
         }
 
         for (A_TILE_DESCRIPTION.Size asize : sizz) {
             int index = asize.getResolution();
             L2aMetadata.TileGeometry tgeox = resolutions.get(index);
-            tgeox.numCols = asize.getNCOLS();
-            tgeox.numRows = asize.getNROWS();
+            tgeox.setNumCols(asize.getNCOLS());
+            tgeox.setNumRows(asize.getNROWS());
         }
 
         return resolutions;
@@ -268,20 +268,20 @@ public class L2aMetadataProc extends S2MetadataProc {
         int zencolumns = sun.getZenith().getValues_List().getVALUES().size();
 
         L2aMetadata.AnglesGrid ag = new L2aMetadata.AnglesGrid();
-        ag.azimuth = new float[azrows][azcolumns];
-        ag.zenith = new float[zenrows][zencolumns];
+        ag.setAzimuth(new float[azrows][azcolumns]);
+        ag.setZenith(new float[zenrows][zencolumns]);
 
         for (int rowindex = 0; rowindex < azrows; rowindex++) {
             List<Float> azimuths = sun.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
             for (int colindex = 0; colindex < azcolumns; colindex++) {
-                ag.azimuth[rowindex][colindex] = azimuths.get(colindex);
+                ag.getAzimuth()[rowindex][colindex] = azimuths.get(colindex);
             }
         }
 
         for (int rowindex = 0; rowindex < zenrows; rowindex++) {
             List<Float> zeniths = sun.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
             for (int colindex = 0; colindex < zencolumns; colindex++) {
-                ag.zenith[rowindex][colindex] = zeniths.get(colindex);
+                ag.getZenith()[rowindex][colindex] = zeniths.get(colindex);
             }
         }
 
@@ -304,25 +304,25 @@ public class L2aMetadataProc extends S2MetadataProc {
 
 
             L2aMetadata.AnglesGrid ag2 = new L2aMetadata.AnglesGrid();
-            ag2.azimuth = new float[azrows2][azcolumns2];
-            ag2.zenith = new float[zenrows2][zencolumns2];
+            ag2.setAzimuth(new float[azrows2][azcolumns2]);
+            ag2.setZenith(new float[zenrows2][zencolumns2]);
 
             for (int rowindex = 0; rowindex < azrows2; rowindex++) {
                 List<Float> azimuths = angleGrid.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
                 for (int colindex = 0; colindex < azcolumns2; colindex++) {
-                    ag2.azimuth[rowindex][colindex] = azimuths.get(colindex);
+                    ag2.getAzimuth()[rowindex][colindex] = azimuths.get(colindex);
                 }
             }
 
             for (int rowindex = 0; rowindex < zenrows2; rowindex++) {
                 List<Float> zeniths = angleGrid.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
                 for (int colindex = 0; colindex < zencolumns2; colindex++) {
-                    ag2.zenith[rowindex][colindex] = zeniths.get(colindex);
+                    ag2.getZenith()[rowindex][colindex] = zeniths.get(colindex);
                 }
             }
 
-            ag2.bandId = Integer.parseInt(angleGrid.getBandId());
-            ag2.detectorId = Integer.parseInt(angleGrid.getDetectorId());
+            ag2.setBandId(Integer.parseInt(angleGrid.getBandId()));
+            ag2.setDetectorId(Integer.parseInt(angleGrid.getDetectorId()));
             darr[index] = ag2;
         }
 

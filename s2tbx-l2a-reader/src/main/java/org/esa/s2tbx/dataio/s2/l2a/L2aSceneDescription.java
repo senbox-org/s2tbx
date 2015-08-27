@@ -23,19 +23,14 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.util.SystemUtils;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,11 +44,6 @@ public class L2aSceneDescription extends S2SceneDescription {
     private final Envelope2D sceneEnvelope;
     private final Rectangle sceneRectangle;
     private final Map<String, TileInfo> tileInfoMap;
-    private final L2aMetadata.Tile.idGeom geometry;
-
-    public L2aMetadata.Tile.idGeom getGeometry() {
-        return geometry;
-    }
 
     private static class TileInfo {
         private final int index;
@@ -71,7 +61,7 @@ public class L2aSceneDescription extends S2SceneDescription {
         }
     }
 
-    public static L2aSceneDescription create(L2aMetadata header, L2aMetadata.Tile.idGeom index, S2Config config) {
+    public static L2aSceneDescription create(L2aMetadata header, S2SpatialResolution productResolution, S2Config config) {
         List<L2aMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
@@ -85,19 +75,19 @@ public class L2aSceneDescription extends S2SceneDescription {
             L2aMetadata.Tile tile = tileList.get(i);
             if (crs == null) {
                 try {
-                    crs = CRS.decode(tile.horizontalCsCode);
+                    crs = CRS.decode(tile.getHorizontalCsCode());
                     SystemUtils.LOG.fine("crs = " + crs);
                 } catch (FactoryException e) {
-                    SystemUtils.LOG.severe("Unknown CRS: " + tile.horizontalCsCode);
+                    SystemUtils.LOG.severe("Unknown CRS: " + tile.getHorizontalCsCode());
                 }
             }
 
-            L2aMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
+            L2aMetadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
             Envelope2D envelope = new Envelope2D(crs,
-                                                 selectedGeometry.upperLeftX,
-                                                 selectedGeometry.upperLeftY + selectedGeometry.numRows * selectedGeometry.yDim,
-                                                 selectedGeometry.numCols * selectedGeometry.xDim,
-                                                 -selectedGeometry.numRows * selectedGeometry.yDim);
+                                                 selectedGeometry.getUpperLeftX(),
+                                                 selectedGeometry.getUpperLeftY() + selectedGeometry.getNumRows() * selectedGeometry.getyDim(),
+                                                 selectedGeometry.getNumCols() * selectedGeometry.getxDim(),
+                                                 -selectedGeometry.getNumRows() * selectedGeometry.getyDim());
             tileEnvelopes[i] = envelope;
 
             if (sceneEnvelope == null) {
@@ -105,7 +95,7 @@ public class L2aSceneDescription extends S2SceneDescription {
             } else {
                 sceneEnvelope.add(envelope);
             }
-            tileInfos[i] = new TileInfo(i, tile.id, new Rectangle());
+            tileInfos[i] = new TileInfo(i, tile.getId(), new Rectangle());
         }
 
         if (sceneEnvelope == null) {
@@ -116,36 +106,33 @@ public class L2aSceneDescription extends S2SceneDescription {
         Rectangle sceneBounds = null;
         for (int i = 0; i < tileEnvelopes.length; i++) {
             L2aMetadata.Tile tile = tileList.get(i);
-            L2aMetadata.TileGeometry selectedGeometry = tile.getGeometry(index);
+            L2aMetadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
             Envelope2D tileEnvelope = tileEnvelopes[i];
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
-            Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.xDim),
-                                                (int) ((imageY - tileY) / -selectedGeometry.yDim),
-                                                selectedGeometry.numCols,
-                                                selectedGeometry.numRows);
+            Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.getxDim()),
+                                                (int) ((imageY - tileY) / -selectedGeometry.getyDim()),
+                                                selectedGeometry.getNumCols(),
+                                                selectedGeometry.getNumRows());
             if (sceneBounds == null) {
                 sceneBounds = new Rectangle(rectangle);
             } else {
                 sceneBounds.add(rectangle);
             }
-            tileInfos[i] = new TileInfo(i, tile.id, rectangle);
+            tileInfos[i] = new TileInfo(i, tile.getId(), rectangle);
         }
 
-        return new L2aSceneDescription(tileInfos, sceneEnvelope, sceneBounds, index, config);
+        return new L2aSceneDescription(tileInfos, sceneEnvelope, sceneBounds);
     }
 
     private L2aSceneDescription(TileInfo[] tileInfos,
                                 Envelope2D sceneEnvelope,
-                                Rectangle sceneRectangle,
-                                L2aMetadata.Tile.idGeom geometry,
-                                S2Config config) {
-        super(config);
+                                Rectangle sceneRectangle) {
+        super();
 
         this.tileInfos = tileInfos;
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;
-        this.geometry = geometry;
         this.tileInfoMap = new HashMap<>();
         for (TileInfo tileInfo : tileInfos) {
             tileInfoMap.put(tileInfo.id, tileInfo);

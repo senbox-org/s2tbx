@@ -72,22 +72,25 @@ public class S2Config {
 
     private TileLayout[] tileLayouts = new TileLayout[3];
 
+
     /**
      * returns the TileLayout for a given resolution. If no TileLayout was set for the resolution
      * returns the default tile layout
      *
-     * @param resolution the resolution for which we want the tile layout
+     * @param spatialResolution the resolution for which we want the tile layout
      * @return the tile layout at the given resolution
      */
-    public TileLayout getTileLayout(int resolution){
+    public TileLayout getTileLayout(S2SpatialResolution spatialResolution) {
+
+
         TileLayout tileLayoutForResolution;
-        int tileIndex = LAYOUTMAP.get(resolution);
+        int tileIndex = spatialResolution.id;
         tileLayoutForResolution = tileLayouts[tileIndex];
 
         if(tileLayoutForResolution == null) {
             TileLayout nonNullTileLayout = null;
             int resolutionForNonNullTileLayout = 0;
-            if(resolution == S2SpatialResolution.R10M.resolution) {
+            if(spatialResolution == S2SpatialResolution.R10M) {
                 if(tileLayouts[S2SpatialResolution.R20M.id] != null) {
                     nonNullTileLayout = tileLayouts[S2SpatialResolution.R20M.id];
                     resolutionForNonNullTileLayout = S2SpatialResolution.R20M.resolution;
@@ -97,7 +100,7 @@ public class S2Config {
                 }
 
                 if(nonNullTileLayout != null) {
-                    float factor = resolutionForNonNullTileLayout / resolution;
+                    float factor = resolutionForNonNullTileLayout / spatialResolution.resolution;
                     int width = Math.round(nonNullTileLayout.width * factor);
                     int height = Math.round(nonNullTileLayout.height * factor);
                     int tileWidth = Math.round(nonNullTileLayout.tileWidth * factor);
@@ -114,9 +117,27 @@ public class S2Config {
         return tileLayoutForResolution;
     }
 
-    public void updateTileLayout(int resolution, TileLayout tileLayout) {
-        int tileIndex = LAYOUTMAP.get(resolution);
-        tileLayouts[tileIndex] = tileLayout;
+
+    /**
+     * returns the TileLayout for a given resolution. If no TileLayout was set for the resolution
+     * returns the default tile layout
+     *
+     * @param resolution the resolution for which we want the tile layout
+     * @return the tile layout at the given resolution
+     */
+    public TileLayout getTileLayout(int resolution) {
+        return getTileLayout(S2SpatialResolution.valueOfResolution(resolution));
+    }
+
+
+    /**
+     * Update the tile layout for the resolution. The existing tile layout is replaced
+     *
+     * @param resolution the resolution for which we want to replace the tile layout
+     * @param tileLayout the new tile layout
+     */
+    public void updateTileLayout(S2SpatialResolution resolution, TileLayout tileLayout) {
+        tileLayouts[resolution.id] = tileLayout;
     }
 
     /**

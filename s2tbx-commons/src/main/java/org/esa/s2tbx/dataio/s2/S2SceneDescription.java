@@ -23,15 +23,7 @@ package org.esa.s2tbx.dataio.s2;
  */
 public abstract class S2SceneDescription {
 
-    private final double tileResolution10M;
 
-    public S2SceneDescription(S2Config config) {
-        int tileSize10M = config.getTileLayout(S2SpatialResolution.R10M.resolution).width;
-        int pixelResolution10M = S2SpatialResolution.R10M.resolution;
-        tileResolution10M = pixelResolution10M * tileSize10M;
-    }
-
-    public double getTileResolution10M() {
-        return tileResolution10M;
+    public S2SceneDescription() {
     }
 }

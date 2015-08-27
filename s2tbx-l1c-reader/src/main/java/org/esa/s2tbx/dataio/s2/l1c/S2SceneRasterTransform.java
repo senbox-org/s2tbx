@@ -22,7 +22,7 @@ import org.esa.snap.framework.datamodel.SceneRasterTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 
 /**
- * Created by opicas-p on 06/05/2015.
+ * @author Oscar Picas-Puig
  */
 public class S2SceneRasterTransform implements SceneRasterTransform {
     private final MathTransform2D forward;

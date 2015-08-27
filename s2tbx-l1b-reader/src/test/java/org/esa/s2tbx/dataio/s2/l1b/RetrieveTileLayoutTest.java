@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
 import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -38,9 +39,9 @@ public class RetrieveTileLayoutTest {
     public void testRetrieveLayoutForL1B10m() {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
 
-        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, false, 10);
+        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, false, S2SpatialResolution.R10M);
 
-        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, 10);
+        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, S2SpatialResolution.R10M);
 
         TileLayout realTileLayout = new TileLayout(2552, 18432, 2592, 2304, 1, 8, 5);
 
@@ -53,8 +54,8 @@ public class RetrieveTileLayoutTest {
     public void testRetrieveLayoutForL1B20m() {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
 
-        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, false, 20);
-        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, 20);
+        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, false, S2SpatialResolution.R20M);
+        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, S2SpatialResolution.R20M);
 
         TileLayout realTileLayout = new TileLayout(1276, 9216, 1296, 1152, 1, 8, 5);
 
@@ -67,8 +68,8 @@ public class RetrieveTileLayoutTest {
     public void testRetrieveLayoutForL1B60m() {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
 
-        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, false, 60);
-        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, 60);
+        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, false, S2SpatialResolution.R60M);
+        TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, S2SpatialResolution.R60M);
 
         TileLayout realTileLayout =  new TileLayout(1276, 3072, 1296, 384, 1, 8, 5);
 

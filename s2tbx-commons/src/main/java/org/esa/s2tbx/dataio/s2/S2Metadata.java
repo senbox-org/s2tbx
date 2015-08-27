@@ -19,6 +19,9 @@
 package org.esa.s2tbx.dataio.s2;
 
 
+import com.vividsolutions.jts.geom.Coordinate;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.apache.commons.io.IOUtils;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
@@ -31,6 +34,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -47,20 +51,454 @@ import java.util.Set;
  */
 public abstract class S2Metadata {
 
-    private TileLayout[] tileLayouts;
+    public static class Tile {
+        private String id;
+        private String detectorId;
+        private String horizontalCsName;
+        private String horizontalCsCode;
+        private TileGeometry tileGeometry10M;
+        private TileGeometry tileGeometry20M;
+        private TileGeometry tileGeometry60M;
+        private AnglesGrid sunAnglesGrid;
+        private AnglesGrid[] viewingIncidenceAnglesGrids;
+        private MaskFilename[] maskFilenames;
+        public List<Coordinate> corners;
+
+
+        public Tile(String id) {
+            this.id = id;
+            tileGeometry10M = new TileGeometry();
+            tileGeometry20M = new TileGeometry();
+            tileGeometry60M = new TileGeometry();
+        }
+
+        public Tile(String id, String detectorId) {
+            this.id = id;
+            this.detectorId = detectorId;
+            tileGeometry10M = new TileGeometry();
+            tileGeometry20M = new TileGeometry();
+            tileGeometry60M = new TileGeometry();
+        }
+
+        public TileGeometry getGeometry(S2SpatialResolution spacialResolution) {
+            switch (spacialResolution.resolution) {
+                case 10:
+                    return tileGeometry10M;
+                case 20:
+                    return tileGeometry20M;
+                case 60:
+                    return tileGeometry60M;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getHorizontalCsName() {
+            return horizontalCsName;
+        }
+
+        public void setHorizontalCsName(String horizontalCsName) {
+            this.horizontalCsName = horizontalCsName;
+        }
+
+        public String getHorizontalCsCode() {
+            return horizontalCsCode;
+        }
+
+        public void setHorizontalCsCode(String horizontalCsCode) {
+            this.horizontalCsCode = horizontalCsCode;
+        }
+
+        public TileGeometry getTileGeometry10M() {
+            return tileGeometry10M;
+        }
+
+        public void setTileGeometry10M(TileGeometry tileGeometry10M) {
+            this.tileGeometry10M = tileGeometry10M;
+        }
+
+        public TileGeometry getTileGeometry20M() {
+            return tileGeometry20M;
+        }
+
+        public void setTileGeometry20M(TileGeometry tileGeometry20M) {
+            this.tileGeometry20M = tileGeometry20M;
+        }
+
+        public TileGeometry getTileGeometry60M() {
+            return tileGeometry60M;
+        }
+
+        public void setTileGeometry60M(TileGeometry tileGeometry60M) {
+            this.tileGeometry60M = tileGeometry60M;
+        }
+
+        public AnglesGrid getSunAnglesGrid() {
+            return sunAnglesGrid;
+        }
+
+        public void setSunAnglesGrid(AnglesGrid sunAnglesGrid) {
+            this.sunAnglesGrid = sunAnglesGrid;
+        }
+
+        public AnglesGrid[] getViewingIncidenceAnglesGrids() {
+            return viewingIncidenceAnglesGrids;
+        }
+
+        public void setViewingIncidenceAnglesGrids(AnglesGrid[] viewingIncidenceAnglesGrids) {
+            this.viewingIncidenceAnglesGrids = viewingIncidenceAnglesGrids;
+        }
+
+        public String getDetectorId() {
+            return detectorId;
+        }
+
+        public void setDetectorId(String detectorId) {
+            this.detectorId = detectorId;
+        }
+
+        public MaskFilename[] getMaskFilenames() {
+            return maskFilenames;
+        }
+
+        public void setMaskFilenames(MaskFilename[] maskFilenames) {
+            this.maskFilenames = maskFilenames;
+        }
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+    }
+
+    public static class MaskFilename
+    {
+        String bandId;
+        String type;
+        File name;
+
+        public MaskFilename(String bandId, String type, File name) {
+            this.bandId = bandId;
+            this.type = type;
+            this.name = name;
+        }
+
+        public String getBandId() {
+            return bandId;
+        }
+
+        public void setBandId(String bandId) {
+            this.bandId = bandId;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public File getName() {
+            return name;
+        }
+
+        public void setName(File name) {
+            this.name = name;
+        }
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+    }
+
+
+    public static class AnglesGrid {
+        private int bandId;
+        private int detectorId;
+        private float[][] zenith;
+        private float[][] azimuth;
+
+        public int getBandId() {
+            return bandId;
+        }
+
+        public void setBandId(int bandId) {
+            this.bandId = bandId;
+        }
+
+        public int getDetectorId() {
+            return detectorId;
+        }
+
+        public void setDetectorId(int detectorId) {
+            this.detectorId = detectorId;
+        }
+
+        public float[][] getZenith() {
+            return zenith;
+        }
+
+        public void setZenith(float[][] zenith) {
+            this.zenith = zenith;
+        }
+
+        public float[][] getAzimuth() {
+            return azimuth;
+        }
+
+        public void setAzimuth(float[][] azimuth) {
+            this.azimuth = azimuth;
+        }
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+    }
+
+    public static class TileGeometry {
+        private int numRows;
+        private int numCols;
+        private double upperLeftX;
+        private double upperLeftY;
+        private double xDim;
+        private double yDim;
+        private String detector;
+        private Integer position;
+        private int resolution;
+        private int numRowsDetector;
+
+        public int getNumRows() {
+            return numRows;
+        }
+
+        public void setNumRows(int numRows) {
+            this.numRows = numRows;
+        }
+
+        public int getNumCols() {
+            return numCols;
+        }
+
+        public void setNumCols(int numCols) {
+            this.numCols = numCols;
+        }
+
+        public double getUpperLeftX() {
+            return upperLeftX;
+        }
+
+        public void setUpperLeftX(double upperLeftX) {
+            this.upperLeftX = upperLeftX;
+        }
+
+        public double getUpperLeftY() {
+            return upperLeftY;
+        }
+
+        public void setUpperLeftY(double upperLeftY) {
+            this.upperLeftY = upperLeftY;
+        }
+
+        public double getxDim() {
+            return xDim;
+        }
+
+        public void setxDim(double xDim) {
+            this.xDim = xDim;
+        }
+
+        public double getyDim() {
+            return yDim;
+        }
+
+        public void setyDim(double yDim) {
+            this.yDim = yDim;
+        }
+
+        public String getDetector() {
+            return detector;
+        }
+
+        public void setDetector(String detector) {
+            this.detector = detector;
+        }
+
+        public Integer getPosition() {
+            return position;
+        }
+
+        public void setPosition(Integer position) {
+            this.position = position;
+        }
+
+        public int getResolution() {
+            return resolution;
+        }
+
+        public void setResolution(int resolution) {
+            this.resolution = resolution;
+        }
+
+        public int getNumRowsDetector() {
+            return numRowsDetector;
+        }
+
+        public void setNumRowsDetector(int numRowsDetector) {
+            this.numRowsDetector = numRowsDetector;
+        }
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+    }
+
+    public static class ProductCharacteristics {
+        private String spacecraft;
+        private String datasetProductionDate;
+        private String processingLevel;
+        private S2SpectralInformation[] bandInformations;
+        private String metaDataLevel;
+
+        public String getSpacecraft() {
+            return spacecraft;
+        }
+
+        public void setSpacecraft(String spacecraft) {
+            this.spacecraft = spacecraft;
+        }
+
+        public String getDatasetProductionDate() {
+            return datasetProductionDate;
+        }
+
+        public void setDatasetProductionDate(String datasetProductionDate) {
+            this.datasetProductionDate = datasetProductionDate;
+        }
+
+        public String getProcessingLevel() {
+            return processingLevel;
+        }
+
+        public void setProcessingLevel(String processingLevel) {
+            this.processingLevel = processingLevel;
+        }
+
+        public S2SpectralInformation[] getBandInformations() {
+            return bandInformations;
+        }
+
+        public void setBandInformations(S2SpectralInformation[] bandInformations) {
+            this.bandInformations = bandInformations;
+        }
+
+        public String getMetaDataLevel() {
+            return metaDataLevel;
+        }
+
+        public void setMetaDataLevel(String metaDataLevel) {
+            this.metaDataLevel = metaDataLevel;
+        }
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+
+
+    }
+
+
+    public static class Histogram {
+        public int bandId;
+        int[] values;
+        int step;
+        double min;
+        double max;
+        double mean;
+        double stdDev;
+
+        public int getBandId() {
+            return bandId;
+        }
+
+        public void setBandId(int bandId) {
+            this.bandId = bandId;
+        }
+
+        public int[] getValues() {
+            return values;
+        }
+
+        public void setValues(int[] values) {
+            this.values = values;
+        }
+
+        public int getStep() {
+            return step;
+        }
+
+        public void setStep(int step) {
+            this.step = step;
+        }
+
+        public double getMin() {
+            return min;
+        }
+
+        public void setMin(double min) {
+            this.min = min;
+        }
+
+        public double getMax() {
+            return max;
+        }
+
+        public void setMax(double max) {
+            this.max = max;
+        }
+
+        public double getMean() {
+            return mean;
+        }
+
+        public void setMean(double mean) {
+            this.mean = mean;
+        }
+
+        public double getStdDev() {
+            return stdDev;
+        }
+
+        public void setStdDev(double stdDev) {
+            this.stdDev = stdDev;
+        }
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+    }
+
+    private S2Config config;
 
     private Unmarshaller unmarshaller;
 
     private String psdString;
 
-    public S2Metadata(TileLayout[] tileLayouts, JAXBContext context, String psdString) throws JAXBException {
-        this.tileLayouts = tileLayouts;
+    public S2Metadata(S2Config config, JAXBContext context, String psdString) throws JAXBException {
+        this.config = config;
         this.unmarshaller = context.createUnmarshaller();
         this.psdString = psdString;
     }
 
-    public TileLayout[] getTileLayouts() {
-        return tileLayouts;
+    public S2Config getConfig() {
+        return config;
     }
 
 

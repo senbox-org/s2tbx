@@ -21,7 +21,6 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.util.SystemUtils;
@@ -30,12 +29,7 @@ import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
@@ -50,22 +44,15 @@ public class L1cSceneDescription extends S2SceneDescription {
     private final Envelope2D sceneEnvelope;
     private final Rectangle sceneRectangle;
     private final Map<String, TileInfo> tileInfoMap;
-    private final S2SpatialResolution productResolution;
-
-    public S2SpatialResolution getProductResolution() {
-        return productResolution;
-    }
 
     private static class TileInfo {
         private final int index;
         private final String id;
-        private final Envelope2D envelope;
         private final Rectangle rectangle;
 
-        public TileInfo(int index, String id, Envelope2D envelope, Rectangle rectangle) {
+        public TileInfo(int index, String id, Rectangle rectangle) {
             this.index = index;
             this.id = id;
-            this.envelope = envelope;
             this.rectangle = rectangle;
         }
 
@@ -74,7 +61,7 @@ public class L1cSceneDescription extends S2SceneDescription {
         }
     }
 
-    public static L1cSceneDescription create(L1cMetadata header, S2SpatialResolution productResolution, S2Config config) {
+    public static L1cSceneDescription create(L1cMetadata header, S2SpatialResolution productResolution) {
         List<L1cMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
@@ -88,19 +75,19 @@ public class L1cSceneDescription extends S2SceneDescription {
             L1cMetadata.Tile tile = tileList.get(i);
             if (crs == null) {
                 try {
-                    crs = CRS.decode(tile.horizontalCsCode);
+                    crs = CRS.decode(tile.getHorizontalCsCode());
                     SystemUtils.LOG.fine("crs = " + crs);
                 } catch (FactoryException e) {
-                    SystemUtils.LOG.severe("Unknown CRS: " + tile.horizontalCsCode);
+                    SystemUtils.LOG.severe("Unknown CRS: " + tile.getHorizontalCsCode());
                 }
             }
 
             L1cMetadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
             Envelope2D envelope = new Envelope2D(crs,
-                                                 selectedGeometry.upperLeftX,
-                                                 selectedGeometry.upperLeftY + selectedGeometry.numRows * selectedGeometry.yDim,
-                                                 selectedGeometry.numCols * selectedGeometry.xDim,
-                                                 -selectedGeometry.numRows * selectedGeometry.yDim);
+                                                 selectedGeometry.getUpperLeftX(),
+                                                 selectedGeometry.getUpperLeftY() + selectedGeometry.getNumRows() * selectedGeometry.getyDim(),
+                                                 selectedGeometry.getNumCols() * selectedGeometry.getxDim(),
+                                                 -selectedGeometry.getNumRows() * selectedGeometry.getyDim());
             tileEnvelopes[i] = envelope;
 
             if (sceneEnvelope == null) {
@@ -108,7 +95,7 @@ public class L1cSceneDescription extends S2SceneDescription {
             } else {
                 sceneEnvelope.add(envelope);
             }
-            tileInfos[i] = new TileInfo(i, tile.id, envelope, new Rectangle());
+            tileInfos[i] = new TileInfo(i, tile.getId(), new Rectangle());
         }
 
         if (sceneEnvelope == null) {
@@ -123,32 +110,29 @@ public class L1cSceneDescription extends S2SceneDescription {
             Envelope2D tileEnvelope = tileEnvelopes[i];
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
-            Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.xDim),
-                                                (int) ((imageY - tileY) / -selectedGeometry.yDim),
-                                                selectedGeometry.numCols,
-                                                selectedGeometry.numRows);
+            Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.getxDim()),
+                                                (int) ((imageY - tileY) / -selectedGeometry.getyDim()),
+                                                selectedGeometry.getNumCols(),
+                                                selectedGeometry.getNumRows());
             if (sceneBounds == null) {
                 sceneBounds = new Rectangle(rectangle);
             } else {
                 sceneBounds.add(rectangle);
             }
-            tileInfos[i] = new TileInfo(i, tile.id, tileEnvelope, rectangle);
+            tileInfos[i] = new TileInfo(i, tile.getId(), rectangle);
         }
 
-        return new L1cSceneDescription(tileInfos, sceneEnvelope, sceneBounds, productResolution, config);
+        return new L1cSceneDescription(tileInfos, sceneEnvelope, sceneBounds);
     }
 
     private L1cSceneDescription(TileInfo[] tileInfos,
                                 Envelope2D sceneEnvelope,
-                                Rectangle sceneRectangle,
-                                S2SpatialResolution productResolution,
-                                S2Config config) {
-        super(config);
+                                Rectangle sceneRectangle) {
+        super();
 
         this.tileInfos = tileInfos;
         this.sceneEnvelope = sceneEnvelope;
         this.sceneRectangle = sceneRectangle;
-        this.productResolution = productResolution;
         this.tileInfoMap = new HashMap<>();
         for (TileInfo tileInfo : tileInfos) {
             tileInfoMap.put(tileInfo.id, tileInfo);
@@ -163,10 +147,6 @@ public class L1cSceneDescription extends S2SceneDescription {
         return sceneEnvelope;
     }
 
-    public int getTileCount() {
-        return tileInfos.length;
-    }
-
     public String[] getTileIds() {
         final String[] tileIds = new String[tileInfos.length];
         for (int i = 0; i < tileInfos.length; i++) {
@@ -178,14 +158,6 @@ public class L1cSceneDescription extends S2SceneDescription {
     public int getTileIndex(String tileId) {
         TileInfo tileInfo = tileInfoMap.get(tileId);
         return tileInfo != null ? tileInfo.index : -1;
-    }
-
-    public String getTileId(int tileIndex) {
-        return tileInfos[tileIndex].id;
-    }
-
-    public Envelope2D getTileEnvelope(int tileIndex) {
-        return tileInfos[tileIndex].envelope;
     }
 
     public Rectangle getTileRectangle(int tileIndex) {

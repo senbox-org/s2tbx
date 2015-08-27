@@ -21,10 +21,8 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
-import org.esa.s2tbx.dataio.jp2.AEmptyListener;
-import org.esa.s2tbx.dataio.jp2.CodeStreamUtils;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2TileOpImage;
@@ -66,7 +64,7 @@ class L2aTileOpImage extends S2TileOpImage {
                               File cacheDir,
                               Point imagePos,
                               TileLayout l2aTileLayout,
-                              TileLayout[] tileLayouts,
+                              S2Config config,
                               MultiLevelModel imageModel,
                               S2SpatialResolution spatialResolution,
                               int level) {
@@ -83,9 +81,10 @@ class L2aTileOpImage extends S2TileOpImage {
         } else {
             org.esa.snap.util.SystemUtils.LOG.warning("Using empty image !");
 
-            int targetWidth = getSizeAtResolutionLevel(tileLayouts[0].width, level);
-            int targetHeight = getSizeAtResolutionLevel(tileLayouts[0].height, level);
-            Dimension targetTileDim = getTileDimAtResolutionLevel(tileLayouts[0].tileWidth, tileLayouts[0].tileHeight, level);
+            TileLayout tileLayout10m = config.getTileLayout(S2SpatialResolution.R10M);
+            int targetWidth = getSizeAtResolutionLevel(tileLayout10m.width, level);
+            int targetHeight = getSizeAtResolutionLevel(tileLayout10m.height, level);
+            Dimension targetTileDim = getTileDimAtResolutionLevel(tileLayout10m.tileWidth, tileLayout10m.tileHeight, level);
             SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
@@ -212,14 +211,6 @@ class L2aTileOpImage extends S2TileOpImage {
         }
 
         logger.fine("Processing file: " + imageFile.getName());
-
-        TileLayout myLayout = null;
-        try {
-            myLayout = CodeStreamUtils.getTileLayout(S2Config.OPJ_INFO_EXE, imageFile.toURI(), new AEmptyListener(), S2Config.NODUMP);
-        } catch (Exception iae) {
-            Arrays.fill(tileData, S2Config.FILL_CODE_MOSAIC_BG);
-            return;
-        }
 
         final File outputFile0 = getFirstComponentOutputFile(outputFile);
         // todo - outputFile0 may have already been created, although 'opj_decompress' has not finished execution.

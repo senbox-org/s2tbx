@@ -134,10 +134,6 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             return wavebandInfo;
         }
 
-        public TileLayout getImageLayout() {
-            return imageLayout;
-        }
-
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
@@ -168,9 +164,9 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
         // update the tile layout
         if(isMultiResolution) {
-            updateTileLayout(metadataFile.toPath(), isAGranule, -1);
+            updateTileLayout(metadataFile.toPath(), isAGranule, null);
         } else {
-            updateTileLayout(metadataFile.toPath(), isAGranule, productResolution.resolution);
+            updateTileLayout(metadataFile.toPath(), isAGranule, productResolution);
         }
 
         String filterTileId = null;
@@ -215,7 +211,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
 
         try {
-            metadataHeader = L1cMetadata.parseHeader(rootMetaDataFile, granuleDirName, getConfig().getTileLayouts(), epsgCode);
+            metadataHeader = L1cMetadata.parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
         } catch (JDOMException|JAXBException e) {
             throw new IOException("Failed to parse metadata in " + rootMetaDataFile.getName());
         }
@@ -223,8 +219,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
 
         L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader,
-                                                                          productResolution,
-                                                                          getConfig());
+                                                                          productResolution);
         logger.fine("Scene Description: " + sceneDescription);
 
         File productDir = getProductDir(rootMetaDataFile);
@@ -235,7 +230,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
         // set the product global geo-coding
         Product product = new Product(FileUtils.getFilenameWithoutExtension(rootMetaDataFile),
-                                      "S2_MSI_" + productCharacteristics.processingLevel,
+                                      "S2_MSI_" + productCharacteristics.getProcessingLevel(),
                                       sceneDescription.getSceneRectangle().width,
                                       sceneDescription.getSceneRectangle().height);
 
@@ -269,26 +264,26 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             // otherwise get the list of tiles for this UTM zone
             List<L1cMetadata.Tile> utmZoneTileList = metadataHeader.getTileList(utmZone);
             if (isAGranule) {
-                utmZoneTileList = utmZoneTileList.stream().filter(p -> p.id.equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+                utmZoneTileList = utmZoneTileList.stream().filter(p -> p.getId().equalsIgnoreCase(aFilter)).collect(Collectors.toList());
             }
             // for all bands of the UTM zone, store tiles files names
-            for (S2SpectralInformation bandInformation : productCharacteristics.bandInformations) {
+            for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
                 int bandIndex = bandInformation.getBandId();
-                if (bandIndex >= 0 && bandIndex < productCharacteristics.bandInformations.length) {
+                if (bandIndex >= 0 && bandIndex < productCharacteristics.getBandInformations().length) {
 
                     HashMap<String, File> tileFileMap = new HashMap<>();
                     for (L1cMetadata.Tile tile : utmZoneTileList) {
-                        S2L1CGranuleDirFilename gf = S2L1CGranuleDirFilename.create(tile.id);
+                        S2L1CGranuleDirFilename gf = S2L1CGranuleDirFilename.create(tile.getId());
                         if (gf != null) {
                             S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
 
-                            String imgFilename = "GRANULE" + File.separator + tile.id + File.separator + "IMG_DATA" + File.separator + imageFilename.name;
+                            String imgFilename = "GRANULE" + File.separator + tile.getId() + File.separator + "IMG_DATA" + File.separator + imageFilename.name;
 
                             logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
                             File file = new File(productDir, imgFilename);
                             if (file.exists()) {
-                                tileFileMap.put(tile.id, file);
+                                tileFileMap.put(tile.getId(), file);
                             } else {
                                 logger.warning(String.format("Warning: missing file %s\n", file));
                             }
@@ -320,7 +315,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             if(!polygons.isEmpty())
             {
                 // first collect all types
-                Set<String> polygonTypes = polygons.stream().map(p -> p.getType()).collect(Collectors.toSet());
+                Set<String> polygonTypes = polygons.stream().map(EopPolygon::getType).collect(Collectors.toSet());
                 for(String polygonType: polygonTypes)
                 {
                     polygonsByType.put(polygonType, polygons.stream().filter(p -> p.getType().equals(polygonType)).collect(Collectors.toList()) );
@@ -365,7 +360,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
         {
             for(L1cMetadata.Tile tile: utmZoneTileList)
             {
-                L1cMetadata.MaskFilename[] filenames = tile.maskFilenames;
+                L1cMetadata.MaskFilename[] filenames = tile.getMaskFilenames();
 
                 if(filenames != null) {
                     for (L1cMetadata.MaskFilename aMaskFile : filenames) {
@@ -377,7 +372,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                         if (!polys.getFirst().isEmpty()) {
                             int indexOfColons = polys.getFirst().indexOf(':');
                             if (indexOfColons != -1) {
-                                String realCsCode = tile.horizontalCsCode.substring(tile.horizontalCsCode.indexOf(':') + 1);
+                                String realCsCode = tile.getHorizontalCsCode().substring(tile.getHorizontalCsCode().indexOf(':') + 1);
                                 if (polys.getFirst().contains(realCsCode)) {
                                     polygons.addAll(polys.getSecond());
                                 } else {
@@ -493,37 +488,37 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
     private TiePointGrid[] createL1cTileTiePointGrids(L1cMetadata metadataHeader, int tileIndex) {
         TiePointGrid[] tiePointGrid = null;
         L1cMetadata.Tile tile = metadataHeader.getTileList().get(tileIndex);
-        L1cMetadata.AnglesGrid anglesGrid = tile.sunAnglesGrid;
+        L1cMetadata.AnglesGrid anglesGrid = tile.getSunAnglesGrid();
         if(anglesGrid != null) {
-            int gridHeight = tile.sunAnglesGrid.zenith.length;
-            int gridWidth = tile.sunAnglesGrid.zenith[0].length;
+            int gridHeight = tile.getSunAnglesGrid().getZenith().length;
+            int gridWidth = tile.getSunAnglesGrid().getZenith()[0].length;
             float[] sunZeniths = new float[gridWidth * gridHeight];
             float[] sunAzimuths = new float[gridWidth * gridHeight];
             float[] viewingZeniths = new float[gridWidth * gridHeight];
             float[] viewingAzimuths = new float[gridWidth * gridHeight];
             Arrays.fill(viewingZeniths, Float.NaN);
             Arrays.fill(viewingAzimuths, Float.NaN);
-            L1cMetadata.AnglesGrid sunAnglesGrid = tile.sunAnglesGrid;
-            L1cMetadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.viewingIncidenceAnglesGrids;
+            L1cMetadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
+            L1cMetadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.getViewingIncidenceAnglesGrids();
             for (int y = 0; y < gridHeight; y++) {
                 for (int x = 0; x < gridWidth; x++) {
                     final int index = y * gridWidth + x;
-                    sunZeniths[index] = sunAnglesGrid.zenith[y][x];
-                    sunAzimuths[index] = sunAnglesGrid.azimuth[y][x];
+                    sunZeniths[index] = sunAnglesGrid.getZenith()[y][x];
+                    sunAzimuths[index] = sunAnglesGrid.getAzimuth()[y][x];
                     for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
                         try {
-                            if (y < grid.zenith.length) {
-                                if (x < grid.zenith[y].length) {
-                                    if (!Float.isNaN(grid.zenith[y][x])) {
-                                        viewingZeniths[index] = grid.zenith[y][x];
+                            if (y < grid.getZenith().length) {
+                                if (x < grid.getZenith()[y].length) {
+                                    if (!Float.isNaN(grid.getZenith()[y][x])) {
+                                        viewingZeniths[index] = grid.getZenith()[y][x];
                                     }
                                 }
                             }
 
-                            if (y < grid.azimuth.length) {
-                                if (x < grid.azimuth[y].length) {
-                                    if (!Float.isNaN(grid.azimuth[y][x])) {
-                                        viewingAzimuths[index] = grid.azimuth[y][x];
+                            if (y < grid.getAzimuth().length) {
+                                if (x < grid.getAzimuth()[y].length) {
+                                    if (!Float.isNaN(grid.getAzimuth()[y][x])) {
+                                        viewingAzimuths[index] = grid.getAzimuth()[y][x];
                                     }
                                 }
                             }
@@ -630,9 +625,6 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                                              sceneDescription.getSceneRectangle().height));
             this.sceneDescription = sceneDescription;
         }
-
-
-        protected abstract PlanarImage createL1cTileImage(String tileId, int level);
     }
 
     /**
@@ -646,14 +638,13 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             this.bandInfo = bandInfo;
         }
 
-        @Override
         protected PlanarImage createL1cTileImage(String tileId, int level) {
             File imageFile = bandInfo.tileIdToFileMap.get(tileId);
             PlanarImage planarImage = L1cTileOpImage.create(imageFile,
                                                             cacheDir,
                                                             null, // tileRectangle.getLocation(),
                                                             bandInfo.imageLayout,
-                                                            getConfig().getTileLayouts(),
+                                                            getConfig(),
                                                             getModel(),
                                                             bandInfo.wavebandInfo.resolution,
                                                             level);
@@ -668,7 +659,6 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             return planarImage;
         }
 
-        @Override
         protected RenderedImage createImage(int level) {
             ArrayList<RenderedImage> tileImages = new ArrayList<>();
 
@@ -764,7 +754,6 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
             tiePointGridsMap = new HashMap<>();
         }
 
-        @Override
         protected PlanarImage createL1cTileImage(String tileId, int level) {
             PlanarImage tiePointGridL1CTileImage = null;
             TiePointGrid[] tiePointGrids = tiePointGridsMap.get(tileId);
@@ -838,17 +827,17 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
 
     @Override
-    protected String[] getBandNames(int resolution) {
+    protected String[] getBandNames(S2SpatialResolution resolution) {
         String[] bandNames;
 
         switch (resolution) {
-            case 10:
+            case R10M:
                 bandNames = new String[] {"B02", "B03", "B04", "B08"};
                 break;
-            case 20:
+            case R20M:
                 bandNames = new String[] {"B05", "B06", "B07", "B8A", "B09", "B11", "B12"};
                 break;
-            case 60:
+            case R60M:
                 bandNames = new String[] {"B01", "B09", "B10"};
                 break;
             default:

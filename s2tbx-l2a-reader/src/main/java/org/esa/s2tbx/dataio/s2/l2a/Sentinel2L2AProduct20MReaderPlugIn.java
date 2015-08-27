@@ -48,7 +48,7 @@ public class Sentinel2L2AProduct20MReaderPlugIn extends Sentinel2L2AProductReade
     }
 
     @Override
-    protected int getReaderResolution() {
-        return S2SpatialResolution.R20M.resolution;
+    protected S2SpatialResolution getReaderResolution() {
+        return S2SpatialResolution.R20M;
     }
 }

@@ -20,6 +20,7 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
@@ -56,9 +57,9 @@ public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPl
         return deco;
     }
 
-    protected abstract int getReaderResolution();
+    protected abstract S2SpatialResolution getReaderResolution();
 
-    protected DecodeQualification getDecodeQualificationFromResolution(File productFile, int resolution) {
+    protected DecodeQualification getDecodeQualificationFromResolution(File productFile, S2SpatialResolution resolution) {
         DecodeQualification decodeQualification = DecodeQualification.UNABLE;
 
         File parentFolder = productFile.getParentFile();
@@ -103,12 +104,12 @@ public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPl
         }
 
         switch (resolution) {
-            case 10:
+            case R10M:
                 if(contains10mFiles) {
                     decodeQualification = DecodeQualification.INTENDED;
                 }
                 break;
-            case 20:
+            case R20M:
                 if(contains20mFiles) {
                     if(contains10mFiles) {
                         decodeQualification = DecodeQualification.SUITABLE;
@@ -117,7 +118,7 @@ public abstract class Sentinel2L2AProductReaderPlugIn implements ProductReaderPl
                     }
                 }
                 break;
-            case 60:
+            case R60M:
                 if(contains60mFiles) {
                     if (contains10mFiles || contains20mFiles) {
                         decodeQualification = DecodeQualification.SUITABLE;

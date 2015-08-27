@@ -34,6 +34,7 @@ import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -75,9 +76,9 @@ public class L1bMetadataProc extends S2MetadataProc {
         A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getProduct_Info().getDatatake();
 
         L1bMetadata.ProductCharacteristics characteristics = new L1bMetadata.ProductCharacteristics();
-        characteristics.spacecraft = info.getSPACECRAFT_NAME();
-        characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString();
-        characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString();
+        characteristics.setSpacecraft(info.getSPACECRAFT_NAME());
+        characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString());
+        characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString());
 
         List<S2SpectralInformation> targetList = new ArrayList<S2SpectralInformation>();
 
@@ -97,7 +98,7 @@ public class L1bMetadataProc extends S2MetadataProc {
         }
 
         int size = targetList.size();
-        characteristics.bandInformations = targetList.toArray(new S2SpectralInformation[size]);
+        characteristics.setBandInformations(targetList.toArray(new S2SpectralInformation[size]));
 
         return characteristics;
     }
@@ -106,9 +107,9 @@ public class L1bMetadataProc extends S2MetadataProc {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
 
         L1bMetadata.ProductCharacteristics characteristics = new L1bMetadata.ProductCharacteristics();
-        characteristics.spacecraft = product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME();
-        characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString();
-        characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value();
+        characteristics.setSpacecraft(product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME());
+        characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString());
+        characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value());
 
         List<S2SpectralInformation> aInfo = new ArrayList<>();
         Object spectral_list = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List();
@@ -149,7 +150,7 @@ public class L1bMetadataProc extends S2MetadataProc {
         }
 
         int size = aInfo.size();
-        characteristics.bandInformations = aInfo.toArray(new S2SpectralInformation[size]);
+        characteristics.setBandInformations(aInfo.toArray(new S2SpectralInformation[size]));
 
         return characteristics;
     }
@@ -203,7 +204,7 @@ public class L1bMetadataProc extends S2MetadataProc {
     }
 
     public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule,
-                                                                              TileLayout[] tileLayouts) {
+                                                                              S2Config config) {
         Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<>();
 
         List<A_GRANULE_DIMENSIONS.Size> sizes = granule.getGeometric_Info().getGranule_Dimensions().getSize();
@@ -214,20 +215,26 @@ public class L1bMetadataProc extends S2MetadataProc {
             int resolution = gpos.getResolution();
 
             int ratio = resolution / S2SpatialResolution.R10M.resolution;
-            L1bMetadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
-            tgeox.numCols = gpos.getNCOLS();
+            S2Metadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
+            tgeox.setNumCols(gpos.getNCOLS());
 
-            tgeox.numRows = Math.max(gpos.getNROWS() - (pos / ratio), tileLayouts[S2Config.LAYOUTMAP.get(resolution)].height);
-            if ((gpos.getNROWS() - (pos / ratio)) < tileLayouts[S2Config.LAYOUTMAP.get(resolution)].height) {
-                SystemUtils.LOG.log(Level.parse(S2Config.LOG_DEBUG), "Test if we need extra processing here");
+            TileLayout tileLayout = config.getTileLayout(resolution);
+
+            if(tileLayout != null) {
+                tgeox.setNumRows(Math.max(gpos.getNROWS() - (pos / ratio), tileLayout.height));
+                if ((gpos.getNROWS() - (pos / ratio)) < tileLayout.height) {
+                    SystemUtils.LOG.log(Level.parse(S2Config.LOG_DEBUG), "Test if we need extra processing here");
+                }
+            } else {
+                SystemUtils.LOG.fine("No TileLayout at resolution R" + resolution + "m");
             }
 
-            tgeox.numRowsDetector = gpos.getNROWS();
-            tgeox.position = pos;
-            tgeox.resolution = resolution;
-            tgeox.xDim = resolution;
-            tgeox.yDim = -resolution;
-            tgeox.detector = detector;
+            tgeox.setNumRowsDetector(gpos.getNROWS());
+            tgeox.setPosition(pos);
+            tgeox.setResolution(resolution);
+            tgeox.setxDim(resolution);
+            tgeox.setyDim(-resolution);
+            tgeox.setDetector(detector);
 
             resolutions.put(resolution, tgeox);
         }
@@ -235,19 +242,21 @@ public class L1bMetadataProc extends S2MetadataProc {
         return resolutions;
     }
 
+    /*
     public static L1bMetadata.AnglesGrid getSunGrid(Level1B_Granule aGranule) {
         A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
         L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
-        grid.zenith = geoHeader.getSolar_Angles().getZENITH_ANGLE().getValue();
-        grid.azimuth = geoHeader.getSolar_Angles().getAZIMUTH_ANGLE().getValue();
+        grid.setZenith(geoHeader.getSolar_Angles().getZENITH_ANGLE().getValue());
+        grid.setAzimuth(geoHeader.getSolar_Angles().getAZIMUTH_ANGLE().getValue());
         return grid;
     }
 
-    public static L1bMetadata.AnglesGrid getAnglesGrid(Level1B_Granule aGranule) {
+    public static S2Metadata.AnglesGrid getAnglesGrid(Level1B_Granule aGranule) {
         A_GRANULE_POSITION.Geometric_Header geoHeader = aGranule.getGeometric_Info().getGranule_Position().getGeometric_Header();
         L1bMetadata.AnglesGrid grid = new L1bMetadata.AnglesGrid();
-        grid.zenith = geoHeader.getIncidence_Angles().getZENITH_ANGLE().getValue();
-        grid.azimuth = geoHeader.getIncidence_Angles().getAZIMUTH_ANGLE().getValue();
+        grid.setZenith(geoHeader.getIncidence_Angles().getZENITH_ANGLE().getValue());
+        grid.setAzimuth(geoHeader.getIncidence_Angles().getAZIMUTH_ANGLE().getValue());
         return grid;
     }
+    */
 }

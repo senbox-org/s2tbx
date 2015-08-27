@@ -27,6 +27,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math3.util.Pair;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
@@ -110,9 +111,9 @@ public class L1cMetadataProc extends S2MetadataProc {
         A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getProduct_Info().getDatatake();
 
         L1cMetadata.ProductCharacteristics characteristics = new L1cMetadata.ProductCharacteristics();
-        characteristics.spacecraft = info.getSPACECRAFT_NAME();
-        characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString();
-        characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString();
+        characteristics.setSpacecraft(info.getSPACECRAFT_NAME());
+        characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString());
+        characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString());
 
         List<S2SpectralInformation> targetList = new ArrayList<>();
 
@@ -132,16 +133,16 @@ public class L1cMetadataProc extends S2MetadataProc {
         }
 
         int size = targetList.size();
-        characteristics.bandInformations = targetList.toArray(new S2SpectralInformation[size]);
+        characteristics.setBandInformations(targetList.toArray(new S2SpectralInformation[size]));
 
         return characteristics;
     }
 
     public static L1cMetadata.ProductCharacteristics getProductOrganization(Level1C_User_Product product) {
         L1cMetadata.ProductCharacteristics characteristics = new L1cMetadata.ProductCharacteristics();
-        characteristics.spacecraft = product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME();
-        characteristics.datasetProductionDate = product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString();
-        characteristics.processingLevel = product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value();
+        characteristics.setSpacecraft(product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME());
+        characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString());
+        characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value());
         characteristics.setMetaDataLevel(product.getGeneral_Info().getProduct_Info().getQuery_Options().getMETADATA_LEVEL());
 
         List<S2SpectralInformation> aInfo = new ArrayList<>();
@@ -184,7 +185,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         }
 
         int size = aInfo.size();
-        characteristics.bandInformations = aInfo.toArray(new S2SpectralInformation[size]);
+        characteristics.setBandInformations(aInfo.toArray(new S2SpectralInformation[size]));
 
         return characteristics;
     }
@@ -249,18 +250,18 @@ public class L1cMetadataProc extends S2MetadataProc {
         for (A_TILE_DESCRIPTION.Geoposition gpos : poss) {
             int index = gpos.getResolution();
             L1cMetadata.TileGeometry tgeox = new L1cMetadata.TileGeometry();
-            tgeox.upperLeftX = gpos.getULX();
-            tgeox.upperLeftY = gpos.getULY();
-            tgeox.xDim = gpos.getXDIM();
-            tgeox.yDim = gpos.getYDIM();
+            tgeox.setUpperLeftX(gpos.getULX());
+            tgeox.setUpperLeftY(gpos.getULY());
+            tgeox.setxDim(gpos.getXDIM());
+            tgeox.setyDim(gpos.getYDIM());
             resolutions.put(index, tgeox);
         }
 
         for (A_TILE_DESCRIPTION.Size asize : sizz) {
             int index = asize.getResolution();
             L1cMetadata.TileGeometry tgeox = resolutions.get(index);
-            tgeox.numCols = asize.getNCOLS();
-            tgeox.numRows = asize.getNROWS();
+            tgeox.setNumCols(asize.getNCOLS());
+            tgeox.setNumRows(asize.getNROWS());
         }
 
         return resolutions;
@@ -280,20 +281,20 @@ public class L1cMetadataProc extends S2MetadataProc {
             int zencolumns = sun.getZenith().getValues_List().getVALUES().get(0).getValue().size();
 
             ag = new L1cMetadata.AnglesGrid();
-            ag.azimuth = new float[azrows][azcolumns];
-            ag.zenith = new float[zenrows][zencolumns];
+            ag.setAzimuth(new float[azrows][azcolumns]);
+            ag.setZenith(new float[zenrows][zencolumns]);
 
             for (int rowindex = 0; rowindex < azrows; rowindex++) {
                 List<Float> azimuths = sun.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
                 for (int colindex = 0; colindex < azcolumns; colindex++) {
-                    ag.azimuth[rowindex][colindex] = azimuths.get(colindex);
+                    ag.getAzimuth()[rowindex][colindex] = azimuths.get(colindex);
                 }
             }
 
             for (int rowindex = 0; rowindex < zenrows; rowindex++) {
                 List<Float> zeniths = sun.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
                 for (int colindex = 0; colindex < zencolumns; colindex++) {
-                    ag.zenith[rowindex][colindex] = zeniths.get(colindex);
+                    ag.getZenith()[rowindex][colindex] = zeniths.get(colindex);
                 }
             }
         }
@@ -327,25 +328,25 @@ public class L1cMetadataProc extends S2MetadataProc {
 
 
                 L1cMetadata.AnglesGrid ag2 = new L1cMetadata.AnglesGrid();
-                ag2.azimuth = new float[azrows2][azcolumns2];
-                ag2.zenith = new float[zenrows2][zencolumns2];
+                ag2.setAzimuth(new float[azrows2][azcolumns2]);
+                ag2.setZenith(new float[zenrows2][zencolumns2]);
 
                 for (int rowindex = 0; rowindex < azrows2; rowindex++) {
                     List<Float> azimuths = angleGrid.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
                     for (int colindex = 0; colindex < azcolumns2; colindex++) {
-                        ag2.azimuth[rowindex][colindex] = azimuths.get(colindex);
+                        ag2.getAzimuth()[rowindex][colindex] = azimuths.get(colindex);
                     }
                 }
 
                 for (int rowindex = 0; rowindex < zenrows2; rowindex++) {
                     List<Float> zeniths = angleGrid.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
                     for (int colindex = 0; colindex < zencolumns2; colindex++) {
-                        ag2.zenith[rowindex][colindex] = zeniths.get(colindex);
+                        ag2.getZenith()[rowindex][colindex] = zeniths.get(colindex);
                     }
                 }
 
-                ag2.bandId = Integer.parseInt(angleGrid.getBandId());
-                ag2.detectorId = Integer.parseInt(angleGrid.getDetectorId());
+                ag2.setBandId(Integer.parseInt(angleGrid.getBandId()));
+                ag2.setDetectorId(Integer.parseInt(angleGrid.getDetectorId()));
                 darr[index] = ag2;
             }
         }
@@ -353,10 +354,10 @@ public class L1cMetadataProc extends S2MetadataProc {
         return darr;
     }
 
-    public static L1cMetadata.MaskFilename[] getMasks(Level1C_Tile aTile, File file) {
+    public static S2Metadata.MaskFilename[] getMasks(Level1C_Tile aTile, File file) {
         A_QUALITY_INDICATORS_INFO_TILE qualityInfo = aTile.getQuality_Indicators_Info();
 
-        L1cMetadata.MaskFilename[] maskFileNamesArray = null;
+        S2Metadata.MaskFilename[] maskFileNamesArray = null;
         if(qualityInfo != null) {
             List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getPixel_Level_QI().getMASK_FILENAME();
             List<L1cMetadata.MaskFilename> aMaskList = new ArrayList<>();
