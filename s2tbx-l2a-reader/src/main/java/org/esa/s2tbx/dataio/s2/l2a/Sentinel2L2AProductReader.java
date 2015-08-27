@@ -216,7 +216,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
             throw new IOException("Failed to parse metadata in " + productMetadataFile.getName());
         }
 
-        L2aSceneDescription sceneDescription = L2aSceneDescription.create(metadataHeader, S2SpatialResolution.R10M, getConfig());
+        L2aSceneDescription sceneDescription = L2aSceneDescription.create(metadataHeader, productResolution);
         logger.fine("Scene Description: " + sceneDescription);
 
         File productDir = getProductDir(productMetadataFile);
@@ -256,6 +256,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                         if ( (productResolution == S2SpatialResolution.R10M && imageFileName.contains("10m")) ||
                                 (productResolution == S2SpatialResolution.R20M && imageFileName.contains("20m"))||
                                 (productResolution == S2SpatialResolution.R60M && imageFileName.contains("60m"))  ) {
+
 
 
                             String resolutionFolder = String.format("R%sm", productResolution.resolution);
@@ -367,9 +368,8 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     }
 
     private Band addBand(Product product, BandInfo bandInfo) {
-        int index = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
-
-        final Band band = new Band(bandInfo.wavebandInfo.bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth()  / index, product.getSceneRasterHeight()  / index);
+        String bandName = bandInfo.wavebandInfo.bandName;
+        Band band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
         product.addBand(band);
 
         band.setSpectralBandIndex(bandInfo.bandIndex);

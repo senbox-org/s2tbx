@@ -23,13 +23,14 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.framework.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.getSafeDecompressorAndUpdatePermissions;
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions;
 
 /**
+ * Class to store S2 readers paramteters: static const, openjpeg executables path, tile layouts, ...
+ *
+ * @author Nicolas Ducoin
  * @author Norman Fomferra
  */
 public class S2Config {
@@ -59,19 +60,7 @@ public class S2Config {
 
     public static final String MTD_EXT = ".xml";
 
-    /**
-     * Map between resolution and index in the tile layout
-     */
-    public static final Map<Integer, Integer> LAYOUTMAP = new HashMap<Integer, Integer>() {
-        {
-            put(10, 0);
-            put(20, 1);
-            put(60, 2);
-        }
-    };
-
     private TileLayout[] tileLayouts = new TileLayout[3];
-
 
     /**
      * returns the TileLayout for a given resolution. If no TileLayout was set for the resolution
