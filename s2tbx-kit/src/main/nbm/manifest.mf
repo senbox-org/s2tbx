@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: ${snap.nbmSpecVersion}
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Layer: org/esa/s2tbx/layer.xml
 AutoUpdate-Show-In-Client: true
