@@ -80,7 +80,7 @@ public class Sentinel2L1BProductReaderPlugIn implements ProductReaderPlugIn {
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader...");
-        return new Sentinel2L1BProductReader(this, false);
+        return new Sentinel2L1BProductReader(this);
     }
 
     @Override

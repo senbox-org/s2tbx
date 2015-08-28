@@ -121,8 +121,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
     static final String USER_CACHE_DIR = "s2tbx/l1b-reader/cache";
 
-    private final boolean forceResize;
-
     private File cacheDir;
     protected final Logger logger;
 
@@ -144,16 +142,14 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
     }
 
-    public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, S2SpatialResolution productResolution) {
+    public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution) {
         super(readerPlugIn, productResolution, false);
         logger = SystemUtils.LOG;
-        this.forceResize = forceResize;
     }
 
-    Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize) {
+    Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn, S2SpatialResolution.R10M, true);
         logger = SystemUtils.LOG;
-        this.forceResize = forceResize;
     }
 
     @Override
@@ -389,21 +385,19 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 Band band = addBand(product, tileBandInfo);
                 band.setSourceImage(mlif.createSourceImage(tileBandInfo));
 
-                if (!forceResize) {
-                    try {
-                        band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
-                                band.getRasterWidth(),
-                                band.getRasterHeight(),
-                                envelope.getMinX(),
-                                envelope.getMaxY(),
-                                tileBandInfo.getWavebandInfo().resolution.resolution,
-                                tileBandInfo.getWavebandInfo().resolution.resolution,
-                                0.0, 0.0));
-                    } catch (FactoryException e) {
-                        logger.severe("Illegal CRS");
-                    } catch (TransformException e) {
-                        logger.severe("Illegal projection");
-                    }
+                try {
+                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
+                                                       band.getRasterWidth(),
+                                                       band.getRasterHeight(),
+                                                       envelope.getMinX(),
+                                                       envelope.getMaxY(),
+                                                       tileBandInfo.getWavebandInfo().resolution.resolution,
+                                                       tileBandInfo.getWavebandInfo().resolution.resolution,
+                                                       0.0, 0.0));
+                } catch (FactoryException e) {
+                    logger.severe("Illegal CRS");
+                } catch (TransformException e) {
+                    logger.severe("Illegal projection");
                 }
             }
         }
@@ -587,7 +581,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
             if (this.tileBandInfo.getWavebandInfo().resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.getWavebandInfo().resolution, level, forceResize);
+                PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.getWavebandInfo().resolution, level);
 
                 logger.log(Level.parse(S2Config.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 

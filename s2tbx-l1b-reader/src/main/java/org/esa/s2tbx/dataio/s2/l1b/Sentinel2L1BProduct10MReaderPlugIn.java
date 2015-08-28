@@ -33,7 +33,7 @@ public class Sentinel2L1BProduct10MReaderPlugIn extends Sentinel2L1BProductReade
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader...");
-        return new Sentinel2L1BProductReader(this, false, S2SpatialResolution.R10M);
+        return new Sentinel2L1BProductReader(this, S2SpatialResolution.R10M);
     }
 
     @Override

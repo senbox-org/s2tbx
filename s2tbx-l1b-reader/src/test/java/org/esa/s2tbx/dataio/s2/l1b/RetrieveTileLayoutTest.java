@@ -39,7 +39,7 @@ public class RetrieveTileLayoutTest {
     public void testRetrieveLayoutForL1B10m() {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
 
-        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, false, S2SpatialResolution.R10M);
+        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, S2SpatialResolution.R10M);
 
         TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, S2SpatialResolution.R10M);
 
@@ -54,7 +54,7 @@ public class RetrieveTileLayoutTest {
     public void testRetrieveLayoutForL1B20m() {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
 
-        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, false, S2SpatialResolution.R20M);
+        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, S2SpatialResolution.R20M);
         TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, S2SpatialResolution.R20M);
 
         TileLayout realTileLayout = new TileLayout(1276, 9216, 1296, 1152, 1, 8, 5);
@@ -68,7 +68,7 @@ public class RetrieveTileLayoutTest {
     public void testRetrieveLayoutForL1B60m() {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
 
-        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, false, S2SpatialResolution.R60M);
+        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, S2SpatialResolution.R60M);
         TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, S2SpatialResolution.R60M);
 
         TileLayout realTileLayout =  new TileLayout(1276, 3072, 1296, 384, 1, 8, 5);
