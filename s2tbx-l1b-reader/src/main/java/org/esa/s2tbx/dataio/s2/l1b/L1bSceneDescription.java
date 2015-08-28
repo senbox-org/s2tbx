@@ -21,21 +21,15 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 // import com.jcabi.aspects.Loggable;
 
-import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.geotools.geometry.Envelope2D;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +46,7 @@ public class L1bSceneDescription extends S2SceneDescription {
     private final Envelope2D sceneEnvelope;
     private final Rectangle sceneRectangle;
     private final Map<String, TileInfo> tileInfoMap;
+
 
     private static class TileInfo {
         private final int index;
@@ -76,24 +71,22 @@ public class L1bSceneDescription extends S2SceneDescription {
      *
      * @param header the {@link L1bMetadata} object containing the tile list
      * @param productResolution the product resolution for which we want the scene description
-     * @param config the {@link S2Config} object giving access to the tile layout
      * @return the scene description of {@code null}
      */
-    public static L1bSceneDescription create(L1bMetadata header, S2SpatialResolution productResolution, S2Config config) {
+    public static L1bSceneDescription create(L1bMetadata header, S2SpatialResolution productResolution) {
         L1bSceneDescription sceneDescription = null;
 
-        List<L1bMetadata.Tile> tileList = header.getTileList();
+        List<S2Metadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = GeometryFactory.getDefaultCrs();
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
         TileInfo[] tileInfos = new TileInfo[tileList.size()];
         Envelope2D sceneEnvelope = null;
 
-        TileLayout tileLayoutFor10m = config.getTileLayout(S2SpatialResolution.R10M);
-        TileLayout tileLayoutForThis = config.getTileLayout(productResolution);
 
-        if(! tileList.isEmpty() && tileLayoutFor10m != null && tileLayoutForThis != null) {
+        if(!tileList.isEmpty()) {
 
-            int firstPosition = tileList.get(0).getGeometry(productResolution).getPosition();
+
+            Map<String, Integer> detectorsTopPositionMap = computeTopPositions(tileList, productResolution);
 
             for (int i = 0; i < tileList.size(); i++) {
                 L1bMetadata.Tile tile = tileList.get(i);
@@ -106,9 +99,13 @@ public class L1bSceneDescription extends S2SceneDescription {
                 Envelope2D envelope;
 
                 // data is referenced through 1 based indexes
-                //int xOffset = (detectorId - 1) * tileLayouts[S2L1bConfig.LAYOUTMAP.get(selectedGeometry.resolution)].width * selectedGeometry.resolution;
-                int yOffsetIndex = (selectedGeometry.getPosition() - firstPosition) / tileLayoutFor10m.height;
-                double yWidth = yOffsetIndex * selectedGeometry.getyDim() * tileLayoutForThis.height;
+                // since position si computed for 10m, we need multiply by a ration if product resolution is not 10m
+
+                int ratio = productResolution.resolution / S2SpatialResolution.R10M.resolution;
+                String detectorId = tile.getDetectorId();
+                int topPosition = detectorsTopPositionMap.get(detectorId);
+                int yOffset = (selectedGeometry.getPosition() - topPosition) / ratio;
+                double yWidth = yOffset * selectedGeometry.getyDim();
 
 
                 int xOffset = 0;
@@ -160,6 +157,21 @@ public class L1bSceneDescription extends S2SceneDescription {
         return sceneDescription;
     }
 
+    private static  Map<String, Integer> computeTopPositions(List<S2Metadata.Tile> tileList, S2SpatialResolution productResolution) {
+        Map<String, Integer> detectorsTopPositionMap = new HashMap<>(12);
+
+        for (S2Metadata.Tile tile : tileList) {
+            String detectorId = tile.getDetectorId();
+            Integer tilePosition = tile.getGeometry(productResolution).getPosition();
+            Integer storedTopPosition = detectorsTopPositionMap.get(detectorId);
+            if (storedTopPosition == null || storedTopPosition < tilePosition) {
+                detectorsTopPositionMap.put(detectorId, tilePosition);
+            }
+        }
+
+        return detectorsTopPositionMap;
+    }
+
     private L1bSceneDescription(TileInfo[] tileInfos,
                                 Envelope2D sceneEnvelope,
                                 Rectangle sceneRectangle) {
@@ -188,8 +200,7 @@ public class L1bSceneDescription extends S2SceneDescription {
             tileIds[i] = tileInfos[i].id;
         }
 
-        List<String> myList = new ArrayList<>(Arrays.asList(tileIds));
-        return myList;
+        return new ArrayList<>(Arrays.asList(tileIds));
     }
 
     public int getTileIndex(String tileId) {

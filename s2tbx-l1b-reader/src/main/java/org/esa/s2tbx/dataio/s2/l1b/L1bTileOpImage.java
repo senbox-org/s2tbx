@@ -50,7 +50,6 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,15 +65,16 @@ class L1bTileOpImage extends S2TileOpImage {
                               File cacheDir,
                               Point imagePos,
                               TileLayout l1bTileLayout,
-                              TileLayout[] tileLayouts,
+                              S2Config config,
                               MultiLevelModel imageModel,
-                              S2SpatialResolution spatialResolution,
+                              S2SpatialResolution tileResolution,
+                              S2SpatialResolution productResolution,
                               int level) {
 
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(l1bTileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
-        Assert.notNull(spatialResolution, "spatialResolution");
+        Assert.notNull(tileResolution, "spatialResolution");
 
         if (imageFile != null) {
             SystemUtils.LOG.fine("Image layout: " + l1bTileLayout);
@@ -83,9 +83,10 @@ class L1bTileOpImage extends S2TileOpImage {
         } else {
             SystemUtils.LOG.warning("Using empty image !");
 
-            int targetWidth = S2TileOpImage.getSizeAtResolutionLevel(tileLayouts[0].width, level);
-            int targetHeight = S2TileOpImage.getSizeAtResolutionLevel(tileLayouts[0].height, level);
-            Dimension targetTileDim = S2TileOpImage.getTileDimAtResolutionLevel(tileLayouts[0].tileWidth, tileLayouts[0].tileHeight, level);
+            TileLayout tileLayout10m = config.getTileLayout(productResolution);
+            int targetWidth = S2TileOpImage.getSizeAtResolutionLevel(tileLayout10m.width, level);
+            int targetHeight = S2TileOpImage.getSizeAtResolutionLevel(tileLayout10m.height, level);
+            Dimension targetTileDim = S2TileOpImage.getTileDimAtResolutionLevel(tileLayout10m.tileWidth, tileLayout10m.tileHeight, level);
             SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),

@@ -118,7 +118,6 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
     private File cacheDir;
     protected final Logger logger;
-    private S2SpatialResolution productResolution;
 
     static class BandInfo {
         final Map<String, File> tileIdToFileMap;
@@ -143,10 +142,9 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     }
 
     public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, boolean forceResize, S2SpatialResolution productResolution) {
-        super(readerPlugIn);
+        super(readerPlugIn, productResolution, false);
         logger = SystemUtils.LOG;
         this.forceResize = forceResize;
-        this.productResolution = productResolution;
     }
 
     @Override
@@ -165,7 +163,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
         }
 
         // update the tile layout
-        updateTileLayout(metadataFile.toPath(), isAGranule, productResolution);
+        updateTileLayout(metadataFile.toPath(), isAGranule, getProductResolution());
 
 
         String filterTileId = null;
@@ -216,7 +214,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
             throw new IOException("Failed to parse metadata in " + productMetadataFile.getName());
         }
 
-        L2aSceneDescription sceneDescription = L2aSceneDescription.create(metadataHeader, productResolution);
+        L2aSceneDescription sceneDescription = L2aSceneDescription.create(metadataHeader, getProductResolution());
         logger.fine("Scene Description: " + sceneDescription);
 
         File productDir = getProductDir(productMetadataFile);
@@ -253,13 +251,13 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                     for (ImageInfo imageFound : filteredImages) {
 
                         String imageFileName = imageFound.getFileName();
-                        if ( (productResolution == S2SpatialResolution.R10M && imageFileName.contains("10m")) ||
-                                (productResolution == S2SpatialResolution.R20M && imageFileName.contains("20m"))||
-                                (productResolution == S2SpatialResolution.R60M && imageFileName.contains("60m"))  ) {
+                        if ( (getProductResolution() == S2SpatialResolution.R10M && imageFileName.contains("10m")) ||
+                                (getProductResolution() == S2SpatialResolution.R20M && imageFileName.contains("20m"))||
+                                (getProductResolution() == S2SpatialResolution.R60M && imageFileName.contains("60m"))  ) {
 
 
 
-                            String resolutionFolder = String.format("R%sm", productResolution.resolution);
+                            String resolutionFolder = String.format("R%sm", getProductResolution().resolution);
 
                             String imgFilename = "GRANULE" + File.separator + tile.getId() + File.separator + "IMG_DATA" + File.separator + resolutionFolder+ File.separator + imageFileName + ".jp2";
                             String fallbackImgFilename = "GRANULE" + File.separator + tile.getId() + File.separator + "IMG_DATA" + File.separator + imageFound.getFileName() + ".jp2";
@@ -328,7 +326,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
-        product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
+        product.setNumResolutionsMax(getConfig().getTileLayout(getProductResolution()).numResolutions);
         product.setAutoGrouping("reflec:radiance:sun:view");
 
         ArrayList<Integer> bandIndexes = new ArrayList<>(bandInfoMap.keySet());
@@ -340,7 +338,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
         for (Integer bandIndex : bandIndexes) {
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
-            if (bandInfo.getWavebandInfo().resolution == this.productResolution)
+            if (bandInfo.getWavebandInfo().resolution == this.getProductResolution())
             {
                 Band band = addBand(product, bandInfo);
                 band.setSourceImage(mlif.createSourceImage(bandInfo));
@@ -458,7 +456,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     }
 
     private BandInfo createBandInfoFromHeaderInfo(S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
-        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(productResolution.resolution);
+        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(getProductResolution().resolution);
         return new BandInfo(tileFileMap,
                             bandInformation.getBandId(),
                             new S2WavebandInfo(bandInformation.getBandId(),
@@ -475,8 +473,8 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                                                   product.getSceneRasterHeight(),
                                                   envelope.getMinX(),
                                                   envelope.getMaxY(),
-                                                  S2SpatialResolution.R10M.resolution,
-                                                  S2SpatialResolution.R10M.resolution,
+                                                  getProductResolution().resolution,
+                                                  getProductResolution().resolution,
                                                   0.0, 0.0));
         } catch (FactoryException e) {
             logger.severe("Illegal CRS");
@@ -599,8 +597,8 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                 PlanarImage opImage = createL2aTileImage(tileId, level);
 
                 {
-                    double factorX = 1.0 / (Math.pow(2, level) * (this.bandInfo.wavebandInfo.resolution.resolution / S2SpatialResolution.R10M.resolution));
-                    double factorY = 1.0 / (Math.pow(2, level) * (this.bandInfo.wavebandInfo.resolution.resolution / S2SpatialResolution.R10M.resolution));
+                    double factorX = 1.0 / (Math.pow(2, level));
+                    double factorY = 1.0 / (Math.pow(2, level));
 
                     opImage = TranslateDescriptor.create(opImage,
                                                          (float) Math.floor((tileRectangle.x * factorX)),

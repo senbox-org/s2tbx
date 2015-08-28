@@ -21,9 +21,7 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
-import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_DATATAKE_IDENTIFICATION;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_DIMENSIONS;
-import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_POSITION;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1B;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
@@ -37,9 +35,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -56,7 +52,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.as3DCoordinates;
 
@@ -68,43 +63,10 @@ public class L1bMetadataProc extends S2MetadataProc {
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
 
         ClassLoader s2c = Level1B_User_Product.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1B, s2c);
-        return jaxbContext;
-    }
-
-    public static L1bMetadata.ProductCharacteristics parseCharacteristics(Level1B_User_Product product) {
-        A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getProduct_Info().getDatatake();
-
-        L1bMetadata.ProductCharacteristics characteristics = new L1bMetadata.ProductCharacteristics();
-        characteristics.setSpacecraft(info.getSPACECRAFT_NAME());
-        characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString());
-        characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString());
-
-        List<S2SpectralInformation> targetList = new ArrayList<S2SpectralInformation>();
-
-        List<A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> aList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
-        for (A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
-            S2SpectralInformation newInfo = new S2SpectralInformation();
-            newInfo.setBandId(Integer.parseInt(si.getBandId()));
-            newInfo.setPhysicalBand(si.getPhysicalBand().value());
-            newInfo.setResolution(si.getRESOLUTION());
-            newInfo.setWavelengthCentral(si.getWavelength().getCENTRAL().getValue());
-            newInfo.setWavelengthMax(si.getWavelength().getMAX().getValue());
-            newInfo.setWavelengthMin(si.getWavelength().getMIN().getValue());
-
-            int size = si.getSpectral_Response().getVALUES().size();
-            newInfo.setSpectralResponseValues(ArrayUtils.toPrimitive(si.getSpectral_Response().getVALUES().toArray(new Double[size])));
-            targetList.add(newInfo);
-        }
-
-        int size = targetList.size();
-        characteristics.setBandInformations(targetList.toArray(new S2SpectralInformation[size]));
-
-        return characteristics;
+        return JAXBContext.newInstance(S2MetadataType.L1B, s2c);
     }
 
     public static L1bMetadata.ProductCharacteristics getProductOrganization(Level1B_User_Product product) {
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
 
         L1bMetadata.ProductCharacteristics characteristics = new L1bMetadata.ProductCharacteristics();
         characteristics.setSpacecraft(product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME());
@@ -166,8 +128,7 @@ public class L1bMetadataProc extends S2MetadataProc {
             return gr.getGranuleIdentifier();
         };
 
-        Collection col = CollectionUtils.collect(aGranuleList, tileSelector);
-        return col;
+        return CollectionUtils.collect(aGranuleList, tileSelector);
     }
 
     public static S2DatastripFilename getDatastrip(Level1B_User_Product product) {
@@ -214,17 +175,13 @@ public class L1bMetadataProc extends S2MetadataProc {
         for (A_GRANULE_DIMENSIONS.Size gpos : sizes) {
             int resolution = gpos.getResolution();
 
-            int ratio = resolution / S2SpatialResolution.R10M.resolution;
             S2Metadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.setNumCols(gpos.getNCOLS());
 
             TileLayout tileLayout = config.getTileLayout(resolution);
 
             if(tileLayout != null) {
-                tgeox.setNumRows(Math.max(gpos.getNROWS() - (pos / ratio), tileLayout.height));
-                if ((gpos.getNROWS() - (pos / ratio)) < tileLayout.height) {
-                    SystemUtils.LOG.log(Level.parse(S2Config.LOG_DEBUG), "Test if we need extra processing here");
-                }
+                tgeox.setNumRows(tileLayout.height);
             } else {
                 SystemUtils.LOG.fine("No TileLayout at resolution R" + resolution + "m");
             }

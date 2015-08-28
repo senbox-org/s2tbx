@@ -81,7 +81,7 @@ class L2aTileOpImage extends S2TileOpImage {
         } else {
             org.esa.snap.util.SystemUtils.LOG.warning("Using empty image !");
 
-            TileLayout tileLayout10m = config.getTileLayout(S2SpatialResolution.R10M);
+            TileLayout tileLayout10m = config.getTileLayout(spatialResolution);
             int targetWidth = getSizeAtResolutionLevel(tileLayout10m.width, level);
             int targetHeight = getSizeAtResolutionLevel(tileLayout10m.height, level);
             Dimension targetTileDim = getTileDimAtResolutionLevel(tileLayout10m.tileWidth, tileLayout10m.tileHeight, level);

@@ -1,10 +1,13 @@
 package org.esa.s2tbx.dataio.s2;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.jp2.CodeStreamUtils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
+import org.esa.snap.framework.datamodel.Band;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.util.SystemUtils;
 
@@ -14,6 +17,8 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Base class for all Sentinel-2 product readers
@@ -22,11 +27,19 @@ import java.nio.file.Path;
  */
 public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
+
+
     private S2Config config;
+    private final S2SpatialResolution productResolution;
+    private final boolean isMultiResolution;
 
 
-    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn) {
+
+    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution, boolean isMultiResolution) {
         super(readerPlugIn);
+
+        this.productResolution = productResolution;
+        this.isMultiResolution = isMultiResolution;
 
         this.config = new S2Config();
     }
@@ -37,6 +50,14 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
      */
     public S2Config getConfig() {
         return config;
+    }
+
+    public S2SpatialResolution getProductResolution() {
+        return productResolution;
+    }
+
+    public boolean isMultiResolution() {
+        return isMultiResolution;
     }
 
     protected abstract Product getMosaicProduct(File granuleMetadataFile) throws IOException;
@@ -229,4 +250,68 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
             }
             return false;
         });
-    }}
+    }
+
+
+    protected Band addBand(Product product, BandInfo bandInfo) {
+        int scaleFactor = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
+
+        String bandName = bandInfo.wavebandInfo.bandName;
+        Band band;
+        if(isMultiResolution) {
+            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth() / scaleFactor, product.getSceneRasterHeight() / scaleFactor);
+        } else {
+            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
+        }
+        product.addBand(band);
+
+        band.setSpectralBandIndex(bandInfo.bandIndex);
+        band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
+        band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
+
+        setValidPixelMask(band, bandName);
+
+        return band;
+    }
+
+    private void setValidPixelMask(Band band, String bandName) {
+        band.setNoDataValue(0);
+        band.setValidPixelExpression(String.format("%s.raw > %s",
+                                                   bandName, S2Config.RAW_NO_DATA_THRESHOLD));
+    }
+
+    public static class BandInfo {
+        private final Map<String, File> tileIdToFileMap;
+        private final int bandIndex;
+        private final S2WavebandInfo wavebandInfo;
+        private final TileLayout imageLayout;
+
+        public BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo, TileLayout imageLayout) {
+            this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
+            this.bandIndex = bandIndex;
+            this.wavebandInfo = wavebandInfo;
+            this.imageLayout = imageLayout;
+        }
+
+        public S2WavebandInfo getWavebandInfo() {
+            return wavebandInfo;
+        }
+
+        public Map<String, File> getTileIdToFileMap() {
+            return tileIdToFileMap;
+        }
+
+        public int getBandIndex() {
+            return bandIndex;
+        }
+
+        public TileLayout getImageLayout() {
+            return imageLayout;
+        }
+
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+    }
+
+}

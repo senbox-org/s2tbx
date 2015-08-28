@@ -39,7 +39,6 @@ public class S2Config {
 
     public static final String LOG_JPEG = DEBUG ? "INFO" : "FINEST";
     public static final String LOG_SCENE = DEBUG ? "INFO" : "FINEST";
-    public static final String LOG_DEBUG = DEBUG ? "WARNING" : "FINEST";
 
     public static final String OPJ_DECOMPRESSOR_EXE = getSafeDecompressorAndUpdatePermissions();
     public static final String OPJ_INFO_EXE = getSafeInfoExtractorAndUpdatePermissions();
@@ -127,23 +126,5 @@ public class S2Config {
      */
     public void updateTileLayout(S2SpatialResolution resolution, TileLayout tileLayout) {
         tileLayouts[resolution.id] = tileLayout;
-    }
-
-    /**
-     * Returns the tileLayouts map, somme elements of this map can be null
-     *
-     * Deprecated, instead use getDefaultTileLayout(int resolution)
-     *
-     * @return the tileLayouts map
-     */
-    @Deprecated
-    public TileLayout[] getTileLayouts(){
-        TileLayout[] tileLayoutsToReturn = new TileLayout[3];
-
-        tileLayoutsToReturn[S2SpatialResolution.R10M.id] = getTileLayout(S2SpatialResolution.R10M.resolution);
-        tileLayoutsToReturn[S2SpatialResolution.R20M.id] = getTileLayout(S2SpatialResolution.R20M.resolution);
-        tileLayoutsToReturn[S2SpatialResolution.R60M.id] = getTileLayout(S2SpatialResolution.R60M.resolution);
-
-        return tileLayoutsToReturn;
     }
 }
