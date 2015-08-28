@@ -34,6 +34,7 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
+import org.esa.s2tbx.dataio.s2.S2TileOpImage;
 import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
@@ -501,15 +502,13 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         protected PlanarImage createL1bTileImage(String tileId, int level) {
             File imageFile = tileBandInfo.getTileIdToFileMap().get(tileId);
 
-            PlanarImage planarImage = L1bTileOpImage.create(imageFile,
-                                                            cacheDir,
-                                                            null, // tileRectangle.getLocation(),
-                                                            tileBandInfo.getImageLayout(),
-                                                            getConfig(),
-                                                            getModel(),
-                                                            tileBandInfo.getWavebandInfo().resolution,
-                                                            getProductResolution(),
-                                                            level);
+            PlanarImage planarImage = S2TileOpImage.create(imageFile,
+                                                           cacheDir,
+                                                           null, // tileRectangle.getLocation(),
+                                                           tileBandInfo.getImageLayout(),
+                                                           getConfig(),
+                                                           getModel(),
+                                                           level);
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
@@ -581,7 +580,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
             if (this.tileBandInfo.getWavebandInfo().resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = L1bTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.getWavebandInfo().resolution, level);
+                PlanarImage scaled = S2TileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.getWavebandInfo().resolution, level);
 
                 logger.log(Level.parse(S2Config.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 

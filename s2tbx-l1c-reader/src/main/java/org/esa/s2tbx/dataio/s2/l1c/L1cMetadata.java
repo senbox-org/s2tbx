@@ -21,14 +21,12 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
@@ -45,7 +43,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,17 +68,6 @@ public class L1cMetadata extends S2Metadata {
     private MetadataElement metadataElement;
     protected Logger logger = SystemUtils.LOG;
 
-
-
-    static class QuicklookDescriptor {
-        int imageNCols;
-        int imageNRows;
-        Histogram[] histogramList;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
 
     static class Histogram {
         public int bandId;
@@ -169,8 +155,6 @@ public class L1cMetadata extends S2Metadata {
         tileList = new ArrayList<>();
 
         for (String tileName : tileNames) {
-            FileInputStream fi = (FileInputStream) stream;
-            File nestedMetadata = new File(parent, "GRANULE" + File.separator + tileName);
 
             S2L1CGranuleDirFilename aGranuleDir = S2L1CGranuleDirFilename.create(tileName);
 

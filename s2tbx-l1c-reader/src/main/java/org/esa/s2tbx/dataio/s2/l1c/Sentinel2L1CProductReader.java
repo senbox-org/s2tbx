@@ -33,6 +33,7 @@ import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
+import org.esa.s2tbx.dataio.s2.S2TileOpImage;
 import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
@@ -582,14 +583,13 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
         protected PlanarImage createL1cTileImage(String tileId, int level) {
             File imageFile = bandInfo.getTileIdToFileMap().get(tileId);
-            PlanarImage planarImage = L1cTileOpImage.create(imageFile,
-                                                            cacheDir,
-                                                            null, // tileRectangle.getLocation(),
-                                                            bandInfo.getImageLayout(),
-                                                            getConfig(),
-                                                            getModel(),
-                                                            bandInfo.getWavebandInfo().resolution,
-                                                            level);
+            PlanarImage planarImage = S2TileOpImage.create(imageFile,
+                                                           cacheDir,
+                                                           null, // tileRectangle.getLocation(),
+                                                           bandInfo.getImageLayout(),
+                                                           getConfig(),
+                                                           getModel(),
+                                                           level);
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
@@ -660,7 +660,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
 
 
             if (this.bandInfo.getWavebandInfo().resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = L1cTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.getWavebandInfo().resolution, level);
+                PlanarImage scaled = S2TileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.getWavebandInfo().resolution, level);
 
                 logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 

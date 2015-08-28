@@ -32,6 +32,7 @@ import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
+import org.esa.s2tbx.dataio.s2.S2TileOpImage;
 import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
@@ -540,14 +541,13 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
 
         protected PlanarImage createL2aTileImage(String tileId, int level) {
             File imageFile = bandInfo.tileIdToFileMap.get(tileId);
-            PlanarImage planarImage = L2aTileOpImage.create(imageFile,
-                                                            cacheDir,
-                                                            null, // tileRectangle.getLocation(),
-                                                            bandInfo.imageLayout,
-                                                            getConfig(),
-                                                            getModel(),
-                                                            bandInfo.wavebandInfo.resolution,
-                                                            level);
+            PlanarImage planarImage = S2TileOpImage.create(imageFile,
+                                                           cacheDir,
+                                                           null, // tileRectangle.getLocation(),
+                                                           bandInfo.imageLayout,
+                                                           getConfig(),
+                                                           getModel(),
+                                                           level);
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
@@ -604,7 +604,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             if (this.bandInfo.wavebandInfo.resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = L2aTileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level);
+                PlanarImage scaled = S2TileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.wavebandInfo.resolution, level);
 
                 logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 

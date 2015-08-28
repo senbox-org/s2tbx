@@ -19,19 +19,12 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_HEADER_LIST_EXPERTISE;
-import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_datastrip_metadata.Level1B_DataStrip;
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -51,7 +44,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -177,32 +169,7 @@ public class L1bMetadata extends S2Metadata {
         metadataElement.addElement(dataStrip);
         MetadataElement granulesMetaData = new MetadataElement("Granules");
 
-        // get datastrip...
-        FileInputStream dataStripStream = new FileInputStream(dataStripMetadata);
-        Level1B_DataStrip theDataStrip = (Level1B_DataStrip) updateAndUnmarshal(dataStripStream);
-        //int numheaders = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header().size();
 
-/*
-        List<AnglesGrid> sunGrid = new ArrayList<>();
-        List<AnglesGrid> incidenceGrid = new ArrayList<>();
-
-        List<A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header> headers = theDataStrip.getImage_Data_Info().getGeometric_Header_List().getGeometric_Header();
-        for (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header header : headers) {
-            Iterator it = header.getLocated_Geometric_Header().iterator();
-            while (it.hasNext()) {
-                A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header o = (A_GEOMETRIC_HEADER_LIST_EXPERTISE.Geometric_Header.Located_Geometric_Header) it.next();
-                AnglesGrid tmpGrid = new AnglesGrid();
-                tmpGrid.setAzimuth(o.getSolar_Angles().getAZIMUTH_ANGLE().getValue());
-                tmpGrid.setZenith(o.getSolar_Angles().getZENITH_ANGLE().getValue());
-                sunGrid.add(tmpGrid);
-
-                AnglesGrid tmpIncidenceGrid = new AnglesGrid();
-                tmpIncidenceGrid.setAzimuth(o.getIncidence_Angles().getAZIMUTH_ANGLE().getValue());
-                tmpIncidenceGrid.setZenith(o.getIncidence_Angles().getZENITH_ANGLE().getValue());
-                incidenceGrid.add(tmpIncidenceGrid);
-            }
-        }
-*/
         for (File aGranuleMetadataFile : fullTileNamesList) {
             MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
             granulesMetaData.addElement(aGranule);
@@ -212,27 +179,21 @@ public class L1bMetadata extends S2Metadata {
     }
 
     private void initTile(Object casted) throws IOException, JAXBException, JDOMException {
-        Level1B_Granule product = (Level1B_Granule) casted;
+        Level1B_Granule aGranule = (Level1B_Granule) casted;
         productCharacteristics = new L1bMetadata.ProductCharacteristics();
 
         tileList = new ArrayList<>();
 
-        {
-            Level1B_Granule aGranule = product;
-            Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
+        Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
 
-            Tile tile = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
+        Tile tile = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
 
-            tile.setTileGeometry10M(geoms.get(10));
-            tile.setTileGeometry20M(geoms.get(20));
-            tile.setTileGeometry60M(geoms.get(60));
+        tile.setTileGeometry10M(geoms.get(10));
+        tile.setTileGeometry20M(geoms.get(20));
+        tile.setTileGeometry60M(geoms.get(60));
 
-            //tile.setSunAnglesGrid(L1bMetadataProc.getSunGrid(aGranule));
-            //tile.setViewingIncidenceAnglesGrids(L1bMetadataProc.getAnglesGrid(aGranule));
+        tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
 
-            tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
-
-            tileList.add(tile);
-        }
+        tileList.add(tile);
     }
 }
