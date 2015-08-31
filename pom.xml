@@ -43,14 +43,15 @@
     <packaging>pom</packaging>
 
     <properties>
+        <snap.version>2.0.0-SNAPSHOT</snap.version>
         <!--
             snap.version is the Maven module version.
             snap.nbmSpecVersion is the NetBeans module specification version.
             It is used to filter manifest.mf and set the manifest's "OpenIDE-Module-Specification-Version" header.
             This is necessary to make NetBeans modules updatable and independent from the Maven version (= snap.version).
         -->
-        <snap.version>2.0.0-SNAPSHOT</snap.version>
-        <snap.nbmSpecVersion>1.0</snap.nbmSpecVersion>
+        <s2tbx.version>2.0.0-SNAPSHOT</s2tbx.version>
+        <s2tbx.nbmSpecVersion>2.0.0.6</s2tbx.nbmSpecVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE802</netbeans.version>
@@ -196,7 +197,6 @@
                                     </includes>
                                 </resource>
                             </resources>
-
                         </configuration>
                     </execution>
                 </executions>
