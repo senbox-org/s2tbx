@@ -547,6 +547,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
                                                            bandInfo.imageLayout,
                                                            getConfig(),
                                                            getModel(),
+                                                           getProductResolution(),
                                                            level);
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));

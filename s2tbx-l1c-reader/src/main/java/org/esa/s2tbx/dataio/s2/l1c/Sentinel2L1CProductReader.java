@@ -26,24 +26,30 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Polygon;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
+import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.S2TileOpImage;
 import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
-import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
-import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleMetadataFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.gml.GmlFilter;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.framework.datamodel.*;
+import org.esa.snap.framework.datamodel.Band;
+import org.esa.snap.framework.datamodel.CrsGeoCoding;
+import org.esa.snap.framework.datamodel.Placemark;
+import org.esa.snap.framework.datamodel.Product;
+import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.framework.datamodel.TiePointGrid;
+import org.esa.snap.framework.datamodel.VectorDataNode;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
@@ -56,7 +62,6 @@ import org.jdom.JDOMException;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -74,8 +79,14 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -589,6 +600,7 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                                                            bandInfo.getImageLayout(),
                                                            getConfig(),
                                                            getModel(),
+                                                           getProductResolution(),
                                                            level);
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
@@ -611,8 +623,8 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                 PlanarImage opImage = createL1cTileImage(tileId, level);
 
                 {
-                    double factorX = 1.0 / (Math.pow(2, level) * (this.bandInfo.getWavebandInfo().resolution.resolution / S2SpatialResolution.R10M.resolution));
-                    double factorY = 1.0 / (Math.pow(2, level) * (this.bandInfo.getWavebandInfo().resolution.resolution / S2SpatialResolution.R10M.resolution));
+                    double factorX = 1.0 / (Math.pow(2, level) * (this.bandInfo.getWavebandInfo().resolution.resolution / getProductResolution().resolution));
+                    double factorY = 1.0 / (Math.pow(2, level) * (this.bandInfo.getWavebandInfo().resolution.resolution / getProductResolution().resolution));
 
                     opImage = TranslateDescriptor.create(opImage,
                                                          (float) Math.floor((tileRectangle.x * factorX)),

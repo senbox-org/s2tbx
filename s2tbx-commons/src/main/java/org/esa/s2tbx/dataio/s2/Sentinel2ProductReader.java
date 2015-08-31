@@ -254,7 +254,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
 
     protected Band addBand(Product product, BandInfo bandInfo) {
-        int scaleFactor = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / S2SpatialResolution.R10M.resolution;
+        int scaleFactor = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / getProductResolution().resolution;
 
         String bandName = bandInfo.wavebandInfo.bandName;
         Band band;

@@ -508,6 +508,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                                            tileBandInfo.getImageLayout(),
                                                            getConfig(),
                                                            getModel(),
+                                                           getProductResolution(),
                                                            level);
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
@@ -577,14 +578,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 SystemUtils.LOG.log(Level.parse(S2Config.LOG_SCENE), String.format("Border: (%d, %d), (%d, %d)", mosaicOp.getWidth(), destBounds.width, mosaicOp.getHeight(), destBounds.height));
 
                 mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
-            }
-
-            if (this.tileBandInfo.getWavebandInfo().resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = S2TileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.tileBandInfo.getWavebandInfo().resolution, level);
-
-                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
-
-                return scaled;
             }
 
             logger.log(Level.parse(S2Config.LOG_SCENE), String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY(), mosaicOp.getWidth(), mosaicOp.getHeight()));

@@ -120,6 +120,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
                               TileLayout l1cTileLayout,
                               S2Config config,
                               MultiLevelModel imageModel,
+                                     S2SpatialResolution productResolution,
                               int level) {
 
         Assert.notNull(cacheDir, "cacheDir");
@@ -134,10 +135,10 @@ public class S2TileOpImage extends SingleBandedOpImage {
             SystemUtils.LOG.fine("Using empty image !");
 
 
-            TileLayout tileLayout10m = config.getTileLayout(S2SpatialResolution.R10M);
-            int targetWidth = getSizeAtResolutionLevel(tileLayout10m.width, level);
-            int targetHeight = getSizeAtResolutionLevel(tileLayout10m.height, level);
-            Dimension targetTileDim = getTileDimAtResolutionLevel(tileLayout10m.tileWidth, tileLayout10m.tileHeight, level);
+            TileLayout tileLaoutForProductResolution = config.getTileLayout(productResolution);
+            int targetWidth = getSizeAtResolutionLevel(tileLaoutForProductResolution.width, level);
+            int targetHeight = getSizeAtResolutionLevel(tileLaoutForProductResolution.height, level);
+            Dimension targetTileDim = getTileDimAtResolutionLevel(tileLaoutForProductResolution.tileWidth, tileLaoutForProductResolution.tileHeight, level);
             SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
