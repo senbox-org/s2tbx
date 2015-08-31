@@ -127,9 +127,9 @@ public class CodeStreamUtils {
     public static TileLayout getTileLayoutWithOpenJPEG(String opjdumpPath, URI uri) throws IOException, InterruptedException {
         Objects.requireNonNull(opjdumpPath);
 
-        String pathToImageFile = uri.getPath().substring(1);
+        String pathToImageFile = uri.getPath();
         if(SystemUtils.IS_OS_WINDOWS) {
-            pathToImageFile = Utils.GetIterativeShortPathName(pathToImageFile);
+            pathToImageFile = Utils.GetIterativeShortPathName(pathToImageFile.substring(1));
         }
 
         String thePath = opjdumpPath;
