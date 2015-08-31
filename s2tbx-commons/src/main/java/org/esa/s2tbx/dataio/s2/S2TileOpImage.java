@@ -175,7 +175,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
         if (scaledImage.getWidth() == targetWidth && scaledImage.getHeight() == targetHeight) {
             return scaledImage;
-        } else if (scaledImage.getWidth() >= targetWidth || scaledImage.getHeight() >= targetHeight) {
+        } else if (scaledImage.getWidth() > targetWidth || scaledImage.getHeight() > targetHeight) {
             SystemUtils.LOG.fine(String.format("Cropping: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
 
             return CropDescriptor.create(scaledImage,
