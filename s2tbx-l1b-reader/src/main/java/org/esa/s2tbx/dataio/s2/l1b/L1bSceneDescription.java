@@ -164,7 +164,7 @@ public class L1bSceneDescription extends S2SceneDescription {
             String detectorId = tile.getDetectorId();
             Integer tilePosition = tile.getGeometry(productResolution).getPosition();
             Integer storedTopPosition = detectorsTopPositionMap.get(detectorId);
-            if (storedTopPosition == null || storedTopPosition < tilePosition) {
+            if (storedTopPosition == null || storedTopPosition > tilePosition) {
                 detectorsTopPositionMap.put(detectorId, tilePosition);
             }
         }
