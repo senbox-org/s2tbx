@@ -67,6 +67,7 @@
   </parameters>
   <source>user</source>
   <isSystem>false</isSystem>
+  <isHandlingOutputName>true</isHandlingOutputName>
   <sourceProductDescriptors>
     <org.esa.snap.framework.gpf.descriptor.DefaultSourceProductDescriptor>
       <name>sourceProduct</name>

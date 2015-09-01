@@ -43,6 +43,16 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>nbm-maven-plugin</artifactId>
             <extensions>true</extensions>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>nbm</goal>
+                        <goal>cluster</goal>
+                        <goal>autoupdate</goal>
+                    </goals>
+                </execution>
+            </executions>
         </plugin>
     </plugins>
 </build>
