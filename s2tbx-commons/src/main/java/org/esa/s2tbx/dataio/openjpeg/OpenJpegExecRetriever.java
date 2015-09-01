@@ -200,6 +200,7 @@ public class OpenJpegExecRetriever {
                 Path openjpegLocalModulePath = Paths.get("").resolve("lib-openjpeg").resolve("release").resolve("dependency");
                 pathToExec = openjpegLocalModulePath.resolve(endPath);
                 if(!Files.exists(pathToExec)) {
+                    pathToExec = null;
                     SystemUtils.LOG.severe("Could not find OpenJpeg executable " + endPath);
                 }
             }
