@@ -11,7 +11,7 @@ import java.util.concurrent.Future;
  * Helper class to execute loops in parallel.
  */
 public class Parallel {
-    static final int PARALLELISM = Math.min(Runtime.getRuntime().availableProcessors() - 1, 2);
+    static final int PARALLELISM = Math.max(Runtime.getRuntime().availableProcessors() - 1, 2);
     /**
      * The loop code wrapper
      */
