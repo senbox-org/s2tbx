@@ -18,9 +18,12 @@
 
 package org.esa.s2tbx.dataio.openjpeg;
 
+import org.apache.commons.lang.SystemUtils;
+import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +36,47 @@ import java.util.List;
  * @author Oscar Picas-Puig
  */
 public class OpenJpegUtils {
+
+    /**
+     * Get the tile layout with opj_dump
+     *
+     * @param opjdumpPath path to opj_dump
+     * @param jp2FilePath the path to the jpeg file
+     * @return the tile layout for the openjpeg file
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public static TileLayout getTileLayoutWithOpenJPEG(String opjdumpPath, Path jp2FilePath) throws IOException, InterruptedException {
+
+        if(opjdumpPath == null) {
+            throw new IllegalStateException("Cannot retrieve tile layout, opj_dump cannot be found");
+        }
+
+        TileLayout tileLayout;
+
+        String pathToImageFile = jp2FilePath.toAbsolutePath().toString();
+        if (SystemUtils.IS_OS_WINDOWS) {
+            pathToImageFile = Utils.GetIterativeShortPathName(pathToImageFile);
+        }
+
+        ProcessBuilder builder = new ProcessBuilder(opjdumpPath, "-i", pathToImageFile);
+        builder.redirectErrorStream(true);
+
+        CommandOutput exit = OpenJpegUtils.runProcess(builder);
+
+        if (exit.getErrorCode() != 0) {
+            StringBuilder sbu = new StringBuilder();
+            for (String fragment : builder.command()) {
+                sbu.append(fragment);
+                sbu.append(' ');
+            }
+
+            throw new IOException(String.format("Command [%s] failed with error code [%d], stdoutput [%s] and stderror [%s]", sbu.toString(), exit.getErrorCode(), exit.getTextOutput(), exit.getErrorOutput()));
+        }
+        tileLayout = OpenJpegUtils.parseOpjDump(exit.getTextOutput());
+
+        return tileLayout;
+    }
 
     public static String convertStreamToString(java.io.InputStream is) {
         java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");

@@ -2,8 +2,8 @@ package org.esa.s2tbx.dataio.s2;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.jp2.CodeStreamUtils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
@@ -190,7 +190,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
             for (Path imageFilePath : getImageDirectories(pathToImages, resolution)) {
                 try {
                     tileLayoutForResolution =
-                            CodeStreamUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath.toUri());
+                            OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath);
                     if(tileLayoutForResolution != null) {
                         break;
                     }
