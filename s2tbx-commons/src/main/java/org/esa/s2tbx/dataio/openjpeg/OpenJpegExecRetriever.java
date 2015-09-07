@@ -42,6 +42,9 @@ import static org.apache.commons.lang.SystemUtils.IS_OS_MAC_OSX;
  */
 public class OpenJpegExecRetriever {
 
+    private static String OPENJPEG_EXEC_PATH_PROPERTY = "s2tbx.openjpeg.dir";
+
+
     private static void setExecutableRights(Path executablePathName) {
         Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(
                 PosixFilePermission.OWNER_EXECUTE,
@@ -177,29 +180,35 @@ public class OpenJpegExecRetriever {
     }
 
     private static Path findOpenJpegExecPath(String endPath)  {
-        Path pathToExec;
+        Path pathToExec = null;
 
-        // decompressor should be in the install dir or in the user dir.
-        // check the user dir first, then the install dir
 
-        endPath = "modules/ext/org.esa.s2tbx.lib-openjpeg/" + endPath;
+        String openJpegDir = EngineConfig.instance("s2tbx").preferences().get(OPENJPEG_EXEC_PATH_PROPERTY, null);
 
-        EngineConfig engineConfig = EngineConfig.instance();
-        Path userDirPath = engineConfig.userDir();
+        // openjpeg executables should be in the install dir or in the user dir.
+        // it is also possible to specify its path
+        // check the config first, then the user dir and finally the install dir
 
-        pathToExec = userDirPath.resolve(endPath);
+        if(openJpegDir != null) {
+            pathToExec = Paths.get(openJpegDir).resolve(endPath);
+        }
 
-        if (!Files.exists(pathToExec)) {
-            // try the installation directory
-            Path installPath = engineConfig.installDir();
-            String projectDir = "s2tbx";
-            pathToExec = installPath.resolve(projectDir).resolve(endPath);
 
-            if(!Files.exists(pathToExec)) {
-                // try local directory (used for tests)
-                Path openjpegLocalModulePath = Paths.get("").resolve("lib-openjpeg").resolve("release").resolve("dependency");
-                pathToExec = openjpegLocalModulePath.resolve(endPath);
-                if(!Files.exists(pathToExec)) {
+        if(pathToExec == null || !Files.exists(pathToExec)) {
+            endPath = "modules/ext/org.esa.s2tbx.lib-openjpeg/" + endPath;
+
+            EngineConfig engineConfig = EngineConfig.instance();
+            Path userDirPath = engineConfig.userDir();
+
+            pathToExec = userDirPath.resolve(endPath);
+
+            if (!Files.exists(pathToExec)) {
+                // try the installation directory
+                Path installPath = engineConfig.installDir();
+                String projectDir = "s2tbx";
+                pathToExec = installPath.resolve(projectDir).resolve(endPath);
+
+                if (!Files.exists(pathToExec)) {
                     pathToExec = null;
                     SystemUtils.LOG.severe("Could not find OpenJpeg executable " + endPath);
                 }
