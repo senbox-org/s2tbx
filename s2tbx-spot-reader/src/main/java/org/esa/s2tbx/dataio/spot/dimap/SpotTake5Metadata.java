@@ -23,7 +23,6 @@ import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,8 +56,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public int getNumBands() {
         int numBands = -1;
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_RADIOMETRY)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_RADIOMETRY)) != null)) {
             String descBands = currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_BANDS);
             numBands = StringUtils.countMatches(descBands, SpotConstants.SPOT4_TAKE5_VALUES_SEPARATOR) + 1;
         }
@@ -72,8 +70,7 @@ public class SpotTake5Metadata extends XmlMetadata {
      */
     public String[] getBandNames() {
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_RADIOMETRY)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_RADIOMETRY)) != null)) {
             String descBands = currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_BANDS);
             return StringUtils.split(descBands, SpotConstants.SPOT4_TAKE5_VALUES_SEPARATOR);
         }
@@ -96,8 +93,7 @@ public class SpotTake5Metadata extends XmlMetadata {
         }
         MetadataAttribute currentElement;
         MetadataElement filesElement;
-        if ((rootElement != null) &&
-                ((filesElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_FILES)) != null)) {
+        if (((filesElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_FILES)) != null)) {
             this.tiffFiles = new HashMap<String, String>();
             if ((currentElement = filesElement.getAttribute(SpotConstants.SPOT4_TAKE5_TAG_GEOTIFF)) != null) {
                 this.tiffFiles.put(SpotConstants.SPOT4_TAKE5_TAG_GEOTIFF, currentElement.getData().toString());
@@ -123,6 +119,7 @@ public class SpotTake5Metadata extends XmlMetadata {
      * <ul><li>METADATA/FILES/MASK_SATURATION</li></ul>
      * <ul><li>METADATA/FILES/MASK_CLOUDS</li></ul>
      * <ul><li>METADATA/FILES/MASK_DIVERSE</li></ul>
+     * NB: for N2 products, the metadata contains the name of the grouping folder, in which the mask files are to be found
      *
      * @return a map of String values, representing pairs of the tag of the file and the file name, as they appear in the metadata file
      */
@@ -132,9 +129,8 @@ public class SpotTake5Metadata extends XmlMetadata {
         }
         MetadataAttribute currentElement;
         MetadataElement filesElement;
-        if ((rootElement != null) &&
-                ((filesElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_FILES)) != null)) {
-            this.maskFiles = new HashMap<String, String>();
+        if (((filesElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_FILES)) != null)) {
+            this.maskFiles = new HashMap<>();
             if ((currentElement = filesElement.getAttribute(SpotConstants.SPOT4_TAKE5_TAG_SATURATION)) != null) {
                 this.maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, currentElement.getData().toString());
             }
@@ -148,12 +144,24 @@ public class SpotTake5Metadata extends XmlMetadata {
         return this.maskFiles;
     }
 
+    public String getMasksFolder() {
+        String maskFolderName = null;
+        MetadataAttribute currentElement;
+        MetadataElement filesElement;
+        if (((filesElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_FILES)) != null)) {
+            if ((currentElement = filesElement.getAttribute(SpotConstants.SPOT4_TAKE5_TAG_MASK_N2)) != null) {
+                ProductData data = currentElement.getData();
+                maskFolderName = data != null ? data.toString() : null;
+            }
+        }
+        return maskFolderName;
+    }
+
     @Override
     public String getProductName() {
         String name = null;
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_HEADER)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_HEADER)) != null)) {
             name = currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_IDENT);
             rootElement.setDescription(name);
         }
@@ -168,8 +176,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public String getProjectionCode() {
         String name = null;
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
             name = currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_PROJECTION);
         }
         return name;
@@ -183,8 +190,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public float getRasterGeoRefY() {
         float value = 0.0f;
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
             value = Float.parseFloat(currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_ORIGIN_Y));
         }
         return value;
@@ -198,8 +204,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public float getRasterGeoRefX() {
         float value = 0.0f;
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
             value = Float.parseFloat(currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_ORIGIN_X));
         }
         return value;
@@ -213,8 +218,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public float getRasterGeoRefSizeY() {
         float value = 0.0f;
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
             value = Float.parseFloat(currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_PIXEL_SIZE_Y));
         }
         return value;
@@ -228,8 +232,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public float getRasterGeoRefSizeX() {
         float value = 0.0f;
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
             value = Float.parseFloat(currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_PIXEL_SIZE_X));
         }
         return value;
@@ -244,8 +247,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public String getMetadataProfile() {
         String name = null;
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_HEADER)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_HEADER)) != null)) {
             name = currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_LEVEL);
         }
         return name;
@@ -255,8 +257,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public int getRasterWidth() {
         if (width == 0) {
             MetadataElement currentElement;
-            if ((rootElement != null) &&
-                    ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
+            if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
                 width = Integer.parseInt(currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_COLS));
             }
         }
@@ -267,8 +268,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public int getRasterHeight() {
         if (height == 0) {
             MetadataElement currentElement;
-            if ((rootElement != null) &&
-                    ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
+            if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_GEOMETRY)) != null)) {
                 height = Integer.parseInt(currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_ROWS));
             }
         }
@@ -314,8 +314,7 @@ public class SpotTake5Metadata extends XmlMetadata {
         String dateStr = null;
         ProductData.UTC dateValue = null;
         MetadataElement currentElement;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_HEADER)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_HEADER)) != null)) {
             dateStr = currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_DATE_PDV);
         }
         if (dateStr != null) {
@@ -332,8 +331,7 @@ public class SpotTake5Metadata extends XmlMetadata {
     public String getGeographicZone() {
         MetadataElement currentElement;
         String result = null;
-        if ((rootElement != null) &&
-                ((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_HEADER)) != null)) {
+        if (((currentElement = rootElement.getElement(SpotConstants.SPOT4_TAKE5_TAG_HEADER)) != null)) {
             result = currentElement.getAttributeString(SpotConstants.SPOT4_TAKE5_TAG_ZONE_GEO);
         }
         return result;
