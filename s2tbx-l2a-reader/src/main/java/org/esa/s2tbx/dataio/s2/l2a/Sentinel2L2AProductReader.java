@@ -40,6 +40,7 @@ import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.Band;
 import org.esa.snap.framework.datamodel.CrsGeoCoding;
+import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.framework.datamodel.TiePointGrid;
@@ -287,14 +288,15 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
             }
         }
 
-        //todo change product filename properties...
-        //todo test saving modified product...
         Product product = new Product(FileUtils.getFilenameWithoutExtension(productMetadataFile),
                                       "S2_MSI_" + productCharacteristics.getProcessingLevel(),
                                       sceneDescription.getSceneRectangle().width,
                                       sceneDescription.getSceneRectangle().height);
 
-        product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
+        for(MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
+            product.getMetadataRoot().addElement(metadataElement);
+        }
+
         product.setFileLocation(productMetadataFile.getParentFile());
 
         //todo look at affine tranformation geocoding info...
@@ -529,7 +531,7 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     }
 
     /**
-     * A MultiLevelSource used by bands for a scene made of multiple L1C tiles.
+     * A MultiLevelSource used by bands for a scene made of multiple L2A tiles.
      */
     private final class BandL2aSceneMultiLevelSource extends AbstractL2aSceneMultiLevelSource {
         private final BandInfo bandInfo;
@@ -709,16 +711,14 @@ public class Sentinel2L2AProductReader extends Sentinel2ProductReader {
     @Override
     protected DirectoryStream<Path> getImageDirectories(Path pathToImages, S2SpatialResolution spatialResolution) throws IOException {
         String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
+        Path pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
 
-        return Files.newDirectoryStream(pathToImages, entry -> {
-            Path pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
-
-            if (Files.exists(pathToImagesOfResolution)) {
-                if (entry.toString().endsWith(".jp2")) {
-                    return true;
-                }
-            }
-            return false;
-        });
+        if (Files.exists(pathToImagesOfResolution)) {
+            return Files.newDirectoryStream(pathToImagesOfResolution, entry -> {
+                return entry.toString().endsWith("_" + spatialResolution.resolution + "m.jp2");
+            });
+        } else {
+            return null;
+        }
     }
 }
