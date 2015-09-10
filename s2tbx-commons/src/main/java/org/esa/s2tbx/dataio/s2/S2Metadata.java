@@ -20,10 +20,9 @@ package org.esa.s2tbx.dataio.s2;
 
 
 import com.vividsolutions.jts.geom.Coordinate;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.apache.commons.io.IOUtils;
 import org.esa.snap.framework.datamodel.MetadataAttribute;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
@@ -37,6 +36,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +50,8 @@ import java.util.Set;
  * @author Nicolas Ducoin
  */
 public abstract class S2Metadata {
+
+    private List<MetadataElement> metadataElements;
 
     public static class Tile {
         private String id;
@@ -414,92 +416,28 @@ public abstract class S2Metadata {
 
     }
 
-
-    public static class Histogram {
-        public int bandId;
-        int[] values;
-        int step;
-        double min;
-        double max;
-        double mean;
-        double stdDev;
-
-        public int getBandId() {
-            return bandId;
-        }
-
-        public void setBandId(int bandId) {
-            this.bandId = bandId;
-        }
-
-        public int[] getValues() {
-            return values;
-        }
-
-        public void setValues(int[] values) {
-            this.values = values;
-        }
-
-        public int getStep() {
-            return step;
-        }
-
-        public void setStep(int step) {
-            this.step = step;
-        }
-
-        public double getMin() {
-            return min;
-        }
-
-        public void setMin(double min) {
-            this.min = min;
-        }
-
-        public double getMax() {
-            return max;
-        }
-
-        public void setMax(double max) {
-            this.max = max;
-        }
-
-        public double getMean() {
-            return mean;
-        }
-
-        public void setMean(double mean) {
-            this.mean = mean;
-        }
-
-        public double getStdDev() {
-            return stdDev;
-        }
-
-        public void setStdDev(double stdDev) {
-            this.stdDev = stdDev;
-        }
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
-
     private S2Config config;
 
     private Unmarshaller unmarshaller;
 
     private String psdString;
 
+
     public S2Metadata(S2Config config, JAXBContext context, String psdString) throws JAXBException {
         this.config = config;
         this.unmarshaller = context.createUnmarshaller();
         this.psdString = psdString;
+        metadataElements = new ArrayList<>();
     }
 
     public S2Config getConfig() {
         return config;
     }
+
+    public List<MetadataElement> getMetadataElements() {
+        return metadataElements;
+    }
+
 
 
     protected Object updateAndUnmarshal(InputStream xmlStream) throws IOException, JAXBException {

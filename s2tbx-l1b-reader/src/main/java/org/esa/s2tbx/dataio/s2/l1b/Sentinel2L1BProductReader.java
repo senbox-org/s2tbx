@@ -45,6 +45,7 @@ import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.Band;
 import org.esa.snap.framework.datamodel.CrsGeoCoding;
 import org.esa.snap.framework.datamodel.GeoCoding;
+import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.framework.datamodel.TiePointGeoCoding;
@@ -326,7 +327,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         product.setFileLocation(productMetadataFile.getParentFile());
-        product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
+
+        for(MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
+            product.getMetadataRoot().addElement(metadataElement);
+        }
 
 
         return product;

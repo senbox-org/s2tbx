@@ -21,14 +21,10 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
@@ -63,10 +59,7 @@ public class L2aMetadata extends S2Metadata {
 
     private static final String PSD_STRING = "12";
 
-    private MetadataElement metadataElement;
     protected Logger logger = SystemUtils.LOG;
-
-
 
 
     private List<Tile> tileList;
@@ -89,11 +82,6 @@ public class L2aMetadata extends S2Metadata {
         return productCharacteristics;
     }
 
-
-    public MetadataElement getMetadataElement() {
-        return metadataElement;
-    }
-
     private L2aMetadata(InputStream stream, File file, String parent, S2Config config) throws DataConversionException, JAXBException, FileNotFoundException {
         super(config, L2aMetadataProc.getJaxbContext(), PSD_STRING);
 
@@ -101,16 +89,16 @@ public class L2aMetadata extends S2Metadata {
             Object userProductOrTile = updateAndUnmarshal(stream);
 
             if(userProductOrTile instanceof Level2A_User_Product) {
-                initProduct(stream, file, parent, userProductOrTile);
+                initProduct(file, parent, userProductOrTile);
             } else {
-                initTile(stream, file, parent, userProductOrTile);
+                initTile(userProductOrTile);
             }
         } catch (JAXBException | JDOMException | IOException e) {
             logger.severe(Utils.getStackTrace(e));
         }
     }
 
-    private void initProduct(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+    private void initProduct(File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
         Level2A_User_Product product = (Level2A_User_Product) casted;
         productCharacteristics = L2aMetadataProc.getProductOrganization(product);
 
@@ -122,14 +110,16 @@ public class L2aMetadata extends S2Metadata {
 
         for (String granuleName : tileNames) {
             S2GranuleDirFilename aGranuleDir = S2L2aGranuleDirFilename.create(granuleName);
-            String theName = aGranuleDir.getMetadataFilename().name;
+            if(aGranuleDir != null) {
+                String theName = aGranuleDir.getMetadataFilename().name;
 
-            File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
-            if (nestedGranuleMetadata.exists()) {
-                fullTileNamesList.add(nestedGranuleMetadata);
-            } else {
-                String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
-                logger.log(Level.WARNING, errorMessage);
+                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
+                if (nestedGranuleMetadata.exists()) {
+                    fullTileNamesList.add(nestedGranuleMetadata);
+                } else {
+                    String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
+                    logger.log(Level.WARNING, errorMessage);
+                }
             }
         }
 
@@ -158,11 +148,10 @@ public class L2aMetadata extends S2Metadata {
 
         File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 
-        metadataElement = new MetadataElement("root");
         MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
         MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
-        metadataElement.addElement(userProduct);
-        metadataElement.addElement(dataStrip);
+        getMetadataElements().add(userProduct);
+        getMetadataElements().add(dataStrip);
         MetadataElement granulesMetaData = new MetadataElement("Granules");
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
@@ -170,10 +159,10 @@ public class L2aMetadata extends S2Metadata {
             granulesMetaData.addElement(aGranule);
         }
 
-        metadataElement.addElement(granulesMetaData);
+        getMetadataElements().add(granulesMetaData);
     }
 
-    private void initTile(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+    private void initTile(Object casted) throws IOException, JAXBException, JDOMException {
         Level2A_Tile aTile = (Level2A_Tile) casted;
 
         {

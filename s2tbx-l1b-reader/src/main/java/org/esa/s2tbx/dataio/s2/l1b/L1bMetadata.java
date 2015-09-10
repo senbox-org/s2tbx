@@ -60,7 +60,6 @@ public class L1bMetadata extends S2Metadata {
 
     private static final String PSD_STRING = "13";
 
-    private MetadataElement metadataElement;
     protected Logger logger = SystemUtils.LOG;
 
 
@@ -78,11 +77,6 @@ public class L1bMetadata extends S2Metadata {
 
     public ProductCharacteristics getProductCharacteristics() {
         return productCharacteristics;
-    }
-
-
-    public MetadataElement getMetadataElement() {
-        return metadataElement;
     }
 
     private L1bMetadata(InputStream stream, File file, String parent, S2Config config) throws DataConversionException, JAXBException, FileNotFoundException {
@@ -162,11 +156,10 @@ public class L1bMetadata extends S2Metadata {
 
         File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 
-        metadataElement = new MetadataElement("root");
         MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
         MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
-        metadataElement.addElement(userProduct);
-        metadataElement.addElement(dataStrip);
+        getMetadataElements().add(userProduct);
+        getMetadataElements().add(dataStrip);
         MetadataElement granulesMetaData = new MetadataElement("Granules");
 
 
@@ -175,7 +168,7 @@ public class L1bMetadata extends S2Metadata {
             granulesMetaData.addElement(aGranule);
         }
 
-        metadataElement.addElement(granulesMetaData);
+        getMetadataElements().add(granulesMetaData);
     }
 
     private void initTile(Object casted) throws IOException, JAXBException, JDOMException {

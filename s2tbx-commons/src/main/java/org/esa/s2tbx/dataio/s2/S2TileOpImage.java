@@ -117,20 +117,20 @@ public class S2TileOpImage extends SingleBandedOpImage {
     public static PlanarImage create(File imageFile,
                               File cacheDir,
                               Point imagePos,
-                              TileLayout l1cTileLayout,
+                              TileLayout tileLayout,
                               S2Config config,
                               MultiLevelModel imageModel,
                                      S2SpatialResolution productResolution,
                               int level) {
 
         Assert.notNull(cacheDir, "cacheDir");
-        Assert.notNull(l1cTileLayout, "imageLayout");
+        Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
 
         if (imageFile != null) {
-            SystemUtils.LOG.fine("Image layout: " + l1cTileLayout);
+            SystemUtils.LOG.fine("Image layout: " + tileLayout);
 
-            return new S2TileOpImage(imageFile, cacheDir, imagePos, l1cTileLayout, imageModel, level);
+            return new S2TileOpImage(imageFile, cacheDir, imagePos, tileLayout, imageModel, level);
         } else {
             SystemUtils.LOG.fine("Using empty image !");
 

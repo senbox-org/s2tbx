@@ -20,7 +20,16 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
 
-import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_DATATAKE_IDENTIFICATION;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_MASK_LIST;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO_USERL1C;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_QUALITY_INDICATORS_INFO_TILE;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
+import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_TILE_DESCRIPTION;
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.collections.CollectionUtils;
@@ -35,72 +44,23 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CDatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
-import org.esa.snap.util.SystemUtils;
-import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author  opicas-p
  */
 public class L1cMetadataProc extends S2MetadataProc {
 
-    public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
-        String subStr = "s2tbx-reader";
-
-        ClassLoader s2c = Sentinel2L1CProductReader.class.getClassLoader();
-        URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
-
-        URL[] theURLs = s2ClassLoader.getURLs();
-        for (URL url : theURLs) {
-            if (url.getPath().contains(subStr) && url.getPath().contains(".jar")) {
-                URI uri = url.toURI();
-                URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
-                return parent.getPath();
-            } else {
-                //todo please note that in dev, all the module jar files are unzipped in modules folder, so SNAP only reaches this code in dev environments
-                if (url.getPath().contains(subStr)) {
-                    URI uri = url.toURI();
-                    URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
-                    return parent.getPath();
-                }
-            }
-        }
-
-        throw new FileNotFoundException("Module " + subStr + " not found !");
-    }
-
-    public static String tryGetModulesDir() {
-        String theDir = "./";
-        try {
-            theDir = getModulesDir();
-        } catch (Exception e) {
-            SystemUtils.LOG.severe(StackTraceUtils.getStackTrace(e));
-        }
-        return theDir;
-    }
-
-    @Deprecated
-    public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
-        ClassLoader s2c = Sentinel2L1CProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L1C + S2MetadataType.SEPARATOR + S2MetadataType.L1B + S2MetadataType.SEPARATOR + S2MetadataType.L2A, s2c);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-        Object ob = unmarshaller.unmarshal(stream);
-
-        return ((JAXBElement) ob).getValue();
-    }
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level1C_User_Product.class.getClassLoader();
@@ -211,11 +171,14 @@ public class L1cMetadataProc extends S2MetadataProc {
 
         String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-        String fileName = dirDatastrip.getFileName(null);
 
         S2DatastripFilename datastripFilename = null;
-        if(fileName != null) {
-            datastripFilename = S2L1CDatastripFilename.create(fileName);
+        if(dirDatastrip != null) {
+            String fileName = dirDatastrip.getFileName(null);
+
+            if (fileName != null) {
+                datastripFilename = S2L1CDatastripFilename.create(fileName);
+            }
         }
 
         return datastripFilename;

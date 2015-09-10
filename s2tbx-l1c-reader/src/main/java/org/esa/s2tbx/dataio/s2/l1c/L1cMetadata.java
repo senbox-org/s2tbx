@@ -21,8 +21,6 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -65,23 +63,8 @@ public class L1cMetadata extends S2Metadata {
 
     private static final String PSD_STRING = "13";
 
-    private MetadataElement metadataElement;
+
     protected Logger logger = SystemUtils.LOG;
-
-
-    static class Histogram {
-        public int bandId;
-        int[] values;
-        int step;
-        double min;
-        double max;
-        double mean;
-        double stdDev;
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-    }
 
     private List<Tile> tileList;
     private Map<String, List<Tile>> allTileLists; // Key is UTM zone, values are the tiles associated to a UTM zone
@@ -109,23 +92,20 @@ public class L1cMetadata extends S2Metadata {
     }
 
 
-    public MetadataElement getMetadataElement() {
-        return metadataElement;
-    }
 
     private L1cMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg) throws JDOMException, JAXBException, FileNotFoundException {
-        super(config, L1cMetadataProc.getJaxbContext(), PSD_STRING);
+        super(config, L1cMetadataProc. getJaxbContext(), PSD_STRING);
 
         try {
             Object userProduct = updateAndUnmarshal(stream);
 
             if(userProduct instanceof Level1C_User_Product)
             {
-                initProduct(stream, file, parent, granuleName, userProduct, epsg);
+                initProduct(file, parent, granuleName, userProduct, epsg);
             }
             else
             {
-                initTile(stream, file, parent, userProduct);
+                initTile(file, userProduct);
             }
         } catch (UnmarshalException|JDOMException e) {
             logger.severe(String.format("Product is not conform to PSD: %s", e.getMessage()));
@@ -135,7 +115,7 @@ public class L1cMetadata extends S2Metadata {
         }
     }
 
-    private void initProduct(InputStream stream, File file, String parent, String granuleName, Object casted, String epsg) throws IOException, JAXBException, JDOMException {
+    private void initProduct(File file, String parent, String granuleName, Object casted, String epsg) throws IOException, JAXBException, JDOMException {
         Level1C_User_Product product = (Level1C_User_Product) casted;
         productCharacteristics = L1cMetadataProc.getProductOrganization(product);
 
@@ -230,11 +210,10 @@ public class L1cMetadata extends S2Metadata {
 
         File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 
-        metadataElement = new MetadataElement("root");
         MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
         MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
-        metadataElement.addElement(userProduct);
-        metadataElement.addElement(dataStrip);
+        getMetadataElements().add(userProduct);
+        getMetadataElements().add(dataStrip);
         MetadataElement granulesMetaData = new MetadataElement("Granules");
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
@@ -242,10 +221,10 @@ public class L1cMetadata extends S2Metadata {
             granulesMetaData.addElement(aGranule);
         }
 
-        metadataElement.addElement(granulesMetaData);
+        getMetadataElements().add(granulesMetaData);
     }
 
-    private void initTile(InputStream stream, File file, String parent, Object casted) throws IOException, JAXBException, JDOMException {
+    private void initTile(File file, Object casted) throws IOException, JAXBException, JDOMException {
         Level1C_Tile product = (Level1C_Tile) casted;
         productCharacteristics = new L1cMetadata.ProductCharacteristics();
 

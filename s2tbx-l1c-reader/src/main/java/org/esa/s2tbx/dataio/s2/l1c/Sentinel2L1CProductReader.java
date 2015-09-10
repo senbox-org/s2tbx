@@ -45,6 +45,7 @@ import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.Band;
 import org.esa.snap.framework.datamodel.CrsGeoCoding;
+import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.Placemark;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.datamodel.ProductData;
@@ -222,7 +223,9 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                                       sceneDescription.getSceneRectangle().width,
                                       sceneDescription.getSceneRectangle().height);
 
-        product.getMetadataRoot().addElement(metadataHeader.getMetadataElement());
+        for(MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
+            product.getMetadataRoot().addElement(metadataElement);
+        }
         product.setFileLocation(metadataFile);
 
         Envelope2D sceneEnvelope = sceneDescription.getSceneEnvelope();
@@ -321,6 +324,9 @@ public class Sentinel2L1CProductReader extends Sentinel2ProductReader {
                         SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
                         collection.add(f1);
                     }
+//                    VectorDataNode vdn = new VectorDataNode("NODATATEST", new DefaultFeatureCollection("S2L1CMasks", type));
+//                    vdn.setOwner(product);
+//                    product.addMask("NODATATEST", vdn, "GML Mask", Color.GREEN, 0.8);
 
                     VectorDataNode vdn = new VectorDataNode(polygonType, collection);
                     vdn.setOwner(product);
