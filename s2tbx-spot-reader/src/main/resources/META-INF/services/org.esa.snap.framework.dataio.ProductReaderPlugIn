@@ -17,3 +17,4 @@
 org.esa.s2tbx.dataio.spot.SpotDimapProductReaderPlugin
 org.esa.s2tbx.dataio.spot.SpotViewProductReaderPlugin
 org.esa.s2tbx.dataio.spot.SpotTake5ProductReaderPlugin
+org.esa.s2tbx.dataio.spot.Spot5Take5ProductReaderPlugin

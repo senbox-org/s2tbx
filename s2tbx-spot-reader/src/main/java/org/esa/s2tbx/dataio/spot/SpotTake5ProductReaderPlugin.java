@@ -61,7 +61,7 @@ public class SpotTake5ProductReaderPlugin extends BaseProductReaderPlugIn {
     protected String[] getProductFilePatterns() { return SpotConstants.SPOT4_TAKE5_FILENAME_PATTERNS; }*/
 
     @Override
-    protected String[] getMinimalPatternList() { return SpotConstants.SPOTTAKE5_MINIMAL_PRODUCT_PATTERNS; }
+    protected String[] getMinimalPatternList() { return SpotConstants.SPOT4TAKE5_MINIMAL_PRODUCT_PATTERNS; }
 
     @Override
     protected String[] getExclusionPatternList() { return new String[0]; }

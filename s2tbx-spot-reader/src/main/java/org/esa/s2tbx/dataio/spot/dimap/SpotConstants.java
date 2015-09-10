@@ -179,16 +179,17 @@ public class SpotConstants {
 
     //take5:
     public static final Class[] SPOT4_TAKE5_READER_INPUT_TYPES = new Class[]{String.class, File.class};
-    public static final String SPOT4_TAKE5_DESCRIPTION = "SPOTTake5 Data Products";
+    public static final String SPOT4_TAKE5_DESCRIPTION = "SPOT4-Take5 Data Products";
+    public static final String SPOT5_TAKE5_DESCRIPTION = "SPOT5-Take5 Data Products";
     public static final String[] SPOT4_TAKE5_DEFAULT_EXTENSION = new String[]{".xml", ".XML", ".tgz", ".TGZ"};
-    public static final String[] SPOT4_TAKE5_FORMAT_NAME = new String[]{"SPOTTake5"};
-    /*public static final String[] SPOT4_TAKE5_FILENAME_PATTERNS = new String[] {
-            "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC](_.+){0,1}\\.(tgz|TGZ)",
-            "SPOT4_HRVIR1_XS_\\d{8}_N\\d{1}[ABC](_.+){0,1}\\.(xml|XML)"};*/
-    public static final String[] SPOTTAKE5_MINIMAL_PRODUCT_PATTERNS = new String[] {
+    public static final String[] SPOT4_TAKE5_FORMAT_NAME = new String[]{"SPOT4Take5"};
+    public static final String[] SPOT5_TAKE5_FORMAT_NAME = new String[]{"SPOT5Take5"};
+    public static final String[] SPOT4TAKE5_MINIMAL_PRODUCT_PATTERNS = new String[] {
             "(.+[/\\\\]){0,1}spot4_hrvir1_xs_.*\\.xml",
             "(.+[/\\\\]){0,1}spot4_hrvir1_xs_.*\\.tif"};
-
+    public static final String[] SPOT5TAKE5_MINIMAL_PRODUCT_PATTERNS = new String[] {
+            "(.+[/\\\\]){0,1}spot5_hrg2_xs_.*\\.xml",
+            "(.+[/\\\\]){0,1}spot5_hrg2_xs_.*\\.tif"};
     public static final String SPOT4_TAKE5_TAG_METADATA = "METADATA";
     public static final String SPOT4_TAKE5_TAG_RADIOMETRY = "RADIOMETRY";
     public static final String SPOT4_TAKE5_TAG_BANDS = "BANDS";
@@ -207,6 +208,7 @@ public class SpotConstants {
     public static final String SPOT4_TAKE5_TAG_ORTHO_VAP_EAU = "ORTHO_VAP_EAU";
     public static final String SPOT4_TAKE5_TAG_DATE_PDV = "DATE_PDV";
     public static final String SPOT4_TAKE5_TAG_SATURATION = "MASK_SATURATION";
+    public static final String SPOT4_TAKE5_TAG_MASK_N2 = "MASK_N2";
     public static final String SPOT4_TAKE5_UTC_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public static final String SPOT4_TAKE5_TAG_PROJECTION = "PROJECTION";
     public static final String SPOT4_TAKE5_TAG_ORIGIN_Y = "ORIGIN_Y";

@@ -132,6 +132,33 @@ public class SpotTake5ProductReader extends AbstractProductReader {
         }
         Product product = null;
         if (imageMetadata != null) {
+            String productLevel = imageMetadata.getMetadataProfile();
+            // for N2, the masks may not be present in metadata, but in a folder named MASK
+            String masksFolderName = imageMetadata.getMasksFolder();
+            if (productLevel.startsWith("N2") && masksFolderName != null) {
+                File masksFolder = new File(imageMetadataFile.getParent(), masksFolderName);
+                String[] files = masksFolder.list();
+                Map<String, String> maskFiles = imageMetadata.getMaskFiles();
+                for (String file : files) {
+                    String path = masksFolderName + File.separator + file;
+                    if (file.contains("SAT")) {
+                        maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
+                    } else if (file.contains("NUA")) {
+                        maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS, path);
+                    } else if (file.contains("DIV")) {
+                        maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE, path);
+                    }
+                }
+                Map<String, String> rasterFiles = imageMetadata.getTiffFiles();
+                if (!rasterFiles.containsKey(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) ||
+                        rasterFiles.get(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT) == null ||
+                        rasterFiles.get(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT).isEmpty()) {
+                    String[] rasterNames = imageMetadataFile.getParentFile().list((dir, name) -> name.contains("AOT"));
+                    if (rasterNames != null && rasterNames.length > 0) {
+                        rasterFiles.put(SpotConstants.SPOT4_TAKE5_TAG_ORTHO_SURF_AOT, rasterNames[0]);
+                    }
+                }
+            }
             product = new Product(imageMetadata.getProductName(),
                                   SpotConstants.SPOT4_TAKE5_FORMAT_NAME[0],
                                   imageMetadata.getRasterWidth(),
@@ -143,11 +170,15 @@ public class SpotTake5ProductReader extends AbstractProductReader {
             ProductData.UTC startTime = imageMetadata.getDatePdv();
             product.setStartTime(startTime);
             product.setEndTime(startTime);
-            product.setDescription(SpotConstants.SPOT4_TAKE5_FORMAT + " level:" + imageMetadata.getMetadataProfile() + " zone:" + imageMetadata.getGeographicZone());
+            product.setDescription(SpotConstants.SPOT4_TAKE5_FORMAT + " level:" + productLevel + " zone:" + imageMetadata.getGeographicZone());
 
             //all the bands of the tiff files are added to the product
-            for (Map.Entry<String, String> entry : imageMetadata.getTiffFiles().entrySet()) {
-                addBands(product, metaSubFolder + entry.getValue(), entry.getKey());
+            Map<String, String> tiffFiles = imageMetadata.getTiffFiles();
+            List<String> sortedKeys = new ArrayList<>(tiffFiles.keySet());
+            Collections.sort(sortedKeys);
+            for (int i = sortedKeys.size() - 1; i >= 0; i--) {
+                String key = sortedKeys.get(i);
+                addBands(product, metaSubFolder + tiffFiles.get(key), key);
             }
 
             //for each mask found in the metadata, the first band of the mask is added to the product, in order to create the masks
