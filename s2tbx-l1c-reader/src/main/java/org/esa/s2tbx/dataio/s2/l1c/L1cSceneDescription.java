@@ -30,7 +30,7 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +61,7 @@ public class L1cSceneDescription extends S2SceneDescription {
         }
     }
 
-    public static L1cSceneDescription create(L1cMetadata header, S2SpatialResolution productResolution) {
+    public static L1cSceneDescription create(L1cMetadata header, S2SpatialResolution productResolution) throws IOException {
         List<L1cMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
@@ -69,7 +69,7 @@ public class L1cSceneDescription extends S2SceneDescription {
         Envelope2D sceneEnvelope = null;
 
         if (tileList.isEmpty()) {
-            throw new IllegalStateException();
+            throw new IOException("The product contains no tile for this reader");
         }
         for (int i = 0; i < tileList.size(); i++) {
             L1cMetadata.Tile tile = tileList.get(i);
@@ -99,7 +99,7 @@ public class L1cSceneDescription extends S2SceneDescription {
         }
 
         if (sceneEnvelope == null) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Could not compute scene envelope for the product");
         }
         double imageX = sceneEnvelope.getX();
         double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
@@ -162,49 +162,6 @@ public class L1cSceneDescription extends S2SceneDescription {
 
     public Rectangle getTileRectangle(int tileIndex) {
         return tileInfos[tileIndex].rectangle;
-    }
-
-    public BufferedImage createTilePicture(int width) {
-
-        Color[] colors = new Color[]{
-                Color.GREEN,
-                Color.RED,
-                Color.BLUE,
-                Color.YELLOW};
-
-        double scale = width / sceneRectangle.getWidth();
-        int height = (int) Math.round(sceneRectangle.getHeight() * scale);
-
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics = image.createGraphics();
-        graphics.scale(scale, scale);
-        graphics.translate(-sceneRectangle.getX(), -sceneRectangle.getY());
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        graphics.setPaint(Color.WHITE);
-        graphics.fill(sceneRectangle);
-        graphics.setStroke(new BasicStroke(100F));
-        graphics.setFont(new Font("Arial", Font.PLAIN, 800));
-
-        for (int i = 0; i < tileInfos.length; i++) {
-            Rectangle rect = tileInfos[i].rectangle;
-            graphics.setPaint(addAlpha(colors[i % colors.length].brighter(), 100));
-            graphics.fill(rect);
-        }
-        for (int i = 0; i < tileInfos.length; i++) {
-            Rectangle rect = tileInfos[i].rectangle;
-            graphics.setPaint(addAlpha(colors[i % colors.length].darker(), 100));
-            graphics.draw(rect);
-            graphics.setPaint(colors[i % colors.length].darker().darker());
-            graphics.drawString("Tile " + (i + 1) + ": " + tileInfos[i].id,
-                                rect.x + 1200F,
-                                rect.y + 2200F);
-        }
-        return image;
-    }
-
-    private static Color addAlpha(Color color, int alpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 
     public String toString() {

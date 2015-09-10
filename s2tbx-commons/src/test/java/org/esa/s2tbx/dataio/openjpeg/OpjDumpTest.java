@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.openjpeg;
 
-import org.esa.s2tbx.dataio.jp2.CodeStreamUtils;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,9 +29,9 @@ public class OpjDumpTest {
     public void testRun1() throws URISyntaxException, IOException {
         String jp2Path = "/org/esa/s2tbx/dataio/s2/l2a/S2A_USER_MSI_L2A_TL_MPS__20150210T180608_A000069_T14RMQ_B03_20m.jp2";
 
-        final File file = new File(OpjDumpTest.class.getResource(jp2Path).toURI());
+        final Path pathToJP2File = Paths.get(OpjDumpTest.class.getResource(jp2Path).toURI());
         try {
-            CodeStreamUtils.getTileLayoutWithOpenJPEG(opjDumpPath.toAbsolutePath().toString(), file.toURI());
+            OpenJpegUtils.getTileLayoutWithOpenJPEG(opjDumpPath.toAbsolutePath().toString(), pathToJP2File);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 1.0
-OpenIDE-Module-Implementation-Version: 1.0
-OpenIDE-Module-Display-Category: SNAP
+OpenIDE-Module-Specification-Version: 2.0.0.6.1
+OpenIDE-Module-Implementation-Version: 2.0.0.6.1
+OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Type: STA
 OpenIDE-Module-Short-Description: Sen2Cor
