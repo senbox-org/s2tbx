@@ -27,12 +27,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -84,7 +79,7 @@ public class SpotTake5ProductReaderPluginTest {
         final String[] formatNames = plugIn.getFormatNames();
         assertNotNull(formatNames);
         assertEquals(1, formatNames.length);
-        assertEquals("SPOTTake5", formatNames[0]);
+        assertEquals("SPOT4Take5", formatNames[0]);
     }
 
     @Test
