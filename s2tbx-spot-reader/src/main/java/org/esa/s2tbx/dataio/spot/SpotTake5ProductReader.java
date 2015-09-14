@@ -139,14 +139,16 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                 File masksFolder = new File(imageMetadataFile.getParent(), masksFolderName);
                 String[] files = masksFolder.list();
                 Map<String, String> maskFiles = imageMetadata.getMaskFiles();
-                for (String file : files) {
-                    String path = masksFolderName + File.separator + file;
-                    if (file.contains("SAT")) {
-                        maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
-                    } else if (file.contains("NUA")) {
-                        maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS, path);
-                    } else if (file.contains("DIV")) {
-                        maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE, path);
+                if (files != null) {
+                    for (String file : files) {
+                        String path = masksFolderName + File.separator + file;
+                        if (file.contains("SAT")) {
+                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_SATURATION, path);
+                        } else if (file.contains("NUA")) {
+                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_CLOUDS, path);
+                        } else if (file.contains("DIV")) {
+                            maskFiles.put(SpotConstants.SPOT4_TAKE5_TAG_DIVERSE, path);
+                        }
                     }
                 }
                 Map<String, String> rasterFiles = imageMetadata.getTiffFiles();
