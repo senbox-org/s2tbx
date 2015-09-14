@@ -24,7 +24,6 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
@@ -62,7 +61,7 @@ public class SpotTake5ProductReaderTest {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(4, finalProduct.getBands().length);
             assertEquals("WGS84(DD)", finalProduct.getGeoCoding().getGeoCRS().getName().toString());
-            assertEquals("SPOTTake5", finalProduct.getProductType());
+            assertEquals("SPOT4Take5", finalProduct.getProductType());
             assertEquals(0, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(4000, finalProduct.getSceneRasterWidth());
             assertEquals(3750, finalProduct.getSceneRasterHeight());
