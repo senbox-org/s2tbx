@@ -92,6 +92,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
+                            <strict>false</strict>
                             <schemaDirectory>src/main/resources/L2</schemaDirectory>
                             <schemaIncludes>
                                 <include>*.xsd</include>

@@ -93,6 +93,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
+                            <strict>false</strict>
                             <schemaDirectory>src/main/resources/schemas/PSD13/</schemaDirectory>
                             <schemaIncludes>
                                 <include>*_Metadata.xsd</include>
