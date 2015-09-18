@@ -1,0 +1,50 @@
+<filesystem>
+    <folder name="Actions">
+        <folder name="Readers">
+            <file name="org-esa-s2tbx-dataio-s2-ImportS2L1BProduct.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
+                <attr name="displayName" stringvalue="S2-MSI L1B"/>
+                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1B"/>
+                <attr name="useAllFileFilter" boolvalue="false"/>
+            </file>
+            <file name="org-esa-s2tbx-dataio-s2-ImportS2Product.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
+                <attr name="displayName" stringvalue="S2-MSI L1C"/>
+                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1C-MultiRes-UTM31N"/>
+                <attr name="useAllFileFilter" boolvalue="false"/>
+            </file>
+            <file name="org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
+                <attr name="displayName" stringvalue="S2-MSI L2A"/>
+                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L2A"/>
+                <attr name="useAllFileFilter" boolvalue="false"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="File">
+            <folder name="Import">
+                <folder name="Optical Sensors">
+                    <folder name="Sentinel-2">
+                        <file name="org-esa-s2tbx-dataio-s2-ImportS2L1BProduct.shadow">
+                            <attr name="originalFile"
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2L1BProduct.instance"/>
+                        </file>
+                        <file name="org-esa-s2tbx-dataio-S2-ImportS2Product.shadow">
+                            <attr name="originalFile"
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2Product.instance"/>
+                        </file>
+                        <file name="org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.shadow">
+                            <attr name="originalFile"
+                                  stringvalue="Actions/Readers/org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.instance"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
