@@ -65,14 +65,8 @@ public class L2aMetadata extends S2OrthoMetadata {
 
     protected Logger logger = SystemUtils.LOG;
 
-    private Collection<ImageInfo> imageList;
-
     public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException, JAXBException {
         return new L2aMetadata(new FileInputStream(file), file, file.getParent(), granuleName, config, epsg, productResolution);
-    }
-
-    public Collection<ImageInfo> getImageList() {
-        return imageList;
     }
 
     private L2aMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, JAXBException, FileNotFoundException {
@@ -106,8 +100,6 @@ public class L2aMetadata extends S2OrthoMetadata {
         List<File> fullTileNamesList = new ArrayList<>();
 
         resetTileList();
-
-        imageList = L2aMetadataProc.getImages(product);
 
         resetTileList();
 

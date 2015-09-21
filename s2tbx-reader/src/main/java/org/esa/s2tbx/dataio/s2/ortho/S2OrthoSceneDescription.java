@@ -17,10 +17,11 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2.l2a;
+package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.util.SystemUtils;
@@ -29,7 +30,8 @@ import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.awt.Rectangle;
+import java.awt.*;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +39,7 @@ import java.util.Map;
 /**
  * @author Norman Fomferra
  */
-public class L2aSceneDescription extends S2SceneDescription {
+public class S2OrthoSceneDescription extends S2SceneDescription {
 
     private final TileInfo[] tileInfos;
     private final Envelope2D sceneEnvelope;
@@ -60,18 +62,18 @@ public class L2aSceneDescription extends S2SceneDescription {
         }
     }
 
-    public static L2aSceneDescription create(L2aMetadata header, S2SpatialResolution productResolution) {
-        List<L2aMetadata.Tile> tileList = header.getTileList();
+    public static S2OrthoSceneDescription create(S2Metadata header, S2SpatialResolution productResolution) throws IOException {
+        List<S2Metadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];
         TileInfo[] tileInfos = new TileInfo[tileList.size()];
         Envelope2D sceneEnvelope = null;
 
         if (tileList.isEmpty()) {
-            throw new IllegalStateException();
+            throw new IOException("The product contains no tile for this reader");
         }
         for (int i = 0; i < tileList.size(); i++) {
-            L2aMetadata.Tile tile = tileList.get(i);
+            S2Metadata.Tile tile = tileList.get(i);
             if (crs == null) {
                 try {
                     crs = CRS.decode(tile.getHorizontalCsCode());
@@ -81,7 +83,7 @@ public class L2aSceneDescription extends S2SceneDescription {
                 }
             }
 
-            L2aMetadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
+            S2Metadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
             Envelope2D envelope = new Envelope2D(crs,
                                                  selectedGeometry.getUpperLeftX(),
                                                  selectedGeometry.getUpperLeftY() + selectedGeometry.getNumRows() * selectedGeometry.getyDim(),
@@ -98,14 +100,14 @@ public class L2aSceneDescription extends S2SceneDescription {
         }
 
         if (sceneEnvelope == null) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Could not compute scene envelope for the product");
         }
         double imageX = sceneEnvelope.getX();
         double imageY = sceneEnvelope.getY() + sceneEnvelope.getHeight();
         Rectangle sceneBounds = null;
         for (int i = 0; i < tileEnvelopes.length; i++) {
-            L2aMetadata.Tile tile = tileList.get(i);
-            L2aMetadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
+            S2Metadata.Tile tile = tileList.get(i);
+            S2Metadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
             Envelope2D tileEnvelope = tileEnvelopes[i];
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
@@ -121,12 +123,12 @@ public class L2aSceneDescription extends S2SceneDescription {
             tileInfos[i] = new TileInfo(i, tile.getId(), rectangle);
         }
 
-        return new L2aSceneDescription(tileInfos, sceneEnvelope, sceneBounds);
+        return new S2OrthoSceneDescription(tileInfos, sceneEnvelope, sceneBounds);
     }
 
-    private L2aSceneDescription(TileInfo[] tileInfos,
-                                Envelope2D sceneEnvelope,
-                                Rectangle sceneRectangle) {
+    private S2OrthoSceneDescription(TileInfo[] tileInfos,
+                                    Envelope2D sceneEnvelope,
+                                    Rectangle sceneRectangle) {
         super();
 
         this.tileInfos = tileInfos;
@@ -145,7 +147,6 @@ public class L2aSceneDescription extends S2SceneDescription {
     public Envelope2D getSceneEnvelope() {
         return sceneEnvelope;
     }
-
 
     public String[] getTileIds() {
         final String[] tileIds = new String[tileInfos.length];

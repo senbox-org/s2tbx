@@ -31,7 +31,6 @@ import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
-import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
@@ -40,20 +39,11 @@ import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
-import org.esa.snap.util.SystemUtils;
-import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,85 +55,13 @@ import java.util.Map;
  */
 public class L2aMetadataProc extends S2MetadataProc {
 
-    public static String getModulesDir() throws URISyntaxException, FileNotFoundException {
-        String subStr = "s2tbx-l2a-reader";
-
-        ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
-        URLClassLoader s2ClassLoader = (URLClassLoader) s2c;
-
-        URL[] theURLs = s2ClassLoader.getURLs();
-        for (URL url : theURLs) {
-            if (url.getPath().contains(subStr) && url.getPath().contains(".jar")) {
-                URI uri = url.toURI();
-                URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
-                return parent.getPath();
-            } else {
-                //todo please note that in dev, all the module jar files are unzipped in modules folder, so SNAP only reaches this code in dev environments
-                if (url.getPath().contains(subStr)) {
-                    URI uri = url.toURI();
-                    URI parent = uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".");
-                    return parent.getPath();
-                }
-            }
-        }
-
-        throw new FileNotFoundException("Module " + subStr + " not found !");
-    }
-
-    public static String tryGetModulesDir() {
-        String theDir = "./";
-        try {
-            theDir = getModulesDir();
-        } catch (Exception e) {
-            SystemUtils.LOG.severe(StackTraceUtils.getStackTrace(e));
-        }
-        return theDir;
-    }
-
-    public static String convertStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
-    }
-
-    @Deprecated
-    public static void setExecutable(File file, boolean executable) {
-        try {
-            Process p = Runtime.getRuntime().exec(new String[]{
-                    "chmod",
-                    "u" + (executable ? '+' : '-') + "x",
-                    file.getAbsolutePath(),
-            });
-            p.waitFor();
-            String output = convertStreamToString(p.getInputStream());
-            String errorOutput = convertStreamToString(p.getErrorStream());
-        } catch (Exception e) {
-            SystemUtils.LOG.severe(Utils.getStackTrace(e));
-        }
-    }
-
-    @Deprecated
-    public static Object readJaxbFromFilename(InputStream stream) throws JAXBException, FileNotFoundException {
-
-        ClassLoader s2c = Sentinel2L2AProductReader.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L2A, s2c);
-
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-        Object ob = unmarshaller.unmarshal(stream);
-        Object casted = ((JAXBElement) ob).getValue();
-
-        return casted;
-    }
-
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level2A_User_Product.class.getClassLoader();
-        JAXBContext jaxbContext = JAXBContext.newInstance(S2MetadataType.L2A, s2c);
-        return jaxbContext;
+        return JAXBContext.newInstance(S2MetadataType.L2A, s2c);
     }
 
 
     public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product, S2SpatialResolution resolution) {
-        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
         L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
         characteristics.setSpacecraft(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME());
@@ -178,17 +96,13 @@ public class L2aMetadataProc extends S2MetadataProc {
 
         List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
 
-        Transformer tileSelector = new Transformer() {
-            @Override
-            public Object transform(Object o) {
-                A_L2A_Product_Info.L2A_Product_Organisation.Granule_List ali = (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List) o;
-                A_PRODUCT_ORGANIZATION_2A.Granules gr = ali.getGranules();
-                return gr.getGranuleIdentifier();
-            }
+        Transformer tileSelector = o -> {
+            A_L2A_Product_Info.L2A_Product_Organisation.Granule_List ali = (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List) o;
+            A_PRODUCT_ORGANIZATION_2A.Granules gr = ali.getGranules();
+            return gr.getGranuleIdentifier();
         };
 
-        Collection col = CollectionUtils.collect(aGranuleList, tileSelector);
-        return col;
+        return CollectionUtils.collect(aGranuleList, tileSelector);
     }
 
     public static S2DatastripFilename getDatastrip(Level2A_User_Product product) {
@@ -196,8 +110,13 @@ public class L2aMetadataProc extends S2MetadataProc {
 
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-        String fileName = dirDatastrip.getFileName(null);
-        return S2OrthoDatastripFilename.create(fileName);
+
+        if (dirDatastrip != null) {
+            String fileName = dirDatastrip.getFileName(null);
+            return S2OrthoDatastripFilename.create(fileName);
+        } else {
+            return null;
+        }
     }
 
     public static S2DatastripDirFilename getDatastripDir(Level2A_User_Product product) {
@@ -207,29 +126,7 @@ public class L2aMetadataProc extends S2MetadataProc {
         return S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
     }
 
-    public static Collection<ImageInfo> getImages(Level2A_User_Product product) {
-        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
-
-        List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> theList = info.getGranule_List();
-        List<ImageInfo> aGranuleList = new ArrayList<ImageInfo>();
-
-        for (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List currentList : theList) {
-            List<A_PRODUCT_ORGANIZATION_2A.Granules.IMAGE_ID_2A> images = currentList.getGranules().getIMAGE_ID_2A();
-
-            for (int granuleIndex = 0; granuleIndex < images.size(); granuleIndex++) {
-                ImageInfo newImage = new ImageInfo(images.get(granuleIndex).getValue());
-                newImage.put("DatastripIdentifier", currentList.getGranules().getDatastripIdentifier());
-                newImage.put("GranuleIdentifier", currentList.getGranules().getGranuleIdentifier());
-                newImage.put("ImageFormat", currentList.getGranules().getImageFormat());
-                aGranuleList.add(newImage);
-            }
-        }
-
-        return aGranuleList;
-    }
-
     public static Map<Integer, L2aMetadata.TileGeometry> getTileGeometries(Level2A_Tile product) {
-        String id = product.getGeneral_Info().getTILE_ID_2A().getValue();
 
         A_GEOMETRIC_INFO_TILE info = product.getGeometric_Info();
         A_GEOMETRIC_INFO_TILE.Tile_Geocoding tgeo = info.getTile_Geocoding();
@@ -238,7 +135,7 @@ public class L2aMetadataProc extends S2MetadataProc {
         List<A_TILE_DESCRIPTION.Geoposition> poss = tgeo.getGeoposition();
         List<A_TILE_DESCRIPTION.Size> sizz = tgeo.getSize();
 
-        Map<Integer, L2aMetadata.TileGeometry> resolutions = new HashMap<Integer, L2aMetadata.TileGeometry>();
+        Map<Integer, L2aMetadata.TileGeometry> resolutions = new HashMap<>();
 
         for (A_TILE_DESCRIPTION.Geoposition gpos : poss) {
             int index = gpos.getResolution();
@@ -261,7 +158,6 @@ public class L2aMetadataProc extends S2MetadataProc {
     }
 
     public static L2aMetadata.AnglesGrid getSunGrid(Level2A_Tile product) {
-        String id = product.getGeneral_Info().getTILE_ID_2A().getValue();
 
         A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
         A_SUN_INCIDENCE_ANGLE_GRID sun = ang.getSun_Angles_Grid();

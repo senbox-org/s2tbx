@@ -42,7 +42,6 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.gml.GmlFilter;
 import org.esa.s2tbx.dataio.s2.l1c.L1cMetadata;
-import org.esa.s2tbx.dataio.s2.l1c.L1cSceneDescription;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
@@ -205,8 +204,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         S2OrthoMetadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
 
-        L1cSceneDescription sceneDescription = L1cSceneDescription.create(metadataHeader,
-                                                                          getProductResolution());
+        S2OrthoSceneDescription sceneDescription = S2OrthoSceneDescription.create(metadataHeader,
+                                                                                  getProductResolution());
         logger.fine("Scene Description: " + sceneDescription);
 
         File productDir = getProductDir(rootMetaDataFile);
@@ -389,7 +388,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
 
-    private void addTiePointGridBand(Product product, S2Metadata metadataHeader, L1cSceneDescription sceneDescription, String name, int tiePointGridIndex) {
+    private void addTiePointGridBand(Product product, S2Metadata metadataHeader, S2OrthoSceneDescription sceneDescription, String name, int tiePointGridIndex) {
         final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
     }
@@ -552,9 +551,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     private class L1cSceneMultiLevelImageFactory extends MultiLevelImageFactory {
 
-        private final L1cSceneDescription sceneDescription;
+        private final S2OrthoSceneDescription sceneDescription;
 
-        public L1cSceneMultiLevelImageFactory(L1cSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
+        public L1cSceneMultiLevelImageFactory(S2OrthoSceneDescription sceneDescription, AffineTransform imageToModelTransform) {
             super(imageToModelTransform);
 
             SystemUtils.LOG.fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
@@ -575,9 +574,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
      * A MultiLevelSource for a scene made of multiple L1C tiles.
      */
     private abstract class AbstractL1cSceneMultiLevelSource extends AbstractMultiLevelSource {
-        protected final L1cSceneDescription sceneDescription;
+        protected final S2OrthoSceneDescription sceneDescription;
 
-        AbstractL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
+        AbstractL1cSceneMultiLevelSource(S2OrthoSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
             super(new DefaultMultiLevelModel(numResolutions,
                                              imageToModelTransform,
                                              sceneDescription.getSceneRectangle().width,
@@ -592,7 +591,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private final class BandL1cSceneMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
         private final BandInfo bandInfo;
 
-        public BandL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
+        public BandL1cSceneMultiLevelSource(S2OrthoSceneDescription sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(sceneDescription, imageToModelTransform, bandInfo.getImageLayout().numResolutions);
             this.bandInfo = bandInfo;
         }
@@ -705,7 +704,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         private final int tiePointGridIndex;
         private HashMap<String, TiePointGrid[]> tiePointGridsMap;
 
-        public TiePointGridL1cSceneMultiLevelSource(L1cSceneDescription sceneDescription, S2Metadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
+        public TiePointGridL1cSceneMultiLevelSource(S2OrthoSceneDescription sceneDescription, S2Metadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
             super(sceneDescription, imageToModelTransform, numResolutions);
             this.metadata = metadata;
             this.tiePointGridIndex = tiePointGridIndex;

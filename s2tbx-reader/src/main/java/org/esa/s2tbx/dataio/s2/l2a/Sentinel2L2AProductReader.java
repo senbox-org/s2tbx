@@ -89,10 +89,7 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
         Path pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
 
         return Files.newDirectoryStream(pathToImagesOfResolution, entry -> {
-            if (entry.toString().endsWith("_" + spatialResolution.resolution + "m.jp2")) {
-                return true;
-            }
-            return false;
+            return entry.toString().endsWith("_" + spatialResolution.resolution + "m.jp2");
         });
     }
 
