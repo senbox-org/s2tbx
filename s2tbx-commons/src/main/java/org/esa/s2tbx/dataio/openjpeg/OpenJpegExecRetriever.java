@@ -47,8 +47,12 @@ public class OpenJpegExecRetriever {
 
     private static void setExecutableRights(Path executablePathName) {
         Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(
+                PosixFilePermission.OWNER_READ,
+                PosixFilePermission.OWNER_WRITE,
                 PosixFilePermission.OWNER_EXECUTE,
+                PosixFilePermission.GROUP_READ,
                 PosixFilePermission.GROUP_EXECUTE,
+                PosixFilePermission.OTHERS_READ,
                 PosixFilePermission.OTHERS_EXECUTE));
         try {
             Files.setPosixFilePermissions(executablePathName, permissions);
