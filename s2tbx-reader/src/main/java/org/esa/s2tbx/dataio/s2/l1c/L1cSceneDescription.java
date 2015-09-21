@@ -21,6 +21,7 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.util.SystemUtils;
@@ -61,7 +62,7 @@ public class L1cSceneDescription extends S2SceneDescription {
         }
     }
 
-    public static L1cSceneDescription create(L1cMetadata header, S2SpatialResolution productResolution) throws IOException {
+    public static L1cSceneDescription create(S2Metadata header, S2SpatialResolution productResolution) throws IOException {
         List<L1cMetadata.Tile> tileList = header.getTileList();
         CoordinateReferenceSystem crs = null;
         Envelope2D[] tileEnvelopes = new Envelope2D[tileList.size()];

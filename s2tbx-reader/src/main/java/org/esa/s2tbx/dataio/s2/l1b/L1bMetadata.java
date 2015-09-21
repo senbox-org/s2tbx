@@ -64,16 +64,13 @@ public class L1bMetadata extends S2Metadata {
 
 
 
-    private List<Tile> tileList;
+
     private ProductCharacteristics productCharacteristics;
 
     public static L1bMetadata parseHeader(File file, S2Config config) throws JDOMException, IOException, JAXBException {
         return new L1bMetadata(new FileInputStream(file), file, file.getParent(), config);
     }
 
-    public List<Tile> getTileList() {
-        return tileList;
-    }
 
     public ProductCharacteristics getProductCharacteristics() {
         return productCharacteristics;
@@ -108,7 +105,7 @@ public class L1bMetadata extends S2Metadata {
         Collection<String> tileNames = L1bMetadataProc.getTiles(product);
         List<File> fullTileNamesList = new ArrayList<>();
 
-        tileList = new ArrayList<>();
+        resetTileList();
 
         for (String granuleName : tileNames) {
             File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
@@ -148,7 +145,7 @@ public class L1bMetadata extends S2Metadata {
 
             tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
 
-            tileList.add(tile);
+            addTileToList(tile);
         }
 
         S2DatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
@@ -175,7 +172,7 @@ public class L1bMetadata extends S2Metadata {
         Level1B_Granule aGranule = (Level1B_Granule) casted;
         productCharacteristics = new L1bMetadata.ProductCharacteristics();
 
-        tileList = new ArrayList<>();
+        resetTileList();
 
         Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
 
@@ -187,6 +184,6 @@ public class L1bMetadata extends S2Metadata {
 
         tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
 
-        tileList.add(tile);
+        addTileToList(tile);
     }
 }

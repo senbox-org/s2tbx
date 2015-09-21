@@ -18,8 +18,7 @@
  */
 package org.esa.s2tbx.dataio.s2.ortho;
 
-import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
-import org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -54,7 +53,7 @@ public class S2ProductCRSCache {
         File granuleFolder = rootPath.resolve("GRANULE").toFile();
         for( File granule : granuleFolder.listFiles() ) {
             if (granule.isDirectory()) {
-                S2L1CGranuleDirFilename granuleDirFilename = S2L1CGranuleDirFilename.create(granule.getName());
+                S2OrthoGranuleDirFilename granuleDirFilename = S2OrthoGranuleDirFilename.create(granule.getName());
                 String epsgCode = S2CRSHelper.tileIdentifierToEPSG(granuleDirFilename.tileNumber);
                 if (!cache.containsKey(productFileName)) {
                     cache.put(productFileName, new S2ProductCRSCacheEntry());

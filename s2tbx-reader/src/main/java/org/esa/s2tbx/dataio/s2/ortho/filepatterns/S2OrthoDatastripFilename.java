@@ -17,7 +17,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2.l1c.filepaterns;
+package org.esa.s2tbx.dataio.s2.ortho.filepatterns;
 
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.snap.util.SystemUtils;
@@ -25,26 +25,26 @@ import org.esa.snap.util.SystemUtils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class S2L1CDatastripFilename extends S2DatastripFilename {
+public class S2OrthoDatastripFilename extends S2DatastripFilename {
     private final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(S[0-9]{8}T[0-9]{6})(\\.[A-Z|a-z|0-9]{3,4})?";
     private final static Pattern PATTERN = Pattern.compile(REGEX);
 
 
-    private S2L1CDatastripFilename(String name,
-                                   String missionID,
-                                   String fileClass,
-                                   String fileCategory,
-                                   String fileSemantic,
-                                   String siteCentre,
-                                   String creationDate,
-                                   String applicabilityStart) {
+    private S2OrthoDatastripFilename(String name,
+                                     String missionID,
+                                     String fileClass,
+                                     String fileCategory,
+                                     String fileSemantic,
+                                     String siteCentre,
+                                     String creationDate,
+                                     String applicabilityStart) {
         super(name, missionID, fileClass, fileCategory, fileSemantic, siteCentre, creationDate, applicabilityStart);
     }
 
     public static S2DatastripFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
-            return new S2L1CDatastripFilename(fileName,
+            return new S2OrthoDatastripFilename(fileName,
                                            matcher.group(1),
                                            matcher.group(2),
                                            matcher.group(3),
@@ -54,7 +54,7 @@ public class S2L1CDatastripFilename extends S2DatastripFilename {
                                            matcher.group(7)
             );
         } else {
-            SystemUtils.LOG.warning(String.format("%s S2L1CDatastripFilename didn't match regexp %s", fileName, PATTERN.toString()));
+            SystemUtils.LOG.warning(String.format("%s S2OrthoDatastripFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

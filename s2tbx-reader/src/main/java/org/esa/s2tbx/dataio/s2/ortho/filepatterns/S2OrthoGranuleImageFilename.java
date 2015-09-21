@@ -17,7 +17,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2.l2a.filepatterns;
+package org.esa.s2tbx.dataio.s2.ortho.filepatterns;
 
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.snap.util.SystemUtils;
@@ -28,22 +28,22 @@ import java.util.regex.Pattern;
 /**
  * @author Norman Fomferra
  */
-public class S2L2aGranuleImageFilename extends S2GranuleImageFilename {
+public class S2OrthoGranuleImageFilename extends S2GranuleImageFilename {
 
     final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})(_A[0-9]{6})(_T[A-Z|0-9]{5})_B([A-B|0-9]{2})(\\.[A-Z|a-z|0-9]{3,4})?";
     final static Pattern PATTERN = Pattern.compile(REGEX);
 
-    private S2L2aGranuleImageFilename(String name,
-                                      String missionID,
-                                      String fileClass,
-                                      String fileCategory,
-                                      String fileSemantic,
-                                      String siteCentre,
-                                      String creationDate,
-                                      String instanceID,
-                                      String absoluteOrbit,
-                                      String tileNumber,
-                                      String bandIndex) {
+    private S2OrthoGranuleImageFilename(String name,
+                                        String missionID,
+                                        String fileClass,
+                                        String fileCategory,
+                                        String fileSemantic,
+                                        String siteCentre,
+                                        String creationDate,
+                                        String instanceID,
+                                        String absoluteOrbit,
+                                        String tileNumber,
+                                        String bandIndex) {
         super(  name,
                 missionID,
                 fileClass,
@@ -68,7 +68,7 @@ public class S2L2aGranuleImageFilename extends S2GranuleImageFilename {
     public static S2GranuleImageFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
-            return new S2L2aGranuleImageFilename(fileName,
+            return new S2OrthoGranuleImageFilename(fileName,
                                                  matcher.group(1),
                                                  matcher.group(2),
                                                  matcher.group(3),

@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripFilename;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -15,7 +15,7 @@ public class S2L2aDatastripFilenameTest {
     @Test
     public void testFileName() throws Exception
     {
-        S2DatastripFilename s2gf = S2L2aDatastripFilename.create("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928");
+        S2DatastripFilename s2gf = S2OrthoDatastripFilename.create("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928");
         assertNotNull(s2gf);
         assertEquals("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928", s2gf.name);
         assertEquals("S2A", s2gf.missionID);
@@ -42,7 +42,7 @@ public class S2L2aDatastripFilenameTest {
         assertEquals("S20091211T165928", s2gf.applicabilityStart);
 
         String fileName = s2gf.getFileName(null);
-        S2DatastripFilename afin = S2L2aDatastripFilename.create(fileName);
+        S2DatastripFilename afin = S2OrthoDatastripFilename.create(fileName);
 
         assertNotNull(afin);
         assertEquals("S2A_OPER_MTD_L1C_DS_CGS1_20130621T120000_S20091211T165928.xml", afin.name);

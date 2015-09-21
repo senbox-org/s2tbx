@@ -42,8 +42,8 @@ import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CDatastripFilename;
-import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -98,8 +98,8 @@ public class L1cMetadataProc extends S2MetadataProc {
         return characteristics;
     }
 
-    public static L1cMetadata.ProductCharacteristics getProductOrganization(Level1C_User_Product product) {
-        L1cMetadata.ProductCharacteristics characteristics = new L1cMetadata.ProductCharacteristics();
+    public static S2Metadata.ProductCharacteristics getProductOrganization(Level1C_User_Product product) {
+        S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setSpacecraft(product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME());
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString());
         characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value());
@@ -177,7 +177,7 @@ public class L1cMetadataProc extends S2MetadataProc {
             String fileName = dirDatastrip.getFileName(null);
 
             if (fileName != null) {
-                datastripFilename = S2L1CDatastripFilename.create(fileName);
+                datastripFilename = S2OrthoDatastripFilename.create(fileName);
             }
         }
 
@@ -188,7 +188,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
         List<A_PRODUCT_INFO.Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
         String granule = aGranuleList.get(0).getGranules().getGranuleIdentifier();
-        S2L1CGranuleDirFilename grafile = S2L1CGranuleDirFilename.create(granule);
+        S2OrthoGranuleDirFilename grafile = S2OrthoGranuleDirFilename.create(granule);
 
         S2DatastripDirFilename datastripDirFilename = null;
         if(grafile != null) {

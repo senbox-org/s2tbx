@@ -54,7 +54,7 @@ public class S2L1BDatastripFilename extends S2DatastripFilename {
                                            matcher.group(7)
             );
         } else {
-            SystemUtils.LOG.warning(String.format("%s S2L1CDatastripFilename didn't match regexp %s", fileName, PATTERN.toString()));
+            SystemUtils.LOG.warning(String.format("%s S2OrthoDatastripFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;
         }
     }

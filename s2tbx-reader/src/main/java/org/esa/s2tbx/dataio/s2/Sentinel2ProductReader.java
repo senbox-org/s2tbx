@@ -301,10 +301,6 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
             return tileIdToFileMap;
         }
 
-        public int getBandIndex() {
-            return bandIndex;
-        }
-
         public TileLayout getImageLayout() {
             return imageLayout;
         }

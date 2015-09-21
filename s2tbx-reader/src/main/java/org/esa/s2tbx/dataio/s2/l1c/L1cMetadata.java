@@ -27,7 +27,9 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.l1c.filepaterns.S2L1CGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.ortho.Counter;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadata;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.util.SystemUtils;
 import org.jdom.JDOMException;
@@ -46,7 +48,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -59,42 +60,18 @@ import java.util.stream.Collectors;
  *
  * @author Norman Fomferra
  */
-public class L1cMetadata extends S2Metadata {
+public class L1cMetadata extends S2OrthoMetadata {
 
     private static final String PSD_STRING = "13";
 
-
     protected Logger logger = SystemUtils.LOG;
-
-    private List<Tile> tileList;
-    private Map<String, List<Tile>> allTileLists; // Key is UTM zone, values are the tiles associated to a UTM zone
-
-    private ProductCharacteristics productCharacteristics;
 
     public static L1cMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws JDOMException, IOException, JAXBException {
         return new L1cMetadata(new FileInputStream(file), file, file.getParent(), granuleName, config, epsg);
     }
 
-    public List<Tile> getTileList() {
-        return tileList;
-    }
-
-    public Set<String> getUTMZonesList() {
-        return allTileLists.keySet();
-    }
-
-    public List<Tile> getTileList(String utmZone) {
-        return allTileLists.get(utmZone);
-    }
-
-    public ProductCharacteristics getProductCharacteristics() {
-        return productCharacteristics;
-    }
-
-
-
     private L1cMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg) throws JDOMException, JAXBException, FileNotFoundException {
-        super(config, L1cMetadataProc. getJaxbContext(), PSD_STRING);
+        super(config, L1cMetadataProc.getJaxbContext(), PSD_STRING);
 
         try {
             Object userProduct = updateAndUnmarshal(stream);
@@ -117,7 +94,7 @@ public class L1cMetadata extends S2Metadata {
 
     private void initProduct(File file, String parent, String granuleName, Object casted, String epsg) throws IOException, JAXBException, JDOMException {
         Level1C_User_Product product = (Level1C_User_Product) casted;
-        productCharacteristics = L1cMetadataProc.getProductOrganization(product);
+        setProductCharacteristics(L1cMetadataProc.getProductOrganization(product));
 
         Collection<String> tileNames;
 
@@ -126,17 +103,14 @@ public class L1cMetadata extends S2Metadata {
         } else {
             tileNames = Collections.singletonList(granuleName);
         }
+
         List<File> fullTileNamesList = new ArrayList<>();
 
-
-        // todo populate allTileLists
-        allTileLists = new HashMap<>();
-
-        tileList = new ArrayList<>();
+        resetTileList();
 
         for (String tileName : tileNames) {
 
-            S2L1CGranuleDirFilename aGranuleDir = S2L1CGranuleDirFilename.create(tileName);
+            S2OrthoGranuleDirFilename aGranuleDir = S2OrthoGranuleDirFilename.create(tileName);
 
             if(aGranuleDir != null) {
                 String theName = aGranuleDir.getMetadataFilename().name;
@@ -186,14 +160,15 @@ public class L1cMetadata extends S2Metadata {
 
             tile.setMaskFilenames(L1cMetadataProc.getMasks(aTile, aGranuleMetadataFile));
 
-            tileList.add(tile);
+            addTileToList(tile);
         }
 
 
         for(String key: counters.keySet())
         {
-            List<L1cMetadata.Tile> aUTMZone = tileList.stream().filter(i -> i.getHorizontalCsCode().equals(key)).collect(Collectors.toList());
-            allTileLists.put(key, aUTMZone);
+            List<S2Metadata.Tile> aUTMZone =
+                    getTileList().stream().filter(i -> i.getHorizontalCsCode().equals(key)).collect(Collectors.toList());
+            addTileListToAllTileList(key, aUTMZone);
         }
 
         // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
@@ -225,33 +200,27 @@ public class L1cMetadata extends S2Metadata {
     }
 
     private void initTile(File file, Object casted) throws IOException, JAXBException, JDOMException {
-        Level1C_Tile product = (Level1C_Tile) casted;
-        productCharacteristics = new L1cMetadata.ProductCharacteristics();
+        Level1C_Tile aTile = (Level1C_Tile) casted;
+        resetTileList();
 
-        tileList = new ArrayList<>();
-        allTileLists = new HashMap<>();
+        Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
-        // todo move this code to a common function
-        {
-            Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(product);
+        Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
+        tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
+        tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
-            Tile tile = new Tile(product.getGeneral_Info().getTILE_ID().getValue());
-            tile.setHorizontalCsCode(product.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
-            tile.setHorizontalCsName(product.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
+        tile.setTileGeometry10M(geoms.get(10));
+        tile.setTileGeometry20M(geoms.get(20));
+        tile.setTileGeometry60M(geoms.get(60));
 
-            tile.setTileGeometry10M(geoms.get(10));
-            tile.setTileGeometry20M(geoms.get(20));
-            tile.setTileGeometry60M(geoms.get(60));
+        tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(aTile));
+        tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(aTile));
 
-            tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(product));
-            tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(product));
+        L1cMetadataProc.getMasks(aTile, file);
+        tile.setMaskFilenames(L1cMetadataProc.getMasks(aTile, file));
 
-            L1cMetadataProc.getMasks(product, file);
-            tile.setMaskFilenames(L1cMetadataProc.getMasks(product, file));
+        addTileToList(tile);
 
-            tileList.add(tile);
-
-            allTileLists.put(tile.getHorizontalCsCode(), tileList);
-        }
+        addTileListToAllTileList(tile.getHorizontalCsCode(), getTileList());
     }
 }

@@ -53,6 +53,124 @@ public abstract class S2Metadata {
 
     private List<MetadataElement> metadataElements;
 
+    private List<Tile> tileList;
+
+    private S2Config config;
+
+    private Unmarshaller unmarshaller;
+
+    private String psdString;
+
+    private ProductCharacteristics productCharacteristics;
+
+
+    public S2Metadata(S2Config config, JAXBContext context, String psdString) throws JAXBException {
+        this.config = config;
+        this.unmarshaller = context.createUnmarshaller();
+        this.psdString = psdString;
+        metadataElements = new ArrayList<>();
+    }
+
+    public S2Config getConfig() {
+        return config;
+    }
+
+    public List<MetadataElement> getMetadataElements() {
+        return metadataElements;
+    }
+
+    public List<Tile> getTileList() {
+        return tileList;
+    }
+
+    public void resetTileList() {
+        tileList = new ArrayList<>();
+    }
+
+    public void addTileToList(Tile tile) {
+        tileList.add(tile);
+    }
+
+    public ProductCharacteristics getProductCharacteristics() {
+        return productCharacteristics;
+    }
+
+    public void setProductCharacteristics(ProductCharacteristics productCharacteristics) {
+        this.productCharacteristics = productCharacteristics;
+    }
+
+    protected Object updateAndUnmarshal(InputStream xmlStream) throws IOException, JAXBException {
+        InputStream updatedStream = changePSDIfRequired(xmlStream, psdString);
+        Object ob = unmarshaller.unmarshal(updatedStream);
+        return ((JAXBElement) ob).getValue();
+    }
+
+    /**
+     * from the input stream, replace the psd number in the header to allow jaxb to find
+     * xsd files. This allows to open product with psd different from the reference one
+     * for small changes.
+     */
+    static InputStream changePSDIfRequired(InputStream xmlStream, String psdNumber) throws IOException {
+        InputStream updatedXmlStream;
+
+        String xmlStreamAsString = IOUtils.toString(xmlStream);
+
+        final String psd13String = "psd-" + psdNumber + ".sentinel2.eo.esa.int";
+        if (!xmlStreamAsString.contains(psd13String)) {
+            String regex="psd-\\d{2,}.sentinel2.eo.esa.int";
+            String updatedXmlStreamAsString =
+                    xmlStreamAsString.replaceAll(
+                            regex, psd13String);
+            updatedXmlStream = IOUtils.toInputStream(updatedXmlStreamAsString, "UTF-8");
+        } else {
+            updatedXmlStream = IOUtils.toInputStream(xmlStreamAsString, "UTF-8");
+        }
+
+        return updatedXmlStream;
+    }
+
+    protected MetadataElement parseAll(Element parent) {
+        return parseTree(parent, null, new HashSet<>(Arrays.asList("Viewing_Incidence_Angles_Grids", "Sun_Angles_Grid")));
+    }
+
+    protected MetadataElement parseTree(Element element, MetadataElement mdParent, Set<String> excludes) {
+
+        MetadataElement mdElement = new MetadataElement(element.getName());
+
+        List attributes = element.getAttributes();
+        for (Object a : attributes) {
+            Attribute attribute = (Attribute) a;
+            MetadataAttribute mdAttribute = new MetadataAttribute(attribute.getName().toUpperCase(), ProductData.createInstance(attribute.getValue()), true);
+            mdElement.addAttribute(mdAttribute);
+        }
+
+        for (Object c : element.getChildren()) {
+            Element child = (Element) c;
+            String childName = child.getName();
+            String childValue = child.getValue();
+            if (!excludes.contains(childName)) {
+                if (childValue != null && !childValue.isEmpty() && childName.equals(childName.toUpperCase())) {
+                    MetadataAttribute mdAttribute = new MetadataAttribute(childName, ProductData.createInstance(childValue), true);
+                    String unit = child.getAttributeValue("unit");
+                    if (unit != null) {
+                        mdAttribute.setUnit(unit);
+                    }
+                    mdElement.addAttribute(mdAttribute);
+                } else {
+                    parseTree(child, mdElement, excludes);
+                }
+            }
+        }
+
+        if (mdParent != null) {
+            mdParent.addElement(mdElement);
+        }
+
+        return mdElement;
+    }
+
+
+
     public static class Tile {
         private String id;
         private String detectorId;
@@ -180,8 +298,7 @@ public abstract class S2Metadata {
         }
     }
 
-    public static class MaskFilename
-    {
+    public static class MaskFilename {
         String bandId;
         String type;
         File name;
@@ -220,7 +337,6 @@ public abstract class S2Metadata {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
     }
-
 
     public static class AnglesGrid {
         private int bandId;
@@ -414,99 +530,5 @@ public abstract class S2Metadata {
         }
 
 
-    }
-
-    private S2Config config;
-
-    private Unmarshaller unmarshaller;
-
-    private String psdString;
-
-
-    public S2Metadata(S2Config config, JAXBContext context, String psdString) throws JAXBException {
-        this.config = config;
-        this.unmarshaller = context.createUnmarshaller();
-        this.psdString = psdString;
-        metadataElements = new ArrayList<>();
-    }
-
-    public S2Config getConfig() {
-        return config;
-    }
-
-    public List<MetadataElement> getMetadataElements() {
-        return metadataElements;
-    }
-
-
-
-    protected Object updateAndUnmarshal(InputStream xmlStream) throws IOException, JAXBException {
-        InputStream updatedStream = changePSDIfRequired(xmlStream, psdString);
-        Object ob = unmarshaller.unmarshal(updatedStream);
-        return ((JAXBElement) ob).getValue();
-    }
-
-    /**
-     * from the input stream, replace the psd number in the header to allow jaxb to find
-     * xsd files. This allows to open product with psd different from the reference one
-     * for small changes.
-     */
-    static InputStream changePSDIfRequired(InputStream xmlStream, String psdNumber) throws IOException {
-        InputStream updatedXmlStream;
-
-        String xmlStreamAsString = IOUtils.toString(xmlStream);
-
-        final String psd13String = "psd-" + psdNumber + ".sentinel2.eo.esa.int";
-        if (!xmlStreamAsString.contains(psd13String)) {
-            String regex="psd-\\d{2,}.sentinel2.eo.esa.int";
-            String updatedXmlStreamAsString =
-                    xmlStreamAsString.replaceAll(
-                            regex, psd13String);
-            updatedXmlStream = IOUtils.toInputStream(updatedXmlStreamAsString, "UTF-8");
-        } else {
-            updatedXmlStream = IOUtils.toInputStream(xmlStreamAsString, "UTF-8");
-        }
-
-        return updatedXmlStream;
-    }
-
-    protected MetadataElement parseAll(Element parent) {
-        return parseTree(parent, null, new HashSet<>(Arrays.asList("Viewing_Incidence_Angles_Grids", "Sun_Angles_Grid")));
-    }
-
-    protected MetadataElement parseTree(Element element, MetadataElement mdParent, Set<String> excludes) {
-
-        MetadataElement mdElement = new MetadataElement(element.getName());
-
-        List attributes = element.getAttributes();
-        for (Object a : attributes) {
-            Attribute attribute = (Attribute) a;
-            MetadataAttribute mdAttribute = new MetadataAttribute(attribute.getName().toUpperCase(), ProductData.createInstance(attribute.getValue()), true);
-            mdElement.addAttribute(mdAttribute);
-        }
-
-        for (Object c : element.getChildren()) {
-            Element child = (Element) c;
-            String childName = child.getName();
-            String childValue = child.getValue();
-            if (!excludes.contains(childName)) {
-                if (childValue != null && !childValue.isEmpty() && childName.equals(childName.toUpperCase())) {
-                    MetadataAttribute mdAttribute = new MetadataAttribute(childName, ProductData.createInstance(childValue), true);
-                    String unit = child.getAttributeValue("unit");
-                    if (unit != null) {
-                        mdAttribute.setUnit(unit);
-                    }
-                    mdElement.addAttribute(mdAttribute);
-                } else {
-                    parseTree(child, mdElement, excludes);
-                }
-            }
-        }
-
-        if (mdParent != null) {
-            mdParent.addElement(mdElement);
-        }
-
-        return mdElement;
     }
 }

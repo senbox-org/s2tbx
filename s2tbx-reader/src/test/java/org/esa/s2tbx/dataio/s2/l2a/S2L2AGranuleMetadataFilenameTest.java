@@ -1,19 +1,19 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2AGranuleMetadataFilename;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 /**
- * Created by opicas-p on 24/06/2014.
+ * @author Oscar Picas-Puig
  */
 public class S2L2AGranuleMetadataFilenameTest {
 
     @Test
     public void testFileName() throws Exception
     {
-        S2L2AGranuleMetadataFilename s2gf = S2L2AGranuleMetadataFilename.create("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml");
+        S2OrthoGranuleMetadataFilename s2gf = S2OrthoGranuleMetadataFilename.create("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml");
         assertNotNull(s2gf);
         assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", s2gf.name);
         assertEquals("S2A", s2gf.missionID);

@@ -17,7 +17,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2.l1c.filepaterns;
+package org.esa.s2tbx.dataio.s2.ortho.filepatterns;
 
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleMetadataFilename;
 import org.esa.snap.util.SystemUtils;
@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 /**
  * @author Norman Fomferra
  */
-public class S2L1CGranuleMetadataFilename extends S2GranuleMetadataFilename {
+public class S2OrthoGranuleMetadataFilename extends S2GranuleMetadataFilename {
 
     final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(A[0-9]{6})_(T[A-Z|0-9]{5})(\\.[A-Z|a-z|0-9]{3,4})?";
     final static Pattern PATTERN = Pattern.compile(REGEX);
@@ -37,15 +37,15 @@ public class S2L1CGranuleMetadataFilename extends S2GranuleMetadataFilename {
     public final String absoluteOrbit;
     public final String tileNumber;
 
-    private S2L1CGranuleMetadataFilename(String name,
-                                         String missionID,
-                                         String fileClass,
-                                         String fileCategory,
-                                         String fileSemantic,
-                                         String siteCentre,
-                                         String creationDate,
-                                         String absoluteOrbit,
-                                         String tileNumber) {
+    private S2OrthoGranuleMetadataFilename(String name,
+                                           String missionID,
+                                           String fileClass,
+                                           String fileCategory,
+                                           String fileSemantic,
+                                           String siteCentre,
+                                           String creationDate,
+                                           String absoluteOrbit,
+                                           String tileNumber) {
         super(name,
               missionID,
               fileClass,
@@ -62,10 +62,10 @@ public class S2L1CGranuleMetadataFilename extends S2GranuleMetadataFilename {
         return PATTERN.matcher(name).matches();
     }
 
-    public static S2L1CGranuleMetadataFilename create(String fileName) {
+    public static S2OrthoGranuleMetadataFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
-            return new S2L1CGranuleMetadataFilename(fileName,
+            return new S2OrthoGranuleMetadataFilename(fileName,
                                                  matcher.group(1),
                                                  matcher.group(2),
                                                  matcher.group(3),

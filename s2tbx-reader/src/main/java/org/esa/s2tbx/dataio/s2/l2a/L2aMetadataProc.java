@@ -22,7 +22,9 @@ package org.esa.s2tbx.dataio.s2.l2a;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_L2A_Product_Info;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_MASK_LIST;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION_2A;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_QUALITY_INDICATORS_INFO_TILE_L2A;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_TILE_DESCRIPTION;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
@@ -30,12 +32,14 @@ import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.l2a.filepatterns.S2L2aDatastripFilename;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.snap.util.SystemUtils;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 
@@ -138,7 +142,7 @@ public class L2aMetadataProc extends S2MetadataProc {
     }
 
 
-    public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product) {
+    public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product, S2SpatialResolution resolution) {
         A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
 
         L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
@@ -148,19 +152,20 @@ public class L2aMetadataProc extends S2MetadataProc {
 
         List<S2SpectralInformation> aInfo = new ArrayList<>();
 
-        aInfo.add(new S2SpectralInformation("B01",0,60, 414, 472, 443));
-        aInfo.add(new S2SpectralInformation("B02",1,10, 425, 555, 490));
-        aInfo.add(new S2SpectralInformation("B03",2,10, 510, 610, 560));
-        aInfo.add(new S2SpectralInformation("B04",3,10, 617, 707, 665));
-        aInfo.add(new S2SpectralInformation("B05",4,20, 625, 722, 705));
-        aInfo.add(new S2SpectralInformation("B06",5,20, 720, 760, 740));
-        aInfo.add(new S2SpectralInformation("B07",6,20, 741, 812, 783));
-        aInfo.add(new S2SpectralInformation("B08",7,10, 752, 927, 842));
-        aInfo.add(new S2SpectralInformation("B8A",8,20, 823, 902, 865));
-        aInfo.add(new S2SpectralInformation("B09",9,60, 903, 982, 945));
-        aInfo.add(new S2SpectralInformation("B10",10,60, 1338, 1413, 1375));
-        aInfo.add(new S2SpectralInformation("B11",11,20, 1532, 1704, 1610));
-        aInfo.add(new S2SpectralInformation("B12",12,20, 2035, 2311, 2190));
+        int resolutionValue = resolution.resolution;
+        aInfo.add(new S2SpectralInformation("B01",0,resolutionValue, 414, 472, 443));
+        aInfo.add(new S2SpectralInformation("B02",1,resolutionValue, 425, 555, 490));
+        aInfo.add(new S2SpectralInformation("B03",2,resolutionValue, 510, 610, 560));
+        aInfo.add(new S2SpectralInformation("B04",3,resolutionValue, 617, 707, 665));
+        aInfo.add(new S2SpectralInformation("B05",4,resolutionValue, 625, 722, 705));
+        aInfo.add(new S2SpectralInformation("B06",5,resolutionValue, 720, 760, 740));
+        aInfo.add(new S2SpectralInformation("B07",6,resolutionValue, 741, 812, 783));
+        aInfo.add(new S2SpectralInformation("B08",7,resolutionValue, 752, 927, 842));
+        aInfo.add(new S2SpectralInformation("B8A",8,resolutionValue, 823, 902, 865));
+        aInfo.add(new S2SpectralInformation("B09",9,resolutionValue, 903, 982, 945));
+        aInfo.add(new S2SpectralInformation("B10",10,resolutionValue, 1338, 1413, 1375));
+        aInfo.add(new S2SpectralInformation("B11",11,resolutionValue, 1532, 1704, 1610));
+        aInfo.add(new S2SpectralInformation("B12",12,resolutionValue, 2035, 2311, 2190));
 
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2SpectralInformation[size]));
@@ -192,7 +197,7 @@ public class L2aMetadataProc extends S2MetadataProc {
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
         String fileName = dirDatastrip.getFileName(null);
-        return S2L2aDatastripFilename.create(fileName);
+        return S2OrthoDatastripFilename.create(fileName);
     }
 
     public static S2DatastripDirFilename getDatastripDir(Level2A_User_Product product) {
@@ -327,5 +332,23 @@ public class L2aMetadataProc extends S2MetadataProc {
         }
 
         return darr;
+    }
+
+    public static S2Metadata.MaskFilename[] getMasks(Level2A_Tile aTile, File file) {
+        A_QUALITY_INDICATORS_INFO_TILE_L2A qualityInfo = aTile.getQuality_Indicators_Info();
+
+        S2Metadata.MaskFilename[] maskFileNamesArray = null;
+        if(qualityInfo != null) {
+            List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getL1C_Pixel_Level_QI().getMASK_FILENAME();
+            List<L2aMetadata.MaskFilename> aMaskList = new ArrayList<>();
+            for (A_MASK_LIST.MASK_FILENAME filename : masks) {
+                File QIData = new File(file.getParent(), "QI_DATA");
+                File GmlData = new File(QIData, filename.getValue());
+                aMaskList.add(new L2aMetadata.MaskFilename(filename.getBandId(), filename.getType(), GmlData));
+            }
+
+            maskFileNamesArray = aMaskList.toArray(new L2aMetadata.MaskFilename[aMaskList.size()]);
+        }
+        return maskFileNamesArray;
     }
 }

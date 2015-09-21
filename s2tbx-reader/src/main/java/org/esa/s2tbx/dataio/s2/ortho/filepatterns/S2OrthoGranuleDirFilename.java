@@ -17,7 +17,7 @@
  *
  */
 
-package org.esa.s2tbx.dataio.s2.l1c.filepaterns;
+package org.esa.s2tbx.dataio.s2.ortho.filepatterns;
 
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 /**
  * @author Norman Fomferra
  */
-public class S2L1CGranuleDirFilename extends S2GranuleDirFilename {
+public class S2OrthoGranuleDirFilename extends S2GranuleDirFilename {
 
     // example :                 S2A          _OPER          _MSI_            L1C_TL          _MTI_            _20150627T180307    _A000062    _T32SMH         _N01.00
     final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_(A[0-9]{6})_(T[A-Z|0-9]{5})(_N[0-9]{2}\\.[0-9]{2})(\\.[A-Z|a-z|0-9]{3,4})?";
@@ -39,16 +39,16 @@ public class S2L1CGranuleDirFilename extends S2GranuleDirFilename {
     public final String absoluteOrbit;
     public final String tileNumber;
 
-    private S2L1CGranuleDirFilename(String name,
-                                    String missionID,
-                                    String fileClass,
-                                    String fileCategory,
-                                    String fileSemantic,
-                                    String siteCentre,
-                                    String creationDate,
-                                    String absoluteOrbit,
-                                    String tileNumber,
-                                    String processingBaseline) {
+    private S2OrthoGranuleDirFilename(String name,
+                                      String missionID,
+                                      String fileClass,
+                                      String fileCategory,
+                                      String fileSemantic,
+                                      String siteCentre,
+                                      String creationDate,
+                                      String absoluteOrbit,
+                                      String tileNumber,
+                                      String processingBaseline) {
         super(name,
               missionID,
               fileClass,
@@ -65,7 +65,7 @@ public class S2L1CGranuleDirFilename extends S2GranuleDirFilename {
 
     public S2GranuleMetadataFilename getMetadataFilename() {
         String tmp = String.format("%s_%s_%s%s_%s_%s_%s_%s.xml", missionID, fileClass, "MTD_", fileSemantic, siteCentre, creationDate, absoluteOrbit, tileNumber);
-        return S2L1CGranuleMetadataFilename.create(tmp);
+        return S2OrthoGranuleMetadataFilename.create(tmp);
     }
 
     public S2GranuleImageFilename getImageFilename(String bandId) {
@@ -76,13 +76,13 @@ public class S2L1CGranuleDirFilename extends S2GranuleDirFilename {
         }
 
         String tmp = String.format("%s_%s_%s%s_%s_%s_%s_%s_%s.jp2", missionID, fileClass, fileCategory, fileSemantic, siteCentre, creationDate, absoluteOrbit, tileNumber, newBandId);
-        return S2L1CGranuleImageFilename.create(tmp);
+        return S2OrthoGranuleImageFilename.create(tmp);
     }
 
-    public static S2L1CGranuleDirFilename create(String fileName) {
+    public static S2OrthoGranuleDirFilename create(String fileName) {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
-            return new S2L1CGranuleDirFilename(fileName,
+            return new S2OrthoGranuleDirFilename(fileName,
                                             matcher.group(1),
                                             matcher.group(2),
                                             matcher.group(3),
