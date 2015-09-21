@@ -52,6 +52,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     public S2OrthoProductReaderPlugIn() {
         RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Natural Colors", new String[]{"B4", "B3", "B2"}));
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI False-color Infrared", new String[]{"B8", "B4", "B3"}));
     }
 
     protected String getLevel() {
