@@ -44,42 +44,40 @@ public class OpenJpegExecRetriever {
 
     private static String OPENJPEG_EXEC_PATH_PROPERTY = "s2tbx.openjpeg.dir";
 
-
-    private static void setExecutableRights(Path executablePathName) {
-        Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(
-                PosixFilePermission.OWNER_READ,
-                PosixFilePermission.OWNER_WRITE,
-                PosixFilePermission.OWNER_EXECUTE,
-                PosixFilePermission.GROUP_READ,
-                PosixFilePermission.GROUP_EXECUTE,
-                PosixFilePermission.OTHERS_READ,
-                PosixFilePermission.OTHERS_EXECUTE));
-        try {
-            Files.setPosixFilePermissions(executablePathName, permissions);
-        } catch (IOException e) {
-            // can't set the permissions for this file, eg. the file was installed as root
-            // send a warning message, user will have to do that by hand.
-            SystemUtils.LOG.warning("Can't set permissions for executable " + executablePathName.toString() +
-                                    ". If required please ask an authorised user to make the file executable.");
+    private static void setExecutablePermissions(Path executablePathName) {
+        if (IS_OS_LINUX || IS_OS_MAC || IS_OS_MAC_OSX) {
+            Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(
+                    PosixFilePermission.OWNER_READ,
+                    PosixFilePermission.OWNER_WRITE,
+                    PosixFilePermission.OWNER_EXECUTE,
+                    PosixFilePermission.GROUP_READ,
+                    PosixFilePermission.GROUP_EXECUTE,
+                    PosixFilePermission.OTHERS_READ,
+                    PosixFilePermission.OTHERS_EXECUTE));
+            try {
+                Files.setPosixFilePermissions(executablePathName, permissions);
+            } catch (IOException e) {
+                // can't set the permissions for this file, eg. the file was installed as root
+                // send a warning message, user will have to do that by hand.
+                SystemUtils.LOG.warning("Can't set execution permissions for executable " + executablePathName.toString() +
+                                        ". If required, please ask an authorised user to make the file executable.");
+            }
         }
     }
 
 
     /**
      * Compute the path to the openjpeg decompressor and
-     * set up execution right for it on mac os/linux
+     * fix up permissions for it on mac os/linux
      *
      * @return The path to opj_dump
      */
     public static String getSafeInfoExtractorAndUpdatePermissions() {
         String infoExtractorPathString = null;
-
         Path infoExtractorPath = findOpenJpegExecPath(getInfoExtractor());
 
         if (infoExtractorPath != null) {
-            if (IS_OS_LINUX || IS_OS_MAC || IS_OS_MAC_OSX) {
-                    setExecutableRights(infoExtractorPath);
-            }
+            setExecutablePermissions(infoExtractorPath);
             infoExtractorPathString = infoExtractorPath.toString();
         }
 
@@ -94,13 +92,10 @@ public class OpenJpegExecRetriever {
      */
     public static String getSafeDecompressorAndUpdatePermissions() {
         String decompressorPathString = null;
-
         Path decompressorPath = findOpenJpegExecPath(getDecompressor());
 
         if (decompressorPath != null) {
-            if (IS_OS_LINUX || IS_OS_MAC || IS_OS_MAC_OSX) {
-                setExecutableRights(decompressorPath);
-            }
+            setExecutablePermissions(decompressorPath);
             decompressorPathString = decompressorPath.toString();
         }
 
@@ -185,7 +180,6 @@ public class OpenJpegExecRetriever {
 
     private static Path findOpenJpegExecPath(String endPath)  {
         Path pathToExec = null;
-
 
         String openJpegDir = EngineConfig.instance("s2tbx").preferences().get(OPENJPEG_EXEC_PATH_PROPERTY, null);
 
