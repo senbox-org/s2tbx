@@ -22,6 +22,7 @@ package org.esa.s2tbx.dataio.openjpeg;
 import org.esa.snap.runtime.EngineConfig;
 import org.esa.snap.util.SystemUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,8 +33,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.apache.commons.lang.SystemUtils.IS_OS_LINUX;
-import static org.apache.commons.lang.SystemUtils.IS_OS_MAC;
 import static org.apache.commons.lang.SystemUtils.IS_OS_MAC_OSX;
+import static org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.commons.lang.SystemUtils.IS_OS_UNIX;
 
 /**
  * Utility class to get executables from OpenJpeg module
@@ -44,39 +46,18 @@ public class OpenJpegExecRetriever {
 
     private static String OPENJPEG_EXEC_PATH_PROPERTY = "s2tbx.openjpeg.dir";
 
-    private static void setExecutablePermissions(Path executablePathName) {
-        if (IS_OS_LINUX || IS_OS_MAC || IS_OS_MAC_OSX) {
-            Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(
-                    PosixFilePermission.OWNER_READ,
-                    PosixFilePermission.OWNER_WRITE,
-                    PosixFilePermission.OWNER_EXECUTE,
-                    PosixFilePermission.GROUP_READ,
-                    PosixFilePermission.GROUP_EXECUTE,
-                    PosixFilePermission.OTHERS_READ,
-                    PosixFilePermission.OTHERS_EXECUTE));
-            try {
-                Files.setPosixFilePermissions(executablePathName, permissions);
-            } catch (IOException e) {
-                // can't set the permissions for this file, eg. the file was installed as root
-                // send a warning message, user will have to do that by hand.
-                SystemUtils.LOG.warning("Can't set execution permissions for executable " + executablePathName.toString() +
-                                        ". If required, please ask an authorised user to make the file executable.");
-            }
-        }
-    }
-
-
     /**
-     * Compute the path to the openjpeg decompressor and
+     * Compute the path to the openjpeg dump utility and
      * fix up permissions for it on mac os/linux
      *
      * @return The path to opj_dump
      */
     public static String getSafeInfoExtractorAndUpdatePermissions() {
         String infoExtractorPathString = null;
-        Path infoExtractorPath = findOpenJpegExecPath(getInfoExtractor());
+        Path infoExtractorPath = findOpenJpegExecPath(getOSCategory().getDump());
 
-        if (infoExtractorPath != null) {
+        if (infoExtractorPath != null)
+        {
             setExecutablePermissions(infoExtractorPath);
             infoExtractorPathString = infoExtractorPath.toString();
         }
@@ -85,97 +66,22 @@ public class OpenJpegExecRetriever {
     }
 
     /**
-     * Compute the path to the openjpeg decompressor and
-     * set up execution right for it on mac os/linux
+     * Compute the path to the openjpeg decompressor utility and
+     * fix up permissions for it on mac os/linux
      *
      * @return The path to opj_decompress
      */
     public static String getSafeDecompressorAndUpdatePermissions() {
         String decompressorPathString = null;
-        Path decompressorPath = findOpenJpegExecPath(getDecompressor());
+        Path decompressorPath = findOpenJpegExecPath(getOSCategory().getDecompressor());
 
-        if (decompressorPath != null) {
+        if (decompressorPath != null)
+        {
             setExecutablePermissions(decompressorPath);
             decompressorPathString = decompressorPath.toString();
         }
 
         return decompressorPathString;
-    }
-
-    static String getInfoExtractor() {
-        String usedPath;
-
-        String winPath = "openjpeg-2.1.0-win32-x86_dyn/bin/opj_dump.exe";
-        String linuxPath = "openjpeg-2.1.0-Linux-i386/bin/opj_dump";
-        String linux64Path = "openjpeg-2.1.0-Linux-x64/bin/opj_dump";
-        String macPath = "openjpeg-2.1.0-Darwin-i386/bin/opj_dump";
-
-        if (IS_OS_LINUX) {
-            try {
-                Process p = Runtime.getRuntime().exec("uname -m");
-                p.waitFor();
-
-                String osArch = OpenJpegUtils.convertStreamToString(p.getInputStream());
-
-                if (osArch.equalsIgnoreCase("i686")) {
-                    usedPath = linuxPath;
-                } else {
-                    usedPath = linux64Path;
-                }
-            } catch (IOException|InterruptedException e) {
-                // by default we use linuxPath as it works also on 64 bits platform
-                usedPath = linuxPath;
-
-                SystemUtils.LOG.warning(
-                        "Could not find system architecture 32/64 bits, openjpeg info extractor for 32 bits will be used: " +
-                                e.getMessage());
-            }
-
-        } else if (IS_OS_MAC || IS_OS_MAC_OSX) {
-            usedPath = macPath;
-        } else {
-            usedPath = winPath;
-        }
-
-        return usedPath;
-    }
-
-    static String getDecompressor() {
-        String usedPath;
-
-        String winPath = "openjpeg-2.1.0-win32-x86_dyn/bin/opj_decompress.exe";
-        String linuxPath = "openjpeg-2.1.0-Linux-i386/bin/opj_decompress";
-        String linux64Path = "openjpeg-2.1.0-Linux-x64/bin/opj_decompress";
-        String macPath = "openjpeg-2.1.0-Darwin-i386/bin/opj_decompress";
-
-        if (IS_OS_LINUX) {
-            try {
-                Process p = Runtime.getRuntime().exec("uname -m");
-                p.waitFor();
-
-                String osArch = OpenJpegUtils.convertStreamToString(p.getInputStream());
-
-                if (osArch.equalsIgnoreCase("i686")) {
-                    usedPath = linuxPath;
-                } else {
-                    usedPath = linux64Path;
-                }
-            } catch (IOException|InterruptedException e) {
-                // by default we use linuxPath as it works also on 64 bits platform
-                usedPath = linuxPath;
-
-                SystemUtils.LOG.warning(
-                        "Could not find system architecture 32/64 bits, openjpeg decompressor for 32 bits will be used: " +
-                                e.getMessage());
-            }
-
-        } else if (IS_OS_MAC || IS_OS_MAC_OSX) {
-            usedPath = macPath;
-        } else {
-            usedPath = winPath;
-        }
-
-        return usedPath;
     }
 
     private static Path findOpenJpegExecPath(String endPath)  {
@@ -214,5 +120,88 @@ public class OpenJpegExecRetriever {
         }
 
         return pathToExec;
+    }
+
+    private static void setExecutablePermissions(Path executablePathName) {
+        if (IS_OS_UNIX) {
+            Set<PosixFilePermission> permissions = new HashSet<>(Arrays.asList(
+                    PosixFilePermission.OWNER_READ,
+                    PosixFilePermission.OWNER_WRITE,
+                    PosixFilePermission.OWNER_EXECUTE,
+                    PosixFilePermission.GROUP_READ,
+                    PosixFilePermission.GROUP_EXECUTE,
+                    PosixFilePermission.OTHERS_READ,
+                    PosixFilePermission.OTHERS_EXECUTE));
+            try {
+                Files.setPosixFilePermissions(executablePathName, permissions);
+            } catch (IOException e) {
+                // can't set the permissions for this file, eg. the file was installed as root
+                // send a warning message, user will have to do that by hand.
+                SystemUtils.LOG.warning("Can't set execution permissions for executable " + executablePathName.toString() +
+                        ". If required, please ask an authorised user to make the file executable.");
+            }
+        }
+    }
+
+    /* The different OS for which OpenJPEG executables are released */
+    private enum OSCategory {
+        WIN_32("openjpeg-2.1.0-win32-x86_dyn", "bin/opj_decompress.exe", "bin/opj_dump.exe"),
+        LINUX_32("openjpeg-2.1.0-Linux-i386", "bin/opj_decompress", "bin/opj_dump"),
+        LINUX_64("openjpeg-2.1.0-Linux-x64", "bin/opj_decompress", "bin/opj_dump"),
+        MAC_OS_X("openjpeg-2.1.0-Darwin-i386", "bin/opj_decompress", "bin/opj_dump"),
+        UNSUPPORTED(null, null, null);
+
+        String directory;
+        String decompressor;
+        String dump;
+
+        OSCategory(String directory, String decompressor, String dump)
+        {
+            this.directory = directory;
+            this.decompressor = decompressor;
+            this.dump = dump;
+        }
+
+        String getDecompressor() {
+            return String.format("%s%s%s", directory, File.separator, decompressor);
+        }
+
+        String getDump() {
+            return String.format("%s%s%s", directory, File.separator, dump);
+        }
+    }
+
+    private static OSCategory getOSCategory() {
+        OSCategory category;
+        if (IS_OS_LINUX)
+        {
+            category = OSCategory.LINUX_32;
+            try {
+                Process p = Runtime.getRuntime().exec("uname -m");
+                p.waitFor();
+                String osArch = OpenJpegUtils.convertStreamToString(p.getInputStream());
+                if (!osArch.equalsIgnoreCase("i686")) {
+                    category = OSCategory.LINUX_64;
+                }
+            } catch (IOException|InterruptedException e) {
+                // by default we use the 32 bits path as it works also on 64 bits platform
+                SystemUtils.LOG.warning(
+                        "Could not find system architecture 32/64 bits, openjpeg executables for 32 bits will be used: " +
+                                e.getMessage());
+            }
+        }
+        else if (IS_OS_MAC_OSX)
+        {
+            category = OSCategory.MAC_OS_X;
+        }
+        else if (IS_OS_WINDOWS)
+        {
+            category = OSCategory.WIN_32;
+        }
+        else {
+            // we should never be here since we do not release installers for other systems.
+            category = OSCategory.UNSUPPORTED;
+        }
+        return category;
     }
 }
