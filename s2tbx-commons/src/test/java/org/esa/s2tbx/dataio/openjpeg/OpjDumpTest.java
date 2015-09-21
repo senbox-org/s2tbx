@@ -20,7 +20,7 @@ public class OpjDumpTest {
     @Before
     public void retreiveOpjDump() {
         Path openjpegDirs = Paths.get("").resolve("lib-openjpeg").resolve("release").resolve("dependency");
-        String endOfPath = OpenJpegExecRetriever.getInfoExtractor();
+        String endOfPath = OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions();
         opjDumpPath = openjpegDirs.resolve(endOfPath);
         Assume.assumeTrue(Files.exists(opjDumpPath));
     }
