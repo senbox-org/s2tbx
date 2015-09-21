@@ -265,7 +265,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
         }
         product.addBand(band);
 
-        band.setSpectralBandIndex(bandInfo.bandIndex);
+        band.setSpectralBandIndex(bandInfo.getBandIndex());
         band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
         band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
 
@@ -305,9 +305,14 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
             return imageLayout;
         }
 
+        public int getBandIndex() {
+            return bandIndex;
+        }
+
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
         }
+
     }
 
 }
