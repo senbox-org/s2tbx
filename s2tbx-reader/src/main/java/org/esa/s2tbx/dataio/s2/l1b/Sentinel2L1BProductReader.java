@@ -43,7 +43,6 @@ import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.Band;
-import org.esa.snap.framework.datamodel.CrsGeoCoding;
 import org.esa.snap.framework.datamodel.GeoCoding;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.Product;
@@ -54,10 +53,7 @@ import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.Guardian;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
-import org.geotools.geometry.Envelope2D;
 import org.jdom.JDOMException;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -99,7 +95,6 @@ import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadata.parseHeader;
 
 // todo - register reasonable RGB profile(s)
 // todo - set a band's validMaskExpr or no-data value (read from GML)
-// todo - set band's ImageInfo from min,max,histogram found in header (--> L1cMetadata.quicklookDescriptor)
 // todo - viewing incidence tie-point grids contain NaN values - find out how to correctly treat them
 
 // todo - better collect problems during product opening and generate problem report (requires reader API change), see {@report "Problem detected..."} code marks
@@ -320,7 +315,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 }
             }
 
-            addDetectorBands(product, bandInfoByKey, sceneDescription.getSceneEnvelope(), new L1bSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+            addDetectorBands(product, bandInfoByKey, new L1bSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
         } else {
             product = new Product(FileUtils.getFilenameWithoutExtension(productMetadataFile),
                                   "S2_MSI_" + productCharacteristics.getProcessingLevel());
@@ -371,7 +366,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return  new TiePointGeoCoding(latGrid, lonGrid);
     }
 
-    private void addDetectorBands(Product product, Map<String, L1BBandInfo> stringBandInfoMap, Envelope2D envelope, MultiLevelImageFactory mlif) throws IOException {
+    private void addDetectorBands(Product product, Map<String, L1BBandInfo> stringBandInfoMap, MultiLevelImageFactory mlif) throws IOException {
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayout(getProductResolution().resolution).numResolutions);
 
@@ -390,7 +385,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 Band band = addBand(product, tileBandInfo);
                 band.setSourceImage(mlif.createSourceImage(tileBandInfo));
 
-                try {
+/*                try {
                     band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
                                                        band.getRasterWidth(),
                                                        band.getRasterHeight(),
@@ -403,7 +398,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     logger.severe("Illegal CRS");
                 } catch (TransformException e) {
                     logger.severe("Illegal projection");
-                }
+                }*/
             }
         }
         
