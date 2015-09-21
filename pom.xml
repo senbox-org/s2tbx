@@ -26,9 +26,7 @@
     <url>https://github.com/senbox-org/s2tbx</url>
 
     <modules>
-        <module>s2tbx-l1c-reader</module>
-        <module>s2tbx-l2a-reader</module>
-        <module>s2tbx-l1b-reader</module>
+        <module>s2tbx-reader</module>
         <module>s2tbx-j2kreader</module>
         <module>lib-openjpeg</module>
         <module>s2tbx-commons</module>

@@ -9,7 +9,7 @@ import org.esa.s2tbx.dataio.j2k.metadata.*;
 import org.esa.s2tbx.dataio.j2k.metadata.ImageInfo;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import org.esa.snap.framework.dataio.AbstractProductReader;
 import org.esa.snap.framework.dataio.DecodeQualification;
@@ -105,7 +105,7 @@ public class J2KProductReader extends AbstractProductReader {
         tmpFolder.mkdir();
         logger.info("Reading product metadata");
         try {
-            OpjExecutor dumper = new OpjExecutor(S2Config.OPJ_INFO_EXE);
+            OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions());
             OpjDumpFile dumpFile = new OpjDumpFile(new File(tmpFolder, inputFile.getName() + "_dump.txt"));
             Map<String, String> params = new HashMap<String, String>() {{
                 put("-i", inputFile.getAbsolutePath());
@@ -354,7 +354,7 @@ public class J2KProductReader extends AbstractProductReader {
     private File decompressTile(int index) {
         File tileFile = new File(tmpFolder, "tile_" + String.valueOf(index) + ".tif");
         if (!tileFile.exists()) {
-            final OpjExecutor decompress = new OpjExecutor(S2Config.OPJ_DECOMPRESSOR_EXE);
+            final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getSafeDecompressorAndUpdatePermissions());
             final Map<String, String> params = new HashMap<String, String>() {{
                 put("-i", getFileInput(getInput()).getAbsolutePath());
                 put("-r", "0");
