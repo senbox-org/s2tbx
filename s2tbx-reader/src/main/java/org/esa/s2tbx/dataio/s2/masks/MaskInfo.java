@@ -166,7 +166,7 @@ public enum MaskInfo {
     }
 
     public String getTypeForBand(String bandName) {
-        return String.format("%s-%s-%s", mainType, subType, bandName);
+        return String.format("%s__%s__%s", mainType, subType, bandName);
     }
 
     public String getDescriptionForBand(String bandName) {
