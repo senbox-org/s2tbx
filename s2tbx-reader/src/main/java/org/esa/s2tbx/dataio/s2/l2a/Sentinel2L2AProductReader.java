@@ -86,14 +86,11 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     @Override
     protected DirectoryStream<Path> getImageDirectories(Path pathToImages, S2SpatialResolution spatialResolution) throws IOException {
         String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
+        Path pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
 
-        return Files.newDirectoryStream(pathToImages, entry -> {
-            Path pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
-
-            if (Files.exists(pathToImagesOfResolution)) {
-                if (entry.toString().endsWith(".jp2")) {
-                    return true;
-                }
+        return Files.newDirectoryStream(pathToImagesOfResolution, entry -> {
+            if (entry.toString().endsWith("_" + spatialResolution.resolution + "m.jp2")) {
+                return true;
             }
             return false;
         });
