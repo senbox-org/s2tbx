@@ -102,6 +102,10 @@ public class S2SpectralInformation {
         this.wavelengthCentral = wavelengthCentral;
     }
 
+    public double getSpectralBandwith() {
+        return (this.wavelengthMax - this.wavelengthMin);
+    }
+
     public double[] getSpectralResponseValues() {
         return spectralResponseValues;
     }

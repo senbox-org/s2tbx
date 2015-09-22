@@ -280,7 +280,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
         float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
         float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
 
-        String bandName = bandInfo.wavebandInfo.bandName;
+        String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
         Band band;
         if(isMultiResolution) {
             band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
@@ -290,8 +290,8 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
         product.addBand(band);
 
         band.setSpectralBandIndex(bandInfo.getBandIndex());
-        band.setSpectralWavelength((float) bandInfo.wavebandInfo.wavelength);
-        band.setSpectralBandwidth((float) bandInfo.wavebandInfo.bandwidth);
+        band.setSpectralWavelength((float) bandInfo.getSpectralInfo().getWavelengthCentral());
+        band.setSpectralBandwidth((float) bandInfo.getSpectralInfo().getSpectralBandwith());
 
         setValidPixelMask(band, bandName);
 
@@ -307,18 +307,18 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
     public static class BandInfo {
         private final Map<String, File> tileIdToFileMap;
         private final int bandIndex;
-        private final S2WavebandInfo wavebandInfo;
+        private final S2SpectralInformation spectralInformation;
         private final TileLayout imageLayout;
 
-        public BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2WavebandInfo wavebandInfo, TileLayout imageLayout) {
+        public BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2SpectralInformation spectralInformation, TileLayout imageLayout) {
             this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
             this.bandIndex = bandIndex;
-            this.wavebandInfo = wavebandInfo;
+            this.spectralInformation = spectralInformation;
             this.imageLayout = imageLayout;
         }
 
-        public S2WavebandInfo getWavebandInfo() {
-            return wavebandInfo;
+        public S2SpectralInformation getSpectralInfo() {
+            return spectralInformation;
         }
 
         public Map<String, File> getTileIdToFileMap() {

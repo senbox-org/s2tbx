@@ -323,9 +323,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         float[] lats = convertDoublesToFloats(getLatitudes(coords));
         float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
-        TiePointGrid latGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getWavebandInfo().bandName + ",latitude", lats);
+        TiePointGrid latGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getSpectralInfo().getPhysicalBand() + ",latitude", lats);
         product.addTiePointGrid(latGrid);
-        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getWavebandInfo().bandName + ",longitude", lons);
+        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getSpectralInfo().getPhysicalBand() + ",longitude", lons);
         product.addTiePointGrid(lonGrid);
 
         return  new TiePointGeoCoding(latGrid, lonGrid);
@@ -346,7 +346,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         for (String bandIndex : bandIndexes) {
             L1BBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
-            if (isMultiResolution() || tileBandInfo.getWavebandInfo().resolution == this.getProductResolution()){
+            if (isMultiResolution() || tileBandInfo.getSpectralInfo().getResolution() == this.getProductResolution()){
                 Band band = addBand(product, tileBandInfo);
                 band.setSourceImage(mlif.createSourceImage(tileBandInfo));
 
@@ -373,11 +373,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     private L1BBandInfo createBandInfoFromHeaderInfo(String detector, S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
         S2SpatialResolution spatialResolution = bandInformation.getResolution();
         return new L1BBandInfo(tileFileMap,
-                                bandInformation.getBandId(), detector,
-                                new S2WavebandInfo(bandInformation.getBandId(),
-                                                      detector + bandInformation.getPhysicalBand(), // notice that text shown to user in menu (detector, band) is evaluated as an expression !!
-                                                      spatialResolution, bandInformation.getWavelengthCentral(),
-                                                      bandInformation.getWavelengthMax() - bandInformation.getWavelengthMin()),
+                                bandInformation.getBandId(),
+                                detector,
+                                bandInformation,
                                 getConfig().getTileLayout(spatialResolution.resolution));
     }
 
@@ -468,7 +466,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
             logger.fine(String.format("Planar image created: %s %s: minX=%d, minY=%d, width=%d, height=%d\n",
-                                      tileBandInfo.getWavebandInfo().bandName, tileId,
+                                      tileBandInfo.getSpectralInfo().getPhysicalBand(), tileId,
                                       planarImage.getMinX(), planarImage.getMinY(),
                                       planarImage.getWidth(), planarImage.getHeight()));
 
@@ -583,12 +581,12 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return bandNames;
     }
 
-    public static class L1BBandInfo extends BandInfo {
+        public static class L1BBandInfo extends BandInfo {
 
         private final String detectorId;
 
-        L1BBandInfo(Map<String, File> tileIdToFileMap, int bandIndex, String detector, S2WavebandInfo wavebandInfo, TileLayout imageLayout) {
-            super(tileIdToFileMap, bandIndex, wavebandInfo, imageLayout);
+        L1BBandInfo(Map<String, File> tileIdToFileMap, int bandIndex, String detector, S2SpectralInformation spectralInfo, TileLayout imageLayout) {
+            super(tileIdToFileMap, bandIndex, spectralInfo, imageLayout);
 
             this.detectorId = detector == null ? "" : detector;
         }

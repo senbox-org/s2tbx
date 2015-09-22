@@ -347,7 +347,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             collection.add(f1);
         }
 
-        String bandName = bandInfo.getWavebandInfo().bandName;
+        String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
 
         VectorDataNode vdn = new VectorDataNode(maskInfo.getTypeForBand(bandName), collection);
         vdn.setOwner(product);
@@ -383,8 +383,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                    band.getRasterHeight(),
                                                    envelope.getMinX(),
                                                    envelope.getMaxY(),
-                                                   bandInfo.getWavebandInfo().resolution.resolution,
-                                                   bandInfo.getWavebandInfo().resolution.resolution,
+                                                   bandInfo.getSpectralInfo().getResolution().resolution,
+                                                   bandInfo.getSpectralInfo().getResolution().resolution,
                                                    0.0, 0.0));
             } catch (FactoryException e) {
                 logger.severe("Illegal CRS");
@@ -479,10 +479,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         S2SpatialResolution spatialResolution = bandInformation.getResolution();
         return new BandInfo(tileFileMap,
                             bandInformation.getBandId(),
-                            new S2WavebandInfo(bandInformation.getBandId(),
-                                               bandInformation.getPhysicalBand(),
-                                               spatialResolution, bandInformation.getWavelengthCentral(),
-                                               bandInformation.getWavelengthMax() - bandInformation.getWavelengthMin()),
+                            bandInformation,
                             getConfig().getTileLayout(spatialResolution.resolution));
     }
 
@@ -570,7 +567,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
             logger.fine(String.format("Planar image created: %s %s: minX=%d, minY=%d, width=%d, height=%d\n",
-                                      bandInfo.getWavebandInfo().bandName, tileId,
+                                      bandInfo.getSpectralInfo().getPhysicalBand(), tileId,
                                       planarImage.getMinX(), planarImage.getMinY(),
                                       planarImage.getWidth(), planarImage.getHeight()));
 
@@ -587,7 +584,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 PlanarImage opImage = createL1cTileImage(tileId, level);
 
                 {
-                    double scaleFactor = 1.0 / (Math.pow(2, level) * (bandInfo.getWavebandInfo().resolution.resolution / getProductResolution().resolution));
+                    double scaleFactor = 1.0 / (Math.pow(2, level) * (bandInfo.getSpectralInfo().getResolution().resolution / getProductResolution().resolution));
 
                     opImage = TranslateDescriptor.create(opImage,
                                                          (float) Math.floor((tileRectangle.x * scaleFactor)),
@@ -620,7 +617,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             // todo add crop or extend here to ensure "right" size...
-            Rectangle fitrect = new Rectangle(0, 0, (int) sceneDescription.getSceneEnvelope().getWidth() / bandInfo.getWavebandInfo().resolution.resolution, (int) sceneDescription.getSceneEnvelope().getHeight() / bandInfo.getWavebandInfo().resolution.resolution);
+            Rectangle fitrect = new Rectangle(0, 0, (int) sceneDescription.getSceneEnvelope().getWidth() / bandInfo.getSpectralInfo().getResolution().resolution, (int) sceneDescription.getSceneEnvelope().getHeight() / bandInfo.getSpectralInfo().getResolution().resolution);
             final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitrect, Math.pow(2.0, level));
 
             BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
@@ -634,8 +631,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
 
 
-            if (this.bandInfo.getWavebandInfo().resolution != S2SpatialResolution.R10M) {
-                PlanarImage scaled = S2TileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.getWavebandInfo().resolution, level);
+            if (this.bandInfo.getSpectralInfo().getResolution() != S2SpatialResolution.R10M) {
+                PlanarImage scaled = S2TileOpImage.createGenericScaledImage(mosaicOp, sceneDescription.getSceneEnvelope(), this.bandInfo.getSpectralInfo().getResolution(), level);
 
                 logger.fine(String.format("mosaicOp created for level %d at (%d,%d) with size (%d, %d)%n", level, scaled.getMinX(), scaled.getMinY(), scaled.getWidth(), scaled.getHeight()));
 
