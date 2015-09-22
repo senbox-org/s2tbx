@@ -349,25 +349,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             if (isMultiResolution() || tileBandInfo.getSpectralInfo().getResolution() == this.getProductResolution()){
                 Band band = addBand(product, tileBandInfo);
                 band.setSourceImage(mlif.createSourceImage(tileBandInfo));
-
-/*                try {
-                    band.setGeoCoding(new CrsGeoCoding(envelope.getCoordinateReferenceSystem(),
-                                                       band.getRasterWidth(),
-                                                       band.getRasterHeight(),
-                                                       envelope.getMinX(),
-                                                       envelope.getMaxY(),
-                                                       tileBandInfo.getWavebandInfo().resolution.resolution,
-                                                       tileBandInfo.getWavebandInfo().resolution.resolution,
-                                                       0.0, 0.0));
-                } catch (FactoryException e) {
-                    logger.severe("Illegal CRS");
-                } catch (TransformException e) {
-                    logger.severe("Illegal projection");
-                }*/
             }
         }
-        
-
     }
 
     private L1BBandInfo createBandInfoFromHeaderInfo(String detector, S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
