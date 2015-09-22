@@ -68,7 +68,7 @@ public abstract class S2Metadata {
         this.config = config;
         this.unmarshaller = context.createUnmarshaller();
         this.psdString = psdString;
-        metadataElements = new ArrayList<>();
+        this.metadataElements = new ArrayList<>();
     }
 
     public S2Config getConfig() {
