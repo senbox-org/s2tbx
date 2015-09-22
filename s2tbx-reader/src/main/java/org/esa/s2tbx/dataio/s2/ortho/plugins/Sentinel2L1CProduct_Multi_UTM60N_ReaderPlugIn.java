@@ -2,7 +2,6 @@
 package org.esa.s2tbx.dataio.s2.ortho.plugins;
 
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
-import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
 
 /**
  * Reader plugin for S2 MSI L1C over WGS84 / UTM Zone 60 N

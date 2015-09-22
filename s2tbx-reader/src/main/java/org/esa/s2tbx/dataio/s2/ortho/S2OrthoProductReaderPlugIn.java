@@ -22,8 +22,8 @@ package org.esa.s2tbx.dataio.s2.ortho;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
-import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.DecodeQualification;
 import org.esa.snap.framework.dataio.ProductReader;
 import org.esa.snap.framework.datamodel.RGBImageProfile;
@@ -34,9 +34,7 @@ import java.io.File;
 import java.util.Locale;
 import java.util.regex.Matcher;
 
-import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToDisplayName;
-import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
-import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.tileIdentifierToEPSG;
+import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.*;
 
 /**
  * @author Norman Fomferra
