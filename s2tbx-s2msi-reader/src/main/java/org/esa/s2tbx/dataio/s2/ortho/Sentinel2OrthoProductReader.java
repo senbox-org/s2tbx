@@ -230,7 +230,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             if (bandIndex >= 0 && bandIndex < productCharacteristics.getBandInformations().length) {
 
                 if(isMultiResolution() ||
-                        bandInformation.getResolution() == this.getProductResolution().resolution ||
+                        bandInformation.getResolution() == this.getProductResolution() ||
                         this instanceof Sentinel2L2AProductReader) {
                     HashMap<String, File> tileFileMap = new HashMap<>();
                     for (S2Metadata.Tile tile : tileList) {
@@ -476,7 +476,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     private BandInfo createBandInfoFromHeaderInfo(S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
-        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.getResolution());
+        S2SpatialResolution spatialResolution = bandInformation.getResolution();
         return new BandInfo(tileFileMap,
                             bandInformation.getBandId(),
                             new S2WavebandInfo(bandInformation.getBandId(),

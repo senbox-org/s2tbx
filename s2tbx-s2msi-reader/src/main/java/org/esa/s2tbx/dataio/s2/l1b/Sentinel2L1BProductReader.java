@@ -371,7 +371,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     private L1BBandInfo createBandInfoFromHeaderInfo(String detector, S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
-        S2SpatialResolution spatialResolution = S2SpatialResolution.valueOfResolution(bandInformation.getResolution());
+        S2SpatialResolution spatialResolution = bandInformation.getResolution();
         return new L1BBandInfo(tileFileMap,
                                 bandInformation.getBandId(), detector,
                                 new S2WavebandInfo(bandInformation.getBandId(),
