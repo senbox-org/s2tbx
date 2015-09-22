@@ -17,8 +17,7 @@ import org.esa.s2tbx.dataio.s2.l1c.{PARENT_CLASS};
 public class {READER_CLASS} extends {PARENT_CLASS} {{
 
     @Override
-    public String getEPSG()
-    {{
+    public String getEPSG() {{
         return "{EPSG}";
     }}
 
