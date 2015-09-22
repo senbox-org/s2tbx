@@ -43,6 +43,7 @@ import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.gml.GmlFilter;
 import org.esa.s2tbx.dataio.s2.l1c.L1cMetadata;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
+import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
@@ -296,43 +297,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             if(!bandInfoMap.isEmpty())
             {
-                addBands(product, bandInfoMap, sceneDescription.getSceneEnvelope(), new L1cSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
-            }
+                addBands(product,
+                        bandInfoMap,
+                        sceneDescription.getSceneEnvelope(),
+                        new L1cSceneMultiLevelImageFactory(sceneDescription,
+                                ImageManager.getImageToModelTransform(product.getGeoCoding()))
+                );
 
-            List<EopPolygon> polygons = filterMasksInUTMZones(utmZoneTileList);
-
-            Map<String, List<EopPolygon>> polygonsByType = new HashMap<>();
-
-            // todo put polygon creation in a function
-            if(!polygons.isEmpty())
-            {
-                // first collect all types
-                Set<String> polygonTypes = polygons.stream().map(EopPolygon::getType).collect(Collectors.toSet());
-                for(String polygonType: polygonTypes)
-                {
-                    polygonsByType.put(polygonType, polygons.stream().filter(p -> p.getType().equals(polygonType)).collect(Collectors.toList()) );
-                }
-
-                for (String polygonType : polygonTypes) {
-                    final SimpleFeatureType type = Placemark.createGeometryFeatureType();
-                    final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
-
-                    List<EopPolygon> typedPolygon = polygonsByType.get(polygonType);
-                    for (int index = 0; index < typedPolygon.size(); index++) {
-                        Polygon pol = typedPolygon.get(index).getPolygon();
-
-                        Object[] data1 = {pol, String.format("Polygon-%s", index)};
-                        SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
-                        collection.add(f1);
-                    }
-//                    VectorDataNode vdn = new VectorDataNode("NODATATEST", new DefaultFeatureCollection("S2L1CMasks", type));
-//                    vdn.setOwner(product);
-//                    product.addMask("NODATATEST", vdn, "GML Mask", Color.GREEN, 0.8);
-
-                    VectorDataNode vdn = new VectorDataNode(polygonType, collection);
-                    vdn.setOwner(product);
-                    product.addMask(polygonType, vdn, "GML Mask", Color.GREEN, 0.8);
-                }
+                addMasks(product, utmZoneTileList, bandInfoMap);
             }
         }
 
@@ -347,46 +319,78 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return product;
     }
 
-    private  List<EopPolygon> filterMasksInUTMZones(List<L1cMetadata.Tile> utmZoneTileList) {
-        List<EopPolygon> polygons = new ArrayList<>();
-
-        GmlFilter gmlFilter = new GmlFilter();
-        if(!utmZoneTileList.isEmpty())
+    private void addMasks(Product product, List<L1cMetadata.Tile> utmZoneTileList, Map<Integer, BandInfo> bandInfoMap) throws IOException {
+        for (MaskInfo maskInfo : MaskInfo.values())
         {
-            for(L1cMetadata.Tile tile: utmZoneTileList)
-            {
-                L1cMetadata.MaskFilename[] filenames = tile.getMaskFilenames();
+            // We are only interested in masks present in L1C products
+            if (!maskInfo.isPresentAtLevel(MaskInfo.L1C))
+                continue;
 
-                if(filenames != null) {
-                    for (L1cMetadata.MaskFilename aMaskFile : filenames) {
-                        File aFile = aMaskFile.getName();
-                        Pair<String, List<EopPolygon>> polys = gmlFilter.parse(aFile);
 
-                        boolean warningForPolygonsOutOfUtmZone = false;
+            ArrayList<Integer> bandIndexes = new ArrayList<>(bandInfoMap.keySet());
+            Collections.sort(bandIndexes);
 
-                        if (!polys.getFirst().isEmpty()) {
-                            int indexOfColons = polys.getFirst().indexOf(':');
-                            if (indexOfColons != -1) {
-                                String realCsCode = tile.getHorizontalCsCode().substring(tile.getHorizontalCsCode().indexOf(':') + 1);
-                                if (polys.getFirst().contains(realCsCode)) {
-                                    polygons.addAll(polys.getSecond());
-                                } else {
-                                    warningForPolygonsOutOfUtmZone = true;
-                                }
-                            }
-                        }
+            if (bandIndexes.isEmpty()) {
+                throw new IOException("No valid bands found.");
+            }
 
-                        if (warningForPolygonsOutOfUtmZone) {
-                            logger.warning(String.format("Polygons detected out of its UTM zone in file [%s] !", aFile.getAbsolutePath()));
-                        }
-                    }
+            for (Integer bandIndex : bandIndexes) {
+                addMask(product, utmZoneTileList, maskInfo, bandInfoMap.get(bandIndex));
+            }
+        }
+    }
+
+    private void addMask(Product product, List<L1cMetadata.Tile> utmZoneTileList, MaskInfo maskInfo, BandInfo bandInfo) {
+        List<EopPolygon> productPolygons = new ArrayList<>();
+
+        for(L1cMetadata.Tile tile : utmZoneTileList ) {
+            for (S2Metadata.MaskFilename maskFilename : tile.getMaskFilenames()) {
+
+                // We are only interested in a single mask main type
+                if (!maskFilename.getType().equals(maskInfo.getMainType())) {
+                    continue;
                 }
+
+                // We are only interested in masks for a certain band
+                if (!maskFilename.getBandId().equals(String.format("%s", bandInfo.getBandIndex()))) {
+                    continue;
+                }
+
+                // Read all polygons from the mask file
+                GmlFilter gmlFilter = new GmlFilter();
+                List<EopPolygon> polygonsForTile = gmlFilter.parse(maskFilename.getName()).getSecond();
+
+                // We are interested only in a single subtype
+                polygonsForTile = polygonsForTile.stream().filter(p -> p.getType().equals(maskInfo.getSubType())).collect(Collectors.toList());
+
+                // Merge polygons from this tile to product polygon list
+                productPolygons.addAll(polygonsForTile);
             }
         }
 
-        return polygons;
-    }
+        // TODO : why do we use this here ?
+        final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+        // TODO : why "S2L1CMasks" ?
+        final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
 
+        for (int index = 0; index < productPolygons.size(); index++) {
+            Polygon polygon = productPolygons.get(index).getPolygon();
+
+            Object[] data1 = {polygon, String.format("Polygon-%s", index)};
+            SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+            collection.add(f1);
+        }
+
+        String bandName = bandInfo.getWavebandInfo().bandName;
+
+        VectorDataNode vdn = new VectorDataNode(maskInfo.getTypeForBand(bandName), collection);
+        vdn.setOwner(product);
+        product.addMask(maskInfo.getTypeForBand(bandName),
+                vdn,
+                maskInfo.getDescriptionForBand(bandName),
+                maskInfo.getColor(),
+                maskInfo.getTransparency());
+    }
 
     private void addTiePointGridBand(Product product, S2Metadata metadataHeader, S2OrthoSceneDescription sceneDescription, String name, int tiePointGridIndex) {
         final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
