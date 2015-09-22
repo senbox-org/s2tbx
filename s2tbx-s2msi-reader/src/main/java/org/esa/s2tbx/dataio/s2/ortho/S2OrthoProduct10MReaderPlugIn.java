@@ -38,7 +38,7 @@ public abstract class S2OrthoProduct10MReaderPlugIn extends S2OrthoProductReader
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info(String.format("Building product reader 10M - %s", getEPSG()));
 
-        if(getLevel() != null && getLevel().equals("L2A")) {
+        if (getLevel() != null && getLevel().equals("L2A")) {
             return new Sentinel2L2AProductReader(this, S2SpatialResolution.R10M, getEPSG());
         } else {
             return new Sentinel2L1CProductReader(this, S2SpatialResolution.R10M, getEPSG());
@@ -53,4 +53,5 @@ public abstract class S2OrthoProduct10MReaderPlugIn extends S2OrthoProductReader
     @Override
     public String getDescription(Locale locale) {
         return String.format("Sentinel-2 MSI %s - 1Om bands - %s", getLevel(), epsgToDisplayName(getEPSG()));
-    }}
+    }
+}

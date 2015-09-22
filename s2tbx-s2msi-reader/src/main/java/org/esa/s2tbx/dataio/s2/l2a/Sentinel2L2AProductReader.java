@@ -72,7 +72,7 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
 
         try {
             return L2aMetadata.parseHeader(file, granuleName, config, epsg, getProductResolution());
-        } catch (JDOMException |JAXBException e) {
+        } catch (JDOMException | JAXBException e) {
             throw new IOException("Failed to parse metadata in " + file.getName());
         }
     }
@@ -95,15 +95,15 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     @Override
     protected String getImagePathString(S2Metadata.Tile tile, String imageFileName) {
         String resolutionFolder = String.format("R%dm", getProductResolution().resolution);
-        String imageWithoutExtention = imageFileName.substring(0, imageFileName.length()-4);
+        String imageWithoutExtention = imageFileName.substring(0, imageFileName.length() - 4);
         return String.format("GRANULE%s%s%sIMG_DATA%s%s%s%s_%dm.jp2",
-                             File.separator,
-                             tile.getId(),
-                             File.separator,
-                             File.separator,
-                             resolutionFolder,
-                             File.separator,
-                             imageWithoutExtention,
-                             getProductResolution().resolution);
+                File.separator,
+                tile.getId(),
+                File.separator,
+                File.separator,
+                resolutionFolder,
+                File.separator,
+                imageWithoutExtention,
+                getProductResolution().resolution);
     }
 }

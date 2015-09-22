@@ -63,11 +63,10 @@ public class L1bSceneDescription extends S2SceneDescription {
     }
 
     /**
+     * Returns the scene description, or null if no scene description can be created (no tile of
+     * no tile layout)
      *
-     *  Returns the scene description, or null if no scene description can be created (no tile of
-     *  no tile layout)
-     *
-     * @param header the {@link L1bMetadata} object containing the tile list
+     * @param header            the {@link L1bMetadata} object containing the tile list
      * @param productResolution the product resolution for which we want the scene description
      * @return the scene description of {@code null}
      */
@@ -82,7 +81,7 @@ public class L1bSceneDescription extends S2SceneDescription {
         Envelope2D sceneEnvelope = null;
 
 
-        if(!tileList.isEmpty()) {
+        if (!tileList.isEmpty()) {
 
 
             Map<String, Integer> detectorsTopPositionMap = computeTopPositions(tileList, productResolution);
@@ -110,10 +109,10 @@ public class L1bSceneDescription extends S2SceneDescription {
                 int xOffset = 0;
 
                 envelope = new Envelope2D(crs,
-                                          xOffset,
-                                          yWidth + selectedGeometry.getNumRows() * selectedGeometry.getyDim(),
-                                          selectedGeometry.getNumCols() * selectedGeometry.getxDim(),
-                                          -selectedGeometry.getNumRows() * selectedGeometry.getyDim());
+                        xOffset,
+                        yWidth + selectedGeometry.getNumRows() * selectedGeometry.getyDim(),
+                        selectedGeometry.getNumCols() * selectedGeometry.getxDim(),
+                        -selectedGeometry.getNumRows() * selectedGeometry.getyDim());
 
                 tileEnvelopes[i] = envelope;
 
@@ -139,9 +138,9 @@ public class L1bSceneDescription extends S2SceneDescription {
                 double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
 
                 Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.getxDim()),
-                                                    (int) ((imageY - tileY) / -selectedGeometry.getyDim()),
-                                                    selectedGeometry.getNumCols(),
-                                                    selectedGeometry.getNumRows());
+                        (int) ((imageY - tileY) / -selectedGeometry.getyDim()),
+                        selectedGeometry.getNumCols(),
+                        selectedGeometry.getNumRows());
                 if (sceneBounds == null) {
                     sceneBounds = new Rectangle(rectangle);
                 } else {
@@ -156,7 +155,7 @@ public class L1bSceneDescription extends S2SceneDescription {
         return sceneDescription;
     }
 
-    private static  Map<String, Integer> computeTopPositions(List<S2Metadata.Tile> tileList, S2SpatialResolution productResolution) {
+    private static Map<String, Integer> computeTopPositions(List<S2Metadata.Tile> tileList, S2SpatialResolution productResolution) {
         Map<String, Integer> detectorsTopPositionMap = new HashMap<>(12);
 
         for (S2Metadata.Tile tile : tileList) {
@@ -244,8 +243,8 @@ public class L1bSceneDescription extends S2SceneDescription {
             graphics.draw(rect);
             graphics.setPaint(colors[i % colors.length].darker().darker());
             graphics.drawString("Tile " + (i + 1) + ": " + tileInfos[i].id,
-                                rect.x + 1200F,
-                                rect.y + 2200F);
+                    rect.x + 1200F,
+                    rect.y + 2200F);
         }
         return image;
     }

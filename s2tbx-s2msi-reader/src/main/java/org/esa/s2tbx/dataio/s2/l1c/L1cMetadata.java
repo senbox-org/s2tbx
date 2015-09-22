@@ -65,15 +65,12 @@ public class L1cMetadata extends S2Metadata {
         try {
             Object userProduct = updateAndUnmarshal(stream);
 
-            if(userProduct instanceof Level1C_User_Product)
-            {
+            if (userProduct instanceof Level1C_User_Product) {
                 initProduct(file, parent, granuleName, userProduct, epsg);
-            }
-            else
-            {
+            } else {
                 initTile(file, userProduct);
             }
-        } catch (UnmarshalException|JDOMException e) {
+        } catch (UnmarshalException | JDOMException e) {
             logger.severe(String.format("Product is not conform to PSD: %s", e.getMessage()));
             throw e;
         } catch (JAXBException | IOException e) {
@@ -87,7 +84,7 @@ public class L1cMetadata extends S2Metadata {
 
         Collection<String> tileNames;
 
-        if(granuleName == null ) {
+        if (granuleName == null) {
             tileNames = L1cMetadataProc.getTiles(product);
         } else {
             tileNames = Collections.singletonList(granuleName);
@@ -101,7 +98,7 @@ public class L1cMetadata extends S2Metadata {
 
             S2OrthoGranuleDirFilename aGranuleDir = S2OrthoGranuleDirFilename.create(tileName);
 
-            if(aGranuleDir != null) {
+            if (aGranuleDir != null) {
                 String theName = aGranuleDir.getMetadataFilename().name;
 
                 File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + tileName + File.separator + theName);
@@ -125,7 +122,7 @@ public class L1cMetadata extends S2Metadata {
             tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
             tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
-            if (! tile.getHorizontalCsCode().equals(epsg)) {
+            if (!tile.getHorizontalCsCode().equals(epsg)) {
                 // skip tiles that are not in the desired UTM zone
                 logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", aGranuleMetadataFile.getName(), tile.getHorizontalCsCode(), epsg));
                 continue;

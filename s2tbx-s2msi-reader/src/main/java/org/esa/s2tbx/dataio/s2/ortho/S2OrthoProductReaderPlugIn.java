@@ -63,7 +63,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
         DecodeQualification decodeQualification = DecodeQualification.UNABLE;
 
-        if(input instanceof File) {
+        if (input instanceof File) {
             File file = (File) input;
 
             if (file.isFile()) {
@@ -71,34 +71,34 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
                 // first check it is a Sentinel-2 product
                 Matcher matcher = PATTERN.matcher(fileName);
-                if(matcher.matches()) {
+                if (matcher.matches()) {
 
                     // test for granule filename first as it is more restrictive
                     if (S2OrthoGranuleMetadataFilename.isGranuleFilename(fileName)) {
-                        level = matcher.group(4).substring(0,3);
+                        level = matcher.group(4).substring(0, 3);
                         S2OrthoGranuleMetadataFilename granuleMetadataFilename = S2OrthoGranuleMetadataFilename.create(fileName);
                         if (granuleMetadataFilename != null &&
                                 (level.equals("L1C") ||
                                         (level.equals("L2A") && !this.getClass().equals(S2OrthoProductReaderPlugIn.class)))) {
                             String tileId = granuleMetadataFilename.tileNumber;
                             String epsg = tileIdentifierToEPSG(tileId);
-                            if (getEPSG()!= null && getEPSG().equalsIgnoreCase(epsg)) {
+                            if (getEPSG() != null && getEPSG().equalsIgnoreCase(epsg)) {
                                 decodeQualification = DecodeQualification.INTENDED;
                             }
                         }
-                    }  else if (S2ProductFilename.isMetadataFilename(fileName)) {
+                    } else if (S2ProductFilename.isMetadataFilename(fileName)) {
                         level = matcher.group(4).substring(3);
                         S2ProductFilename productFilename = S2ProductFilename.create(fileName);
                         if (productFilename != null) {
                             if (level.equals("L1C") ||
                                     // no multi-resolution for L2A products
                                     (level.equals("L2A") &&
-                                            ( this instanceof S2OrthoProduct10MReaderPlugIn ||
+                                            (this instanceof S2OrthoProduct10MReaderPlugIn ||
                                                     this instanceof S2OrthoProduct20MReaderPlugIn ||
                                                     this instanceof S2OrthoProduct60MReaderPlugIn
                                             ))) {
                                 crsCache.ensureIsCached(file.getAbsolutePath());
-                                if (getEPSG()!= null && crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
+                                if (getEPSG() != null && crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
                                     decodeQualification = DecodeQualification.INTENDED;
                                 }
                             }
@@ -116,7 +116,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        if(level != null && level.equals("L2A")) {
+        if (level != null && level.equals("L2A")) {
             return new Sentinel2L2AProductReader(this, getEPSG());
         } else {
             return new Sentinel2L1CProductReader(this, getEPSG());
@@ -125,7 +125,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{FORMAT_NAME+"-MultiRes-" + epsgToShortDisplayName(getEPSG())};
+        return new String[]{FORMAT_NAME + "-MultiRes-" + epsgToShortDisplayName(getEPSG())};
     }
 
     @Override

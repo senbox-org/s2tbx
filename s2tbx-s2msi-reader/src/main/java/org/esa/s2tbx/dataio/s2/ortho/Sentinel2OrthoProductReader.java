@@ -110,7 +110,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
         // Should never not come here, since we have an OpImage that reads data
     }
-    
+
     protected abstract String getReaderCacheDir();
 
     protected abstract S2Metadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException;

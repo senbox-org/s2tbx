@@ -59,8 +59,6 @@ public class L1bMetadata extends S2Metadata {
     protected Logger logger = SystemUtils.LOG;
 
 
-
-
     private ProductCharacteristics productCharacteristics;
 
     public static L1bMetadata parseHeader(File file, S2Config config) throws JDOMException, IOException, JAXBException {
@@ -78,12 +76,9 @@ public class L1bMetadata extends S2Metadata {
         try {
             Object userProductOrTile = updateAndUnmarshal(stream);
 
-            if(userProductOrTile instanceof Level1B_User_Product)
-            {
+            if (userProductOrTile instanceof Level1B_User_Product) {
                 initProduct(file, parent, userProductOrTile);
-            }
-            else
-            {
+            } else {
                 initTile(userProductOrTile);
             }
 
@@ -94,7 +89,7 @@ public class L1bMetadata extends S2Metadata {
 
 
     private void initProduct(File file, String parent, Object casted
-                             ) throws IOException, JAXBException, JDOMException {
+    ) throws IOException, JAXBException, JDOMException {
         Level1B_User_Product product = (Level1B_User_Product) casted;
         productCharacteristics = L1bMetadataProc.getProductOrganization(product);
 

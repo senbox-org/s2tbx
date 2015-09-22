@@ -87,19 +87,19 @@ public class L1bMetadataProc extends S2MetadataProc {
                 aInfo.add(data);
             }
         } else {
-            aInfo.add(new S2SpectralInformation("B1",0,S2SpatialResolution.R60M, 414, 472, 443));
-            aInfo.add(new S2SpectralInformation("B2",1,S2SpatialResolution.R10M, 425, 555, 490));
-            aInfo.add(new S2SpectralInformation("B3",2,S2SpatialResolution.R10M, 510, 610, 560));
-            aInfo.add(new S2SpectralInformation("B4",3,S2SpatialResolution.R10M, 617, 707, 665));
-            aInfo.add(new S2SpectralInformation("B5",4,S2SpatialResolution.R20M, 625, 722, 705));
-            aInfo.add(new S2SpectralInformation("B6",5,S2SpatialResolution.R20M, 720, 760, 740));
-            aInfo.add(new S2SpectralInformation("B7",6,S2SpatialResolution.R20M, 741, 812, 783));
-            aInfo.add(new S2SpectralInformation("B8",7,S2SpatialResolution.R10M, 752, 927, 842));
-            aInfo.add(new S2SpectralInformation("B8A",8,S2SpatialResolution.R20M, 823, 902, 865));
-            aInfo.add(new S2SpectralInformation("B9",9,S2SpatialResolution.R60M, 903, 982, 945));
-            aInfo.add(new S2SpectralInformation("B10",10,S2SpatialResolution.R60M, 1338, 1413, 1375));
-            aInfo.add(new S2SpectralInformation("B11",11,S2SpatialResolution.R20M, 1532, 1704, 1610));
-            aInfo.add(new S2SpectralInformation("B12",12,S2SpatialResolution.R20M, 2035, 2311, 2190));
+            aInfo.add(new S2SpectralInformation("B1", 0, S2SpatialResolution.R60M, 414, 472, 443));
+            aInfo.add(new S2SpectralInformation("B2", 1, S2SpatialResolution.R10M, 425, 555, 490));
+            aInfo.add(new S2SpectralInformation("B3", 2, S2SpatialResolution.R10M, 510, 610, 560));
+            aInfo.add(new S2SpectralInformation("B4", 3, S2SpatialResolution.R10M, 617, 707, 665));
+            aInfo.add(new S2SpectralInformation("B5", 4, S2SpatialResolution.R20M, 625, 722, 705));
+            aInfo.add(new S2SpectralInformation("B6", 5, S2SpatialResolution.R20M, 720, 760, 740));
+            aInfo.add(new S2SpectralInformation("B7", 6, S2SpatialResolution.R20M, 741, 812, 783));
+            aInfo.add(new S2SpectralInformation("B8", 7, S2SpatialResolution.R10M, 752, 927, 842));
+            aInfo.add(new S2SpectralInformation("B8A", 8, S2SpatialResolution.R20M, 823, 902, 865));
+            aInfo.add(new S2SpectralInformation("B9", 9, S2SpatialResolution.R60M, 903, 982, 945));
+            aInfo.add(new S2SpectralInformation("B10", 10, S2SpatialResolution.R60M, 1338, 1413, 1375));
+            aInfo.add(new S2SpectralInformation("B11", 11, S2SpatialResolution.R20M, 1532, 1704, 1610));
+            aInfo.add(new S2SpectralInformation("B12", 12, S2SpatialResolution.R20M, 2035, 2311, 2190));
         }
 
         int size = aInfo.size();
@@ -171,7 +171,7 @@ public class L1bMetadataProc extends S2MetadataProc {
 
             TileLayout tileLayout = config.getTileLayout(resolution);
 
-            if(tileLayout != null) {
+            if (tileLayout != null) {
                 tgeox.setNumRows(tileLayout.height);
             } else {
                 SystemUtils.LOG.fine("No TileLayout at resolution R" + resolution + "m");

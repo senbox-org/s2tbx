@@ -75,19 +75,19 @@ public class S2Config {
         int tileIndex = spatialResolution.id;
         tileLayoutForResolution = tileLayouts[tileIndex];
 
-        if(tileLayoutForResolution == null) {
+        if (tileLayoutForResolution == null) {
             TileLayout nonNullTileLayout = null;
             int resolutionForNonNullTileLayout = 0;
-            if(spatialResolution == S2SpatialResolution.R10M) {
-                if(tileLayouts[S2SpatialResolution.R20M.id] != null) {
+            if (spatialResolution == S2SpatialResolution.R10M) {
+                if (tileLayouts[S2SpatialResolution.R20M.id] != null) {
                     nonNullTileLayout = tileLayouts[S2SpatialResolution.R20M.id];
                     resolutionForNonNullTileLayout = S2SpatialResolution.R20M.resolution;
-                } else if(tileLayouts[S2SpatialResolution.R60M.id] != null) {
+                } else if (tileLayouts[S2SpatialResolution.R60M.id] != null) {
                     nonNullTileLayout = tileLayouts[S2SpatialResolution.R60M.id];
                     resolutionForNonNullTileLayout = S2SpatialResolution.R60M.resolution;
                 }
 
-                if(nonNullTileLayout != null) {
+                if (nonNullTileLayout != null) {
                     float factor = resolutionForNonNullTileLayout / spatialResolution.resolution;
                     int width = Math.round(nonNullTileLayout.width * factor);
                     int height = Math.round(nonNullTileLayout.height * factor);
@@ -95,9 +95,9 @@ public class S2Config {
                     int tileHeight = Math.round(nonNullTileLayout.tileHeight * factor);
                     tileLayoutForResolution =
                             new TileLayout(width, height,
-                                           tileWidth, tileHeight,
-                                           nonNullTileLayout.numXTiles, nonNullTileLayout.numYTiles,
-                                           nonNullTileLayout.numResolutions);
+                                    tileWidth, tileHeight,
+                                    nonNullTileLayout.numXTiles, nonNullTileLayout.numYTiles,
+                                    nonNullTileLayout.numResolutions);
                 }
             }
         }

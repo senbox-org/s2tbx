@@ -56,7 +56,7 @@ public class S2DatastripDirFilename {
         if (fileCategory != null) {
             defaultFileCategory = fileCategory;
         }
-        return  String.format("%s_%s_%s%s_%s_%s_%s.xml", missionID, fileClass, defaultFileCategory, fileSemantic, siteCentre, creationDate, applicabilityStart);
+        return String.format("%s_%s_%s%s_%s_%s_%s.xml", missionID, fileClass, defaultFileCategory, fileSemantic, siteCentre, creationDate, applicabilityStart);
     }
 
     public static S2DatastripDirFilename create(String fileName, String fileCategory) {
@@ -64,25 +64,25 @@ public class S2DatastripDirFilename {
         if (matcher.matches()) {
             if (fileCategory == null) {
                 return new S2DatastripDirFilename(fileName,
-                                                     matcher.group(1),
-                                                     matcher.group(2),
-                                                     matcher.group(3),
-                                                     matcher.group(4),
-                                                     matcher.group(5),
-                                                     matcher.group(6),
-                                                     matcher.group(7),
-                                                     matcher.group(8)
+                        matcher.group(1),
+                        matcher.group(2),
+                        matcher.group(3),
+                        matcher.group(4),
+                        matcher.group(5),
+                        matcher.group(6),
+                        matcher.group(7),
+                        matcher.group(8)
                 );
             }
             return new S2DatastripDirFilename(fileName.replace(matcher.group(3), fileCategory),
-                                                 matcher.group(1),
-                                                 matcher.group(2),
-                                                 fileCategory,
-                                                 matcher.group(4),
-                                                 matcher.group(5),
-                                                 matcher.group(6),
-                                                 matcher.group(7),
-                                                 matcher.group(8)
+                    matcher.group(1),
+                    matcher.group(2),
+                    fileCategory,
+                    matcher.group(4),
+                    matcher.group(5),
+                    matcher.group(6),
+                    matcher.group(7),
+                    matcher.group(8)
             );
 
         } else {

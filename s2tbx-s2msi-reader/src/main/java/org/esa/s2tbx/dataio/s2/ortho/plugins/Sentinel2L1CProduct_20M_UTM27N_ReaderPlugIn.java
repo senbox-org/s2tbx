@@ -9,8 +9,7 @@ import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProduct20MReaderPlugIn;
 public class Sentinel2L1CProduct_20M_UTM27N_ReaderPlugIn extends S2OrthoProduct20MReaderPlugIn {
 
     @Override
-    public String getEPSG()
-    {
+    public String getEPSG() {
         return "EPSG:32627";
     }
 

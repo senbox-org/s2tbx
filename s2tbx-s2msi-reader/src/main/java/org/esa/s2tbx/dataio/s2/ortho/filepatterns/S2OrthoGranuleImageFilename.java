@@ -44,7 +44,7 @@ public class S2OrthoGranuleImageFilename extends S2GranuleImageFilename {
                                         String absoluteOrbit,
                                         String tileNumber,
                                         String bandIndex) {
-        super(  name,
+        super(name,
                 missionID,
                 fileClass,
                 fileCategory,
@@ -69,16 +69,16 @@ public class S2OrthoGranuleImageFilename extends S2GranuleImageFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2OrthoGranuleImageFilename(fileName,
-                                                 matcher.group(1),
-                                                 matcher.group(2),
-                                                 matcher.group(3),
-                                                 matcher.group(4),
-                                                 matcher.group(5),
-                                                 matcher.group(6),
-                                                 matcher.group(7),
-                                                 matcher.group(8),
-                                                 matcher.group(9),
-                                                 matcher.group(10));
+                    matcher.group(1),
+                    matcher.group(2),
+                    matcher.group(3),
+                    matcher.group(4),
+                    matcher.group(5),
+                    matcher.group(6),
+                    matcher.group(7),
+                    matcher.group(8),
+                    matcher.group(9),
+                    matcher.group(10));
         } else {
             SystemUtils.LOG.warning(String.format("%s S2GranuleImageFilename didn't match regexp %s", fileName, PATTERN.toString()));
             return null;

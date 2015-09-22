@@ -20,7 +20,7 @@ package org.esa.s2tbx.dataio.s2;
 
 
 /**
- *  @author Nicolas Ducoin
+ * @author Nicolas Ducoin
  */
 public class S2MetadataProc {
 

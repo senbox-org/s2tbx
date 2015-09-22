@@ -64,7 +64,7 @@ public class L2aMetadata extends S2Metadata {
         try {
             Object userProductOrTile = updateAndUnmarshal(stream);
 
-            if(userProductOrTile instanceof Level2A_User_Product) {
+            if (userProductOrTile instanceof Level2A_User_Product) {
                 initProduct(file, parent, granuleName, userProductOrTile, epsg, productResolution);
             } else {
                 initTile(file, userProductOrTile);
@@ -80,7 +80,7 @@ public class L2aMetadata extends S2Metadata {
 
         Collection<String> tileNames;
 
-        if(granuleName == null ) {
+        if (granuleName == null) {
             tileNames = L2aMetadataProc.getTiles(product);
         } else {
             tileNames = Collections.singletonList(granuleName);
@@ -92,7 +92,7 @@ public class L2aMetadata extends S2Metadata {
 
         for (String tileName : tileNames) {
             S2GranuleDirFilename aGranuleDir = S2OrthoGranuleDirFilename.create(tileName);
-            if(aGranuleDir != null) {
+            if (aGranuleDir != null) {
                 String theName = aGranuleDir.getMetadataFilename().name;
 
                 File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + tileName + File.separator + theName);
@@ -117,7 +117,7 @@ public class L2aMetadata extends S2Metadata {
             tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
             tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
-            if (! tile.getHorizontalCsCode().equals(epsg)) {
+            if (!tile.getHorizontalCsCode().equals(epsg)) {
                 // skip tiles that are not in the desired UTM zone
                 logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", aGranuleMetadataFile.getName(), tile.getHorizontalCsCode(), epsg));
                 continue;

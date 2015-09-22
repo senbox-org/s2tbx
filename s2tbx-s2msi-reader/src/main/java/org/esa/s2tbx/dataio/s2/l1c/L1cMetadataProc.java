@@ -40,14 +40,14 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 /**
- * @author  opicas-p
+ * @author opicas-p
  */
 public class L1cMetadataProc extends S2MetadataProc {
 
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level1C_User_Product.class.getClassLoader();
-        return  JAXBContext.newInstance(S2MetadataType.L1C, s2c);
+        return JAXBContext.newInstance(S2MetadataType.L1C, s2c);
     }
 
     public static L1cMetadata.ProductCharacteristics parseCharacteristics(Level1C_User_Product product) {
@@ -90,8 +90,7 @@ public class L1cMetadataProc extends S2MetadataProc {
 
         List<S2SpectralInformation> aInfo = new ArrayList<>();
 
-        if (product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List() != null)
-        {
+        if (product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List() != null) {
             List<A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
 
             for (A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
@@ -108,22 +107,20 @@ public class L1cMetadataProc extends S2MetadataProc {
 
                 aInfo.add(data);
             }
-        }
-        else
-        {
-            aInfo.add(new S2SpectralInformation("B1",0,S2SpatialResolution.R60M, 414, 472, 443));
-            aInfo.add(new S2SpectralInformation("B2",1,S2SpatialResolution.R10M, 425, 555, 490));
-            aInfo.add(new S2SpectralInformation("B3",2,S2SpatialResolution.R10M, 510, 610, 560));
-            aInfo.add(new S2SpectralInformation("B4",3,S2SpatialResolution.R10M, 617, 707, 665));
-            aInfo.add(new S2SpectralInformation("B5",4,S2SpatialResolution.R20M, 625, 722, 705));
-            aInfo.add(new S2SpectralInformation("B6",5,S2SpatialResolution.R20M, 720, 760, 740));
-            aInfo.add(new S2SpectralInformation("B7",6,S2SpatialResolution.R20M, 741, 812, 783));
-            aInfo.add(new S2SpectralInformation("B8",7,S2SpatialResolution.R10M, 752, 927, 842));
-            aInfo.add(new S2SpectralInformation("B8A",8,S2SpatialResolution.R20M, 823, 902, 865));
-            aInfo.add(new S2SpectralInformation("B9",9,S2SpatialResolution.R60M, 903, 982, 945));
-            aInfo.add(new S2SpectralInformation("B10",10,S2SpatialResolution.R60M, 1338, 1413, 1375));
-            aInfo.add(new S2SpectralInformation("B11",11,S2SpatialResolution.R20M, 1532, 1704, 1610));
-            aInfo.add(new S2SpectralInformation("B12",12,S2SpatialResolution.R20M, 2035, 2311, 2190));
+        } else {
+            aInfo.add(new S2SpectralInformation("B1", 0, S2SpatialResolution.R60M, 414, 472, 443));
+            aInfo.add(new S2SpectralInformation("B2", 1, S2SpatialResolution.R10M, 425, 555, 490));
+            aInfo.add(new S2SpectralInformation("B3", 2, S2SpatialResolution.R10M, 510, 610, 560));
+            aInfo.add(new S2SpectralInformation("B4", 3, S2SpatialResolution.R10M, 617, 707, 665));
+            aInfo.add(new S2SpectralInformation("B5", 4, S2SpatialResolution.R20M, 625, 722, 705));
+            aInfo.add(new S2SpectralInformation("B6", 5, S2SpatialResolution.R20M, 720, 760, 740));
+            aInfo.add(new S2SpectralInformation("B7", 6, S2SpatialResolution.R20M, 741, 812, 783));
+            aInfo.add(new S2SpectralInformation("B8", 7, S2SpatialResolution.R10M, 752, 927, 842));
+            aInfo.add(new S2SpectralInformation("B8A", 8, S2SpatialResolution.R20M, 823, 902, 865));
+            aInfo.add(new S2SpectralInformation("B9", 9, S2SpatialResolution.R60M, 903, 982, 945));
+            aInfo.add(new S2SpectralInformation("B10", 10, S2SpatialResolution.R60M, 1338, 1413, 1375));
+            aInfo.add(new S2SpectralInformation("B11", 11, S2SpatialResolution.R20M, 1532, 1704, 1610));
+            aInfo.add(new S2SpectralInformation("B12", 12, S2SpatialResolution.R20M, 2035, 2311, 2190));
         }
 
         int size = aInfo.size();
@@ -155,7 +152,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
 
         S2DatastripFilename datastripFilename = null;
-        if(dirDatastrip != null) {
+        if (dirDatastrip != null) {
             String fileName = dirDatastrip.getFileName(null);
 
             if (fileName != null) {
@@ -173,7 +170,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         S2OrthoGranuleDirFilename grafile = S2OrthoGranuleDirFilename.create(granule);
 
         S2DatastripDirFilename datastripDirFilename = null;
-        if(grafile != null) {
+        if (grafile != null) {
             String fileCategory = grafile.fileCategory;
             String dataStripMetadataFilenameCandidate = aGranuleList.get(0).getGranules().getDatastripIdentifier();
             datastripDirFilename = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
@@ -216,7 +213,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
 
         L1cMetadata.AnglesGrid ag = null;
-        if(ang != null) {
+        if (ang != null) {
             A_SUN_INCIDENCE_ANGLE_GRID sun = ang.getSun_Angles_Grid();
 
             int azrows = sun.getAzimuth().getValues_List().getVALUES().size();
@@ -251,7 +248,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
 
         L1cMetadata.AnglesGrid[] darr = null;
-        if(ang != null) {
+        if (ang != null) {
             List<AN_INCIDENCE_ANGLE_GRID> filteredListe = ang.getViewing_Incidence_Angles_Grids();
 
             Map<Pair<String, String>, AN_INCIDENCE_ANGLE_GRID> theMap = new LinkedHashMap<>();
@@ -303,7 +300,7 @@ public class L1cMetadataProc extends S2MetadataProc {
         A_QUALITY_INDICATORS_INFO_TILE qualityInfo = aTile.getQuality_Indicators_Info();
 
         S2Metadata.MaskFilename[] maskFileNamesArray = null;
-        if(qualityInfo != null) {
+        if (qualityInfo != null) {
             List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getPixel_Level_QI().getMASK_FILENAME();
             List<L1cMetadata.MaskFilename> aMaskList = new ArrayList<>();
             for (A_MASK_LIST.MASK_FILENAME filename : masks) {

@@ -45,13 +45,13 @@ public class S2OrthoDatastripFilename extends S2DatastripFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2OrthoDatastripFilename(fileName,
-                                           matcher.group(1),
-                                           matcher.group(2),
-                                           matcher.group(3),
-                                           matcher.group(4),
-                                           matcher.group(5),
-                                           matcher.group(6),
-                                           matcher.group(7)
+                    matcher.group(1),
+                    matcher.group(2),
+                    matcher.group(3),
+                    matcher.group(4),
+                    matcher.group(5),
+                    matcher.group(6),
+                    matcher.group(7)
             );
         } else {
             SystemUtils.LOG.warning(String.format("%s S2OrthoDatastripFilename didn't match regexp %s", fileName, PATTERN.toString()));

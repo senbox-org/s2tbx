@@ -39,7 +39,7 @@ public abstract class S2OrthoProduct60MReaderPlugIn extends S2OrthoProductReader
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader 60M");
 
-        if(getLevel() != null && getLevel().equals("L2A")) {
+        if (getLevel() != null && getLevel().equals("L2A")) {
             return new Sentinel2L2AProductReader(this, S2SpatialResolution.R60M, getEPSG());
         } else {
             return new Sentinel2L1CProductReader(this, S2SpatialResolution.R60M, getEPSG());

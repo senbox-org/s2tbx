@@ -113,7 +113,7 @@ public abstract class S2Metadata {
 
         final String psd13String = "psd-" + psdNumber + ".sentinel2.eo.esa.int";
         if (!xmlStreamAsString.contains(psd13String)) {
-            String regex="psd-\\d{2,}.sentinel2.eo.esa.int";
+            String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
             String updatedXmlStreamAsString =
                     xmlStreamAsString.replaceAll(
                             regex, psd13String);
@@ -164,7 +164,6 @@ public abstract class S2Metadata {
 
         return mdElement;
     }
-
 
 
     public static class Tile {

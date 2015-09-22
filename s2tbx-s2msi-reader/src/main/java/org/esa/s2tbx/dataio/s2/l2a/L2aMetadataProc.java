@@ -55,19 +55,19 @@ public class L2aMetadataProc extends S2MetadataProc {
 
         List<S2SpectralInformation> aInfo = new ArrayList<>();
 
-        aInfo.add(new S2SpectralInformation("B01",0,resolution, 414, 472, 443));
-        aInfo.add(new S2SpectralInformation("B02",1,resolution, 425, 555, 490));
-        aInfo.add(new S2SpectralInformation("B03",2,resolution, 510, 610, 560));
-        aInfo.add(new S2SpectralInformation("B04",3,resolution, 617, 707, 665));
-        aInfo.add(new S2SpectralInformation("B05",4,resolution, 625, 722, 705));
-        aInfo.add(new S2SpectralInformation("B06",5,resolution, 720, 760, 740));
-        aInfo.add(new S2SpectralInformation("B07",6,resolution, 741, 812, 783));
-        aInfo.add(new S2SpectralInformation("B08",7,resolution, 752, 927, 842));
-        aInfo.add(new S2SpectralInformation("B8A",8,resolution, 823, 902, 865));
-        aInfo.add(new S2SpectralInformation("B09",9,resolution, 903, 982, 945));
-        aInfo.add(new S2SpectralInformation("B10",10,resolution, 1338, 1413, 1375));
-        aInfo.add(new S2SpectralInformation("B11",11,resolution, 1532, 1704, 1610));
-        aInfo.add(new S2SpectralInformation("B12",12,resolution, 2035, 2311, 2190));
+        aInfo.add(new S2SpectralInformation("B01", 0, resolution, 414, 472, 443));
+        aInfo.add(new S2SpectralInformation("B02", 1, resolution, 425, 555, 490));
+        aInfo.add(new S2SpectralInformation("B03", 2, resolution, 510, 610, 560));
+        aInfo.add(new S2SpectralInformation("B04", 3, resolution, 617, 707, 665));
+        aInfo.add(new S2SpectralInformation("B05", 4, resolution, 625, 722, 705));
+        aInfo.add(new S2SpectralInformation("B06", 5, resolution, 720, 760, 740));
+        aInfo.add(new S2SpectralInformation("B07", 6, resolution, 741, 812, 783));
+        aInfo.add(new S2SpectralInformation("B08", 7, resolution, 752, 927, 842));
+        aInfo.add(new S2SpectralInformation("B8A", 8, resolution, 823, 902, 865));
+        aInfo.add(new S2SpectralInformation("B09", 9, resolution, 903, 982, 945));
+        aInfo.add(new S2SpectralInformation("B10", 10, resolution, 1338, 1413, 1375));
+        aInfo.add(new S2SpectralInformation("B11", 11, resolution, 1532, 1704, 1610));
+        aInfo.add(new S2SpectralInformation("B12", 12, resolution, 2035, 2311, 2190));
 
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2SpectralInformation[size]));
@@ -218,7 +218,7 @@ public class L2aMetadataProc extends S2MetadataProc {
         A_QUALITY_INDICATORS_INFO_TILE_L2A qualityInfo = aTile.getQuality_Indicators_Info();
 
         S2Metadata.MaskFilename[] maskFileNamesArray = null;
-        if(qualityInfo != null) {
+        if (qualityInfo != null) {
             List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getL1C_Pixel_Level_QI().getMASK_FILENAME();
             List<L2aMetadata.MaskFilename> aMaskList = new ArrayList<>();
             for (A_MASK_LIST.MASK_FILENAME filename : masks) {

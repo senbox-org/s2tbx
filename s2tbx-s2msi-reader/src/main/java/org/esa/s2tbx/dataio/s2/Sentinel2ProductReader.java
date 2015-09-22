@@ -25,15 +25,13 @@ import java.util.Map;
  *
  * @author Nicolas Ducoin
  */
-public abstract class Sentinel2ProductReader  extends AbstractProductReader {
-
+public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
 
     private S2Config config;
     private File cacheDir;
     private final S2SpatialResolution productResolution;
     private final boolean isMultiResolution;
-
 
 
     public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution, boolean isMultiResolution) {
@@ -46,7 +44,6 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
     }
 
     /**
-     *
      * @return The configuration file specific to a product reader
      */
     public S2Config getConfig() {
@@ -71,7 +68,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
     protected void initCacheDir(File productDir) throws IOException {
         cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir()),
-                            productDir.getName());
+                productDir.getName());
 
         //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();
@@ -80,7 +77,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
         }
     }
 
-        @Override
+    @Override
     protected Product readProductNodesImpl() throws IOException {
         SystemUtils.LOG.fine("readProductNodeImpl, " + getInput().toString());
 
@@ -105,29 +102,28 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
     }
 
     /**
-     *
      * update the tile layout in S2Config
      *
      * @param metadataFilePath the path to the product metadata file
-     * @param isGranule true if it is the metadata file of a granule
-     * @param resolution the resolution we want to update, or null to update all resolutions
+     * @param isGranule        true if it is the metadata file of a granule
+     * @param resolution       the resolution we want to update, or null to update all resolutions
      */
     protected void updateTileLayout(Path metadataFilePath, boolean isGranule, S2SpatialResolution resolution) {
 
-        if(resolution == null) {
-            for(S2SpatialResolution layoutResolution: S2SpatialResolution.values()) {
+        if (resolution == null) {
+            for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
                 updateTileLayout(metadataFilePath, isGranule, layoutResolution);
             }
         } else {
 
             TileLayout tileLayout;
-            if(isGranule) {
+            if (isGranule) {
                 tileLayout = retrieveTileLayoutFromGranuleMetadataFile(
                         metadataFilePath, resolution);
             } else {
                 tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, resolution);
             }
-            config.updateTileLayout(resolution,tileLayout);
+            config.updateTileLayout(resolution, tileLayout);
         }
     }
 
@@ -143,7 +139,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
     public TileLayout retrieveTileLayoutFromGranuleMetadataFile(Path granuleMetadataFilePath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
 
-        if(Files.exists(granuleMetadataFilePath) && granuleMetadataFilePath.toString().endsWith(".xml")) {
+        if (Files.exists(granuleMetadataFilePath) && granuleMetadataFilePath.toString().endsWith(".xml")) {
             Path granuleDirPath = granuleMetadataFilePath.getParent();
             tileLayoutForResolution = retrieveTileLayoutFromGranuleDirectory(granuleDirPath, resolution);
         }
@@ -152,36 +148,34 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
     }
 
 
-
-        /**
-         * From a product path, search a jpeg file for the given resolution, extract tile layout
-         * information and update
-         *
-         * @param productMetadataFilePath the complete path to the product metadata file
-         * @param resolution the resolution for which we wan to find the tile layout
-         * @return the tile layout for the resolution, or {@code null} if none was found
-
-         */
+    /**
+     * From a product path, search a jpeg file for the given resolution, extract tile layout
+     * information and update
+     *
+     * @param productMetadataFilePath the complete path to the product metadata file
+     * @param resolution              the resolution for which we wan to find the tile layout
+     * @return the tile layout for the resolution, or {@code null} if none was found
+     */
     public TileLayout retrieveTileLayoutFromProduct(Path productMetadataFilePath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
 
-        if(Files.exists(productMetadataFilePath) && productMetadataFilePath.toString().endsWith(".xml")) {
+        if (Files.exists(productMetadataFilePath) && productMetadataFilePath.toString().endsWith(".xml")) {
             Path productFolder = productMetadataFilePath.getParent();
             Path granulesFolder = productFolder.resolve("GRANULE");
             try {
                 DirectoryStream<Path> granulesFolderStream = Files.newDirectoryStream(granulesFolder);
 
-                for(Path granulePath : granulesFolderStream) {
+                for (Path granulePath : granulesFolderStream) {
                     tileLayoutForResolution = retrieveTileLayoutFromGranuleDirectory(granulePath, resolution);
-                    if(tileLayoutForResolution != null) {
+                    if (tileLayoutForResolution != null) {
                         break;
                     }
                 }
             } catch (IOException e) {
                 SystemUtils.LOG.warning("Could not retrieve tile layout for product " +
-                                                productMetadataFilePath.toAbsolutePath().toString() +
-                                                " error returned: " +
-                                                e.getMessage());
+                        productMetadataFilePath.toAbsolutePath().toString() +
+                        " error returned: " +
+                        e.getMessage());
             }
         }
 
@@ -194,9 +188,8 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
      * information and update
      *
      * @param granuleMetadataPath the complete path to the granule directory
-     * @param resolution the resolution for which we wan to find the tile layout
+     * @param resolution          the resolution for which we wan to find the tile layout
      * @return the tile layout for the resolution, or {@code null} if none was found
-     *
      */
     private TileLayout retrieveTileLayoutFromGranuleDirectory(Path granuleMetadataPath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
@@ -209,7 +202,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
                 try {
                     tileLayoutForResolution =
                             OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath);
-                    if(tileLayoutForResolution != null) {
+                    if (tileLayoutForResolution != null) {
                         break;
                     }
                 } catch (IOException | InterruptedException e) {
@@ -234,8 +227,6 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
     }
 
 
-
-
     /**
      * For a given resolution, gets the list of band names.
      * For example, for 10m L1C, {"B02", "B03", "B04", "B08"} should be returned
@@ -246,13 +237,13 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
     protected abstract String[] getBandNames(S2SpatialResolution resolution);
 
     /**
-     *  get an iterator to image files in pathToImages containing files for the given resolution
-     *
-     *  This method is based on band names, if resolution can't be based on band names or if image files are not in
-     *  pathToImages (like for L2A products), this method has to be overriden
+     * get an iterator to image files in pathToImages containing files for the given resolution
+     * <p>
+     * This method is based on band names, if resolution can't be based on band names or if image files are not in
+     * pathToImages (like for L2A products), this method has to be overriden
      *
      * @param pathToImages the path to the directory containing the images
-     * @param resolution the resolution for which we want to get images
+     * @param resolution   the resolution for which we want to get images
      * @return a {@link DirectoryStream<Path>}, iterator on the list of image path
      * @throws IOException if an I/O error occurs
      */
@@ -282,7 +273,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
         String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
         Band band;
-        if(isMultiResolution) {
+        if (isMultiResolution) {
             band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
         } else {
             band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
@@ -301,7 +292,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
     private void setValidPixelMask(Band band, String bandName) {
         band.setNoDataValue(0);
         band.setValidPixelExpression(String.format("%s.raw > %s",
-                                                   bandName, S2Config.RAW_NO_DATA_THRESHOLD));
+                bandName, S2Config.RAW_NO_DATA_THRESHOLD));
     }
 
     public static class BandInfo {

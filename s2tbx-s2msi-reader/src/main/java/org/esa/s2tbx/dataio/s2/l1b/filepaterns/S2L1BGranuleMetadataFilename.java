@@ -38,12 +38,12 @@ public class S2L1BGranuleMetadataFilename extends S2GranuleMetadataFilename {
 
     private S2L1BGranuleMetadataFilename(String name, String missionID, String fileClass, String fileCategory, String fileSemantic, String siteCentre, String creationDate, String startDate, String detectorId) {
         super(name,
-              missionID,
-              fileClass,
-              fileCategory,
-              fileSemantic,
-              siteCentre,
-              creationDate);
+                missionID,
+                fileClass,
+                fileCategory,
+                fileSemantic,
+                siteCentre,
+                creationDate);
 
         this.startDate = startDate;
         this.detectorId = detectorId;
@@ -57,14 +57,14 @@ public class S2L1BGranuleMetadataFilename extends S2GranuleMetadataFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2L1BGranuleMetadataFilename(fileName,
-                                                 matcher.group(1),
-                                                 matcher.group(2),
-                                                 matcher.group(3),
-                                                 matcher.group(4),
-                                                 matcher.group(5),
-                                                 matcher.group(6),
-                                                 matcher.group(7),
-                                                 matcher.group(8)
+                    matcher.group(1),
+                    matcher.group(2),
+                    matcher.group(3),
+                    matcher.group(4),
+                    matcher.group(5),
+                    matcher.group(6),
+                    matcher.group(7),
+                    matcher.group(8)
             );
         } else {
             SystemUtils.LOG.warning(String.format("%s S2GranuleMetadataFilename didn't match regexp %s", fileName, PATTERN.toString()));

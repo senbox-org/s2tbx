@@ -34,6 +34,7 @@ import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
+
 /**
  * <p>
  * This product reader can currently read single L1C tiles (also called L1C granules) and entire L1C scenes composed of
@@ -54,7 +55,6 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
     static final String L1C_CACHE_DIR = "l1c-reader";
 
     protected final Logger logger;
-
 
 
     public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
@@ -82,7 +82,7 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
 
         try {
             return L1cMetadata.parseHeader(file, granuleName, config, epsg);
-        } catch (JDOMException |JAXBException e) {
+        } catch (JDOMException | JAXBException e) {
             throw new IOException("Failed to parse metadata in " + file.getName());
         }
     }

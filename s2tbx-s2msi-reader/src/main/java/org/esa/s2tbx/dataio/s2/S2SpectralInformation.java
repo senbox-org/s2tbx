@@ -43,8 +43,7 @@ public class S2SpectralInformation {
                                  S2SpatialResolution resolution,
                                  double wavelengthMin,
                                  double wavelengthMax,
-                                 double wavelengthCentral)
-    {
+                                 double wavelengthCentral) {
         this.physicalBand = physicalBand;
         this.bandId = bandId;
         this.resolution = resolution;

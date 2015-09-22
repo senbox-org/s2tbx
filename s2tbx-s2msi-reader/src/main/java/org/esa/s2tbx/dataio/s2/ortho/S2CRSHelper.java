@@ -32,8 +32,7 @@ public class S2CRSHelper {
     private final static String EPSG_REGEX = "EPSG:32([0-9]{1})([0-9]{2})";
     private final static Pattern EPSG_PATTERN = Pattern.compile(EPSG_REGEX);
 
-    static public String tileIdentifierToEPSG(String tileIdentifier)
-    {
+    static public String tileIdentifierToEPSG(String tileIdentifier) {
         String epsgcode;
         final Matcher matcher = TILE_IDENTIFIER_PATTERN.matcher(tileIdentifier);
         if (matcher.matches()) {
@@ -42,8 +41,7 @@ public class S2CRSHelper {
             char gridZone = mgrs.charAt(0);
             char hemisphere = (gridZone <= 'M' ? 'S' : 'N');
             epsgcode = String.format("EPSG:32%s%s", hemisphere == 'N' ? '6' : '7', zone);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(String.format("Illegal tile identifier %s", tileIdentifier));
         }
         return epsgcode;
@@ -57,8 +55,7 @@ public class S2CRSHelper {
             String zone = matcher.group(2);
             char hemisphere = (('6' == hemisphereIdentifier) ? 'N' : 'S');
             displayName = String.format("WGS84 / UTM zone %s%s", zone, hemisphere);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException(String.format("Illegal UTM EPSG code identifier %s", epsg));
         }
         return displayName;
@@ -66,7 +63,7 @@ public class S2CRSHelper {
 
     static public String epsgToShortDisplayName(String epsg) {
         String displayName = null;
-        if(epsg != null) {
+        if (epsg != null) {
             final Matcher matcher = EPSG_PATTERN.matcher(epsg);
             if (matcher.matches()) {
                 char hemisphereIdentifier = matcher.group(1).charAt(0);
