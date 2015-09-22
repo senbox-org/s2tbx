@@ -214,7 +214,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         S2Metadata.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
-
         // set the product global geo-coding
         Product product = new Product(FileUtils.getFilenameWithoutExtension(rootMetaDataFile),
                                       "S2_MSI_" + productCharacteristics.getProcessingLevel(),
@@ -245,67 +244,61 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
         product.setAutoGrouping("sun:view");
 
-        // create the band mosaics per UTM zones
-        for (String utmZone : metadataHeader.getUTMZonesList()) {
-            Map<Integer, BandInfo> bandInfoMap = new HashMap<>();
+        Map<Integer, BandInfo> bandInfoMap = new HashMap<>();
 
-            // if we selected the granule there is only one UTM zone and we'll get here only once, just extract the granule
-            // otherwise get the list of tiles for this UTM zone
-            List<S2Metadata.Tile> utmZoneTileList = metadataHeader.getTileList(utmZone);
-            if (isAGranule) {
-                utmZoneTileList = utmZoneTileList.stream().filter(p -> p.getId().equalsIgnoreCase(aFilter)).collect(Collectors.toList());
-            }
-            // for all bands of the UTM zone, store tiles files names
-            for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
-                int bandIndex = bandInformation.getBandId();
-                if (bandIndex >= 0 && bandIndex < productCharacteristics.getBandInformations().length) {
+        List<S2Metadata.Tile> tileList = metadataHeader.getTileList();
+        if (isAGranule) {
+            tileList = tileList.stream().filter(p -> p.getId().equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+        }
 
-                    if(isMultiResolution() ||
-                            bandInformation.getResolution() == this.getProductResolution().resolution ||
-                            this instanceof Sentinel2L2AProductReader) {
-                        HashMap<String, File> tileFileMap = new HashMap<>();
-                        for (S2Metadata.Tile tile : utmZoneTileList) {
+        // Verify access to granule image files, and store absolute location
+        for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
+            int bandIndex = bandInformation.getBandId();
+            if (bandIndex >= 0 && bandIndex < productCharacteristics.getBandInformations().length) {
 
-                            S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
-                            if (gf != null) {
-                                S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
+                if(isMultiResolution() ||
+                        bandInformation.getResolution() == this.getProductResolution().resolution ||
+                        this instanceof Sentinel2L2AProductReader) {
+                    HashMap<String, File> tileFileMap = new HashMap<>();
+                    for (S2Metadata.Tile tile : tileList) {
 
-                                String imgFilename = getImagePathString(tile, imageFilename.name);
-                                logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
+                        S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
+                        if (gf != null) {
+                            S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
 
-                                File file = new File(productDir, imgFilename);
-                                if (file.exists()) {
-                                    tileFileMap.put(tile.getId(), file);
-                                } else {
-                                    logger.warning(String.format("Warning: missing file %s\n", file));
-                                }
+                            String imgFilename = getImagePathString(tile, imageFilename.name);
+                            logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
+
+                            File file = new File(productDir, imgFilename);
+                            if (file.exists()) {
+                                tileFileMap.put(tile.getId(), file);
+                            } else {
+                                logger.warning(String.format("Warning: missing file %s\n", file));
                             }
                         }
-
-                        if (!tileFileMap.isEmpty()) {
-                            BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
-                            bandInfoMap.put(bandIndex, bandInfo);
-                        } else {
-                            logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
-                        }
                     }
-                } else {
-                    logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
+
+                    if (!tileFileMap.isEmpty()) {
+                        BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+                        bandInfoMap.put(bandIndex, bandInfo);
+                    } else {
+                        logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
+                    }
                 }
+            } else {
+                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
             }
+        }
 
+        if(!bandInfoMap.isEmpty()) {
+            addBands(product,
+                    bandInfoMap,
+                    sceneDescription.getSceneEnvelope(),
+                    new L1cSceneMultiLevelImageFactory(sceneDescription,
+                            ImageManager.getImageToModelTransform(product.getGeoCoding()))
+            );
 
-            if(!bandInfoMap.isEmpty())
-            {
-                addBands(product,
-                        bandInfoMap,
-                        sceneDescription.getSceneEnvelope(),
-                        new L1cSceneMultiLevelImageFactory(sceneDescription,
-                                ImageManager.getImageToModelTransform(product.getGeoCoding()))
-                );
-
-                addMasks(product, utmZoneTileList, bandInfoMap);
-            }
+            addMasks(product, tileList, bandInfoMap);
         }
 
         if(!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
@@ -319,7 +312,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return product;
     }
 
-    private void addMasks(Product product, List<S2Metadata.Tile> utmZoneTileList, Map<Integer, BandInfo> bandInfoMap) throws IOException {
+    private void addMasks(Product product, List<S2Metadata.Tile> tileList, Map<Integer, BandInfo> bandInfoMap) throws IOException {
         for (MaskInfo maskInfo : MaskInfo.values())
         {
             // We are only interested in masks present in L1C products
@@ -335,15 +328,15 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
 
             for (Integer bandIndex : bandIndexes) {
-                addMask(product, utmZoneTileList, maskInfo, bandInfoMap.get(bandIndex));
+                addMask(product, tileList, maskInfo, bandInfoMap.get(bandIndex));
             }
         }
     }
 
-    private void addMask(Product product, List<S2Metadata.Tile> utmZoneTileList, MaskInfo maskInfo, BandInfo bandInfo) {
+    private void addMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, BandInfo bandInfo) {
         List<EopPolygon> productPolygons = new ArrayList<>();
 
-        for(S2Metadata.Tile tile : utmZoneTileList ) {
+        for(S2Metadata.Tile tile : tileList ) {
             for (S2Metadata.MaskFilename maskFilename : tile.getMaskFilenames()) {
 
                 // We are only interested in a single mask main type
