@@ -19,11 +19,6 @@
 
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
-import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.logging.BeamLogManager;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class S2DatastripFilename {
     public final String name;

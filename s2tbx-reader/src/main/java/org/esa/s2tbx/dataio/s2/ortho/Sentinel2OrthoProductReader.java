@@ -28,7 +28,6 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -89,7 +88,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -119,7 +117,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     private final String epsgCode;
 
-    private File cacheDir;
     protected final Logger logger;
 
 
@@ -142,7 +139,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
 
-    protected abstract String getUserCacheDir();
+    protected abstract String getReaderCacheDir();
 
     protected abstract S2OrthoMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException;
 
@@ -386,10 +383,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         VectorDataNode vdn = new VectorDataNode(maskInfo.getTypeForBand(bandName), collection);
         vdn.setOwner(product);
         product.addMask(maskInfo.getTypeForBand(bandName),
-                vdn,
-                maskInfo.getDescriptionForBand(bandName),
-                maskInfo.getColor(),
-                maskInfo.getTransparency());
+                        vdn,
+                        maskInfo.getDescriptionForBand(bandName),
+                        maskInfo.getColor(),
+                        maskInfo.getTransparency());
     }
 
     private void addTiePointGridBand(Product product, S2Metadata metadataHeader, S2OrthoSceneDescription sceneDescription, String name, int tiePointGridIndex) {
@@ -533,16 +530,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return productFile.getParentFile();
     }
 
-    void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), getUserCacheDir()),
-                            productDir.getName());
-        //noinspection ResultOfMethodCallIgnored
-        cacheDir.mkdirs();
-        if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
-            throw new IOException("Can't access package cache directory");
-        }
-    }
-
     private abstract class MultiLevelImageFactory {
         protected final AffineTransform imageToModelTransform;
 
@@ -603,7 +590,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         protected PlanarImage createL1cTileImage(String tileId, int level) {
             File imageFile = bandInfo.getTileIdToFileMap().get(tileId);
             PlanarImage planarImage = S2TileOpImage.create(imageFile,
-                                                           cacheDir,
+                                                           getCacheDir(),
                                                            null, // tileRectangle.getLocation(),
                                                            bandInfo.getImageLayout(),
                                                            getConfig(),

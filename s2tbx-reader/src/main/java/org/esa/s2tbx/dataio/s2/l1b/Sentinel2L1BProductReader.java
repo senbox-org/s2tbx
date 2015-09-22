@@ -116,28 +116,9 @@ import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadata.parseHeader;
  */
 public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
-    static final String USER_CACHE_DIR = "s2tbx/l1b-reader/cache";
+    static final String L1B_CACHE_DIR = "l1b-reader";
 
-    private File cacheDir;
     protected final Logger logger;
-
-
-    // private MemoryMeter meter;
-
-    public static class L1BBandInfo extends BandInfo {
-
-        private final String detectorId;
-
-        L1BBandInfo(Map<String, File> tileIdToFileMap, int bandIndex, String detector, S2WavebandInfo wavebandInfo, TileLayout imageLayout) {
-            super(tileIdToFileMap, bandIndex, wavebandInfo, imageLayout);
-
-            this.detectorId = detector == null ? "" : detector;
-        }
-
-        public String getDetectorId() {
-            return detectorId;
-        }
-    }
 
     public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution) {
         super(readerPlugIn, productResolution, false);
@@ -148,6 +129,13 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         super(readerPlugIn, S2SpatialResolution.R10M, true);
         logger = SystemUtils.LOG;
     }
+
+    @Override
+    protected String getReaderCacheDir() {
+        return L1B_CACHE_DIR;
+    }
+
+
 
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
@@ -429,16 +417,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return productFile.getParentFile();
     }
 
-    void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), USER_CACHE_DIR),
-                            productDir.getName());
-        //noinspection ResultOfMethodCallIgnored
-        cacheDir.mkdirs();
-        if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
-            throw new IOException("Can't access package cache directory");
-        }
-    }
-
 
     private abstract class MultiLevelImageFactory {
         protected final AffineTransform imageToModelTransform;
@@ -502,7 +480,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             File imageFile = tileBandInfo.getTileIdToFileMap().get(tileId);
 
             PlanarImage planarImage = S2TileOpImage.create(imageFile,
-                                                           cacheDir,
+                                                           getCacheDir(),
                                                            null, // tileRectangle.getLocation(),
                                                            tileBandInfo.getImageLayout(),
                                                            getConfig(),
@@ -626,5 +604,20 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         return bandNames;
+    }
+
+    public static class L1BBandInfo extends BandInfo {
+
+        private final String detectorId;
+
+        L1BBandInfo(Map<String, File> tileIdToFileMap, int bandIndex, String detector, S2WavebandInfo wavebandInfo, TileLayout imageLayout) {
+            super(tileIdToFileMap, bandIndex, wavebandInfo, imageLayout);
+
+            this.detectorId = detector == null ? "" : detector;
+        }
+
+        public String getDetectorId() {
+            return detectorId;
+        }
     }
 }

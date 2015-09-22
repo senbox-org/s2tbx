@@ -30,6 +30,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
 
     private S2Config config;
+    private File cacheDir;
     private final S2SpatialResolution productResolution;
     private final boolean isMultiResolution;
 
@@ -60,7 +61,24 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
         return isMultiResolution;
     }
 
+    public File getCacheDir() {
+        return cacheDir;
+    }
+
     protected abstract Product getMosaicProduct(File granuleMetadataFile) throws IOException;
+
+    protected abstract String getReaderCacheDir();
+
+    protected void initCacheDir(File productDir) throws IOException {
+        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir()),
+                            productDir.getName());
+
+        //noinspection ResultOfMethodCallIgnored
+        cacheDir.mkdirs();
+        if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
+            throw new IOException("Can't access package cache directory");
+        }
+    }
 
         @Override
     protected Product readProductNodesImpl() throws IOException {

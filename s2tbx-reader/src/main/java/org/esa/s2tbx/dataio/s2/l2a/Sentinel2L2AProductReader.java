@@ -52,7 +52,7 @@ import java.nio.file.Path;
  */
 public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
 
-    static final String USER_CACHE_DIR = "s2tbx/l2a-reader/cache";
+    static final String L2A_CACHE_DIR = "l2a-reader";
 
     public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
         super(readerPlugIn, epsgCode);
@@ -63,8 +63,8 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     }
 
     @Override
-    protected String getUserCacheDir() {
-        return USER_CACHE_DIR;
+    protected String getReaderCacheDir() {
+        return L2A_CACHE_DIR;
     }
 
     @Override
