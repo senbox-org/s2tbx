@@ -93,28 +93,9 @@ import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadata.parseHeader;
  */
 public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
-    static final String USER_CACHE_DIR = "s2tbx/l1b-reader/cache";
+    static final String L1B_CACHE_DIR = "l1b-reader";
 
-    private File cacheDir;
     protected final Logger logger;
-
-
-    // private MemoryMeter meter;
-
-    public static class L1BBandInfo extends BandInfo {
-
-        private final String detectorId;
-
-        L1BBandInfo(Map<String, File> tileIdToFileMap, int bandIndex, String detector, S2WavebandInfo wavebandInfo, TileLayout imageLayout) {
-            super(tileIdToFileMap, bandIndex, wavebandInfo, imageLayout);
-
-            this.detectorId = detector == null ? "" : detector;
-        }
-
-        public String getDetectorId() {
-            return detectorId;
-        }
-    }
 
     public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution) {
         super(readerPlugIn, productResolution, false);
@@ -125,6 +106,13 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         super(readerPlugIn, S2SpatialResolution.R10M, true);
         logger = SystemUtils.LOG;
     }
+
+    @Override
+    protected String getReaderCacheDir() {
+        return L1B_CACHE_DIR;
+    }
+
+
 
     @Override
     protected void readBandRasterDataImpl(int sourceOffsetX, int sourceOffsetY, int sourceWidth, int sourceHeight, int sourceStepX, int sourceStepY, Band destBand, int destOffsetX, int destOffsetY, int destWidth, int destHeight, ProductData destBuffer, ProgressMonitor pm) throws IOException {
@@ -406,16 +394,6 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         return productFile.getParentFile();
     }
 
-    void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), USER_CACHE_DIR),
-                            productDir.getName());
-        //noinspection ResultOfMethodCallIgnored
-        cacheDir.mkdirs();
-        if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
-            throw new IOException("Can't access package cache directory");
-        }
-    }
-
 
     private abstract class MultiLevelImageFactory {
         protected final AffineTransform imageToModelTransform;
@@ -479,7 +457,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             File imageFile = tileBandInfo.getTileIdToFileMap().get(tileId);
 
             PlanarImage planarImage = S2TileOpImage.create(imageFile,
-                                                           cacheDir,
+                                                           getCacheDir(),
                                                            null, // tileRectangle.getLocation(),
                                                            tileBandInfo.getImageLayout(),
                                                            getConfig(),
@@ -503,14 +481,22 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
             List<String> tiles = sceneDescription.getTileIds().stream().filter(x -> x.contains(tileBandInfo.detectorId)).collect(Collectors.toList());
 
+
+            TileLayout thisBandTileLayout = this.tileBandInfo.getImageLayout();
+            TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
+            float layoutRatioX = (float) productTileLayout.width / thisBandTileLayout.width;
+            float layoutRatioY = (float) productTileLayout.height / thisBandTileLayout.height;
+
+
             for (String tileId : tiles) {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
                 Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
 
                 PlanarImage opImage = createL1bTileImage(tileId, level);
                 {
-                    double factorX = 1.0 / (Math.pow(2, level) * (this.tileBandInfo.getWavebandInfo().resolution.resolution / getProductResolution().resolution));
-                    double factorY = 1.0 / (Math.pow(2, level) * (this.tileBandInfo.getWavebandInfo().resolution.resolution / getProductResolution().resolution));
+
+                    double factorX = 1.0 / (Math.pow(2, level) * layoutRatioX);
+                    double factorY = 1.0 / (Math.pow(2, level) * layoutRatioY);
 
                     opImage = TranslateDescriptor.create(opImage,
                                                          (float) Math.floor((tileRectangle.x * factorX)),
@@ -542,9 +528,14 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                                           null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
-            // todo add crop or extend here to ensure "right" size...
-            Rectangle fitrect = new Rectangle(0, 0, (int) sceneDescription.getSceneEnvelope().getWidth() / tileBandInfo.getWavebandInfo().resolution.resolution, (int) sceneDescription.getSceneEnvelope().getHeight() / tileBandInfo.getWavebandInfo().resolution.resolution);
-            final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitrect, Math.pow(2.0, level));
+
+            int fitRectWidht = (int) (sceneDescription.getSceneEnvelope().getWidth() /
+                    (layoutRatioX * getProductResolution().resolution ));
+            int fitRectHeight = (int) (sceneDescription.getSceneEnvelope().getHeight() /
+                    (layoutRatioY * getProductResolution().resolution ));
+
+            Rectangle fitRect = new Rectangle(0, 0, fitRectWidht, fitRectHeight);
+            final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
 
             BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
 
@@ -590,5 +581,20 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         return bandNames;
+    }
+
+    public static class L1BBandInfo extends BandInfo {
+
+        private final String detectorId;
+
+        L1BBandInfo(Map<String, File> tileIdToFileMap, int bandIndex, String detector, S2WavebandInfo wavebandInfo, TileLayout imageLayout) {
+            super(tileIdToFileMap, bandIndex, wavebandInfo, imageLayout);
+
+            this.detectorId = detector == null ? "" : detector;
+        }
+
+        public String getDetectorId() {
+            return detectorId;
+        }
     }
 }

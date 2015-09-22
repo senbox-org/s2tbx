@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by opicas-p on 23/06/2014.
+ * @author Oscar Picas-Puig
  */
 
 public class S2ProductFilename {

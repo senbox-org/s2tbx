@@ -51,7 +51,7 @@ import java.util.logging.Logger;
  */
 public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
 
-    static final String USER_CACHE_DIR = "s2tbx/l1c-reader/cache";
+    static final String L1C_CACHE_DIR = "l1c-reader";
 
     protected final Logger logger;
 
@@ -73,8 +73,8 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
     }
 
     @Override
-    protected String getUserCacheDir() {
-        return USER_CACHE_DIR;
+    protected String getReaderCacheDir() {
+        return L1C_CACHE_DIR;
     }
 
     protected S2Metadata parseHeader(

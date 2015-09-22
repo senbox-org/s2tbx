@@ -93,7 +93,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     private final String epsgCode;
 
-    private File cacheDir;
     protected final Logger logger;
 
 
@@ -116,7 +115,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
 
-    protected abstract String getUserCacheDir();
+    protected abstract String getReaderCacheDir();
 
     protected abstract S2Metadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException;
 
@@ -500,16 +499,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return productFile.getParentFile();
     }
 
-    void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getApplicationDataDir(), getUserCacheDir()),
-                            productDir.getName());
-        //noinspection ResultOfMethodCallIgnored
-        cacheDir.mkdirs();
-        if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
-            throw new IOException("Can't access package cache directory");
-        }
-    }
-
     private abstract class MultiLevelImageFactory {
         protected final AffineTransform imageToModelTransform;
 
@@ -570,7 +559,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         protected PlanarImage createL1cTileImage(String tileId, int level) {
             File imageFile = bandInfo.getTileIdToFileMap().get(tileId);
             PlanarImage planarImage = S2TileOpImage.create(imageFile,
-                                                           cacheDir,
+                                                           getCacheDir(),
                                                            null, // tileRectangle.getLocation(),
                                                            bandInfo.getImageLayout(),
                                                            getConfig(),

@@ -30,6 +30,7 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
 
     private S2Config config;
+    private File cacheDir;
     private final S2SpatialResolution productResolution;
     private final boolean isMultiResolution;
 
@@ -60,7 +61,24 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
         return isMultiResolution;
     }
 
+    public File getCacheDir() {
+        return cacheDir;
+    }
+
     protected abstract Product getMosaicProduct(File granuleMetadataFile) throws IOException;
+
+    protected abstract String getReaderCacheDir();
+
+    protected void initCacheDir(File productDir) throws IOException {
+        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir()),
+                            productDir.getName());
+
+        //noinspection ResultOfMethodCallIgnored
+        cacheDir.mkdirs();
+        if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
+            throw new IOException("Can't access package cache directory");
+        }
+    }
 
         @Override
     protected Product readProductNodesImpl() throws IOException {
@@ -254,12 +272,18 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
 
     protected Band addBand(Product product, BandInfo bandInfo) {
-        int scaleFactor = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / getProductResolution().resolution;
+
+
+        TileLayout thisBandTileLayout = bandInfo.getImageLayout();
+        TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
+
+        float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
+        float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
 
         String bandName = bandInfo.wavebandInfo.bandName;
         Band band;
         if(isMultiResolution) {
-            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth() / scaleFactor, product.getSceneRasterHeight() / scaleFactor);
+            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
         } else {
             band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
         }
