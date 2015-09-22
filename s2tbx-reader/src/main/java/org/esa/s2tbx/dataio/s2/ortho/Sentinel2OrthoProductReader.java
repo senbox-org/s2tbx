@@ -319,7 +319,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return product;
     }
 
-    private void addMasks(Product product, List<L1cMetadata.Tile> utmZoneTileList, Map<Integer, BandInfo> bandInfoMap) throws IOException {
+    private void addMasks(Product product, List<S2Metadata.Tile> utmZoneTileList, Map<Integer, BandInfo> bandInfoMap) throws IOException {
         for (MaskInfo maskInfo : MaskInfo.values())
         {
             // We are only interested in masks present in L1C products
@@ -340,10 +340,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
-    private void addMask(Product product, List<L1cMetadata.Tile> utmZoneTileList, MaskInfo maskInfo, BandInfo bandInfo) {
+    private void addMask(Product product, List<S2Metadata.Tile> utmZoneTileList, MaskInfo maskInfo, BandInfo bandInfo) {
         List<EopPolygon> productPolygons = new ArrayList<>();
 
-        for(L1cMetadata.Tile tile : utmZoneTileList ) {
+        for(S2Metadata.Tile tile : utmZoneTileList ) {
             for (S2Metadata.MaskFilename maskFilename : tile.getMaskFilenames()) {
 
                 // We are only interested in a single mask main type
@@ -449,8 +449,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     private TiePointGrid[] createL1cTileTiePointGrids(S2Metadata metadataHeader, int tileIndex) {
         TiePointGrid[] tiePointGrid = null;
-        L1cMetadata.Tile tile = metadataHeader.getTileList().get(tileIndex);
-        L1cMetadata.AnglesGrid anglesGrid = tile.getSunAnglesGrid();
+        S2Metadata.Tile tile = metadataHeader.getTileList().get(tileIndex);
+        S2Metadata.AnglesGrid anglesGrid = tile.getSunAnglesGrid();
         if(anglesGrid != null) {
             int gridHeight = tile.getSunAnglesGrid().getZenith().length;
             int gridWidth = tile.getSunAnglesGrid().getZenith()[0].length;
@@ -460,14 +460,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             float[] viewingAzimuths = new float[gridWidth * gridHeight];
             Arrays.fill(viewingZeniths, Float.NaN);
             Arrays.fill(viewingAzimuths, Float.NaN);
-            L1cMetadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
-            L1cMetadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.getViewingIncidenceAnglesGrids();
+            S2Metadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
+            S2Metadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.getViewingIncidenceAnglesGrids();
             for (int y = 0; y < gridHeight; y++) {
                 for (int x = 0; x < gridWidth; x++) {
                     final int index = y * gridWidth + x;
                     sunZeniths[index] = sunAnglesGrid.getZenith()[y][x];
                     sunAzimuths[index] = sunAnglesGrid.getAzimuth()[y][x];
-                    for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
+                    for (S2Metadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
                         try {
                             if (y < grid.getZenith().length) {
                                 if (x < grid.getZenith()[y].length) {
