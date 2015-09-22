@@ -101,8 +101,6 @@ public class L2aMetadata extends S2OrthoMetadata {
 
         resetTileList();
 
-        resetTileList();
-
         for (String tileName : tileNames) {
             S2GranuleDirFilename aGranuleDir = S2OrthoGranuleDirFilename.create(tileName);
             if(aGranuleDir != null) {
