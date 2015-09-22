@@ -254,12 +254,18 @@ public abstract class Sentinel2ProductReader  extends AbstractProductReader {
 
 
     protected Band addBand(Product product, BandInfo bandInfo) {
-        int scaleFactor = S2SpatialResolution.valueOfId(bandInfo.getWavebandInfo().resolution.id).resolution / getProductResolution().resolution;
+
+
+        TileLayout thisBandTileLayout = bandInfo.getImageLayout();
+        TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
+
+        float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
+        float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
 
         String bandName = bandInfo.wavebandInfo.bandName;
         Band band;
         if(isMultiResolution) {
-            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth() / scaleFactor, product.getSceneRasterHeight() / scaleFactor);
+            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
         } else {
             band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
         }

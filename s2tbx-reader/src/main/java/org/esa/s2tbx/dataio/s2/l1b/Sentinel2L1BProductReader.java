@@ -526,14 +526,22 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
             List<String> tiles = sceneDescription.getTileIds().stream().filter(x -> x.contains(tileBandInfo.detectorId)).collect(Collectors.toList());
 
+
+            TileLayout thisBandTileLayout = this.tileBandInfo.getImageLayout();
+            TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
+            float layoutRatioX = (float) productTileLayout.width / thisBandTileLayout.width;
+            float layoutRatioY = (float) productTileLayout.height / thisBandTileLayout.height;
+
+
             for (String tileId : tiles) {
                 int tileIndex = sceneDescription.getTileIndex(tileId);
                 Rectangle tileRectangle = sceneDescription.getTileRectangle(tileIndex);
 
                 PlanarImage opImage = createL1bTileImage(tileId, level);
                 {
-                    double factorX = 1.0 / (Math.pow(2, level) * (this.tileBandInfo.getWavebandInfo().resolution.resolution / getProductResolution().resolution));
-                    double factorY = 1.0 / (Math.pow(2, level) * (this.tileBandInfo.getWavebandInfo().resolution.resolution / getProductResolution().resolution));
+
+                    double factorX = 1.0 / (Math.pow(2, level) * layoutRatioX);
+                    double factorY = 1.0 / (Math.pow(2, level) * layoutRatioY);
 
                     opImage = TranslateDescriptor.create(opImage,
                                                          (float) Math.floor((tileRectangle.x * factorX)),
@@ -565,9 +573,14 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                                                           null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
-            // todo add crop or extend here to ensure "right" size...
-            Rectangle fitrect = new Rectangle(0, 0, (int) sceneDescription.getSceneEnvelope().getWidth() / tileBandInfo.getWavebandInfo().resolution.resolution, (int) sceneDescription.getSceneEnvelope().getHeight() / tileBandInfo.getWavebandInfo().resolution.resolution);
-            final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitrect, Math.pow(2.0, level));
+
+            int fitRectWidht = (int) (sceneDescription.getSceneEnvelope().getWidth() /
+                    (layoutRatioX * getProductResolution().resolution ));
+            int fitRectHeight = (int) (sceneDescription.getSceneEnvelope().getHeight() /
+                    (layoutRatioY * getProductResolution().resolution ));
+
+            Rectangle fitRect = new Rectangle(0, 0, fitRectWidht, fitRectHeight);
+            final Rectangle destBounds = DefaultMultiLevelSource.getLevelImageBounds(fitRect, Math.pow(2.0, level));
 
             BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_COPY);
 
