@@ -29,31 +29,17 @@ import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
-import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
-import org.esa.s2tbx.dataio.s2.S2TileOpImage;
-import org.esa.s2tbx.dataio.s2.S2WavebandInfo;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
+import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.gml.GmlFilter;
-import org.esa.s2tbx.dataio.s2.l1c.L1cMetadata;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.framework.datamodel.Band;
-import org.esa.snap.framework.datamodel.CrsGeoCoding;
-import org.esa.snap.framework.datamodel.MetadataElement;
-import org.esa.snap.framework.datamodel.Placemark;
-import org.esa.snap.framework.datamodel.Product;
-import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.framework.datamodel.TiePointGrid;
-import org.esa.snap.framework.datamodel.VectorDataNode;
+import org.esa.snap.framework.datamodel.*;
 import org.esa.snap.jai.ImageManager;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
@@ -66,12 +52,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
@@ -81,13 +62,8 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -141,7 +117,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     protected abstract String getReaderCacheDir();
 
-    protected abstract S2OrthoMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException;
+    protected abstract S2Metadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException;
 
     protected abstract String getImagePathString(S2Metadata.Tile tile, String imageFileName);
 
@@ -200,7 +176,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         final String aFilter = filterTileId;
 
-        S2OrthoMetadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
+        S2Metadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
 
         S2OrthoSceneDescription sceneDescription = S2OrthoSceneDescription.create(metadataHeader,
                                                                                   getProductResolution());
@@ -210,7 +186,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         initCacheDir(productDir);
 
         S2Metadata.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
-
 
         // set the product global geo-coding
         Product product = new Product(FileUtils.getFilenameWithoutExtension(rootMetaDataFile),
@@ -242,67 +217,61 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
         product.setAutoGrouping("sun:view");
 
-        // create the band mosaics per UTM zones
-        for (String utmZone : metadataHeader.getUTMZonesList()) {
-            Map<Integer, BandInfo> bandInfoMap = new HashMap<>();
+        Map<Integer, BandInfo> bandInfoMap = new HashMap<>();
 
-            // if we selected the granule there is only one UTM zone and we'll get here only once, just extract the granule
-            // otherwise get the list of tiles for this UTM zone
-            List<S2Metadata.Tile> utmZoneTileList = metadataHeader.getTileList(utmZone);
-            if (isAGranule) {
-                utmZoneTileList = utmZoneTileList.stream().filter(p -> p.getId().equalsIgnoreCase(aFilter)).collect(Collectors.toList());
-            }
-            // for all bands of the UTM zone, store tiles files names
-            for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
-                int bandIndex = bandInformation.getBandId();
-                if (bandIndex >= 0 && bandIndex < productCharacteristics.getBandInformations().length) {
+        List<S2Metadata.Tile> tileList = metadataHeader.getTileList();
+        if (isAGranule) {
+            tileList = tileList.stream().filter(p -> p.getId().equalsIgnoreCase(aFilter)).collect(Collectors.toList());
+        }
 
-                    if(isMultiResolution() ||
-                            bandInformation.getResolution() == this.getProductResolution().resolution ||
-                            this instanceof Sentinel2L2AProductReader) {
-                        HashMap<String, File> tileFileMap = new HashMap<>();
-                        for (S2Metadata.Tile tile : utmZoneTileList) {
+        // Verify access to granule image files, and store absolute location
+        for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
+            int bandIndex = bandInformation.getBandId();
+            if (bandIndex >= 0 && bandIndex < productCharacteristics.getBandInformations().length) {
 
-                            S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
-                            if (gf != null) {
-                                S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
+                if(isMultiResolution() ||
+                        bandInformation.getResolution() == this.getProductResolution().resolution ||
+                        this instanceof Sentinel2L2AProductReader) {
+                    HashMap<String, File> tileFileMap = new HashMap<>();
+                    for (S2Metadata.Tile tile : tileList) {
 
-                                String imgFilename = getImagePathString(tile, imageFilename.name);
-                                logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
+                        S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
+                        if (gf != null) {
+                            S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
 
-                                File file = new File(productDir, imgFilename);
-                                if (file.exists()) {
-                                    tileFileMap.put(tile.getId(), file);
-                                } else {
-                                    logger.warning(String.format("Warning: missing file %s\n", file));
-                                }
+                            String imgFilename = getImagePathString(tile, imageFilename.name);
+                            logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
+
+                            File file = new File(productDir, imgFilename);
+                            if (file.exists()) {
+                                tileFileMap.put(tile.getId(), file);
+                            } else {
+                                logger.warning(String.format("Warning: missing file %s\n", file));
                             }
                         }
-
-                        if (!tileFileMap.isEmpty()) {
-                            BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
-                            bandInfoMap.put(bandIndex, bandInfo);
-                        } else {
-                            logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
-                        }
                     }
-                } else {
-                    logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
+
+                    if (!tileFileMap.isEmpty()) {
+                        BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+                        bandInfoMap.put(bandIndex, bandInfo);
+                    } else {
+                        logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
+                    }
                 }
+            } else {
+                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
             }
+        }
 
+        if(!bandInfoMap.isEmpty()) {
+            addBands(product,
+                    bandInfoMap,
+                    sceneDescription.getSceneEnvelope(),
+                    new L1cSceneMultiLevelImageFactory(sceneDescription,
+                            ImageManager.getImageToModelTransform(product.getGeoCoding()))
+            );
 
-            if(!bandInfoMap.isEmpty())
-            {
-                addBands(product,
-                        bandInfoMap,
-                        sceneDescription.getSceneEnvelope(),
-                        new L1cSceneMultiLevelImageFactory(sceneDescription,
-                                ImageManager.getImageToModelTransform(product.getGeoCoding()))
-                );
-
-                addMasks(product, utmZoneTileList, bandInfoMap);
-            }
+            addMasks(product, tileList, bandInfoMap);
         }
 
         if(!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
@@ -316,7 +285,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return product;
     }
 
-    private void addMasks(Product product, List<L1cMetadata.Tile> utmZoneTileList, Map<Integer, BandInfo> bandInfoMap) throws IOException {
+    private void addMasks(Product product, List<S2Metadata.Tile> tileList, Map<Integer, BandInfo> bandInfoMap) throws IOException {
         for (MaskInfo maskInfo : MaskInfo.values())
         {
             // We are only interested in masks present in L1C products
@@ -332,15 +301,15 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
 
             for (Integer bandIndex : bandIndexes) {
-                addMask(product, utmZoneTileList, maskInfo, bandInfoMap.get(bandIndex));
+                addMask(product, tileList, maskInfo, bandInfoMap.get(bandIndex));
             }
         }
     }
 
-    private void addMask(Product product, List<L1cMetadata.Tile> utmZoneTileList, MaskInfo maskInfo, BandInfo bandInfo) {
+    private void addMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, BandInfo bandInfo) {
         List<EopPolygon> productPolygons = new ArrayList<>();
 
-        for(L1cMetadata.Tile tile : utmZoneTileList ) {
+        for(S2Metadata.Tile tile : tileList ) {
             for (S2Metadata.MaskFilename maskFilename : tile.getMaskFilenames()) {
 
                 // We are only interested in a single mask main type
@@ -383,10 +352,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         VectorDataNode vdn = new VectorDataNode(maskInfo.getTypeForBand(bandName), collection);
         vdn.setOwner(product);
         product.addMask(maskInfo.getTypeForBand(bandName),
-                        vdn,
-                        maskInfo.getDescriptionForBand(bandName),
-                        maskInfo.getColor(),
-                        maskInfo.getTransparency());
+                vdn,
+                maskInfo.getDescriptionForBand(bandName),
+                maskInfo.getColor(),
+                maskInfo.getTransparency());
     }
 
     private void addTiePointGridBand(Product product, S2Metadata metadataHeader, S2OrthoSceneDescription sceneDescription, String name, int tiePointGridIndex) {
@@ -446,8 +415,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     private TiePointGrid[] createL1cTileTiePointGrids(S2Metadata metadataHeader, int tileIndex) {
         TiePointGrid[] tiePointGrid = null;
-        L1cMetadata.Tile tile = metadataHeader.getTileList().get(tileIndex);
-        L1cMetadata.AnglesGrid anglesGrid = tile.getSunAnglesGrid();
+        S2Metadata.Tile tile = metadataHeader.getTileList().get(tileIndex);
+        S2Metadata.AnglesGrid anglesGrid = tile.getSunAnglesGrid();
         if(anglesGrid != null) {
             int gridHeight = tile.getSunAnglesGrid().getZenith().length;
             int gridWidth = tile.getSunAnglesGrid().getZenith()[0].length;
@@ -457,14 +426,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             float[] viewingAzimuths = new float[gridWidth * gridHeight];
             Arrays.fill(viewingZeniths, Float.NaN);
             Arrays.fill(viewingAzimuths, Float.NaN);
-            L1cMetadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
-            L1cMetadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.getViewingIncidenceAnglesGrids();
+            S2Metadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
+            S2Metadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.getViewingIncidenceAnglesGrids();
             for (int y = 0; y < gridHeight; y++) {
                 for (int x = 0; x < gridWidth; x++) {
                     final int index = y * gridWidth + x;
                     sunZeniths[index] = sunAnglesGrid.getZenith()[y][x];
                     sunAzimuths[index] = sunAnglesGrid.getAzimuth()[y][x];
-                    for (L1cMetadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
+                    for (S2Metadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
                         try {
                             if (y < grid.getZenith().length) {
                                 if (x < grid.getZenith()[y].length) {

@@ -28,29 +28,18 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
-import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.Counter;
-import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadata;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.util.SystemUtils;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import javax.xml.bind.JAXBException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Represents the Sentinel-2 MSI L1C XML metadata header file.
@@ -59,7 +48,7 @@ import java.util.stream.Collectors;
  *
  * @author Norman Fomferra
  */
-public class L2aMetadata extends S2OrthoMetadata {
+public class L2aMetadata extends S2Metadata {
 
     private static final String PSD_STRING = "12";
 
@@ -98,8 +87,6 @@ public class L2aMetadata extends S2OrthoMetadata {
         }
 
         List<File> fullTileNamesList = new ArrayList<>();
-
-        resetTileList();
 
         resetTileList();
 
@@ -157,13 +144,6 @@ public class L2aMetadata extends S2OrthoMetadata {
             addTileToList(tile);
         }
 
-        for(String key: counters.keySet())
-        {
-            List<S2Metadata.Tile> aUTMZone =
-                    getTileList().stream().filter(i -> i.getHorizontalCsCode().equals(key)).collect(Collectors.toList());
-            addTileListToAllTileList(key, aUTMZone);
-        }
-
         S2DatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
         S2DatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
 
@@ -204,7 +184,5 @@ public class L2aMetadata extends S2OrthoMetadata {
         tile.setMaskFilenames(L2aMetadataProc.getMasks(aTile, file));
 
         addTileToList(tile);
-
-        addTileListToAllTileList(tile.getHorizontalCsCode(), getTileList());
     }
 }

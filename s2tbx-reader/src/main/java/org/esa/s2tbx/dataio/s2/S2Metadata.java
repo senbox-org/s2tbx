@@ -36,11 +36,7 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents the Sentinel-2 MSI XML metadata header file.
@@ -68,7 +64,7 @@ public abstract class S2Metadata {
         this.config = config;
         this.unmarshaller = context.createUnmarshaller();
         this.psdString = psdString;
-        metadataElements = new ArrayList<>();
+        this.metadataElements = new ArrayList<>();
     }
 
     public S2Config getConfig() {

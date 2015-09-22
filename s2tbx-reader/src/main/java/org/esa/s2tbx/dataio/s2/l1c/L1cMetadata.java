@@ -27,9 +27,8 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.Counter;
-import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadata;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.util.SystemUtils;
 import org.jdom.JDOMException;
@@ -37,20 +36,10 @@ import org.jdom.input.SAXBuilder;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 
 /**
@@ -60,7 +49,7 @@ import java.util.stream.Collectors;
  *
  * @author Norman Fomferra
  */
-public class L1cMetadata extends S2OrthoMetadata {
+public class L1cMetadata extends S2Metadata {
 
     private static final String PSD_STRING = "13";
 
@@ -163,23 +152,6 @@ public class L1cMetadata extends S2OrthoMetadata {
             addTileToList(tile);
         }
 
-
-        for(String key: counters.keySet())
-        {
-            List<S2Metadata.Tile> aUTMZone =
-                    getTileList().stream().filter(i -> i.getHorizontalCsCode().equals(key)).collect(Collectors.toList());
-            addTileListToAllTileList(key, aUTMZone);
-        }
-
-        // if it's a multi-UTM product, we create the product using only the main UTM zone (the one with more tiles)
-        // todo make sure that tileList and allTileLists.get(maximus) are the same before removing this code
-
-        //if (counters.values().size() > 1) {
-        //    Counter maximus = Collections.max(counters.values());
-        //    logger.info(String.format("There are %d UTM zones in this product, the main zone is [%s]", counters.size(), maximus.getName()));
-        //    tileList = tileList.stream().filter(i -> i.horizontalCsCode.equals(maximus.getName())).collect(Collectors.toList());
-        //}
-
         S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
         S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);
 
@@ -220,7 +192,5 @@ public class L1cMetadata extends S2OrthoMetadata {
         tile.setMaskFilenames(L1cMetadataProc.getMasks(aTile, file));
 
         addTileToList(tile);
-
-        addTileListToAllTileList(tile.getHorizontalCsCode(), getTileList());
     }
 }

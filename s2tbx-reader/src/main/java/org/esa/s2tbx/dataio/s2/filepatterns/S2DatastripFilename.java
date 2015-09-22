@@ -19,7 +19,6 @@
 
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
-
 public class S2DatastripFilename {
     public final String name;
     public final String missionID;

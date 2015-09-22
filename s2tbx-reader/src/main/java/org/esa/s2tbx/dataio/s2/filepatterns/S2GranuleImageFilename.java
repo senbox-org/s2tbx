@@ -19,7 +19,6 @@
 
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
-
 /**
  * @author Norman Fomferra
  */
