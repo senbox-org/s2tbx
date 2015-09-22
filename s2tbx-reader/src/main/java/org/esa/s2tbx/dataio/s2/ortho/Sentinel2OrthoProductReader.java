@@ -118,7 +118,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     protected abstract String getUserCacheDir();
 
-    protected abstract S2OrthoMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException;
+    protected abstract S2Metadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException;
 
     protected abstract String getImagePathString(S2Metadata.Tile tile, String imageFileName);
 
@@ -177,7 +177,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         final String aFilter = filterTileId;
 
-        S2OrthoMetadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
+        S2Metadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
 
         S2OrthoSceneDescription sceneDescription = S2OrthoSceneDescription.create(metadataHeader,
                                                                                   getProductResolution());
