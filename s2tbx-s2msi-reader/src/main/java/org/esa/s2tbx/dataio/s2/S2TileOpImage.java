@@ -83,12 +83,12 @@ public class S2TileOpImage extends SingleBandedOpImage {
             MultiLevelModel imageModel,
             int level) {
         super(S2Config.SAMPLE_DATA_BUFFER_TYPE,
-              imagePos,
-              tileLayout.width,
-              tileLayout.height,
-              getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
-              null,
-              ResolutionLevel.create(imageModel, level));
+                imagePos,
+                tileLayout.width,
+                tileLayout.height,
+                getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
+                null,
+                ResolutionLevel.create(imageModel, level));
 
         Assert.notNull(imageFile, "imageFile");
         Assert.notNull(cacheDir, "cacheDir");
@@ -106,17 +106,16 @@ public class S2TileOpImage extends SingleBandedOpImage {
     }
 
 
-
     protected final Logger logger;
 
     public static PlanarImage create(File imageFile,
-                              File cacheDir,
-                              Point imagePos,
-                              TileLayout tileLayout,
-                              S2Config config,
-                              MultiLevelModel imageModel,
+                                     File cacheDir,
+                                     Point imagePos,
+                                     TileLayout tileLayout,
+                                     S2Config config,
+                                     MultiLevelModel imageModel,
                                      S2SpatialResolution productResolution,
-                              int level) {
+                                     int level) {
 
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "imageLayout");
@@ -137,9 +136,9 @@ public class S2TileOpImage extends SingleBandedOpImage {
             SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(S2Config.SAMPLE_DATA_BUFFER_TYPE, targetWidth, targetHeight);
             ImageLayout imageLayout = new ImageLayout(0, 0, targetWidth, targetHeight, 0, 0, targetTileDim.width, targetTileDim.height, sampleModel, null);
             return ConstantDescriptor.create((float) imageLayout.getWidth(null),
-                                             (float) imageLayout.getHeight(null),
-                                             new Short[]{S2Config.FILL_CODE_NO_FILE},
-                                             new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                    (float) imageLayout.getHeight(null),
+                    new Short[]{S2Config.FILL_CODE_NO_FILE},
+                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
         }
     }
 
@@ -156,15 +155,15 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
         BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
         RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                                                           borderExtender);
+                borderExtender);
 
         RenderedOp scaledImage = ScaleDescriptor.create(sourceImage,
-                                                        scaleX,
-                                                        scaleY,
-                                                        sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
-                                                        sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
-                                                        Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                                                        renderingHints);
+                scaleX,
+                scaleY,
+                sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
+                sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
+                Interpolation.getInstance(Interpolation.INTERP_NEAREST),
+                renderingHints);
 
         SystemUtils.LOG.fine(String.format("After scaling: (%d, %d)", scaledImage.getWidth(), scaledImage.getHeight()));
 
@@ -174,11 +173,11 @@ public class S2TileOpImage extends SingleBandedOpImage {
             SystemUtils.LOG.fine(String.format("Cropping: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
 
             return CropDescriptor.create(scaledImage,
-                                         (float) sourceImage.getMinX(),
-                                         (float) sourceImage.getMinY(),
-                                         (float) targetWidth,
-                                         (float) targetHeight,
-                                         null);
+                    (float) sourceImage.getMinX(),
+                    (float) sourceImage.getMinY(),
+                    (float) targetWidth,
+                    (float) targetHeight,
+                    null);
         } else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
             int rightPad = targetWidth - scaledImage.getWidth();
             int bottomPad = targetHeight - scaledImage.getHeight();
@@ -203,7 +202,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
         if (tileWidth * tileHeight != tileData.length) {
             throw new IllegalStateException(String.format("tileWidth (=%d) * tileHeight (=%d) != tileData.length (=%d)",
-                                                          tileWidth, tileHeight, tileData.length));
+                    tileWidth, tileHeight, tileData.length));
         }
 
         final Dimension jp2TileDim = getDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, getLevel());
@@ -225,9 +224,9 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
         try {
             outputFile = new File(cacheDir,
-                                  FileUtils.exchangeExtension(imageFile.getName(),
-                                                              String.format("_R%d_TX%d_TY%d.pgx",
-                                                                            getLevel(), jp2TileX, jp2TileY)));
+                    FileUtils.exchangeExtension(imageFile.getName(),
+                            String.format("_R%d_TX%d_TY%d.pgx",
+                                    getLevel(), jp2TileX, jp2TileY)));
         } catch (Exception e) {
             logger.severe(Utils.getStackTrace(e));
         }
@@ -275,6 +274,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
         int height = getSizeAtResolutionLevel(fullHeight, level);
         return new Dimension(width, height);
     }
+
     /**
      * Computes a new size at a given resolution level in the style of JPEG2000.
      *
@@ -294,7 +294,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
     static Dimension getTileDim(int width, int height) {
         return new Dimension(width < S2Config.DEFAULT_JAI_TILE_SIZE ? width : S2Config.DEFAULT_JAI_TILE_SIZE,
-                             height < S2Config.DEFAULT_JAI_TILE_SIZE ? height : S2Config.DEFAULT_JAI_TILE_SIZE);
+                height < S2Config.DEFAULT_JAI_TILE_SIZE ? height : S2Config.DEFAULT_JAI_TILE_SIZE);
     }
 
 
@@ -303,7 +303,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
         ProcessBuilder builder;
 
-        if(S2Config.OPJ_DECOMPRESSOR_EXE != null) {
+        if (S2Config.OPJ_DECOMPRESSOR_EXE != null) {
             if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
                 String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
                 String outputFileName = outputFile.getPath();
@@ -315,20 +315,20 @@ public class S2TileOpImage extends SingleBandedOpImage {
                 Guardian.assertTrue("Image file exists", new File(inputFileName).exists());
 
                 builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
-                                             "-i", inputFileName,
-                                             "-o", outputFileName,
-                                             "-r", getLevel() + "",
-                                             "-t", tileIndex + "");
+                        "-i", inputFileName,
+                        "-o", outputFileName,
+                        "-r", getLevel() + "",
+                        "-t", tileIndex + "");
             } else {
                 SystemUtils.LOG.fine("Writing to " + outputFile.getPath());
 
                 Guardian.assertTrue("Image file exists", imageFile.exists());
 
                 builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
-                                             "-i", imageFile.getPath(),
-                                             "-o", outputFile.getPath(),
-                                             "-r", getLevel() + "",
-                                             "-t", tileIndex + "");
+                        "-i", imageFile.getPath(),
+                        "-o", outputFile.getPath(),
+                        "-r", getLevel() + "",
+                        "-t", tileIndex + "");
             }
         } else {
             throw new UnexpectedException("OpenJpeg decompressor is not set");
@@ -347,7 +347,6 @@ public class S2TileOpImage extends SingleBandedOpImage {
             SystemUtils.LOG.severe("Process was interrupted, InterruptedException: " + e.getMessage());
         }
     }
-
 
 
     @Override
@@ -388,12 +387,12 @@ public class S2TileOpImage extends SingleBandedOpImage {
     }
 
     protected void readTileData(File outputFile,
-                              int tileX, int tileY,
-                              int tileWidth, int tileHeight,
-                              int jp2TileX, int jp2TileY,
-                              int jp2TileWidth, int jp2TileHeight,
-                              short[] tileData,
-                              Rectangle destRect) throws IOException {
+                                int tileX, int tileY,
+                                int tileWidth, int tileHeight,
+                                int jp2TileX, int jp2TileY,
+                                int jp2TileWidth, int jp2TileHeight,
+                                short[] tileData,
+                                Rectangle destRect) throws IOException {
 
         synchronized (this) {
             if (!locks.containsKey(outputFile)) {
@@ -412,14 +411,14 @@ public class S2TileOpImage extends SingleBandedOpImage {
             int jp2Height = jp2File.height;
             if (jp2Width > jp2TileWidth || jp2Height > jp2TileHeight) {
                 throw new IllegalStateException(String.format("width (=%d) > tileWidth (=%d) || height (=%d) > tileHeight (=%d)",
-                                                              jp2Width, jp2TileWidth, jp2Height, jp2TileHeight));
+                        jp2Width, jp2TileWidth, jp2Height, jp2TileHeight));
             }
 
             int jp2X = destRect.x - jp2TileX * jp2TileWidth;
             int jp2Y = destRect.y - jp2TileY * jp2TileHeight;
             if (jp2X < 0 || jp2Y < 0) {
                 throw new IllegalStateException(String.format("jp2X (=%d) < 0 || jp2Y (=%d) < 0",
-                                                              jp2X, jp2Y));
+                        jp2X, jp2Y));
             }
 
             final ImageInputStream stream = jp2File.stream;
@@ -432,8 +431,8 @@ public class S2TileOpImage extends SingleBandedOpImage {
             } else {
                 final Rectangle jp2FileRect = new Rectangle(0, 0, jp2Width, jp2Height);
                 final Rectangle tileRect = new Rectangle(jp2X,
-                                                         jp2Y,
-                                                         tileWidth, tileHeight);
+                        jp2Y,
+                        tileWidth, tileHeight);
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
                 if (!intersection.isEmpty()) {
                     SystemUtils.LOG.fine(String.format("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection));
@@ -491,8 +490,6 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
         return jp2File;
     }
-
-
 
 
 }

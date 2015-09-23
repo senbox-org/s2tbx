@@ -50,13 +50,13 @@ public class S2OrthoGranuleDirFilename extends S2GranuleDirFilename {
                                       String tileNumber,
                                       String processingBaseline) {
         super(name,
-              missionID,
-              fileClass,
-              fileCategory,
-              fileSemantic,
-              siteCentre,
-              creationDate,
-              processingBaseline);
+                missionID,
+                fileClass,
+                fileCategory,
+                fileSemantic,
+                siteCentre,
+                creationDate,
+                processingBaseline);
 
 
         this.absoluteOrbit = absoluteOrbit;
@@ -83,15 +83,15 @@ public class S2OrthoGranuleDirFilename extends S2GranuleDirFilename {
         final Matcher matcher = PATTERN.matcher(fileName);
         if (matcher.matches()) {
             return new S2OrthoGranuleDirFilename(fileName,
-                                            matcher.group(1),
-                                            matcher.group(2),
-                                            matcher.group(3),
-                                            matcher.group(4),
-                                            matcher.group(5),
-                                            matcher.group(6),
-                                            matcher.group(7),
-                                            matcher.group(8),
-                                            matcher.group(9)
+                    matcher.group(1),
+                    matcher.group(2),
+                    matcher.group(3),
+                    matcher.group(4),
+                    matcher.group(5),
+                    matcher.group(6),
+                    matcher.group(7),
+                    matcher.group(8),
+                    matcher.group(9)
             );
         } else {
             SystemUtils.LOG.warning(String.format("%s S2GranuleDirFilename didn't match regexp %s", fileName, PATTERN.toString()));

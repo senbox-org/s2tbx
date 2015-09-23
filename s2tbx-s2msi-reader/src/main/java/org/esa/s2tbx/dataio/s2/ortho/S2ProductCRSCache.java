@@ -38,10 +38,12 @@ public class S2ProductCRSCache {
             return epsgCodeList.contains(epsg);
         }
 
-        boolean add(String epsg) { return epsgCodeList.add(epsg); }
+        boolean add(String epsg) {
+            return epsgCodeList.add(epsg);
+        }
     }
 
-    private HashMap<String,S2ProductCRSCacheEntry> cache = new HashMap<>();
+    private HashMap<String, S2ProductCRSCacheEntry> cache = new HashMap<>();
 
     /* ctor */
     public S2ProductCRSCache() {
@@ -51,7 +53,7 @@ public class S2ProductCRSCache {
     synchronized void ensureIsCached(String productFileName) {
         Path rootPath = new File(productFileName).toPath().getParent();
         File granuleFolder = rootPath.resolve("GRANULE").toFile();
-        for( File granule : granuleFolder.listFiles() ) {
+        for (File granule : granuleFolder.listFiles()) {
             if (granule.isDirectory()) {
                 S2OrthoGranuleDirFilename granuleDirFilename = S2OrthoGranuleDirFilename.create(granule.getName());
                 String epsgCode = S2CRSHelper.tileIdentifierToEPSG(granuleDirFilename.tileNumber);

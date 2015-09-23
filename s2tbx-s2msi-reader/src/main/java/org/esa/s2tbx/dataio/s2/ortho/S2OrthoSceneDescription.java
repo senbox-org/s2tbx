@@ -85,10 +85,10 @@ public class S2OrthoSceneDescription extends S2SceneDescription {
 
             S2Metadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
             Envelope2D envelope = new Envelope2D(crs,
-                                                 selectedGeometry.getUpperLeftX(),
-                                                 selectedGeometry.getUpperLeftY() + selectedGeometry.getNumRows() * selectedGeometry.getyDim(),
-                                                 selectedGeometry.getNumCols() * selectedGeometry.getxDim(),
-                                                 -selectedGeometry.getNumRows() * selectedGeometry.getyDim());
+                    selectedGeometry.getUpperLeftX(),
+                    selectedGeometry.getUpperLeftY() + selectedGeometry.getNumRows() * selectedGeometry.getyDim(),
+                    selectedGeometry.getNumCols() * selectedGeometry.getxDim(),
+                    -selectedGeometry.getNumRows() * selectedGeometry.getyDim());
             tileEnvelopes[i] = envelope;
 
             if (sceneEnvelope == null) {
@@ -112,9 +112,9 @@ public class S2OrthoSceneDescription extends S2SceneDescription {
             double tileX = tileEnvelope.getX();
             double tileY = tileEnvelope.getY() + tileEnvelope.getHeight();
             Rectangle rectangle = new Rectangle((int) ((tileX - imageX) / selectedGeometry.getxDim()),
-                                                (int) ((imageY - tileY) / -selectedGeometry.getyDim()),
-                                                selectedGeometry.getNumCols(),
-                                                selectedGeometry.getNumRows());
+                    (int) ((imageY - tileY) / -selectedGeometry.getyDim()),
+                    selectedGeometry.getNumCols(),
+                    selectedGeometry.getNumRows());
             if (sceneBounds == null) {
                 sceneBounds = new Rectangle(rectangle);
             } else {

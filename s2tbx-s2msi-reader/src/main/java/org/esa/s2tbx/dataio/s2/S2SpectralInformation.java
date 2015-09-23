@@ -27,7 +27,7 @@ public class S2SpectralInformation {
 
     private int bandId;
     private String physicalBand;
-    private int resolution;
+    private S2SpatialResolution resolution;
     private double wavelengthMin;
     private double wavelengthMax;
     private double wavelengthCentral;
@@ -39,18 +39,11 @@ public class S2SpectralInformation {
     }
 
     public S2SpectralInformation(String physicalBand,
-                                 int bandId)
-    {
-        this(physicalBand, bandId, 0, 0, 0, 0);
-    }
-
-    public S2SpectralInformation(String physicalBand,
                                  int bandId,
-                                 int resolution,
+                                 S2SpatialResolution resolution,
                                  double wavelengthMin,
                                  double wavelengthMax,
-                                 double wavelengthCentral)
-    {
+                                 double wavelengthCentral) {
         this.physicalBand = physicalBand;
         this.bandId = bandId;
         this.resolution = resolution;
@@ -76,11 +69,11 @@ public class S2SpectralInformation {
         this.physicalBand = physicalBand;
     }
 
-    public int getResolution() {
+    public S2SpatialResolution getResolution() {
         return resolution;
     }
 
-    public void setResolution(int resolution) {
+    public void setResolution(S2SpatialResolution resolution) {
         this.resolution = resolution;
     }
 
@@ -106,6 +99,10 @@ public class S2SpectralInformation {
 
     public void setWavelengthCentral(double wavelengthCentral) {
         this.wavelengthCentral = wavelengthCentral;
+    }
+
+    public double getSpectralBandwith() {
+        return (this.wavelengthMax - this.wavelengthMin);
     }
 
     public double[] getSpectralResponseValues() {

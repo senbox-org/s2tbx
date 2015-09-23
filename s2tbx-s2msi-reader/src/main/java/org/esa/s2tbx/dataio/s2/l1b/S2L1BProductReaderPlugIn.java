@@ -50,7 +50,7 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
 
         DecodeQualification decodeQualification = DecodeQualification.UNABLE;
 
-        if(input instanceof File) {
+        if (input instanceof File) {
             File file = (File) input;
 
             if (file.isFile()) {
@@ -58,7 +58,7 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
 
                 // first check it is a Sentinel-2 product
                 Matcher matcher = PATTERN.matcher(fileName);
-                if(matcher.matches()) {
+                if (matcher.matches()) {
 
                     // test for granule filename first as it is more restrictive
                     if (S2L1BGranuleMetadataFilename.isGranuleFilename(fileName)) {
