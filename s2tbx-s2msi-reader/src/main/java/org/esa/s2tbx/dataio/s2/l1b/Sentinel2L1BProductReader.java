@@ -97,13 +97,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
     protected final Logger logger;
 
-    public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution) {
-        super(readerPlugIn, productResolution, false);
-        logger = SystemUtils.LOG;
-    }
-
-    public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn, S2SpatialResolution.R10M, true);
+    public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation) {
+        super(readerPlugIn, interpretation);
         logger = SystemUtils.LOG;
     }
 
