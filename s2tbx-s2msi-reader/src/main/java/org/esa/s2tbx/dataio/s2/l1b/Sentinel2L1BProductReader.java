@@ -126,12 +126,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             logger.fine("Reading a granule");
         }
 
-        // update the tile layout
-        if (isMultiResolution()) {
-            updateTileLayout(metadataFile.toPath(), isAGranule, null);
-        } else {
-            updateTileLayout(metadataFile.toPath(), isAGranule, getProductResolution());
-        }
+        updateTileLayout(metadataFile.toPath(), isAGranule);
 
         Objects.requireNonNull(metadataFile);
 

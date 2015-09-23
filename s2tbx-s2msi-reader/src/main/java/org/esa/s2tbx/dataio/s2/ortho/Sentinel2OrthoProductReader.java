@@ -122,11 +122,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         // update the tile layout
-        if (isMultiResolution()) {
-            updateTileLayout(metadataFile.toPath(), isAGranule, null);
-        } else {
-            updateTileLayout(metadataFile.toPath(), isAGranule, getProductResolution());
-        }
+        updateTileLayout(metadataFile.toPath(), isAGranule);
 
         String filterTileId = null;
         File rootMetaDataFile = null;
