@@ -173,7 +173,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         S2Metadata.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
-        // set the product global geo-coding
         Product product = new Product(FileUtils.getFilenameWithoutExtension(rootMetaDataFile),
                 "S2_MSI_" + productCharacteristics.getProcessingLevel(),
                 sceneDescription.getSceneRectangle().width,
@@ -220,7 +219,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         this instanceof Sentinel2L2AProductReader) {
                     HashMap<String, File> tileFileMap = new HashMap<>();
                     for (S2Metadata.Tile tile : tileList) {
-
                         S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
                         if (gf != null) {
                             S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
