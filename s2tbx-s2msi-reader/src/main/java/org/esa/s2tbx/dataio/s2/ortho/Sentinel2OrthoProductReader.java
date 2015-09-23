@@ -212,38 +212,33 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         // Verify access to granule image files, and store absolute location
         for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
             int bandIndex = bandInformation.getBandId();
-            if (bandIndex >= 0 && bandIndex < productCharacteristics.getBandInformations().length) {
+            if (bandIndex < 0 && bandIndex >= productCharacteristics.getBandInformations().length) {
+                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
+            }
 
-                if (isMultiResolution() ||
-                        bandInformation.getResolution() == this.getProductResolution() ||
-                        this instanceof Sentinel2L2AProductReader) {
-                    HashMap<String, File> tileFileMap = new HashMap<>();
-                    for (S2Metadata.Tile tile : tileList) {
-                        S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
-                        if (gf != null) {
-                            S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
+            HashMap<String, File> tileFileMap = new HashMap<>();
+            for (S2Metadata.Tile tile : tileList) {
+                S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
+                if (gf != null) {
+                    S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
 
-                            String imgFilename = getImagePathString(tile, imageFilename.name);
-                            logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
+                    String imgFilename = getImagePathString(tile, imageFilename.name);
+                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
-                            File file = new File(productDir, imgFilename);
-                            if (file.exists()) {
-                                tileFileMap.put(tile.getId(), file);
-                            } else {
-                                logger.warning(String.format("Warning: missing file %s\n", file));
-                            }
-                        }
-                    }
-
-                    if (!tileFileMap.isEmpty()) {
-                        BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
-                        bandInfoMap.put(bandIndex, bandInfo);
+                    File file = new File(productDir, imgFilename);
+                    if (file.exists()) {
+                        tileFileMap.put(tile.getId(), file);
                     } else {
-                        logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
+                        logger.warning(String.format("Warning: missing file %s\n", file));
                     }
                 }
+            }
+
+            if (!tileFileMap.isEmpty()) {
+                BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+                bandInfoMap.put(bandIndex, bandInfo);
             } else {
-                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
+                logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
             }
         }
 
