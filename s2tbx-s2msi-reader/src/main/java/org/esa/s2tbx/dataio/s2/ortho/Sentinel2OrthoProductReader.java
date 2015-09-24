@@ -41,6 +41,7 @@ import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.*;
 import org.esa.snap.jai.ImageManager;
+import org.esa.snap.jai.SourceImageScaler;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -250,6 +251,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             ImageManager.getImageToModelTransform(product.getGeoCoding()))
             );
 
+            scaleBands(product, bandInfoMap);
+
             addMasks(product, tileList, bandInfoMap);
         }
 
@@ -259,7 +262,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", VIEW_ZENITH_GRID_INDEX);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", VIEW_AZIMUTH_GRID_INDEX);
         }
-
 
         return product;
     }
@@ -353,6 +355,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
 
             Band band = addBand(product, bandInfo);
+
             band.setSourceImage(mlif.createSourceImage(bandInfo));
 
             try {
@@ -388,6 +391,62 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     logger.severe("Illegal transform");
                 }
                 */
+        }
+    }
+
+    private void scaleBands(Product product, Map<Integer, BandInfo> bandInfoMap) throws IOException {
+
+        // In MultiResolution mode, all bands are kept at their native resolution
+        if (isMultiResolution()) {
+            return;
+        }
+
+        switch (getInterpretation()) {
+            case RESOLUTION_10M:
+                break;
+            case RESOLUTION_20M:
+                break;
+            case RESOLUTION_60M:
+                break;
+        }
+
+        // Find a reference band for rescaling the bands at other resolution
+        MultiLevelImage targetImage = null;
+        for (Integer bandIndex : bandInfoMap.keySet()) {
+            BandInfo bandInfo = bandInfoMap.get(bandIndex);
+            if (bandInfo.getSpectralInfo().getResolution() == getProductResolution()) {
+                Band referenceBand = product.getBand(bandInfo.getSpectralInfo().getPhysicalBand());
+                targetImage = referenceBand.getSourceImage();
+                break;
+            }
+        }
+
+        // If the product only has a subset of bands, we may not find what we are looking for
+        if (targetImage == null) {
+            String error = String.format("Products with no bands at %s m resolution currently cannot be read by the %s m reader", getProductResolution().resolution);
+            throw new IOException(error);
+        }
+
+        for (Band band : product.getBands()) {
+            final MultiLevelImage sourceImage = band.getSourceImage();
+
+            if (sourceImage.getWidth() == product.getSceneRasterWidth()
+                    && sourceImage.getHeight() == product.getSceneRasterHeight() )
+            {
+                // Do not rescaled band which are already at the correct resolution
+                continue;
+            }
+
+            ImageLayout imageLayout = new ImageLayout();
+            ImageManager.getPreferredTileSize(product);
+            final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+            float[] scalings = new float[2];
+            scalings[0] = product.getSceneRasterWidth() / (float)sourceImage.getWidth();
+            scalings[1] = product.getSceneRasterHeight() / (float) sourceImage.getHeight();
+            PlanarImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetImage, sourceImage, scalings, null, renderingHints,
+                    band.getNoDataValue(),
+                    Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+            band.setSourceImage(scaledImage);
         }
     }
 
