@@ -621,7 +621,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 PlanarImage opImage = createL1cTileImage(tileId, level);
 
                 {
-                    double scaleFactor = 1.0 / (Math.pow(2, level) * (bandInfo.getSpectralInfo().getResolution().resolution / getProductResolution().resolution));
+                    double bandResolution = (double)(bandInfo.getSpectralInfo().getResolution().resolution);
+                    double productResolution = (double)(getProductResolution().resolution);
+                    double scaleFactor = 1.0 / (Math.pow(2, level) * (bandResolution/productResolution));
 
                     opImage = TranslateDescriptor.create(opImage,
                             (float) Math.floor((tileRectangle.x * scaleFactor)),
