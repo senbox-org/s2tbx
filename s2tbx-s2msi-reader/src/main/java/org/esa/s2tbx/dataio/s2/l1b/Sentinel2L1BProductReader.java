@@ -305,9 +305,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         float[] lats = convertDoublesToFloats(getLatitudes(coords));
         float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
-        TiePointGrid latGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getSpectralInfo().getPhysicalBand() + ",latitude", lats);
+        TiePointGrid latGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getSpectralInfo().getPhysicalBand() + ",latitude", lats);
         product.addTiePointGrid(latGrid);
-        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getSpectralInfo().getPhysicalBand() + ",longitude", lons);
+        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getSpectralInfo().getPhysicalBand() + ",longitude", lons);
         product.addTiePointGrid(lonGrid);
 
         return new TiePointGeoCoding(latGrid, lonGrid);
@@ -557,6 +557,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         public String getDetectorId() {
             return detectorId;
+        }
+
+        public String getBandName() {
+            return String.format("%s%s", getDetectorId(), getSpectralInfo().getPhysicalBand());
         }
     }
 }

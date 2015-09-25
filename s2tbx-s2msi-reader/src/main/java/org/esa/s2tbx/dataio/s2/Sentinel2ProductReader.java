@@ -279,12 +279,11 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
         float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
 
-        String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
         Band band;
         if (isMultiResolution()) {
-            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
+            band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
         } else {
-            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
+            band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
         }
         product.addBand(band);
 
@@ -292,15 +291,11 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         band.setSpectralWavelength((float) bandInfo.getSpectralInfo().getWavelengthCentral());
         band.setSpectralBandwidth((float) bandInfo.getSpectralInfo().getSpectralBandwith());
 
-        setValidPixelMask(band, bandName);
-
-        return band;
-    }
-
-    private void setValidPixelMask(Band band, String bandName) {
         band.setNoDataValue(0);
         band.setValidPixelExpression(String.format("%s.raw > %s",
-                bandName, S2Config.RAW_NO_DATA_THRESHOLD));
+                bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
+
+        return band;
     }
 
     public static class BandInfo {
@@ -330,6 +325,10 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         public int getBandIndex() {
             return bandIndex;
+        }
+
+        public String getBandName() {
+            return getSpectralInfo().getPhysicalBand();
         }
 
         public String toString() {
