@@ -113,6 +113,14 @@ public class CodeStreamInfo {
         componentTilesInfo.add(componentTileInfo);
     }
 
+    public int getNumResolutions() {
+        int numResolutions = 0;
+        if (componentTilesInfo.size() > 0) {
+            numResolutions = componentTilesInfo.get(0).getNumResolutions();
+        }
+        return numResolutions;
+    }
+
     public MetadataElement toMetadataElement() {
         MetadataElement element = new MetadataElement("Code Stream");
         element.addAttribute(new MetadataAttribute("tx0", ProductData.ASCII.createInstance(String.valueOf(this.tx0)), false));

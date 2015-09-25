@@ -10,4 +10,5 @@ public class J2KProductReaderConstants {
     public static final String[] FORMAT_NAMES = new String[] { "JPEG2000" };
     public static final String[] DEFAULT_EXTENSIONS = new String[] { ".jp2" };
     public static final String DESCRIPTION = "JPEG-2000 Files";
+    public static final String JP2_INFO_FILE = "%s_dump.txt";
 }

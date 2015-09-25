@@ -22,7 +22,16 @@
             <artifactId>ceres-core</artifactId>
             <version>${snap.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-glayer</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>ceres-jai</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
