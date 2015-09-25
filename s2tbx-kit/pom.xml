@@ -51,7 +51,7 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-reader</artifactId>
+            <artifactId>s2tbx-s2msi-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
 

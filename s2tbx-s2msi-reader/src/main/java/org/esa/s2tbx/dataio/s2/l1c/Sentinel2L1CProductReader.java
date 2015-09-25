@@ -56,14 +56,8 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
 
     protected final Logger logger;
 
-
-    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
-        super(readerPlugIn, epsgCode);
-        logger = SystemUtils.LOG;
-    }
-
-    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution, String epsgCode) {
-        super(readerPlugIn, productResolution, epsgCode);
+    public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation, String epsgCode) {
+        super(readerPlugIn, interpretation, epsgCode);
         logger = SystemUtils.LOG;
     }
 

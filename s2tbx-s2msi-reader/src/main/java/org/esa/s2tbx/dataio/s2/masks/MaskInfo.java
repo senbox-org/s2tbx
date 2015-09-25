@@ -14,6 +14,7 @@ public enum MaskInfo {
             "DETECTOR_FOOTPRINT",
             "Detector footprint mask",
             null,
+            "detector_footprint",
             MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -22,6 +23,7 @@ public enum MaskInfo {
             "QT_NODATA_PIXELS",
             "Radiometric quality mask",
             "No–data pixels",
+            "nodata",
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -30,6 +32,7 @@ public enum MaskInfo {
             "QT_PARTIALLY_CORRECTED_PIXELS",
             "Radiometric quality mask",
             "Pixels partially corrected during cross-talk processing",
+            "partially_corrected_crosstalk",
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -38,6 +41,7 @@ public enum MaskInfo {
             "QT_SATURATED_PIXELS_L1A",
             "Radiometric quality mask",
             "Saturated pixels before on-ground radiometric processing",
+            "saturated_l1a",
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -46,6 +50,7 @@ public enum MaskInfo {
             "QT_SATURATED_PIXELS_L1B",
             "Radiometric quality mask",
             "Saturated pixels after on-ground radiometric processing",
+            "saturated_l1b",
             MaskInfo.L1B | MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -54,6 +59,7 @@ public enum MaskInfo {
             "QT_DEFECTIVE_PIXELS",
             "Radiometric quality mask",
             "Defective pixels (matching defective columns)",
+            "defective",
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -62,6 +68,7 @@ public enum MaskInfo {
             "ANC_LOST",
             "Technical quality mask",
             "Ancillary lost data",
+            "ancillary_lost",
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -70,6 +77,7 @@ public enum MaskInfo {
             "ANC_DEG",
             "Technical quality mask",
             "Ancillary degraded data",
+            "ancillary_degraded",
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -78,6 +86,7 @@ public enum MaskInfo {
             "MSI_LOST",
             "Technical quality mask",
             "MSI lost data",
+            "msi_lost",
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -86,6 +95,7 @@ public enum MaskInfo {
             "MSI_DEG",
             "Technical quality mask",
             "MSI degraded data",
+            "msi_degraded",
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -94,6 +104,7 @@ public enum MaskInfo {
             "CLOUD_INV",
             "Coarse cloud mask",
             null,
+            "coarse_cloud",
             MaskInfo.L1A | MaskInfo.L1B,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -102,6 +113,7 @@ public enum MaskInfo {
             "OPAQUE",
             "Finer cloud mask",
             "Opaque clouds",
+            "opaque_clouds",
             MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -110,6 +122,7 @@ public enum MaskInfo {
             "CIRRUS",
             "Finer cloud mask",
             "Cirrus clouds",
+            "cirrus_clouds",
             MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -118,6 +131,7 @@ public enum MaskInfo {
             "LAND",
             "Land mask",
             null,
+            "land",
             MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -126,6 +140,7 @@ public enum MaskInfo {
             "WATER",
             "Water mask",
             null,
+            "water",
             MaskInfo.L1C,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY);
@@ -134,6 +149,7 @@ public enum MaskInfo {
     private final String subType;
     private final String mainDescription;
     private final String subDescription;
+    private final String snapName;
     private final int levels;
     private final Color color;
     private final double transparency;
@@ -147,11 +163,12 @@ public enum MaskInfo {
 
     private static final double DEFAULT_TRANSPARENCY = 0.8;
 
-    MaskInfo(String mainType, String subType, String mainDescription, String subDescription, int levels, Color color, double transparency) {
+    MaskInfo(String mainType, String subType, String mainDescription, String subDescription, String snapName, int levels, Color color, double transparency) {
         this.mainType = mainType;
         this.subType = subType;
         this.mainDescription = mainDescription;
         this.subDescription = subDescription;
+        this.snapName = snapName;
         this.levels = levels;
         this.color = color;
         this.transparency = transparency;
@@ -166,11 +183,18 @@ public enum MaskInfo {
     }
 
     public String getTypeForBand(String bandName) {
-        return String.format("%s__%s__%s", mainType, subType, bandName);
+        return String.format("%s_%s", snapName, bandName);
     }
 
     public String getDescriptionForBand(String bandName) {
-        return String.format("%s - %s - %s", mainDescription, subDescription, bandName);
+        String description;
+        if (subDescription == null) {
+            description = String.format("%s - %s", mainDescription, bandName);
+        }
+        else {
+            description = String.format("%s - %s - %s", mainDescription, subDescription, bandName);
+        }
+        return description;
     }
 
     public Color getColor() {

@@ -53,12 +53,8 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
 
     static final String L2A_CACHE_DIR = "l2a-reader";
 
-    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
-        super(readerPlugIn, epsgCode);
-    }
-
-    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution, String epsgCode) {
-        super(readerPlugIn, productResolution, epsgCode);
+    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation, String epsgCode) {
+        super(readerPlugIn, interpretation, epsgCode);
     }
 
     @Override

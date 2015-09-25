@@ -19,6 +19,7 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
 import org.esa.snap.framework.dataio.ProductReader;
@@ -39,9 +40,9 @@ public abstract class S2OrthoProduct20MReaderPlugIn extends S2OrthoProductReader
         SystemUtils.LOG.info("Building product reader 20M");
 
         if (getLevel() != null && getLevel().equals("L2A")) {
-            return new Sentinel2L2AProductReader(this, S2SpatialResolution.R20M, getEPSG());
+            return new Sentinel2L2AProductReader(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_20M, getEPSG());
         } else {
-            return new Sentinel2L1CProductReader(this, S2SpatialResolution.R20M, getEPSG());
+            return new Sentinel2L1CProductReader(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_20M, getEPSG());
         }
     }
 
