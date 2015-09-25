@@ -41,6 +41,7 @@ import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.*;
 import org.esa.snap.jai.ImageManager;
+import org.esa.snap.jai.SourceImageScaler;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -94,14 +95,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private final String epsgCode;
     protected final Logger logger;
 
-    public Sentinel2OrthoProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
-        super(readerPlugIn, S2SpatialResolution.R10M, true);
-        logger = SystemUtils.LOG;
-        this.epsgCode = epsgCode;
-    }
-
-    public Sentinel2OrthoProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution, String epsgCode) {
-        super(readerPlugIn, productResolution, false);
+    public Sentinel2OrthoProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation, String epsgCode) {
+        super(readerPlugIn, interpretation);
         logger = SystemUtils.LOG;
         this.epsgCode = epsgCode;
     }
@@ -128,11 +123,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         // update the tile layout
-        if (isMultiResolution()) {
-            updateTileLayout(metadataFile.toPath(), isAGranule, null);
-        } else {
-            updateTileLayout(metadataFile.toPath(), isAGranule, getProductResolution());
-        }
+        updateTileLayout(metadataFile.toPath(), isAGranule);
 
         String filterTileId = null;
         File rootMetaDataFile = null;
@@ -183,7 +174,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         S2Metadata.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
-        // set the product global geo-coding
         Product product = new Product(FileUtils.getFilenameWithoutExtension(rootMetaDataFile),
                 "S2_MSI_" + productCharacteristics.getProcessingLevel(),
                 sceneDescription.getSceneRectangle().width,
@@ -223,39 +213,33 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         // Verify access to granule image files, and store absolute location
         for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
             int bandIndex = bandInformation.getBandId();
-            if (bandIndex >= 0 && bandIndex < productCharacteristics.getBandInformations().length) {
+            if (bandIndex < 0 && bandIndex >= productCharacteristics.getBandInformations().length) {
+                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
+            }
 
-                if (isMultiResolution() ||
-                        bandInformation.getResolution() == this.getProductResolution() ||
-                        this instanceof Sentinel2L2AProductReader) {
-                    HashMap<String, File> tileFileMap = new HashMap<>();
-                    for (S2Metadata.Tile tile : tileList) {
+            HashMap<String, File> tileFileMap = new HashMap<>();
+            for (S2Metadata.Tile tile : tileList) {
+                S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
+                if (gf != null) {
+                    S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
 
-                        S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
-                        if (gf != null) {
-                            S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
+                    String imgFilename = getImagePathString(tile, imageFilename.name);
+                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
-                            String imgFilename = getImagePathString(tile, imageFilename.name);
-                            logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
-
-                            File file = new File(productDir, imgFilename);
-                            if (file.exists()) {
-                                tileFileMap.put(tile.getId(), file);
-                            } else {
-                                logger.warning(String.format("Warning: missing file %s\n", file));
-                            }
-                        }
-                    }
-
-                    if (!tileFileMap.isEmpty()) {
-                        BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
-                        bandInfoMap.put(bandIndex, bandInfo);
+                    File file = new File(productDir, imgFilename);
+                    if (file.exists()) {
+                        tileFileMap.put(tile.getId(), file);
                     } else {
-                        logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
+                        logger.warning(String.format("Warning: missing file %s\n", file));
                     }
                 }
+            }
+
+            if (!tileFileMap.isEmpty()) {
+                BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+                bandInfoMap.put(bandIndex, bandInfo);
             } else {
-                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
+                logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
             }
         }
 
@@ -267,6 +251,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             ImageManager.getImageToModelTransform(product.getGeoCoding()))
             );
 
+            scaleBands(product, bandInfoMap);
+
             addMasks(product, tileList, bandInfoMap);
         }
 
@@ -276,7 +262,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", VIEW_ZENITH_GRID_INDEX);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", VIEW_AZIMUTH_GRID_INDEX);
         }
-
 
         return product;
     }
@@ -370,6 +355,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
 
             Band band = addBand(product, bandInfo);
+
             band.setSourceImage(mlif.createSourceImage(bandInfo));
 
             try {
@@ -405,6 +391,62 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     logger.severe("Illegal transform");
                 }
                 */
+        }
+    }
+
+    private void scaleBands(Product product, Map<Integer, BandInfo> bandInfoMap) throws IOException {
+
+        // In MultiResolution mode, all bands are kept at their native resolution
+        if (isMultiResolution()) {
+            return;
+        }
+
+        switch (getInterpretation()) {
+            case RESOLUTION_10M:
+                break;
+            case RESOLUTION_20M:
+                break;
+            case RESOLUTION_60M:
+                break;
+        }
+
+        // Find a reference band for rescaling the bands at other resolution
+        MultiLevelImage targetImage = null;
+        for (Integer bandIndex : bandInfoMap.keySet()) {
+            BandInfo bandInfo = bandInfoMap.get(bandIndex);
+            if (bandInfo.getSpectralInfo().getResolution() == getProductResolution()) {
+                Band referenceBand = product.getBand(bandInfo.getSpectralInfo().getPhysicalBand());
+                targetImage = referenceBand.getSourceImage();
+                break;
+            }
+        }
+
+        // If the product only has a subset of bands, we may not find what we are looking for
+        if (targetImage == null) {
+            String error = String.format("Products with no bands at %s m resolution currently cannot be read by the %s m reader", getProductResolution().resolution);
+            throw new IOException(error);
+        }
+
+        for (Band band : product.getBands()) {
+            final MultiLevelImage sourceImage = band.getSourceImage();
+
+            if (sourceImage.getWidth() == product.getSceneRasterWidth()
+                    && sourceImage.getHeight() == product.getSceneRasterHeight() )
+            {
+                // Do not rescaled band which are already at the correct resolution
+                continue;
+            }
+
+            ImageLayout imageLayout = new ImageLayout();
+            ImageManager.getPreferredTileSize(product);
+            final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+            float[] scalings = new float[2];
+            scalings[0] = product.getSceneRasterWidth() / (float)sourceImage.getWidth();
+            scalings[1] = product.getSceneRasterHeight() / (float) sourceImage.getHeight();
+            PlanarImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetImage, sourceImage, scalings, null, renderingHints,
+                    band.getNoDataValue(),
+                    Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+            band.setSourceImage(scaledImage);
         }
     }
 
@@ -579,7 +621,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 PlanarImage opImage = createL1cTileImage(tileId, level);
 
                 {
-                    double scaleFactor = 1.0 / (Math.pow(2, level) * (bandInfo.getSpectralInfo().getResolution().resolution / getProductResolution().resolution));
+                    double bandResolution = (double)(bandInfo.getSpectralInfo().getResolution().resolution);
+                    double productResolution = (double)(getProductResolution().resolution);
+                    double scaleFactor = 1.0 / (Math.pow(2, level) * (bandResolution/productResolution));
 
                     opImage = TranslateDescriptor.create(opImage,
                             (float) Math.floor((tileRectangle.x * scaleFactor)),
