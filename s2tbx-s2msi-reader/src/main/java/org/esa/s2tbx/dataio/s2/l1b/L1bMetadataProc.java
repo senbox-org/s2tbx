@@ -155,16 +155,15 @@ public class L1bMetadataProc extends S2MetadataProc {
         return as3DCoordinates(polygon);
     }
 
-    public static Map<Integer, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule,
-                                                                              S2Config config) {
-        Map<Integer, L1bMetadata.TileGeometry> resolutions = new HashMap<>();
+    public static Map<S2SpatialResolution, L1bMetadata.TileGeometry> getGranuleGeometries(Level1B_Granule granule, S2Config config) {
+        Map<S2SpatialResolution, L1bMetadata.TileGeometry> resolutions = new HashMap<>();
 
         List<A_GRANULE_DIMENSIONS.Size> sizes = granule.getGeometric_Info().getGranule_Dimensions().getSize();
         int pos = granule.getGeometric_Info().getGranule_Position().getPOSITION();
         String detector = granule.getGeneral_Info().getDETECTOR_ID().getValue();
 
         for (A_GRANULE_DIMENSIONS.Size gpos : sizes) {
-            int resolution = gpos.getResolution();
+            S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(gpos.getResolution());
 
             S2Metadata.TileGeometry tgeox = new L1bMetadata.TileGeometry();
             tgeox.setNumCols(gpos.getNCOLS());
@@ -179,9 +178,9 @@ public class L1bMetadataProc extends S2MetadataProc {
 
             tgeox.setNumRowsDetector(gpos.getNROWS());
             tgeox.setPosition(pos);
-            tgeox.setResolution(resolution);
-            tgeox.setxDim(resolution);
-            tgeox.setyDim(-resolution);
+            tgeox.setResolution(resolution.resolution);
+            tgeox.setxDim(resolution.resolution);
+            tgeox.setyDim(-resolution.resolution);
             tgeox.setDetector(detector);
 
             resolutions.put(resolution, tgeox);

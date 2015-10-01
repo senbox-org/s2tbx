@@ -295,7 +295,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         // sort tiles by position
-        Collections.sort(aList, (Tile u1, Tile u2) -> u1.getTileGeometry10M().getPosition().compareTo(u2.getTileGeometry10M().getPosition()));
+        Collections.sort(aList, (Tile u1, Tile u2) -> u1.getTileGeometry(S2SpatialResolution.R10M).getPosition().compareTo(u2.getTileGeometry(S2SpatialResolution.R10M).getPosition()));
 
         coords.add(aList.get(0).corners.get(0));
         coords.add(aList.get(0).corners.get(3));
@@ -305,9 +305,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         float[] lats = convertDoublesToFloats(getLatitudes(coords));
         float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
-        TiePointGrid latGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getSpectralInfo().getPhysicalBand() + ",latitude", lats);
+        TiePointGrid latGrid = addTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getSpectralInfo().getPhysicalBand() + ",latitude", lats);
         product.addTiePointGrid(latGrid);
-        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).getTileGeometry10M().getNumCols(), aList.get(0).getTileGeometry10M().getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getSpectralInfo().getPhysicalBand() + ",longitude", lons);
+        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getSpectralInfo().getPhysicalBand() + ",longitude", lons);
         product.addTiePointGrid(lonGrid);
 
         return new TiePointGeoCoding(latGrid, lonGrid);

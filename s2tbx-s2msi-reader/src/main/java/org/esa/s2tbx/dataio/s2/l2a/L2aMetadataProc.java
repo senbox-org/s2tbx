@@ -110,7 +110,7 @@ public class L2aMetadataProc extends S2MetadataProc {
         return S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
     }
 
-    public static Map<Integer, L2aMetadata.TileGeometry> getTileGeometries(Level2A_Tile product) {
+    public static Map<S2SpatialResolution, L2aMetadata.TileGeometry> getTileGeometries(Level2A_Tile product) {
 
         A_GEOMETRIC_INFO_TILE info = product.getGeometric_Info();
         A_GEOMETRIC_INFO_TILE.Tile_Geocoding tgeo = info.getTile_Geocoding();
@@ -119,21 +119,21 @@ public class L2aMetadataProc extends S2MetadataProc {
         List<A_TILE_DESCRIPTION.Geoposition> poss = tgeo.getGeoposition();
         List<A_TILE_DESCRIPTION.Size> sizz = tgeo.getSize();
 
-        Map<Integer, L2aMetadata.TileGeometry> resolutions = new HashMap<>();
+        Map<S2SpatialResolution, L2aMetadata.TileGeometry> resolutions = new HashMap<>();
 
         for (A_TILE_DESCRIPTION.Geoposition gpos : poss) {
-            int index = gpos.getResolution();
+            S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(gpos.getResolution());
             L2aMetadata.TileGeometry tgeox = new L2aMetadata.TileGeometry();
             tgeox.setUpperLeftX(gpos.getULX());
             tgeox.setUpperLeftY(gpos.getULY());
             tgeox.setxDim(gpos.getXDIM());
             tgeox.setyDim(gpos.getYDIM());
-            resolutions.put(index, tgeox);
+            resolutions.put(resolution, tgeox);
         }
 
         for (A_TILE_DESCRIPTION.Size asize : sizz) {
-            int index = asize.getResolution();
-            L2aMetadata.TileGeometry tgeox = resolutions.get(index);
+            S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(asize.getResolution());
+            L2aMetadata.TileGeometry tgeox = resolutions.get(resolution);
             tgeox.setNumCols(asize.getNCOLS());
             tgeox.setNumRows(asize.getNROWS());
         }
