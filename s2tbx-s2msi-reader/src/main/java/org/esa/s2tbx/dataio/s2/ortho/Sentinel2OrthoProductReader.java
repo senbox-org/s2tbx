@@ -263,10 +263,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return product;
     }
 
+    abstract protected int getMaskLevel();
+
     private void addMasks(Product product, List<S2Metadata.Tile> tileList, Map<Integer, BandInfo> bandInfoMap) throws IOException {
         for (MaskInfo maskInfo : MaskInfo.values()) {
             // We are only interested in masks present in L1C products
-            if (!maskInfo.isPresentAtLevel(MaskInfo.L1C))
+            if (!maskInfo.isPresentAtLevel(getMaskLevel()))
                 continue;
 
 

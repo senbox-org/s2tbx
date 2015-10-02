@@ -22,6 +22,7 @@ package org.esa.s2tbx.dataio.s2.l2a;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.jdom.JDOMException;
@@ -101,5 +102,10 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
                 File.separator,
                 imageWithoutExtention,
                 getProductResolution().resolution);
+    }
+
+    @Override
+    protected int getMaskLevel() {
+        return MaskInfo.L1C;
     }
 }
