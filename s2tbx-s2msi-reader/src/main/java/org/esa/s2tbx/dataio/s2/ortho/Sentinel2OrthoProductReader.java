@@ -46,14 +46,12 @@ import org.esa.snap.util.io.FileUtils;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.*;
-import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
@@ -587,10 +585,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         public BandL1cSceneMultiLevelSource(S2OrthoSceneLayout sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
             super(sceneDescription, imageToModelTransform, bandInfo.getImageLayout().numResolutions);
             this.bandInfo = bandInfo;
-        }
-
-        protected PlanarImage createL1cTileImage(String tileId, int level) throws IOException {
-            return planarImage;
         }
 
         protected RenderedImage createImage(int level) {
