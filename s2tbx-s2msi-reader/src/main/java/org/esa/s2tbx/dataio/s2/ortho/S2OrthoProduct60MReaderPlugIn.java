@@ -18,7 +18,6 @@
 
 package org.esa.s2tbx.dataio.s2.ortho;
 
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
@@ -27,8 +26,7 @@ import org.esa.snap.util.SystemUtils;
 
 import java.util.Locale;
 
-import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToDisplayName;
-import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
+import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.*;
 
 
 /**

@@ -24,7 +24,6 @@ import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;

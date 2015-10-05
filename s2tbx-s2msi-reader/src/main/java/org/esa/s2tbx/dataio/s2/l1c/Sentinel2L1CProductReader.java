@@ -22,7 +22,6 @@ package org.esa.s2tbx.dataio.s2.l1c;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
 import org.esa.snap.framework.datamodel.Band;

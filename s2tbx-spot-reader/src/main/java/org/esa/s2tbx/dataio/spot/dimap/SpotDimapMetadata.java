@@ -26,10 +26,7 @@ import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
