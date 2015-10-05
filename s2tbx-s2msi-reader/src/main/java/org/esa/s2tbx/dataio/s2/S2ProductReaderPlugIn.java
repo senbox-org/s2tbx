@@ -20,8 +20,6 @@
 package org.esa.s2tbx.dataio.s2;
 
 import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.framework.datamodel.RGBImageProfile;
-import org.esa.snap.framework.datamodel.RGBImageProfileManager;
 import org.esa.snap.util.io.SnapFileFilter;
 
 import java.io.File;
