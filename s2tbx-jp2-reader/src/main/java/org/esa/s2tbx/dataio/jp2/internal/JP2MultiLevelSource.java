@@ -80,7 +80,14 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param level     The resolution level (0 = highest)
      */
     protected PlanarImage createTileImage(int row, int col, int level) throws IOException {
-        return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, tileLayout, getModel(), dataType, level);
+        TileLayout currentLayout = tileLayout;
+        // the edge tiles dimensions may be less than the dimensions from JP2 header
+        if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
+            currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
+                                           tileLayout.width - col * tileLayout.tileWidth, tileLayout.height - row * tileLayout.tileHeight,
+                                           tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+        }
+        return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
     }
 
     @Override
