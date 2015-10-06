@@ -17,8 +17,8 @@
 package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.snap.framework.datamodel.MetadataElement;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.ProductData;
 
 import java.nio.ByteOrder;
 

@@ -17,9 +17,9 @@
 package org.esa.s2tbx.dataio.rapideye.metadata;
 
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.snap.framework.datamodel.MetadataAttribute;
-import org.esa.snap.framework.datamodel.MetadataElement;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.MetadataAttribute;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
 /**

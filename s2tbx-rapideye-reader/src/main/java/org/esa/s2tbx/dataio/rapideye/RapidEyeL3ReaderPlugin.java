@@ -18,9 +18,9 @@ package org.esa.s2tbx.dataio.rapideye;
 
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
-import org.esa.snap.framework.dataio.ProductReader;
-import org.esa.snap.framework.datamodel.RGBImageProfile;
-import org.esa.snap.framework.datamodel.RGBImageProfileManager;
+import org.esa.snap.core.dataio.ProductReader;
+import org.esa.snap.core.datamodel.RGBImageProfile;
+import org.esa.snap.core.datamodel.RGBImageProfileManager;
 
 import java.util.Locale;
 

@@ -20,12 +20,11 @@
 package org.esa.s2tbx.dataio.s2;
 
 import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
 
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.getSafeDecompressorAndUpdatePermissions;
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.*;
 
 /**
  * Class to store S2 readers paramteters: static const, openjpeg executables path, tile layouts, ...

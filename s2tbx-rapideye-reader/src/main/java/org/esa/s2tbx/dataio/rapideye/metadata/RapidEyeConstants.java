@@ -15,7 +15,7 @@
  */
 package org.esa.s2tbx.dataio.rapideye.metadata;
 
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductData;
 
 import java.io.File;
 

@@ -1,6 +1,6 @@
 <operator>
   <name>org.esa.s2tbx.sen2cor</name>
-  <operatorClass>org.esa.snap.framework.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
+  <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Sen2Cor</alias>
   <label>SEN2COR</label>
   <version>2.0.3</version>
@@ -69,9 +69,9 @@
   <isSystem>false</isSystem>
   <isHandlingOutputName>true</isHandlingOutputName>
   <sourceProductDescriptors>
-    <org.esa.snap.framework.gpf.descriptor.DefaultSourceProductDescriptor>
+    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
       <name>sourceProduct</name>
-    </org.esa.snap.framework.gpf.descriptor.DefaultSourceProductDescriptor>
+    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
   </sourceProductDescriptors>
   <targetPropertyDescriptors/>
   <numSourceProducts>1</numSourceProducts>

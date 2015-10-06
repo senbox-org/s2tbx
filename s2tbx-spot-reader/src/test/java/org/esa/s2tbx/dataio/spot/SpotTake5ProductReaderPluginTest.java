@@ -17,9 +17,9 @@
 package org.esa.s2tbx.dataio.spot;
 
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
-import org.esa.snap.framework.dataio.DecodeQualification;
-import org.esa.snap.framework.dataio.ProductIOPlugInManager;
-import org.esa.snap.framework.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.dataio.ProductIOPlugInManager;
+import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.util.io.SnapFileFilter;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
@@ -27,7 +27,12 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 
 import static org.junit.Assert.*;
 

@@ -17,11 +17,11 @@ package org.esa.s2tbx.dataio.deimos.dimap;
 
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductData;
 
-import java.awt.*;
+import java.awt.Color;
 
-import static org.esa.snap.utils.DateHelper.parseDate;
+import static org.esa.snap.utils.DateHelper.*;
 
 /**
  * Holder for DIMAP metadata file.

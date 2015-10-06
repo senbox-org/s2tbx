@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.jp2.metadata;
 
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductData;
 
 import java.awt.geom.Point2D;
 

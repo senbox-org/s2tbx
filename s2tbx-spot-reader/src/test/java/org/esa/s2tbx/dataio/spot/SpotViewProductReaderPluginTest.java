@@ -17,8 +17,8 @@
 package org.esa.s2tbx.dataio.spot;
 
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
-import org.esa.snap.framework.dataio.ProductIOPlugInManager;
-import org.esa.snap.framework.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.dataio.ProductIOPlugInManager;
+import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.junit.Test;
 
 import java.util.Iterator;

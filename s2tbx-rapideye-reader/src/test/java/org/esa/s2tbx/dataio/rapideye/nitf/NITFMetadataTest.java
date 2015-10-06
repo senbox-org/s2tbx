@@ -19,7 +19,7 @@ package org.esa.s2tbx.dataio.rapideye.nitf;
 import junit.framework.TestCase;
 import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;

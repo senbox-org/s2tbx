@@ -16,8 +16,8 @@
 
 package org.esa.s2tbx.dataio.nitf;
 
-import org.esa.snap.framework.datamodel.MetadataElement;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
 /**
@@ -180,7 +180,7 @@ public class NITFMetadata {
      * Returns the data type value of a pixel of the first image.
      *
      * @return One of the ProductData.TYPE_* values.
-     * @see org.esa.snap.framework.datamodel.ProductData
+     * @see ProductData
      */
     public int getDataType() {
         return getDataType(FIRST_IMAGE);

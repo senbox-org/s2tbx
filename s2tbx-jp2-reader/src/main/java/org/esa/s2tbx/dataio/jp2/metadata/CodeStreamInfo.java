@@ -1,9 +1,9 @@
 package org.esa.s2tbx.dataio.jp2.metadata;
 
 import com.bc.ceres.core.Assert;
-import org.esa.snap.framework.datamodel.MetadataAttribute;
-import org.esa.snap.framework.datamodel.MetadataElement;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.MetadataAttribute;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.ProductData;
 
 import java.util.ArrayList;
 import java.util.List;

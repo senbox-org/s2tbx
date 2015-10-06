@@ -20,9 +20,9 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.GeoTiffBasedReader;
 import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
-import org.esa.snap.framework.dataio.ProductReaderPlugIn;
-import org.esa.snap.framework.datamodel.Band;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.ProductData;
 
 /**
  * This is the base class for SPOT DIMAP readers, which regroups common

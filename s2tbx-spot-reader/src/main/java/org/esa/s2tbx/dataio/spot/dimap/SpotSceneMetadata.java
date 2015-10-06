@@ -18,7 +18,7 @@ package org.esa.s2tbx.dataio.spot.dimap;
 
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
-import org.esa.snap.framework.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.MetadataElement;
 
 import java.io.File;
 import java.io.FileInputStream;

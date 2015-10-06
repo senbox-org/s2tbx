@@ -17,8 +17,8 @@
 package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.NullProgressMonitor;
-import org.esa.snap.framework.datamodel.Product;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.util.TreeNode;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;

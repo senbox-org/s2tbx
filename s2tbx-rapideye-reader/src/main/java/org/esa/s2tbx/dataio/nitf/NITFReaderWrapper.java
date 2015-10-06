@@ -21,11 +21,11 @@ import nitf.ImageSegment;
 import nitf.NITFException;
 import nitf.imageio.ImageIOUtils;
 import nitf.imageio.NITFReaderSpi;
-import org.esa.snap.framework.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductData;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.spi.IIORegistry;
-import java.awt.*;
+import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.io.File;
