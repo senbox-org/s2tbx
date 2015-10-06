@@ -33,7 +33,6 @@
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-deimos-reader</module>
-        <module>s2tbx-eop2-gml-reader</module>
         <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-kit</module>
     </modules>
@@ -186,7 +185,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${build.directory}/nbm</outputDirectory>
+                            <outputDirectory>${project.build.directory}/nbm</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/nbm</directory>

@@ -75,6 +75,15 @@ public abstract class S2Metadata {
         return metadataElements;
     }
 
+    public Tile getTile(String tileID) throws IOException {
+        for (Tile tile : tileList) {
+            if (tile.getId() == tileID) {
+                return tile;
+            }
+        }
+        throw new IOException(String.format("No tile with id %s", tileID));
+    }
+
     public List<Tile> getTileList() {
         return tileList;
     }
@@ -171,9 +180,7 @@ public abstract class S2Metadata {
         private String detectorId;
         private String horizontalCsName;
         private String horizontalCsCode;
-        private TileGeometry tileGeometry10M;
-        private TileGeometry tileGeometry20M;
-        private TileGeometry tileGeometry60M;
+        private Map<S2SpatialResolution, TileGeometry> tileGeometries;
         private AnglesGrid sunAnglesGrid;
         private AnglesGrid[] viewingIncidenceAnglesGrids;
         private MaskFilename[] maskFilenames;
@@ -182,30 +189,11 @@ public abstract class S2Metadata {
 
         public Tile(String id) {
             this.id = id;
-            tileGeometry10M = new TileGeometry();
-            tileGeometry20M = new TileGeometry();
-            tileGeometry60M = new TileGeometry();
         }
 
         public Tile(String id, String detectorId) {
             this.id = id;
             this.detectorId = detectorId;
-            tileGeometry10M = new TileGeometry();
-            tileGeometry20M = new TileGeometry();
-            tileGeometry60M = new TileGeometry();
-        }
-
-        public TileGeometry getGeometry(S2SpatialResolution spacialResolution) {
-            switch (spacialResolution.resolution) {
-                case 10:
-                    return tileGeometry10M;
-                case 20:
-                    return tileGeometry20M;
-                case 60:
-                    return tileGeometry60M;
-                default:
-                    throw new IllegalStateException();
-            }
         }
 
         public String getId() {
@@ -230,30 +218,6 @@ public abstract class S2Metadata {
 
         public void setHorizontalCsCode(String horizontalCsCode) {
             this.horizontalCsCode = horizontalCsCode;
-        }
-
-        public TileGeometry getTileGeometry10M() {
-            return tileGeometry10M;
-        }
-
-        public void setTileGeometry10M(TileGeometry tileGeometry10M) {
-            this.tileGeometry10M = tileGeometry10M;
-        }
-
-        public TileGeometry getTileGeometry20M() {
-            return tileGeometry20M;
-        }
-
-        public void setTileGeometry20M(TileGeometry tileGeometry20M) {
-            this.tileGeometry20M = tileGeometry20M;
-        }
-
-        public TileGeometry getTileGeometry60M() {
-            return tileGeometry60M;
-        }
-
-        public void setTileGeometry60M(TileGeometry tileGeometry60M) {
-            this.tileGeometry60M = tileGeometry60M;
         }
 
         public AnglesGrid getSunAnglesGrid() {
@@ -290,6 +254,14 @@ public abstract class S2Metadata {
 
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+
+        public void setTileGeometries(Map<S2SpatialResolution, TileGeometry> tileGeometries) {
+            this.tileGeometries = tileGeometries;
+        }
+
+        public TileGeometry getTileGeometry(S2SpatialResolution resolution) {
+            return tileGeometries.get(resolution);
         }
     }
 

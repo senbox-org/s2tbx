@@ -111,7 +111,7 @@ public class L2aMetadata extends S2Metadata {
             FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
             Level2A_Tile aTile = (Level2A_Tile) updateAndUnmarshal(granuleStream);
 
-            Map<Integer, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
+            Map<S2SpatialResolution, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
 
             Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID_2A().getValue());
             tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
@@ -132,10 +132,7 @@ public class L2aMetadata extends S2Metadata {
                 counters.get(key).increment();
             }
 
-            tile.setTileGeometry10M(geoms.get(S2SpatialResolution.R10M.resolution));
-            tile.setTileGeometry20M(geoms.get(S2SpatialResolution.R20M.resolution));
-            tile.setTileGeometry60M(geoms.get(S2SpatialResolution.R60M.resolution));
-
+            tile.setTileGeometries(geoms);
             tile.setSunAnglesGrid(L2aMetadataProc.getSunGrid(aTile));
             tile.setViewingIncidenceAnglesGrids(L2aMetadataProc.getAnglesGrid(aTile));
 
@@ -167,16 +164,13 @@ public class L2aMetadata extends S2Metadata {
         Level2A_Tile aTile = (Level2A_Tile) casted;
         resetTileList();
 
-        Map<Integer, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
+        Map<S2SpatialResolution, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
 
         Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID_2A().getValue());
         tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
         tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
-        tile.setTileGeometry10M(geoms.get(10));
-        tile.setTileGeometry20M(geoms.get(20));
-        tile.setTileGeometry60M(geoms.get(60));
-
+        tile.setTileGeometries(geoms);
         tile.setSunAnglesGrid(L2aMetadataProc.getSunGrid(aTile));
         tile.setViewingIncidenceAnglesGrids(L2aMetadataProc.getAnglesGrid(aTile));
 

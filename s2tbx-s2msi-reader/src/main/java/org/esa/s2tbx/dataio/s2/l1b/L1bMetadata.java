@@ -123,19 +123,11 @@ public class L1bMetadata extends S2Metadata {
             FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
             Level1B_Granule aGranule = (Level1B_Granule) updateAndUnmarshal(granuleStream);
 
-            Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
+            Map<S2SpatialResolution, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
 
             Tile tile = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
-
-            tile.setTileGeometry10M(geoms.get(S2SpatialResolution.R10M.resolution));
-            tile.setTileGeometry20M(geoms.get(S2SpatialResolution.R20M.resolution));
-            tile.setTileGeometry60M(geoms.get(S2SpatialResolution.R60M.resolution));
-
-            //tile.setSunAnglesGrid(L1bMetadataProc.getSunGrid(aGranule));
-            //tile.setViewingIncidenceAnglesGrids(L1bMetadataProc.getAnglesGrid(aGranule));
-
+            tile.setTileGeometries(geoms);
             tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
-
             addTileToList(tile);
         }
 
@@ -162,19 +154,11 @@ public class L1bMetadata extends S2Metadata {
     private void initTile(Object casted) throws IOException, JAXBException, JDOMException {
         Level1B_Granule aGranule = (Level1B_Granule) casted;
         productCharacteristics = new L1bMetadata.ProductCharacteristics();
-
         resetTileList();
-
-        Map<Integer, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
-
+        Map<S2SpatialResolution, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
         Tile tile = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
-
-        tile.setTileGeometry10M(geoms.get(10));
-        tile.setTileGeometry20M(geoms.get(20));
-        tile.setTileGeometry60M(geoms.get(60));
-
+        tile.setTileGeometries(geoms);
         tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
-
         addTileToList(tile);
     }
 }
