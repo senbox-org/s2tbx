@@ -6,7 +6,7 @@ import org.esa.snap.framework.dataio.ProductSubsetDef;
 import org.esa.snap.framework.datamodel.Band;
 import org.esa.snap.framework.datamodel.Product;
 import org.esa.snap.framework.datamodel.ProductData;
-import org.esa.snap.framework.ui.ModalDialog;
+import org.esa.snap.ui.ModalDialog;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
