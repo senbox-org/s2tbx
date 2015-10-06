@@ -31,7 +31,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.util.TreeNode;
+import org.esa.snap.core.util.TreeNode;
 
 import javax.imageio.IIOException;
 import java.io.File;

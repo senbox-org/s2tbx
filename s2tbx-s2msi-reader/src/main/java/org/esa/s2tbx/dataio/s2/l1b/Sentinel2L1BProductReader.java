@@ -48,10 +48,10 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.jai.ImageManager;
-import org.esa.snap.util.Guardian;
-import org.esa.snap.util.SystemUtils;
-import org.esa.snap.util.io.FileUtils;
+import org.esa.snap.core.image.ImageManager;
+import org.esa.snap.core.util.Guardian;
+import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.core.util.io.FileUtils;
 import org.jdom.JDOMException;
 
 import javax.media.jai.BorderExtender;

@@ -19,8 +19,8 @@
 package org.esa.s2tbx.dataio.openjpeg;
 
 
+import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.runtime.EngineConfig;
-import org.esa.snap.util.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,10 +32,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.apache.commons.lang.SystemUtils.IS_OS_LINUX;
-import static org.apache.commons.lang.SystemUtils.IS_OS_MAC_OSX;
-import static org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS;
-import static org.apache.commons.lang.SystemUtils.IS_OS_UNIX;
+import static org.apache.commons.lang.SystemUtils.*;
 
 /**
  * Utility class to get executables from OpenJpeg module

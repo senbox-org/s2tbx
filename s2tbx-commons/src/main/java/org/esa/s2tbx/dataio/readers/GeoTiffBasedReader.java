@@ -31,10 +31,10 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.image.ImageManager;
+import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
-import org.esa.snap.jai.ImageManager;
-import org.esa.snap.util.StringUtils;
-import org.esa.snap.util.TreeNode;
 import org.esa.snap.utils.CollectionHelper;
 
 import javax.imageio.spi.IIORegistry;

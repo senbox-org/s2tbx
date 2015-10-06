@@ -20,7 +20,7 @@
 package org.esa.s2tbx.dataio.s2;
 
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.util.io.SnapFileFilter;
+import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
 import java.util.regex.Pattern;

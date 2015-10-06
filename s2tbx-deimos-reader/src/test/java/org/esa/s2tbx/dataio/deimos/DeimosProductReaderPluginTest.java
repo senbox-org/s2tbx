@@ -20,7 +20,7 @@ import org.esa.s2tbx.dataio.deimos.dimap.DeimosConstants;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.util.io.SnapFileFilter;
+import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;

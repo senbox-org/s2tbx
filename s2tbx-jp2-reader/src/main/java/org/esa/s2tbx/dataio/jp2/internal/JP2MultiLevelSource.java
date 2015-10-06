@@ -5,7 +5,7 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.jai.ImageManager;
+import org.esa.snap.core.image.ImageManager;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;

@@ -21,7 +21,7 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.esa.snap.util.Guardian;
+import org.esa.snap.core.util.Guardian;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,8 +4,8 @@ import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.util.io.FileUtils;
-import org.esa.snap.util.io.SnapFileFilter;
+import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
 import java.util.Locale;

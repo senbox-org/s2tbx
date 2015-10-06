@@ -1,9 +1,9 @@
 package org.esa.s2tbx.dataio.s2;
 
-import org.junit.Assert;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.Utils;
-import org.esa.snap.util.io.FileUtils;
+import org.esa.snap.core.util.io.FileUtils;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;

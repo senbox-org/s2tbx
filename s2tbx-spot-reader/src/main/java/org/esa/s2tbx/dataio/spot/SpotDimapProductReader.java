@@ -31,7 +31,7 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.util.TreeNode;
+import org.esa.snap.core.util.TreeNode;
 import org.geotools.metadata.InvalidMetadataException;
 
 import javax.imageio.spi.IIORegistry;
