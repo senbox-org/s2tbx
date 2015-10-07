@@ -20,6 +20,7 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
+import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
@@ -117,9 +118,9 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     @Override
     public ProductReader createReaderInstance() {
         if (level != null && level.equals("L2A")) {
-            return new Sentinel2L2AProductReader(this, getEPSG());
+            return new Sentinel2L2AProductReader(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_MULTI, getEPSG());
         } else {
-            return new Sentinel2L1CProductReader(this, getEPSG());
+            return new Sentinel2L1CProductReader(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_MULTI, getEPSG());
         }
     }
 

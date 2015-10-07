@@ -11,7 +11,7 @@
     </parent>
 
     <packaging>nbm</packaging>
-    <artifactId>s2tbx-reader</artifactId>
+    <artifactId>s2tbx-s2msi-reader</artifactId>
     <name>Sentinel-2 Toolbox Reader</name>
     <description>
         This module enables the Sentinel Toolbox to read S2-MSI products
@@ -28,11 +28,13 @@
             <artifactId>ceres-core</artifactId>
             <version>${snap.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-glayer</artifactId>
             <version>${snap.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-jai</artifactId>
@@ -44,6 +46,7 @@
             <artifactId>snap-core</artifactId>
             <version>${snap.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-ui</artifactId>
@@ -67,11 +70,6 @@
             <artifactId>jaxp-api</artifactId>
             <version>1.4.5</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>xml-apis</groupId>-->
-            <!--<artifactId>xml-apis-xerces</artifactId>-->
-            <!--<version>2.7.1</version>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
@@ -84,19 +82,12 @@
             <artifactId>lib-openjpeg</artifactId>
             <version>${openjpeg.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-eop2-gml-reader</artifactId>
-            <version>${snap.version}</version>
-        </dependency>
-
 
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
         </dependency>
-
     </dependencies>
 
 

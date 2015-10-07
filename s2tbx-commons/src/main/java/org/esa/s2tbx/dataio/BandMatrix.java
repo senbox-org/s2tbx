@@ -49,6 +49,12 @@ public class BandMatrix {
 
     private BandMatrixCell[] cachedCells;
 
+    public int maxWidth;
+    public int maxHeight;
+
+    public int maxCellWidth;
+    public int maxCellHeight;
+
     /**
      * This class represents a cell in the matrix of "bands".
      * Besides acting as a container for Band references, this class exposes methods for
@@ -109,6 +115,10 @@ public class BandMatrix {
          */
         public int cellOffsetY;
 
+        public int row;
+
+        public int column;
+
         /**
          * The only (package protected) constructor of the cell.
          * A cell is not intended to be created but only by a <code>BandMatrix</code> object.
@@ -127,6 +137,16 @@ public class BandMatrix {
                 this.cellPixelWidth = band.getRasterWidth();
                 this.cellPixelHeight = band.getRasterHeight();
             }
+            this.cellWidth = (double) cellPixelWidth * dX;
+            this.cellHeight = (double) cellPixelHeight * dY;
+        }
+
+        BandMatrixCell(int row, int col, Point2D origin, double stepX, double stepY) {
+            this.origin = origin;
+            this.dX = stepX;
+            this.dY = stepY;
+            this.cellPixelWidth = maxWidth > (col + 1) * maxCellWidth ? maxCellWidth : (col + 1) * maxCellWidth - maxWidth;
+            this.cellPixelHeight = maxHeight > (row + 1) * maxCellHeight ? maxCellHeight : (row + 1) * maxCellHeight - maxHeight;
             this.cellWidth = (double) cellPixelWidth * dX;
             this.cellHeight = (double) cellPixelHeight * dY;
         }
@@ -210,6 +230,14 @@ public class BandMatrix {
         this.internal = new BandMatrixCell[rows][cols];
     }
 
+    public BandMatrix(int rows, int cols, int width, int height, int cellWidth, int cellHeight) {
+        this(rows, cols);
+        this.maxWidth = width;
+        this.maxHeight = height;
+        this.maxCellWidth = cellWidth;
+        this.maxCellHeight = cellHeight;
+    }
+
     /**
      * Gets all the cells of this matrix, ordered from top-left cell to bottom-right cell,
      * row by row.
@@ -250,6 +278,10 @@ public class BandMatrix {
         return numCols;
     }
 
+    public BandMatrixCell getCellAt(int row, int col) {
+        return internal[row][col];
+    }
+
     /**
      * Adds (creates) a new cell to this instance, at the next available position.
      * If the current (last) position is already at the bottom-right cell, an exception
@@ -287,27 +319,37 @@ public class BandMatrix {
             throw new IllegalArgumentException("Invalid row index");
         if (col < 0 || col > numCols - 1)
             throw new IllegalArgumentException("Invalid row index");
-        BandMatrixCell cell = new BandMatrixCell(band, cellOrigin, stepX, stepY);
-        this.internal[row][col] = cell;
-        if (col > 0) {
-            BandMatrixCell leftCell = this.internal[row][col - 1];
-            if (cell.cellPixelHeight != leftCell.cellPixelHeight)
-                throw new IllegalArgumentException("Band height is different from that of previously added bands");
-            cell.cellStartPixelX = leftCell.cellStartPixelX + leftCell.cellPixelWidth;
-            Rectangle leftOverlap = cell.overlapping(leftCell);
-            cell.cellOffsetX = leftOverlap.width;
+        BandMatrixCell cell = this.internal[row][col];
+        if (cell == null) {
+            cell = band != null ?
+                    new BandMatrixCell(band, cellOrigin, stepX, stepY) :
+                    new BandMatrixCell(row, col, cellOrigin, stepX, stepY);
+            this.internal[row][col] = cell;
+            cell.row = row;
+            cell.column = col;
+
+            if (col > 0) {
+                BandMatrixCell leftCell = this.internal[row][col - 1];
+                if (cell.cellPixelHeight != leftCell.cellPixelHeight)
+                    throw new IllegalArgumentException("Band height is different from that of previously added bands");
+                cell.cellStartPixelX = leftCell.cellStartPixelX + leftCell.cellPixelWidth;
+                Rectangle leftOverlap = cell.overlapping(leftCell);
+                cell.cellOffsetX = leftOverlap.width;
+            } else {
+                cell.cellStartPixelX = 0;
+            }
+            if (row > 0) {
+                BandMatrixCell upperCell = this.internal[row - 1][col];
+                if (cell.cellPixelWidth != upperCell.cellPixelWidth)
+                    throw new IllegalArgumentException("Band width is different from that of previously added bands");
+                cell.cellStartPixelY = upperCell.cellStartPixelY + upperCell.cellPixelHeight;
+                Rectangle upperOverlap = cell.overlapping(upperCell);
+                cell.cellOffsetY = upperOverlap.height;
+            } else {
+                cell.cellStartPixelY = 0;
+            }
         } else {
-            cell.cellStartPixelX = 0;
-        }
-        if (row > 0) {
-            BandMatrixCell upperCell = this.internal[row - 1][col];
-            if (cell.cellPixelWidth != upperCell.cellPixelWidth)
-                throw new IllegalArgumentException("Band width is different from that of previously added bands");
-            cell.cellStartPixelY = upperCell.cellStartPixelY + upperCell.cellPixelHeight;
-            Rectangle upperOverlap = cell.overlapping(upperCell);
-            cell.cellOffsetY = upperOverlap.height;
-        } else {
-            cell.cellStartPixelY = 0;
+            cell.band = band;
         }
     }
 

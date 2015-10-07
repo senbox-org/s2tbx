@@ -89,7 +89,7 @@ public class L1bSceneDescription extends S2SceneDescription {
             for (int i = 0; i < tileList.size(); i++) {
                 L1bMetadata.Tile tile = tileList.get(i);
 
-                L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
+                L1bMetadata.TileGeometry selectedGeometry = tile.getTileGeometry(productResolution);
 
 
                 // Envelope2D envelope = new Envelope2D(selectedGeometry.envelope);
@@ -97,7 +97,7 @@ public class L1bSceneDescription extends S2SceneDescription {
                 Envelope2D envelope;
 
                 // data is referenced through 1 based indexes
-                // since position si computed for 10m, we need multiply by a ration if product resolution is not 10m
+                // since position si computed for 10m, we need multiply by a ratio if product resolution is not 10m
 
                 int ratio = productResolution.resolution / S2SpatialResolution.R10M.resolution;
                 String detectorId = tile.getDetectorId();
@@ -130,7 +130,7 @@ public class L1bSceneDescription extends S2SceneDescription {
             Rectangle sceneBounds = null;
             for (int i = 0; i < tileEnvelopes.length; i++) {
                 L1bMetadata.Tile tile = tileList.get(i);
-                L1bMetadata.TileGeometry selectedGeometry = tile.getGeometry(productResolution);
+                L1bMetadata.TileGeometry selectedGeometry = tile.getTileGeometry(productResolution);
                 Envelope2D tileEnvelope = tileEnvelopes[i];
 
                 // upperLeft again
@@ -160,7 +160,7 @@ public class L1bSceneDescription extends S2SceneDescription {
 
         for (S2Metadata.Tile tile : tileList) {
             String detectorId = tile.getDetectorId();
-            Integer tilePosition = tile.getGeometry(productResolution).getPosition();
+            Integer tilePosition = tile.getTileGeometry(productResolution).getPosition();
             Integer storedTopPosition = detectorsTopPositionMap.get(detectorId);
             if (storedTopPosition == null || storedTopPosition > tilePosition) {
                 detectorsTopPositionMap.put(detectorId, tilePosition);

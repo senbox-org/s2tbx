@@ -21,7 +21,6 @@ import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
-import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;

@@ -31,15 +31,13 @@ import org.esa.snap.util.Guardian;
 import org.esa.snap.util.ImageUtils;
 import org.esa.snap.util.SystemUtils;
 import org.esa.snap.util.io.FileUtils;
-import org.geotools.geometry.Envelope2D;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.*;
-import javax.media.jai.operator.BorderDescriptor;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
-import javax.media.jai.operator.CropDescriptor;
-import javax.media.jai.operator.ScaleDescriptor;
 import java.awt.*;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.SampleModel;
@@ -58,7 +56,6 @@ import java.util.logging.Logger;
  * @author Nicolas Ducoin
  */
 public class S2TileOpImage extends SingleBandedOpImage {
-
 
     private static class Jp2File {
         File file;
@@ -142,54 +139,6 @@ public class S2TileOpImage extends SingleBandedOpImage {
         }
     }
 
-    public static PlanarImage createGenericScaledImage(PlanarImage sourceImage, Envelope2D sceneEnvelope, S2SpatialResolution resolution, int level) {
-        SystemUtils.LOG.fine("Asking for scaled mosaic image: " + resolution.toString());
-        SystemUtils.LOG.warning("SourceImage:" + sourceImage.getWidth() + ", " + sourceImage.getHeight());
-
-        int targetResolution = resolution.resolution;
-        int targetWidth = S2TileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getWidth() / (targetResolution)), level);
-        int targetHeight = S2TileOpImage.getSizeAtResolutionLevel((int) (sceneEnvelope.getHeight() / (targetResolution)), level);
-
-        float scaleX = (float) 1.0;
-        float scaleY = (float) 1.0;
-
-        BorderExtender borderExtender = BorderExtender.createInstance(BorderExtender.BORDER_ZERO);
-        RenderingHints renderingHints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
-                borderExtender);
-
-        RenderedOp scaledImage = ScaleDescriptor.create(sourceImage,
-                scaleX,
-                scaleY,
-                sourceImage.getMinX() - sourceImage.getMinX() * scaleX,
-                sourceImage.getMinY() - sourceImage.getMinY() * scaleY,
-                Interpolation.getInstance(Interpolation.INTERP_NEAREST),
-                renderingHints);
-
-        SystemUtils.LOG.fine(String.format("After scaling: (%d, %d)", scaledImage.getWidth(), scaledImage.getHeight()));
-
-        if (scaledImage.getWidth() == targetWidth && scaledImage.getHeight() == targetHeight) {
-            return scaledImage;
-        } else if (scaledImage.getWidth() > targetWidth || scaledImage.getHeight() > targetHeight) {
-            SystemUtils.LOG.fine(String.format("Cropping: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
-
-            return CropDescriptor.create(scaledImage,
-                    (float) sourceImage.getMinX(),
-                    (float) sourceImage.getMinY(),
-                    (float) targetWidth,
-                    (float) targetHeight,
-                    null);
-        } else if (scaledImage.getWidth() <= targetWidth && scaledImage.getHeight() <= targetHeight) {
-            int rightPad = targetWidth - scaledImage.getWidth();
-            int bottomPad = targetHeight - scaledImage.getHeight();
-            SystemUtils.LOG.fine(String.format("Border: (%d, %d), (%d, %d)", scaledImage.getWidth(), targetWidth, scaledImage.getHeight(), targetHeight));
-
-            return BorderDescriptor.create(scaledImage, 0, rightPad, 0, bottomPad, borderExtender, null);
-        } else {
-            throw new IllegalStateException();
-        }
-    }
-
-
     @Override
     protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
         final DataBufferUShort dataBuffer = (DataBufferUShort) dest.getDataBuffer();
@@ -212,16 +161,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
         final int jp2TileX = destRect.x / jp2TileWidth;
         final int jp2TileY = destRect.y / jp2TileHeight;
 
-        // Res - Img Size - Tile W
-        //  0  -  10960   -  4096
-        //  1  -   5480   -  2048
-        //  2  -   2740   -  1024
-        //  3  -   1370   -   512
-        //  4  -    685   -   256
-        //  5  -    343   -   128
-
         File outputFile = null;
-
         try {
             outputFile = new File(cacheDir,
                     FileUtils.exchangeExtension(imageFile.getName(),

@@ -116,7 +116,7 @@ public class L1cMetadata extends S2Metadata {
         for (File aGranuleMetadataFile : fullTileNamesList) {
             FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
             Level1C_Tile aTile = (Level1C_Tile) updateAndUnmarshal(granuleStream);
-            Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
+            Map<S2SpatialResolution, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
             Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
             tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
@@ -137,10 +137,7 @@ public class L1cMetadata extends S2Metadata {
                 counters.get(key).increment();
             }
 
-            tile.setTileGeometry10M(geoms.get(S2SpatialResolution.R10M.resolution));
-            tile.setTileGeometry20M(geoms.get(S2SpatialResolution.R20M.resolution));
-            tile.setTileGeometry60M(geoms.get(S2SpatialResolution.R60M.resolution));
-
+            tile.setTileGeometries(geoms);
             tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(aTile));
             tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(aTile));
 
@@ -172,16 +169,13 @@ public class L1cMetadata extends S2Metadata {
         Level1C_Tile aTile = (Level1C_Tile) casted;
         resetTileList();
 
-        Map<Integer, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
+        Map<S2SpatialResolution, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
         Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
         tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
         tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
-        tile.setTileGeometry10M(geoms.get(10));
-        tile.setTileGeometry20M(geoms.get(20));
-        tile.setTileGeometry60M(geoms.get(60));
-
+        tile.setTileGeometries(geoms);
         tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(aTile));
         tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(aTile));
 

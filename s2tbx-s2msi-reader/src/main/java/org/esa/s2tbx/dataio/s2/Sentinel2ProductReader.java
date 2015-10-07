@@ -45,19 +45,21 @@ import java.util.Map;
  */
 public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
+    public enum ProductInterpretation {
+        RESOLUTION_10M,
+        RESOLUTION_20M,
+        RESOLUTION_60M,
+        RESOLUTION_MULTI;
+    }
 
     private S2Config config;
     private File cacheDir;
-    private final S2SpatialResolution productResolution;
-    private final boolean isMultiResolution;
+    private final ProductInterpretation interpretation;
 
 
-    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, S2SpatialResolution productResolution, boolean isMultiResolution) {
+    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation) {
         super(readerPlugIn);
-
-        this.productResolution = productResolution;
-        this.isMultiResolution = isMultiResolution;
-
+        this.interpretation = interpretation;
         this.config = new S2Config();
     }
 
@@ -68,12 +70,26 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return config;
     }
 
+    public ProductInterpretation getInterpretation() {
+        return interpretation;
+    }
+
     public S2SpatialResolution getProductResolution() {
-        return productResolution;
+        switch (interpretation) {
+            case RESOLUTION_10M:
+                return S2SpatialResolution.R10M;
+            case RESOLUTION_20M:
+                return S2SpatialResolution.R20M;
+            case RESOLUTION_60M:
+                return S2SpatialResolution.R60M;
+            case RESOLUTION_MULTI:
+                return S2SpatialResolution.R10M;
+        }
+        throw new IllegalStateException("Unknown product interpretation");
     }
 
     public boolean isMultiResolution() {
-        return isMultiResolution;
+        return interpretation == ProductInterpretation.RESOLUTION_MULTI;
     }
 
     public File getCacheDir() {
@@ -124,24 +140,17 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      *
      * @param metadataFilePath the path to the product metadata file
      * @param isGranule        true if it is the metadata file of a granule
-     * @param resolution       the resolution we want to update, or null to update all resolutions
      */
-    protected void updateTileLayout(Path metadataFilePath, boolean isGranule, S2SpatialResolution resolution) {
-
-        if (resolution == null) {
-            for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
-                updateTileLayout(metadataFilePath, isGranule, layoutResolution);
-            }
-        } else {
-
+    protected void updateTileLayout(Path metadataFilePath, boolean isGranule) {
+        for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
             TileLayout tileLayout;
             if (isGranule) {
                 tileLayout = retrieveTileLayoutFromGranuleMetadataFile(
-                        metadataFilePath, resolution);
+                        metadataFilePath, layoutResolution);
             } else {
-                tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, resolution);
+                tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, layoutResolution);
             }
-            config.updateTileLayout(resolution, tileLayout);
+            config.updateTileLayout(layoutResolution, tileLayout);
         }
     }
 
@@ -279,7 +288,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         });
     }
 
-
     protected Band addBand(Product product, BandInfo bandInfo) {
 
 
@@ -289,12 +297,11 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
         float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
 
-        String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
         Band band;
-        if (isMultiResolution) {
-            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
+        if (isMultiResolution()) {
+            band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
         } else {
-            band = new Band(bandName, S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
+            band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
         }
         product.addBand(band);
 
@@ -302,15 +309,11 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         band.setSpectralWavelength((float) bandInfo.getSpectralInfo().getWavelengthCentral());
         band.setSpectralBandwidth((float) bandInfo.getSpectralInfo().getSpectralBandwith());
 
-        setValidPixelMask(band, bandName);
-
-        return band;
-    }
-
-    private void setValidPixelMask(Band band, String bandName) {
         band.setNoDataValue(0);
         band.setValidPixelExpression(String.format("%s.raw > %s",
-                bandName, S2Config.RAW_NO_DATA_THRESHOLD));
+                bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
+
+        return band;
     }
 
     public static class BandInfo {
@@ -340,6 +343,10 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         public int getBandIndex() {
             return bandIndex;
+        }
+
+        public String getBandName() {
+            return getSpectralInfo().getPhysicalBand();
         }
 
         public String toString() {

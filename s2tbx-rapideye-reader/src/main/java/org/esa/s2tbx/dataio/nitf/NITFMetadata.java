@@ -20,8 +20,6 @@ import org.esa.snap.framework.datamodel.MetadataElement;
 import org.esa.snap.framework.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 
-import java.text.ParseException;
-
 /**
  * Contains parsed metadata from a NITF file.
  *
