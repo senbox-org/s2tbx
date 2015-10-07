@@ -173,6 +173,7 @@ public class JP2ProductReader extends AbstractProductReader {
             throw new IOException(msg);
         }
         if (product != null) {
+            product.setFileLocation(inputFile);
             product.setModified(false);
         }
         return product;
