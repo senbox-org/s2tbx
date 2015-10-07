@@ -5,7 +5,7 @@ import os
 
 module_root = os.path.abspath( os.path.join( os.path.dirname(__file__),  os.pardir ) )
 target_dir_java = os.path.join( module_root , 'src', 'main', 'java', 'org', 'esa', 's2tbx', 'dataio', 's2', 'l1c', 'plugins' )
-target_file_spi = os.path.join( module_root , 'src', 'main', 'resources', 'META-INF', 'services', 'ProductReaderPlugIn' )
+target_file_spi = os.path.join( module_root , 'src', 'main', 'resources', 'META-INF', 'services', 'org.esa.snap.core.dataio.ProductReaderPlugIn' )
 
 template = """
 package org.esa.s2tbx.dataio.s2.l1c.plugins;
