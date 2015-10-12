@@ -283,7 +283,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 }
             }
 
-            addDetectorBands(product, bandInfoByKey, new L1bSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getGeoCoding())));
+            addDetectorBands(product, bandInfoByKey, new L1bSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getSceneGeoCoding())));
         } else {
             product = new Product(FileUtils.getFilenameWithoutExtension(productMetadataFile),
                     "S2_MSI_" + productCharacteristics.getProcessingLevel());

@@ -150,7 +150,7 @@ public class JP2ProductReader extends AbstractProductReader {
                             }
                         }
                         if (geoCoding != null) {
-                            product.setGeoCoding(geoCoding);
+                            product.setSceneGeoCoding(geoCoding);
                         }
                     }
                 }
@@ -170,7 +170,7 @@ public class JP2ProductReader extends AbstractProductReader {
                             csInfo.getTileWidth(), csInfo.getTileHeight(),
                             csInfo.getNumTilesX(), csInfo.getNumTilesY(),
                             csInfo.getNumResolutions(), dataTypeMap.get(precision),
-                            product.getGeoCoding());
+                            product.getSceneGeoCoding());
                     virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
                     product.addBand(virtualBand);
                 }

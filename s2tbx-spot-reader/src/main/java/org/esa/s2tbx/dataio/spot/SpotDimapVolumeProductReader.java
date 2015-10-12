@@ -198,7 +198,7 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
                     if (tiffMetadata != null) {
                         XmlMetadata.CopyChildElements(tiffMetadata, product.getMetadataRoot());
                     }
-                    if (product.getGeoCoding() == null)
+                    if (product.getSceneGeoCoding() == null)
                         tiffProduct.transferGeoCodingTo(product, null);
                     if (product.getPreferredTileSize() == null)
                         product.setPreferredTileSize(tiffProduct.getPreferredTileSize());

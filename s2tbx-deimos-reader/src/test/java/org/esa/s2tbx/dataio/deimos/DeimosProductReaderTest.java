@@ -59,7 +59,7 @@ public class DeimosProductReaderTest {
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(3, finalProduct.getBands().length);
-            assertEquals("WGS84(DD)", finalProduct.getGeoCoding().getGeoCRS().getName().toString());
+            assertEquals("WGS84(DD)", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("DEIMOS", finalProduct.getProductType());
             assertEquals(1, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(2, finalProduct.getTiePointGrids().length);

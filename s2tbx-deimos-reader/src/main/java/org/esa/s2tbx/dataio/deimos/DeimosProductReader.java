@@ -123,7 +123,7 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
                 TiePointGrid latGrid = addTiePointGrid(stepX, stepY, product, DeimosConstants.LATITUDE_BAND_NAME, latitudes);
                 TiePointGrid lonGrid = addTiePointGrid(stepX, stepY, product, DeimosConstants.LONGITUDE_BAND_NAME, longitudes);
                 GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-                product.setGeoCoding(geoCoding);
+                product.setSceneGeoCoding(geoCoding);
             }
         }
     }

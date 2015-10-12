@@ -60,7 +60,7 @@ public class RapidEyeL1ReaderTest {
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(6, finalProduct.getBands().length);
-            assertEquals("WGS84(DD)", finalProduct.getGeoCoding().getGeoCRS().getName().toString());
+            assertEquals("WGS84(DD)", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("L1B", finalProduct.getProductType());
             assertEquals(7, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(11829, finalProduct.getSceneRasterWidth());

@@ -205,14 +205,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setFileLocation(metadataFile);
 
         try {
-            product.setGeoCoding(new CrsGeoCoding(CRS.decode(this.epsgCode),
-                    product.getSceneRasterWidth(),
-                    product.getSceneRasterHeight(),
-                    sceneDescription.getSceneOrigin()[0],
-                    sceneDescription.getSceneOrigin()[1],
-                    this.getProductResolution().resolution,
-                    this.getProductResolution().resolution,
-                    0.0, 0.0));
+            product.setSceneGeoCoding(new CrsGeoCoding(CRS.decode(this.epsgCode),
+                                                       product.getSceneRasterWidth(),
+                                                       product.getSceneRasterHeight(),
+                                                       sceneDescription.getSceneOrigin()[0],
+                                                       sceneDescription.getSceneOrigin()[1],
+                                                       this.getProductResolution().resolution,
+                                                       this.getProductResolution().resolution,
+                                                       0.0, 0.0));
         } catch (FactoryException e) {
             throw new IOException(e);
         } catch (TransformException e) {
@@ -268,7 +268,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     bandInfoMap,
                     sceneDescription.getSceneOrigin(),
                     new L1cSceneMultiLevelImageFactory(sceneDescription,
-                            ImageManager.getImageToModelTransform(product.getGeoCoding()))
+                            ImageManager.getImageToModelTransform(product.getSceneGeoCoding()))
             );
 
             scaleBands(product, bandInfoMap);
@@ -362,7 +362,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     private void addTiePointGridBand(Product product, S2Metadata metadataHeader, S2OrthoSceneLayout sceneDescription, String name, int tiePointGridIndex) {
         final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
-        band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
+        band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getSceneGeoCoding()), 6, tiePointGridIndex)));
     }
 
     private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, double[] sceneOrigin, MultiLevelImageFactory mlif) throws IOException {

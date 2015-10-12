@@ -60,7 +60,7 @@ public class RapidEyeL3ReaderTest {
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(3, finalProduct.getBands().length);
-            assertEquals("EPSG:World Geodetic System 1984", finalProduct.getGeoCoding().getGeoCRS().getName().toString());
+            assertEquals("EPSG:World Geodetic System 1984", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("L3M", finalProduct.getProductType());
             assertEquals(0, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(10985, finalProduct.getSceneRasterWidth());

@@ -230,7 +230,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
         TiePointGrid latGrid = addTiePointGrid(product.getSceneRasterWidth(), product.getSceneRasterHeight(), product, "latitude", metadata.getCornersLatitudes());
         TiePointGrid lonGrid = addTiePointGrid(product.getSceneRasterWidth(), product.getSceneRasterHeight(), product, "longitude", metadata.getCornersLongitudes());
         GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-        product.setGeoCoding(geoCoding);
+        product.setSceneGeoCoding(geoCoding);
     }
 
     @Override

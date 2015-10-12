@@ -61,7 +61,7 @@ public class SpotDimapProductReaderTest {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapSimpleProductReader.class);
             assertEquals(4, finalProduct.getBands().length);
-            assertEquals("WGS84(DD)", finalProduct.getGeoCoding().getGeoCRS().getName().toString());
+            assertEquals("WGS84(DD)", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("SPOTSCENE_1A", finalProduct.getProductType());
             assertEquals(2, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(3000, finalProduct.getSceneRasterWidth());
@@ -157,7 +157,7 @@ public class SpotDimapProductReaderTest {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(finalProduct.getProductReader().getClass(), SpotDimapVolumeProductReader.class);
             assertEquals(3, finalProduct.getBands().length);
-            assertEquals("EPSG:World Geodetic System 1984", finalProduct.getGeoCoding().getGeoCRS().getName().toString());
+            assertEquals("EPSG:World Geodetic System 1984", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("SPOTDimap", finalProduct.getProductType());
             assertEquals(1, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(31770, finalProduct.getSceneRasterWidth());

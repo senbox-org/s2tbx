@@ -60,7 +60,7 @@ public class SpotViewProductReaderTest {
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             assertEquals(4, finalProduct.getBands().length);
-            assertEquals("WGS84(DD)", finalProduct.getGeoCoding().getGeoCRS().getName().toString());
+            assertEquals("WGS84(DD)", finalProduct.getSceneGeoCoding().getGeoCRS().getName().toString());
             assertEquals("SPOTView", finalProduct.getProductType());
             assertEquals(0, finalProduct.getMaskGroup().getNodeCount());
             assertEquals(2713, finalProduct.getSceneRasterWidth());

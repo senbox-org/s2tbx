@@ -109,7 +109,7 @@ public class SpotViewProductReader extends AbstractProductReader {
 
             logger.info("Trying to attach tiepoint geocoding");
             initTiePointGeoCoding(product);
-            if (product.getGeoCoding() == null) {
+            if (product.getSceneGeoCoding() == null) {
                 logger.info("Trying to attach geocoding");
                 initGeoCoding(product);
             }
@@ -180,7 +180,7 @@ public class SpotViewProductReader extends AbstractProductReader {
             TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, metadata.getRasterWidth(), metadata.getRasterHeight(), lonPoints);
             product.addTiePointGrid(lonGrid);
             GeoCoding geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
-            product.setGeoCoding(geoCoding);
+            product.setSceneGeoCoding(geoCoding);
         }
     }
 
@@ -200,7 +200,7 @@ public class SpotViewProductReader extends AbstractProductReader {
                     transformation.translate(-product.getSceneRasterHeight(), -product.getSceneRasterWidth());
                     Rectangle rectangle = new Rectangle(metadata.getRasterWidth(), metadata.getRasterHeight());
                     CrsGeoCoding geoCoding = new CrsGeoCoding(crs, rectangle, transformation);
-                    product.setGeoCoding(geoCoding);
+                    product.setSceneGeoCoding(geoCoding);
                 }
             }
         } catch (FactoryException e) {
