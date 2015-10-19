@@ -24,7 +24,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "No–data pixels",
             "nodata",
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
+            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_NODATA_CROSSTALK(
@@ -33,7 +33,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "Pixels partially corrected during cross-talk processing",
             "partially_corrected_crosstalk",
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
+            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_SATURA_L1A(
@@ -42,7 +42,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "Saturated pixels before on-ground radiometric processing",
             "saturated_l1a",
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
+            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_SATURA_L1B(
@@ -51,7 +51,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "Saturated pixels after on-ground radiometric processing",
             "saturated_l1b",
-            MaskInfo.L1B | MaskInfo.L1C,
+            MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_DEFECT(
@@ -60,7 +60,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "Defective pixels (matching defective columns)",
             "defective",
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
+            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_TECQUA_ANC_LOST(
@@ -69,7 +69,7 @@ public enum MaskInfo {
             "Technical quality mask",
             "Ancillary lost data",
             "ancillary_lost",
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
+            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_TECQUA_ANC_DEG(
@@ -78,7 +78,7 @@ public enum MaskInfo {
             "Technical quality mask",
             "Ancillary degraded data",
             "ancillary_degraded",
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
+            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_TECQUA_MSI_LOST(
@@ -87,7 +87,7 @@ public enum MaskInfo {
             "Technical quality mask",
             "MSI lost data",
             "msi_lost",
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
+            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_TECQUA_MSI_DEG(
@@ -96,7 +96,7 @@ public enum MaskInfo {
             "Technical quality mask",
             "MSI degraded data",
             "msi_degraded",
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C,
+            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_CLOLOW(
@@ -114,7 +114,7 @@ public enum MaskInfo {
             "Finer cloud mask",
             "Opaque clouds",
             "opaque_clouds",
-            MaskInfo.L1C,
+            MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_CLOUDS_CIRRUS(
@@ -123,7 +123,7 @@ public enum MaskInfo {
             "Finer cloud mask",
             "Cirrus clouds",
             "cirrus_clouds",
-            MaskInfo.L1C,
+            MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_LAND(
@@ -132,7 +132,7 @@ public enum MaskInfo {
             "Land mask",
             null,
             "land",
-            MaskInfo.L1C,
+            MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_WATER(
@@ -141,7 +141,7 @@ public enum MaskInfo {
             "Water mask",
             null,
             "water",
-            MaskInfo.L1C,
+            MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY);
 
