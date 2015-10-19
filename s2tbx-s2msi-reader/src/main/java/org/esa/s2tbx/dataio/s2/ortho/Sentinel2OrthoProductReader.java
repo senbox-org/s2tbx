@@ -380,14 +380,22 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             band.setSourceImage(mlif.createSourceImage(bandInfo));
 
+            double pixelSize = 0;
+            if (isMultiResolution()) {
+                pixelSize = (double)bandInfo.getSpectralInfo().getResolution().resolution;
+            }
+            else {
+                pixelSize = (double)getProductResolution().resolution;
+            }
+
             try {
                 band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
                         band.getRasterWidth(),
                         band.getRasterHeight(),
                         sceneOrigin[0],
                         sceneOrigin[1],
-                        bandInfo.getSpectralInfo().getResolution().resolution,
-                        bandInfo.getSpectralInfo().getResolution().resolution,
+                        pixelSize,
+                        pixelSize,
                         0.0, 0.0));
             } catch (FactoryException e) {
                 throw new IOException(e);
