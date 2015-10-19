@@ -52,6 +52,6 @@ public abstract class S2OrthoProduct60MReaderPlugIn extends S2OrthoProductReader
 
     @Override
     public String getDescription(Locale locale) {
-        return String.format("Sentinel-2 MSI %s - 60m bands - %s", getLevel(), epsgToDisplayName(getEPSG()));
+        return String.format("Sentinel-2 MSI %s - Resampled at 60m resolution - %s", getLevel(), epsgToDisplayName(getEPSG()));
     }
 }
