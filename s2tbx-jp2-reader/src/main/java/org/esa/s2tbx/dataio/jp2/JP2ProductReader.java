@@ -6,25 +6,15 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.jp2.internal.JP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
 import org.esa.s2tbx.dataio.jp2.internal.OpjExecutor;
-import org.esa.s2tbx.dataio.jp2.metadata.CodeStreamInfo;
+import org.esa.s2tbx.dataio.jp2.metadata.*;
 import org.esa.s2tbx.dataio.jp2.metadata.ImageInfo;
-import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadata;
-import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadataReader;
-import org.esa.s2tbx.dataio.jp2.metadata.OpjDumpFile;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.SystemUtils;
 import org.geotools.referencing.CRS;
 
@@ -48,6 +38,7 @@ public class JP2ProductReader extends AbstractProductReader {
     private static final Map<Integer, Integer> precisionTypeMap = new HashMap<Integer, Integer>() {{
         put(8, ProductData.TYPE_UINT8);
         put(12, ProductData.TYPE_UINT16);
+        put(15, ProductData.TYPE_UINT16);
         put(16, ProductData.TYPE_UINT16);
         put(32, ProductData.TYPE_FLOAT32);
     }};
@@ -55,6 +46,7 @@ public class JP2ProductReader extends AbstractProductReader {
     private static final Map<Integer, Integer> dataTypeMap = new HashMap<Integer, Integer>() {{
         put(8, DataBuffer.TYPE_BYTE);
         put(12, DataBuffer.TYPE_USHORT);
+        put(15, DataBuffer.TYPE_USHORT);
         put(16, DataBuffer.TYPE_USHORT);
         put(32, DataBuffer.TYPE_FLOAT);
     }};
