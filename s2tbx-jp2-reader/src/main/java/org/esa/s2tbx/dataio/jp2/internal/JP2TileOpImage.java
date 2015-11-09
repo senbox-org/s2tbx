@@ -5,6 +5,7 @@ import com.bc.ceres.glevel.MultiLevelModel;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
+import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
@@ -17,16 +18,11 @@ import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.image.DataBuffer;
-import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
-import java.io.File;
+import java.awt.*;
+import java.awt.image.*;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,14 +36,14 @@ import java.util.logging.Logger;
 public class JP2TileOpImage extends SingleBandedOpImage {
 
     private final TileLayout tileLayout;
-    private final File imageFile;
-    private final File cacheDir;
+    private final Path imageFile;
+    private final Path cacheDir;
     private final ImageReader imageReader;
     private final int tileIndex;
     private final int bandIndex;
     private final Logger logger;
 
-    public JP2TileOpImage(File imageFile, int bandIdx, File cacheDir, int row, int col,
+    public JP2TileOpImage(Path imageFile, int bandIdx, Path cacheDir, int row, int col,
                           TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level) throws IOException {
         super(dataType, null, tileLayout.tileWidth, tileLayout.tileHeight,
                 getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
@@ -81,7 +77,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
      * @param level         The resolution at which the tile is created
      * @throws IOException
      */
-    public static PlanarImage create(File imageFile, File cacheDir, int bandIdx,
+    public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx,
                                      int row, int col, TileLayout tileLayout,
                                      MultiLevelModel imageModel, int dataType, int level) throws IOException {
         Assert.notNull(cacheDir, "cacheDir");
@@ -159,16 +155,16 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     }
 
 
-    protected File decompressTile(int tileIndex, int level) throws IOException {
-        File tileFile = new File(cacheDir, imageFile.getName() + "_tile_" + String.valueOf(tileIndex) + "_" + String.valueOf(level) + ".tif");
-        if (!tileFile.exists()) {
+    protected Path decompressTile(int tileIndex, int level) throws IOException {
+        Path tileFile = PathUtils.get(cacheDir, PathUtils.getFileNameWithoutExtension(imageFile).toLowerCase() + "_tile_" + String.valueOf(tileIndex) + "_" + String.valueOf(level) + ".tif");
+        if (!Files.exists(tileFile)) {
             final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getSafeDecompressorAndUpdatePermissions());
             final Map<String, String> params = new HashMap<String, String>() {{
-                put("-i", imageFile.getAbsolutePath());
+                put("-i", imageFile.toString());
                 put("-r", String.valueOf(level));
                 put("-l", "20");
             }};
-            params.put("-o", tileFile.getAbsolutePath());
+            params.put("-o", tileFile.toString());
             params.put("-t", String.valueOf(tileIndex));
             if (decompress.execute(params) != 0) {
                 logger.severe(decompress.getLastError());
@@ -210,8 +206,8 @@ public class JP2TileOpImage extends SingleBandedOpImage {
             }
         }
 
-        public void setInput(File input) throws IOException {
-            inputStream = ImageIO.createImageInputStream(input);
+        public void setInput(Path input) throws IOException {
+            inputStream = ImageIO.createImageInputStream(input.toFile());
             imageReader.setInput(inputStream);
         }
 

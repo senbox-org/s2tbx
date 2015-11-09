@@ -7,22 +7,16 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.image.ImageManager;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,8 +30,8 @@ import java.util.logging.Logger;
 public class JP2MultiLevelSource extends AbstractMultiLevelSource {
 
     private final TileLayout tileLayout;
-    private final File sourceFile;
-    private final File cacheFolder;
+    private final Path sourceFile;
+    private final Path cacheFolder;
     private final int dataType;
     private final Logger logger;
     private final int bandIndex;
@@ -58,7 +52,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param dataType      The pixel data type
      * @param geoCoding     (optional) The geocoding found (if any) in the JP2 header
      */
-    public JP2MultiLevelSource(File jp2File, File cacheFolder, int bandIndex, int imageWidth, int imageHeight,
+    public JP2MultiLevelSource(Path jp2File, Path cacheFolder, int bandIndex, int imageWidth, int imageHeight,
                                int tileWidth, int tileHeight, int numTilesX, int numTilesY, int levels, int dataType,
                                GeoCoding geoCoding) {
         super(new DefaultMultiLevelModel(levels,
