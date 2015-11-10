@@ -29,12 +29,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
-import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
-import org.esa.s2tbx.dataio.s2.S2TileOpImage;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
+import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
@@ -265,14 +260,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         if (!bandInfoMap.isEmpty()) {
             addBands(product,
-                    bandInfoMap,
-                    sceneDescription.getSceneOrigin(),
-                    new L1cSceneMultiLevelImageFactory(sceneDescription,
-                            ImageManager.getImageToModelTransform(product.getSceneGeoCoding()))
-            );
-
+                     bandInfoMap,
+                     sceneDescription);
             scaleBands(product, bandInfoMap);
-
             addMasks(product, tileList, bandInfoMap);
         }
 
@@ -365,7 +355,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getSceneGeoCoding()), 6, tiePointGridIndex)));
     }
 
-    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, double[] sceneOrigin, MultiLevelImageFactory mlif) throws IOException {
+    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, S2OrthoSceneLayout sceneDescription) throws IOException {
         ArrayList<Integer> bandIndexes = new ArrayList<>(bandInfoMap.keySet());
         Collections.sort(bandIndexes);
 
@@ -377,8 +367,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             BandInfo bandInfo = bandInfoMap.get(bandIndex);
 
             Band band = addBand(product, bandInfo);
-
-            band.setSourceImage(mlif.createSourceImage(bandInfo));
 
             double pixelSize = 0;
             if (isMultiResolution()) {
@@ -392,8 +380,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
                         band.getRasterWidth(),
                         band.getRasterHeight(),
-                        sceneOrigin[0],
-                        sceneOrigin[1],
+                        sceneDescription.getSceneOrigin()[0],
+                        sceneDescription.getSceneOrigin()[1],
                         pixelSize,
                         pixelSize,
                         0.0, 0.0));
@@ -402,6 +390,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             } catch (TransformException e) {
                 throw new IOException(e);
             }
+
+            MultiLevelImageFactory mlif = new L1cSceneMultiLevelImageFactory(
+                    sceneDescription,
+                    ImageManager.getImageToModelTransform(band.getGeoCoding()));
+
+            band.setSourceImage(mlif.createSourceImage(bandInfo));
 
                 /*
                 try {
