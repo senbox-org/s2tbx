@@ -24,6 +24,7 @@ import org.esa.snap.runtime.EngineConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,6 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.apache.commons.lang.SystemUtils.*;
+
 
 /**
  * Utility class to get executables from OpenJpeg module
@@ -53,8 +55,7 @@ public class OpenJpegExecRetriever {
         String infoExtractorPathString = null;
         Path infoExtractorPath = findOpenJpegExecPath(getOSCategory().getDump());
 
-        if (infoExtractorPath != null)
-        {
+        if (infoExtractorPath != null) {
             setExecutablePermissions(infoExtractorPath);
             infoExtractorPathString = infoExtractorPath.toString();
         }
@@ -72,8 +73,7 @@ public class OpenJpegExecRetriever {
         String decompressorPathString = null;
         Path decompressorPath = findOpenJpegExecPath(getOSCategory().getDecompressor());
 
-        if (decompressorPath != null)
-        {
+        if (decompressorPath != null) {
             setExecutablePermissions(decompressorPath);
             decompressorPathString = decompressorPath.toString();
         }
@@ -81,38 +81,44 @@ public class OpenJpegExecRetriever {
         return decompressorPathString;
     }
 
-    private static Path findOpenJpegExecPath(String endPath)  {
+    private static Path findOpenJpegExecPath(String endPath) {
         Path pathToExec = null;
 
         String openJpegDir = EngineConfig.instance("s2tbx").preferences().get(OPENJPEG_EXEC_PATH_PROPERTY, null);
 
         // openjpeg executables should be in the install dir or in the user dir.
         // it is also possible to specify its path
-        // check the config first, then the user dir and finally the install dir
-
-        if(openJpegDir != null) {
+        // check the config first, then then user jar dir and finally the class dir
+        if (openJpegDir != null) {
             pathToExec = Paths.get(openJpegDir).resolve(endPath);
         }
 
 
-        if(pathToExec == null || !Files.exists(pathToExec)) {
-            endPath = "modules/ext/org.esa.s2tbx.lib-openjpeg/" + endPath;
+        if (pathToExec == null || !Files.exists(pathToExec)) {
 
-            EngineConfig engineConfig = EngineConfig.instance();
-            Path userDirPath = engineConfig.userDir();
+            try {
+                String thisJarString = OpenJpegExecRetriever.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
+                int lastSepPosition = thisJarString.substring(0, thisJarString.length() - 1).lastIndexOf('/');
+                thisJarString = thisJarString.substring(10, lastSepPosition);
+                Path thisJarPath = Paths.get(thisJarString);
 
-            pathToExec = userDirPath.resolve(endPath);
+                endPath = "ext/org.esa.s2tbx.lib-openjpeg/" + endPath;
 
-            if (!Files.exists(pathToExec)) {
-                // try the installation directory
-                Path installPath = engineConfig.installDir();
-                String projectDir = "s2tbx";
-                pathToExec = installPath.resolve(projectDir).resolve(endPath);
+                if (thisJarPath.endsWith("modules")) {
+                    pathToExec = thisJarPath.resolve(endPath);
+                } else {
+                    // should be in dev mode
+                    pathToExec = thisJarPath.getParent().getParent().getParent()
+                            .resolve("lib-openjpeg/target/nbm/netbeans/s2tbx/modules")
+                            .resolve(endPath);
+                }
 
                 if (!Files.exists(pathToExec)) {
                     pathToExec = null;
                     SystemUtils.LOG.severe("Could not find OpenJpeg executable " + endPath);
                 }
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
             }
         }
 
@@ -135,7 +141,7 @@ public class OpenJpegExecRetriever {
                 // can't set the permissions for this file, eg. the file was installed as root
                 // send a warning message, user will have to do that by hand.
                 SystemUtils.LOG.warning("Can't set execution permissions for executable " + executablePathName.toString() +
-                        ". If required, please ask an authorised user to make the file executable.");
+                                                ". If required, please ask an authorised user to make the file executable.");
             }
         }
     }
@@ -152,8 +158,7 @@ public class OpenJpegExecRetriever {
         String decompressor;
         String dump;
 
-        OSCategory(String directory, String decompressor, String dump)
-        {
+        OSCategory(String directory, String decompressor, String dump) {
             this.directory = directory;
             this.decompressor = decompressor;
             this.dump = dump;
@@ -170,32 +175,28 @@ public class OpenJpegExecRetriever {
 
     private static OSCategory getOSCategory() {
         OSCategory category;
-        if (IS_OS_LINUX)
-        {
+        if (IS_OS_LINUX) {
             category = OSCategory.LINUX_32;
             try {
                 Process p = Runtime.getRuntime().exec("uname -m");
                 p.waitFor();
+
                 String osArch = OpenJpegUtils.convertStreamToString(p.getInputStream());
+
                 if (!osArch.equalsIgnoreCase("i686")) {
                     category = OSCategory.LINUX_64;
                 }
-            } catch (IOException|InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 // by default we use the 32 bits path as it works also on 64 bits platform
                 SystemUtils.LOG.warning(
                         "Could not find system architecture 32/64 bits, openjpeg executables for 32 bits will be used: " +
                                 e.getMessage());
             }
-        }
-        else if (IS_OS_MAC_OSX)
-        {
+        } else if (IS_OS_MAC_OSX) {
             category = OSCategory.MAC_OS_X;
-        }
-        else if (IS_OS_WINDOWS)
-        {
+        } else if (IS_OS_WINDOWS) {
             category = OSCategory.WIN_32;
-        }
-        else {
+        } else {
             // we should never be here since we do not release installers for other systems.
             category = OSCategory.UNSUPPORTED;
         }
