@@ -594,11 +594,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private abstract class AbstractL1cSceneMultiLevelSource extends AbstractMultiLevelSource {
         protected final S2OrthoSceneLayout sceneDescription;
 
-        AbstractL1cSceneMultiLevelSource(S2OrthoSceneLayout sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
+        AbstractL1cSceneMultiLevelSource(S2OrthoSceneLayout sceneDescription, S2SpatialResolution bandResolution, AffineTransform imageToModelTransform, int numResolutions) {
             super(new DefaultMultiLevelModel(numResolutions,
                     imageToModelTransform,
-                    sceneDescription.getSceneDimension(getProductResolution()).width,
-                    sceneDescription.getSceneDimension(getProductResolution()).height));
+                    sceneDescription.getSceneDimension(bandResolution).width,
+                    sceneDescription.getSceneDimension(bandResolution).height));
             this.sceneDescription = sceneDescription;
         }
     }
@@ -610,7 +610,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         private final BandInfo bandInfo;
 
         public BandL1cSceneMultiLevelSource(S2OrthoSceneLayout sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
-            super(sceneDescription, imageToModelTransform, bandInfo.getImageLayout().numResolutions);
+            super(sceneDescription, bandInfo.getSpectralInfo().getResolution(), imageToModelTransform, bandInfo.getImageLayout().numResolutions);
             this.bandInfo = bandInfo;
         }
 
@@ -705,7 +705,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         private HashMap<String, TiePointGrid[]> tiePointGridsMap;
 
         public TiePointGridL1cSceneMultiLevelSource(S2OrthoSceneLayout sceneDescription, S2Metadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex) {
-            super(sceneDescription, imageToModelTransform, numResolutions);
+            super(sceneDescription, getProductResolution(), imageToModelTransform, numResolutions);
             this.metadata = metadata;
             this.tiePointGridIndex = tiePointGridIndex;
             tiePointGridsMap = new HashMap<>();
