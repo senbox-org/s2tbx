@@ -25,9 +25,11 @@ import org.esa.snap.core.datamodel.ProductData;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,16 +64,16 @@ public abstract class XmlMetadata {
      * @param <T>       Generic type of the metadata class.
      * @return An instance of <code>T</code> type.
      */
-    public static <T extends XmlMetadata> T create(Class<T> clazz, File inputFile) {
+    public static <T extends XmlMetadata> T create(Class<T> clazz, Path inputFile) {
         Assert.notNull(inputFile);
         T result = null;
-        FileInputStream stream = null;
+        InputStream stream = null;
         try {
-            if (inputFile.exists()) {
-                stream = new FileInputStream(inputFile);
+            if (Files.exists(inputFile)) {
+                stream = Files.newInputStream(inputFile, StandardOpenOption.READ);
                 //noinspection unchecked
                 result = (T) XmlMetadataParserFactory.getParser(clazz).parse(stream);
-                result.setPath(inputFile.getPath());
+                result.setPath(inputFile.toAbsolutePath().toString());
                 String metadataProfile = result.getMetadataProfile();
                 if (metadataProfile != null)
                     result.setName(metadataProfile);
@@ -86,6 +88,11 @@ public abstract class XmlMetadata {
             }
         }
         return result;
+    }
+
+    public static <T extends XmlMetadata> T create(Class<T> clazz, File inputFile) {
+        Assert.notNull(inputFile);
+        return create(clazz, inputFile.toPath());
     }
 
     public static <T extends XmlMetadata> T create(Class<T> clazz, String input) {

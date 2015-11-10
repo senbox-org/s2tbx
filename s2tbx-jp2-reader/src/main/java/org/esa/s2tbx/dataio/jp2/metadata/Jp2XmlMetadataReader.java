@@ -1,10 +1,10 @@
 package org.esa.s2tbx.dataio.jp2.metadata;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Reader for decoding JP2 XML blocks into Metadata elements.
@@ -21,9 +21,9 @@ public class Jp2XmlMetadataReader {
     private ByteSequenceMatcher jp2cMatcher;
     private ByteSequenceMatcher xmlTagMatcher;
 
-    private File jp2File;
+    private Path jp2File;
 
-    public Jp2XmlMetadataReader(File jp2File) {
+    public Jp2XmlMetadataReader(Path jp2File) {
         this.jp2File = jp2File;
         jp2cMatcher = new ByteSequenceMatcher(JP2_JP2C);
         xmlTagMatcher = new ByteSequenceMatcher(JP2_XML);
@@ -31,9 +31,8 @@ public class Jp2XmlMetadataReader {
 
     public Jp2XmlMetadata read() {
         Jp2XmlMetadata metadata = null;
-        if (jp2File != null && jp2File.canRead()) {
-            try (FileInputStream stream = new FileInputStream(jp2File)) {
-                FileChannel channel = stream.getChannel();
+        if (jp2File != null && Files.isReadable(jp2File)) {
+            try (FileChannel channel = FileChannel.open(jp2File)) {
                 MappedByteBuffer mappedByteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0L, channel.size());
                 int currentByte;
                 while (mappedByteBuffer.hasRemaining() && !jp2cMatcher.matches((currentByte = mappedByteBuffer.get()))) {
@@ -47,7 +46,7 @@ public class Jp2XmlMetadataReader {
                         }
                     }
                 }
-                stream.close();
+                channel.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -3,28 +3,20 @@ package org.esa.s2tbx.dataio.jp2;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.MultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import org.esa.s2tbx.dataio.BucketMap;
 import org.esa.s2tbx.dataio.jp2.internal.JP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
 import org.esa.s2tbx.dataio.jp2.internal.OpjExecutor;
-import org.esa.s2tbx.dataio.jp2.metadata.CodeStreamInfo;
+import org.esa.s2tbx.dataio.jp2.metadata.*;
 import org.esa.s2tbx.dataio.jp2.metadata.ImageInfo;
-import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadata;
-import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadataReader;
-import org.esa.s2tbx.dataio.jp2.metadata.OpjDumpFile;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
+import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.SystemUtils;
 import org.geotools.referencing.CRS;
 
@@ -33,6 +25,9 @@ import java.awt.geom.Point2D;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,23 +40,23 @@ import java.util.logging.Logger;
  */
 public class JP2ProductReader extends AbstractProductReader {
 
-    private static final Map<Integer, Integer> precisionTypeMap = new HashMap<Integer, Integer>() {{
-        put(8, ProductData.TYPE_UINT8);
-        put(12, ProductData.TYPE_UINT16);
-        put(16, ProductData.TYPE_UINT16);
-        put(32, ProductData.TYPE_FLOAT32);
+    private static final BucketMap<Integer, Integer> precisionTypeMap = new BucketMap<Integer, Integer>() {{
+        put(1, 8, ProductData.TYPE_UINT8);
+        put(9, 15, ProductData.TYPE_UINT16);
+        put(16, ProductData.TYPE_INT16);
+        put(17, 32, ProductData.TYPE_FLOAT32);
     }};
 
-    private static final Map<Integer, Integer> dataTypeMap = new HashMap<Integer, Integer>() {{
-        put(8, DataBuffer.TYPE_BYTE);
-        put(12, DataBuffer.TYPE_USHORT);
-        put(16, DataBuffer.TYPE_USHORT);
-        put(32, DataBuffer.TYPE_FLOAT);
+    private static final BucketMap<Integer, Integer> dataTypeMap = new BucketMap<Integer, Integer>() {{
+        put(1, 8, DataBuffer.TYPE_BYTE);
+        put(9, 15, DataBuffer.TYPE_USHORT);
+        put(16, DataBuffer.TYPE_SHORT);
+        put(17, 32, DataBuffer.TYPE_FLOAT);
     }};
 
     private final Logger logger;
     private Product product;
-    private File tmpFolder;
+    private Path tmpFolder;
 
     protected JP2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
@@ -81,15 +76,14 @@ public class JP2ProductReader extends AbstractProductReader {
                 }
             }
         }
-        File[] files = tmpFolder.listFiles();
+        List<Path> files = PathUtils.listFiles(tmpFolder);
+        ;
         if (files != null) {
-            for (File file : files) {
-                if (!file.delete())
-                    file.deleteOnExit();
+            for (Path file : files) {
+                Files.delete(file);
             }
         }
-        if (!tmpFolder.delete())
-            tmpFolder.deleteOnExit();
+        Files.delete(tmpFolder);
         super.close();
     }
 
@@ -98,15 +92,16 @@ public class JP2ProductReader extends AbstractProductReader {
         if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
-        File inputFile = getFileInput(getInput());
-        tmpFolder = new File(SystemUtils.getCacheDir(), inputFile.getName().toLowerCase().replace(".jp2", "") + "_cached");
-        tmpFolder.mkdir();
+        Path inputFile = getFileInput(getInput());
+        tmpFolder = PathUtils.get(SystemUtils.getCacheDir(), PathUtils.getFileNameWithoutExtension(inputFile).toLowerCase() + "_cached");
+        Files.createDirectory(tmpFolder);
+
         logger.info("Reading product metadata");
         try {
             OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions());
-            OpjDumpFile dumpFile = new OpjDumpFile(new File(tmpFolder, String.format(JP2ProductReaderConstants.JP2_INFO_FILE, inputFile.getName())));
+            OpjDumpFile dumpFile = new OpjDumpFile(PathUtils.get(tmpFolder, String.format(JP2ProductReaderConstants.JP2_INFO_FILE, PathUtils.getFileNameWithoutExtension(inputFile))));
             Map<String, String> params = new HashMap<String, String>() {{
-                put("-i", inputFile.getAbsolutePath());
+                put("-i", inputFile.toAbsolutePath().toString());
                 put("-o", dumpFile.getPath());
             }};
             if (dumper.execute(params) == 0) {
@@ -116,13 +111,13 @@ public class JP2ProductReader extends AbstractProductReader {
                 CodeStreamInfo csInfo = dumpFile.getCodeStreamInfo();
                 int imageWidth = imageInfo.getWidth();
                 int imageHeight = imageInfo.getHeight();
-                product = new Product(inputFile.getName(), JP2ProductReaderConstants.TYPE, imageWidth, imageHeight);
+                product = new Product(inputFile.getFileName().toString(), JP2ProductReaderConstants.TYPE, imageWidth, imageHeight);
                 MetadataElement metadataRoot = product.getMetadataRoot();
                 metadataRoot.addElement(imageInfo.toMetadataElement());
                 metadataRoot.addElement(csInfo.toMetadataElement());
                 Jp2XmlMetadata metadata = new Jp2XmlMetadataReader(inputFile).read();
                 if (metadata != null) {
-                    metadata.setFileName(inputFile.getName());
+                    metadata.setFileName(inputFile.toAbsolutePath().toString());
                     metadataRoot.addElement(metadata.getRootElement());
                     String crsGeocoding = metadata.getCrsGeocoding();
                     Point2D origin = metadata.getOrigin();
@@ -183,7 +178,7 @@ public class JP2ProductReader extends AbstractProductReader {
             throw new IOException(msg);
         }
         if (product != null) {
-            product.setFileLocation(inputFile);
+            product.setFileLocation(inputFile.toFile());
             product.setModified(false);
         }
         return product;
@@ -202,11 +197,13 @@ public class JP2ProductReader extends AbstractProductReader {
      * @param input the input object
      * @return  Either a new instance of File, if the input represents the file name, or the casted input File.
      */
-    protected File getFileInput(Object input) {
+    protected Path getFileInput(Object input) {
         if (input instanceof String) {
-            return new File((String) input);
+            return Paths.get((String) input);
         } else if (input instanceof File) {
-            return (File) input;
+            return ((File) input).toPath();
+        } else if (input instanceof Path) {
+            return (Path) input;
         }
         return null;
     }
