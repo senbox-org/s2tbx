@@ -48,7 +48,6 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.FileUtils;
@@ -84,8 +83,10 @@ import java.util.stream.Collectors;
 
 import static org.esa.s2tbx.dataio.s2.S2Metadata.ProductCharacteristics;
 import static org.esa.s2tbx.dataio.s2.S2Metadata.Tile;
-import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
-import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadata.*;
+import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.convertDoublesToFloats;
+import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.getLatitudes;
+import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.getLongitudes;
+import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadata.parseHeader;
 
 // import com.jcabi.aspects.Loggable;
 
@@ -267,9 +268,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         if (sceneDescription != null) {
             product = new Product(FileUtils.getFilenameWithoutExtension(productMetadataFile),
-                    "S2_MSI_" + productCharacteristics.getProcessingLevel(),
-                    sceneDescription.getSceneRectangle().width,
-                    sceneDescription.getSceneRectangle().height);
+                                  "S2_MSI_" + productCharacteristics.getProcessingLevel(),
+                                  sceneDescription.getSceneRectangle().width,
+                                  sceneDescription.getSceneRectangle().height);
 
 
             Map<String, GeoCoding> geoCodingsByDetector = new HashMap<>();
@@ -283,10 +284,11 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 }
             }
 
-            addDetectorBands(product, bandInfoByKey, new L1bSceneMultiLevelImageFactory(sceneDescription, ImageManager.getImageToModelTransform(product.getSceneGeoCoding())));
+            addDetectorBands(product, bandInfoByKey,
+                             new L1bSceneMultiLevelImageFactory(sceneDescription, Product.findImageToModelTransform(product.getSceneGeoCoding())));
         } else {
             product = new Product(FileUtils.getFilenameWithoutExtension(productMetadataFile),
-                    "S2_MSI_" + productCharacteristics.getProcessingLevel());
+                                  "S2_MSI_" + productCharacteristics.getProcessingLevel());
         }
 
         product.setFileLocation(productMetadataFile.getParentFile());
@@ -359,10 +361,10 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     private L1BBandInfo createBandInfoFromHeaderInfo(String detector, S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
         S2SpatialResolution spatialResolution = bandInformation.getResolution();
         return new L1BBandInfo(tileFileMap,
-                bandInformation.getBandId(),
-                detector,
-                bandInformation,
-                getConfig().getTileLayout(spatialResolution.resolution));
+                               bandInformation.getBandId(),
+                               detector,
+                               bandInformation,
+                               getConfig().getTileLayout(spatialResolution.resolution));
     }
 
     static File getProductDir(File productFile) throws IOException {
@@ -419,9 +421,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         AbstractL1bSceneMultiLevelSource(L1bSceneDescription sceneDescription, AffineTransform imageToModelTransform, int numResolutions) {
             super(new DefaultMultiLevelModel(numResolutions,
-                    imageToModelTransform,
-                    sceneDescription.getSceneRectangle().width,
-                    sceneDescription.getSceneRectangle().height));
+                                             imageToModelTransform,
+                                             sceneDescription.getSceneRectangle().width,
+                                             sceneDescription.getSceneRectangle().height));
             this.sceneDescription = sceneDescription;
         }
     }
@@ -441,20 +443,20 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             File imageFile = tileBandInfo.getTileIdToFileMap().get(tileId);
 
             PlanarImage planarImage = S2TileOpImage.create(imageFile,
-                    getCacheDir(),
-                    null, // tileRectangle.getLocation(),
-                    tileBandInfo.getImageLayout(),
-                    getConfig(),
-                    getModel(),
-                    getProductResolution(),
-                    level);
+                                                           getCacheDir(),
+                                                           null, // tileRectangle.getLocation(),
+                                                           tileBandInfo.getImageLayout(),
+                                                           getConfig(),
+                                                           getModel(),
+                                                           getProductResolution(),
+                                                           level);
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
             logger.fine(String.format("Planar image created: %s %s: minX=%d, minY=%d, width=%d, height=%d\n",
-                    tileBandInfo.getSpectralInfo().getPhysicalBand(), tileId,
-                    planarImage.getMinX(), planarImage.getMinY(),
-                    planarImage.getWidth(), planarImage.getHeight()));
+                                      tileBandInfo.getSpectralInfo().getPhysicalBand(), tileId,
+                                      planarImage.getMinX(), planarImage.getMinY(),
+                                      planarImage.getWidth(), planarImage.getHeight()));
 
             return planarImage;
         }
@@ -483,9 +485,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     double factorY = 1.0 / (Math.pow(2, level) * layoutRatioY);
 
                     opImage = TranslateDescriptor.create(opImage,
-                            (float) Math.floor((tileRectangle.x * factorX)),
-                            (float) Math.floor((tileRectangle.y * factorY)),
-                            Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                                                         (float) Math.floor((tileRectangle.x * factorX)),
+                                                         (float) Math.floor((tileRectangle.y * factorY)),
+                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
                     logger.log(Level.parse(S2Config.LOG_SCENE), String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
                 }
@@ -508,9 +510,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             imageLayout.setTileGridYOffset(0);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
-                    MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                    null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
-                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                                          MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                          null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
+                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
 
             int fitRectWidht = (int) (sceneDescription.getSceneEnvelope().getWidth() /
