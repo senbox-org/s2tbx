@@ -297,8 +297,15 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 throw new IOException("No valid bands found.");
             }
 
-            for (Integer bandIndex : bandIndexes) {
-                addMask(product, tileList, maskInfo, bandInfoMap.get(bandIndex));
+            if (!maskInfo.isPerBand()) {
+                // cloud masks are provided once and valid for all bands
+                addMask(product, tileList, maskInfo, null);
+            }
+            else {
+                // for other masks, we have one mask instance for each band
+                for (Integer bandIndex : bandIndexes) {
+                    addMask(product, tileList, maskInfo, bandInfoMap.get(bandIndex));
+                }
             }
         }
     }
@@ -314,9 +321,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     continue;
                 }
 
-                // We are only interested in masks for a certain band
-                if (!maskFilename.getBandId().equals(String.format("%s", bandInfo.getBandIndex()))) {
-                    continue;
+                if (bandInfo != null) {
+                    // We are only interested in masks for a certain band
+                    if (!maskFilename.getBandId().equals(String.format("%s", bandInfo.getBandIndex()))) {
+                        continue;
+                    }
                 }
 
                 // Read all polygons from the mask file
@@ -344,13 +353,23 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             collection.add(f1);
         }
 
-        String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
+        String snapName = null;
+        String description = null;
+        if (bandInfo == null) {
+            snapName = maskInfo.getSnapName();
+            description = maskInfo.getDescription();
+        }
+        else {
+            String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
+            snapName = maskInfo.getSnapNameForBand(bandName);
+            description = maskInfo.getDescriptionForBand(bandName);
+        }
 
-        VectorDataNode vdn = new VectorDataNode(maskInfo.getSnapNameForBand(bandName), collection);
+        VectorDataNode vdn = new VectorDataNode(snapName, collection);
         vdn.setOwner(product);
-        product.addMask(maskInfo.getSnapNameForBand(bandName),
+        product.addMask(snapName,
                         vdn,
-                        maskInfo.getDescriptionForBand(bandName),
+                        description,
                         maskInfo.getColor(),
                         maskInfo.getTransparency());
     }

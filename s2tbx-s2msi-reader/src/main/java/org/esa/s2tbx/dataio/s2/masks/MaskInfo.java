@@ -177,19 +177,27 @@ public enum MaskInfo {
         return subType;
     }
 
+    public String getSnapName() {
+        return snapName;
+    }
+
     public String getSnapNameForBand(String bandName) {
         return String.format("%s_%s", snapName, bandName);
     }
 
-    public String getDescriptionForBand(String bandName) {
+    public String getDescription() {
         String description;
         if (subDescription == null) {
-            description = String.format("%s - %s", mainDescription, bandName);
+            description = mainDescription;
         }
         else {
-            description = String.format("%s - %s - %s", mainDescription, subDescription, bandName);
+            description = String.format("%s - %s", mainDescription, subDescription);
         }
         return description;
+    }
+
+    public String getDescriptionForBand(String bandName) {
+        return String.format("%s - %s", getDescription(), bandName);
     }
 
     public Color getColor() {
