@@ -24,6 +24,7 @@ import org.esa.snap.runtime.EngineConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -97,17 +98,18 @@ public class OpenJpegExecRetriever {
         if (pathToExec == null || !Files.exists(pathToExec)) {
 
             try {
-                String thisJarString = OpenJpegExecRetriever.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
-                int lastSepPosition = thisJarString.substring(0, thisJarString.length() - 1).lastIndexOf('/');
-                thisJarString = thisJarString.substring(10, lastSepPosition);
-                Path thisJarPath = Paths.get(thisJarString);
-
+                URI thisJarURI = OpenJpegExecRetriever.class.getProtectionDomain().getCodeSource().getLocation().toURI();
                 endPath = "ext/org.esa.s2tbx.lib-openjpeg/" + endPath;
 
-                if (thisJarPath.endsWith("modules")) {
-                    pathToExec = thisJarPath.resolve(endPath);
+                if (thisJarURI.toString().startsWith("jar:")) {
+                    //int lastSepPosition = thisJarString.substring(0, thisJarString.length() - 1).lastIndexOf('/');
+                    //thisJarString = thisJarString.substring(10, lastSepPosition);
+                    thisJarURI = URI.create(thisJarURI.toString().substring(4));
+                    Path thisJarDirPath = Paths.get(thisJarURI).getParent();
+                    pathToExec = thisJarDirPath.resolve(endPath);
                 } else {
                     // should be in dev mode
+                    Path thisJarPath = Paths.get(thisJarURI);
                     pathToExec = thisJarPath.getParent().getParent().getParent()
                             .resolve("lib-openjpeg/target/nbm/netbeans/s2tbx/modules")
                             .resolve(endPath);
