@@ -15,6 +15,7 @@ public enum MaskInfo {
             "Detector footprint mask",
             null,
             "detector_footprint",
+            true,
             MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -24,6 +25,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "No–data pixels",
             "nodata",
+            true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -33,6 +35,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "Pixels partially corrected during cross-talk processing",
             "partially_corrected_crosstalk",
+            true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -42,6 +45,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "Saturated pixels before on-ground radiometric processing",
             "saturated_l1a",
+            true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -51,6 +55,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "Saturated pixels after on-ground radiometric processing",
             "saturated_l1b",
+            true,
             MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -60,6 +65,7 @@ public enum MaskInfo {
             "Radiometric quality mask",
             "Defective pixels (matching defective columns)",
             "defective",
+            true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -69,6 +75,7 @@ public enum MaskInfo {
             "Technical quality mask",
             "Ancillary lost data",
             "ancillary_lost",
+            true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -78,6 +85,7 @@ public enum MaskInfo {
             "Technical quality mask",
             "Ancillary degraded data",
             "ancillary_degraded",
+            true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -87,6 +95,7 @@ public enum MaskInfo {
             "Technical quality mask",
             "MSI lost data",
             "msi_lost",
+            true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -96,6 +105,7 @@ public enum MaskInfo {
             "Technical quality mask",
             "MSI degraded data",
             "msi_degraded",
+            true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -105,6 +115,7 @@ public enum MaskInfo {
             "Coarse cloud mask",
             null,
             "coarse_cloud",
+            true,
             MaskInfo.L1A | MaskInfo.L1B,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -114,6 +125,7 @@ public enum MaskInfo {
             "Finer cloud mask",
             "Opaque clouds",
             "opaque_clouds",
+            false,
             MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY),
@@ -123,6 +135,7 @@ public enum MaskInfo {
             "Finer cloud mask",
             "Cirrus clouds",
             "cirrus_clouds",
+            false,
             MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY);
@@ -132,6 +145,7 @@ public enum MaskInfo {
     private final String mainDescription;
     private final String subDescription;
     private final String snapName;
+    private final boolean perBand;
     private final int levels;
     private final Color color;
     private final double transparency;
@@ -143,12 +157,13 @@ public enum MaskInfo {
 
     private static final double DEFAULT_TRANSPARENCY = 0.8;
 
-    MaskInfo(String mainType, String subType, String mainDescription, String subDescription, String snapName, int levels, Color color, double transparency) {
+    MaskInfo(String mainType, String subType, String mainDescription, String subDescription, String snapName, boolean perBand, int levels, Color color, double transparency) {
         this.mainType = mainType;
         this.subType = subType;
         this.mainDescription = mainDescription;
         this.subDescription = subDescription;
         this.snapName = snapName;
+        this.perBand = perBand;
         this.levels = levels;
         this.color = color;
         this.transparency = transparency;
@@ -187,6 +202,10 @@ public enum MaskInfo {
 
     public boolean isPresentAtLevel(int level) {
         return (levels & level) != 0;
+    }
+
+    public boolean isPerBand() {
+        return this.perBand;
     }
 
 }
