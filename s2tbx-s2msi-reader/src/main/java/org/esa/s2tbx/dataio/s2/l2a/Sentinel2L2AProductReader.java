@@ -106,6 +106,6 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
 
     @Override
     protected int getMaskLevel() {
-        return MaskInfo.L1C;
+        return MaskInfo.L2A;
     }
 }

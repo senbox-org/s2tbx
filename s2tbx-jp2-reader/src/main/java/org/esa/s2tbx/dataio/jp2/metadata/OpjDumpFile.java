@@ -2,32 +2,27 @@ package org.esa.s2tbx.dataio.jp2.metadata;
 
 import org.esa.snap.core.datamodel.MetadataElement;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Created by kraftek on 7/15/2015.
  */
 public class OpjDumpFile {
 
-    private File file;
+    private Path file;
     private ImageInfo imageInfo;
     private CodeStreamInfo codeStreamInfo;
     private boolean isParsed;
 
-    public OpjDumpFile(File dumpFile) {
+    public OpjDumpFile(Path dumpFile) {
         file = dumpFile;
     }
 
     public String getPath() {
-        return file != null ? file.getAbsolutePath() : null;
+        return file != null ? file.toString() : null;
     }
 
     public ImageInfo getImageInfo() {
@@ -51,9 +46,9 @@ public class OpjDumpFile {
     }
 
     public void parse() {
-        if (file != null && file.exists() && file.canRead()) {
+        if (file != null && Files.exists(file) && Files.isReadable(file)) {
             try {
-                List<String> lines = Files.readAllLines(Paths.get(file.toURI()));
+                List<String> lines = Files.readAllLines(file);
                 Iterator<String> iterator = lines.iterator();
                 String currentLine;
                 while(iterator.hasNext()) {
