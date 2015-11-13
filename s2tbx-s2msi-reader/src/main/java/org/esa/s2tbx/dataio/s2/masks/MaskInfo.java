@@ -125,24 +125,6 @@ public enum MaskInfo {
             "cirrus_clouds",
             MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_LAND(
-            "MSK_LANWAT",
-            "LAND",
-            "Land mask",
-            null,
-            "land",
-            MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_WATER(
-            "MSK_LANWAT",
-            "WATER",
-            "Water mask",
-            null,
-            "water",
-            MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
             MaskInfo.DEFAULT_TRANSPARENCY);
 
     private final String mainType;
