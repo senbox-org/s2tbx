@@ -346,9 +346,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
 
-        VectorDataNode vdn = new VectorDataNode(maskInfo.getTypeForBand(bandName), collection);
+        VectorDataNode vdn = new VectorDataNode(maskInfo.getSnapNameForBand(bandName), collection);
         vdn.setOwner(product);
-        product.addMask(maskInfo.getTypeForBand(bandName),
+        product.addMask(maskInfo.getSnapNameForBand(bandName),
                         vdn,
                         maskInfo.getDescriptionForBand(bandName),
                         maskInfo.getColor(),

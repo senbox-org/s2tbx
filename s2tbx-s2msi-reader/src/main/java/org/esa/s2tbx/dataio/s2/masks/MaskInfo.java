@@ -107,8 +107,7 @@ public enum MaskInfo {
             "coarse_cloud",
             MaskInfo.L1A | MaskInfo.L1B,
             Color.ORANGE,
-            MaskInfo.DEFAULT_TRANSPARENCY);
-    /*
+            MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_CLOUDS_OPAQUE(
             "MSK_CLOUDS",
             "OPAQUE",
@@ -126,8 +125,7 @@ public enum MaskInfo {
             "cirrus_clouds",
             MaskInfo.L1C | MaskInfo.L2A,
             Color.ORANGE,
-            MaskInfo.DEFAULT_TRANSPARENCY)
-    */
+            MaskInfo.DEFAULT_TRANSPARENCY);
 
     private final String mainType;
     private final String subType;
@@ -164,7 +162,7 @@ public enum MaskInfo {
         return subType;
     }
 
-    public String getTypeForBand(String bandName) {
+    public String getSnapNameForBand(String bandName) {
         return String.format("%s_%s", snapName, bandName);
     }
 
