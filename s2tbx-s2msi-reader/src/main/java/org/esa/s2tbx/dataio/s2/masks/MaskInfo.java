@@ -142,8 +142,6 @@ public enum MaskInfo {
     public static final int L1B = (1 << 1);
     public static final int L1C = (1 << 2);
     public static final int L2A = (1 << 3);
-    public static final int L2B = (1 << 4);
-    public static final int L3 = (1 << 5);
 
     private static final double DEFAULT_TRANSPARENCY = 0.8;
 
