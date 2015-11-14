@@ -424,24 +424,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             band.setSourceImage(mlif.createSourceImage(bandInfo));
 
-                /*
-                try {
-                    AffineTransform scaler = AffineTransform.getScaleInstance(this.productResolution, this.productResolution).createInverse();
-                    AffineTransform move = AffineTransform.getTranslateInstance(-envelope.getMinX(), -envelope.getMinY());
-                    AffineTransform mirror_y = new AffineTransform(1, 0, 0, -1, 0, envelope.getHeight() / this.productResolution);
-
-                    AffineTransform world2pixel = new AffineTransform(mirror_y);
-                    world2pixel.concatenate(scaler);
-                    world2pixel.concatenate(move);
-
-                    S2SceneRasterTransform transform = new S2SceneRasterTransform(new AffineTransform2D(world2pixel), new AffineTransform2D(world2pixel.createInverse()));
-
-                    // todo uncomment when mutiresolution works using setSceneRasterTransform
-                    // band.setSceneRasterTransform(transform);
-                } catch (NoninvertibleTransformException e) {
-                    logger.severe("Illegal transform");
-                }
-                */
         }
     }
 
