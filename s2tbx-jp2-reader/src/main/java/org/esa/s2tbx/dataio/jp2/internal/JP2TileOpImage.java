@@ -100,28 +100,31 @@ public class JP2TileOpImage extends SingleBandedOpImage {
 
     @Override
     protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
-        final DataBuffer dataBuffer = dest.getDataBuffer();
-        int tileWidth = this.getTileWidth();
-        int tileHeight = this.getTileHeight();
-        final int fileTileX = destRect.x / tileLayout.tileWidth;
-        final int fileTileY = destRect.y / tileLayout.tileHeight;
-        int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth;
-        int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight;
         try {
-            imageReader.setInput(decompressTile(tileIndex, getLevel()));
-            int fileTileWidth = imageReader.getImageWidth();
-            int fileTileHeight = imageReader.getImageHeight();
+            Path tile = decompressTile(tileIndex, getLevel());
             RenderedImage readTileImage = null;
-            if (fileTileOriginX == 0 && tileLayout.tileWidth == tileWidth
-                    && fileTileOriginY == 0 && tileLayout.tileHeight == tileHeight
-                    && tileWidth * tileHeight == dataBuffer.getSize()) {
-                readTileImage = imageReader.read();
-            } else {
-                final Rectangle fileTileRect = new Rectangle(0, 0, fileTileWidth, fileTileHeight);
-                final Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
-                final Rectangle intersection = fileTileRect.intersection(tileRect);
-                if (!intersection.isEmpty()) {
-                    readTileImage = imageReader.read(intersection);
+            if (tile != null) {
+                final DataBuffer dataBuffer = dest.getDataBuffer();
+                int tileWidth = this.getTileWidth();
+                int tileHeight = this.getTileHeight();
+                final int fileTileX = destRect.x / tileLayout.tileWidth;
+                final int fileTileY = destRect.y / tileLayout.tileHeight;
+                int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth;
+                int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight;
+                imageReader.setInput(tile);
+                int fileTileWidth = imageReader.getImageWidth();
+                int fileTileHeight = imageReader.getImageHeight();
+                if (fileTileOriginX == 0 && tileLayout.tileWidth == tileWidth
+                        && fileTileOriginY == 0 && tileLayout.tileHeight == tileHeight
+                        && tileWidth * tileHeight == dataBuffer.getSize()) {
+                    readTileImage = imageReader.read();
+                } else {
+                    final Rectangle fileTileRect = new Rectangle(0, 0, fileTileWidth, fileTileHeight);
+                    final Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
+                    final Rectangle intersection = fileTileRect.intersection(tileRect);
+                    if (!intersection.isEmpty()) {
+                        readTileImage = imageReader.read(intersection);
+                    }
                 }
             }
             if (readTileImage != null) {
@@ -168,6 +171,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
             params.put("-t", String.valueOf(tileIndex));
             if (decompress.execute(params) != 0) {
                 logger.severe(decompress.getLastError());
+                tileFile = null;
             } else {
                 logger.fine("Decompressed tile #" + String.valueOf(tileIndex) + " @ resolution " + String.valueOf(level));
             }

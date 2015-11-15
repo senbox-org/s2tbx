@@ -94,8 +94,9 @@ public class JP2ProductReader extends AbstractProductReader {
         }
         Path inputFile = getFileInput(getInput());
         tmpFolder = PathUtils.get(SystemUtils.getCacheDir(), PathUtils.getFileNameWithoutExtension(inputFile).toLowerCase() + "_cached");
-        Files.createDirectory(tmpFolder);
-
+        if (!Files.exists(tmpFolder)) {
+            Files.createDirectory(tmpFolder);
+        }
         logger.info("Reading product metadata");
         try {
             OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions());
