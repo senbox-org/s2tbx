@@ -22,7 +22,9 @@ import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,11 +86,30 @@ public class OpenJpegUtils {
     }
 
     public static CommandOutput runProcess(ProcessBuilder builder) throws InterruptedException, IOException {
+        builder.environment().putAll(System.getenv());
+        StringBuilder output = new StringBuilder();
+        boolean isStopped = false;
         final Process process = builder.start();
-        final int exitCode = process.waitFor();
-        String output = convertStreamToString(process.getInputStream());
+        try (BufferedReader outReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            while (!isStopped) {
+                while (outReader.ready()) {
+                    String line = outReader.readLine();
+                    if (line != null && !line.isEmpty()) {
+                        output.append(line);
+                    }
+                }
+                if (!process.isAlive()) {
+                    isStopped = true;
+                } else {
+                    Thread.yield();
+                }
+            }
+            outReader.close();
+        }
+        int exitCode = process.exitValue();
+        //String output = convertStreamToString(process.getInputStream());
         String errorOutput = convertStreamToString(process.getErrorStream());
-        return new CommandOutput(exitCode, output, errorOutput);
+        return new CommandOutput(exitCode, output.toString(), errorOutput);
     }
 
     /**
@@ -99,7 +120,7 @@ public class OpenJpegUtils {
      */
     public static TileLayout parseOpjDump(String content) {
         List<String> splittedContent = new ArrayList<>();
-        Collections.addAll(splittedContent, content.split("\n"));
+        Collections.addAll(splittedContent, content.split(content.contains("\n") ? "\n" : "\t"));
         return parseOpjDump(splittedContent);
     }
 

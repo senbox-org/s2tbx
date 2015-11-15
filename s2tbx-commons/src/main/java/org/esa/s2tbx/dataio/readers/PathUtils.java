@@ -80,6 +80,38 @@ public class PathUtils {
         return files;
     }
 
+    public static String[] list(Path basePath) throws IOException {
+        if (basePath == null)
+            return null;
+        List<String> files = new ArrayList<>();
+        Files.walkFileTree(basePath,
+                EnumSet.noneOf(FileVisitOption.class),
+                1,
+                new FileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        files.add(file.toAbsolutePath().toString());
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+        return files.toArray(new String[files.size()]);
+    }
+
     public static String getFileNameWithoutExtension(Path path) {
         if (path == null || Files.isDirectory(path)) {
             return null;

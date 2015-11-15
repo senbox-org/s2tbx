@@ -154,6 +154,7 @@ public class OpenJpegExecRetriever {
         LINUX_32("openjpeg-2.1.0-Linux-i386", "bin/opj_decompress", "bin/opj_dump"),
         LINUX_64("openjpeg-2.1.0-Linux-x64", "bin/opj_decompress", "bin/opj_dump"),
         MAC_OS_X("openjpeg-2.1.0-Darwin-i386", "bin/opj_decompress", "bin/opj_dump"),
+        WIN_64("openjpeg-2.1.0-win32-x64_dyn", "bin/opj_decompress.exe", "bin/opj_dump.exe"),
         UNSUPPORTED(null, null, null);
 
         String directory;
@@ -197,7 +198,12 @@ public class OpenJpegExecRetriever {
         } else if (IS_OS_MAC_OSX) {
             category = OSCategory.MAC_OS_X;
         } else if (IS_OS_WINDOWS) {
-            category = OSCategory.WIN_32;
+            String sysArch = System.getProperty("os.arch").toLowerCase();
+            if (sysArch.contains("amd64") || sysArch.contains("x86_x64")) {
+                category = OSCategory.WIN_64;
+            } else {
+                category = OSCategory.WIN_32;
+            }
         } else {
             // we should never be here since we do not release installers for other systems.
             category = OSCategory.UNSUPPORTED;
