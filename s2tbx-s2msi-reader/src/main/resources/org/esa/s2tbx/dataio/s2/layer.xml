@@ -5,21 +5,21 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="S2-MSI L1B"/>
-                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1B"/>
+                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1B-MultiRes"/>
                 <attr name="useAllFileFilter" boolvalue="false"/>
             </file>
             <file name="org-esa-s2tbx-dataio-s2-ImportS2Product.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="S2-MSI L1C"/>
-                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L1C-MultiRes-UTM31N"/>
+                <attr name="formatName" stringvalue="SENTINEL-2-MSI-MultiRes-UTM01N"/>
                 <attr name="useAllFileFilter" boolvalue="false"/>
             </file>
             <file name="org-esa-s2tbx-dataio-s2-ImportS2L2AProduct.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ImportProductAction.create"/>
                 <attr name="displayName" stringvalue="S2-MSI L2A"/>
-                <attr name="formatName" stringvalue="SENTINEL-2-MSI-L2A"/>
+                <attr name="formatName" stringvalue="SENTINEL-2-MSI-MultiRes-UTM01N"/>
                 <attr name="useAllFileFilter" boolvalue="false"/>
             </file>
         </folder>

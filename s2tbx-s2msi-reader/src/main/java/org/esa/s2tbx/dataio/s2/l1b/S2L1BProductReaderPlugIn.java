@@ -89,7 +89,7 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     @Override
     public String[] getFormatNames() {
-        return new String[]{String.format("%s-%s-MultiRes", L1B_LEVEL, FORMAT_NAME)};
+        return new String[]{String.format("%s-%s-MultiRes", FORMAT_NAME, L1B_LEVEL)};
     }
 
 
