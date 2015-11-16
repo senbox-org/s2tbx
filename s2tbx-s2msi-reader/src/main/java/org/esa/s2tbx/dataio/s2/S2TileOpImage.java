@@ -280,6 +280,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
         builder = builder.directory(cacheDir);
 
         try {
+            builder.redirectErrorStream(true);
             CommandOutput result = OpenJpegUtils.runProcess(builder);
 
             final int exitCode = result.getErrorCode();
