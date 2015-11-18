@@ -101,10 +101,15 @@ public class OpenJpegExecRetriever {
                 URI thisJarURI = OpenJpegExecRetriever.class.getProtectionDomain().getCodeSource().getLocation().toURI();
                 endPath = "ext/org.esa.s2tbx.lib-openjpeg/" + endPath;
 
+                SystemUtils.LOG.fine("OpenJpegExecRetriever jar location URI: " + thisJarURI.toString());
+
                 if (thisJarURI.toString().startsWith("jar:")) {
                     //int lastSepPosition = thisJarString.substring(0, thisJarString.length() - 1).lastIndexOf('/');
                     //thisJarString = thisJarString.substring(10, lastSepPosition);
                     thisJarURI = URI.create(thisJarURI.toString().substring(4));
+                    Path thisJarDirPath = Paths.get(thisJarURI).getParent();
+                    pathToExec = thisJarDirPath.resolve(endPath);
+                } else if (thisJarURI.toString().endsWith(".jar")) {
                     Path thisJarDirPath = Paths.get(thisJarURI).getParent();
                     pathToExec = thisJarDirPath.resolve(endPath);
                 } else {
