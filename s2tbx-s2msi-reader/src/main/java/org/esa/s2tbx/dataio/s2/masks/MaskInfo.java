@@ -1,6 +1,8 @@
 package org.esa.s2tbx.dataio.s2.masks;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * S2-MSI Masks model
@@ -17,7 +19,7 @@ public enum MaskInfo {
             "detector_footprint",
             true,
             MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_NODATA_NODATA(
             "MSK_NODATA",
@@ -27,7 +29,7 @@ public enum MaskInfo {
             "nodata",
             true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_NODATA_CROSSTALK(
             "MSK_NODATA",
@@ -37,7 +39,7 @@ public enum MaskInfo {
             "partially_corrected_crosstalk",
             true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_SATURA_L1A(
             "MSK_SATURA",
@@ -47,7 +49,7 @@ public enum MaskInfo {
             "saturated_l1a",
             true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_SATURA_L1B(
             "MSK_SATURA",
@@ -57,7 +59,7 @@ public enum MaskInfo {
             "saturated_l1b",
             true,
             MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_DEFECT(
             "MSK_DEFECT",
@@ -67,7 +69,7 @@ public enum MaskInfo {
             "defective",
             true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_TECQUA_ANC_LOST(
             "MSK_TECQUA",
@@ -87,7 +89,7 @@ public enum MaskInfo {
             "ancillary_degraded",
             true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_TECQUA_MSI_LOST(
             "MSK_TECQUA",
@@ -97,7 +99,7 @@ public enum MaskInfo {
             "msi_lost",
             true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_TECQUA_MSI_DEG(
             "MSK_TECQUA",
@@ -107,7 +109,7 @@ public enum MaskInfo {
             "msi_degraded",
             true,
             MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_CLOLOW(
             "MSK_CLOLOW",
@@ -117,7 +119,7 @@ public enum MaskInfo {
             "coarse_cloud",
             true,
             MaskInfo.L1A | MaskInfo.L1B,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_CLOUDS_OPAQUE(
             "MSK_CLOUDS",
@@ -127,7 +129,7 @@ public enum MaskInfo {
             "opaque_clouds",
             false,
             MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY),
     MSK_CLOUDS_CIRRUS(
             "MSK_CLOUDS",
@@ -137,7 +139,7 @@ public enum MaskInfo {
             "cirrus_clouds",
             false,
             MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
+            ColorIterator.next(),
             MaskInfo.DEFAULT_TRANSPARENCY);
 
     private final String mainType;
@@ -214,6 +216,42 @@ public enum MaskInfo {
 
     public boolean isPerBand() {
         return this.perBand;
+    }
+
+    private static class ColorIterator {
+
+        static ArrayList<Color> colors;
+        static Iterator<Color> colorIterator;
+
+        static {
+            colors = new ArrayList<>();
+            colors.add(Color.red);
+            colors.add(Color.red.darker());
+            colors.add(Color.red.darker().darker());
+            colors.add(Color.blue);
+            colors.add(Color.blue.darker());
+            colors.add(Color.blue.darker().darker());
+            colors.add(Color.green);
+            colors.add(Color.green.darker());
+            colors.add(Color.green.darker().darker());
+            colors.add(Color.yellow);
+            colors.add(Color.yellow.darker());
+            colors.add(Color.yellow.darker().darker());
+            colors.add(Color.magenta);
+            colors.add(Color.magenta.darker());
+            colors.add(Color.magenta.darker().darker());
+            colors.add(Color.pink);
+            colors.add(Color.pink.darker());
+            colors.add(Color.pink.darker().darker());
+            colorIterator = colors.iterator();
+        }
+
+        static Color next() {
+            if (!colorIterator.hasNext()) {
+                colorIterator = colors.iterator();
+            }
+            return colorIterator.next();
+        }
     }
 
 }
