@@ -259,7 +259,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             scaleBands(product, bandInfoList);
 
-            addMasks(product, tileList, bandInfoList);
+            addVectorMasks(product, tileList, bandInfoList);
 
             addIndexMasks(product, bandInfoList);
         }
@@ -293,7 +293,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
-    private void addMasks(Product product, List<S2Metadata.Tile> tileList, List<BandInfo> bandInfoList) throws IOException {
+    private void addVectorMasks(Product product, List<S2Metadata.Tile> tileList, List<BandInfo> bandInfoList) throws IOException {
         for (MaskInfo maskInfo : MaskInfo.values()) {
             if (!maskInfo.isPresentAtLevel(getMaskLevel()))
                 continue;
