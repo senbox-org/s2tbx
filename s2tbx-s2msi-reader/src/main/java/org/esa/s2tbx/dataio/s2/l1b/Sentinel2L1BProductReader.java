@@ -222,6 +222,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         Map<String, L1BBandInfo> bandInfoByKey = new HashMap<>();
         if (productCharacteristics.getBandInformations() != null) {
             for (Tile tile : tileList) {
+                // TODO : rely on the imageFileTemplate hosted by the S2SpectralBandInformation instance.
                 S2L1BGranuleDirFilename gf = (S2L1BGranuleDirFilename) S2L1BGranuleDirFilename.create(tile.getId());
                 Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
