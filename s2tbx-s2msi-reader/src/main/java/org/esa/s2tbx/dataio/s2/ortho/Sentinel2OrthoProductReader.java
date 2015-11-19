@@ -391,20 +391,20 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             if (!maskInfo.isPerBand()) {
                 // cloud masks are provided once and valid for all bands
-                addVectorMask(product, tileList, maskInfo, null);
+                addVectorMask(product, tileList, maskInfo, null, bandInfoList);
             }
             else {
                 // for other masks, we have one mask instance for each spectral band
                 for (BandInfo bandInfo : bandInfoList) {
                     if (bandInfo.getBandInformation() instanceof S2SpectralInformation) {
-                        addVectorMask(product, tileList, maskInfo, (S2SpectralInformation)bandInfo.getBandInformation());
+                        addVectorMask(product, tileList, maskInfo, (S2SpectralInformation)bandInfo.getBandInformation(), bandInfoList);
                     }
                 }
             }
         }
     }
 
-    private void addVectorMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, S2SpectralInformation spectralInfo) {
+    private void addVectorMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, S2SpectralInformation spectralInfo, List<BandInfo> bandInfoList) {
         List<EopPolygon> productPolygons = new ArrayList<>();
 
         for (S2Metadata.Tile tile : tileList) {
@@ -447,25 +447,52 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             collection.add(f1);
         }
 
-        String snapName = null;
-        String description = null;
         if (spectralInfo == null) {
-            snapName = maskInfo.getSnapName();
-            description = maskInfo.getDescription();
+            // This mask is not specific to a band
+            // So we need one version of it for each resolution present in the band list
+            for (S2SpatialResolution resolution : S2SpatialResolution.values()) {
+                // Find a band with this resolution
+                Band referenceBand = null;
+                for (BandInfo bandInfo : bandInfoList) {
+                    if (bandInfo.getBandInformation().getResolution() == resolution) {
+                        referenceBand = product.getBand(bandInfo.getBandInformation().getPhysicalBand());
+                        break;
+                    }
+                }
+
+                // We may not find a band with this resolution
+                if (referenceBand == null) {
+                    continue;
+                }
+
+                // We need a different name for each resolution version
+                String description = maskInfo.getDescription();
+                String snapName = String.format("%s_%dm", maskInfo.getSnapName(), resolution.resolution);
+                VectorDataNode vdn = new VectorDataNode(snapName, collection);
+                vdn.setOwner(product);
+                product.addMask(snapName,
+                                vdn,
+                                description,
+                                maskInfo.getColor(),
+                                maskInfo.getTransparency(),
+                                referenceBand);
+            }
         }
         else {
+            // This mask is specific to a band
+            Band referenceBand = product.getBand(spectralInfo.getPhysicalBand());
             String bandName = spectralInfo.getPhysicalBand();
-            snapName = maskInfo.getSnapNameForBand(bandName);
-            description = maskInfo.getDescriptionForBand(bandName);
+            String snapName = maskInfo.getSnapNameForBand(bandName);
+            String description = maskInfo.getDescriptionForBand(bandName);
+            VectorDataNode vdn = new VectorDataNode(snapName, collection);
+            vdn.setOwner(product);
+            product.addMask(snapName,
+                            vdn,
+                            description,
+                            maskInfo.getColor(),
+                            maskInfo.getTransparency(),
+                            referenceBand);
         }
-
-        VectorDataNode vdn = new VectorDataNode(snapName, collection);
-        vdn.setOwner(product);
-        product.addMask(snapName,
-                        vdn,
-                        description,
-                        maskInfo.getColor(),
-                        maskInfo.getTransparency());
     }
 
     private void addTiePointGridBand(Product product, S2Metadata metadataHeader, S2OrthoSceneLayout sceneDescription, String name, int tiePointGridIndex) {
