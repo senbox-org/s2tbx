@@ -120,8 +120,6 @@ public class L1cMetadata extends S2Metadata {
             }
         }
 
-        Map<String, Counter> counters = new HashMap<>();
-
         for (File aGranuleMetadataFile : fullTileNamesList) {
             FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
             Level1C_Tile aTile = (Level1C_Tile) updateAndUnmarshal(granuleStream);
@@ -135,15 +133,6 @@ public class L1cMetadata extends S2Metadata {
                 // skip tiles that are not in the desired UTM zone
                 logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", aGranuleMetadataFile.getName(), tile.getHorizontalCsCode(), epsg));
                 continue;
-            }
-
-            // counting tiles by UTM zones
-            String key = tile.getHorizontalCsCode();
-            if (counters.containsKey(key)) {
-                counters.get(key).increment();
-            } else {
-                counters.put(key, new Counter(key));
-                counters.get(key).increment();
             }
 
             tile.setTileGeometries(geoms);

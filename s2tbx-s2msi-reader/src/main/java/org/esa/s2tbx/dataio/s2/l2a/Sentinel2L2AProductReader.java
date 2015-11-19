@@ -90,18 +90,14 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     }
 
     @Override
-    protected String getImagePathString(S2Metadata.Tile tile, String imageFileName) {
-        String resolutionFolder = String.format("R%dm", getProductResolution().resolution);
-        String imageWithoutExtention = imageFileName.substring(0, imageFileName.length() - 4);
-        return String.format("GRANULE%s%s%sIMG_DATA%s%s%s%s_%dm.jp2",
-                File.separator,
-                tile.getId(),
-                File.separator,
-                File.separator,
+    protected String getImagePathString(String imageFileName, S2SpatialResolution resolution) {
+        String resolutionFolder = String.format("R%dm", resolution.resolution);
+        String imageWithoutExtension = imageFileName.substring(0, imageFileName.length() - 4);
+        return String.format("%s%s%s_%dm.jp2",
                 resolutionFolder,
                 File.separator,
-                imageWithoutExtention,
-                getProductResolution().resolution);
+                imageWithoutExtension,
+                resolution.resolution);
     }
 
     @Override

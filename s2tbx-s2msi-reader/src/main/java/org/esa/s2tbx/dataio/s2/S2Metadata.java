@@ -454,7 +454,7 @@ public abstract class S2Metadata {
         private String spacecraft;
         private String datasetProductionDate;
         private String processingLevel;
-        private S2SpectralInformation[] bandInformations;
+        private S2BandInformation[] bandInformations;
         private String metaDataLevel;
 
         public String getSpacecraft() {
@@ -481,11 +481,11 @@ public abstract class S2Metadata {
             this.processingLevel = processingLevel;
         }
 
-        public S2SpectralInformation[] getBandInformations() {
+        public S2BandInformation[] getBandInformations() {
             return bandInformations;
         }
 
-        public void setBandInformations(S2SpectralInformation[] bandInformations) {
+        public void setBandInformations(S2BandInformation[] bandInformations) {
             this.bandInformations = bandInformations;
         }
 

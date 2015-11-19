@@ -31,11 +31,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
-import org.esa.s2tbx.dataio.s2.S2TileOpImage;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
+import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
@@ -217,8 +213,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         // Order bands by physicalBand
-        Map<String, S2SpectralInformation> sin = new HashMap<>();
-        for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
+        Map<String, S2BandInformation> sin = new HashMap<>();
+        for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
             sin.put(bandInformation.getPhysicalBand(), bandInformation);
         }
 
@@ -229,7 +225,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 S2L1BGranuleDirFilename gf = (S2L1BGranuleDirFilename) S2L1BGranuleDirFilename.create(tile.getId());
                 Guardian.assertNotNull("Product files don't match regular expressions", gf);
 
-                for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
+                for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
                     S2GranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.getPhysicalBand());
                     String imgFilename = "GRANULE" + File.separator + tile.getId() + File.separator + "IMG_DATA" + File.separator + granuleFileName.name;
 
@@ -328,9 +324,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         float[] lats = convertDoublesToFloats(getLatitudes(coords));
         float[] lons = convertDoublesToFloats(getLongitudes(coords));
 
-        TiePointGrid latGrid = addTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getSpectralInfo().getPhysicalBand() + ",latitude", lats);
+        TiePointGrid latGrid = addTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getBandInformation().getPhysicalBand() + ",latitude", lats);
         product.addTiePointGrid(latGrid);
-        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getSpectralInfo().getPhysicalBand() + ",longitude", lons);
+        TiePointGrid lonGrid = addTiePointGrid(aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumCols(), aList.get(0).getTileGeometry(S2SpatialResolution.R10M).getNumRowsDetector(), tileBandInfo.getDetectorId() + tileBandInfo.getBandInformation().getPhysicalBand() + ",longitude", lons);
         product.addTiePointGrid(lonGrid);
 
         return new TiePointGeoCoding(latGrid, lonGrid);
@@ -351,17 +347,17 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         for (String bandIndex : bandIndexes) {
             L1BBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
-            if (isMultiResolution() || tileBandInfo.getSpectralInfo().getResolution() == this.getProductResolution()) {
+            if (isMultiResolution() || tileBandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
                 Band band = addBand(product, tileBandInfo);
+                band.setDescription(String.format("Radiance in %s", tileBandInfo.getBandName()));
                 band.setSourceImage(mlif.createSourceImage(tileBandInfo));
             }
         }
     }
 
-    private L1BBandInfo createBandInfoFromHeaderInfo(String detector, S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
+    private L1BBandInfo createBandInfoFromHeaderInfo(String detector, S2BandInformation bandInformation, Map<String, File> tileFileMap) {
         S2SpatialResolution spatialResolution = bandInformation.getResolution();
         return new L1BBandInfo(tileFileMap,
-                               bandInformation.getBandId(),
                                detector,
                                bandInformation,
                                getConfig().getTileLayout(spatialResolution.resolution));
@@ -454,7 +450,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
             logger.fine(String.format("Planar image created: %s %s: minX=%d, minY=%d, width=%d, height=%d\n",
-                                      tileBandInfo.getSpectralInfo().getPhysicalBand(), tileId,
+                                      tileBandInfo.getBandInformation().getPhysicalBand(), tileId,
                                       planarImage.getMinX(), planarImage.getMinY(),
                                       planarImage.getWidth(), planarImage.getHeight()));
 
@@ -572,8 +568,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         private final String detectorId;
 
-        L1BBandInfo(Map<String, File> tileIdToFileMap, int bandIndex, String detector, S2SpectralInformation spectralInfo, TileLayout imageLayout) {
-            super(tileIdToFileMap, bandIndex, spectralInfo, imageLayout);
+        L1BBandInfo(Map<String, File> tileIdToFileMap, String detector, S2BandInformation spectralInfo, TileLayout imageLayout) {
+            super(tileIdToFileMap, spectralInfo, imageLayout);
 
             this.detectorId = detector == null ? "" : detector;
         }
@@ -583,7 +579,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         public String getBandName() {
-            return String.format("%s%s", getDetectorId(), getSpectralInfo().getPhysicalBand());
+            return String.format("%s%s", getDetectorId(), getBandInformation().getPhysicalBand());
         }
     }
 }

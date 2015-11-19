@@ -28,6 +28,7 @@ import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
+import org.esa.snap.core.datamodel.IndexCoding;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -45,6 +46,40 @@ public class L2aMetadataProc extends S2MetadataProc {
         return JAXBContext.newInstance(S2MetadataType.L2A, s2c);
     }
 
+    private static String makeSpectralBandImageFileTemplate(String bandFileId) {
+        /* Sample :
+        MISSION_ID : S2A
+        SITECENTRE : MTI_
+        CREATIONDATE : 20150813T201603
+        ABSOLUTEORBIT : A000734
+        TILENUMBER : T32TQR
+        RESOLUTION : 10 | 20 | 60
+         */
+        return String.format("IMG_DATA%sR{{RESOLUTION}}m%s{{MISSION_ID}}_USER_MSI_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_%s_{{RESOLUTION}}m.jp2",
+                File.separator, File.separator, bandFileId);
+    }
+
+    private static String makeAOTFileTemplate() {
+        return String.format("IMG_DATA%sR{{RESOLUTION}}m%s{{MISSION_ID}}_USER_AOT_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2",
+                File.separator, File.separator);
+    }
+
+    private static String makeWVPFileTemplate() {
+        return String.format("IMG_DATA%sR{{RESOLUTION}}m%s{{MISSION_ID}}_USER_WVP_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2",
+                File.separator, File.separator);
+    }
+
+    private static String makeSCLFileTemplate() {
+        return String.format("IMG_DATA%s{{MISSION_ID}}_USER_SCL_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2", File.separator);
+    }
+
+    private static String makeCLDFileTemplate() {
+        return String.format("QI_DATA%s{{MISSION_ID}}_USER_CLD_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2", File.separator);
+    }
+
+    private static String makeSNWFileTemplate() {
+        return String.format("QI_DATA%s{{MISSION_ID}}_USER_SNW_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2", File.separator);
+    }
 
     public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product, S2SpatialResolution resolution) {
 
@@ -53,24 +88,90 @@ public class L2aMetadataProc extends S2MetadataProc {
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString());
         characteristics.setProcessingLevel(product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value());
 
-        List<S2SpectralInformation> aInfo = new ArrayList<>();
+        List<S2BandInformation> aInfo = new ArrayList<>();
 
-        aInfo.add(new S2SpectralInformation("B1", 0, resolution, 414, 472, 443));
-        aInfo.add(new S2SpectralInformation("B2", 1, resolution, 425, 555, 490));
-        aInfo.add(new S2SpectralInformation("B3", 2, resolution, 510, 610, 560));
-        aInfo.add(new S2SpectralInformation("B4", 3, resolution, 617, 707, 665));
-        aInfo.add(new S2SpectralInformation("B5", 4, resolution, 625, 722, 705));
-        aInfo.add(new S2SpectralInformation("B6", 5, resolution, 720, 760, 740));
-        aInfo.add(new S2SpectralInformation("B7", 6, resolution, 741, 812, 783));
-        aInfo.add(new S2SpectralInformation("B8", 7, resolution, 752, 927, 842));
-        aInfo.add(new S2SpectralInformation("B8A", 8, resolution, 823, 902, 865));
-        aInfo.add(new S2SpectralInformation("B9", 9, resolution, 903, 982, 945));
-        aInfo.add(new S2SpectralInformation("B10", 10, resolution, 1338, 1413, 1375));
-        aInfo.add(new S2SpectralInformation("B11", 11, resolution, 1532, 1704, 1610));
-        aInfo.add(new S2SpectralInformation("B12", 12, resolution, 2035, 2311, 2190));
+        IndexCoding sclCoding = new IndexCoding("quality_scene_classification");
+        sclCoding.addIndex("NODATA", 0, "No data");
+        sclCoding.addIndex("SATURATED_DEFECTIVE", 1, "Saturated or defective");
+        sclCoding.addIndex("DARK_FEATURE_SHADOW", 2, "Dark feature shadow");
+        sclCoding.addIndex("CLOUD_SHADOW", 3, "Cloud shadow");
+        sclCoding.addIndex("VEGETATION", 4, "Vegetation");
+        sclCoding.addIndex("BARE_SOIL_DESERT", 5, "Bare soil / Desert");
+        sclCoding.addIndex("WATER", 6, "Water");
+        sclCoding.addIndex("CLOUD_LOW_PROBA", 7, "Cloud (low probability)");
+        sclCoding.addIndex("CLOUD_MEDIUM_PROBA", 8, "Cloud (medium probability)");
+        sclCoding.addIndex("CLOUD_HIGH_PROBA", 9, "Cloud (high probability)");
+        sclCoding.addIndex("THIN_CIRRUS", 10, "Thin cirrus");
+        sclCoding.addIndex("SNOW_ICE", 11, "Snow or Ice");
 
+        switch(resolution) {
+            case R10M:
+                aInfo.add(new S2SpectralInformation("B1", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B01"), 0, 414, 472, 443));
+                aInfo.add(new S2SpectralInformation("B2", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B02"), 1, 425, 555, 490));
+                aInfo.add(new S2SpectralInformation("B3", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B03"), 2, 510, 610, 560));
+                aInfo.add(new S2SpectralInformation("B4", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B04"), 3, 617, 707, 665));
+                aInfo.add(new S2SpectralInformation("B5", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B05"), 4, 625, 722, 705));
+                aInfo.add(new S2SpectralInformation("B6", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B06"), 5, 720, 760, 740));
+                aInfo.add(new S2SpectralInformation("B7", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B07"), 6, 741, 812, 783));
+                aInfo.add(new S2SpectralInformation("B8", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B08"), 7, 752, 927, 842));
+                aInfo.add(new S2SpectralInformation("B8A", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B8A"), 8, 823, 902, 865));
+                aInfo.add(new S2SpectralInformation("B9", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B09"), 9, 903, 982, 945));
+                aInfo.add(new S2SpectralInformation("B11", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B11"), 11, 1532, 1704, 1610));
+                aInfo.add(new S2SpectralInformation("B12", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B12"), 12, 2035, 2311, 2190));
+
+                aInfo.add(new S2BandInformation("quality_aot", S2SpatialResolution.R10M, makeAOTFileTemplate()));
+                aInfo.add(new S2BandInformation("quality_wvp", S2SpatialResolution.R10M, makeWVPFileTemplate()));
+                aInfo.add(new S2BandInformation("quality_cloud_confidence", S2SpatialResolution.R20M, makeCLDFileTemplate()));
+                aInfo.add(new S2BandInformation("quality_snow_confidence", S2SpatialResolution.R20M, makeSNWFileTemplate()));
+
+                // SCL only generated at 20m and 60m. upsample the 20m version
+                aInfo.add(new S2IndexBandInformation("quality_scene_classification", S2SpatialResolution.R20M, makeSCLFileTemplate(), sclCoding));
+                break;
+            case R20M:
+                aInfo.add(new S2SpectralInformation("B1", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B01"), 0, 414, 472, 443));
+                aInfo.add(new S2SpectralInformation("B2", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B02"), 1, 425, 555, 490));
+                aInfo.add(new S2SpectralInformation("B3", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B03"), 2, 510, 610, 560));
+                aInfo.add(new S2SpectralInformation("B4", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B04"), 3, 617, 707, 665));
+                aInfo.add(new S2SpectralInformation("B5", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B05"), 4, 625, 722, 705));
+                aInfo.add(new S2SpectralInformation("B6", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B06"), 5, 720, 760, 740));
+                aInfo.add(new S2SpectralInformation("B7", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B07"), 6, 741, 812, 783));
+                aInfo.add(new S2SpectralInformation("B8", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B08"), 7, 752, 927, 842));
+                aInfo.add(new S2SpectralInformation("B8A", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B8A"), 8, 823, 902, 865));
+                aInfo.add(new S2SpectralInformation("B9", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B09"), 9, 903, 982, 945));
+                aInfo.add(new S2SpectralInformation("B11", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B11"), 11, 1532, 1704, 1610));
+                aInfo.add(new S2SpectralInformation("B12", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B12"), 12, 2035, 2311, 2190));
+
+                aInfo.add(new S2BandInformation("quality_aot", S2SpatialResolution.R20M, makeAOTFileTemplate()));
+                aInfo.add(new S2BandInformation("quality_wvp", S2SpatialResolution.R20M, makeWVPFileTemplate()));
+                aInfo.add(new S2BandInformation("quality_cloud_confidence", S2SpatialResolution.R20M, makeCLDFileTemplate()));
+                aInfo.add(new S2BandInformation("quality_snow_confidence", S2SpatialResolution.R20M, makeSNWFileTemplate()));
+
+                aInfo.add(new S2IndexBandInformation("quality_scene_classification", S2SpatialResolution.R20M, makeSCLFileTemplate(), sclCoding));
+                break;
+            case R60M:
+                aInfo.add(new S2SpectralInformation("B1", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B01"), 0, 414, 472, 443));
+                aInfo.add(new S2SpectralInformation("B2", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B02"), 1, 425, 555, 490));
+                aInfo.add(new S2SpectralInformation("B3", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B03"), 2, 510, 610, 560));
+                aInfo.add(new S2SpectralInformation("B4", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B04"), 3, 617, 707, 665));
+                aInfo.add(new S2SpectralInformation("B5", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B05"), 4, 625, 722, 705));
+                aInfo.add(new S2SpectralInformation("B6", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B06"), 5, 720, 760, 740));
+                aInfo.add(new S2SpectralInformation("B7", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B07"), 6, 741, 812, 783));
+                aInfo.add(new S2SpectralInformation("B8", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B08"), 7, 752, 927, 842));
+                aInfo.add(new S2SpectralInformation("B8A", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B8A"), 8, 823, 902, 865));
+                aInfo.add(new S2SpectralInformation("B9", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B09"), 9, 903, 982, 945));
+                aInfo.add(new S2SpectralInformation("B11", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B11"), 11, 1532, 1704, 1610));
+                aInfo.add(new S2SpectralInformation("B12", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B12"), 12, 2035, 2311, 2190));
+
+                aInfo.add(new S2BandInformation("quality_aot", S2SpatialResolution.R60M, makeAOTFileTemplate()));
+                aInfo.add(new S2BandInformation("quality_water_vapour", S2SpatialResolution.R60M, makeWVPFileTemplate()));
+                aInfo.add(new S2BandInformation("quality_cloud_confidence", S2SpatialResolution.R60M, makeCLDFileTemplate()));
+                aInfo.add(new S2BandInformation("quality_snow_confidence", S2SpatialResolution.R60M, makeSNWFileTemplate()));
+
+                aInfo.add(new S2IndexBandInformation("quality_scene_classification", S2SpatialResolution.R60M, makeSCLFileTemplate(), sclCoding));
+                break;
+        }
         int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2SpectralInformation[size]));
+        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
         return characteristics;
     }

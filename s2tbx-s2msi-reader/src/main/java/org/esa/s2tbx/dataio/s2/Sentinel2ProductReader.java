@@ -49,7 +49,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         RESOLUTION_10M,
         RESOLUTION_20M,
         RESOLUTION_60M,
-        RESOLUTION_MULTI;
+        RESOLUTION_MULTI
     }
 
     private S2Config config;
@@ -305,32 +305,49 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
         product.addBand(band);
 
-        band.setSpectralBandIndex(bandInfo.getBandIndex());
-        band.setSpectralWavelength((float) bandInfo.getSpectralInfo().getWavelengthCentral());
-        band.setSpectralBandwidth((float) bandInfo.getSpectralInfo().getSpectralBandwith());
+        S2BandInformation bandInformation = bandInfo.getBandInformation();
+        if (bandInformation instanceof S2SpectralInformation) {
+            S2SpectralInformation spectralInfo = (S2SpectralInformation) bandInformation;
+            band.setSpectralWavelength((float) spectralInfo.getWavelengthCentral());
+            band.setSpectralBandwidth((float) spectralInfo.getSpectralBandwith());
+            band.setSpectralBandIndex(spectralInfo.getBandId());
 
-        band.setNoDataValue(0);
-        band.setValidPixelExpression(String.format("%s.raw > %s",
-                bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
+            band.setNoDataValueUsed(false);
+            band.setNoDataValue(0);
+            band.setValidPixelExpression(String.format("%s.raw > %s",
+                    bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
+        }
+        else if (bandInformation instanceof S2IndexBandInformation) {
+            S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInformation;
+            band.setSpectralWavelength(0);
+            band.setSpectralBandwidth(0);
+            band.setSpectralBandIndex(-1);
+            band.setSampleCoding(indexBandInfo.getIndexCoding());
+        }
+        else {
+            band.setSpectralWavelength(0);
+            band.setSpectralBandwidth(0);
+            band.setSpectralBandIndex(-1);
+        }
+
+
 
         return band;
     }
 
     public static class BandInfo {
         private final Map<String, File> tileIdToFileMap;
-        private final int bandIndex;
-        private final S2SpectralInformation spectralInformation;
+        private final S2BandInformation bandInformation;
         private final TileLayout imageLayout;
 
-        public BandInfo(Map<String, File> tileIdToFileMap, int bandIndex, S2SpectralInformation spectralInformation, TileLayout imageLayout) {
+        public BandInfo(Map<String, File> tileIdToFileMap, S2BandInformation spectralInformation, TileLayout imageLayout) {
             this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
-            this.bandIndex = bandIndex;
-            this.spectralInformation = spectralInformation;
+            this.bandInformation = spectralInformation;
             this.imageLayout = imageLayout;
         }
 
-        public S2SpectralInformation getSpectralInfo() {
-            return spectralInformation;
+        public S2BandInformation getBandInformation() {
+            return bandInformation;
         }
 
         public Map<String, File> getTileIdToFileMap() {
@@ -341,12 +358,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             return imageLayout;
         }
 
-        public int getBandIndex() {
-            return bandIndex;
-        }
-
         public String getBandName() {
-            return getSpectralInfo().getPhysicalBand();
+            return getBandInformation().getPhysicalBand();
         }
 
         public String toString() {

@@ -22,6 +22,7 @@ package org.esa.s2tbx.dataio.s2.l1c;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -82,8 +83,8 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
     }
 
     @Override
-    protected String getImagePathString(S2Metadata.Tile tile, String imageFileName) {
-        return String.format("GRANULE%s%s%sIMG_DATA%s%s", File.separator, tile.getId(), File.separator, File.separator, imageFileName);
+    protected String getImagePathString(String imageFileName, S2SpatialResolution resolution) {
+        return imageFileName;
     }
 
     @Override

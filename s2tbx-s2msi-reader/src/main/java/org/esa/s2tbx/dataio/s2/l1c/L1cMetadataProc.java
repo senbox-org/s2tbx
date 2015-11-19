@@ -25,7 +25,6 @@ import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
@@ -44,41 +43,22 @@ import java.util.*;
  */
 public class L1cMetadataProc extends S2MetadataProc {
 
-
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level1C_User_Product.class.getClassLoader();
         return JAXBContext.newInstance(S2MetadataType.L1C, s2c);
     }
 
-    public static L1cMetadata.ProductCharacteristics parseCharacteristics(Level1C_User_Product product) {
-        A_DATATAKE_IDENTIFICATION info = product.getGeneral_Info().getProduct_Info().getDatatake();
-
-        L1cMetadata.ProductCharacteristics characteristics = new L1cMetadata.ProductCharacteristics();
-        characteristics.setSpacecraft(info.getSPACECRAFT_NAME());
-        characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getGENERATION_TIME().toString());
-        characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().toString());
-
-        List<S2SpectralInformation> targetList = new ArrayList<>();
-
-        List<A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> aList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
-        for (A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information si : aList) {
-            S2SpectralInformation newInfo = new S2SpectralInformation();
-            newInfo.setBandId(Integer.parseInt(si.getBandId()));
-            newInfo.setPhysicalBand(si.getPhysicalBand().value());
-            newInfo.setResolution(S2SpatialResolution.valueOfResolution(si.getRESOLUTION()));
-            newInfo.setWavelengthCentral(si.getWavelength().getCENTRAL().getValue());
-            newInfo.setWavelengthMax(si.getWavelength().getMAX().getValue());
-            newInfo.setWavelengthMin(si.getWavelength().getMIN().getValue());
-
-            int size = si.getSpectral_Response().getVALUES().size();
-            newInfo.setSpectralResponseValues(ArrayUtils.toPrimitive(si.getSpectral_Response().getVALUES().toArray(new Double[size])));
-            targetList.add(newInfo);
-        }
-
-        int size = targetList.size();
-        characteristics.setBandInformations(targetList.toArray(new S2SpectralInformation[size]));
-
-        return characteristics;
+    private static String makeSpectralBandImageFileTemplate() {
+        /* Sample :
+        MISSION_ID : S2A
+        SITECENTRE : MTI_
+        CREATIONDATE : 20150813T201603
+        ABSOLUTEORBIT : A000734
+        TILENUMBER : T32TQR
+        PHYSICALBAND : B01 | B02 | ... | B12
+        RESOLUTION : 10 | 20 | 60
+         */
+        return String.format("IMG_DATA%s{{MISSION_ID}}_OPER_MSI_L1C_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{PHYSICALBAND}}_{{RESOLUTION}}m.jp2", File.separator);
     }
 
     public static S2Metadata.ProductCharacteristics getProductOrganization(Level1C_User_Product product) {
@@ -88,7 +68,11 @@ public class L1cMetadataProc extends S2MetadataProc {
         characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value());
         characteristics.setMetaDataLevel(product.getGeneral_Info().getProduct_Info().getQuery_Options().getMETADATA_LEVEL());
 
-        List<S2SpectralInformation> aInfo = new ArrayList<>();
+        List<S2BandInformation> aInfo = new ArrayList<>();
+        /*
+         * User products do not provide these information
+         * so we hardcode them
+         *
 
         if (product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List() != null) {
             List<A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
@@ -107,24 +91,24 @@ public class L1cMetadataProc extends S2MetadataProc {
 
                 aInfo.add(data);
             }
-        } else {
-            aInfo.add(new S2SpectralInformation("B1", 0, S2SpatialResolution.R60M, 414, 472, 443));
-            aInfo.add(new S2SpectralInformation("B2", 1, S2SpatialResolution.R10M, 425, 555, 490));
-            aInfo.add(new S2SpectralInformation("B3", 2, S2SpatialResolution.R10M, 510, 610, 560));
-            aInfo.add(new S2SpectralInformation("B4", 3, S2SpatialResolution.R10M, 617, 707, 665));
-            aInfo.add(new S2SpectralInformation("B5", 4, S2SpatialResolution.R20M, 625, 722, 705));
-            aInfo.add(new S2SpectralInformation("B6", 5, S2SpatialResolution.R20M, 720, 760, 740));
-            aInfo.add(new S2SpectralInformation("B7", 6, S2SpatialResolution.R20M, 741, 812, 783));
-            aInfo.add(new S2SpectralInformation("B8", 7, S2SpatialResolution.R10M, 752, 927, 842));
-            aInfo.add(new S2SpectralInformation("B8A", 8, S2SpatialResolution.R20M, 823, 902, 865));
-            aInfo.add(new S2SpectralInformation("B9", 9, S2SpatialResolution.R60M, 903, 982, 945));
-            aInfo.add(new S2SpectralInformation("B10", 10, S2SpatialResolution.R60M, 1338, 1413, 1375));
-            aInfo.add(new S2SpectralInformation("B11", 11, S2SpatialResolution.R20M, 1532, 1704, 1610));
-            aInfo.add(new S2SpectralInformation("B12", 12, S2SpatialResolution.R20M, 2035, 2311, 2190));
         }
+        */
+        aInfo.add(new S2SpectralInformation("B1", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate(), 0, 414, 472, 443));
+        aInfo.add(new S2SpectralInformation("B2", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate(), 1, 425, 555, 490));
+        aInfo.add(new S2SpectralInformation("B3", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate(), 2, 510, 610, 560));
+        aInfo.add(new S2SpectralInformation("B4", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate(), 3, 617, 707, 665));
+        aInfo.add(new S2SpectralInformation("B5", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate(), 4, 625, 722, 705));
+        aInfo.add(new S2SpectralInformation("B6", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate(), 5, 720, 760, 740));
+        aInfo.add(new S2SpectralInformation("B7", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate(), 6, 741, 812, 783));
+        aInfo.add(new S2SpectralInformation("B8", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate(), 7, 752, 927, 842));
+        aInfo.add(new S2SpectralInformation("B8A", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate(), 8, 823, 902, 865));
+        aInfo.add(new S2SpectralInformation("B9", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate(), 9, 903, 982, 945));
+        aInfo.add(new S2SpectralInformation("B10", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate(), 10, 1338, 1413, 1375));
+        aInfo.add(new S2SpectralInformation("B11", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate(), 11, 1532, 1704, 1610));
+        aInfo.add(new S2SpectralInformation("B12", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate(), 12, 2035, 2311, 2190));
 
         int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2SpectralInformation[size]));
+        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
         return characteristics;
     }

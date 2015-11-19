@@ -1,8 +1,8 @@
 package org.esa.s2tbx.dataio.s2.masks;
 
+import org.esa.s2tbx.dataio.s2.ColorIterator;
+
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * S2-MSI Masks model
@@ -157,7 +157,7 @@ public enum MaskInfo {
     public static final int L1C = (1 << 2);
     public static final int L2A = (1 << 3);
 
-    private static final double DEFAULT_TRANSPARENCY = 0.8;
+    private static final double DEFAULT_TRANSPARENCY = 0.5;
 
     MaskInfo(String mainType, String subType, String mainDescription, String subDescription, String snapName, boolean perBand, int levels, Color color, double transparency) {
         this.mainType = mainType;
@@ -216,42 +216,6 @@ public enum MaskInfo {
 
     public boolean isPerBand() {
         return this.perBand;
-    }
-
-    private static class ColorIterator {
-
-        static ArrayList<Color> colors;
-        static Iterator<Color> colorIterator;
-
-        static {
-            colors = new ArrayList<>();
-            colors.add(Color.red);
-            colors.add(Color.red.darker());
-            colors.add(Color.red.darker().darker());
-            colors.add(Color.blue);
-            colors.add(Color.blue.darker());
-            colors.add(Color.blue.darker().darker());
-            colors.add(Color.green);
-            colors.add(Color.green.darker());
-            colors.add(Color.green.darker().darker());
-            colors.add(Color.yellow);
-            colors.add(Color.yellow.darker());
-            colors.add(Color.yellow.darker().darker());
-            colors.add(Color.magenta);
-            colors.add(Color.magenta.darker());
-            colors.add(Color.magenta.darker().darker());
-            colors.add(Color.pink);
-            colors.add(Color.pink.darker());
-            colors.add(Color.pink.darker().darker());
-            colorIterator = colors.iterator();
-        }
-
-        static Color next() {
-            if (!colorIterator.hasNext()) {
-                colorIterator = colors.iterator();
-            }
-            return colorIterator.next();
-        }
     }
 
 }

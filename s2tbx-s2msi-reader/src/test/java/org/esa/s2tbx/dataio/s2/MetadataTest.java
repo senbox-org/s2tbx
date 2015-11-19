@@ -98,22 +98,6 @@ public class MetadataTest {
         return o;
     }
 
-
-
-    @Test
-    public void test1() throws Exception
-    {
-        Level1C_User_Product o = getUserProduct();
-
-        Assert.assertNotNull(o);
-
-        L1cMetadata.ProductCharacteristics pchar = L1cMetadataProc.parseCharacteristics(o);
-        assertEquals("Sentinel-2A", pchar.getSpacecraft());
-        assertEquals("2013-06-21T12:00:00Z", pchar.getDatasetProductionDate());
-        assertEquals("LEVEL___1_C", pchar.getProcessingLevel());
-        assertEquals(0.0000082, pchar.getBandInformations()[0].getSpectralResponseValues()[1], 1e-15);
-    }
-
     @Test
     public void test2() throws Exception
     {

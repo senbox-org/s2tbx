@@ -29,13 +29,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
-import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
-import org.esa.s2tbx.dataio.s2.S2TileOpImage;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
+import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.gml.GmlFilter;
@@ -43,14 +37,7 @@ import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.Placemark;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.SourceImageScaler;
 import org.esa.snap.core.util.SystemUtils;
@@ -81,7 +68,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,11 +79,11 @@ import java.util.stream.Collectors;
 
 /**
  * <p>
- * Base class for Sentinel-2 readers of orthorectified productx
+ * Base class for Sentinel-2 readers of orthorectified products
  * </p>
  * <p>
  * To read single tiles, select any tile image file (IMG_*.jp2) within a product package. The reader will then
- * collect other band images for the selected tile and wiull also try to read the metadata file (MTD_*.xml).
+ * collect other band images for the selected tile and will also try to read the metadata file (MTD_*.xml).
  * </p>
  * <p>To read an entire scene, select the metadata file (MTD_*.xml) within a product package. The reader will then
  * collect other tile/band images and create a mosaic on the fly.
@@ -131,7 +117,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     protected abstract S2Metadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException;
 
-    protected abstract String getImagePathString(S2Metadata.Tile tile, String imageFileName);
+    protected abstract String getImagePathString(String imageFileName, S2SpatialResolution resolution);
 
     @Override
     protected Product getMosaicProduct(File metadataFile) throws IOException {
@@ -221,9 +207,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
-        product.setAutoGrouping("sun:view");
+        product.setAutoGrouping("sun:view:quality");
 
-        Map<Integer, BandInfo> bandInfoMap = new HashMap<>();
+        List<BandInfo> bandInfoList = new ArrayList<>();
 
         List<S2Metadata.Tile> tileList = metadataHeader.getTileList();
         if (isAGranule) {
@@ -231,19 +217,22 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         // Verify access to granule image files, and store absolute location
-        for (S2SpectralInformation bandInformation : productCharacteristics.getBandInformations()) {
-            int bandIndex = bandInformation.getBandId();
-            if (bandIndex < 0 && bandIndex >= productCharacteristics.getBandInformations().length) {
-                logger.warning(String.format("Warning: illegal band index detected for band %s\n", bandInformation.getPhysicalBand()));
-            }
-
+        for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
             HashMap<String, File> tileFileMap = new HashMap<>();
             for (S2Metadata.Tile tile : tileList) {
                 S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
                 if (gf != null) {
-                    S2GranuleImageFilename imageFilename = gf.getImageFilename(bandInformation.getPhysicalBand());
 
-                    String imgFilename = getImagePathString(tile, imageFilename.name);
+                    String imgFilename = String.format("GRANULE%s%s%s%s", File.separator, tile.getId(),
+                            File.separator,
+                            bandInformation.getImageFileTemplate()
+                                    .replace("{{MISSION_ID}}", gf.missionID)
+                                    .replace("{{SITECENTRE}}", gf.siteCentre)
+                                    .replace("{{CREATIONDATE}}", gf.creationDate)
+                                    .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
+                                    .replace("{{TILENUMBER}}", gf.tileNumber)
+                                    .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
+
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
                     File file = new File(productDir, imgFilename);
@@ -257,18 +246,22 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             if (!tileFileMap.isEmpty()) {
                 BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
-                bandInfoMap.put(bandIndex, bandInfo);
+                bandInfoList.add(bandInfo);
             } else {
                 logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
             }
         }
 
-        if (!bandInfoMap.isEmpty()) {
+        if (!bandInfoList.isEmpty()) {
             addBands(product,
-                     bandInfoMap,
+                     bandInfoList,
                      sceneDescription);
-            scaleBands(product, bandInfoMap);
-            addMasks(product, tileList, bandInfoMap);
+
+            scaleBands(product, bandInfoList);
+
+            addMasks(product, tileList, bandInfoList);
+
+            addIndexMasks(product, bandInfoList);
         }
 
         if (!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
@@ -283,34 +276,44 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     abstract protected int getMaskLevel();
 
-    private void addMasks(Product product, List<S2Metadata.Tile> tileList, Map<Integer, BandInfo> bandInfoMap) throws IOException {
+    private void addIndexMasks(Product product, List<BandInfo> bandInfoList) {
+        for (BandInfo bandInfo : bandInfoList) {
+            if (bandInfo.getBandInformation() instanceof S2IndexBandInformation) {
+                S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) bandInfo.getBandInformation();
+                IndexCoding indexCoding = indexBandInformation.getIndexCoding();
+                product.getIndexCodingGroup().add(indexCoding);
+                for (String indexName : indexCoding.getIndexNames()) {
+                    int indexValue = indexCoding.getIndexValue(indexName);
+                    String description = indexCoding.getIndex(indexName).getDescription();
+                    Mask mask = Mask.BandMathsType.create("scl_" + indexName.toLowerCase(), description, product.getSceneRasterWidth(), product.getSceneRasterHeight(),
+                            String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), ColorIterator.next(), 0.5);
+                    product.addMask(mask);
+                }
+            }
+        }
+    }
+
+    private void addMasks(Product product, List<S2Metadata.Tile> tileList, List<BandInfo> bandInfoList) throws IOException {
         for (MaskInfo maskInfo : MaskInfo.values()) {
-            // We are only interested in masks present in L1C products
             if (!maskInfo.isPresentAtLevel(getMaskLevel()))
                 continue;
-
-
-            ArrayList<Integer> bandIndexes = new ArrayList<>(bandInfoMap.keySet());
-            Collections.sort(bandIndexes);
-
-            if (bandIndexes.isEmpty()) {
-                throw new IOException("No valid bands found.");
-            }
 
             if (!maskInfo.isPerBand()) {
                 // cloud masks are provided once and valid for all bands
                 addMask(product, tileList, maskInfo, null);
             }
             else {
-                // for other masks, we have one mask instance for each band
-                for (Integer bandIndex : bandIndexes) {
-                    addMask(product, tileList, maskInfo, bandInfoMap.get(bandIndex));
+                // for other masks, we have one mask instance for each spectral band
+                for (BandInfo bandInfo : bandInfoList) {
+                    if (bandInfo.getBandInformation() instanceof S2SpectralInformation) {
+                        addMask(product, tileList, maskInfo, (S2SpectralInformation)bandInfo.getBandInformation());
+                    }
                 }
             }
         }
     }
 
-    private void addMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, BandInfo bandInfo) {
+    private void addMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, S2SpectralInformation spectralInfo) {
         List<EopPolygon> productPolygons = new ArrayList<>();
 
         for (S2Metadata.Tile tile : tileList) {
@@ -321,9 +324,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     continue;
                 }
 
-                if (bandInfo != null) {
+                if (spectralInfo != null) {
                     // We are only interested in masks for a certain band
-                    if (!maskFilename.getBandId().equals(String.format("%s", bandInfo.getBandIndex()))) {
+                    if (!maskFilename.getBandId().equals(String.format("%s", spectralInfo.getBandId()))) {
                         continue;
                     }
                 }
@@ -355,12 +358,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         String snapName = null;
         String description = null;
-        if (bandInfo == null) {
+        if (spectralInfo == null) {
             snapName = maskInfo.getSnapName();
             description = maskInfo.getDescription();
         }
         else {
-            String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
+            String bandName = spectralInfo.getPhysicalBand();
             snapName = maskInfo.getSnapNameForBand(bandName);
             description = maskInfo.getDescriptionForBand(bandName);
         }
@@ -383,22 +386,15 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                                                                 tiePointGridIndex)));
     }
 
-    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, S2OrthoSceneLayout sceneDescription) throws IOException {
-        ArrayList<Integer> bandIndexes = new ArrayList<>(bandInfoMap.keySet());
-        Collections.sort(bandIndexes);
-
-        if (bandIndexes.isEmpty()) {
-            throw new IOException("No valid bands found.");
-        }
-
-        for (Integer bandIndex : bandIndexes) {
-            BandInfo bandInfo = bandInfoMap.get(bandIndex);
-
+    private void addBands(Product product, List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription) throws IOException {
+        for (BandInfo bandInfo : bandInfoList) {
             Band band = addBand(product, bandInfo);
+            band.setDescription(String.format("Reflectance in %s", bandInfo.getBandName()));
+            band.setUnit("dl");
 
             double pixelSize = 0;
             if (isMultiResolution()) {
-                pixelSize = (double) bandInfo.getSpectralInfo().getResolution().resolution;
+                pixelSize = (double) bandInfo.getBandInformation().getResolution().resolution;
             } else {
                 pixelSize = (double) getProductResolution().resolution;
             }
@@ -427,7 +423,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
-    private void scaleBands(Product product, Map<Integer, BandInfo> bandInfoMap) throws IOException {
+    private void scaleBands(Product product, List<BandInfo> bandInfoList) throws IOException {
 
         // In MultiResolution mode, all bands are kept at their native resolution
         if (isMultiResolution()) {
@@ -445,10 +441,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         // Find a reference band for rescaling the bands at other resolution
         MultiLevelImage targetImage = null;
-        for (Integer bandIndex : bandInfoMap.keySet()) {
-            BandInfo bandInfo = bandInfoMap.get(bandIndex);
-            if (bandInfo.getSpectralInfo().getResolution() == getProductResolution()) {
-                Band referenceBand = product.getBand(bandInfo.getSpectralInfo().getPhysicalBand());
+        for (BandInfo bandInfo : bandInfoList) {
+            if (bandInfo.getBandInformation().getResolution() == getProductResolution()) {
+                Band referenceBand = product.getBand(bandInfo.getBandInformation().getPhysicalBand());
                 targetImage = referenceBand.getSourceImage();
                 break;
             }
@@ -544,10 +539,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return tiePointGrid;
     }
 
-    private BandInfo createBandInfoFromHeaderInfo(S2SpectralInformation bandInformation, Map<String, File> tileFileMap) {
+    private BandInfo createBandInfoFromHeaderInfo(S2BandInformation bandInformation, Map<String, File> tileFileMap) {
         S2SpatialResolution spatialResolution = bandInformation.getResolution();
         return new BandInfo(tileFileMap,
-                            bandInformation.getBandId(),
                             bandInformation,
                             getConfig().getTileLayout(spatialResolution.resolution));
     }
@@ -618,7 +612,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         private final BandInfo bandInfo;
 
         public BandL1cSceneMultiLevelSource(S2OrthoSceneLayout sceneDescription, BandInfo bandInfo, AffineTransform imageToModelTransform) {
-            super(sceneDescription, bandInfo.getSpectralInfo().getResolution(), imageToModelTransform, bandInfo.getImageLayout().numResolutions);
+            super(sceneDescription, bandInfo.getBandInformation().getResolution(), imageToModelTransform, bandInfo.getImageLayout().numResolutions);
             this.bandInfo = bandInfo;
         }
 
@@ -643,7 +637,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                  * Translate the [0,0] image w.r.t its pixel position in the scene.
                  */
                 // Get the band native resolution
-                S2SpatialResolution bandNativeResolution = bandInfo.getSpectralInfo().getResolution();
+                S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
                 // Get the position in scene at level 0
                 Rectangle tileRectangle = sceneDescription.getTilePositionInScene(tileId, bandNativeResolution);
                 // Compute position in scene for current level
@@ -683,7 +677,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
              * Adjust size of output image
              */
             // Get dimension at level 0
-            S2SpatialResolution bandNativeResolution = bandInfo.getSpectralInfo().getResolution();
+            S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
             Dimension bandDimensionLevel0 = sceneDescription.getSceneDimension(bandNativeResolution);
             // Compute dimension at level 'level' according to "J2K rule"
             Rectangle bandRectangle = DefaultMultiLevelSource.getLevelImageBounds(

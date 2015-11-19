@@ -23,58 +23,27 @@ import org.apache.commons.lang.builder.ToStringStyle;
 /**
  * @author Nicolas Ducoin
  */
-public class S2SpectralInformation {
+public class S2SpectralInformation extends S2BandInformation {
 
     private int bandId;
-    private String physicalBand;
-    private S2SpatialResolution resolution;
     private double wavelengthMin;
     private double wavelengthMax;
     private double wavelengthCentral;
-
     private double[] spectralResponseValues;
 
-    public S2SpectralInformation() {
-        spectralResponseValues = new double[]{};
-    }
-
     public S2SpectralInformation(String physicalBand,
-                                 int bandId,
                                  S2SpatialResolution resolution,
+                                 String imageFileTemplate,
+                                 int bandId,
                                  double wavelengthMin,
                                  double wavelengthMax,
                                  double wavelengthCentral) {
-        this.physicalBand = physicalBand;
+        super(physicalBand, resolution, imageFileTemplate);
         this.bandId = bandId;
-        this.resolution = resolution;
-        spectralResponseValues = new double[]{};
         this.wavelengthMin = wavelengthMin;
         this.wavelengthMax = wavelengthMax;
         this.wavelengthCentral = wavelengthCentral;
-    }
-
-    public int getBandId() {
-        return bandId;
-    }
-
-    public void setBandId(int bandId) {
-        this.bandId = bandId;
-    }
-
-    public String getPhysicalBand() {
-        return physicalBand;
-    }
-
-    public void setPhysicalBand(String physicalBand) {
-        this.physicalBand = physicalBand;
-    }
-
-    public S2SpatialResolution getResolution() {
-        return resolution;
-    }
-
-    public void setResolution(S2SpatialResolution resolution) {
-        this.resolution = resolution;
+        this.spectralResponseValues = new double[]{};
     }
 
     public double getWavelengthMin() {
@@ -111,6 +80,10 @@ public class S2SpectralInformation {
 
     public void setSpectralResponseValues(double[] spectralResponseValues) {
         this.spectralResponseValues = spectralResponseValues;
+    }
+
+    public int getBandId() {
+        return bandId;
     }
 
     public String toString() {
