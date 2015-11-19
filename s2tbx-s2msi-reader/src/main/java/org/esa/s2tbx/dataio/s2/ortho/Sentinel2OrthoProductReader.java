@@ -276,6 +276,97 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     abstract protected int getMaskLevel();
 
+    private void addBands(Product product, List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription) throws IOException {
+        for (BandInfo bandInfo : bandInfoList) {
+            Band band = addBand(product, bandInfo);
+            band.setDescription(String.format("Reflectance in %s", bandInfo.getBandName()));
+            band.setUnit("dl");
+
+            double pixelSize = 0;
+            if (isMultiResolution()) {
+                pixelSize = (double) bandInfo.getBandInformation().getResolution().resolution;
+            } else {
+                pixelSize = (double) getProductResolution().resolution;
+            }
+
+            try {
+                band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
+                        band.getRasterWidth(),
+                        band.getRasterHeight(),
+                        sceneDescription.getSceneOrigin()[0],
+                        sceneDescription.getSceneOrigin()[1],
+                        pixelSize,
+                        pixelSize,
+                        0.0, 0.0));
+            } catch (FactoryException e) {
+                throw new IOException(e);
+            } catch (TransformException e) {
+                throw new IOException(e);
+            }
+
+            MultiLevelImageFactory mlif = new L1cSceneMultiLevelImageFactory(
+                    sceneDescription,
+                    Product.findImageToModelTransform(band.getGeoCoding()));
+
+            band.setSourceImage(mlif.createSourceImage(bandInfo));
+
+        }
+    }
+
+    private void scaleBands(Product product, List<BandInfo> bandInfoList) throws IOException {
+
+        // In MultiResolution mode, all bands are kept at their native resolution
+        if (isMultiResolution()) {
+            return;
+        }
+
+        switch (getInterpretation()) {
+            case RESOLUTION_10M:
+                break;
+            case RESOLUTION_20M:
+                break;
+            case RESOLUTION_60M:
+                break;
+        }
+
+        // Find a reference band for rescaling the bands at other resolution
+        MultiLevelImage targetImage = null;
+        for (BandInfo bandInfo : bandInfoList) {
+            if (bandInfo.getBandInformation().getResolution() == getProductResolution()) {
+                Band referenceBand = product.getBand(bandInfo.getBandInformation().getPhysicalBand());
+                targetImage = referenceBand.getSourceImage();
+                break;
+            }
+        }
+
+        // If the product only has a subset of bands, we may not find what we are looking for
+        if (targetImage == null) {
+            String error = String.format("Products with no bands at %s m resolution currently cannot be read by the %s m reader", getProductResolution().resolution, getProductResolution().resolution);
+            throw new IOException(error);
+        }
+
+        for (Band band : product.getBands()) {
+            final MultiLevelImage sourceImage = band.getSourceImage();
+
+            if (sourceImage.getWidth() == product.getSceneRasterWidth()
+                    && sourceImage.getHeight() == product.getSceneRasterHeight()) {
+                // Do not rescaled band which are already at the correct resolution
+                continue;
+            }
+
+            ImageLayout imageLayout = new ImageLayout();
+            ImageManager.getPreferredTileSize(product);
+            final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+            float[] scalings = new float[2];
+            scalings[0] = product.getSceneRasterWidth() / (float) sourceImage.getWidth();
+            scalings[1] = product.getSceneRasterHeight() / (float) sourceImage.getHeight();
+            PlanarImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetImage, sourceImage, scalings, null, renderingHints,
+                    band.getNoDataValue(),
+                    Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+            band.setSourceImage(scaledImage);
+        }
+    }
+
     private void addIndexMasks(Product product, List<BandInfo> bandInfoList) {
         for (BandInfo bandInfo : bandInfoList) {
             if (bandInfo.getBandInformation() instanceof S2IndexBandInformation) {
@@ -300,20 +391,20 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             if (!maskInfo.isPerBand()) {
                 // cloud masks are provided once and valid for all bands
-                addMask(product, tileList, maskInfo, null);
+                addVectorMask(product, tileList, maskInfo, null);
             }
             else {
                 // for other masks, we have one mask instance for each spectral band
                 for (BandInfo bandInfo : bandInfoList) {
                     if (bandInfo.getBandInformation() instanceof S2SpectralInformation) {
-                        addMask(product, tileList, maskInfo, (S2SpectralInformation)bandInfo.getBandInformation());
+                        addVectorMask(product, tileList, maskInfo, (S2SpectralInformation)bandInfo.getBandInformation());
                     }
                 }
             }
         }
     }
 
-    private void addMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, S2SpectralInformation spectralInfo) {
+    private void addVectorMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, S2SpectralInformation spectralInfo) {
         List<EopPolygon> productPolygons = new ArrayList<>();
 
         for (S2Metadata.Tile tile : tileList) {
@@ -384,97 +475,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                                                                 Product.findImageToModelTransform(product.getSceneGeoCoding()),
                                                                                                 6,
                                                                                                 tiePointGridIndex)));
-    }
-
-    private void addBands(Product product, List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription) throws IOException {
-        for (BandInfo bandInfo : bandInfoList) {
-            Band band = addBand(product, bandInfo);
-            band.setDescription(String.format("Reflectance in %s", bandInfo.getBandName()));
-            band.setUnit("dl");
-
-            double pixelSize = 0;
-            if (isMultiResolution()) {
-                pixelSize = (double) bandInfo.getBandInformation().getResolution().resolution;
-            } else {
-                pixelSize = (double) getProductResolution().resolution;
-            }
-
-            try {
-                band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
-                                                   band.getRasterWidth(),
-                                                   band.getRasterHeight(),
-                                                   sceneDescription.getSceneOrigin()[0],
-                                                   sceneDescription.getSceneOrigin()[1],
-                                                   pixelSize,
-                                                   pixelSize,
-                                                   0.0, 0.0));
-            } catch (FactoryException e) {
-                throw new IOException(e);
-            } catch (TransformException e) {
-                throw new IOException(e);
-            }
-
-            MultiLevelImageFactory mlif = new L1cSceneMultiLevelImageFactory(
-                    sceneDescription,
-                    Product.findImageToModelTransform(band.getGeoCoding()));
-
-            band.setSourceImage(mlif.createSourceImage(bandInfo));
-
-        }
-    }
-
-    private void scaleBands(Product product, List<BandInfo> bandInfoList) throws IOException {
-
-        // In MultiResolution mode, all bands are kept at their native resolution
-        if (isMultiResolution()) {
-            return;
-        }
-
-        switch (getInterpretation()) {
-            case RESOLUTION_10M:
-                break;
-            case RESOLUTION_20M:
-                break;
-            case RESOLUTION_60M:
-                break;
-        }
-
-        // Find a reference band for rescaling the bands at other resolution
-        MultiLevelImage targetImage = null;
-        for (BandInfo bandInfo : bandInfoList) {
-            if (bandInfo.getBandInformation().getResolution() == getProductResolution()) {
-                Band referenceBand = product.getBand(bandInfo.getBandInformation().getPhysicalBand());
-                targetImage = referenceBand.getSourceImage();
-                break;
-            }
-        }
-
-        // If the product only has a subset of bands, we may not find what we are looking for
-        if (targetImage == null) {
-            String error = String.format("Products with no bands at %s m resolution currently cannot be read by the %s m reader", getProductResolution().resolution, getProductResolution().resolution);
-            throw new IOException(error);
-        }
-
-        for (Band band : product.getBands()) {
-            final MultiLevelImage sourceImage = band.getSourceImage();
-
-            if (sourceImage.getWidth() == product.getSceneRasterWidth()
-                    && sourceImage.getHeight() == product.getSceneRasterHeight()) {
-                // Do not rescaled band which are already at the correct resolution
-                continue;
-            }
-
-            ImageLayout imageLayout = new ImageLayout();
-            ImageManager.getPreferredTileSize(product);
-            final RenderingHints renderingHints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout);
-            float[] scalings = new float[2];
-            scalings[0] = product.getSceneRasterWidth() / (float) sourceImage.getWidth();
-            scalings[1] = product.getSceneRasterHeight() / (float) sourceImage.getHeight();
-            PlanarImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetImage, sourceImage, scalings, null, renderingHints,
-                                                                             band.getNoDataValue(),
-                                                                             Interpolation.getInstance(Interpolation.INTERP_NEAREST));
-            band.setSourceImage(scaledImage);
-        }
     }
 
     private TiePointGrid[] createL1cTileTiePointGrids(S2Metadata metadataHeader, String tileId) throws IOException {
