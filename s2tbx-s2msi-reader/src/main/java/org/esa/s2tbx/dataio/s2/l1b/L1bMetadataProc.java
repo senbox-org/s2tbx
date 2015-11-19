@@ -42,6 +42,7 @@ import org.esa.snap.core.util.SystemUtils;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,8 +72,7 @@ public class L1bMetadataProc extends S2MetadataProc {
         TILENUMBER : T32TQR
         RESOLUTION : 10 | 20 | 60
          */
-        return String.format("{{MISSION_ID}}_OPER_MSI_L1B_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_%s_{{RESOLUTION}}m.jp2",
-                bandFileId);
+        return String.format("IMG_DATA%s{{MISSION_ID}}_OPER_MSI_L1B_GR_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{DETECTOR}}_%s.jp2", File.separator, bandFileId);
     }
 
     public static L1bMetadata.ProductCharacteristics getProductOrganization(Level1B_User_Product product) {
@@ -112,19 +112,19 @@ public class L1bMetadataProc extends S2MetadataProc {
         }
         */
 
-        aInfo.add(new S2SpectralInformation("B1",  S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B01"), 0, 414, 472, 443));
-        aInfo.add(new S2SpectralInformation("B2",  S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B02"), 1, 425, 555, 490));
-        aInfo.add(new S2SpectralInformation("B3",  S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B03"), 2, 510, 610, 560));
-        aInfo.add(new S2SpectralInformation("B4",  S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B04"), 3, 617, 707, 665));
-        aInfo.add(new S2SpectralInformation("B5",  S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B05"), 4, 625, 722, 705));
-        aInfo.add(new S2SpectralInformation("B6",  S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B06"), 5, 720, 760, 740));
-        aInfo.add(new S2SpectralInformation("B7",  S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B07"), 6, 741, 812, 783));
-        aInfo.add(new S2SpectralInformation("B8",  S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B08"), 7, 752, 927, 842));
-        aInfo.add(new S2SpectralInformation("B8A", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B8A"), 8, 823, 902, 865));
-        aInfo.add(new S2SpectralInformation("B9",  S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B09"), 9, 903, 982, 945));
+        aInfo.add(new S2SpectralInformation("B1", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B01"), 0, 414, 472, 443));
+        aInfo.add(new S2SpectralInformation("B2", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B02"), 1, 425, 555, 490));
+        aInfo.add(new S2SpectralInformation("B3", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B03"), 2, 510, 610, 560));
+        aInfo.add(new S2SpectralInformation("B4", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B04"), 3, 617, 707, 665));
+        aInfo.add(new S2SpectralInformation("B5", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B05"), 4, 625, 722, 705));
+        aInfo.add(new S2SpectralInformation("B6", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B06"), 5, 720, 760, 740));
+        aInfo.add(new S2SpectralInformation("B7", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B07"), 6, 741, 812, 783));
+        aInfo.add(new S2SpectralInformation("B8", S2SpatialResolution.R10M, makeSpectralBandImageFileTemplate("B08"), 7, 752, 927, 842));
+        aInfo.add(new S2SpectralInformation("B8A", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B8A"), 8, 823, 902, 865));
+        aInfo.add(new S2SpectralInformation("B9", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B09"), 9, 903, 982, 945));
         aInfo.add(new S2SpectralInformation("B10", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B10"), 10, 1338, 1413, 1375));
-        aInfo.add(new S2SpectralInformation("B11", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B11"), 11, 1532, 1704, 1610));
-        aInfo.add(new S2SpectralInformation("B12", S2SpatialResolution.R60M, makeSpectralBandImageFileTemplate("B12"), 12, 2035, 2311, 2190));
+        aInfo.add(new S2SpectralInformation("B11", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B11"), 11, 1532, 1704, 1610));
+        aInfo.add(new S2SpectralInformation("B12", S2SpatialResolution.R20M, makeSpectralBandImageFileTemplate("B12"), 12, 2035, 2311, 2190));
 
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
