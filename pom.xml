@@ -72,24 +72,6 @@
                 <checksumPolicy>warn</checksumPolicy>
             </snapshots>
         </repository>
-
-        <repository>
-            <id>cwatch-repo-releases</id>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>http://cwatch.org/repo/releases</url>
-        </repository>
-        <repository>
-            <id>cwatch-repo-snapshots</id>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>http://cwatch.org/repo/libs-snapshot-local</url>
-        </repository>
     </repositories>
 
     <pluginRepositories>
