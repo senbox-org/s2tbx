@@ -528,7 +528,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         try {
                             if (y < grid.getZenith().length) {
                                 if (x < grid.getZenith()[y].length) {
-                                    if (!Float.isNaN(grid.getZenith()[y][x])) {
+                                    if (!Float.isNaN(grid.getZenith()[y][x]) && !Float.isInfinite(grid.getZenith()[y][x])) {
                                         viewingZeniths[index] = grid.getZenith()[y][x];
                                     }
                                 }
@@ -536,7 +536,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                             if (y < grid.getAzimuth().length) {
                                 if (x < grid.getAzimuth()[y].length) {
-                                    if (!Float.isNaN(grid.getAzimuth()[y][x])) {
+                                    if (!Float.isNaN(grid.getAzimuth()[y][x]) && !Float.isInfinite(grid.getZenith()[y][x])) {
                                         viewingAzimuths[index] = grid.getAzimuth()[y][x];
                                     }
                                 }
