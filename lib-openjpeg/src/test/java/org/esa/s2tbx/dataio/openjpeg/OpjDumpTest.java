@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.openjpeg;
 
-import org.jdesktop.swingx.util.OS;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +9,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS;
+
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -43,7 +44,7 @@ public class OpjDumpTest {
 
         String pathToJp2File = OpjDumpTest.class.getResource(jp2Path).getPath();
 
-        if(OS.isWindows()) {
+        if(IS_OS_WINDOWS) {
             pathToJp2File = pathToJp2File.substring(1);
         }
 
