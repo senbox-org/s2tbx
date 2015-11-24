@@ -83,6 +83,8 @@ public class OpenJpegExecRetriever {
     }
 
     private static Path findOpenJpegExecPath(String endPath) {
+        return SystemUtils.getAuxDataPath().resolve("openjpeg").resolve(endPath);
+        /*
         Path pathToExec = null;
 
         String openJpegDir = EngineConfig.instance("s2tbx").preferences().get(OPENJPEG_EXEC_PATH_PROPERTY, null);
@@ -130,6 +132,7 @@ public class OpenJpegExecRetriever {
         }
 
         return pathToExec;
+        */
     }
 
     private static void setExecutablePermissions(Path executablePathName) {
