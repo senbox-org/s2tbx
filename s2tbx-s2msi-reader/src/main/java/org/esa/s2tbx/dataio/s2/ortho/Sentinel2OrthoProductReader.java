@@ -764,8 +764,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             ArrayList<RenderedImage> tileImages = new ArrayList<>();
 
             for (String tileId : sceneDescription.getTileIds()) {
-                Rectangle tileRectangle = sceneDescription.getTilePositionInScene(tileId, getProductResolution());
-
                 PlanarImage opImage = null;
                 try {
                     opImage = createL1cTileImage(tileId, level);
@@ -773,19 +771,24 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     logger.severe("Unable to create L1cTileImage");
                 }
 
-                // todo - This translation step is actually not required because we can create L1cTileOpImages
-                // with minX, minY set as it is required by the MosaicDescriptor and indicated by its API doc.
-                // But if we do it like that, we get lots of weird visual artifacts in the resulting mosaic.
-                if (opImage != null) {
-                    opImage = TranslateDescriptor.create(opImage,
-                                                         (float) (tileRectangle.x >> level),
-                                                         (float) (tileRectangle.y >> level),
-                                                         Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                /*
+                 * Translate the [0,0] image w.r.t its pixel position in the scene.
+                 */
+                // Get the position in scene at level 0 and or product resolution
+                Rectangle tileRectangle = sceneDescription.getTilePositionInScene(tileId, getProductResolution());
+                // Compute position in scene for current level
+                Rectangle scaledRectangle = DefaultMultiLevelSource.getLevelImageBounds(tileRectangle, getModel().getScale(level));
+                // Apply tile translation
+                opImage = TranslateDescriptor.create(opImage,
+                        (float) scaledRectangle.x,
+                        (float) scaledRectangle.y,
+                        Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
+                logger.fine(String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
+                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
 
-                    logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY()));
-                    tileImages.add(opImage);
-                }
+                // Feed the image list for mosaic
+                tileImages.add(opImage);
             }
 
             if (tileImages.isEmpty()) {
@@ -809,7 +812,21 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             logger.fine(String.format("mosaicOp created for level %d at (%d,%d)%n", level, mosaicOp.getMinX(), mosaicOp.getMinY()));
             logger.fine(String.format("mosaicOp size: (%d,%d)%n", mosaicOp.getWidth(), mosaicOp.getHeight()));
 
-            return mosaicOp;
+            /*
+             * Adjust size of output image
+             */
+            // Get dimension at level 0
+            Dimension dimensionLevel0 = sceneDescription.getSceneDimension(getProductResolution());
+            // Compute dimension at level 'level' according to "J2K rule"
+            Rectangle rectangle = DefaultMultiLevelSource.getLevelImageBounds(
+                    new Rectangle(dimensionLevel0.width, dimensionLevel0.height),
+                    getModel().getScale(level));
+            // Crop accordingly
+            RenderedOp croppedMosaic = CropDescriptor.create(mosaicOp,
+                    0.0f, 0.0f, (float) rectangle.width, (float) rectangle.height,
+                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+
+            return croppedMosaic;
         }
     }
 
