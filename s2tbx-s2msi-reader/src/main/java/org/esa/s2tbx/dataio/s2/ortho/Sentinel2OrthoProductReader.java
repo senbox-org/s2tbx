@@ -500,7 +500,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription,
                                                                                                 metadataHeader,
                                                                                                 Product.findImageToModelTransform(product.getSceneGeoCoding()),
-                                                                                                6,
+                                                                                                4,
                                                                                                 tiePointGridIndex)));
     }
 
