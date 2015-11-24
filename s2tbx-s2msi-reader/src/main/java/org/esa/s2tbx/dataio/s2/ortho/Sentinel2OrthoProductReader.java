@@ -560,7 +560,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, float[] values) {
-        final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, 0.0F, 0.0F, 500.0F, 500.0F, values);
+        double offset = 0.0;
+        double subSampling = 500.0F / ((double)getProductResolution().resolution / (double)S2SpatialResolution.R10M.resolution);
+        final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, offset, offset, subSampling, subSampling, values);
         tiePointGrid.setNoDataValue(Double.NaN);
         tiePointGrid.setNoDataValueUsed(true);
         return tiePointGrid;
