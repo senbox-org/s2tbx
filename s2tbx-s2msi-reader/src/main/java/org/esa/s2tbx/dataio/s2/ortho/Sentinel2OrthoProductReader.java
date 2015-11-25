@@ -310,15 +310,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             return;
         }
 
-        switch (getInterpretation()) {
-            case RESOLUTION_10M:
-                break;
-            case RESOLUTION_20M:
-                break;
-            case RESOLUTION_60M:
-                break;
-        }
-
         // Find a reference band for rescaling the bands at other resolution
         MultiLevelImage targetImage = null;
         for (BandInfo bandInfo : bandInfoList) {
