@@ -1,11 +1,6 @@
 package org.esa.s2tbx.dataio.jp2;
 
-import org.esa.s2tbx.dataio.jp2.boxes.ColorSpecificationBox;
-import org.esa.s2tbx.dataio.jp2.boxes.FileTypeBox;
-import org.esa.s2tbx.dataio.jp2.boxes.IgnoredBox;
-import org.esa.s2tbx.dataio.jp2.boxes.ImageHeaderBox;
-import org.esa.s2tbx.dataio.jp2.boxes.Jpeg2000SignatureBox;
-import org.esa.s2tbx.dataio.jp2.boxes.UuidBox;
+import org.esa.s2tbx.dataio.jp2.boxes.*;
 import org.junit.Assert;
 import org.junit.Test;
 

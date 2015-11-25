@@ -9,12 +9,9 @@ import org.esa.snap.rcp.about.AboutBox;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.BorderLayout;
+import java.awt.*;
 
 /**
  * @author Norman

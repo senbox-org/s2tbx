@@ -16,7 +16,7 @@
 
 package org.esa.s2tbx.dataio.spot.dimap;
 
-import java.awt.Color;
+import java.awt.*;
 
 /**
  * The enumeration type {@code Flags} is a representation of

@@ -25,7 +25,7 @@ import org.esa.snap.core.datamodel.ProductData;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.spi.IIORegistry;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.io.File;

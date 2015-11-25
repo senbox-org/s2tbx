@@ -9,7 +9,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ParseOpjDumpTest {
 

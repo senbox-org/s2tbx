@@ -3,8 +3,8 @@ package org.esa.s2tbx.dataio.s2.l2a;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import org.junit.Test;
 
-import static java.lang.Math.*;
-import static org.junit.Assert.*;
+import static java.lang.Math.pow;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Norman Fomferra
