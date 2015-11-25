@@ -62,6 +62,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -119,13 +120,16 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             logger.fine("Reading a granule");
         }
 
+        TimeProbe timeProbe = TimeProbe.start();
         // update the tile layout
         updateTileLayout(metadataFile.toPath(), isAGranule);
+        SystemUtils.LOG.fine(String.format("[timeprobe] updateTileLayout : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
 
         String filterTileId = null;
         File rootMetaDataFile = null;
         String granuleDirName = null;
 
+        timeProbe.reset();
         // we need to recover parent metadata file if we have a granule
         if (isAGranule) {
             granuleDirName = metadataFile.getParentFile().getName();
@@ -161,6 +165,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         final String aFilter = filterTileId;
 
         S2Metadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
+        SystemUtils.LOG.fine(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+        timeProbe.reset();
 
         S2OrthoSceneLayout sceneDescription = S2OrthoSceneLayout.create(metadataHeader);
         logger.fine("Scene Description: " + sceneDescription);
@@ -198,6 +204,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
         product.setAutoGrouping("sun:view:quality");
+
+
 
         List<BandInfo> bandInfoList = new ArrayList<>();
 
@@ -241,17 +249,28 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 logger.warning(String.format("Warning: no image files found for band %s\n", bandInformation.getPhysicalBand()));
             }
         }
+        SystemUtils.LOG.fine(String.format("[timeprobe] product initialisation : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+        timeProbe.reset();
 
         if (!bandInfoList.isEmpty()) {
             addBands(product,
                      bandInfoList,
                      sceneDescription);
+            SystemUtils.LOG.fine(String.format("[timeprobe] addBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            timeProbe.reset();
+
 
             scaleBands(product, bandInfoList);
+            SystemUtils.LOG.fine(String.format("[timeprobe] scaleBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            timeProbe.reset();
 
             addVectorMasks(product, tileList, bandInfoList);
+            SystemUtils.LOG.fine(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            timeProbe.reset();
 
             addIndexMasks(product, bandInfoList);
+            SystemUtils.LOG.fine(String.format("[timeprobe] addIndexMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            timeProbe.reset();
         }
 
         if (!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
@@ -259,6 +278,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", SUN_AZIMUTH_GRID_INDEX);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", VIEW_ZENITH_GRID_INDEX);
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", VIEW_AZIMUTH_GRID_INDEX);
+            SystemUtils.LOG.fine(String.format("[timeprobe] addTiePointGridBand : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            timeProbe.reset();
         }
 
         return product;
