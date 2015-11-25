@@ -84,55 +84,6 @@ public class OpenJpegExecRetriever {
 
     private static Path findOpenJpegExecPath(String endPath) {
         return SystemUtils.getAuxDataPath().resolve("openjpeg").resolve(endPath);
-        /*
-        Path pathToExec = null;
-
-        String openJpegDir = EngineConfig.instance("s2tbx").preferences().get(OPENJPEG_EXEC_PATH_PROPERTY, null);
-
-        // openjpeg executables should be in the install dir or in the user dir.
-        // it is also possible to specify its path
-        // check the config first, then then user jar dir and finally the class dir
-        if (openJpegDir != null) {
-            pathToExec = Paths.get(openJpegDir).resolve(endPath);
-        }
-
-
-        if (pathToExec == null || !Files.exists(pathToExec)) {
-
-            try {
-                URI thisJarURI = OpenJpegExecRetriever.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-                endPath = "ext/org.esa.s2tbx.lib-openjpeg/" + endPath;
-
-                SystemUtils.LOG.fine("OpenJpegExecRetriever jar location URI: " + thisJarURI.toString());
-
-                if (thisJarURI.toString().startsWith("jar:")) {
-                    //int lastSepPosition = thisJarString.substring(0, thisJarString.length() - 1).lastIndexOf('/');
-                    //thisJarString = thisJarString.substring(10, lastSepPosition);
-                    thisJarURI = URI.create(thisJarURI.toString().substring(4));
-                    Path thisJarDirPath = Paths.get(thisJarURI).getParent();
-                    pathToExec = thisJarDirPath.resolve(endPath);
-                } else if (thisJarURI.toString().endsWith(".jar")) {
-                    Path thisJarDirPath = Paths.get(thisJarURI).getParent();
-                    pathToExec = thisJarDirPath.resolve(endPath);
-                } else {
-                    // should be in dev mode
-                    Path thisJarPath = Paths.get(thisJarURI);
-                    pathToExec = thisJarPath.getParent().getParent().getParent()
-                            .resolve("lib-openjpeg/target/nbm/netbeans/s2tbx/modules")
-                            .resolve(endPath);
-                }
-
-                if (!Files.exists(pathToExec)) {
-                    pathToExec = null;
-                    SystemUtils.LOG.severe("Could not find OpenJpeg executable " + endPath);
-                }
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return pathToExec;
-        */
     }
 
     private static void setExecutablePermissions(Path executablePathName) {
