@@ -2,8 +2,7 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import org.junit.Ignore;
 
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 import java.io.IOException;
 
 /**

@@ -4,8 +4,8 @@ package org.esa.s2tbx.dataio.s2.l1b;
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;

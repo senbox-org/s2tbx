@@ -1,10 +1,10 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleMetadataFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 /**

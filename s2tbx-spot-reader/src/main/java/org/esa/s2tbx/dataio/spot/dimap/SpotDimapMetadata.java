@@ -24,7 +24,7 @@ import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.DateHelper;
 import org.geotools.coverage.grid.io.imageio.geotiff.TiePoint;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;

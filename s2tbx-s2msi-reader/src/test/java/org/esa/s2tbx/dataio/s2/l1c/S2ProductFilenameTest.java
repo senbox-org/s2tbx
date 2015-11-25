@@ -3,7 +3,8 @@ package org.esa.s2tbx.dataio.s2.l1c;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by opicas-p on 24/06/2014.

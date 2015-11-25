@@ -20,15 +20,11 @@ package org.esa.s2tbx.dataio.openjpeg;
 
 
 import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.runtime.EngineConfig;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.HashSet;

@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.esa.s2tbx.dataio.jp2.BoxReaderTest.*;
+import static org.esa.s2tbx.dataio.jp2.BoxReaderTest.openBoxReader;
 import static org.junit.Assert.*;
 
 public class CodestreamReaderTest {

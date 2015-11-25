@@ -26,7 +26,8 @@ import org.esa.snap.core.util.SystemUtils;
 
 import java.util.Locale;
 
-import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.*;
+import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToDisplayName;
+import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
 
 /**
  * @author Nicolas Ducoin

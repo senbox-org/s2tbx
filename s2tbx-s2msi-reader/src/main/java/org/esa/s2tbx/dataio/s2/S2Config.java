@@ -24,7 +24,8 @@ import org.esa.snap.core.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
 
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.*;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.getSafeDecompressorAndUpdatePermissions;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions;
 
 /**
  * Class to store S2 readers paramteters: static const, openjpeg executables path, tile layouts, ...

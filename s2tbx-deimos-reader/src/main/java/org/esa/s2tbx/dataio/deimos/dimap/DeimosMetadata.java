@@ -19,9 +19,9 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.ProductData;
 
-import java.awt.Color;
+import java.awt.*;
 
-import static org.esa.snap.utils.DateHelper.*;
+import static org.esa.snap.utils.DateHelper.parseDate;
 
 /**
  * Holder for DIMAP metadata file.
