@@ -99,7 +99,7 @@ public class JP2ProductReader extends AbstractProductReader {
         }
         logger.info("Reading product metadata");
         try {
-            OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions());
+            OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getOpjDump());
             OpjDumpFile dumpFile = new OpjDumpFile(PathUtils.get(tmpFolder, String.format(JP2ProductReaderConstants.JP2_INFO_FILE, PathUtils.getFileNameWithoutExtension(inputFile))));
             Map<String, String> params = new HashMap<String, String>() {{
                 put("-i", inputFile.toAbsolutePath().toString());
