@@ -20,12 +20,10 @@
 package org.esa.s2tbx.dataio.s2;
 
 import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.snap.core.datamodel.ProductData;
 
 import java.awt.image.DataBuffer;
-
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.getSafeDecompressorAndUpdatePermissions;
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions;
 
 /**
  * Class to store S2 readers paramteters: static const, openjpeg executables path, tile layouts, ...
@@ -40,8 +38,8 @@ public class S2Config {
     public static final String LOG_JPEG = DEBUG ? "INFO" : "FINEST";
     public static final String LOG_SCENE = DEBUG ? "INFO" : "FINEST";
 
-    public static final String OPJ_DECOMPRESSOR_EXE = getSafeDecompressorAndUpdatePermissions();
-    public static final String OPJ_INFO_EXE = getSafeInfoExtractorAndUpdatePermissions();
+    public static final String OPJ_DECOMPRESSOR_EXE = OpenJpegExecRetriever.getOpjDecompress();
+    public static final String OPJ_INFO_EXE = OpenJpegExecRetriever.getOpjDump();
 
     public static final int DEFAULT_JAI_TILE_SIZE = 512;
 
@@ -69,8 +67,6 @@ public class S2Config {
      * @return the tile layout at the given resolution
      */
     public TileLayout getTileLayout(S2SpatialResolution spatialResolution) {
-
-
         TileLayout tileLayoutForResolution;
         int tileIndex = spatialResolution.id;
         tileLayoutForResolution = tileLayouts[tileIndex];

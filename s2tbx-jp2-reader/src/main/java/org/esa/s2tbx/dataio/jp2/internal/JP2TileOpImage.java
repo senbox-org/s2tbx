@@ -161,7 +161,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     protected Path decompressTile(int tileIndex, int level) throws IOException {
         Path tileFile = PathUtils.get(cacheDir, PathUtils.getFileNameWithoutExtension(imageFile).toLowerCase() + "_tile_" + String.valueOf(tileIndex) + "_" + String.valueOf(level) + ".tif");
         if (!Files.exists(tileFile)) {
-            final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getSafeDecompressorAndUpdatePermissions());
+            final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getOpjDecompress());
             final Map<String, String> params = new HashMap<String, String>() {{
                 put("-i", imageFile.toString());
                 put("-r", String.valueOf(level));

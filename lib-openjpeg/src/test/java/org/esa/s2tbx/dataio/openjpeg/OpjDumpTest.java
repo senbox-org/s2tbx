@@ -20,7 +20,7 @@ public class OpjDumpTest {
 
     @Before
     public void retreiveOpjDump() {
-        opjDumpPath = Paths.get(OpenJpegExecRetriever.getSafeInfoExtractorAndUpdatePermissions());
+        opjDumpPath = Paths.get(OpenJpegExecRetriever.getOpjDump());
         Assume.assumeTrue(Files.exists(opjDumpPath));
     }
 
