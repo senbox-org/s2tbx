@@ -288,8 +288,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     protected Band addBand(Product product, BandInfo bandInfo) {
-
-
         TileLayout thisBandTileLayout = bandInfo.getImageLayout();
         TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
 
@@ -328,9 +326,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             band.setSpectralBandwidth(0);
             band.setSpectralBandIndex(-1);
         }
-
-
-
         return band;
     }
 
