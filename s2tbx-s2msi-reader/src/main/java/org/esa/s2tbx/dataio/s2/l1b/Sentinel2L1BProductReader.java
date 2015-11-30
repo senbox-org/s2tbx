@@ -329,7 +329,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             L1BBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
             if (isMultiResolution() || tileBandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
                 Band band = addBand(product, tileBandInfo);
-                band.setDescription(String.format("Radiance in %s", tileBandInfo.getBandName()));
+                band.setDescription(tileBandInfo.getBandInformation().getDescription());
                 band.setSourceImage(mlif.createSourceImage(tileBandInfo));
             }
         }

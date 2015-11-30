@@ -49,10 +49,46 @@ public class L2aMetadataProc extends S2MetadataProc {
                 bandConstant.getPhysicalName(),
                 resolution,
                 makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),
+                "Reflectance in band " + bandConstant.getPhysicalName(),
+                "dl",
                 bandConstant.getBandIndex(),
                 bandConstant.getWavelengthMin(),
                 bandConstant.getWavelengthMax(),
                 bandConstant.getWavelengthCentral());
+    }
+
+    private static S2BandInformation makeAOTInformation(S2SpatialResolution resolution) {
+        return new S2BandInformation("quality_aot", resolution, makeAOTFileTemplate(), "Aerosol Optical Thickness", "none (x 1000)");
+    }
+
+    private static S2BandInformation makeWVPInformation(S2SpatialResolution resolution) {
+        return new S2BandInformation("quality_wvp", resolution, makeWVPFileTemplate(), "Water Vapour", "cm (x 1000)");
+    }
+
+    private static S2BandInformation makeCLDInformation(S2SpatialResolution resolution) {
+        return new S2BandInformation("quality_cloud_confidence", resolution, makeCLDFileTemplate(), "Cloud Confidence", "%");
+    }
+
+    private static S2BandInformation makeSNWInformation(S2SpatialResolution resolution) {
+        return new S2BandInformation("quality_snow_confidence", resolution, makeSNWFileTemplate(), "Snow Confidence", "%");
+    }
+
+    private static S2BandInformation makeSCLInformation(S2SpatialResolution resolution) {
+        IndexCoding sclCoding = new IndexCoding("quality_scene_classification");
+        sclCoding.addIndex("NODATA",              0, "No data");
+        sclCoding.addIndex("SATURATED_DEFECTIVE", 1, "Saturated or defective");
+        sclCoding.addIndex("DARK_FEATURE_SHADOW", 2, "Dark feature shadow");
+        sclCoding.addIndex("CLOUD_SHADOW",        3, "Cloud shadow");
+        sclCoding.addIndex("VEGETATION",          4, "Vegetation");
+        sclCoding.addIndex("BARE_SOIL_DESERT",    5, "Bare soil / Desert");
+        sclCoding.addIndex("WATER",               6, "Water");
+        sclCoding.addIndex("CLOUD_LOW_PROBA",     7, "Cloud (low probability)");
+        sclCoding.addIndex("CLOUD_MEDIUM_PROBA",  8, "Cloud (medium probability)");
+        sclCoding.addIndex("CLOUD_HIGH_PROBA",    9, "Cloud (high probability)");
+        sclCoding.addIndex("THIN_CIRRUS",         10, "Thin cirrus");
+        sclCoding.addIndex("SNOW_ICE",            11, "Snow or Ice");
+
+        return new S2IndexBandInformation("quality_scene_classification", resolution, makeSCLFileTemplate(), "Scene classification", "", sclCoding);
     }
 
     private static String makeSpectralBandImageFileTemplate(String bandFileId) {
@@ -91,28 +127,12 @@ public class L2aMetadataProc extends S2MetadataProc {
     }
 
     public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product, S2SpatialResolution resolution) {
-
         L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
         characteristics.setSpacecraft(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME());
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString());
         characteristics.setProcessingLevel(product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value());
 
         List<S2BandInformation> aInfo = new ArrayList<>();
-
-        IndexCoding sclCoding = new IndexCoding("quality_scene_classification");
-        sclCoding.addIndex("NODATA", 0, "No data");
-        sclCoding.addIndex("SATURATED_DEFECTIVE", 1, "Saturated or defective");
-        sclCoding.addIndex("DARK_FEATURE_SHADOW", 2, "Dark feature shadow");
-        sclCoding.addIndex("CLOUD_SHADOW", 3, "Cloud shadow");
-        sclCoding.addIndex("VEGETATION", 4, "Vegetation");
-        sclCoding.addIndex("BARE_SOIL_DESERT", 5, "Bare soil / Desert");
-        sclCoding.addIndex("WATER", 6, "Water");
-        sclCoding.addIndex("CLOUD_LOW_PROBA", 7, "Cloud (low probability)");
-        sclCoding.addIndex("CLOUD_MEDIUM_PROBA", 8, "Cloud (medium probability)");
-        sclCoding.addIndex("CLOUD_HIGH_PROBA", 9, "Cloud (high probability)");
-        sclCoding.addIndex("THIN_CIRRUS", 10, "Thin cirrus");
-        sclCoding.addIndex("SNOW_ICE", 11, "Snow or Ice");
-
         switch(resolution) {
             case R10M:
                 aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
@@ -129,13 +149,13 @@ public class L2aMetadataProc extends S2MetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M));
 
-                aInfo.add(new S2BandInformation("quality_aot", S2SpatialResolution.R10M, makeAOTFileTemplate()));
-                aInfo.add(new S2BandInformation("quality_wvp", S2SpatialResolution.R10M, makeWVPFileTemplate()));
-                aInfo.add(new S2BandInformation("quality_cloud_confidence", S2SpatialResolution.R20M, makeCLDFileTemplate()));
-                aInfo.add(new S2BandInformation("quality_snow_confidence", S2SpatialResolution.R20M, makeSNWFileTemplate()));
+                aInfo.add(makeAOTInformation(S2SpatialResolution.R10M));
+                aInfo.add(makeWVPInformation(S2SpatialResolution.R10M));
+                aInfo.add(makeCLDInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeSNWInformation(S2SpatialResolution.R20M));
 
                 // SCL only generated at 20m and 60m. upsample the 20m version
-                aInfo.add(new S2IndexBandInformation("quality_scene_classification", S2SpatialResolution.R20M, makeSCLFileTemplate(), sclCoding));
+                aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
                 break;
             case R20M:
                 aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
@@ -152,12 +172,12 @@ public class L2aMetadataProc extends S2MetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M));
 
-                aInfo.add(new S2BandInformation("quality_aot", S2SpatialResolution.R20M, makeAOTFileTemplate()));
-                aInfo.add(new S2BandInformation("quality_wvp", S2SpatialResolution.R20M, makeWVPFileTemplate()));
-                aInfo.add(new S2BandInformation("quality_cloud_confidence", S2SpatialResolution.R20M, makeCLDFileTemplate()));
-                aInfo.add(new S2BandInformation("quality_snow_confidence", S2SpatialResolution.R20M, makeSNWFileTemplate()));
+                aInfo.add(makeAOTInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeWVPInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeCLDInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeSNWInformation(S2SpatialResolution.R20M));
 
-                aInfo.add(new S2IndexBandInformation("quality_scene_classification", S2SpatialResolution.R20M, makeSCLFileTemplate(), sclCoding));
+                aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
                 break;
             case R60M:
                 aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
@@ -174,12 +194,12 @@ public class L2aMetadataProc extends S2MetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R60M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R60M));
 
-                aInfo.add(new S2BandInformation("quality_aot", S2SpatialResolution.R60M, makeAOTFileTemplate()));
-                aInfo.add(new S2BandInformation("quality_water_vapour", S2SpatialResolution.R60M, makeWVPFileTemplate()));
-                aInfo.add(new S2BandInformation("quality_cloud_confidence", S2SpatialResolution.R60M, makeCLDFileTemplate()));
-                aInfo.add(new S2BandInformation("quality_snow_confidence", S2SpatialResolution.R60M, makeSNWFileTemplate()));
+                aInfo.add(makeAOTInformation(S2SpatialResolution.R60M));
+                aInfo.add(makeWVPInformation(S2SpatialResolution.R60M));
+                aInfo.add(makeCLDInformation(S2SpatialResolution.R60M));
+                aInfo.add(makeSNWInformation(S2SpatialResolution.R60M));
 
-                aInfo.add(new S2IndexBandInformation("quality_scene_classification", S2SpatialResolution.R60M, makeSCLFileTemplate(), sclCoding));
+                aInfo.add(makeSCLInformation(S2SpatialResolution.R60M));
                 break;
         }
         int size = aInfo.size();

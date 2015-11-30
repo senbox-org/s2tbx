@@ -34,11 +34,13 @@ public class S2SpectralInformation extends S2BandInformation {
     public S2SpectralInformation(String physicalBand,
                                  S2SpatialResolution resolution,
                                  String imageFileTemplate,
+                                 String description,
+                                 String unit,
                                  int bandId,
                                  double wavelengthMin,
                                  double wavelengthMax,
                                  double wavelengthCentral) {
-        super(physicalBand, resolution, imageFileTemplate);
+        super(physicalBand, resolution, imageFileTemplate, description, unit);
         this.bandId = bandId;
         this.wavelengthMin = wavelengthMin;
         this.wavelengthMax = wavelengthMax;
