@@ -60,6 +60,8 @@ public class L1bMetadataProc extends S2MetadataProc {
                 bandConstant.getPhysicalName(),
                 resolution,
                 makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),
+                "Radiance in band " + bandConstant.getPhysicalName(),
+                "",
                 bandConstant.getBandIndex(),
                 bandConstant.getWavelengthMin(),
                 bandConstant.getWavelengthMax(),

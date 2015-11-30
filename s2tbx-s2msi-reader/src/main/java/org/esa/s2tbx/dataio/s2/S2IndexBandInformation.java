@@ -29,8 +29,10 @@ public class S2IndexBandInformation extends S2BandInformation {
     public S2IndexBandInformation(String physicalBand,
                                   S2SpatialResolution resolution,
                                   String imageFileTemplate,
+                                  String description,
+                                  String unit,
                                   IndexCoding indexCoding) {
-        super(physicalBand, resolution, imageFileTemplate);
+        super(physicalBand, resolution, imageFileTemplate, description, unit);
         this.indexCoding = indexCoding;
     }
 

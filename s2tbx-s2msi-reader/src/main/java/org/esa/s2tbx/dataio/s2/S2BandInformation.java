@@ -21,16 +21,22 @@ package org.esa.s2tbx.dataio.s2;
  * @author Julien Malik (CS SI)
  */
 public class S2BandInformation {
-    protected String physicalBand;
-    protected S2SpatialResolution resolution;
-    protected String imageFileTemplate;
+    private String physicalBand;
+    private S2SpatialResolution resolution;
+    private String imageFileTemplate;
+    private String description;
+    private String unit;
 
     public S2BandInformation(String physicalBand,
-                      S2SpatialResolution resolution,
-                      String imageFileTemplate) {
+                             S2SpatialResolution resolution,
+                             String imageFileTemplate,
+                             String description,
+                             String unit) {
         this.physicalBand = physicalBand;
         this.resolution = resolution;
         this.imageFileTemplate = imageFileTemplate;
+        this.description = description;
+        this.unit = unit;
     }
 
     public String getPhysicalBand() {
@@ -55,5 +61,13 @@ public class S2BandInformation {
 
     public String getImageFileTemplate() {
         return this.imageFileTemplate;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getUnit() {
+        return unit;
     }
 }

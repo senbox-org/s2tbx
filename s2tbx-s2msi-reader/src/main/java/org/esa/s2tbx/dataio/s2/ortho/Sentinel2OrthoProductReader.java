@@ -288,8 +288,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private void addBands(Product product, List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription) throws IOException {
         for (BandInfo bandInfo : bandInfoList) {
             Band band = addBand(product, bandInfo);
-            band.setDescription(String.format("Reflectance in %s", bandInfo.getBandName()));
-            band.setUnit("dl");
+            band.setDescription(bandInfo.getBandInformation().getDescription());
+            band.setUnit(bandInfo.getBandInformation().getUnit());
 
             double pixelSize = 0;
             if (isMultiResolution()) {
