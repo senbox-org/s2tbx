@@ -34,6 +34,7 @@
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-sta-adapters-help</module>
+        <module>s2tbx-radiometric-indices</module>
         <module>s2tbx-kit</module>
     </modules>
 
