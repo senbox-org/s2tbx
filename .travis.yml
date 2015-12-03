@@ -1,2 +1,10 @@
 language: java
+
 sudo: false
+
+jdk:
+  - oraclejdk8
+
+before_install:
+  - cat ~/.m2/settings.xml
+
