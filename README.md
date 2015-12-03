@@ -3,6 +3,7 @@ Sentinel-2 Toolbox (S2TBX)
 
 A toolbox for the MSI instruments on board of ESA's Sentinel-2 satellite.
 
+[![Build Status](https://travis-ci.org/senbox-org/s2tbx.svg?branch=master)](https://travis-ci.org/senbox-org/s2tbx)
 
 Building S2TBX from the source
 ------------------------------
