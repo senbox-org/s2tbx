@@ -109,27 +109,28 @@ public class L1cMetadata extends S2Metadata {
         }
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
-            FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
-            Level1C_Tile aTile = (Level1C_Tile) updateAndUnmarshal(granuleStream);
-            Map<S2SpatialResolution, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
+            try( FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile) ) {
+                Level1C_Tile aTile = (Level1C_Tile) updateAndUnmarshal(granuleStream);
+                Map<S2SpatialResolution, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
-            Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
-            tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
-            tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
+                Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
+                tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
+                tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
-            if (!tile.getHorizontalCsCode().equals(epsg)) {
-                // skip tiles that are not in the desired UTM zone
-                logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", aGranuleMetadataFile.getName(), tile.getHorizontalCsCode(), epsg));
-                continue;
+                if (!tile.getHorizontalCsCode().equals(epsg)) {
+                    // skip tiles that are not in the desired UTM zone
+                    logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", aGranuleMetadataFile.getName(), tile.getHorizontalCsCode(), epsg));
+                    continue;
+                }
+
+                tile.setTileGeometries(geoms);
+                tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(aTile));
+                tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(aTile));
+
+                tile.setMaskFilenames(L1cMetadataProc.getMasks(aTile, aGranuleMetadataFile));
+
+                addTileToList(tile);
             }
-
-            tile.setTileGeometries(geoms);
-            tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(aTile));
-            tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(aTile));
-
-            tile.setMaskFilenames(L1cMetadataProc.getMasks(aTile, aGranuleMetadataFile));
-
-            addTileToList(tile);
         }
 
         S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);

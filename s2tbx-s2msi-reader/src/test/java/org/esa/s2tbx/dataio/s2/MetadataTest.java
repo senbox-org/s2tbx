@@ -51,17 +51,16 @@ public class MetadataTest {
     public void testUpdatePSD12RootXML() {
         String psd12RootXmlFileName =
                 "l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml";
-        try {
+        try (
             InputStream inputStream = getClass().getResourceAsStream(psd12RootXmlFileName);
             InputStream updatedInputStream = S2Metadata.changePSDIfRequired(inputStream, "13");
-
+        ){
             JAXBContext jaxbContext = L1cMetadataProc.getJaxbContext();
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
             Object unmarshalled =  unmarshaller.unmarshal(updatedInputStream);
             Object castedUnmarshalled = ((JAXBElement) unmarshalled).getValue();
             assertTrue(Level1C_User_Product.class.isInstance(castedUnmarshalled));
-
         } catch (FileNotFoundException e) {
             org.junit.Assert.fail("The file was not found: " + psd12RootXmlFileName);
             e.printStackTrace();
