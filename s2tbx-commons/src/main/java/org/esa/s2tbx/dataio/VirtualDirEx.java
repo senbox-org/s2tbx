@@ -623,12 +623,14 @@ public abstract class VirtualDirEx extends VirtualDir {
         public String[] listAll() {
             List<String> fileNames = new ArrayList<>();
             TarInputStream tis;
-            try {
+            try (
+                FileInputStream fileStream = new FileInputStream(archiveFile)
+            ) {
                 if (isTgz(archiveFile.getName())) {
                     tis = new TarInputStream(
-                            new GZIPInputStream(new BufferedInputStream(new FileInputStream(archiveFile))));
+                            new GZIPInputStream(new BufferedInputStream(fileStream)));
                 } else {
-                    tis = new TarInputStream(new BufferedInputStream(new FileInputStream(archiveFile)));
+                    tis = new TarInputStream(new BufferedInputStream(fileStream));
                 }
                 TarEntry entry;
 
