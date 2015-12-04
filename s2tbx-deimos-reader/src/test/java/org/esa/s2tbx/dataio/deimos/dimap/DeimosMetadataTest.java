@@ -31,6 +31,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static org.junit.Assume.assumeTrue;
+
 /**
  * Unit test class for Deimos Metadata
  * @author Cosmin Cara
@@ -43,6 +45,8 @@ public class DeimosMetadataTest extends TestCase {
 
     @Before
     public void setUp() throws Exception {
+        assumeTrue(TestUtil.testdataAvailable());
+
         XmlMetadataParserFactory.registerParser(DeimosMetadata.class, new XmlMetadataParser<>(DeimosMetadata.class));
         metadata = XmlMetadata.create(DeimosMetadata.class, TestUtil.getTestFile(productsFolder + "DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502/DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502.dim"));
     }

@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -42,6 +43,8 @@ public class RapidEyeL3ReaderTest {
 
     @Before
     public void setup() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         RapidEyeL3ReaderPlugin plugin = new RapidEyeL3ReaderPlugin();
         reader = new RapidEyeL3Reader(plugin);
     }

@@ -30,6 +30,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static org.junit.Assume.assumeTrue;
+
 /**
  * @author Ramona Manda
  */
@@ -39,6 +41,8 @@ public class NITFMetadataTest extends TestCase {
 
     @Before
     public void setUp() throws Exception {
+        assumeTrue(TestUtil.testdataAvailable());
+
         NITFReaderWrapper reader = new NITFReaderWrapper(TestUtil.getTestFile(productsFolder + "2009-04-16T104920_RE4_1B-NAC_3436599_84303_band2.ntf"));
         metadata = reader.getMetadata();
     }

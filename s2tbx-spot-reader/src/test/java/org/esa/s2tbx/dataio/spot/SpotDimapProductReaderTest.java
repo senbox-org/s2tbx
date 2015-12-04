@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -53,6 +54,8 @@ public class SpotDimapProductReaderTest {
 
     @Test
     public void testReadProductNodesBySimpleProductReader(){
+        assumeTrue(TestUtil.testdataAvailable());
+
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "30382639609301123571X0_1A_NETWORK.ZIP");
@@ -77,6 +80,8 @@ public class SpotDimapProductReaderTest {
 
     @Test
     public void testReadBandRasterDataBySimpleProductReader(){
+        assumeTrue(TestUtil.testdataAvailable());
+
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile(productsFolder + "30382639609301123571X0_1A_NETWORK.ZIP");
@@ -104,6 +109,8 @@ public class SpotDimapProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnVolumeFileInputBySimpleProductReader(){
+        assumeTrue(TestUtil.testdataAvailable());
+
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "vol_list.dim");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
@@ -131,6 +138,8 @@ public class SpotDimapProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnArchiveInputBySimpleProductReader(){
+        assumeTrue(TestUtil.testdataAvailable());
+
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "30382639609301123571X0_1A_NETWORK.ZIP");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
@@ -149,6 +158,8 @@ public class SpotDimapProductReaderTest {
 
     @Test
     public void testReadProductNodesByVolumeProductReader(){
+        assumeTrue(TestUtil.testdataAvailable());
+
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
@@ -173,6 +184,8 @@ public class SpotDimapProductReaderTest {
 
     @Test
     public void testReadBandRasterDataByVolumeProductReader(){
+        assumeTrue(TestUtil.testdataAvailable());
+
         Date startDate = Calendar.getInstance().getTime();
         Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
@@ -200,6 +213,8 @@ public class SpotDimapProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnVolumeFileInputByVolumeProductReader(){
+        assumeTrue(TestUtil.testdataAvailable());
+
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SPOT-5_2.5mc_3\\VOL_LIST.DIM");
         System.setProperty("snap.dataio.reader.tileWidth", "100");

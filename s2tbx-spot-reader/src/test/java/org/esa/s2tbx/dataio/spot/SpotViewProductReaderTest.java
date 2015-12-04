@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -76,6 +77,8 @@ public class SpotViewProductReaderTest {
 
     @Test
     public void testReadBandRasterData() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         Date startDate = Calendar.getInstance().getTime();
         //Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
@@ -103,6 +106,8 @@ public class SpotViewProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnFileInput() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
@@ -129,6 +134,8 @@ public class SpotViewProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnArchiveInput() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
         System.setProperty("snap.dataio.reader.tileWidth", "100");

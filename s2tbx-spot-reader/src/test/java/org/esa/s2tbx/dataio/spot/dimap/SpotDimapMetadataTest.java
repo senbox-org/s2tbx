@@ -32,6 +32,7 @@ import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -42,6 +43,7 @@ public class SpotDimapMetadataTest {
 
     @Before
     public void setUp() throws Exception {
+        assumeTrue(TestUtil.testdataAvailable());
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new SpotDimapMetadata.SpotDimapMetadataParser(SpotDimapMetadata.class));
         metadata = XmlMetadata.create(SpotDimapMetadata.class, TestUtil.getTestFile(productsFolder + "metadata.dim"));
     }

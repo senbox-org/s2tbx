@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -54,6 +55,8 @@ public class RapidEyeL3ReaderPluginTest {
 
     @Test
     public void testDecodeQualificationForXML() throws IOException {
+        assumeTrue(TestUtil.testdataAvailable());
+
         Date startDate = Calendar.getInstance().getTime();
         DecodeQualification decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "dimap/test_ST4_MT.xml"));
         assertEquals(DecodeQualification.UNABLE, decodeQualification);
