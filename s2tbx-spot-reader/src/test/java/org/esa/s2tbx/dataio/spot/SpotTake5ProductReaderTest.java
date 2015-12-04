@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -76,6 +77,8 @@ public class SpotTake5ProductReaderTest {
 
     @Test
     public void testReadBandRasterData() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         Date startDate = Calendar.getInstance().getTime();
         //Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
@@ -103,6 +106,8 @@ public class SpotTake5ProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnFileInput() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
@@ -121,6 +126,8 @@ public class SpotTake5ProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnArchiveInput() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.tgz");
         System.setProperty("snap.dataio.reader.tileWidth", "100");

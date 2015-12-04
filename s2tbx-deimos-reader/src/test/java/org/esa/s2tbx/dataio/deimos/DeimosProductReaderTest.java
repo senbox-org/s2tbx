@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona MANDA
@@ -42,6 +43,8 @@ public class DeimosProductReaderTest {
 
     @Before
     public void setup() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         DeimosProductReaderPlugin plugin = new DeimosProductReaderPlugin();
         reader = new DeimosProductReader(plugin);
     }

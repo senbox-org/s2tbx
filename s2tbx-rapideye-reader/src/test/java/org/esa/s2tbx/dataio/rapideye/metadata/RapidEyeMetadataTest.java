@@ -32,6 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static org.junit.Assume.assumeTrue;
+
 /**
  * @author Ramona Manda
  */
@@ -47,6 +49,8 @@ public class RapidEyeMetadataTest extends TestCase {
 
     @Before
     public void setUp() throws Exception {
+        assumeTrue(TestUtil.testdataAvailable());
+
         XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<RapidEyeMetadata>(RapidEyeMetadata.class));
         metadata = XmlMetadata.create(RapidEyeMetadata.class, TestUtil.getTestFile(productsFolder + "2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
     }

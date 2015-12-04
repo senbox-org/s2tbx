@@ -30,6 +30,7 @@ import java.io.File;
 import java.nio.ByteOrder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -40,6 +41,8 @@ public class SpotViewMetadataTest {
 
     @Before
     public void setUp() throws Exception {
+        assumeTrue(TestUtil.testdataAvailable());
+
         XmlMetadataParserFactory.registerParser(SpotViewMetadata.class, new XmlMetadataParser<SpotViewMetadata>(SpotViewMetadata.class));
         metadata = XmlMetadata.create(SpotViewMetadata.class, TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml"));
     }
