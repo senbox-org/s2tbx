@@ -30,7 +30,8 @@ public class TestUtil {
     public static final String PROPERTYNAME_DATA_DIR = "snap.reader.tests.data.dir";
 
     public static boolean testdataAvailable() {
-        return Files.exists( Paths.get( System.getProperty(PROPERTYNAME_DATA_DIR) ) );
+        String testDataDir = System.getProperty(PROPERTYNAME_DATA_DIR);
+        return (testDataDir != null) && Files.exists( Paths.get( testDataDir ) );
     }
 
     public static File getTestFile(String file) {
