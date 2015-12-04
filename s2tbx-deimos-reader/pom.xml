@@ -47,7 +47,7 @@
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-reader-tests</artifactId>
             <version>${snap.version}</version>
@@ -59,7 +59,7 @@
             <type>test-jar</type>
             <scope>test</scope>
             <version>${snap.version}</version>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>org.esa.snap</groupId>
