@@ -43,6 +43,8 @@ public class SpotTake5ProductReaderTest {
 
     @Before
     public void setup() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         SpotTake5ProductReaderPlugin plugin = new SpotTake5ProductReaderPlugin();
         reader = new SpotTake5ProductReader(plugin);
     }
@@ -77,8 +79,6 @@ public class SpotTake5ProductReaderTest {
 
     @Test
     public void testReadBandRasterData() {
-        assumeTrue(TestUtil.testdataAvailable());
-
         Date startDate = Calendar.getInstance().getTime();
         //Product product = new Product("name", "desc", 100, 200);
         File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
@@ -106,8 +106,6 @@ public class SpotTake5ProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnFileInput() {
-        assumeTrue(TestUtil.testdataAvailable());
-
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.xml");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
@@ -126,8 +124,6 @@ public class SpotTake5ProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnArchiveInput() {
-        assumeTrue(TestUtil.testdataAvailable());
-
         Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_88888888_N1A.tgz");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
