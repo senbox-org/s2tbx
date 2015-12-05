@@ -15,7 +15,7 @@ Download and install the required build tools
 
 Add $JAVA_HOME/bin, $MAVEN_HOME/bin to your PATH.
 
-Clone the S2TBX source code and related repositories into a directory referred to a ${snap} from here on
+Clone the S2TBX source code and related repositories into a directory referred to as ${snap} from here on
 
     cd ${snap}
     git clone https://github.com/senbox-org/s2tbx.git
