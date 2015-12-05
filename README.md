@@ -32,7 +32,7 @@ Build SNAP-Desktop:
     cd ${snap}/snap-desktop
     mvn install
 
-Build Sentinel-3 Toolbox:
+Build Sentinel-2 Toolbox:
 
     cd ${snap}/s2tbx
     mvn install
