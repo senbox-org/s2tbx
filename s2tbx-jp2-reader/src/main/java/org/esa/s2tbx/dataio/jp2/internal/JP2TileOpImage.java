@@ -151,6 +151,8 @@ public class JP2TileOpImage extends SingleBandedOpImage {
 
         } catch (IOException e) {
             logger.severe(e.getMessage());
+        } finally {
+            imageReader.close();
         }
     }
 
