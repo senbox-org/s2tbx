@@ -31,7 +31,6 @@ import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.FileUtils;
 
 import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
@@ -44,8 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.UnexpectedException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 
@@ -55,20 +52,9 @@ import java.util.logging.Logger;
  */
 public class S2TileOpImage extends SingleBandedOpImage {
 
-    private static class Jp2File {
-        File file;
-        String header;
-        ImageInputStream stream;
-        long dataPos;
-        int width;
-        int height;
-    }
-
     protected TileLayout tileLayout;
     protected File imageFile;
     protected File cacheDir;
-    private Map<File, Object> locks;
-    private Map<File, Jp2File> openFiles;
 
     public S2TileOpImage(
             File imageFile,
@@ -95,9 +81,6 @@ public class S2TileOpImage extends SingleBandedOpImage {
         this.imageFile = imageFile;
         this.cacheDir = cacheDir;
         this.tileLayout = tileLayout;
-
-        this.openFiles = new HashMap<>();
-        this.locks = new HashMap<>();
     }
 
 
@@ -291,28 +274,6 @@ public class S2TileOpImage extends SingleBandedOpImage {
     @Override
     public synchronized void dispose() {
 
-        for (Map.Entry<File, Jp2File> entry : openFiles.entrySet()) {
-            SystemUtils.LOG.finest("closing " + entry.getKey());
-            try {
-                final Jp2File jp2File = entry.getValue();
-                if (jp2File.stream != null) {
-                    jp2File.stream.close();
-                    jp2File.stream = null;
-                }
-            } catch (IOException e) {
-                SystemUtils.LOG.severe("Failed to close stream: " + Utils.getStackTrace(e));
-            }
-        }
-
-        for (File file : openFiles.keySet()) {
-            SystemUtils.LOG.fine("Deleting " + file);
-            if (!file.delete()) {
-                SystemUtils.LOG.severe("Failed to delete file! :" + file.getAbsolutePath());
-            }
-        }
-
-        openFiles.clear();
-
         if (!cacheDir.delete()) {
             SystemUtils.LOG.severe("Failed to delete cache dir! :" + cacheDir.getAbsolutePath());
         }
@@ -333,21 +294,26 @@ public class S2TileOpImage extends SingleBandedOpImage {
                                 short[] tileData,
                                 Rectangle destRect) throws IOException {
 
-        synchronized (this) {
-            if (!locks.containsKey(outputFile)) {
-                locks.put(outputFile, new Object());
-            }
-        }
-
         // todo - we still have a synchronisation problem here: often zero areas are generated in a tile.
         // This does not happen, if we synchronise entire computeRect() on the instance, but it is less efficient.
-        final Object lock = locks.get(outputFile);
-        synchronized (lock) {
+        try (FileImageInputStream fis = new FileImageInputStream(outputFile)) {
+            int jp2Width, jp2Height;
+            final String[] tokens = fis.readLine().split(" ");
+            long dataPos = fis.getStreamPosition();
+            if (tokens.length != 6) {
+                throw new IOException("Unexpected PGX tile image format");
+            }
 
-            Jp2File jp2File = getOpenJ2pFile(outputFile);
-
-            int jp2Width = jp2File.width;
-            int jp2Height = jp2File.height;
+            // String pg = tokens[0];   // PG
+            // String ml = tokens[1];   // ML
+            // String plus = tokens[2]; // +
+            try {
+                // int jp2File.nbits = Integer.parseInt(tokens[3]);
+                jp2Width = Integer.parseInt(tokens[4]);
+                jp2Height = Integer.parseInt(tokens[5]);
+            } catch (NumberFormatException e) {
+                throw new IOException("Unexpected PGX tile image format");
+            }
             if (jp2Width > jp2TileWidth || jp2Height > jp2TileHeight) {
                 throw new IllegalStateException(String.format("width (=%d) > tileWidth (=%d) || height (=%d) > tileHeight (=%d)",
                         jp2Width, jp2TileWidth, jp2Height, jp2TileHeight));
@@ -360,13 +326,11 @@ public class S2TileOpImage extends SingleBandedOpImage {
                         jp2X, jp2Y));
             }
 
-            final ImageInputStream stream = jp2File.stream;
-
             if (jp2X == 0 && jp2Width == tileWidth
                     && jp2Y == 0 && jp2Height == tileHeight
                     && tileWidth * tileHeight == tileData.length) {
-                stream.seek(jp2File.dataPos);
-                stream.readFully(tileData, 0, tileData.length);
+                fis.seek(dataPos);
+                fis.readFully(tileData, 0, tileData.length);
             } else {
                 final Rectangle jp2FileRect = new Rectangle(0, 0, jp2Width, jp2Height);
                 final Rectangle tileRect = new Rectangle(jp2X,
@@ -374,12 +338,12 @@ public class S2TileOpImage extends SingleBandedOpImage {
                         tileWidth, tileHeight);
                 final Rectangle intersection = jp2FileRect.intersection(tileRect);
                 if (!intersection.isEmpty()) {
-                    SystemUtils.LOG.fine(String.format("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", jp2File.file, tileX, tileY, jp2FileRect, tileRect, intersection));
-                    long seekPos = jp2File.dataPos + S2Config.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
+                    SystemUtils.LOG.fine(String.format("%s: tile=(%d,%d): jp2FileRect=%s, tileRect=%s, intersection=%s\n", outputFile, tileX, tileY, jp2FileRect, tileRect, intersection));
+                    long seekPos = dataPos + S2Config.SAMPLE_BYTE_COUNT * (intersection.y * jp2Width + intersection.x);
                     int tilePos = 0;
                     for (int y = 0; y < intersection.height; y++) {
-                        stream.seek(seekPos);
-                        stream.readFully(tileData, tilePos, intersection.width);
+                        fis.seek(seekPos);
+                        fis.readFully(tileData, tilePos, intersection.width);
                         seekPos += S2Config.SAMPLE_BYTE_COUNT * jp2Width;
                         tilePos += tileWidth;
                         for (int x = intersection.width; x < tileWidth; x++) {
@@ -398,37 +362,5 @@ public class S2TileOpImage extends SingleBandedOpImage {
             }
         }
     }
-
-    private Jp2File getOpenJ2pFile(File outputFile) throws IOException {
-        Jp2File jp2File = openFiles.get(outputFile);
-        if (jp2File == null) {
-            jp2File = new Jp2File();
-            jp2File.file = outputFile;
-            jp2File.stream = new FileImageInputStream(outputFile);
-            jp2File.header = jp2File.stream.readLine();
-            jp2File.dataPos = jp2File.stream.getStreamPosition();
-
-            final String[] tokens = jp2File.header.split(" ");
-            if (tokens.length != 6) {
-                throw new IOException("Unexpected PGX tile image format");
-            }
-
-            // String pg = tokens[0];   // PG
-            // String ml = tokens[1];   // ML
-            // String plus = tokens[2]; // +
-            try {
-                // int jp2File.nbits = Integer.parseInt(tokens[3]);
-                jp2File.width = Integer.parseInt(tokens[4]);
-                jp2File.height = Integer.parseInt(tokens[5]);
-            } catch (NumberFormatException e) {
-                throw new IOException("Unexpected PGX tile image format");
-            }
-
-            openFiles.put(outputFile, jp2File);
-        }
-
-        return jp2File;
-    }
-
 
 }
