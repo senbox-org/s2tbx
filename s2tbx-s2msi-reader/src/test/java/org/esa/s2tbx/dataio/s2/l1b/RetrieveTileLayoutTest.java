@@ -44,6 +44,11 @@ public class RetrieveTileLayoutTest {
 
     @Before
     public void setup() {
+        /*
+         * We need a proper Engine start so that the openjpeg activator is started
+         */
+        engine = Engine.start(false);
+
         /**
          * Run these tests only if Sentinel 2 products test directory exists and is set
          */
@@ -51,15 +56,12 @@ public class RetrieveTileLayoutTest {
         sentinel2TestProductsPath = Paths.get(productPath, SENTINEL2_DIR);
         Assume.assumeTrue(Files.exists(sentinel2TestProductsPath));
 
-        /*
-         * We need a proper Engine start so that the openjpeg activator is started
-         */
-        engine = Engine.start(false);
     }
 
     @After
     public void teardown() {
-        engine.stop();
+        if (engine != null)
+            engine.stop();
     }
 
     @Test
