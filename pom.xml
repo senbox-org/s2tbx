@@ -240,6 +240,30 @@
                         <useDefaultManifestFile>true</useDefaultManifestFile>
                     </configuration>
                 </plugin>
+
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.18.1</version>
+                    <configuration>
+                        <enableAssertions>true</enableAssertions>
+                        <!--<skip>true</skip>-->
+                        <printSummary>true</printSummary>
+                        <useFile>false</useFile>
+                        <includes>
+                            <include>**/*Test.java</include>
+                            <include>**/*Test*.java</include>
+                            <include>**/*TestCase.java</include>
+                        </includes>
+                        <systemPropertyVariables>
+                            <org.esa.snap.testdata.out>target/test-data</org.esa.snap.testdata.out>
+                            <snap.reader.tests.execute>${snap.reader.tests.execute}</snap.reader.tests.execute>
+                            <snap.reader.tests.failOnMissingData>${snap.reader.tests.failOnMissingData}</snap.reader.tests.failOnMissingData>
+                            <snap.reader.tests.data.dir>${snap.reader.tests.data.dir}</snap.reader.tests.data.dir>
+                        </systemPropertyVariables>
+                        <argLine>-Xmx1024M -Dfile.encoding=UTF-8</argLine>
+                    </configuration>
+                </plugin>
+
             </plugins>
         </pluginManagement>
 
