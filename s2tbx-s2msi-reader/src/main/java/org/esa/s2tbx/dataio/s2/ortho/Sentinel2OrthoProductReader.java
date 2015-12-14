@@ -511,6 +511,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                                                                 tiePointGridIndex)));
     }
 
+    private boolean isValidAngle(float value) {
+        return !Float.isNaN(value) && !Float.isInfinite(value);
+    }
+
     private TiePointGrid[] createL1cTileTiePointGrids(S2Metadata metadataHeader, String tileId) throws IOException {
         TiePointGrid[] tiePointGrid = null;
         S2Metadata.Tile tile = metadataHeader.getTile(tileId);
@@ -535,7 +539,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         try {
                             if (y < grid.getZenith().length) {
                                 if (x < grid.getZenith()[y].length) {
-                                    if (!Float.isNaN(grid.getZenith()[y][x]) && !Float.isInfinite(grid.getZenith()[y][x])) {
+                                    if (isValidAngle(grid.getZenith()[y][x])) {
                                         viewingZeniths[index] = grid.getZenith()[y][x];
                                     }
                                 }
@@ -543,7 +547,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                             if (y < grid.getAzimuth().length) {
                                 if (x < grid.getAzimuth()[y].length) {
-                                    if (!Float.isNaN(grid.getAzimuth()[y][x]) && !Float.isInfinite(grid.getZenith()[y][x])) {
+                                    if (isValidAngle(grid.getAzimuth()[y][x])) {
                                         viewingAzimuths[index] = grid.getAzimuth()[y][x];
                                     }
                                 }
