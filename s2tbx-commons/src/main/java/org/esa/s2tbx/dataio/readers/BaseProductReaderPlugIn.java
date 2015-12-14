@@ -40,11 +40,13 @@ import java.util.logging.Logger;
 public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
 
     protected final ProductContentEnforcer enforcer;
+    protected int folderDepth;
 
     /**
      * Default constructor
      */
     public BaseProductReaderPlugIn() {
+        folderDepth = 4;
         enforcer = ProductContentEnforcer.create(getMinimalPatternList(), getExclusionPatternList());
         registerRGBProfile();
     }
@@ -84,7 +86,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new BaseProductFileFilter(this);
+        return new BaseProductFileFilter(this, folderDepth);
     }
 
     /**
@@ -194,10 +196,12 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     public class BaseProductFileFilter extends SnapFileFilter {
 
         private Map<File, Boolean> processed;
+        final private int depth;
 
-        public BaseProductFileFilter(BaseProductReaderPlugIn plugIn) {
+        public BaseProductFileFilter(BaseProductReaderPlugIn plugIn, int folderDepth) {
             super(plugIn.getFormatNames()[0], plugIn.getDefaultFileExtensions(), plugIn.getDescription(Locale.getDefault()));
             this.processed = new HashMap<>();
+            this.depth = folderDepth;
         }
 
         @Override
@@ -207,7 +211,7 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
                 File folder = file.getParentFile();
                 if (!processed.containsKey(folder)) {
                     try {
-                        List<String> files = listFiles(folder, 2);
+                        List<String> files = listFiles(folder, depth);
                         shouldAccept = enforcer.isConsistent(files);
                         processed.put(folder, shouldAccept);
                     } catch (IOException e) {
