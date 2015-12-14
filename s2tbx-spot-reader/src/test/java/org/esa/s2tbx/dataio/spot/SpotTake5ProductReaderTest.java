@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -42,6 +43,8 @@ public class SpotTake5ProductReaderTest {
 
     @Before
     public void setup() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         SpotTake5ProductReaderPlugin plugin = new SpotTake5ProductReaderPlugin();
         reader = new SpotTake5ProductReader(plugin);
     }

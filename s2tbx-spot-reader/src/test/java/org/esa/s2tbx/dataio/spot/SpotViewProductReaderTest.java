@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -42,6 +43,8 @@ public class SpotViewProductReaderTest {
 
     @Before
     public void setup() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         SpotViewProductReaderPlugin plugin = new SpotViewProductReaderPlugin();
         reader = new SpotViewProductReader(plugin);
     }
@@ -103,12 +106,11 @@ public class SpotViewProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnFileInput() {
-        Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL/metadata.xml");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
-            Product finalProduct = reader.readProductNodes(file, null);
+            reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(3, components.getChildren().length);
             String[] expectedIds = new String[]{"metadata.dim", "metadata.xml", "geolayer.bil"};
@@ -129,12 +131,11 @@ public class SpotViewProductReaderTest {
 
     @Test
     public void testGetProductComponentsOnArchiveInput() {
-        Product product = new Product("name", "desc", 100, 100);
         File file = TestUtil.getTestFile(productsFolder + "SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
-            Product finalProduct = reader.readProductNodes(file, null);
+            reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(1, components.getChildren().length);
             assertEquals("SP04_HRI1_X__1O_20050605T090007_20050605T090016_DLR_70_PREU.BIL.ZIP", components.getChildren()[0].getId());

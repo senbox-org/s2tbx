@@ -3,6 +3,7 @@ Sentinel-2 Toolbox (S2TBX)
 
 A toolbox for the MSI instruments on board of ESA's Sentinel-2 satellite.
 
+[![Build Status](https://travis-ci.org/senbox-org/s2tbx.svg?branch=master)](https://travis-ci.org/senbox-org/s2tbx) [![Coverity Scan Status](https://scan.coverity.com/projects/7175/badge.svg)](https://scan.coverity.com/projects/senbox-org-s2tbx)
 
 Building S2TBX from the source
 ------------------------------
@@ -14,7 +15,7 @@ Download and install the required build tools
 
 Add $JAVA_HOME/bin, $MAVEN_HOME/bin to your PATH.
 
-Clone the S2TBX source code and related repositories into a directory referred to a ${snap} from here on
+Clone the S2TBX source code and related repositories into a directory referred to as ${snap} from here on
 
     cd ${snap}
     git clone https://github.com/senbox-org/s2tbx.git
@@ -31,7 +32,7 @@ Build SNAP-Desktop:
     cd ${snap}/snap-desktop
     mvn install
 
-Build Sentinel-3 Toolbox:
+Build Sentinel-2 Toolbox:
 
     cd ${snap}/s2tbx
     mvn install

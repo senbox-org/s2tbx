@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
@@ -41,6 +42,8 @@ public class SpotTake5MetadataTest {
 
     @Before
     public void setUp() throws Exception {
+        assumeTrue(TestUtil.testdataAvailable());
+
         XmlMetadataParserFactory.registerParser(SpotTake5Metadata.class, new XmlMetadataParser<SpotTake5Metadata>(SpotTake5Metadata.class));
         metadata = XmlMetadata.create(SpotTake5Metadata.class, TestUtil.getTestFile(productsFolder + "SPOT4_HRVIR1_XS_20130616_N2A_JTanzanieD0000B0000.xml"));
     }

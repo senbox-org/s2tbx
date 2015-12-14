@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona MANDA
@@ -42,6 +43,7 @@ public class DeimosProductReaderPluginTest {
 
     @Before
     public void setup() {
+        assumeTrue(TestUtil.testdataAvailable());
         plugIn = new DeimosProductReaderPlugin();
     }
 

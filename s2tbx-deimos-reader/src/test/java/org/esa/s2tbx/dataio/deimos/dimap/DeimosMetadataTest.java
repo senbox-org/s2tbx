@@ -17,13 +17,13 @@
 
 package org.esa.s2tbx.dataio.deimos.dimap;
 
-import junit.framework.TestCase;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.snap.utils.TestUtil;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 
 import java.awt.*;
 import java.io.File;
@@ -31,56 +31,70 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
 /**
  * Unit test class for Deimos Metadata
  * @author Cosmin Cara
  *
  */
-public class DeimosMetadataTest extends TestCase {
+public class DeimosMetadataTest {
 
     private DeimosMetadata metadata;
     private String productsFolder = "_deimos" + File.separator;
 
     @Before
-    public void setUp() throws Exception {
+    public void setup() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         XmlMetadataParserFactory.registerParser(DeimosMetadata.class, new XmlMetadataParser<>(DeimosMetadata.class));
         metadata = XmlMetadata.create(DeimosMetadata.class, TestUtil.getTestFile(productsFolder + "DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502/DE01_SL6_22P_1T_20120905T170604_20120905T170613_DMI_0_4502.dim"));
     }
 
     @After
-    public void tearDown() {
+    public void teardown() {
         metadata = null;
         System.gc();
     }
 
+    @Test
     public void testGetFileName() throws Exception {
         assertEquals("DEIMOS", metadata.getFileName());
     }
 
+    @Test
     public void testGetProductName() throws Exception {
         assertEquals("DE004502p_023150_046799_042858_045602", metadata.getProductName());
     }
 
+    @Test
     public void testGetProductDescription() throws Exception {
         assertEquals("DE004502p_023150_046799_042858_045602", metadata.getProductDescription());
     }
 
+    @Test
     public void testGetFormatName() throws Exception {
         assertEquals(DeimosConstants.DIMAP, metadata.getFormatName());
     }
 
+    @Test
     public void testGetMetadataProfile() throws Exception {
         assertEquals(DeimosConstants.DEIMOS, metadata.getMetadataProfile());
     }
 
+    @Test
     public void testGetRasterWidth() throws Exception {
         assertEquals(4338, metadata.getRasterWidth());
     }
 
+    @Test
     public void testGetRasterHeight() throws Exception {
         assertEquals(1889, metadata.getRasterHeight());
     }
 
+    @Test
     public void testGetRasterFileNames() throws Exception {
         String[] fileNames = metadata.getRasterFileNames();
         assertNotNull(fileNames);
@@ -88,6 +102,7 @@ public class DeimosMetadataTest extends TestCase {
         assertEquals("de01_sl6_22p_1t_20120905t170604_20120905t170613_dmi_0_4502.tif", fileNames[0]);
     }
 
+    @Test
     public void testGetBandNames() throws Exception {
         String[] bandNames = metadata.getBandNames();
         assertNotNull(bandNames);
@@ -97,26 +112,32 @@ public class DeimosMetadataTest extends TestCase {
         assertEquals(DeimosConstants.DEFAULT_BAND_NAMES[2], bandNames[2]);
     }
 
+    @Test
     public void testGetNumBands() throws Exception {
         assertEquals(3, metadata.getNumBands());
     }
 
+    @Test
     public void testGetNoDataValue() throws Exception {
         assertEquals(0, metadata.getNoDataValue());
     }
 
+    @Test
     public void testGetNoDataColor() throws Exception {
         assertEquals(Color.BLACK, metadata.getNoDataColor());
     }
 
+    @Test
     public void testGetSaturatedPixelValue() throws Exception {
         assertEquals(Integer.MAX_VALUE, metadata.getSaturatedPixelValue());
     }
 
+    @Test
     public void testGetSaturatedColor() throws Exception {
         assertEquals(Color.BLACK, metadata.getSaturatedColor());
     }
 
+    @Test
     public void testGetCenterTime() throws Exception {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -124,6 +145,7 @@ public class DeimosMetadataTest extends TestCase {
         assertEquals(time.getTime(), metadata.getCenterTime().getAsDate().getTime());
     }
 
+    @Test
     public void testGetProcessingLevel() throws Exception {
         assertEquals(DeimosConstants.PROCESSING_2T, metadata.getProcessingLevel());
     }

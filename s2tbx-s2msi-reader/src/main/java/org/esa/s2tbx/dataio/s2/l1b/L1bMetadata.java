@@ -118,15 +118,16 @@ public class L1bMetadata extends S2Metadata {
         }
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
-            FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
-            Level1B_Granule aGranule = (Level1B_Granule) updateAndUnmarshal(granuleStream);
+            try ( FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile) ) {
+                Level1B_Granule aGranule = (Level1B_Granule) updateAndUnmarshal(granuleStream);
 
-            Map<S2SpatialResolution, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
+                Map<S2SpatialResolution, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
 
-            Tile tile = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
-            tile.setTileGeometries(geoms);
-            tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
-            addTileToList(tile);
+                Tile tile = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
+                tile.setTileGeometries(geoms);
+                tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
+                addTileToList(tile);
+            }
         }
 
         S2DatastripFilename stripName = L1bMetadataProc.getDatastrip(product);
