@@ -17,26 +17,69 @@
 
 package org.esa.s2tbx.dataio.s2;
 
+import org.esa.snap.core.datamodel.ColorPaletteDef;
+import org.esa.snap.core.datamodel.ImageInfo;
 import org.esa.snap.core.datamodel.IndexCoding;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author J. Malik
  */
 public class S2IndexBandInformation extends S2BandInformation {
 
-    private IndexCoding indexCoding;
+    private final List<S2IndexBandIndex> indexList;
 
     public S2IndexBandInformation(String physicalBand,
                                   S2SpatialResolution resolution,
                                   String imageFileTemplate,
                                   String description,
                                   String unit,
-                                  IndexCoding indexCoding) {
+                                  List<S2IndexBandIndex> indexList) {
         super(physicalBand, resolution, imageFileTemplate, description, unit);
-        this.indexCoding = indexCoding;
+        this.indexList = indexList;
+    }
+
+    public ImageInfo getImageInfo() {
+        List<ColorPaletteDef.Point> points = new ArrayList<>(indexList.size());
+        for (S2IndexBandIndex index : indexList) {
+            points.add(new ColorPaletteDef.Point(index.sample, index.color, index.label));
+        }
+
+        return new ImageInfo(
+                new ColorPaletteDef(
+                        points.toArray(
+                                new ColorPaletteDef.Point[points.size()]),
+                                points.size())
+        );
     }
 
     public IndexCoding getIndexCoding() {
-        return this.indexCoding;
+        IndexCoding indexCoding = new IndexCoding(getPhysicalBand());
+        for (S2IndexBandIndex index : indexList) {
+            indexCoding.addIndex(index.label, index.sample, index.description);
+        }
+        return indexCoding;
+    }
+
+    public static S2IndexBandIndex makeIndex(int sample, Color color, String label, String description) {
+        return new S2IndexBandIndex(sample, color, label, description);
+    }
+
+    public static class S2IndexBandIndex {
+        private final int sample;
+        private final Color color;
+        private final String label;
+        private final String description;
+
+        S2IndexBandIndex(int sample, Color color, String label, String description) {
+            this.sample = sample;
+            this.color = color;
+            this.label = label;
+            this.description = description;
+        }
     }
 }
+
