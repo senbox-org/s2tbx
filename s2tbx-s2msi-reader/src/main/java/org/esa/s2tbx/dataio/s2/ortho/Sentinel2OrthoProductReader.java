@@ -291,7 +291,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     private void addBands(Product product, List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription) throws IOException {
         for (BandInfo bandInfo : bandInfoList) {
-            Band band = addBand(product, bandInfo);
+            Dimension dimension = sceneDescription.getSceneDimension(bandInfo.getBandInformation().getResolution());
+            Band band = addBand(product, bandInfo, dimension);
             band.setDescription(bandInfo.getBandInformation().getDescription());
             band.setUnit(bandInfo.getBandInformation().getUnit());
 
