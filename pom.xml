@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/senbox-org/s2tbx</url>
@@ -47,8 +47,8 @@
             It is used to filter manifest.mf and set the manifest's "OpenIDE-Module-Specification-Version" header.
             This is necessary to make NetBeans modules updatable and independent from the Maven version (= snap.version).
         -->
-        <s2tbx.version>2.0.1</s2tbx.version>
-        <s2tbx.nbmSpecVersion>2.0.1</s2tbx.nbmSpecVersion>
+        <s2tbx.version>2.0.2</s2tbx.version>
+        <s2tbx.nbmSpecVersion>2.0.2</s2tbx.nbmSpecVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE802</netbeans.version>
