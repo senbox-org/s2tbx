@@ -21,8 +21,6 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.ImageUtils;
 
 import javax.media.jai.*;
@@ -31,6 +29,7 @@ import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,9 +57,10 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
 
     public MosaicMultiLevelSource(Band[][] sourceBands, int imageWidth, int imageHeight,
                                   int tileWidth, int tileHeight, int numTilesX, int numTilesY, int levels, int dataType,
-                                  GeoCoding geoCoding) {
+                                  AffineTransform transform) {
         super(new DefaultMultiLevelModel(levels,
-                                         Product.findImageToModelTransform(geoCoding),
+                                         //Product.findImageToModelTransform(geoCoding),
+                                         transform,
                                          imageWidth, imageHeight));
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;

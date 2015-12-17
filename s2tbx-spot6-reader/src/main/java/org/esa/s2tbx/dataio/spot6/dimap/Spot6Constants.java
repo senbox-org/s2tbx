@@ -3,7 +3,8 @@ package org.esa.s2tbx.dataio.spot6.dimap;
 import java.io.File;
 
 /**
- * Created by kraftek on 12/7/2015.
+ * Holder for various constants related to SPOT 6/7 products.
+ * @author Cosmin Cara
  */
 public class Spot6Constants {
 
@@ -14,6 +15,7 @@ public class Spot6Constants {
     public static final String DIMAP_DESCRIPTION = "SPOT 6/7 Data Products";
     public static final String[] DEFAULT_EXTENSIONS = new String[]{".xml", ".zip"};
     public static final String[] FORMAT_NAMES = new String[]{"SPOT6Dimap"};
+    public static final String ROOT_METADATA = "SPOT_LIST.XML";
     public static final String[] MINIMAL_PATTERN_LIST = new String[] {
             "spot_list\\.xml",
             "prod_spot\\d{1}_\\d{3}[/\\\\]spot_prod\\.xml",
@@ -28,6 +30,7 @@ public class Spot6Constants {
 
     public static final String VALUE_NOT_AVAILABLE = "N/A";
     public static final String METADATA_FORMAT = "DIMAP";
+    public static final String MASK_COMPONENT_TYPE = "MASK";
     public static final String SPOT_PRODUCT = "SPOT 6/7 Product";
     public static final String STRING_ZERO = "0";
     public static final String STRING_ONE = "1";
@@ -108,6 +111,8 @@ public class Spot6Constants {
     public static final String PATH_IMG_TIME_RANGE_END = "/dimap_document/geometric_data/refined_model/time/endt";
     public static final String PATH_IMG_BAND_ID = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_spectral_range/band_id";
     public static final String PATH_IMG_BAND_MEASURE = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_spectral_range/measure_unit";
+    public static final String PATH_IMG_BAND_MIN = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_spectral_range/min";
+    public static final String PATH_IMG_BAND_MAX = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_spectral_range/max";
     public static final String PATH_IMG_BAND_GAIN = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_radiance/gain";
     public static final String PATH_IMG_BAND_BIAS = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_radiance/bias";
     public static final String PATH_IMG_SPECIAL_VALUE_TEXT = "/dimap_document/raster_data/raster_display/special_value/special_value_text";
@@ -124,6 +129,7 @@ public class Spot6Constants {
     public static final String PATH_IMG_BAND_IRRADIANCE_VALUE = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_solar_irradiance/value";
     public static final String PATH_IMG_RASTER_GEOMETRY = "/dimap_document/geoposition/raster_crs/raster_geometry";
     public static final String PATH_IMG_RPC_PATH = "/dimap_document/geoposition/geoposition_models/rational_function_model/component/component_path/href";
+    public static final String PATH_IMG_GEODETIC_CRS_CODE = "/dimap_document/coordinate_reference_system/geodetic_crs/geodetic_crs_code";
     public static final String PATH_IMG_GEOPOSITION_INSERT_ULXMAP = "/dimap_document/geoposition/geoposition_insert/ulxmap";
     public static final String PATH_IMG_GEOPOSITION_INSERT_ULYMAP = "/dimap_document/geoposition/geoposition_insert/ulymap";
     public static final String PATH_IMG_GEOPOSITION_INSERT_XDIM = "/dimap_document/geoposition/geoposition_insert/xdim";
@@ -142,4 +148,14 @@ public class Spot6Constants {
     public static final String PATH_RPC_DM_SAMP_NUM = "/dimap_document/rational_function_model/global_rfm/direct_model/samp_num_coeff_";
     public static final String PATH_RPC_DM_LINE_DEN = "/dimap_document/rational_function_model/global_rfm/direct_model/line_den_coeff";
     public static final String PATH_RPC_DM_LINE_NUM = "/dimap_document/rational_function_model/global_rfm/direct_model/line_num_coeff";
+
+    /*
+     * GML masks elements paths
+     */
+    public static final String PATH_GML_MEASURE_NAME = "/dimap_document/quality_assessment/imaging_quality_measurement/measure_name";
+    public static final String PATH_GML_MEASURE_DESC = "/dimap_document/quality_assessment/imaging_quality_measurement/measure_desc";
+    public static final String PATH_GML_COMPONENT_TITLE = "/dimap_document/quality_assessment/imaging_quality_measurement/quality_mask/component/component_title";
+    public static final String PATH_GML_COMPONENT_CONTENT = "/dimap_document/quality_assessment/imaging_quality_measurement/quality_mask/component/component_content";
+    public static final String PATH_GML_COMPONENT_TYPE = "/dimap_document/quality_assessment/imaging_quality_measurement/quality_mask/component/component_type";
+    public static final String PATH_GML_COMPONENT_PATH = "/dimap_document/quality_assessment/imaging_quality_measurement/quality_mask/component/component_path/href";
 }

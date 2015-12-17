@@ -14,16 +14,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
- * Created by kraftek on 12/7/2015.
+ * Metadata class for SPOT 6/7 raster metadata.
+ *
+ * @author Cosmin Cara
  */
 public class ImageMetadata extends XmlMetadata {
 
-    private Path path;
     private Map<String, Integer> bandIndices;
 
     static class ImageMetadataParser extends XmlMetadataParser<ImageMetadata> {
@@ -49,6 +49,8 @@ public class ImageMetadata extends XmlMetadata {
         String description;
         Double gain;
         Double bias;
+        Float centralWavelength;
+        Float bandwidth;
 
         public String getId() {
             return id;
@@ -69,6 +71,10 @@ public class ImageMetadata extends XmlMetadata {
         public Double getBias() {
             return bias;
         }
+
+        public Float getCentralWavelength() { return centralWavelength; }
+
+        public Float getBandwidth() { return bandwidth; }
     }
 
     public static ImageMetadata create(Path path) throws IOException {
@@ -236,6 +242,10 @@ public class ImageMetadata extends XmlMetadata {
                 bandInfos[i].gain = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_BAND_ID, ids[i], Spot6Constants.PATH_IMG_BAND_GAIN, Spot6Constants.STRING_ONE));
                 bandInfos[i].bias = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_BAND_ID, ids[i], Spot6Constants.PATH_IMG_BAND_BIAS, Spot6Constants.STRING_ZERO));
                 bandInfos[i].unit = getAttributeSiblingValue(Spot6Constants.PATH_IMG_BAND_ID, ids[i], Spot6Constants.PATH_IMG_BAND_MEASURE, Spot6Constants.VALUE_NOT_AVAILABLE);
+                float min = Float.parseFloat(getAttributeSiblingValue(Spot6Constants.PATH_IMG_BAND_ID, ids[i], Spot6Constants.PATH_IMG_BAND_MIN, Spot6Constants.STRING_ZERO));
+                float max = Float.parseFloat(getAttributeSiblingValue(Spot6Constants.PATH_IMG_BAND_ID, ids[i], Spot6Constants.PATH_IMG_BAND_MAX, Spot6Constants.STRING_ZERO));
+                bandInfos[i].centralWavelength = (min + max) / 2;
+                bandInfos[i].bandwidth = max - min;
             }
         }
         return bandInfos;
@@ -337,23 +347,32 @@ public class ImageMetadata extends XmlMetadata {
         } else {
             point.x = Float.parseFloat(getAttributeValue(Spot6Constants.PATH_IMG_EXTENT_VERTEX_LON, 0, String.valueOf(Float.NaN)));
             point.y = Float.parseFloat(getAttributeValue(Spot6Constants.PATH_IMG_EXTENT_VERTEX_LAT, 0, String.valueOf(Float.NaN)));
-            point.stepX = Float.parseFloat(getAttributeValue(Spot6Constants.PATH_IMG_EXTENT_VERTEX_LON, 0, String.valueOf(getPixelSize())));
-            point.stepY = Float.parseFloat(getAttributeValue(Spot6Constants.PATH_IMG_EXTENT_VERTEX_LAT, 0, String.valueOf(getPixelSize())));
+            point.stepX = Float.parseFloat(String.valueOf(getPixelSize()));
+            point.stepY = Float.parseFloat(String.valueOf(getPixelSize()));
         }
         return point;
     }
 
-    public String getProjectionCode() {
+    public String getCRSCode() {
         String code = null;
         String value = getAttributeValue(Spot6Constants.PATH_IMG_PROJECTED_CRS_CODE, null);
         if (value != null) {
             code = value.replace("urn:ogc:def:crs:", "").replace("::", ":");
+        } else {
+            value = getAttributeValue(Spot6Constants.PATH_IMG_GEODETIC_CRS_CODE, null);
+            if (value != null) {
+                code = value.replace("urn:ogc:def:crs:", "").replace("::", ":");
+            }
         }
         return code;
     }
 
+    public String getSpectralProcessing() {
+        return getAttributeValue(Spot6Constants.PATH_IMG_SPECTRAL_PROCESSING, Spot6Constants.VALUE_NOT_AVAILABLE);
+    }
+
     public double getPixelSize() {
-        String processing = getAttributeValue(Spot6Constants.PATH_IMG_SPECTRAL_PROCESSING, Spot6Constants.VALUE_NOT_AVAILABLE);
+        String processing = getSpectralProcessing();
         return "MS".equals(processing) ? Spot6Constants.MS_RESOLUTION : Spot6Constants.P_RESOLUTION;
     }
 
@@ -387,10 +406,34 @@ public class ImageMetadata extends XmlMetadata {
         return result;
     }
 
+    public List<MaskInfo> getMasks() {
+        List<MaskInfo> masks = new ArrayList<>();
+        String[] maskNames = getAttributeValues(Spot6Constants.PATH_GML_COMPONENT_TITLE);
+        String[] maskDescs = getAttributeValues(Spot6Constants.PATH_GML_MEASURE_DESC);
+        String[] paths = getAttributeValues(Spot6Constants.PATH_GML_COMPONENT_PATH);
+        if (maskNames != null && paths != null && maskNames.length == paths.length) {
+            for (int i = 0; i < maskNames.length; i++) {
+                MaskInfo mask = new MaskInfo();
+                mask.name = maskNames[i];
+                mask.description = (maskDescs != null && maskDescs.length == maskNames.length) ? maskDescs[i] : maskNames[i];
+                mask.path = Paths.get(this.path).resolve(paths[i]);
+                masks.add(mask);
+            }
+        }
+
+        return masks;
+    }
+
     public class InsertionPoint {
         public float x;
         public float y;
         public float stepX;
         public float stepY;
+    }
+
+    public class MaskInfo {
+        public String name;
+        public String description;
+        public Path path;
     }
 }
