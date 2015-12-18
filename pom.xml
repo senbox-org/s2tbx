@@ -182,6 +182,32 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.5.201505241946</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>4.1.0</version>
+                <configuration>
+                    <sourceDirectories>
+                        <sourceDirectory>${project.basedir}/s2tbx-s2msi-reader/target/generated-sources</sourceDirectory>
+                    </sourceDirectories>
+                    <scanForSources>true</scanForSources>
+                </configuration>
+            </plugin>
+
         </plugins>
 
         <pluginManagement>
@@ -214,6 +240,30 @@
                         <useDefaultManifestFile>true</useDefaultManifestFile>
                     </configuration>
                 </plugin>
+
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.18.1</version>
+                    <configuration>
+                        <enableAssertions>true</enableAssertions>
+                        <!--<skip>true</skip>-->
+                        <printSummary>true</printSummary>
+                        <useFile>false</useFile>
+                        <includes>
+                            <include>**/*Test.java</include>
+                            <include>**/*Test*.java</include>
+                            <include>**/*TestCase.java</include>
+                        </includes>
+                        <systemPropertyVariables>
+                            <org.esa.snap.testdata.out>target/test-data</org.esa.snap.testdata.out>
+                            <snap.reader.tests.execute>${snap.reader.tests.execute}</snap.reader.tests.execute>
+                            <snap.reader.tests.failOnMissingData>${snap.reader.tests.failOnMissingData}</snap.reader.tests.failOnMissingData>
+                            <snap.reader.tests.data.dir>${snap.reader.tests.data.dir}</snap.reader.tests.data.dir>
+                        </systemPropertyVariables>
+                        <argLine>-Xmx1024M -Dfile.encoding=UTF-8</argLine>
+                    </configuration>
+                </plugin>
+
             </plugins>
         </pluginManagement>
 
