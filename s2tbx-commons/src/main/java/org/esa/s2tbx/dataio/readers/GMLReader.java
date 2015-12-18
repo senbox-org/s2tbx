@@ -1,6 +1,9 @@
 package org.esa.s2tbx.dataio.readers;
 
-import com.vividsolutions.jts.geom.*;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.PrecisionModel;
 import org.esa.snap.core.datamodel.Placemark;
 import org.esa.snap.core.datamodel.VectorDataNode;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -8,6 +11,7 @@ import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.identity.FeatureId;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -29,7 +33,7 @@ import java.util.logging.Logger;
  */
 public class GMLReader {
     protected static Logger systemLogger = Logger.getLogger(GMLReader.class.getName());
-
+    protected static SimpleFeatureType featureType = Placemark.createGeometryFeatureType();
     public static VectorDataNode parse(String maskName, Path inputFile) {
         VectorDataNode node = null;
         try (InputStream inputStream = Files.newInputStream(inputFile)) {
@@ -37,14 +41,14 @@ public class GMLReader {
             SAXParser parser = factory.newSAXParser();
             Handler handler = new Handler();
             parser.parse(inputStream, handler);
-            List<Polygon> polygons = handler.getResult();
-            SimpleFeatureType featureType = Placemark.createGeometryFeatureType();
+            List<SimpleFeature> polygonFeatures = handler.getResult();
             DefaultFeatureCollection featureCollection = new DefaultFeatureCollection("VectorMasks", featureType);
-            for (int i = 0; i < polygons.size(); i++) {
-                SimpleFeature feature = new SimpleFeatureImpl(new Object[]{ polygons.get(i), String.format("Polygon-%s", i)},
+            featureCollection.addAll(polygonFeatures);
+            /*for (int i = 0; i < polygonFeatures.size(); i++) {
+                SimpleFeature feature = new SimpleFeatureImpl(new Object[]{ polygonFeatures.get(i), String.format("Polygon-%s", i)},
                         featureType, new FeatureIdImpl(String.format("F-%s", i)), true);
                 featureCollection.add(feature);
-            }
+            }*/
             node = new VectorDataNode(maskName, featureCollection);
         } catch (Exception e) {
             systemLogger.warning(e.getMessage());
@@ -52,16 +56,17 @@ public class GMLReader {
         return node;
     }
 
-    protected static class Handler extends DefaultHandler
-    {
-        private List<Polygon> result;
+    protected static class Handler extends DefaultHandler {
+        private List<SimpleFeature> result;
+        private List<Object> currentFeaturePoligons;
         private StringBuilder buffer;
+        private FeatureId currentFeatureId;
         private LinearRing currentLinearRing;
         private List<Coordinate> currentCoordinates;
         private int linRingCount;
         private GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING));
 
-        public List<Polygon> getResult() {
+        public List<SimpleFeature> getResult() {
             return result;
         }
 
@@ -70,6 +75,7 @@ public class GMLReader {
             try {
                 result = new ArrayList<>();
                 buffer = new StringBuilder();
+                currentFeaturePoligons = new ArrayList<>();
             } catch (Exception e) {
                 systemLogger.severe(e.getMessage());
             }
@@ -91,8 +97,15 @@ public class GMLReader {
                 qName = qName.substring(qName.indexOf(":") + 1);
             }
             buffer.setLength(0);
-            if ("LinearRing".equals(qName)) {
-                linRingCount++;
+            switch (qName) {
+                case "LinearRing":
+                    linRingCount++;
+                    break;
+                case "MaskFeature":
+                    String id = attributes.getValue("gml:id");
+                    currentFeatureId = new FeatureIdImpl(id);
+                    currentFeaturePoligons.clear();
+                    break;
             }
         }
 
@@ -102,9 +115,15 @@ public class GMLReader {
                 qName = qName.substring(qName.indexOf(":") + 1);
             }
             switch (qName) {
+                case "MaskFeature":
+                    if (currentFeaturePoligons.size() > 0) {
+                        result.add(new SimpleFeatureImpl(currentFeaturePoligons.toArray(), featureType, currentFeatureId, true));
+                    }
+                    break;
                 case "Polygon":
                     if (currentLinearRing != null) {
-                        result.add(geometryFactory.createPolygon(currentLinearRing));
+                        currentFeaturePoligons.add(geometryFactory.createPolygon(currentLinearRing));
+                        currentFeaturePoligons.add(String.format("Polygon-%s", linRingCount));
                         currentLinearRing = null;
                     }
                     break;

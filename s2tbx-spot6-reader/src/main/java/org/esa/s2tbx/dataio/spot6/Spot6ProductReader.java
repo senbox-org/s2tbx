@@ -104,6 +104,7 @@ public class Spot6ProductReader extends AbstractProductReader {
             product = new Product(metadata.getInternalReference(),
                                   metadata.getProductType(),
                                   width, height);
+            product.setFileLocation(new File(metadata.getPath()));
             ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
             product.setStartTime(maxResImageMetadata.getProductStartTime());
             product.setEndTime(maxResImageMetadata.getProductEndTime());
@@ -149,7 +150,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                     tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
-
+                final Stx[] statistics = imageMetadata.getBandsStatistics();
                 for (int i = 0; i < numBands; i++) {
                     Band targetBand = new Band(bandInfos[i].getId(), pixelDataType,
                                                 Math.round(width / factorX),
@@ -170,11 +171,17 @@ public class Spot6ProductReader extends AbstractProductReader {
                             srcBands[x][y] = tiles[x][y].getBandAt(i);
                         }
                     }
+
                     MosaicMultiLevelSource bandSource =
                             new MosaicMultiLevelSource(srcBands,
                                     bandWidth, bandHeight,
                                     tileWidth, tileHeight, tileRows, tileCols,
-                                    levels, typeMap.get(pixelDataType), targetBand.getImageToModelTransform());
+                                    levels, typeMap.get(pixelDataType),
+                                    imageMetadata.isGeocoded() ?
+                                            targetBand.getGeoCoding() != null ?
+                                                    Product.findImageToModelTransform(targetBand.getGeoCoding()) :
+                                                    Product.findImageToModelTransform(product.getSceneGeoCoding()) :
+                                            targetBand.getImageToModelTransform());
                     targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
 
                     product.addBand(targetBand);
@@ -254,17 +261,14 @@ public class Spot6ProductReader extends AbstractProductReader {
     private void addGMLMasks(Product target, ImageMetadata metadata) {
         List<ImageMetadata.MaskInfo> gmlMasks = metadata.getMasks();
         final ProductNodeGroup<VectorDataNode> vectorDataGroup = target.getVectorDataGroup();
-        for (ImageMetadata.MaskInfo mask : gmlMasks) {
-            logger.info("Parsing mask: " + mask.name);
+        gmlMasks.stream().filter(mask -> !vectorDataGroup.contains(mask.name)).forEach(mask -> {
+            logger.info(String.format("Parsing mask %s of component %s", mask.name, metadata.getFileName()));
             VectorDataNode node = GMLReader.parse(mask.name, mask.path);
             if (node != null) {
                 node.setDescription(mask.description);
-                if (!vectorDataGroup.contains(mask.name)) {
-                    vectorDataGroup.add(node);
-                }
+                vectorDataGroup.add(node);
             }
-
-        }
+        });
     }
 
 

@@ -371,6 +371,14 @@ public class ImageMetadata extends XmlMetadata {
         return getAttributeValue(Spot6Constants.PATH_IMG_SPECTRAL_PROCESSING, Spot6Constants.VALUE_NOT_AVAILABLE);
     }
 
+    public String getProcessingLevel() {
+        return getAttributeValue(Spot6Constants.PATH_IMG_PROCESSING_LEVEL, Spot6Constants.VALUE_NOT_AVAILABLE);
+    }
+
+    public boolean isGeocoded() {
+        return !Spot6Constants.PROCESSING_SENSOR.equals(getProcessingLevel());
+    }
+
     public double getPixelSize() {
         String processing = getSpectralProcessing();
         return "MS".equals(processing) ? Spot6Constants.MS_RESOLUTION : Spot6Constants.P_RESOLUTION;

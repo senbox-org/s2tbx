@@ -20,8 +20,8 @@ public class Spot6Constants {
             "spot_list\\.xml",
             "prod_spot\\d{1}_\\d{3}[/\\\\]spot_prod\\.xml",
             "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}[/\\\\]spot_vol\\.xml",
-            "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{3}_\\w{1}[/\\\\]dim_spot\\d{1}_\\w{1,3}_\\d{15}_(sen|ort)_\\d{9}\\.xml",
-            "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{15}_(sen|ort)_\\d{9}_r\\d{1}c\\d{1}\\.(jp2|tif)"};
+            "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{3}_\\w{1}[/\\\\]dim_spot\\d{1}_\\w{1,3}_\\d{15}_(sen|ort)_\\d{9,10}\\.xml",
+            "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{15}_(sen|ort)_\\d{9,10}_r\\d{1}c\\d{1}\\.(jp2|tif)"};
     public static final String[] SPOT6_RGB_PROFILE = new String[] { "B2", "B1", "B0" };
     public static final String ROOT_METADATA_FILE = "SPOT_LIST.XML";
 
@@ -40,6 +40,7 @@ public class Spot6Constants {
     public static final String DEFAULT_PIXEL_SIZE = "16";
     public static final String DEFAULT_SIGN = "UNSIGNED";
     public static final String INTEGER_TYPE = "INTEGER";
+    public static final String PROCESSING_SENSOR = "SENSOR";
     public static final double MS_RESOLUTION = 6;
     public static final double P_RESOLUTION = 1.5;
 
@@ -123,7 +124,7 @@ public class Spot6Constants {
     public static final String PATH_IMG_HISTOGRAM_MIN = "/dimap_document/radiometric_data/histogram_band_list/histogram_band/min";
     public static final String PATH_IMG_HISTOGRAM_MAX = "/dimap_document/radiometric_data/histogram_band_list/histogram_band/max";
     public static final String PATH_IMG_HISTOGRAM_MEAN = "/dimap_document/radiometric_data/histogram_band_list/histogram_band/mean";
-    public static final String PATH_IMG_HISTOGRAM_STDEV = "/dimap_document/radiometric_data/histogram_band_list/histogram_band/stdev";
+    public static final String PATH_IMG_HISTOGRAM_STDEV = "/dimap_document/radiometric_data/histogram_band_list/histogram_band/stdv";
     public static final String PATH_IMG_HISTOGRAM_VALUES = "/dimap_document/radiometric_data/histogram_band_list/histogram_band/values";
     public static final String PATH_IMG_BAND_IRRADIANCE_BAND_ID = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_solar_irradiance/band_id";
     public static final String PATH_IMG_BAND_IRRADIANCE_VALUE = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_solar_irradiance/value";
@@ -140,6 +141,7 @@ public class Spot6Constants {
     public static final String PATH_IMG_EXTENT_VERTEX_ROW = "/dimap_document/dataset_content/dataset_extent/vertex/row";
     public static final String PATH_IMG_PROJECTED_CRS_CODE = "/dimap_document/coordinate_reference_system/projected_crs/projected_crs_code";
     public static final String PATH_IMG_SPECTRAL_PROCESSING = "/dimap_document/processing_information/product_settings/spectral_processing";
+    public static final String PATH_IMG_PROCESSING_LEVEL = "/dimap_document/processing_information/product_settings/processing_level";
 
     /*
      * RPC metadata elements paths
