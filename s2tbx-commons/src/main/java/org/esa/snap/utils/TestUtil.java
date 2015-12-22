@@ -31,7 +31,7 @@ public class TestUtil {
 
     public static boolean testdataAvailable() {
         String testDataDir = System.getProperty(PROPERTYNAME_DATA_DIR);
-        return (testDataDir != null) && Files.exists( Paths.get( testDataDir ) );
+        return (testDataDir != null) && !testDataDir.isEmpty() && Files.exists( Paths.get( testDataDir ) );
     }
 
     public static File getTestFile(String file) {
