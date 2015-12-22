@@ -104,6 +104,20 @@
             <version>${netbeans.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-commons</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <version>${snap.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
