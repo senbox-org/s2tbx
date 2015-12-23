@@ -430,6 +430,7 @@
     </build>
 
 
+    <!-- Generate reports during 'mvn site' -->
     <reporting>
         <plugins>
             <plugin>
