@@ -15,12 +15,10 @@
     <name>Sentinel-2 Toolbox Adapters Help</name>
     <description>Help modules for the adapters for the Standalone Tools of the Sentinel-2 Toolbox</description>
 
-
     <dependencies>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-javahelp</artifactId>
-            <version>${netbeans.version}</version>
         </dependency>
     </dependencies>
 
