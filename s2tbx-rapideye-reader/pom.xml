@@ -27,7 +27,7 @@
     </parent>
 
     <artifactId>s2tbx-rapideye-reader</artifactId>
-    <name>RapidEye Reader</name>
+    <name>Sentinel-2 Toolbox RapidEye Reader</name>
     <packaging>nbm</packaging>
     <description>
         This module enables the Sentinel Toolbox to read RapidEye products

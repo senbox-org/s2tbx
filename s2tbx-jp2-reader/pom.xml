@@ -11,7 +11,7 @@
 
     <artifactId>s2tbx-jp2-reader</artifactId>
     <packaging>nbm</packaging>
-    <name>Generic JP2 Reader</name>
+    <name>Sentinel-2 Toolbox Generic JP2 Reader</name>
     <description>
         This module enables the Sentinel Toolbox to read JP2 data products
     </description>

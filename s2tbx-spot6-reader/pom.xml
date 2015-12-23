@@ -28,7 +28,7 @@
 
     <artifactId>s2tbx-spot6-reader</artifactId>
     <packaging>nbm</packaging>
-    <name>Spot 6/7 Reader</name>
+    <name>Sentinel-2 Toolbox Spot 6/7 Reader</name>
     <description>
         This module enables the Sentinel Toolbox to read SPOT 6 and 7 products
     </description>

@@ -27,9 +27,9 @@
 
     <artifactId>s2tbx-deimos-reader</artifactId>
     <packaging>nbm</packaging>
-    <name>DEIMOS-1 Reader</name>
+    <name>Sentinel-2 Toolbox Deimos-1 Reader</name>
     <description>
-        This module enables the Sentinel Toolbox to read DEIMOS-1 data products
+        This module enables the Sentinel Toolbox to read Deimos-1 data products
     </description>
 
     <dependencies>
