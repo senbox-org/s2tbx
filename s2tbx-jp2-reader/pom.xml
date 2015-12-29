@@ -73,6 +73,7 @@
                 <configuration>
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.dataio.jp2</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.jp2.internal</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
