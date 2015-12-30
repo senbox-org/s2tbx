@@ -67,7 +67,7 @@ public class PathUtils {
     public static List<Path> listFiles(Path basePath, int depth) throws IOException {
         if (basePath == null)
             return null;
-        depth = depth <= 0 ? depth = 255 : depth;
+        depth = depth <= 0 ? 255 : depth;
         List<Path> files = new ArrayList<>();
         Files.walkFileTree(basePath,
                 EnumSet.noneOf(FileVisitOption.class),
