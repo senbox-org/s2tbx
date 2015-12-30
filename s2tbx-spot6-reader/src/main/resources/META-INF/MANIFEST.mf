@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: ${s2tbx.nbmSpecVersion}
-Class-Path: ../lib/relaxngDatatype-20020414.jar ../lib/xsom-20110809.jar ../lib/jaxp-api-1.4.5.jar
