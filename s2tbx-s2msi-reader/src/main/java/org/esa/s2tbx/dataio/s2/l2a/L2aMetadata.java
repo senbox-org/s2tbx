@@ -52,7 +52,9 @@ public class L2aMetadata extends S2Metadata {
     protected Logger logger = SystemUtils.LOG;
 
     public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException, JAXBException {
-        return new L2aMetadata(new FileInputStream(file), file, file.getParent(), granuleName, config, epsg, productResolution);
+        try (FileInputStream stream = new FileInputStream(file)) {
+            return new L2aMetadata(stream, file, file.getParent(), granuleName, config, epsg, productResolution);
+        }
     }
 
     private L2aMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, JAXBException, FileNotFoundException {

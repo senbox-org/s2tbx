@@ -60,7 +60,9 @@ public class L1bMetadata extends S2Metadata {
     private ProductCharacteristics productCharacteristics;
 
     public static L1bMetadata parseHeader(File file, S2Config config) throws JDOMException, IOException, JAXBException {
-        return new L1bMetadata(new FileInputStream(file), file, file.getParent(), config);
+        try (FileInputStream stream = new FileInputStream(file)) {
+            return new L1bMetadata(stream, file, file.getParent(), config);
+        }
     }
 
 
