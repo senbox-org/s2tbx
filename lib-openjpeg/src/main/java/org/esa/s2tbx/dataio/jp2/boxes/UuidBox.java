@@ -53,6 +53,9 @@ public class UuidBox extends Box {
         uiid = new UUID(mostSigBits, leastSigBits);
         final long dataLength = length - (stream.getStreamPosition() - position);
         data = new byte[(int) dataLength];
-        stream.read(data);
+        int bytesRead = stream.read(data);
+        if (bytesRead != dataLength) {
+            throw new IOException(String.format("Unable to read requested %d bytes from UUID Box", dataLength));
+        }
     }
 }
