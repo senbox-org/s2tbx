@@ -88,8 +88,8 @@ public abstract class RapidEyeReader extends AbstractProductReader {
                         GeoTiffProductReader reader = new GeoTiffProductReader(getReaderPlugIn());
                         Product udmProduct = reader.readProductNodes(file, null);
                         Band srcBand = udmProduct.getBandAt(0);
-                        float scaleX = metadata.getRasterWidth() / udmProduct.getSceneRasterWidth();
-                        float scaleY = metadata.getRasterHeight() / udmProduct.getSceneRasterHeight();
+                        float scaleX = (float)metadata.getRasterWidth() / (float)udmProduct.getSceneRasterWidth();
+                        float scaleY = (float)metadata.getRasterHeight() / (float)udmProduct.getSceneRasterHeight();
                         RenderedOp renderedOp = ScaleDescriptor.create(srcBand.getSourceImage(), scaleX, scaleY, 0.0f, 0.0f, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
                         Band targetBand = product.addBand("unusable_data", srcBand.getDataType());
                         targetBand.setSourceImage(renderedOp);
