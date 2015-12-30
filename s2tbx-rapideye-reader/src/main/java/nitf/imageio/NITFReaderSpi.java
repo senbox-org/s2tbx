@@ -71,7 +71,10 @@ public class NITFReaderSpi extends ImageReaderSpi {
         try {
             fin = new FileInputStream(file);
             byte[] firstFour = new byte[4];
-            fin.read(firstFour);
+            int bytesRead = fin.read(firstFour);
+            if (bytesRead != 4) {
+                return false;
+            }
             return new String(firstFour).equals("NITF");
         } catch (IOException e) {
             return false;
