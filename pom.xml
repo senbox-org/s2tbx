@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>2.0.3</version>
+    <version>2.0.4-SNAPSHOT</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/senbox-org/s2tbx</url>
@@ -42,13 +42,13 @@
 
     <properties>
         <snap.version>2.0.0</snap.version>
-        <s2tbx.nbmSpecVersion>2.0.3</s2tbx.nbmSpecVersion>
+        <s2tbx.nbmSpecVersion>2.0.4-SNAPSHOT</s2tbx.nbmSpecVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE802</netbeans.version>
         <javahelp.version>2.0.05</javahelp.version>
         <brandingToken>s2tbx</brandingToken>
-        <openjpeg.version>2.1.0.3</openjpeg.version>
+        <openjpeg.version>2.1.0.4-SNAPSHOT</openjpeg.version>
     </properties>
 
     <repositories>
