@@ -26,6 +26,8 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
@@ -49,11 +51,13 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.*;
+import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -660,35 +664,65 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                  * Get the a PlanarImage of the tile at native resolution, with a [0,0] origin
                  */
                 File imageFile = bandInfo.getTileIdToFileMap().get(tileId);
-                PlanarImage opImage = S2TileOpImage.create(imageFile,
-                                                           getCacheDir(),
-                                                           null, // tileRectangle.getLocation(),
-                                                           bandInfo.getImageLayout(),
-                                                           getConfig(),
-                                                           getModel(),
-                                                           getProductResolution(),
-                                                           level);
 
-                /*
-                 * Translate the [0,0] image w.r.t its pixel position in the scene.
-                 */
                 // Get the band native resolution
                 S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
-                // Get the position in scene at level 0
-                Rectangle tileRectangle = sceneDescription.getTilePositionInScene(tileId, bandNativeResolution);
-                // Compute position in scene for current level
-                Rectangle scaledRectangle = DefaultMultiLevelSource.getLevelImageBounds(tileRectangle, getModel().getScale(level));
-                // Apply tile translation
-                opImage = TranslateDescriptor.create(opImage,
-                                                     (float) scaledRectangle.x,
-                                                     (float) scaledRectangle.y,
-                                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                // Get the position of the L1C tile in full scene at level 0
+                Rectangle l1cTileRectangleL0 = sceneDescription.getTilePositionInScene(tileId, bandNativeResolution);
+                // Get the position of the L1C tile in full scene at current requested level
+                //Rectangle l1cTileRectangle = DefaultMultiLevelSource.getLevelImageBounds(l1cTileRectangleL0, getModel().getScale(level));
 
-                logger.fine(String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
-                logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
+                /*
+                 * Iterate over internal JP2 tiles
+                 */
+                TileLayout l1cTileLayout = bandInfo.getImageLayout();
+                for (int x = 0; x < l1cTileLayout.numXTiles; x++) {
+                    for (int y = 0; y < l1cTileLayout.numYTiles; y++) {
 
-                // Feed the image list for mosaic
-                tileImages.add(opImage);
+                        // Get the position of the internal JP2 tile of L1C tile in full scene at current requested level
+                        /*
+                        Rectangle relativePositionL0 = new Rectangle(x*l1cTileLayout.width, y * l1cTileLayout.height, l1cTileLayout.width, l1cTileLayout.height);
+                        Rectangle relativePosition = DefaultMultiLevelSource.getLevelImageBounds(relativePositionL0, getModel().getScale(level));
+                        Rectangle absolutePosition = (Rectangle)relativePosition.clone();
+                        absolutePosition.translate(l1cTileRectangle.x, l1cTileRectangle.y);
+                        */
+
+                        Rectangle internalJp2TileRectangleL0 = new Rectangle(
+                                l1cTileRectangleL0.x + x * l1cTileLayout.tileWidth,
+                                l1cTileRectangleL0.y + y * l1cTileLayout.tileHeight,
+                                l1cTileLayout.tileWidth,
+                                l1cTileLayout.tileHeight);
+                        Rectangle internalJp2TileRectangle = DefaultMultiLevelSource.getLevelImageBounds(internalJp2TileRectangleL0, getModel().getScale(level));
+
+                        PlanarImage opImage;
+                        try {
+                            TileLayout currentLayout = l1cTileLayout;
+                            // The edge tiles dimensions may be less than the dimensions from JP2 header
+                            // because the size of the image is not necessarily a multiple of the tile size
+                            if (y == l1cTileLayout.numYTiles - 1 || x == l1cTileLayout.numXTiles - 1) {
+                                currentLayout = new TileLayout(l1cTileLayout.width, l1cTileLayout.height,
+                                        l1cTileLayout.width - x * l1cTileLayout.tileWidth, l1cTileLayout.height - y * l1cTileLayout.tileHeight,
+                                        l1cTileLayout.numXTiles, l1cTileLayout.numYTiles, l1cTileLayout.numResolutions);
+                            }
+                            opImage = JP2TileOpImage.create(imageFile.toPath(), getCacheDir().toPath(),
+                                    0, y, x, currentLayout, getModel(), DataBuffer.TYPE_USHORT, level);
+
+                            if (opImage != null) {
+                                opImage = TranslateDescriptor.create(opImage,
+                                        (float) (internalJp2TileRectangle.x),
+                                        (float) (internalJp2TileRectangle.y),
+                                        Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                            }
+                        } catch (IOException ex) {
+                            opImage = ConstantDescriptor.create((float) internalJp2TileRectangle.width, (float) internalJp2TileRectangle.height, new Number[]{0}, null);
+                        }
+                        tileImages.add(opImage);
+                    }
+                }
+                if (tileImages.isEmpty()) {
+                    logger.warning("No tile images for mosaic");
+                    return null;
+                }
             }
 
             if (tileImages.isEmpty()) {

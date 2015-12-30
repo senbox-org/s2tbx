@@ -45,7 +45,7 @@ import java.util.logging.Logger;
  *
  * @author Cosmin Cara
  */
-public class XmlMetadataParser<T extends XmlMetadata> {
+public class XmlMetadataParser<T extends GenericXmlMetadata> {
 
     protected Class fileClass;
     protected String[] schemaLocations;
@@ -147,8 +147,14 @@ public class XmlMetadataParser<T extends XmlMetadata> {
                 @SuppressWarnings("unchecked") Constructor<T> ctor = fileClass.getConstructor(String.class);
                 result = ctor.newInstance("Metadata");
                 currentPath = "/";
-            } catch (Exception e) {
-                systemLogger.severe(e.getMessage());
+            } catch (Exception e1) {
+                try {
+                    @SuppressWarnings("unchecked") Constructor<T> ctor = fileClass.getDeclaredConstructor(String.class);
+                    result = ctor.newInstance("Metadata");
+                    currentPath = "/";
+                } catch (Exception e) {
+                    systemLogger.severe(e.getMessage());
+                }
             }
         }
 

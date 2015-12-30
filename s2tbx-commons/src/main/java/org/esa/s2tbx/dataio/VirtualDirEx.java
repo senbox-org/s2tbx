@@ -202,7 +202,7 @@ public abstract class VirtualDirEx extends VirtualDir {
         try {
             Files.walkFileTree(Paths.get(parent.getAbsolutePath()),
                     EnumSet.noneOf(FileVisitOption.class),
-                    2,
+                    5,
                     new FileVisitor<Path>() {
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
