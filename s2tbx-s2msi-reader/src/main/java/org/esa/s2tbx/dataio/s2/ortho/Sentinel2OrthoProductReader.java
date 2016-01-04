@@ -302,6 +302,66 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             } else {
                 pixelSize = (double) getProductResolution().resolution;
             }
+<<<<<<< Updated upstream
+=======
+        }
+
+        // TODO : why do we use this here ?
+        final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+        // TODO : why "S2L1CMasks" ?
+        final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
+
+        for (int index = 0; index < productPolygons.size(); index++) {
+            Polygon polygon = productPolygons.get(index).getPolygon();
+
+            Object[] data1 = {polygon, String.format("Polygon-%s", index)};
+            SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+            collection.add(f1);
+        }
+
+        String bandName = bandInfo.getSpectralInfo().getPhysicalBand();
+
+        VectorDataNode vdn = new VectorDataNode(maskInfo.getTypeForBand(bandName), collection);
+        vdn.setOwner(product);
+        product.addMask(maskInfo.getTypeForBand(bandName),
+                vdn,
+                maskInfo.getDescriptionForBand(bandName),
+                maskInfo.getColor(),
+                maskInfo.getTransparency());
+    }
+
+    private void addTiePointGridBand(Product product, S2Metadata metadataHeader, S2OrthoSceneLayout sceneDescription, String name, int tiePointGridIndex) {
+        final Band band = product.addBand(name, ProductData.TYPE_FLOAT32);
+        band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription, metadataHeader, ImageManager.getImageToModelTransform(product.getGeoCoding()), 6, tiePointGridIndex)));
+    }
+
+    private void addBands(Product product, Map<Integer, BandInfo> bandInfoMap, double[] sceneOrigin, MultiLevelImageFactory mlif) throws IOException {
+        ArrayList<Integer> bandIndexes = new ArrayList<>(bandInfoMap.keySet());
+        Collections.sort(bandIndexes);
+
+        if (bandIndexes.isEmpty()) {
+            throw new IOException("No valid bands found.");
+        }
+
+        Map<Integer, MultiLevelImage> nativeResolutionImages = new HashMap<>();
+        for (Integer bandIndex : bandIndexes) {
+            BandInfo bandInfo = bandInfoMap.get(bandIndex);
+            MultiLevelImage multilevelImage = mlif.createSourceImage(bandInfo);
+            nativeResolutionImages.put(bandIndex, multilevelImage);
+        }
+
+        if (!isMultiResolution()) {
+
+        }
+
+
+        for (Integer bandIndex : bandIndexes) {
+            BandInfo bandInfo = bandInfoMap.get(bandIndex);
+            MultiLevelImage multilevelImage = mlif.createSourceImage(bandInfo);
+            nativeResolutionImages.put(bandIndex, multilevelImage);
+            Band band = addBand(product, bandInfo);
+            band.setSourceImage(multilevelImage);
+>>>>>>> Stashed changes
 
             try {
                 band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
