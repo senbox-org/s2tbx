@@ -17,7 +17,6 @@
 
 package org.esa.s2tbx.dataio.rapideye.metadata;
 
-import junit.framework.TestCase;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -32,9 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 /**

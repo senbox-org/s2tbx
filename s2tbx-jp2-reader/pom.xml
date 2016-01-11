@@ -47,9 +47,16 @@
             <version>${openjpeg.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>s2tbx-commons</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-commons</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>

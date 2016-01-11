@@ -17,7 +17,6 @@
 
 package org.esa.s2tbx.dataio.rapideye.nitf;
 
-import junit.framework.TestCase;
 import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
 import org.esa.snap.core.datamodel.ProductData;
@@ -30,9 +29,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ramona Manda
