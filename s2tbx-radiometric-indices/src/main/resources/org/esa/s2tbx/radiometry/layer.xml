@@ -1,0 +1,82 @@
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Operators">
+            <file name="org-esa-s2tbx-SaviOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="SAVI Processor"/>
+                <attr name="operatorName" stringvalue="SaviOp"/>
+                <attr name="dialogTitle" stringvalue="SAVI"/>
+                <attr name="helpId" stringvalue="SAVIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_savi"/>
+                <attr name="ShortDescription" stringvalue="Generates SAVI from a source product with at least two spectral bands."/>
+            </file>
+            <file name="org-esa-s2tbx-IpviOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="IPVI Processor"/>
+                <attr name="operatorName" stringvalue="IpviOp"/>
+                <attr name="dialogTitle" stringvalue="IPVI"/>
+                <attr name="helpId" stringvalue="IPVIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_ipvi"/>
+                <attr name="ShortDescription" stringvalue="Generates IPVI from a source product with at least two spectral bands."/>
+            </file>
+            <file name="org-esa-s2tbx-RviOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="RVI Processor"/>
+                <attr name="operatorName" stringvalue="RviOp"/>
+                <attr name="dialogTitle" stringvalue="RVI"/>
+                <attr name="helpId" stringvalue="RVIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_rvi"/>
+                <attr name="ShortDescription" stringvalue="Generates RVI from a source product with at least two spectral bands."/>
+            </file>
+            <file name="org-esa-s2tbx-DviOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="DVI Processor"/>
+                <attr name="operatorName" stringvalue="DviOp"/>
+                <attr name="dialogTitle" stringvalue="DVI"/>
+                <attr name="helpId" stringvalue="DVIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_dvi"/>
+                <attr name="ShortDescription" stringvalue="Generates DVI from a source product with at least two spectral bands."/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="Optical">
+            <folder name="Thematic Land Processing">
+                <file name="org-esa-s2tbx-SaviOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-SaviOpAction.instance"/>
+                    <attr name="position" intvalue="0"/>
+                </file>
+                <file name="org-esa-s2tbx-IpviOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-IpviOpAction.instance"/>
+                    <attr name="position" intvalue="0"/>
+                </file>
+                <file name="org-esa-s2tbx-RviOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-RviOpAction.instance"/>
+                    <attr name="position" intvalue="0"/>
+                </file>
+                <file name="org-esa-s2tbx-DviOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-DviOpAction.instance"/>
+                    <attr name="position" intvalue="0"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Services">
+        <folder name="JavaHelp">
+            <!--file name="org-esa-s2tbx-savi-helpset.xml" url="helpset.xml">
+                <attr name="position" intvalue="4310"/>
+            </file-->
+            <file name="org-esa-s2tbx-helpset.xml" url="helpset.xml">
+                <attr name="position" intvalue="4310"/>
+            </file>
+        </folder>
+    </folder>
+
+</filesystem>

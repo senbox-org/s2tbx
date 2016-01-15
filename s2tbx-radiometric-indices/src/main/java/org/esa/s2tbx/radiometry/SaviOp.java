@@ -17,15 +17,15 @@
 package org.esa.s2tbx.radiometry;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.snap.core.datamodel.*;
-import org.esa.snap.core.gpf.Operator;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.FlagCoding;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
-import org.esa.snap.core.gpf.annotations.SourceProduct;
-import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 
 import java.awt.*;
@@ -37,22 +37,20 @@ import java.util.Map;
         description = "This retrieves the Soil-Adjusted Vegetation Index (SAVI).",
         authors = "Cosmin Cara",
         copyright = "Copyright (C) 2015 by CS ROMANIA")
-public class SaviOp extends Operator {
+public class SaviOp extends BaseIndexOp {
 
     // constants
     public static final String SAVI_BAND_NAME = "savi";
     public static final String SAVI_FLAGS_BAND_NAME = "savi_flags";
+
     public static final String SAVI_ARITHMETIC_FLAG_NAME = "SAVI_ARITHMETIC";
     public static final String SAVI_LOW_FLAG_NAME = "SAVI_NEGATIVE";
     public static final String SAVI_HIGH_FLAG_NAME = "SAVI_SATURATION";
+
     public static final int SAVI_ARITHMETIC_FLAG_VALUE = 1;
     public static final int SAVI_LOW_FLAG_VALUE = 1 << 1;
     public static final int SAVI_HIGH_FLAG_VALUE = 1 << 2;
 
-    @SourceProduct(alias = "source", description="The source product.")
-    private Product sourceProduct;
-    @TargetProduct
-    private Product targetProduct;
 
     @Parameter(label = "Red factor", defaultValue = "1.0F", description = "The value of the red source band is multiplied by this value.")
     private float redFactor;
@@ -75,120 +73,7 @@ public class SaviOp extends Operator {
             rasterDataNodeType = Band.class)
     private String nirSourceBand;
 
-
-    @Override
-    public void initialize() throws OperatorException {
-        loadSourceBands(sourceProduct);
-        int sceneWidth = sourceProduct.getSceneRasterWidth();
-        int sceneHeight = sourceProduct.getSceneRasterHeight();
-        targetProduct = new Product("savi", sourceProduct.getProductType() + "_savi", sceneWidth, sceneHeight);
-
-        Band saviOutputBand = new Band(SAVI_BAND_NAME, ProductData.TYPE_FLOAT32, sceneWidth,
-                sceneHeight);
-        targetProduct.addBand(saviOutputBand);
-
-        ProductUtils.copyTiePointGrids(sourceProduct, targetProduct);
-        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
-        ProductUtils.copyFlagBands(sourceProduct, targetProduct, true);
-
-        FlagCoding saviFlagCoding = createSaviFlagCoding();
-        targetProduct.getFlagCodingGroup().add(saviFlagCoding);
-
-        Band saviFlagsOutputBand = new Band(SAVI_FLAGS_BAND_NAME, ProductData.TYPE_INT32,
-                sceneWidth, sceneHeight);
-        saviFlagsOutputBand.setDescription("savi specific flags");
-        saviFlagsOutputBand.setSampleCoding(saviFlagCoding);
-        targetProduct.addBand(saviFlagsOutputBand);
-
-        ProductUtils.copyMasks(sourceProduct, targetProduct);
-        ProductUtils.copyOverlayMasks(sourceProduct, targetProduct);
-
-        targetProduct.addMask(SAVI_ARITHMETIC_FLAG_NAME, (SAVI_FLAGS_BAND_NAME + "." + SAVI_ARITHMETIC_FLAG_NAME),
-                "An arithmetic exception occurred.",
-                Color.red.brighter(), 0.7);
-        targetProduct.addMask(SAVI_LOW_FLAG_NAME, (SAVI_FLAGS_BAND_NAME + "." + SAVI_LOW_FLAG_NAME),
-                "savi value is too low.",
-                Color.red, 0.7);
-        targetProduct.addMask(SAVI_HIGH_FLAG_NAME, (SAVI_FLAGS_BAND_NAME + "." + SAVI_HIGH_FLAG_NAME),
-                "savi value is too high.",
-                Color.red.darker(), 0.7);
-    }
-
-    @Override
-    public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
-        pm.beginTask("Computing savi", rectangle.height);
-        try {
-            Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
-            Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
-
-            Tile savi = targetTiles.get(targetProduct.getBand(SAVI_BAND_NAME));
-            Tile saviFlags = targetTiles.get(targetProduct.getBand(SAVI_FLAGS_BAND_NAME));
-
-            float saviValue;
-            int saviFlagsValue;
-
-            for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
-                for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
-                    final float nir = nirFactor * nirTile.getSampleFloat(x, y);
-                    final float red = redFactor * redTile.getSampleFloat(x, y);
-
-                    saviValue = (nir - red) / (nir + red + soilCorrectionFactor) * (1 + soilCorrectionFactor);
-                    saviFlagsValue = 0;
-                    if (Float.isNaN(saviValue) || Float.isInfinite(saviValue)) {
-                        saviFlagsValue |= SAVI_ARITHMETIC_FLAG_VALUE;
-                        saviValue = 0.0f;
-                    }
-                    if (saviValue < 0.0f) {
-                        saviFlagsValue |= SAVI_LOW_FLAG_VALUE;
-                    }
-                    if (saviValue > 1.0f) {
-                        saviFlagsValue |= SAVI_HIGH_FLAG_VALUE;
-                    }
-                    savi.setSample(x, y, saviValue);
-                    saviFlags.setSample(x, y, saviFlagsValue);
-                }
-                checkForCancellation();
-                pm.worked(1);
-            }
-        } finally {
-            pm.done();
-        }
-    }
-
-    private void loadSourceBands(Product product) throws OperatorException {
-        if (redSourceBand == null) {
-            redSourceBand = findBand(600, 650, product);
-            getLogger().info("Using band '" + redSourceBand + "' as red input band.");
-        }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(800, 900, product);
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
-        }
-        if (redSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band. Please specify band.");
-        }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
-        }
-    }
-
-    // package local for testing reasons only
-    static String findBand(float minWavelength, float maxWavelength, Product product) {
-        String bestBand = null;
-        float bestBandLowerDelta = Float.MAX_VALUE;
-        for (Band band : product.getBands()) {
-            float bandWavelength = band.getSpectralWavelength();
-            if (bandWavelength != 0.0F) {
-                float lowerDelta = bandWavelength - minWavelength;
-                if (lowerDelta < bestBandLowerDelta && bandWavelength <= maxWavelength && bandWavelength >= minWavelength) {
-                    bestBand = band.getName();
-                    bestBandLowerDelta = lowerDelta;
-                }
-            }
-        }
-        return bestBand;
-    }
-
+    /*
     private static FlagCoding createSaviFlagCoding() {
 
         FlagCoding saviFlagCoding = new FlagCoding("savi_flags");
@@ -212,6 +97,134 @@ public class SaviOp extends Operator {
         saviFlagCoding.addAttribute(attribute);
 
         return saviFlagCoding;
+    }
+*/
+
+    @Override
+    public void initialize() throws OperatorException {
+
+        super.initialize();
+
+        loadSourceBands(sourceProduct);
+
+        Band saviOutputBand = new Band(SAVI_BAND_NAME, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(),
+                sourceProduct.getSceneRasterHeight());
+        targetProduct.addBand(saviOutputBand);
+
+        Band saviFlagsOutputBand = new Band(SAVI_FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(),
+                sourceProduct.getSceneRasterHeight());
+        saviFlagsOutputBand.setDescription("savi specific flags");
+
+        FlagCoding flagCoding = super.createFlagCoding(getFlagCodingDescriptor());
+        saviFlagsOutputBand.setSampleCoding(flagCoding);
+
+        targetProduct.getFlagCodingGroup().add(flagCoding);
+        targetProduct.addBand(saviFlagsOutputBand);
+
+    }
+
+    @Override
+    public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
+        pm.beginTask("Computing savi", rectangle.height);
+        try {
+            Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
+            Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
+
+            Tile savi = targetTiles.get(targetProduct.getBand(SAVI_BAND_NAME));
+            Tile saviFlags = targetTiles.get(targetProduct.getBand(SAVI_FLAGS_BAND_NAME));
+
+            float saviValue;
+            int saviFlagsValue;
+
+            for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
+                for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
+                    final float nir = nirFactor * nirTile.getSampleFloat(x, y);
+                    final float red = redFactor * redTile.getSampleFloat(x, y);
+
+                    saviValue = (nir - red) / (nir + red + soilCorrectionFactor) * (1 + soilCorrectionFactor);
+
+                    saviFlagsValue = 0;
+                    if (Float.isNaN(saviValue) || Float.isInfinite(saviValue)) {
+                        saviFlagsValue |= SAVI_ARITHMETIC_FLAG_VALUE;
+                        saviValue = 0.0f;
+                    }
+                    if (saviValue < 0.0f) {
+                        saviFlagsValue |= SAVI_LOW_FLAG_VALUE;
+                    }
+                    if (saviValue > 1.0f) {
+                        saviFlagsValue |= SAVI_HIGH_FLAG_VALUE;
+                    }
+                    savi.setSample(x, y, saviValue);
+                    saviFlags.setSample(x, y, saviFlagsValue);
+                }
+                checkForCancellation();
+                pm.worked(1);
+            }
+        } finally {
+            pm.done();
+        }
+    }
+
+    protected void loadSourceBands(Product product) throws OperatorException {
+        if (redSourceBand == null) {
+            redSourceBand = findBand(600, 650, product);
+            getLogger().info("Using band '" + redSourceBand + "' as red input band.");
+        }
+        if (nirSourceBand == null) {
+            nirSourceBand = findBand(800, 900, product);
+            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
+        }
+        if (redSourceBand == null) {
+            throw new OperatorException("Unable to find band that could be used as red input band. Please specify band.");
+        }
+        if (nirSourceBand == null) {
+            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
+        }
+    }
+
+    // package local for testing reasons only
+    /*
+    static String findBand(float minWavelength, float maxWavelength, Product product) {
+        String bestBand = null;
+        float bestBandLowerDelta = Float.MAX_VALUE;
+        for (Band band : product.getBands()) {
+            float bandWavelength = band.getSpectralWavelength();
+            if (bandWavelength != 0.0F) {
+                float lowerDelta = bandWavelength - minWavelength;
+                if (lowerDelta < bestBandLowerDelta && bandWavelength <= maxWavelength && bandWavelength >= minWavelength) {
+                    bestBand = band.getName();
+                    bestBandLowerDelta = lowerDelta;
+                }
+            }
+        }
+        return bestBand;
+    }
+   */
+
+    @Override
+    protected OperatorDescriptor getOperatorDescriptor() {
+
+        return new OperatorDescriptor("savi", new MaskDescriptor[]{
+                new MaskDescriptor(SAVI_ARITHMETIC_FLAG_NAME, SAVI_FLAGS_BAND_NAME + "." + SAVI_ARITHMETIC_FLAG_NAME,
+                        "An arithmetic exception occurred.",
+                        Color.red.brighter(), 0.7),
+                new MaskDescriptor(SAVI_LOW_FLAG_NAME, SAVI_FLAGS_BAND_NAME + "." + SAVI_LOW_FLAG_NAME,
+                        "savi value is too low.",
+                        Color.red, 0.7),
+                new MaskDescriptor(SAVI_HIGH_FLAG_NAME, SAVI_FLAGS_BAND_NAME + "." + SAVI_HIGH_FLAG_NAME,
+                        "savi value is too high.",
+                        Color.red.darker(), 0.7)
+                }
+        );
+
+
+    }
+
+    private FlagCodingDescriptor getFlagCodingDescriptor() {
+        return new FlagCodingDescriptor("savi_flags", "SAVI Flag Coding", new FlagDescriptor[]{
+                new FlagDescriptor(SAVI_ARITHMETIC_FLAG_NAME, SAVI_ARITHMETIC_FLAG_VALUE, "SAVI value calculation failed due to an arithmetic exception"),
+                new FlagDescriptor(SAVI_LOW_FLAG_NAME, SAVI_LOW_FLAG_VALUE, "SAVI value is too low"),
+                new FlagDescriptor(SAVI_HIGH_FLAG_NAME, SAVI_HIGH_FLAG_VALUE, "SAVI value is too high")});
     }
 
     public static class Spi extends OperatorSpi {

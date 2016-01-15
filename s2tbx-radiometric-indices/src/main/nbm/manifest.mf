@@ -4,6 +4,5 @@ AutoUpdate-Show-In-Client: false
 AutoUpdate-Essential-Module: true
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Display-Category: SNAP
-OpenIDE-Module-Layer: org/esa/s2tbx/radiometry/savi/layer.xml
-OpenIDE-Module-Long-Description: <p>The SNAP SAVI Processor calculates
-  the Soil-Adjusted Vegetation Index.</p>
+OpenIDE-Module-Layer: org/esa/s2tbx/radiometry/layer.xml
+OpenIDE-Module-Long-Description: <p>SNAP Radiometric Indices calculus.</p>
