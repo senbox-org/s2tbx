@@ -17,7 +17,8 @@
 package org.esa.s2tbx.radiometry;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -64,30 +65,6 @@ public class IpviOp extends BaseIndexOp {
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String nirSourceBand;
-
-
-    @Override
-    public void initialize() throws OperatorException {
-
-        super.initialize();
-
-        loadSourceBands(sourceProduct);
-
-        Band ipviOutputBand = new Band(IPVI_BAND_NAME, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(),
-                sourceProduct.getSceneRasterHeight());
-        targetProduct.addBand(ipviOutputBand);
-
-        Band ipviFlagsOutputBand = new Band(IPVI_FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(),
-                sourceProduct.getSceneRasterHeight());
-        ipviFlagsOutputBand.setDescription("ipvi specific flags");
-
-        FlagCoding flagCoding = super.createFlagCoding(getFlagCodingDescriptor());
-        ipviFlagsOutputBand.setSampleCoding(flagCoding);
-
-        targetProduct.getFlagCodingGroup().add(flagCoding);
-        targetProduct.addBand(ipviFlagsOutputBand);
-
-    }
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
@@ -148,7 +125,6 @@ public class IpviOp extends BaseIndexOp {
         }
     }
 
-
     @Override
     protected OperatorDescriptor getOperatorDescriptor() {
 
@@ -165,11 +141,10 @@ public class IpviOp extends BaseIndexOp {
         }
         );
 
-
     }
 
-
-    private FlagCodingDescriptor getFlagCodingDescriptor() {
+    @Override
+    protected FlagCodingDescriptor getFlagCodingDescriptor() {
         return new FlagCodingDescriptor("ipvi_flags", "IPVI Flag Coding", new FlagDescriptor[]{
                 new FlagDescriptor(IPVI_ARITHMETIC_FLAG_NAME, IPVI_ARITHMETIC_FLAG_VALUE, "IPVI value calculation failed due to an arithmetic exception"),
                 new FlagDescriptor(IPVI_LOW_FLAG_NAME, IPVI_LOW_FLAG_VALUE, "IPVI value is too low"),

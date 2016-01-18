@@ -18,15 +18,12 @@ package org.esa.s2tbx.radiometry;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.FlagCoding;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
-import org.esa.snap.core.util.ProductUtils;
 
 import java.awt.*;
 import java.util.Map;
@@ -58,7 +55,7 @@ public class SaviOp extends BaseIndexOp {
     @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
     private float nirFactor;
 
-    @Parameter(label = "Soil brigthness correction factor", defaultValue = "0.5F", description = "The amount or cover of green vegetation.")
+    @Parameter(label = "Soil brightness correction factor", defaultValue = "0.5F", description = "The amount or cover of green vegetation.")
     private float soilCorrectionFactor;
 
     @Parameter(label = "Red source band",
@@ -72,56 +69,6 @@ public class SaviOp extends BaseIndexOp {
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String nirSourceBand;
-
-    /*
-    private static FlagCoding createSaviFlagCoding() {
-
-        FlagCoding saviFlagCoding = new FlagCoding("savi_flags");
-        saviFlagCoding.setDescription("SAVI Flag Coding");
-
-        MetadataAttribute attribute;
-
-        attribute = new MetadataAttribute(SAVI_ARITHMETIC_FLAG_NAME, ProductData.TYPE_INT32);
-        attribute.getData().setElemInt(SAVI_ARITHMETIC_FLAG_VALUE);
-        attribute.setDescription("SAVI value calculation failed due to an arithmetic exception");
-        saviFlagCoding.addAttribute(attribute);
-
-        attribute = new MetadataAttribute(SAVI_LOW_FLAG_NAME, ProductData.TYPE_INT32);
-        attribute.getData().setElemInt(SAVI_LOW_FLAG_VALUE);
-        attribute.setDescription("SAVI value is too low");
-        saviFlagCoding.addAttribute(attribute);
-
-        attribute = new MetadataAttribute(SAVI_HIGH_FLAG_NAME, ProductData.TYPE_INT32);
-        attribute.getData().setElemInt(SAVI_HIGH_FLAG_VALUE);
-        attribute.setDescription("SAVI value is too high");
-        saviFlagCoding.addAttribute(attribute);
-
-        return saviFlagCoding;
-    }
-*/
-
-    @Override
-    public void initialize() throws OperatorException {
-
-        super.initialize();
-
-        loadSourceBands(sourceProduct);
-
-        Band saviOutputBand = new Band(SAVI_BAND_NAME, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(),
-                sourceProduct.getSceneRasterHeight());
-        targetProduct.addBand(saviOutputBand);
-
-        Band saviFlagsOutputBand = new Band(SAVI_FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(),
-                sourceProduct.getSceneRasterHeight());
-        saviFlagsOutputBand.setDescription("savi specific flags");
-
-        FlagCoding flagCoding = super.createFlagCoding(getFlagCodingDescriptor());
-        saviFlagsOutputBand.setSampleCoding(flagCoding);
-
-        targetProduct.getFlagCodingGroup().add(flagCoding);
-        targetProduct.addBand(saviFlagsOutputBand);
-
-    }
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
@@ -217,10 +164,10 @@ public class SaviOp extends BaseIndexOp {
                 }
         );
 
-
     }
 
-    private FlagCodingDescriptor getFlagCodingDescriptor() {
+    @Override
+    protected FlagCodingDescriptor getFlagCodingDescriptor() {
         return new FlagCodingDescriptor("savi_flags", "SAVI Flag Coding", new FlagDescriptor[]{
                 new FlagDescriptor(SAVI_ARITHMETIC_FLAG_NAME, SAVI_ARITHMETIC_FLAG_VALUE, "SAVI value calculation failed due to an arithmetic exception"),
                 new FlagDescriptor(SAVI_LOW_FLAG_NAME, SAVI_LOW_FLAG_VALUE, "SAVI value is too low"),

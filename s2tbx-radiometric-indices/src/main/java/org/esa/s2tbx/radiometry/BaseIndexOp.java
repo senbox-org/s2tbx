@@ -12,8 +12,6 @@ import java.awt.*;
 /**
  * Created by dmihailescu on 1/12/2016.
  */
-
-
 public abstract class BaseIndexOp extends Operator {
 
     @SourceProduct(alias = "source", description = "The source product.")
@@ -23,7 +21,6 @@ public abstract class BaseIndexOp extends Operator {
 
     protected BaseIndexOp() {
     }
-
 
     protected class OperatorDescriptor {
         public String name;
@@ -76,7 +73,6 @@ public abstract class BaseIndexOp extends Operator {
         }
     }
 
-
     @Override
     public void initialize() throws OperatorException {
 
@@ -94,15 +90,29 @@ public abstract class BaseIndexOp extends Operator {
         for (MaskDescriptor maskDescriptor : operatorDescriptor.maskDescriptors) {
             targetProduct.addMask(maskDescriptor.name, maskDescriptor.expression, maskDescriptor.description, maskDescriptor.color, maskDescriptor.transparency);
         }
+
+        loadSourceBands(sourceProduct);
+
+        Band outputBand = new Band(operatorDescriptor.name, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        targetProduct.addBand(outputBand);
+
+        Band flagsOutputBand = new Band(operatorDescriptor.name + "_flags", ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        flagsOutputBand.setDescription(operatorDescriptor.name + " specific flags");
+
+        FlagCoding flagCoding = createFlagCoding(getFlagCodingDescriptor());
+        flagsOutputBand.setSampleCoding(flagCoding);
+
+        targetProduct.getFlagCodingGroup().add(flagCoding);
+        targetProduct.addBand(flagsOutputBand);
     }
 
-    //abstract void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm);
+    protected abstract OperatorDescriptor getOperatorDescriptor();
 
-    abstract protected OperatorDescriptor getOperatorDescriptor();
+    protected abstract void loadSourceBands(Product product);
 
-    abstract protected void loadSourceBands(Product product);
+    protected abstract FlagCodingDescriptor getFlagCodingDescriptor();
 
-    protected FlagCoding createFlagCoding(FlagCodingDescriptor flagCodingDescriptor) {
+    private FlagCoding createFlagCoding(FlagCodingDescriptor flagCodingDescriptor) {
         FlagCoding flagCoding = new FlagCoding(flagCodingDescriptor.name);
         flagCoding.setDescription(flagCodingDescriptor.description);
 
@@ -116,8 +126,7 @@ public abstract class BaseIndexOp extends Operator {
         return flagCoding;
     }
 
-
-    static String findBand(float minWavelength, float maxWavelength, Product product) {
+    protected String findBand(float minWavelength, float maxWavelength, Product product) {
         String bestBand = null;
         float bestBandLowerDelta = Float.MAX_VALUE;
         for (Band band : product.getBands()) {

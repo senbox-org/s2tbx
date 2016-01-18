@@ -1,7 +1,8 @@
 package org.esa.s2tbx.radiometry;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -48,30 +49,6 @@ public class DviOp extends BaseIndexOp{
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String nirSourceBand;
-
-
-    @Override
-    public void initialize() throws OperatorException {
-
-        super.initialize();
-
-        loadSourceBands(sourceProduct);
-
-        Band dviOutputBand = new Band(DVI_BAND_NAME, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(),
-                sourceProduct.getSceneRasterHeight());
-        targetProduct.addBand(dviOutputBand);
-
-        Band dviFlagsOutputBand = new Band(DVI_FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(),
-                sourceProduct.getSceneRasterHeight());
-        dviFlagsOutputBand.setDescription("dvi specific flags");
-
-        FlagCoding flagCoding = super.createFlagCoding(getFlagCodingDescriptor());
-        dviFlagsOutputBand.setSampleCoding(flagCoding);
-
-        targetProduct.getFlagCodingGroup().add(flagCoding);
-        targetProduct.addBand(dviFlagsOutputBand);
-
-    }
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
@@ -132,7 +109,6 @@ public class DviOp extends BaseIndexOp{
         }
     }
 
-
     @Override
     protected OperatorDescriptor getOperatorDescriptor() {
 
@@ -149,11 +125,10 @@ public class DviOp extends BaseIndexOp{
         }
         );
 
-
     }
 
-
-    private FlagCodingDescriptor getFlagCodingDescriptor() {
+    @Override
+    protected FlagCodingDescriptor getFlagCodingDescriptor() {
         return new FlagCodingDescriptor("dvi_flags", "DVI Flag Coding", new FlagDescriptor[]{
                 new FlagDescriptor(DVI_ARITHMETIC_FLAG_NAME, DVI_ARITHMETIC_FLAG_VALUE, "DVI value calculation failed due to an arithmetic exception"),
                 new FlagDescriptor(DVI_LOW_FLAG_NAME, DVI_LOW_FLAG_VALUE, "DVI value is too low"),

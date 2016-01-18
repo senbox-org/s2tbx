@@ -1,7 +1,8 @@
 package org.esa.s2tbx.radiometry;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -48,30 +49,6 @@ public class RviOp extends BaseIndexOp{
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String nirSourceBand;
-
-
-    @Override
-    public void initialize() throws OperatorException {
-
-        super.initialize();
-
-        loadSourceBands(sourceProduct);
-
-        Band rviOutputBand = new Band(RVI_BAND_NAME, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(),
-                sourceProduct.getSceneRasterHeight());
-        targetProduct.addBand(rviOutputBand);
-
-        Band rviFlagsOutputBand = new Band(RVI_FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(),
-                sourceProduct.getSceneRasterHeight());
-        rviFlagsOutputBand.setDescription("rvi specific flags");
-
-        FlagCoding flagCoding = super.createFlagCoding(getFlagCodingDescriptor());
-        rviFlagsOutputBand.setSampleCoding(flagCoding);
-
-        targetProduct.getFlagCodingGroup().add(flagCoding);
-        targetProduct.addBand(rviFlagsOutputBand);
-
-    }
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
@@ -132,7 +109,6 @@ public class RviOp extends BaseIndexOp{
         }
     }
 
-
     @Override
     protected OperatorDescriptor getOperatorDescriptor() {
 
@@ -152,8 +128,8 @@ public class RviOp extends BaseIndexOp{
 
     }
 
-
-    private FlagCodingDescriptor getFlagCodingDescriptor() {
+    @Override
+    protected FlagCodingDescriptor getFlagCodingDescriptor() {
         return new FlagCodingDescriptor("rvi_flags", "RVI Flag Coding", new FlagDescriptor[]{
                 new FlagDescriptor(RVI_ARITHMETIC_FLAG_NAME, RVI_ARITHMETIC_FLAG_VALUE, "RVI value calculation failed due to an arithmetic exception"),
                 new FlagDescriptor(RVI_LOW_FLAG_NAME, RVI_LOW_FLAG_VALUE, "RVI value is too low"),

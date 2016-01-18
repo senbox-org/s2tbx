@@ -12,6 +12,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_savi"/>
                 <attr name="ShortDescription" stringvalue="Generates SAVI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-TsaviOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="TSAVI Processor"/>
+                <attr name="operatorName" stringvalue="TsaviOp"/>
+                <attr name="dialogTitle" stringvalue="TSAVI"/>
+                <attr name="helpId" stringvalue="TSAVIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_tsavi"/>
+                <attr name="ShortDescription" stringvalue="Generates TSAVI from a source product with at least two spectral bands."/>
+            </file>
             <file name="org-esa-s2tbx-IpviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
@@ -52,17 +62,21 @@
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-SaviOpAction.instance"/>
                     <attr name="position" intvalue="0"/>
                 </file>
+                <file name="org-esa-s2tbx-TsaviOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-TsaviOpAction.instance"/>
+                    <attr name="position" intvalue="1"/>
+                </file>
                 <file name="org-esa-s2tbx-IpviOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-IpviOpAction.instance"/>
-                    <attr name="position" intvalue="0"/>
+                    <attr name="position" intvalue="2"/>
                 </file>
                 <file name="org-esa-s2tbx-RviOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-RviOpAction.instance"/>
-                    <attr name="position" intvalue="0"/>
+                    <attr name="position" intvalue="3"/>
                 </file>
                 <file name="org-esa-s2tbx-DviOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-DviOpAction.instance"/>
-                    <attr name="position" intvalue="0"/>
+                    <attr name="position" intvalue="4"/>
                 </file>
             </folder>
         </folder>
