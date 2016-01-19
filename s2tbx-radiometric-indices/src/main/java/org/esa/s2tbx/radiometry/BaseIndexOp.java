@@ -8,28 +8,36 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Created by dmihailescu on 1/12/2016.
+ * @author Dragos Mihailescu
  */
 public abstract class BaseIndexOp extends Operator {
+
+    protected static final String FLAGS_BAND_NAME = "flags";
+
+    protected static final String ARITHMETIC_FLAG_NAME = "ARITHMETIC";
+    protected static final String LOW_FLAG_NAME = "NEGATIVE";
+    protected static final String HIGH_FLAG_NAME = "SATURATION";
+
+    protected static final int ARITHMETIC_FLAG_VALUE = 1;
+    protected static final int LOW_FLAG_VALUE = 1 << 1;
+    protected static final int HIGH_FLAG_VALUE = 1 << 2;
 
     @SourceProduct(alias = "source", description = "The source product.")
     protected Product sourceProduct;
     @TargetProduct
     protected Product targetProduct;
 
+    private FlagCoding flagCoding;
+    private List<MaskDescriptor> maskDescriptors;
+
     protected BaseIndexOp() {
-    }
-
-    protected class OperatorDescriptor {
-        public String name;
-        public MaskDescriptor[] maskDescriptors;
-
-        public OperatorDescriptor(String name, MaskDescriptor[] maskDescriptors) {
-            this.name = name;
-            this.maskDescriptors = maskDescriptors;
-        }
+        flagCoding = new FlagCoding(FLAGS_BAND_NAME);
+        flagCoding.setDescription("Index Flag Coding");
+        maskDescriptors = new ArrayList<>();
     }
 
     protected class MaskDescriptor {
@@ -49,18 +57,6 @@ public abstract class BaseIndexOp extends Operator {
         }
     }
 
-    protected class FlagCodingDescriptor {
-        public String name;
-        public String description;
-        public FlagDescriptor[] descriptors;
-
-        public FlagCodingDescriptor(String name, String description, FlagDescriptor[] descriptors) {
-            this.name = name;
-            this.description = description;
-            this.descriptors = descriptors;
-        }
-    }
-
     protected class FlagDescriptor {
         public String name;
         public int value;
@@ -73,56 +69,75 @@ public abstract class BaseIndexOp extends Operator {
         }
     }
 
+    public abstract String getBandName();
+
     @Override
     public void initialize() throws OperatorException {
 
         int sceneWidth = sourceProduct.getSceneRasterWidth();
         int sceneHeight = sourceProduct.getSceneRasterHeight();
-        OperatorDescriptor operatorDescriptor = getOperatorDescriptor();
 
-        targetProduct = new Product(operatorDescriptor.name, sourceProduct.getProductType() + "_" + operatorDescriptor.name, sceneWidth, sceneHeight);
+        initDefaultMasks();
+
+        String name = getBandName();
+
+        targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);
         ProductUtils.copyTiePointGrids(sourceProduct, targetProduct);
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
         ProductUtils.copyFlagBands(sourceProduct, targetProduct, true);
         ProductUtils.copyMasks(sourceProduct, targetProduct);
         ProductUtils.copyOverlayMasks(sourceProduct, targetProduct);
 
-        for (MaskDescriptor maskDescriptor : operatorDescriptor.maskDescriptors) {
+        for (MaskDescriptor maskDescriptor : getMaskDescriptors()) {
             targetProduct.addMask(maskDescriptor.name, maskDescriptor.expression, maskDescriptor.description, maskDescriptor.color, maskDescriptor.transparency);
         }
 
         loadSourceBands(sourceProduct);
 
-        Band outputBand = new Band(operatorDescriptor.name, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
         targetProduct.addBand(outputBand);
 
-        Band flagsOutputBand = new Band(operatorDescriptor.name + "_flags", ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
-        flagsOutputBand.setDescription(operatorDescriptor.name + " specific flags");
+        Band flagsOutputBand = new Band(FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        flagsOutputBand.setDescription(name + " specific flags");
 
-        FlagCoding flagCoding = createFlagCoding(getFlagCodingDescriptor());
+        initFlagCoding();
+
         flagsOutputBand.setSampleCoding(flagCoding);
 
         targetProduct.getFlagCodingGroup().add(flagCoding);
         targetProduct.addBand(flagsOutputBand);
     }
 
-    protected abstract OperatorDescriptor getOperatorDescriptor();
+    protected void addMaskDescriptor(String name, String expression, String description, Color color, double transparency) {
+        maskDescriptors.add(new MaskDescriptor(name, expression, description, color, transparency));
+    }
+
+    protected List<MaskDescriptor> getMaskDescriptors() { return maskDescriptors; }
+
+    protected void addFlagDescriptor(String name, int value, String description) {
+        MetadataAttribute attribute = new MetadataAttribute(name, ProductData.TYPE_INT32);
+        attribute.getData().setElemInt(value);
+        attribute.setDescription(description);
+        flagCoding.addAttribute(attribute);
+    }
 
     protected abstract void loadSourceBands(Product product);
 
-    protected abstract FlagCodingDescriptor getFlagCodingDescriptor();
+    private void initDefaultMasks() {
+        addMaskDescriptor(ARITHMETIC_FLAG_NAME, FLAGS_BAND_NAME + "." + ARITHMETIC_FLAG_NAME,
+                            "An arithmetic exception occurred.", Color.red.brighter(), 0.7);
+        addMaskDescriptor(LOW_FLAG_NAME, FLAGS_BAND_NAME + "." + LOW_FLAG_NAME,
+                            "Index value is too low.", Color.red, 0.7);
+        addMaskDescriptor(HIGH_FLAG_NAME, FLAGS_BAND_NAME + "." + HIGH_FLAG_NAME,
+                            "Index value is too high.", Color.red.darker(), 0.7);
+    }
 
-    private FlagCoding createFlagCoding(FlagCodingDescriptor flagCodingDescriptor) {
-        FlagCoding flagCoding = new FlagCoding(flagCodingDescriptor.name);
-        flagCoding.setDescription(flagCodingDescriptor.description);
-
-        for (FlagDescriptor descriptor : flagCodingDescriptor.descriptors) {
-            MetadataAttribute attribute = new MetadataAttribute(descriptor.name, ProductData.TYPE_INT32);
-            attribute.getData().setElemInt(descriptor.value);
-            attribute.setDescription(descriptor.description);
-            flagCoding.addAttribute(attribute);
-        }
-
+    private FlagCoding initFlagCoding() {
+        FlagCoding flagCoding = new FlagCoding(FLAGS_BAND_NAME);
+        flagCoding.setDescription("Index Flag Coding");
+        addFlagDescriptor(ARITHMETIC_FLAG_NAME, ARITHMETIC_FLAG_VALUE, "Value calculation failed due to an arithmetic exception");
+        addFlagDescriptor(LOW_FLAG_NAME, LOW_FLAG_VALUE, "Index value is too low");
+        addFlagDescriptor(HIGH_FLAG_NAME, HIGH_FLAG_VALUE, "Index value is too high");
         return flagCoding;
     }
 

@@ -24,17 +24,7 @@ import java.util.Map;
 public class TsaviOp extends BaseIndexOp {
 
     // constants
-    public static final String BAND_NAME = "tsavi";
-    public static final String FLAGS_BAND_NAME = "tsavi_flags";
-
-    public static final String ARITHMETIC_FLAG_NAME = "TSAVI_ARITHMETIC";
-    public static final String LOW_FLAG_NAME = "TSAVI_NEGATIVE";
-    public static final String HIGH_FLAG_NAME = "TSAVI_SATURATION";
-
-    public static final int ARITHMETIC_FLAG_VALUE = 1;
-    public static final int LOW_FLAG_VALUE = 1 << 1;
-    public static final int HIGH_FLAG_VALUE = 1 << 2;
-
+    static final String BAND_NAME = "tsavi";
 
     @Parameter(label = "Red factor", defaultValue = "1.0F", description = "The value of the RED source band is multiplied by this value.")
     private float redFactor;
@@ -62,6 +52,11 @@ public class TsaviOp extends BaseIndexOp {
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String nirSourceBand;
+
+    @Override
+    public String getBandName() {
+        return BAND_NAME;
+    }
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
@@ -108,22 +103,6 @@ public class TsaviOp extends BaseIndexOp {
     }
 
     @Override
-    protected OperatorDescriptor getOperatorDescriptor() {
-        return new OperatorDescriptor("tsavi", new MaskDescriptor[]{
-                new MaskDescriptor(ARITHMETIC_FLAG_NAME, FLAGS_BAND_NAME + "." + ARITHMETIC_FLAG_NAME,
-                        "An arithmetic exception occurred.",
-                        Color.red.brighter(), 0.7),
-                new MaskDescriptor(LOW_FLAG_NAME, FLAGS_BAND_NAME + "." + LOW_FLAG_NAME,
-                        "tsavi value is too low.",
-                        Color.red, 0.7),
-                new MaskDescriptor(HIGH_FLAG_NAME, FLAGS_BAND_NAME + "." + HIGH_FLAG_NAME,
-                        "tsavi value is too high.",
-                        Color.red.darker(), 0.7)
-        }
-        );
-    }
-
-    @Override
     protected void loadSourceBands(Product product) {
         if (redSourceBand == null) {
             redSourceBand = findBand(600, 650, product);
@@ -139,14 +118,6 @@ public class TsaviOp extends BaseIndexOp {
         if (nirSourceBand == null) {
             throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
         }
-    }
-
-    @Override
-    protected FlagCodingDescriptor getFlagCodingDescriptor() {
-        return new FlagCodingDescriptor(FLAGS_BAND_NAME, "TSAVI Flag Coding", new FlagDescriptor[]{
-                new FlagDescriptor(ARITHMETIC_FLAG_NAME, ARITHMETIC_FLAG_VALUE, "TSAVI value calculation failed due to an arithmetic exception"),
-                new FlagDescriptor(LOW_FLAG_NAME, LOW_FLAG_VALUE, "TSAVI value is too low"),
-                new FlagDescriptor(HIGH_FLAG_NAME, HIGH_FLAG_VALUE, "TSAVI value is too high")});
     }
 
     public static class Spi extends OperatorSpi {

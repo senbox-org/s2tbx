@@ -21,16 +21,7 @@ import java.util.Map;
 public class RviOp extends BaseIndexOp{
 
     // constants
-    public static final String RVI_BAND_NAME = "rvi";
-    public static final String RVI_FLAGS_BAND_NAME = "rvi_flags";
-
-    public static final String RVI_ARITHMETIC_FLAG_NAME = "RVI_ARITHMETIC";
-    public static final String RVI_LOW_FLAG_NAME = "RVI_NEGATIVE";
-    public static final String RVI_HIGH_FLAG_NAME = "RVI_SATURATION";
-
-    public static final int RVI_ARITHMETIC_FLAG_VALUE = 1;
-    public static final int RVI_LOW_FLAG_VALUE = 1 << 1;
-    public static final int RVI_HIGH_FLAG_VALUE = 1 << 2;
+    public static final String BAND_NAME = "rvi";
 
     @Parameter(label = "Red factor", defaultValue = "1.0F", description = "The value of the red source band is multiplied by this value.")
     private float redFactor;
@@ -51,14 +42,19 @@ public class RviOp extends BaseIndexOp{
     private String nirSourceBand;
 
     @Override
+    public String getBandName() {
+        return BAND_NAME;
+    }
+
+    @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
         pm.beginTask("Computing RVI", rectangle.height);
         try {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile rvi = targetTiles.get(targetProduct.getBand(RVI_BAND_NAME));
-            Tile rviFlags = targetTiles.get(targetProduct.getBand(RVI_FLAGS_BAND_NAME));
+            Tile rvi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            Tile rviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float rviValue;
             int rviFlagsValue;
@@ -72,14 +68,14 @@ public class RviOp extends BaseIndexOp{
 
                     rviFlagsValue = 0;
                     if (Float.isNaN(rviValue) || Float.isInfinite(rviValue)) {
-                        rviFlagsValue |= RVI_ARITHMETIC_FLAG_VALUE;
+                        rviFlagsValue |= ARITHMETIC_FLAG_VALUE;
                         rviValue = 0.0f;
                     }
                     if (rviValue < 0.0f) {
-                        rviFlagsValue |= RVI_LOW_FLAG_VALUE;
+                        rviFlagsValue |= LOW_FLAG_VALUE;
                     }
                     if (rviValue > 1.0f) {
-                        rviFlagsValue |= RVI_HIGH_FLAG_VALUE;
+                        rviFlagsValue |= HIGH_FLAG_VALUE;
                     }
                     rvi.setSample(x, y, rviValue);
                     rviFlags.setSample(x, y, rviFlagsValue);
@@ -92,6 +88,7 @@ public class RviOp extends BaseIndexOp{
         }
     }
 
+    @Override
     protected void loadSourceBands(Product product) throws OperatorException {
         if (redSourceBand == null) {
             redSourceBand = findBand(600, 650, product);
@@ -107,33 +104,6 @@ public class RviOp extends BaseIndexOp{
         if (nirSourceBand == null) {
             throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
         }
-    }
-
-    @Override
-    protected OperatorDescriptor getOperatorDescriptor() {
-
-        return new OperatorDescriptor("rvi", new MaskDescriptor[]{
-                new MaskDescriptor(RVI_ARITHMETIC_FLAG_NAME, RVI_FLAGS_BAND_NAME + "." + RVI_ARITHMETIC_FLAG_NAME,
-                        "An arithmetic exception occurred.",
-                        Color.red.brighter(), 0.7),
-                new MaskDescriptor(RVI_LOW_FLAG_NAME, RVI_FLAGS_BAND_NAME + "." + RVI_LOW_FLAG_NAME,
-                        "rvi value is too low.",
-                        Color.red, 0.7),
-                new MaskDescriptor(RVI_HIGH_FLAG_NAME, RVI_FLAGS_BAND_NAME + "." + RVI_HIGH_FLAG_NAME,
-                        "rvi value is too high.",
-                        Color.red.darker(), 0.7)
-        }
-        );
-
-
-    }
-
-    @Override
-    protected FlagCodingDescriptor getFlagCodingDescriptor() {
-        return new FlagCodingDescriptor("rvi_flags", "RVI Flag Coding", new FlagDescriptor[]{
-                new FlagDescriptor(RVI_ARITHMETIC_FLAG_NAME, RVI_ARITHMETIC_FLAG_VALUE, "RVI value calculation failed due to an arithmetic exception"),
-                new FlagDescriptor(RVI_LOW_FLAG_NAME, RVI_LOW_FLAG_VALUE, "RVI value is too low"),
-                new FlagDescriptor(RVI_HIGH_FLAG_NAME, RVI_HIGH_FLAG_VALUE, "RVI value is too high")});
     }
 
     public static class Spi extends OperatorSpi {

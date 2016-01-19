@@ -21,16 +21,7 @@ import java.util.Map;
 public class DviOp extends BaseIndexOp{
 
     // constants
-    public static final String DVI_BAND_NAME = "dvi";
-    public static final String DVI_FLAGS_BAND_NAME = "dvi_flags";
-
-    public static final String DVI_ARITHMETIC_FLAG_NAME = "DVI_ARITHMETIC";
-    public static final String DVI_LOW_FLAG_NAME = "DVI_NEGATIVE";
-    public static final String DVI_HIGH_FLAG_NAME = "DVI_SATURATION";
-
-    public static final int DVI_ARITHMETIC_FLAG_VALUE = 1;
-    public static final int DVI_LOW_FLAG_VALUE = 1 << 1;
-    public static final int DVI_HIGH_FLAG_VALUE = 1 << 2;
+    public static final String BAND_NAME = "dvi";
 
     @Parameter(label = "Red factor", defaultValue = "1.0F", description = "The value of the red source band is multiplied by this value.")
     private float redFactor;
@@ -51,14 +42,19 @@ public class DviOp extends BaseIndexOp{
     private String nirSourceBand;
 
     @Override
+    public String getBandName() {
+        return BAND_NAME;
+    }
+
+    @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
         pm.beginTask("Computing DVI", rectangle.height);
         try {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile dvi = targetTiles.get(targetProduct.getBand(DVI_BAND_NAME));
-            Tile dviFlags = targetTiles.get(targetProduct.getBand(DVI_FLAGS_BAND_NAME));
+            Tile dvi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            Tile dviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float dviValue;
             int dviFlagsValue;
@@ -72,14 +68,14 @@ public class DviOp extends BaseIndexOp{
 
                     dviFlagsValue = 0;
                     if (Float.isNaN(dviValue) || Float.isInfinite(dviValue)) {
-                        dviFlagsValue |= DVI_ARITHMETIC_FLAG_VALUE;
+                        dviFlagsValue |= ARITHMETIC_FLAG_VALUE;
                         dviValue = 0.0f;
                     }
                     if (dviValue < 0.0f) {
-                        dviFlagsValue |= DVI_LOW_FLAG_VALUE;
+                        dviFlagsValue |= LOW_FLAG_VALUE;
                     }
                     if (dviValue > 1.0f) {
-                        dviFlagsValue |= DVI_HIGH_FLAG_VALUE;
+                        dviFlagsValue |= HIGH_FLAG_VALUE;
                     }
                     dvi.setSample(x, y, dviValue);
                     dviFlags.setSample(x, y, dviFlagsValue);
@@ -92,6 +88,7 @@ public class DviOp extends BaseIndexOp{
         }
     }
 
+    @Override
     protected void loadSourceBands(Product product) throws OperatorException {
         if (redSourceBand == null) {
             redSourceBand = findBand(600, 650, product);
@@ -107,32 +104,6 @@ public class DviOp extends BaseIndexOp{
         if (nirSourceBand == null) {
             throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
         }
-    }
-
-    @Override
-    protected OperatorDescriptor getOperatorDescriptor() {
-
-        return new OperatorDescriptor("dvi", new MaskDescriptor[]{
-                new MaskDescriptor(DVI_ARITHMETIC_FLAG_NAME, DVI_FLAGS_BAND_NAME + "." + DVI_ARITHMETIC_FLAG_NAME,
-                        "An arithmetic exception occurred.",
-                        Color.red.brighter(), 0.7),
-                new MaskDescriptor(DVI_LOW_FLAG_NAME, DVI_FLAGS_BAND_NAME + "." + DVI_LOW_FLAG_NAME,
-                        "dvi value is too low.",
-                        Color.red, 0.7),
-                new MaskDescriptor(DVI_HIGH_FLAG_NAME, DVI_FLAGS_BAND_NAME + "." + DVI_HIGH_FLAG_NAME,
-                        "dvi value is too high.",
-                        Color.red.darker(), 0.7)
-        }
-        );
-
-    }
-
-    @Override
-    protected FlagCodingDescriptor getFlagCodingDescriptor() {
-        return new FlagCodingDescriptor("dvi_flags", "DVI Flag Coding", new FlagDescriptor[]{
-                new FlagDescriptor(DVI_ARITHMETIC_FLAG_NAME, DVI_ARITHMETIC_FLAG_VALUE, "DVI value calculation failed due to an arithmetic exception"),
-                new FlagDescriptor(DVI_LOW_FLAG_NAME, DVI_LOW_FLAG_VALUE, "DVI value is too low"),
-                new FlagDescriptor(DVI_HIGH_FLAG_NAME, DVI_HIGH_FLAG_VALUE, "DVI value is too high")});
     }
 
     public static class Spi extends OperatorSpi {

@@ -37,16 +37,7 @@ import java.util.Map;
 public class IpviOp extends BaseIndexOp {
 
     // constants
-    public static final String IPVI_BAND_NAME = "ipvi";
-    public static final String IPVI_FLAGS_BAND_NAME = "ipvi_flags";
-
-    public static final String IPVI_ARITHMETIC_FLAG_NAME = "IPVI_ARITHMETIC";
-    public static final String IPVI_LOW_FLAG_NAME = "IPVI_NEGATIVE";
-    public static final String IPVI_HIGH_FLAG_NAME = "IPVI_SATURATION";
-
-    public static final int IPVI_ARITHMETIC_FLAG_VALUE = 1;
-    public static final int IPVI_LOW_FLAG_VALUE = 1 << 1;
-    public static final int IPVI_HIGH_FLAG_VALUE = 1 << 2;
+    public static final String BAND_NAME = "ipvi";
 
     @Parameter(label = "Red factor", defaultValue = "1.0F", description = "The value of the red source band is multiplied by this value.")
     private float redFactor;
@@ -67,14 +58,19 @@ public class IpviOp extends BaseIndexOp {
     private String nirSourceBand;
 
     @Override
+    public String getBandName() {
+        return BAND_NAME;
+    }
+
+    @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
         pm.beginTask("Computing IPVI", rectangle.height);
         try {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile ipvi = targetTiles.get(targetProduct.getBand(IPVI_BAND_NAME));
-            Tile ipviFlags = targetTiles.get(targetProduct.getBand(IPVI_FLAGS_BAND_NAME));
+            Tile ipvi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            Tile ipviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ipviValue;
             int ipviFlagsValue;
@@ -88,14 +84,14 @@ public class IpviOp extends BaseIndexOp {
 
                     ipviFlagsValue = 0;
                     if (Float.isNaN(ipviValue) || Float.isInfinite(ipviValue)) {
-                        ipviFlagsValue |= IPVI_ARITHMETIC_FLAG_VALUE;
+                        ipviFlagsValue |= ARITHMETIC_FLAG_VALUE;
                         ipviValue = 0.0f;
                     }
                     if (ipviValue < 0.0f) {
-                        ipviFlagsValue |= IPVI_LOW_FLAG_VALUE;
+                        ipviFlagsValue |= LOW_FLAG_VALUE;
                     }
                     if (ipviValue > 1.0f) {
-                        ipviFlagsValue |= IPVI_HIGH_FLAG_VALUE;
+                        ipviFlagsValue |= HIGH_FLAG_VALUE;
                     }
                     ipvi.setSample(x, y, ipviValue);
                     ipviFlags.setSample(x, y, ipviFlagsValue);
@@ -108,6 +104,7 @@ public class IpviOp extends BaseIndexOp {
         }
     }
 
+    @Override
     protected void loadSourceBands(Product product) throws OperatorException {
         if (redSourceBand == null) {
             redSourceBand = findBand(600, 650, product);
@@ -123,32 +120,6 @@ public class IpviOp extends BaseIndexOp {
         if (nirSourceBand == null) {
             throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
         }
-    }
-
-    @Override
-    protected OperatorDescriptor getOperatorDescriptor() {
-
-        return new OperatorDescriptor("ipvi", new MaskDescriptor[]{
-                new MaskDescriptor(IPVI_ARITHMETIC_FLAG_NAME, IPVI_FLAGS_BAND_NAME + "." + IPVI_ARITHMETIC_FLAG_NAME,
-                        "An arithmetic exception occurred.",
-                        Color.red.brighter(), 0.7),
-                new MaskDescriptor(IPVI_LOW_FLAG_NAME, IPVI_FLAGS_BAND_NAME + "." + IPVI_LOW_FLAG_NAME,
-                        "ipvi value is too low.",
-                        Color.red, 0.7),
-                new MaskDescriptor(IPVI_HIGH_FLAG_NAME, IPVI_FLAGS_BAND_NAME + "." + IPVI_HIGH_FLAG_NAME,
-                        "ipvi value is too high.",
-                        Color.red.darker(), 0.7)
-        }
-        );
-
-    }
-
-    @Override
-    protected FlagCodingDescriptor getFlagCodingDescriptor() {
-        return new FlagCodingDescriptor("ipvi_flags", "IPVI Flag Coding", new FlagDescriptor[]{
-                new FlagDescriptor(IPVI_ARITHMETIC_FLAG_NAME, IPVI_ARITHMETIC_FLAG_VALUE, "IPVI value calculation failed due to an arithmetic exception"),
-                new FlagDescriptor(IPVI_LOW_FLAG_NAME, IPVI_LOW_FLAG_VALUE, "IPVI value is too low"),
-                new FlagDescriptor(IPVI_HIGH_FLAG_NAME, IPVI_HIGH_FLAG_VALUE, "IPVI value is too high")});
     }
 
     public static class Spi extends OperatorSpi {
