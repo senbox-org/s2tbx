@@ -17,7 +17,6 @@
 
 package org.esa.s2tbx.dataio.jp2.metadata;
 
-import com.bc.ceres.core.Assert;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
@@ -195,7 +194,7 @@ public class CodeStreamInfo {
         }
 
         public void setCodeBlockWidth(int codeBlockWidth) {
-            Assert.argument(codeBlockWidth == (int)Math.pow(2, numResolutions), "codeBlockWidth must be 2^numResolutions");
+            //Assert.argument(codeBlockWidth == (int)Math.pow(2, numResolutions), "codeBlockWidth must be 2^numResolutions");
             this.codeBlockWidth = codeBlockWidth;
         }
 
@@ -204,7 +203,7 @@ public class CodeStreamInfo {
         }
 
         public void setCodeBlockHeight(int codeBlockHeight) {
-            Assert.argument(codeBlockHeight == (int)Math.pow(2, numResolutions), "codeBlockHeight must be 2^numResolutions");
+            //Assert.argument(codeBlockHeight == (int)Math.pow(2, numResolutions), "codeBlockHeight must be 2^numResolutions");
             this.codeBlockHeight = codeBlockHeight;
         }
 
