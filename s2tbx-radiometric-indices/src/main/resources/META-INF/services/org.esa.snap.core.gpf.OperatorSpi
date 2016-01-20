@@ -5,3 +5,5 @@ org.esa.s2tbx.radiometry.DviOp$Spi
 org.esa.s2tbx.radiometry.TsaviOp$Spi
 org.esa.s2tbx.radiometry.WdviOp$Spi
 org.esa.s2tbx.radiometry.PviOp$Spi
+org.esa.s2tbx.radiometry.MsaviOp$Spi
+org.esa.s2tbx.radiometry.Msavi2Op$Spi

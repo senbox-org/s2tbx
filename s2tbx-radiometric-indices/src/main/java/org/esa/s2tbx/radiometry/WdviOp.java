@@ -28,7 +28,7 @@ public class WdviOp extends BaseIndexOp{
     @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
     private float nirFactor;
 
-    @Parameter(label = "Slope of the soil line", defaultValue = "1.0F", description = "Soil line has an arbitrary slope and passes through origin")
+    @Parameter(label = "Slope of the soil line", defaultValue = "0.5F", description = "Soil line has an arbitrary slope and passes through origin")
     private float slopeSoilLine; /* slope = tan(angle) */
 
     @Parameter(label = "Red source band",

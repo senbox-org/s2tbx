@@ -72,6 +72,26 @@
                 <attr name="targetProductNameSuffix" stringvalue="_pvi"/>
                 <attr name="ShortDescription" stringvalue="Generates PVI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-MsaviOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="MSAVI Processor"/>
+                <attr name="operatorName" stringvalue="MsaviOp"/>
+                <attr name="dialogTitle" stringvalue="MSAVI"/>
+                <attr name="helpId" stringvalue="MSAVIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_msavi"/>
+                <attr name="ShortDescription" stringvalue="Generates MSAVI from a source product with at least two spectral bands."/>
+            </file>
+            <file name="org-esa-s2tbx-Msavi2OpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="MSAVI2 Processor"/>
+                <attr name="operatorName" stringvalue="Msavi2Op"/>
+                <attr name="dialogTitle" stringvalue="MSAVI2"/>
+                <attr name="helpId" stringvalue="MSAVI2Operator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_msavi2"/>
+                <attr name="ShortDescription" stringvalue="Generates MSAVI2 from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -100,11 +120,19 @@
                 </file>
                 <file name="org-esa-s2tbx-WdviOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-WdviOpAction.instance"/>
-                    <attr name="position" intvalue="0"/>
+                    <attr name="position" intvalue="5"/>
                 </file>
                 <file name="org-esa-s2tbx-PviOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-PviOpAction.instance"/>
-                    <attr name="position" intvalue="0"/>
+                    <attr name="position" intvalue="6"/>
+                </file>
+                <file name="org-esa-s2tbx-MsaviOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-MsaviOpAction.instance"/>
+                    <attr name="position" intvalue="7"/>
+                </file>
+                <file name="org-esa-s2tbx-Msavi2OpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Msavi2OpAction.instance"/>
+                    <attr name="position" intvalue="8"/>
                 </file>
             </folder>
         </folder>

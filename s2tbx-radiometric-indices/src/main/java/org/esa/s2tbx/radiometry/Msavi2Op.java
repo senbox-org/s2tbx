@@ -13,18 +13,18 @@ import java.awt.*;
 import java.util.Map;
 
 /**
- * @author Cosmin Cara
+ * @author Dragos Mihailescu
  */
 @OperatorMetadata(
-        alias = "TsaviOp",
+        alias = "Msavi2Op",
         category = "Optical/Thematic Land Processing",
-        description = "This retrieves the Transformed Soil Adjusted Vegetation Index (TSAVI).",
-        authors = "Cosmin Cara",
+        description = "This retrieves the second Modified Soil Adjusted Vegetation Index (MSAVI2).",
+        authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
-public class TsaviOp extends BaseIndexOp {
+public class Msavi2Op extends BaseIndexOp {
 
     // constants
-    static final String BAND_NAME = "tsavi";
+    static final String BAND_NAME = "msavi2";
 
     @Parameter(label = "Red factor", defaultValue = "1.0F", description = "The value of the RED source band is multiplied by this value.")
     private float redFactor;
@@ -32,23 +32,14 @@ public class TsaviOp extends BaseIndexOp {
     @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
     private float nirFactor;
 
-    @Parameter(label = "Soil line slope", defaultValue = "0.5F", description = "The soil line slope.")
-    private float slope;
-
-    @Parameter(label = "Soil line intercept", defaultValue = "0.5F", description = "The soil line intercept.")
-    private float intercept;
-
-    @Parameter(label = "Adjustment", defaultValue = "0.08F", description = "Adjustment factor to minimize soil background.")
-    private float adjustment;
-
     @Parameter(label = "Red source band",
-            description = "The red band for the TSAVI computation. If not provided, the " +
+            description = "The red band for the MSAVI2 computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String redSourceBand;
 
     @Parameter(label = "NIR source band",
-            description = "The near-infrared band for the TSAVI computation. If not provided," +
+            description = "The near-infrared band for the MSAVI2 computation. If not provided," +
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String nirSourceBand;
@@ -60,7 +51,7 @@ public class TsaviOp extends BaseIndexOp {
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
-        pm.beginTask("Computing tsavi", rectangle.height);
+        pm.beginTask("Computing msavi2", rectangle.height);
         try {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
@@ -68,31 +59,30 @@ public class TsaviOp extends BaseIndexOp {
             Tile savi = targetTiles.get(targetProduct.getBand(BAND_NAME));
             Tile saviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
-            float tsaviValue;
-            int tsaviFlagValue;
-
-            float constant = slope * intercept + adjustment * (1 + slope * slope);
+            float msavi2Value;
+            int msavi2FlagValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
+
                     final float nir = nirFactor * nirTile.getSampleFloat(x, y);
                     final float red = redFactor * redTile.getSampleFloat(x, y);
 
-                    tsaviValue = slope * (nir - slope * red - intercept) / (intercept * nir + red - constant);
+                    msavi2Value = (float) ((1/2) * (2*(nir + 1) - Math.sqrt( (2*nir + 1)*(2*nir + 1) - 8*(nir - red))));
 
-                    tsaviFlagValue = 0;
-                    if (Float.isNaN(tsaviValue) || Float.isInfinite(tsaviValue)) {
-                        tsaviFlagValue |= ARITHMETIC_FLAG_VALUE;
-                        tsaviValue = 0.0f;
+                    msavi2FlagValue = 0;
+                    if (Float.isNaN(msavi2Value) || Float.isInfinite(msavi2Value)) {
+                        msavi2FlagValue |= ARITHMETIC_FLAG_VALUE;
+                        msavi2Value = 0.0f;
                     }
-                    if (tsaviValue < 0.0f) {
-                        tsaviFlagValue |= LOW_FLAG_VALUE;
+                    if (msavi2Value < 0.0f) {
+                        msavi2FlagValue |= LOW_FLAG_VALUE;
                     }
-                    if (tsaviValue > 1.0f) {
-                        tsaviFlagValue |= HIGH_FLAG_VALUE;
+                    if (msavi2Value > 1.0f) {
+                        msavi2FlagValue |= HIGH_FLAG_VALUE;
                     }
-                    savi.setSample(x, y, tsaviValue);
-                    saviFlags.setSample(x, y, tsaviFlagValue);
+                    savi.setSample(x, y, msavi2Value);
+                    saviFlags.setSample(x, y, msavi2FlagValue);
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -123,7 +113,7 @@ public class TsaviOp extends BaseIndexOp {
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(TsaviOp.class);
+            super(Msavi2Op.class);
         }
 
     }
