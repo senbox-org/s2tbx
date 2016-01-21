@@ -92,6 +92,26 @@
                 <attr name="targetProductNameSuffix" stringvalue="_msavi2"/>
                 <attr name="ShortDescription" stringvalue="Generates MSAVI2 from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-GemiOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="GEMI Processor"/>
+                <attr name="operatorName" stringvalue="GemiOp"/>
+                <attr name="dialogTitle" stringvalue="GEMI"/>
+                <attr name="helpId" stringvalue="GEMIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_gemi"/>
+                <attr name="ShortDescription" stringvalue="Generates GEMI from a source product with at least two spectral bands."/>
+            </file>
+            <file name="org-esa-s2tbx-TndviOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="TNDVI Processor"/>
+                <attr name="operatorName" stringvalue="TndviOp"/>
+                <attr name="dialogTitle" stringvalue="TNDVI"/>
+                <attr name="helpId" stringvalue="TNDVIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_tndvi"/>
+                <attr name="ShortDescription" stringvalue="Generates TNDVI from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -133,6 +153,14 @@
                 <file name="org-esa-s2tbx-Msavi2OpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Msavi2OpAction.instance"/>
                     <attr name="position" intvalue="8"/>
+                </file>
+                <file name="org-esa-s2tbx-GemiOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-GemiOpAction.instance"/>
+                    <attr name="position" intvalue="9"/>
+                </file>
+                <file name="org-esa-s2tbx-TndviOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-TndviOpAction.instance"/>
+                    <attr name="position" intvalue="10"/>
                 </file>
             </folder>
         </folder>
