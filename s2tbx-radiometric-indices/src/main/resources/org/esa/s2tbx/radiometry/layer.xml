@@ -112,6 +112,26 @@
                 <attr name="targetProductNameSuffix" stringvalue="_tndvi"/>
                 <attr name="ShortDescription" stringvalue="Generates TNDVI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-NdwiOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="NDWI Processor"/>
+                <attr name="operatorName" stringvalue="NdwiOp"/>
+                <attr name="dialogTitle" stringvalue="NDWI"/>
+                <attr name="helpId" stringvalue="NDWIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_ndwi"/>
+                <attr name="ShortDescription" stringvalue="Generates NDWI from a source product with at least two spectral bands."/>
+            </file>
+            <file name="org-esa-s2tbx-MndwiOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="MNDWI Processor"/>
+                <attr name="operatorName" stringvalue="MndwiOp"/>
+                <attr name="dialogTitle" stringvalue="MNDWI"/>
+                <attr name="helpId" stringvalue="MNDWIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_mndwi"/>
+                <attr name="ShortDescription" stringvalue="Generates MNDWI from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -161,6 +181,14 @@
                 <file name="org-esa-s2tbx-TndviOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-TndviOpAction.instance"/>
                     <attr name="position" intvalue="10"/>
+                </file>
+                <file name="org-esa-s2tbx-NdwiOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdwiOpAction.instance"/>
+                    <attr name="position" intvalue="11"/>
+                </file>
+                <file name="org-esa-s2tbx-MndwiOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-MndwiOpAction.instance"/>
+                    <attr name="position" intvalue="12"/>
                 </file>
             </folder>
         </folder>
