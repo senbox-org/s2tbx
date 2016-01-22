@@ -11,3 +11,4 @@ org.esa.s2tbx.radiometry.GemiOp$Spi
 org.esa.s2tbx.radiometry.TndviOp$Spi
 org.esa.s2tbx.radiometry.NdwiOp$Spi
 org.esa.s2tbx.radiometry.MndwiOp$Spi
+org.esa.s2tbx.radiometry.NdtiOp$Spi
