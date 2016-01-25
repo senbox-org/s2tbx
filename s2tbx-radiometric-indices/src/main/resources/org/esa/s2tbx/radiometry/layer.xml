@@ -152,6 +152,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_gndvi"/>
                 <attr name="ShortDescription" stringvalue="Generates GNDVI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-PssraOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="PSSRa Processor"/>
+                <attr name="operatorName" stringvalue="PssraOp"/>
+                <attr name="dialogTitle" stringvalue="PSSRa"/>
+                <attr name="helpId" stringvalue="PSSRaOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_pssra"/>
+                <attr name="ShortDescription" stringvalue="Generates PSSRa from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -217,6 +227,10 @@
                 <file name="org-esa-s2tbx-GndviOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-GndviOpAction.instance"/>
                     <attr name="position" intvalue="14"/>
+                </file>
+                <file name="org-esa-s2tbx-PssraOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-PssraOpAction.instance"/>
+                    <attr name="position" intvalue="15"/>
                 </file>
             </folder>
         </folder>
