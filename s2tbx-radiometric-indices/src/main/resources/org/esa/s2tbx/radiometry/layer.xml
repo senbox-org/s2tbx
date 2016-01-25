@@ -142,6 +142,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ndti"/>
                 <attr name="ShortDescription" stringvalue="Generates NDTI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-GndviOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="GNDVI Processor"/>
+                <attr name="operatorName" stringvalue="GndviOp"/>
+                <attr name="dialogTitle" stringvalue="GNDVI"/>
+                <attr name="helpId" stringvalue="GNDVIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_gndvi"/>
+                <attr name="ShortDescription" stringvalue="Generates GNDVI from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -203,6 +213,10 @@
                 <file name="org-esa-s2tbx-NdtiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdtiOpAction.instance"/>
                     <attr name="position" intvalue="13"/>
+                </file>
+                <file name="org-esa-s2tbx-GndviOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-GndviOpAction.instance"/>
+                    <attr name="position" intvalue="14"/>
                 </file>
             </folder>
         </folder>
