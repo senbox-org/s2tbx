@@ -114,7 +114,7 @@ public class MtciOp extends BaseIndexOp{
             getLogger().info("Using band '" + redSourceBand5 + "' as red input band (B5).");
         }
         if (nirSourceBand == null) {
-            nirSourceBand = findBand(800, 900, product);
+            nirSourceBand = findBand(733, 748, product); /* (800, 900) */
             getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
         }
         if (redSourceBand4 == null) {

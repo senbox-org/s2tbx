@@ -202,6 +202,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ireci"/>
                 <attr name="ShortDescription" stringvalue="Generates IRECI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-S2repOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="S2REP Processor"/>
+                <attr name="operatorName" stringvalue="S2repOp"/>
+                <attr name="dialogTitle" stringvalue="S2REP"/>
+                <attr name="helpId" stringvalue="S2REPOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_s2rep"/>
+                <attr name="ShortDescription" stringvalue="Generates S2REP from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -287,6 +297,10 @@
                 <file name="org-esa-s2tbx-IreciOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-IreciOpAction.instance"/>
                     <attr name="position" intvalue="19"/>
+                </file>
+                <file name="org-esa-s2tbx-S2repOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-S2repOpAction.instance"/>
+                    <attr name="position" intvalue="20"/>
                 </file>
             </folder>
         </folder>

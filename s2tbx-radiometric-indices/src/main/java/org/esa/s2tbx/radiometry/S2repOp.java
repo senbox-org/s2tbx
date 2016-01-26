@@ -13,15 +13,15 @@ import java.awt.*;
 import java.util.Map;
 
 @OperatorMetadata(
-        alias = "IreciOp",
+        alias = "S2repOp",
         category = "Optical/Thematic Land Processing",
-        description = "Inverted red-edge chlorophyll index",
+        description = "Sentinel-2 red-edge position index",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
-public class IreciOp extends BaseIndexOp{
+public class S2repOp extends BaseIndexOp{
 
     // constants
-    public static final String BAND_NAME = "ireci";
+    public static final String BAND_NAME = "s2rep";
 
     @Parameter(label = "Red (B4) factor", defaultValue = "1.0F", description = "The value of the red source band (B4) is multiplied by this value.")
     private float redB4Factor;
@@ -36,25 +36,25 @@ public class IreciOp extends BaseIndexOp{
     private float nirFactor;
 
     @Parameter(label = "Red source band 4",
-            description = "The red band (B4) for the IRECI computation. If not provided, the " +
+            description = "The red band (B4) for the S2REP computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String redSourceBand4;
 
     @Parameter(label = "Red source band 5",
-            description = "The red band (B5) for the IRECI computation. If not provided, the " +
+            description = "The red band (B5) for the S2REP computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String redSourceBand5;
 
     @Parameter(label = "Red source band 6",
-            description = "The red band (B6) for the IRECI computation. If not provided, the " +
+            description = "The red band (B6) for the S2REP computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String redSourceBand6;
 
     @Parameter(label = "NIR source band",
-            description = "The near-infrared band for the IRECI computation. If not provided," +
+            description = "The near-infrared band for the S2REP computation. If not provided," +
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
     private String nirSourceBand;
@@ -66,18 +66,18 @@ public class IreciOp extends BaseIndexOp{
 
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
-        pm.beginTask("Computing IRECI", rectangle.height);
+        pm.beginTask("Computing S2REP", rectangle.height);
         try {
             Tile redB4Tile = getSourceTile(getSourceProduct().getBand(redSourceBand4), rectangle);
             Tile redB5Tile = getSourceTile(getSourceProduct().getBand(redSourceBand5), rectangle);
             Tile redB6Tile = getSourceTile(getSourceProduct().getBand(redSourceBand6), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile ireci = targetTiles.get(targetProduct.getBand(BAND_NAME));
-            Tile ireciFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
+            Tile s2rep = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            Tile s2repFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
-            float ireciValue;
-            int ireciFlagsValue;
+            float s2repValue;
+            int s2repFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -87,21 +87,21 @@ public class IreciOp extends BaseIndexOp{
                     final float redB5 = redB5Factor * redB5Tile.getSampleFloat(x, y);
                     final float redB6 = redB6Factor * redB6Tile.getSampleFloat(x, y);
 
-                    ireciValue = (nir - redB4) / (redB5 / redB6);
+                    s2repValue = 705.0f + 35.0f * ( ( ( (nir + redB4) / 2.0f ) - redB5 ) / (redB6 - redB5) );
 
-                    ireciFlagsValue = 0;
-                    if (Float.isNaN(ireciValue) || Float.isInfinite(ireciValue)) {
-                        ireciFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        ireciValue = 0.0f;
+                    s2repFlagsValue = 0;
+                    if (Float.isNaN(s2repValue) || Float.isInfinite(s2repValue)) {
+                        s2repFlagsValue |= ARITHMETIC_FLAG_VALUE;
+                        s2repValue = 0.0f;
                     }
-                    if (ireciValue < 0.0f) {
-                        ireciFlagsValue |= LOW_FLAG_VALUE;
+                    if (s2repValue < 0.0f) {
+                        s2repFlagsValue |= LOW_FLAG_VALUE;
                     }
-                    if (ireciValue > 1.0f) {
-                        ireciFlagsValue |= HIGH_FLAG_VALUE;
+                    if (s2repValue > 1.0f) {
+                        s2repFlagsValue |= HIGH_FLAG_VALUE;
                     }
-                    ireci.setSample(x, y, ireciValue);
-                    ireciFlags.setSample(x, y, ireciFlagsValue);
+                    s2rep.setSample(x, y, s2repValue);
+                    s2repFlags.setSample(x, y, s2repFlagsValue);
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -146,7 +146,7 @@ public class IreciOp extends BaseIndexOp{
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(IreciOp.class);
+            super(S2repOp.class);
         }
 
     }
