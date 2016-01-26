@@ -172,6 +172,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ndi45"/>
                 <attr name="ShortDescription" stringvalue="Generates NDI45 from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-MtciOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="MTCI Processor"/>
+                <attr name="operatorName" stringvalue="MtciOp"/>
+                <attr name="dialogTitle" stringvalue="MTCI"/>
+                <attr name="helpId" stringvalue="MTCIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_mtci"/>
+                <attr name="ShortDescription" stringvalue="Generates MTCI from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
