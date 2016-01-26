@@ -182,6 +182,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_mtci"/>
                 <attr name="ShortDescription" stringvalue="Generates MTCI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-McariOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="MCARI Processor"/>
+                <attr name="operatorName" stringvalue="McariOp"/>
+                <attr name="dialogTitle" stringvalue="MCARI"/>
+                <attr name="helpId" stringvalue="MCARIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_mcari"/>
+                <attr name="ShortDescription" stringvalue="Generates MCARI from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -255,6 +265,14 @@
                 <file name="org-esa-s2tbx-Ndi45OpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Ndi45OpAction.instance"/>
                     <attr name="position" intvalue="16"/>
+                </file>
+                <file name="org-esa-s2tbx-MtciOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-MtciOpAction.instance"/>
+                    <attr name="position" intvalue="17"/>
+                </file>
+                <file name="org-esa-s2tbx-McariOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-McariOpAction.instance"/>
+                    <attr name="position" intvalue="18"/>
                 </file>
             </folder>
         </folder>
