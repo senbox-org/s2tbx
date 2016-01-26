@@ -17,3 +17,4 @@ org.esa.s2tbx.radiometry.PssraOp$Spi
 org.esa.s2tbx.radiometry.Ndi45Op$Spi
 org.esa.s2tbx.radiometry.MtciOp$Spi
 org.esa.s2tbx.radiometry.McariOp$Spi
+org.esa.s2tbx.radiometry.IreciOp$Spi

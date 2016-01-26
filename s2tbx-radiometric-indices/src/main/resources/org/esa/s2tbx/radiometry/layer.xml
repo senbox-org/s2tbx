@@ -192,6 +192,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_mcari"/>
                 <attr name="ShortDescription" stringvalue="Generates MCARI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-IreciOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="IRECI Processor"/>
+                <attr name="operatorName" stringvalue="IreciOp"/>
+                <attr name="dialogTitle" stringvalue="IRECI"/>
+                <attr name="helpId" stringvalue="IRECIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_ireci"/>
+                <attr name="ShortDescription" stringvalue="Generates IRECI from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -273,6 +283,10 @@
                 <file name="org-esa-s2tbx-McariOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-McariOpAction.instance"/>
                     <attr name="position" intvalue="18"/>
+                </file>
+                <file name="org-esa-s2tbx-IreciOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-IreciOpAction.instance"/>
+                    <attr name="position" intvalue="19"/>
                 </file>
             </folder>
         </folder>
