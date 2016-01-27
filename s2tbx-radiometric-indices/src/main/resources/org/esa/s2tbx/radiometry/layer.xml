@@ -212,6 +212,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_s2rep"/>
                 <attr name="ShortDescription" stringvalue="Generates S2REP from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-NdpiOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="NDPI Processor"/>
+                <attr name="operatorName" stringvalue="NdpiOp"/>
+                <attr name="dialogTitle" stringvalue="NDPI"/>
+                <attr name="helpId" stringvalue="NDPIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_ndpi"/>
+                <attr name="ShortDescription" stringvalue="Generates NDPI from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -301,6 +311,10 @@
                 <file name="org-esa-s2tbx-S2repOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-S2repOpAction.instance"/>
                     <attr name="position" intvalue="20"/>
+                </file>
+                <file name="org-esa-s2tbx-NdpiOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdpiOpAction.instance"/>
+                    <attr name="position" intvalue="21"/>
                 </file>
             </folder>
         </folder>
