@@ -20,3 +20,4 @@ org.esa.s2tbx.radiometry.McariOp$Spi
 org.esa.s2tbx.radiometry.IreciOp$Spi
 org.esa.s2tbx.radiometry.S2repOp$Spi
 org.esa.s2tbx.radiometry.NdpiOp$Spi
+org.esa.s2tbx.radiometry.CiOp$Spi

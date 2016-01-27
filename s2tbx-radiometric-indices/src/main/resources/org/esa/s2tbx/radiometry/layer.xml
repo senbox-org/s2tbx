@@ -222,6 +222,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ndpi"/>
                 <attr name="ShortDescription" stringvalue="Generates NDPI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-CiOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="CI Processor"/>
+                <attr name="operatorName" stringvalue="CiOp"/>
+                <attr name="dialogTitle" stringvalue="CI"/>
+                <attr name="helpId" stringvalue="CIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_ci"/>
+                <attr name="ShortDescription" stringvalue="Generates CI from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -315,6 +325,10 @@
                 <file name="org-esa-s2tbx-NdpiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdpiOpAction.instance"/>
                     <attr name="position" intvalue="21"/>
+                </file>
+                <file name="org-esa-s2tbx-CiOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-CiOpAction.instance"/>
+                    <attr name="position" intvalue="22"/>
                 </file>
             </folder>
         </folder>
