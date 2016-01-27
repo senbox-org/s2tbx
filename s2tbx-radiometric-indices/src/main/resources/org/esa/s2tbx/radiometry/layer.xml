@@ -232,6 +232,26 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ci"/>
                 <attr name="ShortDescription" stringvalue="Generates CI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-BiOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="BI Processor"/>
+                <attr name="operatorName" stringvalue="BiOp"/>
+                <attr name="dialogTitle" stringvalue="BI"/>
+                <attr name="helpId" stringvalue="BIOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_bi"/>
+                <attr name="ShortDescription" stringvalue="Generates BI from a source product with at least two spectral bands."/>
+            </file>
+            <file name="org-esa-s2tbx-Bi2OpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="BI2 Processor"/>
+                <attr name="operatorName" stringvalue="Bi2Op"/>
+                <attr name="dialogTitle" stringvalue="BI2"/>
+                <attr name="helpId" stringvalue="BI2Operator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_bi2"/>
+                <attr name="ShortDescription" stringvalue="Generates BI2 from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -329,6 +349,14 @@
                 <file name="org-esa-s2tbx-CiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-CiOpAction.instance"/>
                     <attr name="position" intvalue="22"/>
+                </file>
+                <file name="org-esa-s2tbx-BiOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-BiOpAction.instance"/>
+                    <attr name="position" intvalue="23"/>
+                </file>
+                <file name="org-esa-s2tbx-Bi2OpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Bi2OpAction.instance"/>
+                    <attr name="position" intvalue="24"/>
                 </file>
             </folder>
         </folder>
