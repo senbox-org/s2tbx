@@ -10,6 +10,7 @@ org.esa.s2tbx.radiometry.Msavi2Op$Spi
 org.esa.s2tbx.radiometry.GemiOp$Spi
 org.esa.s2tbx.radiometry.TndviOp$Spi
 org.esa.s2tbx.radiometry.NdwiOp$Spi
+org.esa.s2tbx.radiometry.Ndwi2Op$Spi
 org.esa.s2tbx.radiometry.MndwiOp$Spi
 org.esa.s2tbx.radiometry.NdtiOp$Spi
 org.esa.s2tbx.radiometry.GndviOp$Spi

@@ -122,6 +122,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ndwi"/>
                 <attr name="ShortDescription" stringvalue="Generates NDWI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-Ndwi2OpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="NDWI2 Processor"/>
+                <attr name="operatorName" stringvalue="Ndwi2Op"/>
+                <attr name="dialogTitle" stringvalue="NDWI2"/>
+                <attr name="helpId" stringvalue="NDWI2Operator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_ndwi2"/>
+                <attr name="ShortDescription" stringvalue="Generates NDWI2 from a source product with at least two spectral bands."/>
+            </file>
             <file name="org-esa-s2tbx-MndwiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
@@ -326,65 +336,69 @@
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdwiOpAction.instance"/>
                     <attr name="position" intvalue="11"/>
                 </file>
+                <file name="org-esa-s2tbx-Ndwi2OpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Ndwi2OpAction.instance"/>
+                    <attr name="position" intvalue="12"/>
+                </file>
                 <file name="org-esa-s2tbx-MndwiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-MndwiOpAction.instance"/>
-                    <attr name="position" intvalue="12"/>
+                    <attr name="position" intvalue="13"/>
                 </file>
                 <file name="org-esa-s2tbx-NdtiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdtiOpAction.instance"/>
-                    <attr name="position" intvalue="13"/>
+                    <attr name="position" intvalue="14"/>
                 </file>
                 <file name="org-esa-s2tbx-GndviOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-GndviOpAction.instance"/>
-                    <attr name="position" intvalue="14"/>
+                    <attr name="position" intvalue="15"/>
                 </file>
                 <file name="org-esa-s2tbx-PssraOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-PssraOpAction.instance"/>
-                    <attr name="position" intvalue="15"/>
+                    <attr name="position" intvalue="16"/>
                 </file>
                 <file name="org-esa-s2tbx-Ndi45OpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Ndi45OpAction.instance"/>
-                    <attr name="position" intvalue="16"/>
+                    <attr name="position" intvalue="17"/>
                 </file>
                 <file name="org-esa-s2tbx-MtciOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-MtciOpAction.instance"/>
-                    <attr name="position" intvalue="17"/>
+                    <attr name="position" intvalue="18"/>
                 </file>
                 <file name="org-esa-s2tbx-McariOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-McariOpAction.instance"/>
-                    <attr name="position" intvalue="18"/>
+                    <attr name="position" intvalue="19"/>
                 </file>
                 <file name="org-esa-s2tbx-IreciOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-IreciOpAction.instance"/>
-                    <attr name="position" intvalue="19"/>
+                    <attr name="position" intvalue="20"/>
                 </file>
                 <file name="org-esa-s2tbx-S2repOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-S2repOpAction.instance"/>
-                    <attr name="position" intvalue="20"/>
+                    <attr name="position" intvalue="21"/>
                 </file>
                 <file name="org-esa-s2tbx-NdpiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdpiOpAction.instance"/>
-                    <attr name="position" intvalue="21"/>
+                    <attr name="position" intvalue="22"/>
                 </file>
                 <file name="org-esa-s2tbx-CiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-CiOpAction.instance"/>
-                    <attr name="position" intvalue="22"/>
+                    <attr name="position" intvalue="23"/>
                 </file>
                 <file name="org-esa-s2tbx-BiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-BiOpAction.instance"/>
-                    <attr name="position" intvalue="23"/>
+                    <attr name="position" intvalue="24"/>
                 </file>
                 <file name="org-esa-s2tbx-Bi2OpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Bi2OpAction.instance"/>
-                    <attr name="position" intvalue="24"/>
+                    <attr name="position" intvalue="25"/>
                 </file>
                 <file name="org-esa-s2tbx-RiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-RiOpAction.instance"/>
-                    <attr name="position" intvalue="25"/>
+                    <attr name="position" intvalue="26"/>
                 </file>
                 <file name="org-esa-s2tbx-ReipOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-ReipOpAction.instance"/>
-                    <attr name="position" intvalue="26"/>
+                    <attr name="position" intvalue="27"/>
                 </file>
             </folder>
         </folder>
