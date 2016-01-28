@@ -262,6 +262,16 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ri"/>
                 <attr name="ShortDescription" stringvalue="Generates RI from a source product with at least two spectral bands."/>
             </file>
+            <file name="org-esa-s2tbx-ReipOpAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="displayName" stringvalue="REIP Processor"/>
+                <attr name="operatorName" stringvalue="ReipOp"/>
+                <attr name="dialogTitle" stringvalue="REIP"/>
+                <attr name="helpId" stringvalue="REIPOperator"/>
+                <attr name="targetProductNameSuffix" stringvalue="_reip"/>
+                <attr name="ShortDescription" stringvalue="Generates REIP from a source product with at least two spectral bands."/>
+            </file>
         </folder>
     </folder>
 
@@ -371,6 +381,10 @@
                 <file name="org-esa-s2tbx-RiOpAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-RiOpAction.instance"/>
                     <attr name="position" intvalue="25"/>
+                </file>
+                <file name="org-esa-s2tbx-ReipOpAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-ReipOpAction.instance"/>
+                    <attr name="position" intvalue="26"/>
                 </file>
             </folder>
         </folder>
