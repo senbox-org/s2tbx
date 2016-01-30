@@ -26,10 +26,12 @@ import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.quicklooks.Quicklook;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -124,6 +126,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         if (S2ProductFilename.isMetadataFilename(inputFile.getName())) {
             p = getMosaicProduct(inputFile);
 
+            addQuicklook(p, getQuicklookFile(inputFile));
+
             if (p != null) {
                 p.setModified(false);
             }
@@ -132,6 +136,24 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         return p;
+    }
+
+    private void addQuicklook(final Product product, final File qlFile) {
+        if(qlFile != null) {
+            product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile));
+        }
+    }
+
+    private File getQuicklookFile(final File metadataFile) {
+        File[] files = metadataFile.getParentFile().listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".png") && name.startsWith("S2A_");
+            }
+        });
+        if (files != null && files.length > 0) {
+            return files[0];
+        }
+        return null;
     }
 
     /**
