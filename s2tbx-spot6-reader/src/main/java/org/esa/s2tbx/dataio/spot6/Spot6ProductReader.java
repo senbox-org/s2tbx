@@ -150,7 +150,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                     tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
-                final Stx[] statistics = imageMetadata.getBandsStatistics();
+                //final Stx[] statistics = imageMetadata.getBandsStatistics();
                 for (int i = 0; i < numBands; i++) {
                     Band targetBand = new Band(bandInfos[i].getId(), pixelDataType,
                                                 Math.round(width / factorX),
