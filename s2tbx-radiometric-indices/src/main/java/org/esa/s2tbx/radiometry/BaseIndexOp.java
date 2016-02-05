@@ -35,8 +35,6 @@ public abstract class BaseIndexOp extends Operator {
     private List<MaskDescriptor> maskDescriptors;
 
     protected BaseIndexOp() {
-        flagCoding = new FlagCoding(FLAGS_BAND_NAME);
-        flagCoding.setDescription("Index Flag Coding");
         maskDescriptors = new ArrayList<>();
     }
 
@@ -100,8 +98,7 @@ public abstract class BaseIndexOp extends Operator {
         Band flagsOutputBand = new Band(FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
         flagsOutputBand.setDescription(name + " specific flags");
 
-        initFlagCoding();
-
+        FlagCoding flagCoding = initFlagCoding();
         flagsOutputBand.setSampleCoding(flagCoding);
 
         targetProduct.getFlagCodingGroup().add(flagCoding);

@@ -24,10 +24,10 @@ public class DviOp extends BaseIndexOp{
     public static final String BAND_NAME = "dvi";
 
     @Parameter(label = "Red factor", defaultValue = "1.0F", description = "The value of the red source band is multiplied by this value.")
-    private float redFactor;
+    protected float redFactor;
 
     @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
-    private float nirFactor;
+    protected float nirFactor;
 
     @Parameter(label = "Red source band",
             description = "The red band for the DVI computation. If not provided, the " +
@@ -44,6 +44,14 @@ public class DviOp extends BaseIndexOp{
     @Override
     public String getBandName() {
         return BAND_NAME;
+    }
+
+    public void setRedSourceBand(String redSourceBand) {
+        this.redSourceBand = redSourceBand;
+    }
+
+    public void setNirSourceBand(String nirSourceBand) {
+        this.nirSourceBand = nirSourceBand;
     }
 
     @Override
