@@ -30,9 +30,6 @@ public class GemiOp extends BaseIndexOp {
     @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
     private float nirFactor;
 
-    @Parameter(label = "Adjustment", defaultValue = "0.08F", description = "Adjustment factor to minimize soil background.")
-    private float adjustment;
-
     @Parameter(label = "Red source band",
             description = "The red band for the GEMI computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
@@ -57,8 +54,8 @@ public class GemiOp extends BaseIndexOp {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile savi = targetTiles.get(targetProduct.getBand(BAND_NAME));
-            Tile saviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
+            Tile gemi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            Tile gemiFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float gemiValue;
             int gemiFlagValue;
@@ -70,7 +67,7 @@ public class GemiOp extends BaseIndexOp {
 
                     final float eta = ( 2*(nir*nir - red*red) + 1.5f*nir + 0.5f*red ) / (nir + red + 0.5f);
 
-                    gemiValue = (3/4)*eta - (red - 0.125f)/(1 - red);
+                    gemiValue = (3f/4f)*eta - (red - 0.125f)/(1 - red);
 
                     gemiFlagValue = 0;
                     if (Float.isNaN(gemiValue) || Float.isInfinite(gemiValue)) {
@@ -83,8 +80,8 @@ public class GemiOp extends BaseIndexOp {
                     if (gemiValue > 1.0f) {
                         gemiFlagValue |= HIGH_FLAG_VALUE;
                     }
-                    savi.setSample(x, y, gemiValue);
-                    saviFlags.setSample(x, y, gemiFlagValue);
+                    gemi.setSample(x, y, gemiValue);
+                    gemiFlags.setSample(x, y, gemiFlagValue);
                 }
                 checkForCancellation();
                 pm.worked(1);

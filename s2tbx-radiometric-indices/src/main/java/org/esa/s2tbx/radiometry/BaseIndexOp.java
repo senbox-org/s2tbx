@@ -130,7 +130,7 @@ public abstract class BaseIndexOp extends Operator {
     }
 
     private FlagCoding initFlagCoding() {
-        FlagCoding flagCoding = new FlagCoding(FLAGS_BAND_NAME);
+        flagCoding = new FlagCoding(FLAGS_BAND_NAME);
         flagCoding.setDescription("Index Flag Coding");
         addFlagDescriptor(ARITHMETIC_FLAG_NAME, ARITHMETIC_FLAG_VALUE, "Value calculation failed due to an arithmetic exception");
         addFlagDescriptor(LOW_FLAG_NAME, LOW_FLAG_VALUE, "Index value is too low");
