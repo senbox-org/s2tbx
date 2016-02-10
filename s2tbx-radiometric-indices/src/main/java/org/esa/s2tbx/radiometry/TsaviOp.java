@@ -65,8 +65,8 @@ public class TsaviOp extends BaseIndexOp {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile savi = targetTiles.get(targetProduct.getBand(BAND_NAME));
-            Tile saviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
+            Tile tsavi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            Tile tsaviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float tsaviValue;
             int tsaviFlagValue;
@@ -91,8 +91,8 @@ public class TsaviOp extends BaseIndexOp {
                     if (tsaviValue > 1.0f) {
                         tsaviFlagValue |= HIGH_FLAG_VALUE;
                     }
-                    savi.setSample(x, y, tsaviValue);
-                    saviFlags.setSample(x, y, tsaviFlagValue);
+                    tsavi.setSample(x, y, tsaviValue);
+                    tsaviFlags.setSample(x, y, tsaviFlagValue);
                 }
                 checkForCancellation();
                 pm.worked(1);
