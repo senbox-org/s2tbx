@@ -59,8 +59,8 @@ public class MsaviOp extends BaseIndexOp {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile savi = targetTiles.get(targetProduct.getBand(BAND_NAME));
-            Tile saviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
+            Tile msavi = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            Tile msaviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float msaviValue;
             int msaviFlagValue;
@@ -88,8 +88,8 @@ public class MsaviOp extends BaseIndexOp {
                     if (msaviValue > 1.0f) {
                         msaviFlagValue |= HIGH_FLAG_VALUE;
                     }
-                    savi.setSample(x, y, msaviValue);
-                    saviFlags.setSample(x, y, msaviFlagValue);
+                    msavi.setSample(x, y, msaviValue);
+                    msaviFlags.setSample(x, y, msaviFlagValue);
                 }
                 checkForCancellation();
                 pm.worked(1);

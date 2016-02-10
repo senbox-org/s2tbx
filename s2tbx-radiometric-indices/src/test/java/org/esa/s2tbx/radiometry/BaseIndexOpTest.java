@@ -59,7 +59,7 @@ public abstract class BaseIndexOpTest<O extends BaseIndexOp> extends TestCase {
         Raster data = targetProduct.getBandAt(0).getSourceImage().getData();
         for (int i = 0; i < expectedValues.length; i++) {
             float aFloat = data.getSampleFloat(i % height, i / width, 0);
-            assertTrue(expectedValues[i] - aFloat < threshold);
+            assertTrue(Math.abs(expectedValues[i] - aFloat) < threshold);
         }
     }
 
