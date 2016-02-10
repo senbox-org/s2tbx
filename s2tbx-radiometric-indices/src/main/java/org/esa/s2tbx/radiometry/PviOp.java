@@ -28,9 +28,8 @@ public class PviOp extends BaseIndexOp{
     @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
     private float nirFactor;
 
-    @Parameter(label = "The angle between the soil line and the NIR axis", defaultValue = "45.0F", description = "Soil line has an arbitrary slope and passes through origin. Ranges -1 to +1")
-    private double angleSoilLineNIRAxis;
-    double radiansAngle = Math.toRadians(angleSoilLineNIRAxis);
+    @Parameter(label = "The angle between the soil line and the NIR axis", defaultValue = "45.0", description = "Soil line has an arbitrary slope and passes through origin. Ranges -1 to +1")
+    private float angleSoilLineNIRAxis;
 
     @Parameter(label = "Red source band",
             description = "The red band for the PVI computation. If not provided, the " +
@@ -61,6 +60,8 @@ public class PviOp extends BaseIndexOp{
 
             float pviValue;
             int pviFlagsValue;
+
+            double radiansAngle = Math.toRadians(angleSoilLineNIRAxis);
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
