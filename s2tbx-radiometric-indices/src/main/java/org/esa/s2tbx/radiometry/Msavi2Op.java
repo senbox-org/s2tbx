@@ -56,8 +56,8 @@ public class Msavi2Op extends BaseIndexOp {
             Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
             Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
 
-            Tile savi = targetTiles.get(targetProduct.getBand(BAND_NAME));
-            Tile saviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
+            Tile msavi2 = targetTiles.get(targetProduct.getBand(BAND_NAME));
+            Tile msavi2Flags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float msavi2Value;
             int msavi2FlagValue;
@@ -68,7 +68,7 @@ public class Msavi2Op extends BaseIndexOp {
                     final float nir = nirFactor * nirTile.getSampleFloat(x, y);
                     final float red = redFactor * redTile.getSampleFloat(x, y);
 
-                    msavi2Value = (float) ((1/2) * (2*(nir + 1) - Math.sqrt( (2*nir + 1)*(2*nir + 1) - 8*(nir - red))));
+                    msavi2Value = (float) ((1f/2f) * (2*(nir + 1) - Math.sqrt( (2*nir + 1)*(2*nir + 1) - 8*(nir - red))));
 
                     msavi2FlagValue = 0;
                     if (Float.isNaN(msavi2Value) || Float.isInfinite(msavi2Value)) {
@@ -81,8 +81,8 @@ public class Msavi2Op extends BaseIndexOp {
                     if (msavi2Value > 1.0f) {
                         msavi2FlagValue |= HIGH_FLAG_VALUE;
                     }
-                    savi.setSample(x, y, msavi2Value);
-                    saviFlags.setSample(x, y, msavi2FlagValue);
+                    msavi2.setSample(x, y, msavi2Value);
+                    msavi2Flags.setSample(x, y, msavi2FlagValue);
                 }
                 checkForCancellation();
                 pm.worked(1);
