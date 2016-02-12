@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.s2tbx.dataio.spot6.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
+import org.esa.s2tbx.dataio.spot6.dimap.VolumeComponent;
 import org.esa.s2tbx.dataio.spot6.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.spot6.internal.MosaicMultiLevelSource;
 import org.esa.snap.core.dataio.AbstractProductReader;
@@ -66,16 +67,23 @@ public class Spot6ProductReader extends AbstractProductReader {
                     addProductComponentIfNotPresent(Spot6Constants.ROOT_METADATA, volumeMetadataPhysicalFile, result);
                     for (VolumeMetadata component : metadata.getVolumeMetadataList()) {
                         try {
-                            addProductComponentIfNotPresent(component.getPath(), productDirectory.getFile(component.getPath()), result);
-                        } catch (IOException ex) {
-                            logger.warning(ex.getMessage());
-                        }
-                    }
-
-                    for (ImageMetadata component : metadata.getImageMetadataList()) {
-                        try {
-                            //add thumb file of the component
-                            addProductComponentIfNotPresent(component.getPath(), productDirectory.getFile(component.getPath()), result);
+                            File fullPathComp = productDirectory.getFile(component.getPath());
+                            addProductComponentIfNotPresent(component.getFileName(), fullPathComp, result);
+                            for (VolumeComponent vComponent: component.getComponents()){
+                                if(vComponent.getType().equals(Spot6Constants.METADATA_FORMAT)){
+                                    File fullPathVComp = productDirectory.getFile(fullPathComp.getParent() + File.separator + vComponent.getPath().toString());
+                                    addProductComponentIfNotPresent(vComponent.getPath().getFileName().toString(), fullPathVComp, result);
+                                    if(vComponent.getComponentMetadata() != null && vComponent.getComponentMetadata() instanceof ImageMetadata){
+                                        ImageMetadata image = (ImageMetadata)vComponent.getComponentMetadata();
+                                        for (String raster : image.getRasterFileNames()){
+                                            addProductComponentIfNotPresent(raster, productDirectory.getFile(fullPathVComp.getParent() + File.separator + raster), result);
+                                        }
+                                        for (ImageMetadata.MaskInfo mask : image.getMasks()){
+                                            addProductComponentIfNotPresent(mask.name, mask.path.toFile(), result);
+                                        }
+                                    }
+                                }
+                            }
                         } catch (IOException ex) {
                             logger.warning(ex.getMessage());
                         }
