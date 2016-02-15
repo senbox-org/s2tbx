@@ -59,7 +59,7 @@
     <mapID target="NDWIOperator" url="ndwi/NdwiTool.html"/>
     <mapID target="algorithm" url="ndwi/NdwiAlgorithmSpecification.html"/>
 
-    <mapID target="PSSRaOperator" url="pssra/NdwiTool.html"/>
+    <mapID target="PSSRaOperator" url="pssra/PssraTool.html"/>
     <mapID target="algorithm" url="pssra/PssraAlgorithmSpecification.html"/>
 
     <mapID target="PVIOperator" url="pvi/PviTool.html"/>
