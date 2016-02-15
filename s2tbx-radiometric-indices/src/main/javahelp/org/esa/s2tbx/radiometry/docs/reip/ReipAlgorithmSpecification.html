@@ -38,15 +38,17 @@
     Red edge, as the inflection point of the strong red absorption to near infrared reflectance, includes the information of both crop N and growth status. <br>
     The reflectance around red edge is sensitive to wide range of crop chlorophyll content, N content, LAI and biomass (Hatfield et al., 2008; Mutanga and Skidmore, 2007; Steele et al., 2008b) <br><br>
 
+    The <b>REIP</b> general formula is based on linear four-point interpolation technique and it uses four wavebands (670, 700, 740 and 780 nm) - Guyot and Baret, (1988)<br><br>
+
 </p>
 
 
 <p>
-    The REIP results from the following (Sensor-dependent) equation: <br>
+    The REIP results from the following (Sensor-dependent) equation: <br><br>
 </p>
 
 <p>
-    <b>REIP = 700 + 40 * ((r670 + r780)/2 - r700) / (r740 - r700)</b> as general formula<br><br>
+    <b>REIP = 700 + 40 * ((r670 + r780)/2 - r700) / (r740 - r700)</b> - as general formula<br><br>
 
     or: <br><br>
     <b>REIP = 700 + 40 * ( (red1_factor * red1 + IR_factor * near_IR)/2) - red2_factor * red2 ) / (red3_factor * red3 - red2_factor * red2) )</b><br><br>
