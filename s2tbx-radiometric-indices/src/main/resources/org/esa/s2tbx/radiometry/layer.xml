@@ -2,7 +2,7 @@
 
     <folder name="Actions">
         <folder name="Operators">
-            <file name="org-esa-s2tbx-SaviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-SaviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="SAVI Processor"/>
@@ -12,7 +12,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_savi"/>
                 <attr name="ShortDescription" stringvalue="Generates SAVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-TsaviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-TsaviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="TSAVI Processor"/>
@@ -22,7 +22,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_tsavi"/>
                 <attr name="ShortDescription" stringvalue="Generates TSAVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-IpviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-IpviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="IPVI Processor"/>
@@ -32,7 +32,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ipvi"/>
                 <attr name="ShortDescription" stringvalue="Generates IPVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-RviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-RviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="RVI Processor"/>
@@ -42,7 +42,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_rvi"/>
                 <attr name="ShortDescription" stringvalue="Generates RVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-DviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-DviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="DVI Processor"/>
@@ -52,7 +52,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_dvi"/>
                 <attr name="ShortDescription" stringvalue="Generates DVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-WdviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-WdviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="WDVI Processor"/>
@@ -62,7 +62,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_wdvi"/>
                 <attr name="ShortDescription" stringvalue="Generates WDVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-PviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-PviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="PVI Processor"/>
@@ -72,7 +72,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_pvi"/>
                 <attr name="ShortDescription" stringvalue="Generates PVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-MsaviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-MsaviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MSAVI Processor"/>
@@ -82,7 +82,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_msavi"/>
                 <attr name="ShortDescription" stringvalue="Generates MSAVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-Msavi2OpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-Msavi2OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MSAVI2 Processor"/>
@@ -92,7 +92,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_msavi2"/>
                 <attr name="ShortDescription" stringvalue="Generates MSAVI2 from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-GemiOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-GemiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="GEMI Processor"/>
@@ -102,7 +102,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_gemi"/>
                 <attr name="ShortDescription" stringvalue="Generates GEMI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-TndviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-TndviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="TNDVI Processor"/>
@@ -112,7 +112,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_tndvi"/>
                 <attr name="ShortDescription" stringvalue="Generates TNDVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-NdwiOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-NdwiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDWI Processor"/>
@@ -122,7 +122,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ndwi"/>
                 <attr name="ShortDescription" stringvalue="Generates NDWI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-Ndwi2OpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-Ndwi2OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDWI2 Processor"/>
@@ -132,7 +132,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ndwi2"/>
                 <attr name="ShortDescription" stringvalue="Generates NDWI2 from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-MndwiOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-MndwiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MNDWI Processor"/>
@@ -142,7 +142,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_mndwi"/>
                 <attr name="ShortDescription" stringvalue="Generates MNDWI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-NdtiOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-NdtiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDTI Processor"/>
@@ -152,7 +152,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ndti"/>
                 <attr name="ShortDescription" stringvalue="Generates NDTI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-GndviOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-GndviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="GNDVI Processor"/>
@@ -162,7 +162,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_gndvi"/>
                 <attr name="ShortDescription" stringvalue="Generates GNDVI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-PssraOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-PssraOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="PSSRa Processor"/>
@@ -172,7 +172,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_pssra"/>
                 <attr name="ShortDescription" stringvalue="Generates PSSRa from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-Ndi45OpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-Ndi45OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDI45 Processor"/>
@@ -182,7 +182,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ndi45"/>
                 <attr name="ShortDescription" stringvalue="Generates NDI45 from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-MtciOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-MtciOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MTCI Processor"/>
@@ -192,7 +192,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_mtci"/>
                 <attr name="ShortDescription" stringvalue="Generates MTCI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-McariOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-McariOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MCARI Processor"/>
@@ -202,7 +202,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_mcari"/>
                 <attr name="ShortDescription" stringvalue="Generates MCARI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-IreciOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-IreciOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="IRECI Processor"/>
@@ -212,7 +212,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ireci"/>
                 <attr name="ShortDescription" stringvalue="Generates IRECI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-S2repOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-S2repOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="S2REP Processor"/>
@@ -222,7 +222,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_s2rep"/>
                 <attr name="ShortDescription" stringvalue="Generates S2REP from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-NdpiOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-NdpiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDPI Processor"/>
@@ -232,7 +232,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ndpi"/>
                 <attr name="ShortDescription" stringvalue="Generates NDPI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-CiOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-CiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="CI Processor"/>
@@ -242,7 +242,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ci"/>
                 <attr name="ShortDescription" stringvalue="Generates CI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-BiOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-BiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="BI Processor"/>
@@ -252,7 +252,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_bi"/>
                 <attr name="ShortDescription" stringvalue="Generates BI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-Bi2OpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-Bi2OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="BI2 Processor"/>
@@ -262,7 +262,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_bi2"/>
                 <attr name="ShortDescription" stringvalue="Generates BI2 from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-RiOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-RiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="RI Processor"/>
@@ -272,7 +272,7 @@
                 <attr name="targetProductNameSuffix" stringvalue="_ri"/>
                 <attr name="ShortDescription" stringvalue="Generates RI from a source product with at least two spectral bands."/>
             </file>
-            <file name="org-esa-s2tbx-ReipOpAction.instance">
+            <file name="org-esa-s2tbx-radiometry-ReipOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="REIP Processor"/>
@@ -288,127 +288,144 @@
     <folder name="Menu">
         <folder name="Optical">
             <folder name="Thematic Land Processing">
-                <file name="org-esa-s2tbx-SaviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-SaviOpAction.instance"/>
-                    <attr name="position" intvalue="0"/>
-                </file>
-                <file name="org-esa-s2tbx-TsaviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-TsaviOpAction.instance"/>
-                    <attr name="position" intvalue="1"/>
-                </file>
-                <file name="org-esa-s2tbx-IpviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-IpviOpAction.instance"/>
-                    <attr name="position" intvalue="2"/>
-                </file>
-                <file name="org-esa-s2tbx-RviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-RviOpAction.instance"/>
-                    <attr name="position" intvalue="3"/>
-                </file>
-                <file name="org-esa-s2tbx-DviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-DviOpAction.instance"/>
-                    <attr name="position" intvalue="4"/>
-                </file>
-                <file name="org-esa-s2tbx-WdviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-WdviOpAction.instance"/>
-                    <attr name="position" intvalue="5"/>
-                </file>
-                <file name="org-esa-s2tbx-PviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-PviOpAction.instance"/>
-                    <attr name="position" intvalue="6"/>
-                </file>
-                <file name="org-esa-s2tbx-MsaviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-MsaviOpAction.instance"/>
-                    <attr name="position" intvalue="7"/>
-                </file>
-                <file name="org-esa-s2tbx-Msavi2OpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Msavi2OpAction.instance"/>
-                    <attr name="position" intvalue="8"/>
-                </file>
-                <file name="org-esa-s2tbx-GemiOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-GemiOpAction.instance"/>
-                    <attr name="position" intvalue="9"/>
-                </file>
-                <file name="org-esa-s2tbx-TndviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-TndviOpAction.instance"/>
-                    <attr name="position" intvalue="10"/>
-                </file>
-                <file name="org-esa-s2tbx-NdwiOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdwiOpAction.instance"/>
-                    <attr name="position" intvalue="11"/>
-                </file>
-                <file name="org-esa-s2tbx-Ndwi2OpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Ndwi2OpAction.instance"/>
-                    <attr name="position" intvalue="12"/>
-                </file>
-                <file name="org-esa-s2tbx-MndwiOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-MndwiOpAction.instance"/>
-                    <attr name="position" intvalue="13"/>
-                </file>
-                <file name="org-esa-s2tbx-NdtiOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdtiOpAction.instance"/>
-                    <attr name="position" intvalue="14"/>
-                </file>
-                <file name="org-esa-s2tbx-GndviOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-GndviOpAction.instance"/>
-                    <attr name="position" intvalue="15"/>
-                </file>
-                <file name="org-esa-s2tbx-PssraOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-PssraOpAction.instance"/>
-                    <attr name="position" intvalue="16"/>
-                </file>
-                <file name="org-esa-s2tbx-Ndi45OpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Ndi45OpAction.instance"/>
-                    <attr name="position" intvalue="17"/>
-                </file>
-                <file name="org-esa-s2tbx-MtciOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-MtciOpAction.instance"/>
-                    <attr name="position" intvalue="18"/>
-                </file>
-                <file name="org-esa-s2tbx-McariOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-McariOpAction.instance"/>
-                    <attr name="position" intvalue="19"/>
-                </file>
-                <file name="org-esa-s2tbx-IreciOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-IreciOpAction.instance"/>
-                    <attr name="position" intvalue="20"/>
-                </file>
-                <file name="org-esa-s2tbx-S2repOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-S2repOpAction.instance"/>
-                    <attr name="position" intvalue="21"/>
-                </file>
-                <file name="org-esa-s2tbx-NdpiOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-NdpiOpAction.instance"/>
-                    <attr name="position" intvalue="22"/>
-                </file>
-                <file name="org-esa-s2tbx-CiOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-CiOpAction.instance"/>
-                    <attr name="position" intvalue="23"/>
-                </file>
-                <file name="org-esa-s2tbx-BiOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-BiOpAction.instance"/>
-                    <attr name="position" intvalue="24"/>
-                </file>
-                <file name="org-esa-s2tbx-Bi2OpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-Bi2OpAction.instance"/>
-                    <attr name="position" intvalue="25"/>
-                </file>
-                <file name="org-esa-s2tbx-RiOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-RiOpAction.instance"/>
-                    <attr name="position" intvalue="26"/>
-                </file>
-                <file name="org-esa-s2tbx-ReipOpAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-ReipOpAction.instance"/>
-                    <attr name="position" intvalue="27"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
 
-    <folder name="Services">
-        <folder name="JavaHelp">
-            <file name="org-esa-s2tbx-radiometry-helpset.xml" url="helpset.xml">
-                <attr name="position" intvalue="4310"/>
-            </file>
+                <folder name="Radiometric Indices">
+
+                    <folder name="Basic Radiometric Indices">
+
+                        <file name="org-esa-s2tbx-radiometry-DviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-DviOpAction.instance"/>
+                            <attr name="position" intvalue="0"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-RviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-RviOpAction.instance"/>
+                            <attr name="position" intvalue="1"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-PviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PviOpAction.instance"/>
+                            <attr name="position" intvalue="2"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-IpviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IpviOpAction.instance"/>
+                            <attr name="position" intvalue="3"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-WdviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-WdviOpAction.instance"/>
+                            <attr name="position" intvalue="4"/>
+                        </file>
+
+                    </folder>
+
+                    <folder name="Indices to Minimize Soil Noise">
+
+                        <file name="org-esa-s2tbx-radiometry-SaviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-SaviOpAction.instance"/>
+                            <attr name="position" intvalue="5"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-TsaviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-TsaviOpAction.instance"/>
+                            <attr name="position" intvalue="6"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-MsaviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MsaviOpAction.instance"/>
+                            <attr name="position" intvalue="7"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-Msavi2OpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Msavi2OpAction.instance"/>
+                            <attr name="position" intvalue="8"/>
+                        </file>
+
+                    </folder>
+
+                    <folder name="Indices to Minimize Atmospheric Noise">
+
+                        <file name="org-esa-s2tbx-radiometry-GemiOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GemiOpAction.instance"/>
+                            <attr name="position" intvalue="9"/>
+                        </file>
+
+                    </folder>
+
+                    <folder name="Other Radiometric Indices">
+
+                        <file name="org-esa-s2tbx-radiometry-TndviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-TndviOpAction.instance"/>
+                            <attr name="position" intvalue="10"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-GndviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GndviOpAction.instance"/>
+                            <attr name="position" intvalue="11"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-MtciOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MtciOpAction.instance"/>
+                            <attr name="position" intvalue="12"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-McariOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-McariOpAction.instance"/>
+                            <attr name="position" intvalue="13"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-PssraOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PssraOpAction.instance"/>
+                            <attr name="position" intvalue="14"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-NdwiOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-NdwiOpAction.instance"/>
+                            <attr name="position" intvalue="15"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-Ndwi2OpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Ndwi2OpAction.instance"/>
+                            <attr name="position" intvalue="16"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-MndwiOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MndwiOpAction.instance"/>
+                            <attr name="position" intvalue="17"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-NdpiOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-NdpiOpAction.instance"/>
+                            <attr name="position" intvalue="18"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-NdtiOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-NdtiOpAction.instance"/>
+                            <attr name="position" intvalue="19"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-RiOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-RiOpAction.instance"/>
+                            <attr name="position" intvalue="20"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-CiOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-CiOpAction.instance"/>
+                            <attr name="position" intvalue="21"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-BiOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-BiOpAction.instance"/>
+                            <attr name="position" intvalue="22"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-Bi2OpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Bi2OpAction.instance"/>
+                            <attr name="position" intvalue="23"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-ReipOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-ReipOpAction.instance"/>
+                            <attr name="position" intvalue="24"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-S2repOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-S2repOpAction.instance"/>
+                            <attr name="position" intvalue="25"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-IreciOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IreciOpAction.instance"/>
+                            <attr name="position" intvalue="26"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-Ndi45OpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Ndi45OpAction.instance"/>
+                            <attr name="position" intvalue="27"/>
+                        </file>
+
+                    </folder>
+
+                </folder>
+
+            </folder>
         </folder>
     </folder>
 
