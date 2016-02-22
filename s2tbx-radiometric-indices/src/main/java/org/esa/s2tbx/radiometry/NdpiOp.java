@@ -14,7 +14,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "NdpiOp",
-        category = "Optical/Thematic Land Processing",
+        category = "Optical/Thematic Land Processing/Radiometric Indices/Other Radiometric Indices",
         description = "The normalized differential pond index, combines the short-wave infrared band-I and the green band",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")

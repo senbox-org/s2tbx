@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @OperatorMetadata(
         alias = "MsaviOp",
-        category = "Optical/Thematic Land Processing",
+        category = "Optical/Thematic Land Processing/Radiometric Indices/Indices to Minimize Soil Noise",
         description = "This retrieves the Modified Soil Adjusted Vegetation Index (MSAVI).",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")

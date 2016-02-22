@@ -15,7 +15,7 @@ import java.util.Map;
 @OperatorMetadata(
         alias = "IreciOp",
         category = "Optical/Thematic Land Processing",
-        description = "Inverted red-edge chlorophyll index",
+        description = "Optical/Thematic Land Processing/Radiometric Indices/Other Radiometric Indices",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
 public class IreciOp extends BaseIndexOp{

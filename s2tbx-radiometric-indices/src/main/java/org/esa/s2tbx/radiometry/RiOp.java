@@ -14,7 +14,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "RiOp",
-        category = "Optical/Thematic Land Processing",
+        category = "Optical/Thematic Land Processing/Radiometric Indices/Other Radiometric Indices",
         description = "The Redness Index was developed to identify soil colour variations.",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")

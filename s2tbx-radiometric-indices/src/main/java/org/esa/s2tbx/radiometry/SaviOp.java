@@ -30,7 +30,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "SaviOp",
-        category = "Optical/Thematic Land Processing",
+        category = "Optical/Thematic Land Processing/Radiometric Indices/Indices to Minimize Soil Noise",
         description = "This retrieves the Soil-Adjusted Vegetation Index (SAVI).",
         authors = "Cosmin Cara",
         copyright = "Copyright (C) 2015 by CS ROMANIA")
