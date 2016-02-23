@@ -89,4 +89,7 @@
     <mapID target="WDVIOperator" url="wdvi/WdviTool.html"/>
     <mapID target="algorithm" url="wdvi/WdviAlgorithmSpecification.html"/>
 
+    <mapID target="ARVIOperator" url="arvi/ArviTool.html"/>
+    <mapID target="algorithm" url="arvi/ArviAlgorithmSpecification.html"/>
+
 </map>

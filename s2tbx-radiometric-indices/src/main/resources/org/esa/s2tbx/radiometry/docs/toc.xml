@@ -55,6 +55,9 @@
                         <tocitem text="GEMI Operator" target="GEMIOperator">
                             <tocitem text="Algorithm Specification" target="algorithm"/>
                         </tocitem>
+                        <tocitem text="ARVI Operator" target="ARVIOperator">
+                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                        </tocitem>
 
                     </tocitem>
 

@@ -26,3 +26,4 @@ org.esa.s2tbx.radiometry.BiOp$Spi
 org.esa.s2tbx.radiometry.Bi2Op$Spi
 org.esa.s2tbx.radiometry.RiOp$Spi
 org.esa.s2tbx.radiometry.ReipOp$Spi
+org.esa.s2tbx.radiometry.ArviOp$Spi
