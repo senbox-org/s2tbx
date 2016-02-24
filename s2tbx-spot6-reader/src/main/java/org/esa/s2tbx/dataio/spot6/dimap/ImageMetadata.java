@@ -271,6 +271,10 @@ public class ImageMetadata extends XmlMetadata {
         return result;
     }
 
+    public int getPixelNBits() {
+        return Integer.parseInt(getAttributeValue(Spot6Constants.PATH_IMG_NBITS, Spot6Constants.DEFAULT_PIXEL_SIZE));
+    }
+
     public int getPixelDataType() {
         int retVal;
         int value = Integer.parseInt(getAttributeValue(Spot6Constants.PATH_IMG_NBITS, Spot6Constants.DEFAULT_PIXEL_SIZE));
@@ -306,18 +310,22 @@ public class ImageMetadata extends XmlMetadata {
             Double stDev = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_HISTOGRAM_BAND, bandId, Spot6Constants.PATH_IMG_HISTOGRAM_STDEV, String.valueOf(Double.NaN)));
             String valuesList = getAttributeSiblingValue(Spot6Constants.PATH_IMG_HISTOGRAM_BAND, bandId, Spot6Constants.PATH_IMG_HISTOGRAM_VALUES, "");
             if (!(min.isNaN() || max.isNaN() || mean.isNaN() || stDev.isNaN())) {
-                String[] values = valuesList.split(" ");
-                int[] bins = new int[values.length];
-                for (int x = 0; x < values.length; x++) {
-                    bins[x] = Integer.parseInt(values[x]);
+                try {
+                    String[] values = valuesList.trim().split(" ");
+                    int[] bins = new int[values.length];
+                    for (int x = 0; x < values.length; x++) {
+                        bins[x] = Integer.parseInt(values[x]);
+                    }
+                    statistics[i] = new StxFactory()
+                            .withMinimum(min)
+                            .withMaximum(max)
+                            .withMean(mean)
+                            .withStandardDeviation(stDev)
+                            .withHistogramBins(bins)
+                            .create();
+                } catch (Exception ex) {
+                    logger.warning("Could not read metadata band statistics for band " + bandId);
                 }
-                statistics[i] = new StxFactory()
-                        .withMinimum(min)
-                        .withMaximum(max)
-                        .withMean(mean)
-                        .withStandardDeviation(stDev)
-                        .withHistogramBins(bins)
-                        .create();
             }
         }
         return statistics;

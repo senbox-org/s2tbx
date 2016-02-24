@@ -161,8 +161,10 @@ public class Spot6ProductReader extends AbstractProductReader {
                     tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
-                product.setNumResolutionsMax(levels);
-                //final Stx[] statistics = imageMetadata.getBandsStatistics();
+                if (levels > product.getNumResolutionsMax()) {
+                    product.setNumResolutionsMax(levels);
+                }
+                final Stx[] statistics = imageMetadata.getBandsStatistics();
                 for (int i = 0; i < numBands; i++) {
                     Band targetBand = new Band(bandInfos[i].getId(), pixelDataType,
                                                 Math.round(width / factorX),
@@ -173,7 +175,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                     targetBand.setSolarFlux(solarIrradiances[i]);
                     targetBand.setUnit(bandInfos[i].getUnit());
                     targetBand.setNoDataValue(noDataValue);
-                    //targetBand.setNoDataValueUsed(true);
+                    targetBand.setNoDataValueUsed(true);
                     targetBand.setScalingFactor(scalingAndOffsets[i][0] / bandInfos[i].getGain());
                     targetBand.setScalingOffset(scalingAndOffsets[i][1] * bandInfos[i].getBias());
                     initBandGeoCoding(imageMetadata, targetBand, width, height);
@@ -195,7 +197,16 @@ public class Spot6ProductReader extends AbstractProductReader {
                                                     Product.findImageToModelTransform(product.getSceneGeoCoding()) :
                                             targetBand.getImageToModelTransform());
                     targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-
+                    if (statistics[i] != null) {
+                        targetBand.setStx(statistics[i]);
+                        targetBand.setImageInfo(
+                                new ImageInfo(
+                                        new ColorPaletteDef(new ColorPaletteDef.Point[] {
+                                                new ColorPaletteDef.Point(statistics[i].getMinimum(), Color.BLACK),
+                                                //new ColorPaletteDef.Point(statistics[i].getMean(), Color.GRAY),
+                                                new ColorPaletteDef.Point(statistics[i].getMaximum(), Color.WHITE)
+                                        })));//, (int) Math.pow(2, imageMetadata.getPixelNBits()))));
+                    }
                     product.addBand(targetBand);
 
                 }
@@ -288,7 +299,6 @@ public class Spot6ProductReader extends AbstractProductReader {
                 if (refBand != null) {
                     target.addMask(maskName, node, mask.description, colorIterator.next(), 0.5, refBand);
                 } else {
-                    node.setOwner(target);
                     target.addMask(mask.name, node, mask.description, colorIterator.next(), 0.5);
                 }
             }
