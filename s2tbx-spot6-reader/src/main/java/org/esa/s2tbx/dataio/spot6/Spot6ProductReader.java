@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.spot6;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.readers.ColorIterator;
 import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.s2tbx.dataio.spot6.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
@@ -22,7 +23,9 @@ import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -117,7 +120,7 @@ public class Spot6ProductReader extends AbstractProductReader {
             product.setStartTime(maxResImageMetadata.getProductStartTime());
             product.setEndTime(maxResImageMetadata.getProductEndTime());
             product.setDescription(maxResImageMetadata.getProductDescription());
-            product.setNumResolutionsMax(imageMetadataList.size());
+            //product.setNumResolutionsMax(imageMetadataList.size());
             ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
             if (maxResImageMetadata.hasInsertPoint()) {
                 String crsCode = maxResImageMetadata.getCRSCode();
@@ -158,6 +161,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                     tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
+                product.setNumResolutionsMax(levels);
                 //final Stx[] statistics = imageMetadata.getBandsStatistics();
                 for (int i = 0; i < numBands; i++) {
                     Band targetBand = new Band(bandInfos[i].getId(), pixelDataType,
@@ -169,7 +173,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                     targetBand.setSolarFlux(solarIrradiances[i]);
                     targetBand.setUnit(bandInfos[i].getUnit());
                     targetBand.setNoDataValue(noDataValue);
-                    targetBand.setNoDataValueUsed(true);
+                    //targetBand.setNoDataValueUsed(true);
                     targetBand.setScalingFactor(scalingAndOffsets[i][0] / bandInfos[i].getGain());
                     targetBand.setScalingOffset(scalingAndOffsets[i][1] * bandInfos[i].getBias());
                     initBandGeoCoding(imageMetadata, targetBand, width, height);
@@ -268,17 +272,39 @@ public class Spot6ProductReader extends AbstractProductReader {
 
     private void addGMLMasks(Product target, ImageMetadata metadata) {
         List<ImageMetadata.MaskInfo> gmlMasks = metadata.getMasks();
-        final ProductNodeGroup<VectorDataNode> vectorDataGroup = target.getVectorDataGroup();
-        gmlMasks.stream().filter(mask -> !vectorDataGroup.contains(mask.name)).forEach(mask -> {
+        final Iterator<Color> colorIterator = ColorIterator.create();
+        Band refBand = findReferenceBand(target, metadata.getRasterWidth());
+        boolean isMultiSize = this.metadata.getImageMetadataList().size() > 1;
+        gmlMasks.stream().forEach(mask -> {
             logger.info(String.format("Parsing mask %s of component %s", mask.name, metadata.getFileName()));
             VectorDataNode node = GMLReader.parse(mask.name, mask.path);
-            if (node != null) {
-                node.setDescription(mask.description);
-                vectorDataGroup.add(node);
+            if (node != null && node.getFeatureCollection().size() > 0) {
+                node.setOwner(target);
+                String maskName = mask.name;
+                if (isMultiSize) {
+                    String resolution = "_" + new DecimalFormat("#.#").format(metadata.getPixelSize()) + "m";
+                    maskName += resolution.endsWith(".") ? resolution.substring(0, resolution.length() - 1) : resolution;
+                }
+                if (refBand != null) {
+                    target.addMask(maskName, node, mask.description, colorIterator.next(), 0.5, refBand);
+                } else {
+                    node.setOwner(target);
+                    target.addMask(mask.name, node, mask.description, colorIterator.next(), 0.5);
+                }
             }
         });
     }
 
+    private Band findReferenceBand(Product product, int width) {
+        Band referenceBand = null;
+        for (Band band : product.getBands()) {
+            if (band.getRasterWidth() == width) {
+                referenceBand = band;
+                break;
+            }
+        }
+        return referenceBand;
+    }
 
     private void addProductComponentIfNotPresent(String componentId, File componentFile, TreeNode<File> currentComponents) {
         TreeNode<File> resultComponent = null;
