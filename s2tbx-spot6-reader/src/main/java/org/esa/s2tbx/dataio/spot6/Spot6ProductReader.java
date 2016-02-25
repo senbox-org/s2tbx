@@ -3,9 +3,11 @@ package org.esa.s2tbx.dataio.spot6;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.readers.ColorIterator;
 import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.s2tbx.dataio.spot6.dimap.ImageMetadata;
 import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
+import org.esa.s2tbx.dataio.spot6.dimap.VolumeComponent;
 import org.esa.s2tbx.dataio.spot6.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.spot6.internal.MosaicMultiLevelSource;
 import org.esa.snap.core.dataio.AbstractProductReader;
@@ -21,7 +23,9 @@ import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -66,16 +70,23 @@ public class Spot6ProductReader extends AbstractProductReader {
                     addProductComponentIfNotPresent(Spot6Constants.ROOT_METADATA, volumeMetadataPhysicalFile, result);
                     for (VolumeMetadata component : metadata.getVolumeMetadataList()) {
                         try {
-                            addProductComponentIfNotPresent(component.getPath(), productDirectory.getFile(component.getPath()), result);
-                        } catch (IOException ex) {
-                            logger.warning(ex.getMessage());
-                        }
-                    }
-
-                    for (ImageMetadata component : metadata.getImageMetadataList()) {
-                        try {
-                            //add thumb file of the component
-                            addProductComponentIfNotPresent(component.getPath(), productDirectory.getFile(component.getPath()), result);
+                            File fullPathComp = productDirectory.getFile(component.getPath());
+                            addProductComponentIfNotPresent(component.getFileName(), fullPathComp, result);
+                            for (VolumeComponent vComponent: component.getComponents()){
+                                if(vComponent.getType().equals(Spot6Constants.METADATA_FORMAT)){
+                                    File fullPathVComp = productDirectory.getFile(fullPathComp.getParent() + File.separator + vComponent.getPath().toString());
+                                    addProductComponentIfNotPresent(vComponent.getPath().getFileName().toString(), fullPathVComp, result);
+                                    if(vComponent.getComponentMetadata() != null && vComponent.getComponentMetadata() instanceof ImageMetadata){
+                                        ImageMetadata image = (ImageMetadata)vComponent.getComponentMetadata();
+                                        for (String raster : image.getRasterFileNames()){
+                                            addProductComponentIfNotPresent(raster, productDirectory.getFile(fullPathVComp.getParent() + File.separator + raster), result);
+                                        }
+                                        for (ImageMetadata.MaskInfo mask : image.getMasks()){
+                                            addProductComponentIfNotPresent(mask.name, mask.path.toFile(), result);
+                                        }
+                                    }
+                                }
+                            }
                         } catch (IOException ex) {
                             logger.warning(ex.getMessage());
                         }
@@ -109,7 +120,7 @@ public class Spot6ProductReader extends AbstractProductReader {
             product.setStartTime(maxResImageMetadata.getProductStartTime());
             product.setEndTime(maxResImageMetadata.getProductEndTime());
             product.setDescription(maxResImageMetadata.getProductDescription());
-            product.setNumResolutionsMax(imageMetadataList.size());
+            //product.setNumResolutionsMax(imageMetadataList.size());
             ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
             if (maxResImageMetadata.hasInsertPoint()) {
                 String crsCode = maxResImageMetadata.getCRSCode();
@@ -150,7 +161,10 @@ public class Spot6ProductReader extends AbstractProductReader {
                     tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
-                //final Stx[] statistics = imageMetadata.getBandsStatistics();
+                if (levels > product.getNumResolutionsMax()) {
+                    product.setNumResolutionsMax(levels);
+                }
+                final Stx[] statistics = imageMetadata.getBandsStatistics();
                 for (int i = 0; i < numBands; i++) {
                     Band targetBand = new Band(bandInfos[i].getId(), pixelDataType,
                                                 Math.round(width / factorX),
@@ -183,7 +197,16 @@ public class Spot6ProductReader extends AbstractProductReader {
                                                     Product.findImageToModelTransform(product.getSceneGeoCoding()) :
                                             targetBand.getImageToModelTransform());
                     targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-
+                    if (statistics[i] != null) {
+                        targetBand.setStx(statistics[i]);
+                        targetBand.setImageInfo(
+                                new ImageInfo(
+                                        new ColorPaletteDef(new ColorPaletteDef.Point[] {
+                                                new ColorPaletteDef.Point(statistics[i].getMinimum(), Color.BLACK),
+                                                //new ColorPaletteDef.Point(statistics[i].getMean(), Color.GRAY),
+                                                new ColorPaletteDef.Point(statistics[i].getMaximum(), Color.WHITE)
+                                        })));//, (int) Math.pow(2, imageMetadata.getPixelNBits()))));
+                    }
                     product.addBand(targetBand);
 
                 }
@@ -260,17 +283,38 @@ public class Spot6ProductReader extends AbstractProductReader {
 
     private void addGMLMasks(Product target, ImageMetadata metadata) {
         List<ImageMetadata.MaskInfo> gmlMasks = metadata.getMasks();
-        final ProductNodeGroup<VectorDataNode> vectorDataGroup = target.getVectorDataGroup();
-        gmlMasks.stream().filter(mask -> !vectorDataGroup.contains(mask.name)).forEach(mask -> {
+        final Iterator<Color> colorIterator = ColorIterator.create();
+        Band refBand = findReferenceBand(target, metadata.getRasterWidth());
+        boolean isMultiSize = this.metadata.getImageMetadataList().size() > 1;
+        gmlMasks.stream().forEach(mask -> {
             logger.info(String.format("Parsing mask %s of component %s", mask.name, metadata.getFileName()));
             VectorDataNode node = GMLReader.parse(mask.name, mask.path);
-            if (node != null) {
-                node.setDescription(mask.description);
-                vectorDataGroup.add(node);
+            if (node != null && node.getFeatureCollection().size() > 0) {
+                node.setOwner(target);
+                String maskName = mask.name;
+                if (isMultiSize) {
+                    String resolution = "_" + new DecimalFormat("#.#").format(metadata.getPixelSize()) + "m";
+                    maskName += resolution.endsWith(".") ? resolution.substring(0, resolution.length() - 1) : resolution;
+                }
+                if (refBand != null) {
+                    target.addMask(maskName, node, mask.description, colorIterator.next(), 0.5, refBand);
+                } else {
+                    target.addMask(mask.name, node, mask.description, colorIterator.next(), 0.5);
+                }
             }
         });
     }
 
+    private Band findReferenceBand(Product product, int width) {
+        Band referenceBand = null;
+        for (Band band : product.getBands()) {
+            if (band.getRasterWidth() == width) {
+                referenceBand = band;
+                break;
+            }
+        }
+        return referenceBand;
+    }
 
     private void addProductComponentIfNotPresent(String componentId, File componentFile, TreeNode<File> currentComponents) {
         TreeNode<File> resultComponent = null;

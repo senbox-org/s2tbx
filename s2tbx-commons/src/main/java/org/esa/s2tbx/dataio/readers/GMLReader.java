@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 /**
@@ -65,6 +66,7 @@ public class GMLReader {
         private List<Coordinate> currentCoordinates;
         private int linRingCount;
         private GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING));
+        private int dimensions;
 
         public List<SimpleFeature> getResult() {
             return result;
@@ -88,7 +90,7 @@ public class GMLReader {
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            buffer.append(new String(ch, start, length));
+            buffer.append(new String(ch, start, length).replace("\n", ""));
         }
 
         @Override
@@ -105,6 +107,14 @@ public class GMLReader {
                     String id = attributes.getValue("gml:id");
                     currentFeatureId = new FeatureIdImpl(id);
                     currentFeaturePoligons.clear();
+                    break;
+                case "posList":
+                    String dimStr = attributes.getValue("srsDimension");
+                    try {
+                        dimensions = Integer.parseInt(dimStr);
+                    } catch (Exception e) {
+                        dimensions = 2;
+                    }
                     break;
             }
         }
@@ -140,11 +150,26 @@ public class GMLReader {
                     }
                     break;
                 case "posList":
-                    String[] points = buffer.toString().replace("\n", "").trim().split(" ");
+                    StringTokenizer tokenizer = new StringTokenizer(buffer.toString(), " ", true);
                     currentCoordinates = new ArrayList<>();
-                    for (int i = 0; i < points.length; i += 2) {
-                        currentCoordinates.add(new Coordinate(Float.parseFloat(points[i]), Float.parseFloat(points[i+1])));
+                    int idx = 0;
+                    Coordinate current = new Coordinate();
+                    while (tokenizer.hasMoreTokens()) {
+                        String token = tokenizer.nextToken();
+                        if (" ".equals(token)) {
+                            if (idx == dimensions) {
+                                currentCoordinates.add(current);
+                                current = new Coordinate();
+                                idx = 0;
+                            }
+                        } else {
+                            current.setOrdinate(idx++, Double.parseDouble(token));
+                        }
                     }
+                    if (idx == dimensions) {
+                        currentCoordinates.add(current);
+                    }
+
                     break;
             }
             buffer.setLength(0);
