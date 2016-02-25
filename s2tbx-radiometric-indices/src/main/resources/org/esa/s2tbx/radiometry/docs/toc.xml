@@ -16,19 +16,19 @@
                     <tocitem text="Basic Radiometric Indices">
 
                         <tocitem text="DVI Operator" target="DVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="DVI Algorithm Specification" target="DVIAlgorithm"/>
                         </tocitem>
                         <tocitem text="RVI Operator" target="RVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="RVI Algorithm Specification" target="RVIAlgorithm"/>
                         </tocitem>
                         <tocitem text="PVI Operator" target="PVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="PVI Algorithm Specification" target="PVIAlgorithm"/>
                         </tocitem>
                         <tocitem text="IPVI Operator" target="IPVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="IPVI Algorithm Specification" target="IPVIAlgorithm"/>
                         </tocitem>
                         <tocitem text="WDVI Operator" target="WDVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="WDVI Algorithm Specification" target="WDVIAlgorithm"/>
                         </tocitem>
 
                     </tocitem>
@@ -36,16 +36,16 @@
                     <tocitem text="Indices to Minimize Soil Noise">
 
                         <tocitem text="SAVI Operator" target="SAVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="SAVI Algorithm Specification" target="SAVIAlgorithm"/>
                         </tocitem>
                         <tocitem text="TSAVI Operator" target="TSAVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="TSAVI Algorithm Specification" target="TSAVIAlgorithm"/>
                         </tocitem>
                         <tocitem text="MSAVI Operator" target="MSAVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="MSAVI Algorithm Specification" target="MSAVIAlgorithm"/>
                         </tocitem>
                         <tocitem text="MSAVI2 Operator" target="MSAVI2Operator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="MSAVI2 Algorithm Specification" target="MSAVI2Algorithm"/>
                         </tocitem>
 
                     </tocitem>
@@ -53,10 +53,10 @@
                     <tocitem text="Indices to Minimize Atmospheric Noise">
 
                         <tocitem text="GEMI Operator" target="GEMIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="GEMI Algorithm Specification" target="GEMIAlgorithm"/>
                         </tocitem>
                         <tocitem text="ARVI Operator" target="ARVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="ARVI Algorithm Specification" target="ARVIAlgorithm"/>
                         </tocitem>
 
                     </tocitem>
@@ -64,58 +64,58 @@
                     <tocitem text="Other Radiometric Indices">
 
                         <tocitem text="TNDVI Operator" target="TNDVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="TNDVI Algorithm Specification" target="TNDVIAlgorithm"/>
                         </tocitem>
                         <tocitem text="GNDVI Operator" target="GNDVIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="GNDVI Algorithm Specification" target="GNDVIAlgorithm"/>
                         </tocitem>
                         <tocitem text="MTCI Operator" target="MTCIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="MTCI Algorithm Specification" target="MTCIAlgorithm"/>
                         </tocitem>
                         <tocitem text="MCARI Operator" target="MCARIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="MCARI Algorithm Specification" target="MCARIAlgorithm"/>
                         </tocitem>
                         <tocitem text="PSSRa Operator" target="PSSRaOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="PSSRa Algorithm Specification" target="PSSRaAlgorithm"/>
                         </tocitem>
                         <tocitem text="NDWI Operator" target="NDWIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="NDWI Algorithm Specification" target="NDWIAlgorithm"/>
                         </tocitem>
                         <tocitem text="NDWI2 Operator" target="NDWI2Operator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="NDWI2 Algorithm Specification" target="NDWI2Algorithm"/>
                         </tocitem>
                         <tocitem text="MNDWI Operator" target="MNDWIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="MNDWI Algorithm Specification" target="MNDWIAlgorithm"/>
                         </tocitem>
                         <tocitem text="NDPI Operator" target="NDPIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="NDPI Algorithm Specification" target="NDPIAlgorithm"/>
                         </tocitem>
                         <tocitem text="NDTI Operator" target="NDTIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="NDTI Algorithm Specification" target="NDTIAlgorithm"/>
                         </tocitem>
                         <tocitem text="RI Operator" target="RIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="RI Algorithm Specification" target="RIAlgorithm"/>
                         </tocitem>
                         <tocitem text="CI Operator" target="CIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="CI Algorithm Specification" target="CIAlgorithm"/>
                         </tocitem>
                         <tocitem text="BI Operator" target="BIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="BI Algorithm Specification" target="BIAlgorithm"/>
                         </tocitem>
                         <tocitem text="BI2 Operator" target="BI2Operator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="BI2 Algorithm Specification" target="BI2Algorithm"/>
                         </tocitem>
                         <tocitem text="REIP Operator" target="REIPOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="REIP Algorithm Specification" target="REIPAlgorithm"/>
                         </tocitem>
                         <tocitem text="S2REP Operator" target="S2REPOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="S2REP Algorithm Specification" target="S2REPAlgorithm"/>
                         </tocitem>
                         <tocitem text="IRECI Operator" target="IRECIOperator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="IRECI Algorithm Specification" target="IRECIAlgorithm"/>
                         </tocitem>
                         <tocitem text="NDI45 Operator" target="NDI45Operator">
-                            <tocitem text="Algorithm Specification" target="algorithm"/>
+                            <tocitem text="NDI45 Algorithm Specification" target="NDI45Algorithm"/>
                         </tocitem>
                     </tocitem>
 
