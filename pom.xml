@@ -268,12 +268,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.jna</groupId>
-                <artifactId>jna</artifactId>
-                <version>4.2.1</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.xeustechnologies</groupId>
                 <artifactId>jtar</artifactId>
                 <version>1.1</version>
