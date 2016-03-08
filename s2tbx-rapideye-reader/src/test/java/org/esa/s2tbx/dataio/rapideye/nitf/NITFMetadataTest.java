@@ -31,11 +31,14 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ramona Manda
  */
-public class NITFMetadataTest extends TestCase {
+public class NITFMetadataTest {
     private NITFMetadata metadata;
     private String productsFolder = "_rapideye" + File.separator;
 

@@ -193,8 +193,8 @@ public class ImageIOUtils {
             int imageHeight = image.getHeight();
             int imageWidth = image.getWidth();
             if (imageHeight > screen.height || imageWidth > screen.width) {
-                double hRatio = (imageHeight - screen.height) / screen.height;
-                double wRatio = (imageWidth - screen.width) / screen.width;
+                double hRatio = (double)(imageHeight - screen.height) / screen.height;
+                double wRatio = (double)(imageWidth - screen.width) / screen.width;
 
                 int w = -1;
                 int h = -1;

@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This factory class returns instances of <code>XmlMetadataParser</code>s that have been previously
+ * This factory class returns instances of {@code XmlMetadataParser}s that have been previously
  * registered with it.
  */
 public class XmlMetadataParserFactory {
@@ -30,12 +30,13 @@ public class XmlMetadataParserFactory {
 
     /**
      * Registers a parser instance, attached to the given metadata class, to this factory.
+     * The metadata class should be an extension of {@code GenericXmlMetadata}
      *
      * @param clazz  The metadata class.
      * @param parser The parser instance.
      * @param <T>    Generic type for metadata class.
      */
-    public static <T extends XmlMetadata> void registerParser(Class clazz, XmlMetadataParser<T> parser) {
+    public static <T extends GenericXmlMetadata> void registerParser(Class clazz, XmlMetadataParser<T> parser) {
         if (!parserMap.containsKey(clazz)) {
             parserMap.put(clazz, parser);
         }
@@ -50,7 +51,7 @@ public class XmlMetadataParserFactory {
      * @return The parser instance.
      * @throws InstantiationException Exception is thrown if no parser was registered for the input class.
      */
-    public static <T extends XmlMetadata> XmlMetadataParser<T> getParser(Class clazz) throws InstantiationException {
+    public static <T extends GenericXmlMetadata> XmlMetadataParser<T> getParser(Class clazz) throws InstantiationException {
         XmlMetadataParser<T> parser;
         if (parserMap.containsKey(clazz)) {
             //noinspection unchecked

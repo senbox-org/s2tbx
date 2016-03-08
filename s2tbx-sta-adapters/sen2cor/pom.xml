@@ -5,7 +5,7 @@
     <parent>
         <artifactId>s2tbx-sta-adapters</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>2.0.3-SNAPSHOT</version>
+        <version>2.0.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,7 +14,7 @@
 
     <name>Sentinel-2 SEN2COR processor</name>
     <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products.
-        To use it you first have to download and install the processor from http://s2tbx.telespazio-vega.de/sen2cor/sen2cor-2.0.3.zip
+        To use it you first have to download and install the processor from http://s2tbx.telespazio-vega.de/sen2cor
         At the root of the archive, the SETUP.pdf file contains instructions to install the Sen2Cor. Follow these instruction before integrating this processor into SNAP.</description>
 
     <build>

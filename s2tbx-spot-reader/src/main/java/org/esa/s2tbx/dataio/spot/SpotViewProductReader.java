@@ -129,7 +129,7 @@ public class SpotViewProductReader extends AbstractProductReader {
 
         final int bandIndex = product.getBandIndex(destBand.getName());
 
-        final long lineSizeInBytes = metadata.getRasterWidth() * metadata.getRasterPixelSize();
+        final long lineSizeInBytes = (long)metadata.getRasterWidth() * (long)metadata.getRasterPixelSize();
         int numBands = product.getNumBands();
 
         pm.beginTask("Reading band '" + destBand.getName() + "'...", sourceMaxY - sourceOffsetY);

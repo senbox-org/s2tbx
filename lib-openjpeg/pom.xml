@@ -7,54 +7,43 @@
     <parent>
         <groupId>org.esa.s2tbx</groupId>
         <artifactId>s2tbx</artifactId>
-        <version>2.0.3-SNAPSHOT</version>
+        <version>2.0.4</version>
     </parent>
 
     <artifactId>lib-openjpeg</artifactId>
-    <version>2.1.0.2</version>
+    <version>2.1.0.4</version>
     <packaging>nbm</packaging>
-    <name>OpenJpeg Library</name>
+    <name>Sentinel-2 Toolbox OpenJpeg Library</name>
     <description>This modules provides the OpenJPEG codec for compressing and decompressing JPEG2000 files.</description>
 
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-core</artifactId>
-            <version>${snap.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-core</artifactId>
-            <version>${snap.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.sun.jna</groupId>
             <artifactId>jna</artifactId>
-            <version>3.0.9</version>
         </dependency>
-
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>compile</scope>
         </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.17</version>
+                <artifactId>maven-jar-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -65,13 +54,6 @@
                         <publicPackage>org.esa.s2tbx.dataio.jp2.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.openjpeg.*</publicPackage>
                     </publicPackages>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <useDefaultManifestFile>true</useDefaultManifestFile>
                 </configuration>
             </plugin>
         </plugins>

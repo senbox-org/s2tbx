@@ -20,11 +20,9 @@ package org.esa.s2tbx.dataio.s2.l1b;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
+import org.esa.snap.runtime.Engine;
 import org.esa.snap.utils.TestUtil;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,21 +34,34 @@ import java.nio.file.Paths;
  */
 public class RetrieveTileLayoutTest {
 
+    private Engine engine;
+
     private Path sentinel2TestProductsPath;
 
     private static final String SENTINEL2_DIR = "Sentinel2";
 
     private static final String L1B_PRODUCT_NAME = "L1B/S2A_OPER_PRD_MSIL1B_PDMC_20150704T101016_R062_V20150627T103414_20150627T103417.SAFE/S2A_OPER_MTD_SAFL1B_PDMC_20150704T101016_R062_V20150627T103414_20150627T103417.xml";
 
-    /**
-     * Run these tests only if Sentinel 2 products test directory exists and is set
-     */
     @Before
-    public void updateDataPath() {
+    public void setup() {
+        /*
+         * We need a proper Engine start so that the openjpeg activator is started
+         */
+        engine = Engine.start(false);
+
+        /**
+         * Run these tests only if Sentinel 2 products test directory exists and is set
+         */
         String productPath = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
         sentinel2TestProductsPath = Paths.get(productPath, SENTINEL2_DIR);
-
         Assume.assumeTrue(Files.exists(sentinel2TestProductsPath));
+
+    }
+
+    @After
+    public void teardown() {
+        if (engine != null)
+            engine.stop();
     }
 
     @Test
