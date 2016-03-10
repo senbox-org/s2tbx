@@ -1,0 +1,46 @@
+<root>
+  <key>Pansharpening-bayes</key>
+  <exec>otbcli_Pansharpening</exec>
+  <longname>Pansharpening (bayes)</longname>
+  <group>Geometry</group>
+  <description>Perform P+XS pansharpening</description>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_InputImage">ParameterRaster</parameter_type>
+    <key>inp</key>
+    <name>Input PAN Image</name>
+    <description> Input panchromatic image.</description>
+    <optional>False</optional>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_InputImage">ParameterRaster</parameter_type>
+    <key>inxs</key>
+    <name>Input XS Image</name>
+    <description> Input XS image.</description>
+    <optional>False</optional>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_OutputImage">OutputRaster</parameter_type>
+    <key>out</key>
+    <name>Output image</name>
+    <description> Output image.</description>
+    <hidden/>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_Float">ParameterNumber</parameter_type>
+    <key>method.bayes.lambda</key>
+    <name>Weight</name>
+    <description>Set the weighting value.</description>
+    <minValue/>
+    <maxValue/>
+    <default>0.9999</default>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_Float">ParameterNumber</parameter_type>
+    <key>method.bayes.s</key>
+    <name>S coefficient</name>
+    <description>Set the S coefficient.</description>
+    <minValue/>
+    <maxValue/>
+    <default>1</default>
+  </parameter>
+  <cli_args_template>-inp {inp} -inxs {inxs} -out {out} -method bayes -method.bayes.lambda {method.bayes.lambda} -method.bayes.s {method.bayes.s} -ram 512</cli_args_template></root>

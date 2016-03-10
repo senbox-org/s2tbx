@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>s2tbx-sta-adapters</artifactId>
+        <groupId>org.esa.s2tbx</groupId>
+        <version>4.0.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>s2tbx-sta-adapters-otb</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Sentinel-2 Toolbox Adapters for Orfeo Toolbox</name>
+    <description>Provides adapters for Orfeo Toolbox external tools</description>
+
+    <modules>
+        <module>s2tbx-otb-adapters-kit</module>
+
+        <module>haralick-texture-extraction</module>
+        <module>mean-shift-smoothing</module>
+        <module>multivariate-alteration-detector</module>
+        <module>pansharpening-bayes</module>
+        <module>pansharpening-lmvm</module>
+        <module>pansharpening-rcs</module>
+        <module>rasterization-image</module>
+        <module>rasterization-manual</module>
+        <module>segmentation-cc</module>
+        <module>segmentation-meanshift</module>
+        <module>segmentation-mprofiles</module>
+        <module>segmentation-watershed</module>
+        <module>s-f-s-texture-extraction</module>
+    </modules>
+
+</project>

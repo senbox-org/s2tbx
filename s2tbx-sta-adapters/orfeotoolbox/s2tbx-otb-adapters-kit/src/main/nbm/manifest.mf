@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: ${s2tbx.nbmSpecVersion}
+OpenIDE-Module-Display-Category: Sentinel-2 Toolbox Adapters
+AutoUpdate-Show-In-Client: true
+AutoUpdate-Essential-Module: false
+

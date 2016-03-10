@@ -1,0 +1,81 @@
+<operator>
+  <name>MultivariateAlterationDetector</name>
+  <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
+  <alias>MultivariateAlterationDetector</alias>
+  <label>MultivariateAlterationDetector</label>
+  <version>5.2</version>
+  <description>Multivariate Alteration Detector</description>
+  <internal>false</internal>
+  <autoWriteSuppressed>false</autoWriteSuppressed>
+  <menuLocation>Menu/Optical/OrfeoToolbox</menuLocation>
+  <preprocessTool>false</preprocessTool>
+  <writeForProcessing>false</writeForProcessing>
+  <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINMULTIVARIATE_ALTERATION_DETECTOR_EXEC</mainToolFileLocation>
+  <workingDir>/tmp</workingDir>
+  <templateFileLocation>multivariate-alteration-detector-template.vm</templateFileLocation>
+  <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
+  <errorPattern>itk::ERROR(.+)</errorPattern>
+  <variables>
+    <osvariable>
+      <key>OTB_BIN_DIR</key>
+      <value></value>
+      <windows></windows>
+      <linux>/usr/bin</linux>
+      <macosx></macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <osvariable>
+      <key>OTB_BINMULTIVARIATE_ALTERATION_DETECTOR_EXEC</key>
+      <value></value>
+      <windows>otbcli_MultivariateAlterationDetector.bat</windows>
+      <linux>otbcli_MultivariateAlterationDetector</linux>
+      <macosx>otbcli_MultivariateAlterationDetector</macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+  </variables>
+  <parameters>
+    <parameter>
+      <name>sourceProductFile</name>
+      <alias>sourceProductFile</alias>
+      <dataType>java.io.File</dataType>
+      <description>Image which describe initial state of the scene.</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>sourceProductFile</name>
+      <alias>sourceProductFile</alias>
+      <dataType>java.io.File</dataType>
+      <description>Image which describe scene after perturbations.</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>targetProductFile</name>
+      <alias>targetProductFile</alias>
+      <dataType>java.io.File</dataType>
+      <description>Image of detected changes.</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+  </parameters>
+  <source>user</source>
+  <isSystem>false</isSystem>
+  <isHandlingOutputName>false</isHandlingOutputName>
+  <sourceProductDescriptors>
+    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+      <name>sourceProduct 1</name>
+    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+  </sourceProductDescriptors>
+  <targetPropertyDescriptors/>
+  <numSourceProducts>1</numSourceProducts>
+</operator>
