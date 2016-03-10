@@ -1,0 +1,8 @@
+-inp
+$sourceProductFile
+-inxs
+$sourceProductFile
+-out
+$targetProductFile
+-method
+$method_string

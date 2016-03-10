@@ -1,0 +1,117 @@
+<operator>
+  <name>Pansharpening-bayes</name>
+  <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
+  <alias>Pansharpening-bayes</alias>
+  <label>Pansharpening-bayes</label>
+  <version>5.2</version>
+  <description>Perform P+XS pansharpening</description>
+  <internal>false</internal>
+  <autoWriteSuppressed>false</autoWriteSuppressed>
+  <menuLocation>Menu/Raster/Image Analysis</menuLocation>
+  <preprocessTool>false</preprocessTool>
+  <writeForProcessing>false</writeForProcessing>
+  <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BIN_EXEC</mainToolFileLocation>
+  <workingDir>/tmp</workingDir>
+  <templateFileLocation>Pansharpening-bayes-template.vm</templateFileLocation>
+  <progressPattern>: (\d{1,3})%(?:.+)</progressPattern>
+  <errorPattern>itk::ERROR(.+)</errorPattern>
+  <variables>
+    <osvariable>
+      <key>OTB_BIN_DIR</key>
+      <value></value>
+      <windows></windows>
+      <linux>/usr/bin</linux>
+      <macosx></macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+    <osvariable>
+      <key>OTB_BIN_EXEC</key>
+      <value></value>
+      <windows>otbcli_Pansharpening.bat</windows>
+      <linux>otbcli_Pansharpening</linux>
+      <macosx>otbcli_Pansharpening</macosx>
+      <isTransient>false</isTransient>
+    </osvariable>
+  </variables>
+  <parameters>
+    <parameter>
+      <name>sourceProductFile</name>
+      <alias>sourceProductFile</alias>
+      <dataType>java.io.File</dataType>
+      <description> Input panchromatic image.</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>sourceProductFile</name>
+      <alias>sourceProductFile</alias>
+      <dataType>java.io.File</dataType>
+      <description> Input XS image.</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>targetProductFile</name>
+      <alias>targetProductFile</alias>
+      <dataType>java.io.File</dataType>
+      <description> Output image.</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>method_string</name>
+      <alias>Algorithm</alias>
+      <dataType>java.lang.String</dataType>
+      <defaultValue>bayes</defaultValue>
+      <description>Selection of the pan-sharpening method.</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>lambda_float</name>
+      <alias>Weight</alias>
+      <dataType>java.lang.Float</dataType>
+      <defaultValue>0.9999</defaultValue>
+      <description>Set the weighting value.</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>s_float</name>
+      <alias>S coefficient</alias>
+      <dataType>java.lang.Float</dataType>
+      <defaultValue>1</defaultValue>
+      <description>Set the S coefficient.</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+  </parameters>
+  <source>user</source>
+  <isSystem>false</isSystem>
+  <isHandlingOutputName>false</isHandlingOutputName>
+  <sourceProductDescriptors>
+    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+      <name>sourceProduct 1</name>
+    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+  </sourceProductDescriptors>
+  <targetPropertyDescriptors/>
+  <numSourceProducts>1</numSourceProducts>
+</operator>

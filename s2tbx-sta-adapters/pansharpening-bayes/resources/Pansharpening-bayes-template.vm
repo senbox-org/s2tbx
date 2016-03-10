@@ -1,0 +1,12 @@
+-inp
+$sourceProductFile
+-inxs
+$sourceProductFile
+-out
+$targetProductFile
+-method
+$method_string
+-method.bayes.lambda
+$lambda_float
+-method.bayes.s
+$s_float
