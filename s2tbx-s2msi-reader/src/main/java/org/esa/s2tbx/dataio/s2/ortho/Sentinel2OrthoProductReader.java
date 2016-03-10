@@ -266,11 +266,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             SystemUtils.LOG.fine(String.format("[timeprobe] scaleBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
-            //addVectorMasks(product, tileList, bandInfoList);
+            addVectorMasks(product, tileList, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
-            //addIndexMasks(product, bandInfoList);
+            addIndexMasks(product, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] addIndexMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
         }
