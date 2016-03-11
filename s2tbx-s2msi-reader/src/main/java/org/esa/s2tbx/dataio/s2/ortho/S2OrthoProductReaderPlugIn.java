@@ -40,7 +40,6 @@ import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.*;
  */
 public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
-
     private static S2ProductCRSCache crsCache = new S2ProductCRSCache();
 
     // Product level: L1C, L2A...
@@ -62,46 +61,49 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
         DecodeQualification decodeQualification = DecodeQualification.UNABLE;
 
-        if (input instanceof File) {
-            File file = (File) input;
+        if (! (input instanceof File)) {
+            return DecodeQualification.UNABLE;
+        }
 
-            if (file.isFile()) {
-                String fileName = file.getName();
+        File file = (File) input;
+        String fileName = file.getName();
+        Matcher matcher = PATTERN.matcher(fileName);
 
-                // first check it is a Sentinel-2 product
-                Matcher matcher = PATTERN.matcher(fileName);
-                if (matcher.matches()) {
+        // Checking for file regex first, it is quicker than File.isFile()
+        if (!matcher.matches()) {
+            return DecodeQualification.UNABLE;
+        }
+        if (!file.isFile()) {
+            return DecodeQualification.UNABLE;
+        }
 
-                    // test for granule filename first as it is more restrictive
-                    if (S2OrthoGranuleMetadataFilename.isGranuleFilename(fileName)) {
-                        level = matcher.group(4).substring(0, 3);
-                        S2OrthoGranuleMetadataFilename granuleMetadataFilename = S2OrthoGranuleMetadataFilename.create(fileName);
-                        if (granuleMetadataFilename != null &&
-                                (level.equals("L1C") ||
-                                        (level.equals("L2A") && !this.getClass().equals(S2OrthoProductReaderPlugIn.class)))) {
-                            String tileId = granuleMetadataFilename.tileNumber;
-                            String epsg = tileIdentifierToEPSG(tileId);
-                            if (getEPSG() != null && getEPSG().equalsIgnoreCase(epsg)) {
-                                decodeQualification = DecodeQualification.INTENDED;
-                            }
-                        }
-                    } else if (S2ProductFilename.isMetadataFilename(fileName)) {
-                        level = matcher.group(4).substring(3);
-                        S2ProductFilename productFilename = S2ProductFilename.create(fileName);
-                        if (productFilename != null) {
-                            if (level.equals("L1C") ||
-                                    // no multi-resolution for L2A products
-                                    (level.equals("L2A") &&
-                                            (this instanceof S2OrthoProduct10MReaderPlugIn ||
-                                                    this instanceof S2OrthoProduct20MReaderPlugIn ||
-                                                    this instanceof S2OrthoProduct60MReaderPlugIn
-                                            ))) {
-                                crsCache.ensureIsCached(file.getAbsolutePath());
-                                if (getEPSG() != null && crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
-                                    decodeQualification = DecodeQualification.INTENDED;
-                                }
-                            }
-                        }
+        // test for granule filename first as it is more restrictive
+        if (S2OrthoGranuleMetadataFilename.isGranuleFilename(fileName)) {
+            level = matcher.group(4).substring(0, 3);
+            S2OrthoGranuleMetadataFilename granuleMetadataFilename = S2OrthoGranuleMetadataFilename.create(fileName);
+            if (granuleMetadataFilename != null &&
+                    (level.equals("L1C") ||
+                            (level.equals("L2A") && !this.getClass().equals(S2OrthoProductReaderPlugIn.class)))) {
+                String tileId = granuleMetadataFilename.tileNumber;
+                String epsg = tileIdentifierToEPSG(tileId);
+                if (getEPSG() != null && getEPSG().equalsIgnoreCase(epsg)) {
+                    decodeQualification = DecodeQualification.INTENDED;
+                }
+            }
+        } else if (S2ProductFilename.isMetadataFilename(fileName)) {
+            level = matcher.group(4).substring(3);
+            S2ProductFilename productFilename = S2ProductFilename.create(fileName);
+            if (productFilename != null) {
+                if (level.equals("L1C") ||
+                        // no multi-resolution for L2A products
+                        (level.equals("L2A") &&
+                                (this instanceof S2OrthoProduct10MReaderPlugIn ||
+                                        this instanceof S2OrthoProduct20MReaderPlugIn ||
+                                        this instanceof S2OrthoProduct60MReaderPlugIn
+                                ))) {
+                    crsCache.ensureIsCached(file.getAbsolutePath());
+                    if (getEPSG() != null && crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
+                        decodeQualification = DecodeQualification.INTENDED;
                     }
                 }
             }
@@ -111,7 +113,6 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     }
 
     public abstract String getEPSG();
-
 
     @Override
     public ProductReader createReaderInstance() {
