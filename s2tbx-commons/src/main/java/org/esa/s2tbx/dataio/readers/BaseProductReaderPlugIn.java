@@ -46,8 +46,12 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
      * Default constructor
      */
     public BaseProductReaderPlugIn() {
-        folderDepth = 4;
-        enforcer = ProductContentEnforcer.create(getMinimalPatternList(), getExclusionPatternList());
+        folderDepth = 1;
+        String[] patternList = getMinimalPatternList();
+        for (String pattern : patternList) {
+            folderDepth = Math.max(folderDepth, pattern.split("\\[/").length - 1);
+        }
+        enforcer = ProductContentEnforcer.create(patternList, getExclusionPatternList());
         registerRGBProfile();
     }
 
@@ -58,8 +62,10 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         try {
             virtualDir = getInput(input);
             if (virtualDir != null) {
-                String[] allFiles = virtualDir.listAll();
-                if (enforcer.isConsistent(allFiles)) {
+                virtualDir.setFolderDepth(folderDepth);
+                String[] files = virtualDir.listAll(enforcer.getMinimalFilePatternList());
+                //if (enforcer.isConsistent(allFiles)) {
+                if (files.length > 0) {
                     retVal = DecodeQualification.INTENDED;
                 }
             }

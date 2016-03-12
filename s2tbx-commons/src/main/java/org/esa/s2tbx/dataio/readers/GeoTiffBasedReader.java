@@ -241,7 +241,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
             M firstMetadata;
             String metadataProfile;
-            if (rasterMetadataList == null || (firstMetadata = rasterMetadataList.get(0)) == null || ((metadataProfile = firstMetadata.getMetadataProfile()) == null || !metadataProfile.startsWith(getMetadataProfile()))) {
+            if (rasterMetadataList == null || rasterMetadataList.size() == 0 || (firstMetadata = rasterMetadataList.get(0)) == null || ((metadataProfile = firstMetadata.getMetadataProfile()) == null || !metadataProfile.startsWith(getMetadataProfile()))) {
                 IOException ex = new IOException("The selected product is not readable by this reader. Please use the appropriate filter");
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
                 throw ex;

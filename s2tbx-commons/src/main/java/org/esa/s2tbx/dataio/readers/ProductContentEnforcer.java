@@ -84,6 +84,10 @@ public class ProductContentEnforcer {
         }
     }
 
+    public Pattern[] getMinimalFilePatternList() {
+        return this.minimalFilePatternList;
+    }
+
     /**
      * Checks if the given set of files (representing a product) is consistent with respect
      * to the current instance rules.
