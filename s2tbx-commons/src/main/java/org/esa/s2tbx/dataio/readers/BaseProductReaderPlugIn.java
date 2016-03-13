@@ -62,11 +62,18 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         try {
             virtualDir = getInput(input);
             if (virtualDir != null) {
-                virtualDir.setFolderDepth(folderDepth);
-                String[] files = virtualDir.listAll(enforcer.getMinimalFilePatternList());
-                //if (enforcer.isConsistent(allFiles)) {
-                if (files.length > 0) {
-                    retVal = DecodeQualification.INTENDED;
+                String[] files = null;
+                if (virtualDir.isCompressed()) {
+                    files = virtualDir.listAll();
+                    if (enforcer.isConsistent(files)) {
+                        retVal = DecodeQualification.INTENDED;
+                    }
+                } else {
+                    virtualDir.setFolderDepth(folderDepth);
+                    files = virtualDir.listAll(enforcer.getMinimalFilePatternList());
+                    if (files.length > 0) {
+                        retVal = DecodeQualification.INTENDED;
+                    }
                 }
             }
         } catch (IOException e) {
