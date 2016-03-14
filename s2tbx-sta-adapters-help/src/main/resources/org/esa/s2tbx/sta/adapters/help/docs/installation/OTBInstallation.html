@@ -1,0 +1,75 @@
+<!--
+  ~ Copyright (C) 2015 CS SI
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>Sentinel Toolbox Help - OTB Installation</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            OTB Installation</td>
+
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>OTB Standalone Tool Installation</h3>
+
+Before integrating it in SNAP, OTB needs to be deployed. Two options are available:
+<ul>
+    <li> Portable version (for Windows): zip file to unpack</li>
+    <li> Installable version: installer to execute</li>
+</ul>
+
+<h4>Portable version</h4>
+
+For Windows, OTB portable binaries can be downloaded from the Orpheo Toolbox Website.
+<ul>
+<li> Windows 64 bits:
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="https://www.orfeo-toolbox.org/packages/OTB-5.2.1-win64.zip">
+    <param name="text" value="<html>OTB-5.2.1-win64.zip</html>">
+</object></li>
+<li> Windows 32 bits:
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="https://www.orfeo-toolbox.org/packages/OTB-5.2.1-win32.zip">
+    <param name="text" value="<html>OTB-5.2.1-win32.zip</html>">
+</object></li>
+</ul>
+Just unpack the zip file in a folder of you choice, no installation is required with these archives.
+
+<h4>Installable version</h4>
+
+OTB can be freely downloaded from its website: <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="https://www.orfeo-toolbox.org">
+    <param name="text" value="<html>https://www.orfeo-toolbox.org</html>">
+</object> <br>
+Download and Install OTB before integrating it in SNAP.
+
+<h3>OTB Integration in SNAP</h3>
+Once OTB is unpacked or installed you have to install the plugin. <br>
+First define the OTB_BIN_DIR environment variable as the full path to the "bin" directory of your OTB installation.
+Then from SNAP, go to Tools/Plugins, under the "Available Plugins" tab the OTB appears
+(if it doesn't, check your internet connection and your proxy settings from tools/options>WWW).
+Tick the checkbox next to it, click install and follow the instructions.<br>
+
+</body>
+</html>
