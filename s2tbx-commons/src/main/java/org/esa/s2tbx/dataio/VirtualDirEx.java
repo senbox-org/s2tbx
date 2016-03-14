@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
@@ -47,6 +48,8 @@ import static org.esa.snap.utils.CollectionHelper.firstOrDefault;
  * @author Cosmin Cara
  */
 public abstract class VirtualDirEx extends VirtualDir {
+
+    private int depth = 1;
 
     private final static HashSet<String> compressedExtensions = new HashSet<String>() {{
         add(".zip");
@@ -97,6 +100,10 @@ public abstract class VirtualDirEx extends VirtualDir {
         return TarVirtualDir.isTar(filename);
     }
 
+    public void setFolderDepth(int value) {
+        this.depth = value;
+    }
+
     /**
      * Finds the first occurrence of the pattern in the list of files of this instance.
      * @param pattern   The pattern to be found.
@@ -142,7 +149,7 @@ public abstract class VirtualDirEx extends VirtualDir {
      * List all the files contained in this virtual directory instance.
      * @return  An array of file names
      */
-    public String[] listAll() {
+    public String[] listAll(Pattern...patterns) {
         String path = getBasePath();
         if (TarVirtualDir.isTar(path) || TarVirtualDir.isTgz(path)) {
             return this.listAll();
@@ -177,47 +184,42 @@ public abstract class VirtualDirEx extends VirtualDir {
                 }
             } else {
                 //listFiles(new File(path), fileNames);
-                fileNames.addAll(listFiles(new File(path)));
+                fileNames.addAll(listFiles(new File(path), patterns));
             }
             return fileNames.toArray(new String[fileNames.size()]);
         }
     }
 
-    /*private void listFiles(File parent, List<String> outList) {
-        if (parent.isFile())
-            return;
-        File[] files = parent.listFiles();
-        for (File file : files) {
-            if (file.isFile())
-                outList.add(new File(getBasePath()).toURI().relativize(file.toURI()).getPath().toLowerCase());
-            else {
-                listFiles(file, outList);
-            }
-        }
-    }*/
-
-    private List<String> listFiles(File parent) {
+    private List<String> listFiles(File parent, Pattern...filters) {
         List<String> files = new ArrayList<>();
         final Logger logger = Logger.getLogger(VirtualDirEx.class.getName());
+        Path parentPath = parent.toPath();
         try {
-            Files.walkFileTree(Paths.get(parent.getAbsolutePath()),
+            Files.walkFileTree(parentPath,
                     EnumSet.noneOf(FileVisitOption.class),
-                    5,
+                    depth,
                     new FileVisitor<Path>() {
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                            return FileVisitResult.CONTINUE;
+                            if (parentPath.equals(dir) ||
+                                    (filters.length == 0 ||
+                                    Arrays.stream(filters).anyMatch(p -> p.matcher(parentPath.relativize(dir).toString()).matches()))) {
+                                return FileVisitResult.CONTINUE;
+                            }
+                            return FileVisitResult.SKIP_SUBTREE;
                         }
 
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                            files.add(file.toFile().getAbsolutePath().replace(parent.getAbsolutePath(), "").substring(1));
+                            String relativePath = parentPath.relativize(file).toString();
+                            if (filters.length == 0 || Arrays.stream(filters).anyMatch(p -> p.matcher(relativePath).matches())) {
+                                files.add(relativePath);
+                            }
                             return FileVisitResult.CONTINUE;
                         }
 
                         @Override
                         public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                            logger.warning(String.format("Problem visiting file %s: %s", file.toUri().toString(), exc.getMessage()));
                             return FileVisitResult.CONTINUE;
                         }
 
@@ -374,8 +376,8 @@ public abstract class VirtualDirEx extends VirtualDir {
         }
 
         @Override
-        public String[] listAll() {
-            String[] list = super.listAll();
+        public String[] listAll(Pattern...patterns) {
+            String[] list = super.listAll(patterns);
             Arrays.stream(list).forEach(item -> files.put(FileUtils.getFileNameFromPath(item).toLowerCase(), item));
             return list;
         }
@@ -391,7 +393,7 @@ public abstract class VirtualDirEx extends VirtualDir {
                                      k -> {
                                          String name = FileUtils.getFilenameWithoutExtension(FileUtils.getFileNameFromPath(k));
                                          name = name.substring(name.lastIndexOf("/") + 1);
-                                         return (extPart != null ? extPart.equalsIgnoreCase(FileUtils.getExtension(k)) : false) && namePart.startsWith(name);
+                                         return (extPart != null && extPart.equalsIgnoreCase(FileUtils.getExtension(k))) && namePart.startsWith(name);
                                      });
             }
             return ret;

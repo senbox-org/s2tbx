@@ -161,6 +161,7 @@ public class SpotConstants {
             "metadata\\.dim" };*/
     public static final String[] DIMAP_MINIMAL_PRODUCT_PATTERNS = new String[] {
         "vol_list\\.dim",
+        "(scene\\d{2}\\/?)|(spview((\\d*_)\\d*)*)",
         "(scene\\d{2}[/\\\\]metadata\\.dim)|(spview((\\d*_)\\d*)*[/\\\\]metadata(_\\d)*.dim)",
         "(scene\\d{2}[/\\\\]imagery\\.tif)|((spview((\\d*_)\\d*)*[/\\\\]imagery(_\\d)*.tif))"};
 

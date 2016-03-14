@@ -18,8 +18,11 @@ public class Spot6Constants {
     public static final String ROOT_METADATA = "SPOT_LIST.XML";
     public static final String[] MINIMAL_PATTERN_LIST = new String[] {
             "spot_list\\.xml",
+            "prod_spot\\d{1}_\\d{3}",
             "prod_spot\\d{1}_\\d{3}[/\\\\]spot_prod\\.xml",
+            "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}",
             "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}[/\\\\]spot_vol\\.xml",
+            "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{3}_\\w{1}",
             "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{3}_\\w{1}[/\\\\]dim_spot\\d{1}_\\w{1,3}_\\d{15}_(sen|ort)_\\d{9,10}\\.xml",
             "prod_spot\\d{1}_\\d{3}[/\\\\]vol_spot\\d{1}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{3}_\\w{1}[/\\\\]img_spot\\d{1}_\\w{1,3}_\\d{15}_(sen|ort)_\\d{9,10}_r\\d{1}c\\d{1}\\.(jp2|tif)"};
     public static final String[] SPOT6_RGB_PROFILE = new String[] { "B2", "B1", "B0" };
