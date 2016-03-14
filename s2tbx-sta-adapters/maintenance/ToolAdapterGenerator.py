@@ -132,7 +132,7 @@ def generateStructure(outputDir, lowerToolName, createAdapter=False):
     return resourceDirectory, metaInfDirectory, toolDirectory, layerDirectory
 
 
-def generateTemplateVM(outputDir, applicationName, param):
+def generateTemplateVM(outputDir, applicationName, param, lowerToolName):
     """
     Generates the file XX-template.vm
     :param outputDir: tool directory
@@ -140,14 +140,14 @@ def generateTemplateVM(outputDir, applicationName, param):
     :param param: string containing all parameters in right format
     :return: path to vm file
     """
-    templateVM = os.path.join(outputDir, applicationName + "-template.vm")
+    templateVM = os.path.join(outputDir, lowerToolName + "-template.vm")
     f = open(templateVM, "w")
     f.write(param)
     f.close()
     return templateVM
 
 
-def getVariables(appName):
+def getVariables(appName, envVarTool):
     """
     Creates the node variables
     <variables>
@@ -183,7 +183,7 @@ def getVariables(appName):
     met = ET.SubElement(root, "osvariable")
 
     submet = ET.SubElement(met, "key")
-    submet.text = "OTB_BIN_EXEC"
+    submet.text = envVarTool
     submet = ET.SubElement(met, "value")
     submet.text = ""
     submet = ET.SubElement(met, "windows")
@@ -214,7 +214,7 @@ def getVariables(appName):
     return root
 
 
-def getXMLRoot(applicationName, info, vmFile, version):
+def getXMLRoot(applicationName, info, vmFile, version, envVarTool):
     """
     Gets the root xml of the description.xml of the tool
     :param applicationName: name of the application
@@ -259,7 +259,7 @@ def getXMLRoot(applicationName, info, vmFile, version):
     met.text = "false"
 
     met = ET.SubElement(root, "mainToolFileLocation")
-    met.text = "$OTB_BIN_DIR/$OTB_BIN_EXEC" # +  info["exec"] #+ "$OTB_BIN_SUFFIX"
+    met.text = "$OTB_BIN_DIR/$" + envVarTool # +  info["exec"] #+ "$OTB_BIN_SUFFIX"
 
     met = ET.SubElement(root, "workingDir")
     met.text = "/tmp"
@@ -333,7 +333,7 @@ def getParameters(XMLParamList):
 
 
 def generateDescriptorXml(outputDir, applicationName, xmlDescriptionProcessing, vmFile, info, XMLParamList,
-                          version, hasOutputRaster):
+                          version, hasOutputRaster, envVarTool):
     """
     Generate the description.xml file which contains the description of parameters
     :param outputDir:
@@ -347,8 +347,8 @@ def generateDescriptorXml(outputDir, applicationName, xmlDescriptionProcessing, 
     """
     descriptorXml = os.path.join(outputDir, "descriptor.xml")
 
-    root = getXMLRoot(applicationName, info, vmFile, version)
-    root.append(getVariables(info["exec"]))
+    root = getXMLRoot(applicationName, info, vmFile, version, envVarTool)
+    root.append(getVariables(info["exec"], envVarTool))
     root.append(getParameters(XMLParamList))
 
     addClosing(root, hasOutputRaster)
@@ -448,15 +448,22 @@ def manageToolParameters(dicInfo):
                 #case of choices
                 if typeParam == "ParameterType_Choice":
                     print 'dicParameters[key]["default"] for', key, dicParameters[key]["default"]
+
+
                     logger.debug("ParameterType_Choice")
                     xpathToChoices = "./options/choices/choice"
                     r = param.xpath(xpathToChoices)
                     if r:
-                        print r, len(r)
+                        print r, len(r), "for", key
                         if len(r) == 1:
                             choices = r[0].text
-                            print choices
+                            print "choices", choices, "for", key, "for", appName
                             dicParameters[key]["default"] = choices
+
+                    # Bug from xml processing files
+                    if "default" in dicParameters[key] and dicParameters[key]["default"] in ["0", 0]:
+                        print "WARNING: This value may be wrong !!", key, appName, " (from app", ")"
+
                     print 'dicParameters[key]["default"] for', key, dicParameters[key]["default"]
 
                 #convert type
@@ -667,20 +674,21 @@ def createManifest(toolDirectory, dicResult, version):
     :param dicResult:
     :return:
     """
+    appKeySplitted = dicResult['key'].replace("-", ".")
     manifestFile = os.path.join(toolDirectory, "MANIFEST.MF")
     stringFile = 'Manifest-Version: 1.0\n\
 OpenIDE-Module-Specification-Version: ' + version + '\n\
 OpenIDE-Module-Implementation-Version: ' + version + '\n\
-OpenIDE-Module-Name: ' + dicResult['key'] + '\n\
+OpenIDE-Module-Name: ' + appKeySplitted + '\n\
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox\n\
 OpenIDE-Module-Java-Dependencies: Java > 1.8\n\
 OpenIDE-Module-Type: STA\n\
-OpenIDE-Module-Short-Description: ' + dicResult['key'] + '\n\
-OpenIDE-Module: org.esa.s2tbx.' + dicResult['key'] + '\n\
-OpenIDE-Module-Alias: ' + dicResult['key'] + '\n\
+OpenIDE-Module-Short-Description: ' + appKeySplitted + '\n\
+OpenIDE-Module: org.esa.s2tbx.' + appKeySplitted + '\n\
+OpenIDE-Module-Alias: ' + appKeySplitted + '\n\
 OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui\n\
 OpenIDE-Module-Install: org/esa/snap/utils/ModuleInstaller.class\n\
-AutoUpdate-Show-In-Client: false'
+AutoUpdate-Show-In-Client: false\n\n'
     f = open(manifestFile, "w")
     f.write(stringFile)
     f.close()
@@ -695,15 +703,16 @@ def run_ToolAdapterGenerator(outputDir, xmlDescriptionProcessing, createAdapter=
     lowerToolName = ''.join([x if x.lower() == x else "-"+x.lower() for x in dicResult["key"]])
     if lowerToolName.startswith("-"):
         lowerToolName = lowerToolName[1:]
+    envVarTool = "OTB_BIN" + lowerToolName.upper().replace("-", "_") +"_EXEC"
 
     dicParameters, stringVM, XMLParamList, hasOutputRaster =manageToolParameters(dicResult)
 
     resourceDirectory, metaInfDirectory, toolDirectory, layerDirectory = generateStructure(outputDir,
                                                                                            lowerToolName,
                                                                                            createAdapter)
-    vmFile = generateTemplateVM(resourceDirectory, applicationName, stringVM)
-    generateDescriptorXml(metaInfDirectory, applicationName, xmlDescriptionProcessing, vmFile, dicResult,
-                          XMLParamList, "5.2", hasOutputRaster)
+    vmFile = generateTemplateVM(resourceDirectory, applicationName, stringVM, lowerToolName)
+    rootVar = generateDescriptorXml(metaInfDirectory, applicationName, xmlDescriptionProcessing, vmFile, dicResult,
+                          XMLParamList, "5.2", hasOutputRaster, envVarTool)
 
     if createAdapter:
         createPom(toolDirectory, dicResult, lowerToolName)
