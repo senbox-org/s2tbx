@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
  */
 public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
 
+    private static Map<Object, String[]> cachedFiles = new WeakHashMap<>();
     protected final ProductContentEnforcer enforcer;
     protected int folderDepth;
 
@@ -61,11 +62,15 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         DecodeQualification retVal = DecodeQualification.UNABLE;
         VirtualDirEx virtualDir;
         try {
+            long start = System.currentTimeMillis();
             virtualDir = getInput(input);
             if (virtualDir != null) {
                 String[] files = null;
                 if (virtualDir.isCompressed()) {
-                    files = virtualDir.listAll();
+                    if (!cachedFiles.containsKey(input)) {
+                        cachedFiles.put(input, virtualDir.listAll());
+                    }
+                    files = cachedFiles.get(input);
                     if (enforcer.isConsistent(files)) {
                         retVal = DecodeQualification.INTENDED;
                     }
@@ -73,11 +78,12 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
                     virtualDir.setFolderDepth(folderDepth);
                     Pattern[] patternList = enforcer.getMinimalFilePatternList();
                     files = virtualDir.listAll(patternList);
-                    if (files.length >= patternList.length) {
+                    if (files.length >= patternList.length && enforcer.isConsistent(files)) {
                         retVal = DecodeQualification.INTENDED;
                     }
                 }
             }
+            System.out.println(getClass().getName() + "::DecodeQualification took " + String.valueOf(System.currentTimeMillis() - start) + " ms");
         } catch (IOException e) {
             retVal = DecodeQualification.UNABLE;
         }
