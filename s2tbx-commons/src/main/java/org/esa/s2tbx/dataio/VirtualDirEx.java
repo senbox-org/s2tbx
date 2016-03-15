@@ -622,7 +622,8 @@ public abstract class VirtualDirEx extends VirtualDir {
             }
         }
 
-        public String[] listAll() {
+        @Override
+        public String[] listAll(Pattern...patterns) {
             List<String> fileNames = new ArrayList<>();
             TarInputStream tis;
             try (
