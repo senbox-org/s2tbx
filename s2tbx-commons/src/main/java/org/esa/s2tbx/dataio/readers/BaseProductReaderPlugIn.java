@@ -29,6 +29,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Base class for product reader plugins which follow the logic of checking consistency
@@ -70,8 +71,9 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
                     }
                 } else {
                     virtualDir.setFolderDepth(folderDepth);
-                    files = virtualDir.listAll(enforcer.getMinimalFilePatternList());
-                    if (files.length > 0) {
+                    Pattern[] patternList = enforcer.getMinimalFilePatternList();
+                    files = virtualDir.listAll(patternList);
+                    if (files.length >= patternList.length) {
                         retVal = DecodeQualification.INTENDED;
                     }
                 }

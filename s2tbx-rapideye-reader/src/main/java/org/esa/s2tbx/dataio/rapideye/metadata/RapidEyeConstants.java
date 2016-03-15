@@ -54,8 +54,8 @@ public class RapidEyeConstants {
             ".*_band[1-6]\\.ntf",
             ".*_metadata\\.xml"};
     public static final String[] L3_MINIMAL_PRODUCT_PATTERNS = new String[]{
-            ".*\\.tif",
-            ".*_metadata\\.xml"};
+            ".*_re[1-5]_3[a-b].*\\.tif",
+            ".*_re[1-5]_3[a-b].*_metadata\\.xml"};
     public static final String[] NOT_L3_FILENAME_PATTERNS = {".*\\.ntf"};
 
     //public static final double RADIOMETRIC_SCALE_FACTOR = 0.01;
