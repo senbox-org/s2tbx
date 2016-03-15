@@ -62,7 +62,6 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         DecodeQualification retVal = DecodeQualification.UNABLE;
         VirtualDirEx virtualDir;
         try {
-            long start = System.currentTimeMillis();
             virtualDir = getInput(input);
             if (virtualDir != null) {
                 String[] files = null;
@@ -83,7 +82,6 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
                     }
                 }
             }
-            System.out.println(getClass().getName() + "::DecodeQualification took " + String.valueOf(System.currentTimeMillis() - start) + " ms");
         } catch (IOException e) {
             retVal = DecodeQualification.UNABLE;
         }
