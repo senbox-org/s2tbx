@@ -11,3 +11,4 @@ OpenIDE-Module-Alias: MeanShiftSmoothing
 OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
 OpenIDE-Module-Install: org/esa/snap/utils/ModuleInstaller.class
 AutoUpdate-Show-In-Client: false
+

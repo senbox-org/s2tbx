@@ -10,9 +10,9 @@
   <menuLocation>Menu/Raster/Image Analysis</menuLocation>
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
-  <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BIN_EXEC</mainToolFileLocation>
+  <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINRASTERIZATION_MANUAL_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
-  <templateFileLocation>Rasterization-manual-template.vm</templateFileLocation>
+  <templateFileLocation>rasterization-manual-template.vm</templateFileLocation>
   <progressPattern>: (\d{1,3})%(?:.+)</progressPattern>
   <errorPattern>itk::ERROR(.+)</errorPattern>
   <variables>
@@ -25,7 +25,7 @@
       <isTransient>false</isTransient>
     </osvariable>
     <osvariable>
-      <key>OTB_BIN_EXEC</key>
+      <key>OTB_BINRASTERIZATION_MANUAL_EXEC</key>
       <value></value>
       <windows>otbcli_Rasterization.bat</windows>
       <linux>otbcli_Rasterization</linux>
@@ -145,7 +145,7 @@
       <name>mode_string</name>
       <alias>Rasterization mode</alias>
       <dataType>java.lang.String</dataType>
-      <defaultValue>0</defaultValue>
+      <defaultValue>binary</defaultValue>
       <description>Choice of rasterization modes</description>
       <valueSet/>
       <notNull>false</notNull>
