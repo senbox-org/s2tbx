@@ -258,7 +258,9 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
             product.setModified(false);
         } else {
-            product.setModified(false);
+            if (product != null) {
+                product.setModified(false);
+            }
         }
         return  product;
     }
