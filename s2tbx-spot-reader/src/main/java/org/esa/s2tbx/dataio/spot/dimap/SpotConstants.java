@@ -190,8 +190,8 @@ public class SpotConstants {
             "(.+[/\\\\]){0,1}spot4_hrvir1_xs_.*\\.xml",
             "(.+[/\\\\]){0,1}spot4_hrvir1_xs_.*\\.tif"};
     public static final String[] SPOT5TAKE5_MINIMAL_PRODUCT_PATTERNS = new String[] {
-            "(.+[/\\\\]){0,1}spot5_hrg2_xs_.*\\.xml",
-            "(.+[/\\\\]){0,1}spot5_hrg2_xs_.*\\.tif"};
+            "(.+[/\\\\]){0,1}spot5_hrg[12]_xs_.*\\.xml",
+            "(.+[/\\\\]){0,1}spot5_hrg[12]_xs_.*\\.tif"};
     public static final String SPOT4_TAKE5_TAG_METADATA = "METADATA";
     public static final String SPOT4_TAKE5_TAG_RADIOMETRY = "RADIOMETRY";
     public static final String SPOT4_TAKE5_TAG_BANDS = "BANDS";
