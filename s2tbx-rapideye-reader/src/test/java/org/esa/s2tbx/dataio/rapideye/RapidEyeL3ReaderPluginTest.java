@@ -62,7 +62,7 @@ public class RapidEyeL3ReaderPluginTest {
         assertEquals(DecodeQualification.UNABLE, decodeQualification);
         decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "Demo26_3A.zip"));
         assertEquals(DecodeQualification.INTENDED, decodeQualification);
-        decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "Eritrea/1234567890_metadata.xml"));
+        decodeQualification = plugIn.getDecodeQualification(TestUtil.getTestFile(productsFolder + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml"));
         assertEquals(DecodeQualification.INTENDED, decodeQualification);
         Date endDate = Calendar.getInstance().getTime();
         assertTrue("The decoding time for the file is too big!", (endDate.getTime() - startDate.getTime()) / 1000 < 30);//30 sec
