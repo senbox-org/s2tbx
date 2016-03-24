@@ -1,7 +1,7 @@
 New in S2TBX 3.0
 -----------------
 
-** Main features
+* Main features
   * S2-MSI reader: many fixes and improvements, including
     * Big S2 datasets could lead to "Too many file opened" exceptions.
     * Angles grid now strictly fit to image in terms of size.
@@ -26,35 +26,35 @@ New in S2TBX 3.0
     * Segmentation-watershed
     * SFSTextureExtraction
 
-** Solved issues
-    * [SIITBX-90] - 'Export mask definition(s) to XML file does not work
-    * [SIITBX-103] - Add Licences for each module
-    * [SIITBX-128] - Nicely handle products with subset of bands
-    * [SIITBX-144] - Unable to use openjpeg in a snap-engine only environment
-    * [SIITBX-145] - S2 readers : Missing band description
-    * [SIITBX-146] - S2 readers:  missing band unit
-    * [SIITBX-153] - Angles of S2 product don't get saved correctly
-    * [SIITBX-154] - Geo-referencement of S2 product don't get saved correctly
-    * [SIITBX-161] - Decoding JPEG2000 files became slow
-    * [SIITBX-168] - [L2A] Wrong description/unit for quality bands
-    * [SIITBX-173] - "Too many open files" when reading big S2 datasets
-    * [SIITBX-176] - Can't producd RGB with product DEIMOS-1_INDONESIA-TrueColor-22m.zip
-    * [SIITBX-177] - JP2 Reader has no unit tests
-    * [SIITBX-179] - Scottish effect when displaying 20m bands
-    * [SIITBX-182] - Sentinel-2 reader a bottleneck for generally opening products
-    * [SIITBX-184] - Problem with Spot 6 masks: memory consumption
-    * [SIITBX-185] - SPOT 6 masks are displayed by default
-    * [SIITBX-186] - Can't open product SPOT-6_1.5m_Ortho_Bundle_12_bits
-    * [SIITBX-189] - Issue to open/import/read directly jpeg2000 files on Linux
-    * [SIITBX-119] - Products read by S-2 MSI readers don't work well with spectrum view
-    * [SIITBX-133] - Use JP2 reader for implementing S2MSI reader
-    * [SIITBX-166] - Fix copyright headers in source code
-    * [SIITBX-167] - Missing description and Unit for sun/view angles grids
-    * [SIITBX-170] - [OpenJPEG] only deploy the binaries
-    * [SIITBX-171] - [OpenJPEG] Set permissions during deployment in auxdata folder
-    * [SIITBX-142] - Add SPOT 6-7 readers
-    * [SIITBX-20] - 4 segmentation algo
-    * [SIITBX-21] - Classification
+* Solved issues
+  * [SIITBX-90] - 'Export mask definition(s) to XML file does not work
+  * [SIITBX-103] - Add Licences for each module
+  * [SIITBX-128] - Nicely handle products with subset of bands
+  * [SIITBX-144] - Unable to use openjpeg in a snap-engine only environment
+  * [SIITBX-145] - S2 readers : Missing band description
+  * [SIITBX-146] - S2 readers:  missing band unit
+  * [SIITBX-153] - Angles of S2 product don't get saved correctly
+  * [SIITBX-154] - Geo-referencement of S2 product don't get saved correctly
+  * [SIITBX-161] - Decoding JPEG2000 files became slow
+  * [SIITBX-168] - [L2A] Wrong description/unit for quality bands
+  * [SIITBX-173] - "Too many open files" when reading big S2 datasets
+  * [SIITBX-176] - Can't producd RGB with product DEIMOS-1_INDONESIA-TrueColor-22m.zip
+  * [SIITBX-177] - JP2 Reader has no unit tests
+  * [SIITBX-179] - Scottish effect when displaying 20m bands
+  * [SIITBX-182] - Sentinel-2 reader a bottleneck for generally opening products
+  * [SIITBX-184] - Problem with Spot 6 masks: memory consumption
+  * [SIITBX-185] - SPOT 6 masks are displayed by default
+  * [SIITBX-186] - Can't open product SPOT-6_1.5m_Ortho_Bundle_12_bits
+  * [SIITBX-189] - Issue to open/import/read directly jpeg2000 files on Linux
+  * [SIITBX-119] - Products read by S-2 MSI readers don't work well with spectrum view
+  * [SIITBX-133] - Use JP2 reader for implementing S2MSI reader
+  * [SIITBX-166] - Fix copyright headers in source code
+  * [SIITBX-167] - Missing description and Unit for sun/view angles grids
+  * [SIITBX-170] - [OpenJPEG] only deploy the binaries
+  * [SIITBX-171] - [OpenJPEG] Set permissions during deployment in auxdata folder
+  * [SIITBX-142] - Add SPOT 6-7 readers
+  * [SIITBX-20] - 4 segmentation algo
+  * [SIITBX-21] - Classification
 
 
 New in S2TBX 2.0
