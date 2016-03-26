@@ -29,7 +29,7 @@ before_install:
   - sed -i -n '/<repositories>/{p; :a; N; /<\/repositories>/!ba; s/.*\n//}; p' ~/.m2/settings.xml
 
 install:
-  - true
+  - mvn dependency:go-offline
 
 script:
   - mvn clean install -B -V
