@@ -94,7 +94,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>lib-openjpeg</artifactId>
-            <version>${openjpeg.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

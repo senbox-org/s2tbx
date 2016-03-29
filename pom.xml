@@ -55,7 +55,6 @@
         <netbeans.version>RELEASE802</netbeans.version>
         <javahelp.version>2.0.05</javahelp.version>
         <brandingToken>s2tbx</brandingToken>
-        <openjpeg.version>2.1.0.5</openjpeg.version>
     </properties>
 
     <repositories>

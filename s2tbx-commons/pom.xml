@@ -51,11 +51,6 @@
             <artifactId>snap-geotiff</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-openjpeg</artifactId>
-            <version>${openjpeg.version}</version>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>

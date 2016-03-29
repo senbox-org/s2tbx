@@ -11,7 +11,6 @@
     </parent>
 
     <artifactId>lib-openjpeg</artifactId>
-    <version>2.1.0.5</version>
     <packaging>nbm</packaging>
     <name>Sentinel-2 Toolbox OpenJpeg Library</name>
     <description>This modules provides the OpenJPEG codec for compressing and decompressing JPEG2000 files.</description>
