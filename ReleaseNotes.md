@@ -53,8 +53,7 @@ New in S2TBX 3.0
   * [SIITBX-170] - [OpenJPEG] only deploy the binaries
   * [SIITBX-171] - [OpenJPEG] Set permissions during deployment in auxdata folder
   * [SIITBX-142] - Add SPOT 6-7 readers
-  * [SIITBX-20] - 4 segmentation algo
-  * [SIITBX-21] - Classification
+  * [SIITBX-190] - OpenJPEG 2.1 outputs TIF with wrong reflectance value
 
 
 New in S2TBX 2.0
