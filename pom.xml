@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>3.0.0</version>
+    <version>4.0.0-SNAPSHOT</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/senbox-org/s2tbx</url>
@@ -41,15 +41,15 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>3.0.0</snap.version>
+        <snap.version>4.0.0-SNAPSHOT</snap.version>
         <!--
             snap.version is the Maven module version.
             snap.nbmSpecVersion is the NetBeans module specification version.
             It is used to filter manifest.mf and set the manifest's "OpenIDE-Module-Specification-Version" header.
             This is necessary to make NetBeans modules updatable and independent from the Maven version (= snap.version).
         -->
-        <s2tbx.version>3.0.0</s2tbx.version>
-        <s2tbx.nbmSpecVersion>3.0.0.0</s2tbx.nbmSpecVersion>
+        <s2tbx.version>4.0.0-SNAPSHOT</s2tbx.version>
+        <s2tbx.nbmSpecVersion>4.0.0</s2tbx.nbmSpecVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE802</netbeans.version>
