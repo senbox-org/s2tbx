@@ -110,7 +110,7 @@ public class L2aMetadata extends S2Metadata {
 
                 Map<S2SpatialResolution, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
 
-                Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID_2A().getValue());
+                Tile tile = new Tile(aGranuleMetadataFile.getParentFile().getName());
                 tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
                 tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
@@ -153,7 +153,7 @@ public class L2aMetadata extends S2Metadata {
 
         Map<S2SpatialResolution, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
 
-        Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID_2A().getValue());
+        Tile tile = new Tile(file.getParentFile().getName());
         tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
         tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
