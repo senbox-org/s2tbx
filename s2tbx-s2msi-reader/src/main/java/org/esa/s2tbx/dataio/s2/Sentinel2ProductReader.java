@@ -29,6 +29,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.quicklooks.Quicklook;
 import org.esa.snap.core.util.SystemUtils;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -309,20 +310,22 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         });
     }
 
-    protected Band addBand(Product product, BandInfo bandInfo) {
-        TileLayout thisBandTileLayout = bandInfo.getImageLayout();
-        TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
-
-        float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
-        float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
-
-        Band band;
+    protected Band addBand(Product product, BandInfo bandInfo, Dimension nativeResolutionDimensions) {
+        Dimension dimension = new Dimension();
         if (isMultiResolution()) {
-            band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
+            dimension.width = nativeResolutionDimensions.width;
+            dimension.height = nativeResolutionDimensions.height;
         } else {
-            band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
+            dimension.width = product.getSceneRasterWidth();
+            dimension.height = product.getSceneRasterHeight();
         }
-        product.addBand(band);
+
+        Band band = new Band(
+                bandInfo.getBandName(),
+                S2Config.SAMPLE_PRODUCT_DATA_TYPE,
+                dimension.width,
+                dimension.height
+        );
 
         S2BandInformation bandInformation = bandInfo.getBandInformation();
         if (bandInformation instanceof S2SpectralInformation) {
@@ -342,12 +345,15 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             band.setSpectralBandwidth(0);
             band.setSpectralBandIndex(-1);
             band.setSampleCoding(indexBandInfo.getIndexCoding());
+            band.setImageInfo(indexBandInfo.getImageInfo());
         }
         else {
             band.setSpectralWavelength(0);
             band.setSpectralBandwidth(0);
             band.setSpectralBandIndex(-1);
         }
+
+        product.addBand(band);
         return band;
     }
 
