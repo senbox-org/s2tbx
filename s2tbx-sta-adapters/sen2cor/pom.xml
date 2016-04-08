@@ -36,32 +36,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestFile>resources/META-INF/MANIFEST.MF</manifestFile>
-                    </archive>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
                 <configuration>
-                    <tasks>
-                        <copy file="target/nbm/${project.artifactId}-${project.version}.nbm" tofile="../target/nbm/${project.artifactId}-${project.version}.nbm"/>
-                    </tasks>
+                    <keystore>${project.basedir}/../../keystore/s2tbx.ks</keystore>
+                    <licenseFile>${project.basedir}/../../LICENSE.html</licenseFile>
                 </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
