@@ -201,12 +201,16 @@ public abstract class VirtualDirEx extends VirtualDir {
                     new FileVisitor<Path>() {
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                            if (parentPath.equals(dir) ||
-                                    (filters.length == 0 ||
-                                    Arrays.stream(filters).anyMatch(p -> p.matcher(parentPath.relativize(dir).toString()).matches()))) {
+                            if (parentPath.equals(dir) || (filters.length == 0)) {
                                 return FileVisitResult.CONTINUE;
+                            } else {
+                                String relativePath = parentPath.relativize(dir).toString();
+                                if (Arrays.stream(filters).anyMatch(p -> p.matcher(relativePath).matches())) {
+                                    files.add(relativePath);
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                return FileVisitResult.SKIP_SUBTREE;
                             }
-                            return FileVisitResult.SKIP_SUBTREE;
                         }
 
                         @Override

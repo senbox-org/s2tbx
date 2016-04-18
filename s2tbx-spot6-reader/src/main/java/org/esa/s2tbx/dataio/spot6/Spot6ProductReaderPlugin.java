@@ -13,6 +13,12 @@ import java.util.Locale;
  * Created by kraftek on 12/7/2015.
  */
 public class Spot6ProductReaderPlugin extends BaseProductReaderPlugIn {
+
+    public Spot6ProductReaderPlugin() {
+        super();
+        folderDepth = 4;
+    }
+
     @Override
     public Class[] getInputTypes() {
         return Spot6Constants.READER_INPUT_TYPES;
