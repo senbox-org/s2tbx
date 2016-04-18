@@ -14,6 +14,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "Ndi45Op",
+        version="1.0",
         category = "Optical/Thematic Land Processing/Radiometric Indices/Other Radiometric Indices",
         description = "Normalized Difference Index using bands 4 and 5",
         authors = "Dragos Mihailescu",

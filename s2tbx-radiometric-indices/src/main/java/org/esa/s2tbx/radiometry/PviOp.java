@@ -13,6 +13,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "PviOp",
+        version="1.0",
         category = "Optical/Thematic Land Processing/Radiometric Indices/Basic Radiometric Indices",
         description = "Perpendicular Vegetation Index retrieves the Isovegetation lines parallel to soil line. Soil line has an arbitrary slope and passes through origin",
         authors = "Dragos Mihailescu",

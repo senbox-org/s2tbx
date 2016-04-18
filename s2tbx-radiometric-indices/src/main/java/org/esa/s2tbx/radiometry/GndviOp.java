@@ -14,6 +14,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "GndviOp",
+        version="1.0",
         category = "Optical/Thematic Land Processing/Radiometric Indices/Other Radiometric Indices",
         description = "Green Normalized Difference Vegetation Index",
         authors = "Dragos Mihailescu",

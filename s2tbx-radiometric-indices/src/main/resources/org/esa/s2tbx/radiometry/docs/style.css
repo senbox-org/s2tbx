@@ -43,6 +43,7 @@ h1 {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 25;
     font-weight: bold;
+	text-align: center;
     margin-top: 18pt;
     margin-right: 6pt;
     margin-bottom: 12pt;
@@ -53,6 +54,7 @@ h2 {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 21;
     font-weight: bold;
+	text-align: center;
     margin-top: 18pt;
     margin-right: 6pt;
     margin-bottom: 12pt;
@@ -73,6 +75,7 @@ h4 {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 15;
     font-weight: bold;
+	text-align: center;
     margin-top: 18pt;
     margin-right: 6pt;
     margin-bottom: 6pt;

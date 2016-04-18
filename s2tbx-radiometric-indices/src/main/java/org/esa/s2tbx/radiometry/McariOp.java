@@ -14,6 +14,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "McariOp",
+        version="1.0",
         category = "Optical/Thematic Land Processing/Radiometric Indices/Other Radiometric Indices",
         description = "Modified Chlorophyll Absorption Ratio Index, developed to be responsive to chlorophyll variation",
         authors = "Dragos Mihailescu",

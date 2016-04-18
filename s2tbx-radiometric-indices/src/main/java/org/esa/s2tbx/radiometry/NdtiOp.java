@@ -14,6 +14,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "NdtiOp",
+        version="1.0",
         category = "Optical/Thematic Land Processing/Radiometric Indices/Other Radiometric Indices",
         description = "Normalized difference turbidity index, allowing for the measurement of water turbidity",
         authors = "Dragos Mihailescu",

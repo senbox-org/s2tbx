@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Thematic Land Processing</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;Thematic Land Processing</td>
+        <td class="header" align="right">
+          <a href="../general/overview/SnapOverview.html">             <img src="images/snap_header.jpg" border="0"/></a>
+        </td>
+    </tr>
+</table>
+<h1>Radiometric Indices</h1>
+<table>
+  <tr>
+    <td><h4><b>Name</b></h4></td>
+    <td><h4><b>Purpose/Classification</b></h4></td>
+	<td><h4><b>Short Description</b></h4></td>
+	<td><h4><b>Type</b></h4></td>
+  </tr>
+    
+  <tr>
+    <td><h2><b><a href="dvi/DviAlgorithmSpecification.html">DVI</a></b></h2></td>
+	<td><h5><u><b>D</b></u>ifference <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index is sensitive to the amount of vegetation</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="rvi/RviAlgorithmSpecification.html">RVI</a></b></h2></td>
+	<td><h5><u><b>R</b></u>atio <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>The simplest ratio-based index, it is also called the Simple Ratio (SR). It indicates the amount of vegetation. It also reduces the effects of atmosphere and topography</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="pvi/PviAlgorithmSpecification.html">PVI</a></b></h2></td>
+	<td><h5><u><b>P</b></u>erpendicular <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index could be considered a generalization of the DVI, which allows for soil lines of different slopes.</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="ipvi/IpviAlgorithmSpecification.html">IPVI</a></b></h2></td>
+	<td><h5><u><b>I</b></u>nfrared <u><b>P</b></u>ercentage <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index is functionally equivalent to NDVI and RVI, but it only ranges in value from 0.0 - 1.0</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="wdvi/WdviAlgorithmSpecification.html">WDVI</a></b></h2></td>
+	<td><h5><u><b>W</b></u>eighted <u><b>D</b></u>ifference <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>WDVI is a mathematically simpler version of PVI, but it has an unrestricted range</h5></td>
+	<td><h5>Vegetation Index</td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="tndvi/TndviAlgorithmSpecification.html">TNDVI</a></b></h2></td>
+	<td><h5><u><b>T</b></u>ransformed <u><b>N</b></u>ormalized <u><b>D</b></u>ifference <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>TNDVI algorithm indicates a relation between the amount of green biomass that is found in a pixel</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="gndvi/GndviAlgorithmSpecification.html">GNDVI</a></b></h2></td>
+	<td><h5><u><b>G</b></u>reen <u><b>N</b></u>ormalized <u><b>D</b></u>ifference <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>GNDVI is more sensible than NDVI to identify different concentration rates of chlorophyll, which is highly correlated at nitrogen.</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="gemi/GemiAlgorithmSpecification.html">GEMI</a></b></h2></td>
+	<td><h5><u><b>G</b></u>lobal <u><b>E</b></u>nvironmental <u><b>M</b></u>onitoring <u><b>I</b></u>ndex</h5></td>
+    <td><h5>Was developed to eliminate the need for a detailed atmospheric correction by constructing a <b>stock</b> atmospheric correction for the vegetation index</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="arvi/ArviAlgorithmSpecification.html">ARVI</a></b></h2></td>
+	<td><h5><u><b>A</b></u>tmospherically <u><b>R</b></u>esistant <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index takes advantage of the different scattering responses from the blue and red band to retrieve information regarding the atmosphere opacity</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="ndi45/Ndi45AlgorithmSpecification.html">NDI45</a></b></h2></td>
+	<td><h5><u><b>N</b></u>ormalized <u><b>D</b></u>ifference <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index algorithm is more linear, with less saturation at higher values than the NDVI.</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+    
+  <tr>
+    <td><h2><b><a href="mtci/MtciAlgorithmSpecification.html">MTCI</a></b></h2></td>
+	<td><h5><u><b>M</b></u>eris <u><b>T</b></u>errestrial <u><b>C</b></u>hlorophyll <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index was developed for estimating chlorophyll content from MERIS (Medium Resolution Imaging Spectrometer) data</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="mcari/McariAlgorithmSpecification.html">MCARI</a></b></h2></td>
+	<td><h5><u><b>M</b></u>odified <u><b>C</b></u>hlorophyll <u><b>A</b></u>bsorption <u><b>R</b></u>atio <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index was developed to be responsive to both leaf chlorophyll concentrations and ground reflectance.</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="reip/ReipAlgorithmSpecification.html">REIP</a></b></h2></td>
+	<td><h5><u><b>R</b></u>ed-<u><b>E</b></u>dge <u><b>I</b></u>nflection <u><b>P</b></u>oint index</h5></td>
+    <td><h5>This index was developed for applications in biomass and nitrogen (N) uptake measurment/management in heterogeneous fields.</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="s2rep/S2repAlgorithmSpecification.html">S2REP</a></b></h2></td>
+	<td><h5>The <u><b>S</b></u>entinel-<b>2</b> <u><b>R</b></u>ed-<u><b>E</b></u>dge <u><b>P</b></u>osition index</h5></td>
+    <td><h5>This index is based on linear interpolation as presented by Guyot and Baret (1988). The reflectance at the inflexion point is estimated and in turn, the REP is retrieved through interpolation of S-2 band 5 and 6 which are positioned on the RE slope.</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="ireci/IreciAlgorithmSpecification.html">IRECI</a></b></h2></td>
+	<td><h5><u><b>I</b></u>nverted <u><b>R</b></u>ed-<u><b>E</b></u>dge <u><b>C</b></u>hlorophyll <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index algorithm incorporates the reflectance in four bands to estimate canopy chlorophyll content</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="pssra/PssraAlgorithmSpecification.html">PSSRa</a></b></h2></td>
+	<td><h5><u><b>P</b></u>igment <u><b>S</b></u>pecific <u><b>S</b></u>imple <u><b>Ra</b></u>tio (chlorophyll) index.</h5></td>
+    <td><h5>This index was developed to investigate the potential of a range of spectral approaches for quantifying  pigments  at  the  scale  of  the  whole  plant  canopy.</h5></td>
+	<td><h5>Vegetation Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="savi/SaviAlgorithmSpecification.html">SAVI</a></b></h2></td>
+	<td><h5><u><b>S</b></u>oil <u><b>A</b></u>djusted <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index attempts to be a hybrid between the ratio-based indices and the perpendicular indices</h5></td>
+	<td><h5>Soil Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="tsavi/TsaviAlgorithmSpecification.html">TSAVI</a></b></h2></td>
+	<td><h5><u><b>T</b></u>ransformed <u><b>S</b></u>oil <u><b>A</b></u>djusted <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index assumes that the soil line has arbitrary slope and intercept, and it makes use of these values to adjust the vegetation index</h5></td>
+	<td><h5>Soil Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="msavi/MsaviAlgorithmSpecification.html">MSAVI</a></b></h2></td>
+	<td><h5><u><b>M</b></u>odified <u><b>S</b></u>oil <u><b>A</b></u>djusted <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>The basic idea of <b>MSAVI</b> was to provide a variable correction factor <b>L</b>. The correction factor used is based on the product of <b>NDVI</b> and <b>WDVI</b></h5></td>
+	<td><h5>Soil Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="msavi2/Msavi2AlgorithmSpecification.html">MSAVI2</a></b></h2></td>
+	<td><h5>The <b>second</b> <u><b>M</b></u>odified <u><b>S</b></u>oil <u><b>A</b></u>djusted <u><b>V</b></u>egetation <u><b>I</b></u>ndex</h5></td>
+    <td><h5>Basically, it is used an iterative process and substitute 1 - MSAVI(n-1) as the <b>L</b> factor in MSAVI(n). <br> They then inductively solve the iteration where MSAVI(n) = MSAVI(n-1)<br></h5></td>
+	<td><h5>Soil Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="bi/BiAlgorithmSpecification.html">BI</a></b></h2></td>
+	<td><h5><u><b>B</b></u>rightness <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index is representing the average of the brightness of a satellite image</h5></td>
+	<td><h5>Soil Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="bi2/Bi2AlgorithmSpecification.html">BI2</a></b></h2></td>
+	<td><h5>The <b>second</b> <u><b>B</b></u>rightness <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index is representing the average of the brightness of a satellite image. The result looks like a panchromatique image with the same resolution of the original image.</h5></td>
+	<td><h5>Soil Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="ri/RiAlgorithmSpecification.html">RI</a></b></h2></td>
+	<td><h5><u><b>R</b></u>edness <u><b>I</b></u>ndex</h5></td>
+    <td><h5>The Redness Index algorithm was developed to identify soil colour variations</h5></td>
+	<td><h5>Soil Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="ci/CiAlgorithmSpecification.html">CI</a></b></h2></td>
+	<td><h5><u><b>C</b></u>olour <u><b>I</b></u>ndex</h5></td>
+    <td><h5>The Colour Index algorithm was developed to differentiate soils in the field</h5></td>
+	<td><h5>Soil Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="ndwi/NdwiAlgorithmSpecification.html">NDWI</a></b></h2></td>
+	<td><h5><u><b>N</b></u>ormalized <u><b>D</b></u>ifference <u><b>W</b></u>ater <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index is a measure of liquid water molecules in vegetation canopies that interacted with the incoming solar radiation.</h5></td>
+	<td><h5>Water Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="ndwi2/Ndwi2AlgorithmSpecification.html">NDWI2</a></b></h2></td>
+	<td><h5>The second <u><b>N</b></u>ormalized <u><b>D</b></u>ifference <u><b>W</b></u>ater <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index was developed to detect surface waters in wetland environments and to allow for the measurement of surface water extent.</h5></td>
+	<td><h5>Water Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="mndwi/MndwiAlgorithmSpecification.html">MNDWI</a></b></h2></td>
+	<td><h5><u><b>M</b></u>odified <u><b>N</b></u>ormalized <u><b>D</b></u>ifference <u><b>W</b></u>ater <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index was developed to enhance open water features, while efficiently suppressing and even removing built-up land noise as well as vegetation and soil noise.</h5></td>
+	<td><h5>Water Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="ndpi/NdpiAlgorithmSpecification.html">NDPI</a></b></h2></td>
+	<td><h5><u><b>N</b></u>ormalized <u><b>D</b></u>ifference <u><b>P</b></u>ond <u><b>I</b></u>ndex</h5></td>
+    <td><h5>The NDPI algorithm makes it possible not only to distinguish small ponds and water bodies (down to 0.01 ha), but also to differentiate vegetation inside ponds from that in their surroundings</h5></td>
+	<td><h5>Water Index</h5></td>
+  </tr>
+  
+  <tr>
+    <td><h2><b><a href="ndti/NdtiAlgorithmSpecification.html">NDTI</a></b></h2></td>
+	<td><h5><u><b>N</b></u>ormalized <u><b>D</b></u>ifference <u><b>T</b></u>urbidity <u><b>I</b></u>ndex</h5></td>
+    <td><h5>This index was developed to allow for the measurement of water turbidity.</h5></td>
+	<td><h5>Water Index</h5></td>
+  </tr>
+  
+</table>
+<hr/>
+</body>
+</html>

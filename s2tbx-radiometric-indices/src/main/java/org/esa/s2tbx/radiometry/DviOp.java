@@ -14,6 +14,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "DviOp",
+        version="1.0",
         category = "Optical/Thematic Land Processing/Radiometric Indices/Basic Radiometric Indices",
         description = "Difference Vegetation Index retrieves the Isovegetation lines parallel to soil line",
         authors = "Dragos Mihailescu",

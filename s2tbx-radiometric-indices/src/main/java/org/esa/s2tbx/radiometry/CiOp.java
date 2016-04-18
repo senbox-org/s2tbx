@@ -14,6 +14,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "CiOp",
+        version="1.0",
         category = "Optical/Thematic Land Processing/Radiometric Indices/Other Radiometric Indices",
         description = "Colour Index  was developed to differentiate soils in the field.\n" +
                       "In most cases the CI gives complementary information with the BI and the NDVI.\n" +

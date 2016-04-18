@@ -92,4 +92,6 @@
     <mapID target="WDVIOperator" url="wdvi/WdviTool.html"/>
     <mapID target="WDVIAlgorithm" url="wdvi/WdviAlgorithmSpecification.html"/>
 
+    <mapID target="OperatorsIndexList" url="OperatorsIndexList.html"/>
+
 </map>

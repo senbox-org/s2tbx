@@ -15,6 +15,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "GemiOp",
+        version="1.0",
         category = "Optical/Thematic Land Processing/Radiometric Indices/Indices to Minimize Atmospheric Noise",
         description = "This retrieves the Global Environmental Monitoring Index (GEMI).",
         authors = "Dragos Mihailescu",

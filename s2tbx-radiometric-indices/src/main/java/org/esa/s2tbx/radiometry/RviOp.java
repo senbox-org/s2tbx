@@ -14,6 +14,7 @@ import java.util.Map;
 
 @OperatorMetadata(
         alias = "RviOp",
+        version="1.0",
         category = "Optical/Thematic Land Processing/Radiometric Indices/Basic Radiometric Indices",
         description = "Ratio Vegetation Index retrieves the Isovegetation lines converge at origin",
         authors = "Dragos Mihailescu",
