@@ -20,34 +20,29 @@
   <variables>
     <variable>
       <key>SEN2COR_HOME</key>
-      <value/>
+      <value></value>
+      <isShared>false</isShared>
     </variable>
     <variable>
       <key>SEN2COR_BIN</key>
-      <value/>
+      <value></value>
+      <isShared>false</isShared>
     </variable>
     <osvariable>
       <key>PYTHON_BIN</key>
       <value></value>
+      <isShared>false</isShared>
       <windows>python.exe</windows>
       <linux>python</linux>
       <macosx>python</macosx>
+      <isTransient>false</isTransient>
     </osvariable>
   </variables>
   <parameters>
     <parameter>
       <name>targetProductFile</name>
+      <alias></alias>
       <dataType>java.io.File</dataType>
-      <valueSet/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
-    </parameter>
-    <parameter>
-      <name>resolution</name>
-      <dataType>java.lang.Integer</dataType>
-      <defaultValue>60</defaultValue>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
@@ -58,14 +53,40 @@
       <name>postExecuteTemplate</name>
       <dataType>java.io.File</dataType>
       <defaultValue>Sen2Cor-post-template.vm</defaultValue>
+      <description></description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>TemplateAfterExecution</parameterType>
       <toolParameterDescriptors/>
     </parameter>
+    <parameter>
+      <name>sceneOnly</name>
+      <dataType>java.lang.Boolean</dataType>
+      <description>Scene Only</description>
+      <label>Scene Only</label>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>resolution</name>
+      <dataType>java.lang.Integer</dataType>
+      <defaultValue>60</defaultValue>
+      <valueSet>
+        <string>10</string>
+        <string>20</string>
+        <string>60</string>
+      </valueSet>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
   </parameters>
-  <source>package</source>
+  <source>user</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>true</isHandlingOutputName>
   <sourceProductDescriptors>
