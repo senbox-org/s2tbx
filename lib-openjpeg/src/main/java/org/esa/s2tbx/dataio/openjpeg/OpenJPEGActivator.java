@@ -22,11 +22,13 @@ import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.runtime.Activator;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -41,8 +43,12 @@ public class OpenJPEGActivator implements Activator {
 
     @Override
     public void start() {
-        Path auxdataDirectory = SystemUtils.getAuxDataPath().resolve("openjpeg");
         Path sourceDirPath = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("auxdata/openjpeg");
+        Path auxdataDirectory = OpenJpegExecRetriever.getOpenJPEGAuxDataPath();
+        if (auxdataDirectory == null) {
+            SystemUtils.LOG.severe("OpenJPEG configuration error: failed to retrieve auxdata path");
+            return;
+        }
         final ResourceInstaller resourceInstaller = new ResourceInstaller(sourceDirPath, auxdataDirectory);
 
         try {
@@ -50,6 +56,7 @@ public class OpenJPEGActivator implements Activator {
             fixUpPermissions(auxdataDirectory);
         } catch (IOException e) {
             SystemUtils.LOG.severe("OpenJPEG configuration error: failed to create " + auxdataDirectory);
+            return;
         }
     }
 
