@@ -17,11 +17,15 @@
 package org.esa.s2tbx.dataio.openjpeg;
 
 
+import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 
 import static org.apache.commons.lang.SystemUtils.*;
 
@@ -59,12 +63,34 @@ public class OpenJpegExecRetriever {
         return findOpenJpegExecPath(OSCategory.getOSCategory().getDump());
     }
 
+    public static Path getOpenJPEGAuxDataPath() {
+        Path versionFile = ResourceInstaller.findModuleCodeBasePath(OpenJpegExecRetriever.class).resolve("version/version.properties");
+        Properties versionProp = new Properties();
+
+        try {
+            InputStream inputStream = Files.newInputStream(versionFile);
+            versionProp.load(inputStream);
+        } catch (IOException e) {
+            SystemUtils.LOG.severe("OpenJPEG configuration error: failed to read " + versionFile.toString());
+            return null;
+        }
+
+        String version = versionProp.getProperty("project.version");
+        if (version == null)
+        {
+            SystemUtils.LOG.severe("OpenJPEG configuration error: unable to get property project.version from " + versionFile.toString());
+            return null;
+        }
+
+        return SystemUtils.getAuxDataPath().resolve("openjpeg").resolve(version);
+    }
+
     private static String findOpenJpegExecPath(String endPath) {
         if (endPath == null) {
             return null;
         }
 
-        Path path = SystemUtils.getAuxDataPath().resolve("openjpeg").resolve(endPath);
+        Path path = getOpenJPEGAuxDataPath().resolve(endPath);
         String pathString = null;
         if (path != null) {
             pathString = path.toString();
