@@ -39,8 +39,6 @@
     </dependencies>
 
     <build>
-
-
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
