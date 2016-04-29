@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.s2;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.core.dataio.AbstractProductReader;
@@ -27,18 +28,17 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.quicklooks.Quicklook;
+import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Base class for all Sentinel-2 product readers
@@ -103,7 +103,19 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     protected abstract String getReaderCacheDir();
 
     protected void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir()),
+        Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
+        Properties versionProp = new Properties();
+
+        InputStream inputStream = Files.newInputStream(versionFile);
+        versionProp.load(inputStream);
+
+        String version = versionProp.getProperty("project.version");
+        if (version == null)
+        {
+            throw new IOException("Unable to get project.version property from " + versionFile);
+        }
+
+        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir() +  File.separator + version),
                 productDir.getName());
 
         //noinspection ResultOfMethodCallIgnored
@@ -111,6 +123,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
             throw new IOException("Can't access package cache directory");
         }
+        SystemUtils.LOG.fine("Successfully set up cache dir for product " + productDir.getName() + " to " + cacheDir.toString());
     }
 
     @Override

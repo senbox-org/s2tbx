@@ -34,6 +34,7 @@ import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 import org.geotools.referencing.CRS;
 
@@ -42,12 +43,14 @@ import java.awt.geom.Point2D;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -104,16 +107,30 @@ public class JP2ProductReader extends AbstractProductReader {
         super.close();
     }
 
+    Path createCacheDirRoot(Path inputFile) throws IOException {
+        Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
+        Properties versionProp = new Properties();
+        versionProp.load(Files.newInputStream(versionFile));
+        String version = versionProp.getProperty("project.version");
+        if (version == null)
+        {
+            throw new IOException("Unable to get project.version property from " + versionFile);
+        }
+        tmpFolder = PathUtils.get(SystemUtils.getCacheDir(), "s2tbx", "jp2-reader", version, PathUtils.getFileNameWithoutExtension(inputFile).toLowerCase() + "_cached");
+        if (!Files.exists(tmpFolder)) {
+            Files.createDirectories(tmpFolder);
+        }
+        return tmpFolder;
+    }
+
     @Override
     protected Product readProductNodesImpl() throws IOException {
         if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
         Path inputFile = getFileInput(getInput());
-        tmpFolder = PathUtils.get(SystemUtils.getCacheDir(), PathUtils.getFileNameWithoutExtension(inputFile).toLowerCase() + "_cached");
-        if (!Files.exists(tmpFolder)) {
-            Files.createDirectory(tmpFolder);
-        }
+        tmpFolder = createCacheDirRoot(inputFile);
+
         logger.info("Reading product metadata");
         try {
             OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getOpjDump());
