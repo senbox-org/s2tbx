@@ -41,7 +41,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>[3.0.0,4.0.0-SNAPSHOT)</snap.version>
+        <snap.version>3.0.0</snap.version>
         <s2tbx.version>[3.0.0,4.0.0-SNAPSHOT)</s2tbx.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
