@@ -47,22 +47,6 @@
                     <keystorepassword>snap-123</keystorepassword>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <configuration>
-                    <keystore>${project.basedir}/../../keystore/s2tbx.ks</keystore>
-                    <licenseFile>${project.basedir}/../../LICENSE.html</licenseFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
