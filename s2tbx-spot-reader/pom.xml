@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
-            <version>${s2tbx.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xsom</groupId>
@@ -92,7 +92,7 @@
             <artifactId>s2tbx-commons</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
-            <version>${s2tbx.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
