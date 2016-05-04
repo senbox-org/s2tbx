@@ -23,7 +23,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>3.0.3</version>
+        <version>3.0.4</version>
     </parent>
 
     <artifactId>s2tbx-spot6-reader</artifactId>
@@ -99,7 +99,7 @@
             <artifactId>s2tbx-commons</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
-            <version>${snap.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
