@@ -1,0 +1,106 @@
+<!--
+  ~ Copyright (C) 2011 Brockmann Consult GmbH (info@brockmann-consult.de)
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>SNAP Data Processors - Idepix Processor - Command Line Description</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            Idepix Processor - Command Line Description
+        </td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg"
+                                                                                     border=0></a>
+        </td>
+    </tr>
+</table>
+
+<h3>Command Line Description</h3>
+
+Since the Idepix processor makes use of the SNAP graph processing framework, it can be
+used also as a command line tool. The graph processing is invoked
+by the command
+<ul>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt
+    </li>
+</ul>
+
+To obtain general help on the graph processing, use the command
+<ul>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h
+    </li>
+</ul>
+
+Specific help on the Idepix processor can be obtained for the supported instruments with
+<ul>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Landsat8
+    </li>
+    <li>
+        ${S3TBX-INSTALL-DIR}/bin/gpt -h Idepix.Modis
+    </li>
+</ul>
+In this case, information on the usage and a list of all available parameters are given. E.g., for MODIS this looks
+like in the figure below.
+<p align="center"><img src="images/IdepixCommandLineModis.png"></p>
+
+The Idepix processor parameters can also be specified via a graph xml file.
+E.g., a possible graph xml file for MODIS could look like the following. (Note that in principle it is not necessary
+to explicitly set parameters if default values shall be used).
+<pre>
+
+    &lt;graph id="IdepixModisTest"&gt;
+        &lt;version&gt;1.0&lt;/version&gt;
+        &lt;node id="idepix"&gt;
+            &lt;operator&gt;Idepix.Modis&lt;/operator&gt;
+            &lt;sources&gt;
+                &lt;source&gt;${modisProduct}&lt;/source&gt;
+            &lt;/sources&gt;
+            &lt;parameters&gt;
+                &lt;cloudFlaggingStrength&gt;CLOUD_CONSERVATIVE&lt;/cloudFlaggingStrength&gt;
+            &lt;/parameters&gt;
+            &lt;parameters&gt;
+                &lt;cloudBufferWidth&gt;2&lt;/cloudBufferWidth&gt;
+            &lt;/parameters&gt;
+            &lt;parameters&gt;
+                &lt;waterMaskResolution&gt;300&lt;/waterMaskResolution&gt;
+            &lt;/parameters&gt;
+            &lt;parameters&gt;
+                &lt;outputRad2Refl&gt;false&lt;/outputRad2Refl&gt;
+            &lt;/parameters&gt;
+            &lt;parameters&gt;
+                &lt;outputEmissive&gttrue&lt;/outputEmissive&gt;
+            &lt;/parameters&gt;
+        &lt;/node&gt;
+    &lt;/graph&gt;
+
+</pre>
+
+This graph can be invoked by the following call on the command line:
+<pre>
+  gpt &lt;graph-file.xml&gt; -SmodisProduct=&lt;path-to-source-file&gt;
+</pre>
+
+<hr>
+</body>
+</html>
