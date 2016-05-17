@@ -83,7 +83,10 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             S2OrthoGranuleMetadataFilename granuleMetadataFilename = S2OrthoGranuleMetadataFilename.create(fileName);
             if (granuleMetadataFilename != null &&
                     (level.equals("L1C") ||
-                            (level.equals("L2A") && !this.getClass().equals(S2OrthoProductReaderPlugIn.class)))) {
+                            (level.equals("L2A") && (this instanceof S2OrthoProduct10MReaderPlugIn ||
+                                    this instanceof S2OrthoProduct20MReaderPlugIn ||
+                                    this instanceof S2OrthoProduct60MReaderPlugIn
+                            )))) {
                 String tileId = granuleMetadataFilename.tileNumber;
                 String epsg = tileIdentifierToEPSG(tileId);
                 if (getEPSG() != null && getEPSG().equalsIgnoreCase(epsg)) {
