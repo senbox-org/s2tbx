@@ -32,6 +32,10 @@ import java.util.Map;
         description = "Pixel identification and classification for Sentinel-2.")
 public class Sentinel2Op extends Operator {
 
+    private static final int LAND_WATER_MASK_RESOLUTION = 50;
+    private static final int OVERSAMPLING_FACTOR_X = 3;
+    private static final int OVERSAMPLING_FACTOR_Y = 3;
+
     @Parameter(defaultValue = "true",
             label = " Write TOA Reflectances to the target product",
             description = " Write TOA Reflectances to the target product")
@@ -106,6 +110,7 @@ public class Sentinel2Op extends Operator {
     @TargetProduct(description = "The target product.")
     private Product targetProduct;
 
+    private Product waterMaskProduct;
     private Product postProcessingProduct;
     private Product s2ClassifProduct;
 
@@ -122,13 +127,16 @@ public class Sentinel2Op extends Operator {
     }
 
     private void processSentinel2() {
-        Map<String, Product> input = new HashMap<>(4);
-        input.put("l1c", sourceProduct);
+        processLandWaterMask();
+
+        Map<String, Product> inputProducts = new HashMap<>(4);
+        inputProducts.put("l1c", sourceProduct);
+        inputProducts.put("waterMask", waterMaskProduct);
 
         final Map<String, Object> pixelClassificationParameters = createPixelClassificationParameters();
 
         final Product prelimClassifProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2ClassificationOp.class),
-                                           pixelClassificationParameters, input);
+                                           pixelClassificationParameters, inputProducts);
 
         AddElevationOp elevationOp = new AddElevationOp();
         elevationOp.setParameterDefaultValues();
@@ -151,6 +159,14 @@ public class Sentinel2Op extends Operator {
         IdepixUtils.setupIdepixCloudscreeningBitmasks(targetProduct);
 
         setTargetProduct(targetProduct);
+    }
+
+    private void processLandWaterMask() {
+        HashMap<String, Object> waterMaskParameters = new HashMap<>();
+        waterMaskParameters.put("resolution", LAND_WATER_MASK_RESOLUTION);
+        waterMaskParameters.put("subSamplingFactorX", OVERSAMPLING_FACTOR_X);
+        waterMaskParameters.put("subSamplingFactorY", OVERSAMPLING_FACTOR_Y);
+        waterMaskProduct = GPF.createProduct("LandWaterMask", waterMaskParameters, sourceProduct);
     }
 
     private void computePostProcessProduct() {

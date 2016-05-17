@@ -49,11 +49,11 @@
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-gpf</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.esa.s2tbx</groupId>-->
-            <!--<artifactId>s2tbx-watermask</artifactId>-->
-            <!--<version>${snap.version}</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-watermask</artifactId>
+            <version>${snap.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>
