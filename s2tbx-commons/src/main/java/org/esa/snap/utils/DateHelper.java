@@ -90,7 +90,19 @@ public class DateHelper {
                     stringData = stringData + ".000000";
                 Long microseconds = 0L;
                 if(dateFormat.contains(".")) {
-                    microseconds = Long.parseLong(stringData.substring(stringData.indexOf(".") + 1));
+                    String stringMicroseconds=stringData.substring(stringData.indexOf(".") + 1);
+
+                    //check the microseconds length
+                    if(stringMicroseconds.length()>6){
+                        //if there are more than 6 digits, the last ones are removed
+                        stringMicroseconds=stringMicroseconds.substring(0,6);
+                    }
+                    else{
+                        //fill until 6 digits
+                        while(stringMicroseconds.length()<6) stringMicroseconds=stringMicroseconds+"0";
+                    }
+
+                    microseconds = Long.parseLong(stringMicroseconds);
                     stringData = stringData.substring(0, stringData.lastIndexOf("."));
                     dateFormat = dateFormat.substring(0, dateFormat.lastIndexOf("."));
                 }
