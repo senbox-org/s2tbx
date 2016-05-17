@@ -69,6 +69,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static org.esa.snap.utils.DateHelper.parseDate;
+
 
 /**
  * <p>
@@ -207,7 +209,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
         product.setAutoGrouping("sun:view:quality");
 
-
+        product.setStartTime(parseDate(productCharacteristics.getProductStartTime(),"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+        product.setEndTime(parseDate(productCharacteristics.getProductStopTime(),"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         List<BandInfo> bandInfoList = new ArrayList<>();
 
