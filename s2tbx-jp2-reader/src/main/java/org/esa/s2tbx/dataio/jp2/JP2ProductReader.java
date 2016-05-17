@@ -53,6 +53,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import static org.esa.s2tbx.dataio.Utils.GetShortPathName;
+
 /**
  * Generic reader for JP2 files.
  *
@@ -136,7 +138,7 @@ public class JP2ProductReader extends AbstractProductReader {
             OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getOpjDump());
             OpjDumpFile dumpFile = new OpjDumpFile(PathUtils.get(tmpFolder, String.format(JP2ProductReaderConstants.JP2_INFO_FILE, PathUtils.getFileNameWithoutExtension(inputFile))));
             Map<String, String> params = new HashMap<String, String>() {{
-                put("-i", inputFile.toAbsolutePath().toString());
+                put("-i", GetShortPathName(inputFile.toAbsolutePath().toString()));
                 put("-o", dumpFile.getPath());
             }};
             if (dumper.execute(params) == 0) {
