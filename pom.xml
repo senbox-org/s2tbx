@@ -147,6 +147,12 @@
 
             <dependency>
                 <groupId>org.esa.snap</groupId>
+                <artifactId>snap-dem</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
                 <artifactId>snap-gpf</artifactId>
                 <version>${snap.version}</version>
             </dependency>

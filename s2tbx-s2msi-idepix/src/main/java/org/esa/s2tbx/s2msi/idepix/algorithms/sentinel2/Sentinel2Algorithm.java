@@ -17,13 +17,17 @@ public class Sentinel2Algorithm {
 
     static final float BRIGHTWHITE_THRESH = 1.5f;
     static final float NDSI_THRESH = 0.6f;
-    static final float CLOUD_THRESH = 1.65f;   // changed back, 20160503 todo: further check how this works
+//    static final float CLOUD_THRESH = 1.65f;   // changed back, 20160503 todo: further check how this works
 //    static final float CLOUD_THRESH = 2.0f;  // OD, 20160422
+    static final float CLOUD_THRESH = 1.8f;  // JM, 20160517
     static final float BRIGHT_THRESH = 0.25f;  // changed back, 20160503 todo: further check how this works
 //    static final float BRIGHT_THRESH = 0.8f;  // OD, 20160422
     static final float BRIGHT_FOR_WHITE_THRESH = 0.8f;
     static final float WHITE_THRESH = 0.9f;
     static final float NDVI_THRESH = 0.5f;
+
+    static final float TC_THRESH = 2100.0f; // what's this?
+    static final float NDWI_THRESH = 0.25f;  // what's this?
 
     private float[] refl;
     private double brr442Thresh;
@@ -37,7 +41,16 @@ public class Sentinel2Algorithm {
 
     public boolean isCloud() {
         boolean threshTest = whiteValue() + brightValue() + pressureValue() + temperatureValue() > CLOUD_THRESH;
-        return !isInvalid() && (threshTest && !isClearSnow());
+
+//        return !isInvalid() && (threshTest && !isClearSnow());
+
+        // JM, 20160517:
+        boolean yellowTest = (Math.abs(refl[3]-refl[2]) < 700.0) && (refl[1] < Math.min(refl[2], refl[3]));
+        boolean darkurbanTest = (Math.abs(refl[3]-refl[2]) < 500.0) && (Math.abs(refl[2]-refl[1]) < 500.0) &&
+                (((refl[1]+refl[2]+refl[3])/3.0) < 2000.0);
+
+        return !isInvalid() && (threshTest && !isClearSnow() && !yellowTest && !darkurbanTest);
+
     }
 
     public boolean isClearLand() {
@@ -72,7 +85,9 @@ public class Sentinel2Algorithm {
     }
 
     public boolean isClearSnow() {
-        return (!isInvalid() && isLand() && isBrightWhite() && ndsiValue() > getNdsiThreshold());
+//        return (!isInvalid() && isLand() && isBrightWhite() && ndsiValue() > getNdsiThreshold());
+        return (!isInvalid() && isLand() && ndsiValue() > getNdsiThreshold() &&
+        !((ndwiValue() > getNdwiThreshold()) && (tcValue() < getTcThreshold() )));  // JM, 20160517
     }
 
     public boolean isSeaIce() {
@@ -109,6 +124,16 @@ public class Sentinel2Algorithm {
     }
 
     // feature values
+    public float tcValue() {
+        // what is TC?
+        return 0.3029f*refl[1] + 0.2786f*refl[2] + 0.4733f*refl[3] + 0.5599f*refl[8] + 0.508f*refl[11] + 0.1872f*refl[12];
+    }
+
+    public float ndwiValue() {
+        // what is NDWI?
+        return (refl[8] - refl[11]) / (refl[8] + refl[11]);
+    }
+
     public float spectralFlatnessValue() {
         final double slope0 = IdepixUtils.spectralSlope(refl[1], refl[0],
                                                         IdepixConstants.S2_MSI_WAVELENGTHS[1],
@@ -191,6 +216,14 @@ public class Sentinel2Algorithm {
 
     public float getNdviThreshold() {
         return NDVI_THRESH;
+    }
+
+    public float getNdwiThreshold() {
+        return NDWI_THRESH;
+    }
+
+    public float getTcThreshold() {
+        return TC_THRESH;
     }
 
     public float getBrightThreshold() {

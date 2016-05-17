@@ -14,6 +14,7 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.dem.gpf.AddElevationOp;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,35 +42,43 @@ public class Sentinel2Op extends Operator {
             description = " Write all Feature Values to the target product")
     private boolean copyFeatureValues;
 
-    @Parameter(defaultValue = "1.95",
-            label = " NN cloud ambiguous lower boundary",
-            description = " NN cloud ambiguous lower boundary")
-    private double nnCloudAmbiguousLowerBoundaryValue;
+    // NN stuff is deactivated unless we have a better net
 
-    @Parameter(defaultValue = "3.45",
-            label = " NN cloud ambiguous/sure separation value",
-            description = " NN cloud ambiguous cloud ambiguous/sure separation value")
-    private double nnCloudAmbiguousSureSeparationValue;
+//    @Parameter(defaultValue = "1.95",
+//            label = " NN cloud ambiguous lower boundary",
+//            description = " NN cloud ambiguous lower boundary")
+//    private double nnCloudAmbiguousLowerBoundaryValue;
+    private double nnCloudAmbiguousLowerBoundaryValue = 1.95;
 
-    @Parameter(defaultValue = "4.3",
-            label = " NN cloud sure/snow separation value",
-            description = " NN cloud ambiguous cloud sure/snow separation value")
-    private double nnCloudSureSnowSeparationValue;
+//    @Parameter(defaultValue = "3.45",
+//            label = " NN cloud ambiguous/sure separation value",
+//            description = " NN cloud ambiguous cloud ambiguous/sure separation value")
+//    private double nnCloudAmbiguousSureSeparationValue;
+    private double nnCloudAmbiguousSureSeparationValue = 3.45;
 
-    @Parameter(defaultValue = "false",
-            label = " Apply NN for pixel classification purely (not combined with feature value approach)",
-            description = " Apply NN for pixelclassification purely (not combined with feature value  approach)")
-    private boolean applyNNPure;
+//    @Parameter(defaultValue = "4.3",
+//            label = " NN cloud sure/snow separation value",
+//            description = " NN cloud ambiguous cloud sure/snow separation value")
+//    private double nnCloudSureSnowSeparationValue;
+    private double nnCloudSureSnowSeparationValue = 4.3;
 
-    @Parameter(defaultValue = "false",
-            label = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)",
-            description = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)")
-    private boolean ignoreNN;
+//    @Parameter(defaultValue = "false",
+//            label = " Apply NN for pixel classification purely (not combined with feature value approach)",
+//            description = " Apply NN for pixelclassification purely (not combined with feature value  approach)")
+//    private boolean applyNNPure;
+    private boolean applyNNPure = false;
 
-    @Parameter(defaultValue = "true",
-            label = " Write NN output value to the target product",
-            description = " Write NN output value to the target product")
-    private boolean copyNNValue = true;
+//    @Parameter(defaultValue = "false",
+//            label = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)",
+//            description = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)")
+//    private boolean ignoreNN;
+    boolean ignoreNN = true;       // currently bad results. Wait for better S2 NN.
+
+//    @Parameter(defaultValue = "true",
+//            label = " Write NN output value to the target product",
+//            description = " Write NN output value to the target product")
+//    private boolean copyNNValue = true;
+    private boolean copyNNValue = false;
 
 //    @Parameter(defaultValue = "true",
 //            label = " Refine pixel classification near coastlines",
@@ -98,7 +107,7 @@ public class Sentinel2Op extends Operator {
     private Product targetProduct;
 
     private Product postProcessingProduct;
-    private Product s2CloudProduct;
+    private Product s2ClassifProduct;
 
     @Override
     public void initialize() throws OperatorException {
@@ -118,19 +127,24 @@ public class Sentinel2Op extends Operator {
 
         final Map<String, Object> pixelClassificationParameters = createPixelClassificationParameters();
 
-        s2CloudProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2ClassificationOp.class),
+        final Product prelimClassifProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2ClassificationOp.class),
                                            pixelClassificationParameters, input);
+
+        AddElevationOp elevationOp = new AddElevationOp();
+        elevationOp.setParameterDefaultValues();
+        elevationOp.setSourceProduct(prelimClassifProduct);
+        s2ClassifProduct = elevationOp.getTargetProduct();
 
         if (refineClassificationNearCoastlines || computeCloudShadow || computeCloudBuffer) {
             // Post Cloud Classification: coastline refinement, cloud shadow, cloud buffer
             computePostProcessProduct();
 
-            targetProduct = IdepixUtils.cloneProduct(s2CloudProduct, true);
+            targetProduct = IdepixUtils.cloneProduct(s2ClassifProduct, true);
 
             Band cloudFlagBand = targetProduct.getBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS);
             cloudFlagBand.setSourceImage(postProcessingProduct.getBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS).getSourceImage());
         } else {
-            targetProduct = s2CloudProduct;
+            targetProduct = s2ClassifProduct;
         }
 
         // new bit masks:
@@ -142,7 +156,7 @@ public class Sentinel2Op extends Operator {
     private void computePostProcessProduct() {
         HashMap<String, Product> input = new HashMap<>();
         input.put("l1c", sourceProduct);
-        input.put("s2Cloud", s2CloudProduct);
+        input.put("s2Cloud", s2ClassifProduct);
 
         Map<String, Object> params = new HashMap<>();
         params.put("cloudBufferWidth", cloudBufferWidth);

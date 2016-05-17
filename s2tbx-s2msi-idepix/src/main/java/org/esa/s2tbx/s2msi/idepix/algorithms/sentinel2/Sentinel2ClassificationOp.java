@@ -47,35 +47,44 @@ public class Sentinel2ClassificationOp extends Operator {
             description = " Write all Feature Values to the target product")
     private boolean copyFeatureValues;
 
-    @Parameter(defaultValue = "1.95",
-            label = " NN cloud ambiguous lower boundary",
-            description = " NN cloud ambiguous lower boundary")
-    double nnCloudAmbiguousLowerBoundaryValue;
+    // NN stuff is deactivated unless we have a better net
 
-    @Parameter(defaultValue = "3.45",
-            label = " NN cloud ambiguous/sure separation value",
-            description = " NN cloud ambiguous cloud ambiguous/sure separation value")
-    double nnCloudAmbiguousSureSeparationValue;
+    //    @Parameter(defaultValue = "1.95",
+//            label = " NN cloud ambiguous lower boundary",
+//            description = " NN cloud ambiguous lower boundary")
+//    private double nnCloudAmbiguousLowerBoundaryValue;
+    private double nnCloudAmbiguousLowerBoundaryValue = 1.95;
 
-    @Parameter(defaultValue = "4.3",
-            label = " NN cloud sure/snow separation value",
-            description = " NN cloud ambiguous cloud sure/snow separation value")
-    double nnCloudSureSnowSeparationValue;
+    //    @Parameter(defaultValue = "3.45",
+//            label = " NN cloud ambiguous/sure separation value",
+//            description = " NN cloud ambiguous cloud ambiguous/sure separation value")
+//    private double nnCloudAmbiguousSureSeparationValue;
+    private double nnCloudAmbiguousSureSeparationValue = 3.45;
 
-    @Parameter(defaultValue = "false",
-            label = " Apply NN for pixel classification purely (not combined with feature value approach)",
-            description = " Apply NN for pixelclassification purely (not combined with feature value  approach)")
-    boolean applyNNPure;
+    //    @Parameter(defaultValue = "4.3",
+//            label = " NN cloud sure/snow separation value",
+//            description = " NN cloud ambiguous cloud sure/snow separation value")
+//    private double nnCloudSureSnowSeparationValue;
+    private double nnCloudSureSnowSeparationValue = 4.3;
 
-    @Parameter(defaultValue = "false",
-            label = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)",
-            description = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)")
-    boolean ignoreNN;
+    //    @Parameter(defaultValue = "false",
+//            label = " Apply NN for pixel classification purely (not combined with feature value approach)",
+//            description = " Apply NN for pixelclassification purely (not combined with feature value  approach)")
+//    private boolean applyNNPure;
+    private boolean applyNNPure = false;
 
-    @Parameter(defaultValue = "true",
-            label = " Write NN output value to the target product",
-            description = " Write NN output value to the target product")
-    private boolean copyNNValue = true;
+    //    @Parameter(defaultValue = "false",
+//            label = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)",
+//            description = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)")
+//    private boolean ignoreNN;
+    boolean ignoreNN = true;       // currently bad results. Wait for better S2 NN.
+
+    //    @Parameter(defaultValue = "true",
+//            label = " Write NN output value to the target product",
+//            description = " Write NN output value to the target product")
+//    private boolean copyNNValue = true;
+    private boolean copyNNValue = false;
+
 
     @SourceProduct(alias = "l1c", description = "The MSI L1C source product.")
     Product sourceProduct;
