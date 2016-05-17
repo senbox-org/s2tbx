@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
+import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
@@ -135,6 +136,9 @@ public class L2aMetadataProc extends S2MetadataProc {
         characteristics.setSpacecraft(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME());
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString());
         characteristics.setProcessingLevel(product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value());
+
+        characteristics.setProductStartTime(((ElementNSImpl) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
+        characteristics.setProductStopTime(((ElementNSImpl) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
 
         List<S2BandInformation> aInfo = new ArrayList<>();
         switch(resolution) {

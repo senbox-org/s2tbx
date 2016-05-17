@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
 
+import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 import com.vividsolutions.jts.geom.Coordinate;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_DIMENSIONS;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
@@ -86,6 +87,9 @@ public class L1bMetadataProc extends S2MetadataProc {
         characteristics.setSpacecraft(product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME());
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString());
         characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value());
+
+        characteristics.setProductStartTime(((ElementNSImpl) product.getGeneral_Info().getProduct_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
+        characteristics.setProductStopTime(((ElementNSImpl) product.getGeneral_Info().getProduct_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
 
         List<S2BandInformation> aInfo = new ArrayList<>();
 

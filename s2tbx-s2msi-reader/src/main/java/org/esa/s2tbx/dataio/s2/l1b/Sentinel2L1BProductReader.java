@@ -62,6 +62,7 @@ import static org.esa.s2tbx.dataio.s2.S2Metadata.ProductCharacteristics;
 import static org.esa.s2tbx.dataio.s2.S2Metadata.Tile;
 import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
 import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadata.parseHeader;
+import static org.esa.snap.utils.DateHelper.parseDate;
 
 // import com.jcabi.aspects.Loggable;
 
@@ -273,6 +274,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             product.getMetadataRoot().addElement(metadataElement);
         }
 
+        product.setStartTime(parseDate(productCharacteristics.getProductStartTime(),"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+        product.setEndTime(parseDate(productCharacteristics.getProductStopTime(),"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         return product;
     }
