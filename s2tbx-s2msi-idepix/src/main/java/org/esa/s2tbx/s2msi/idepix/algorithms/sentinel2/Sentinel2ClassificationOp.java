@@ -3,7 +3,6 @@ package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.idepix.util.IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.IdepixUtils;
-import org.esa.s2tbx.s2msi.idepix.util.SchillerNeuralNetWrapper;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -15,10 +14,9 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.math.MathUtils;
+import org.esa.snap.watermask.operator.WatermaskClassifier;
 
 import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -36,6 +34,8 @@ public class Sentinel2ClassificationOp extends Operator {
 
     public static final double DELTA_RHO_TOA_442_THRESHOLD = 0.03;
     public static final double RHO_TOA_442_THRESHOLD = 0.03;
+
+    private static final float WATER_MASK_SOUTH_BOUND = -58.0f;
 
     @Parameter(defaultValue = "true",
             label = " Write TOA Reflectances to the target product",
@@ -89,11 +89,15 @@ public class Sentinel2ClassificationOp extends Operator {
     @SourceProduct(alias = "l1c", description = "The MSI L1C source product.")
     Product sourceProduct;
 
+    @SourceProduct(alias = "waterMask", optional = true)
+    private Product waterMaskProduct;
+
     @TargetProduct(description = "The target product.")
     Product targetProduct;
 
     private Band[] s2MsiReflBands;
     Band classifFlagBand;
+    Band landWaterBand;
 
     Band szaBand;
     Band vzaBand;
@@ -113,17 +117,21 @@ public class Sentinel2ClassificationOp extends Operator {
     Band radioWaterBand;
 
 
-    public static final String NN_NAME = "20x4x2_1012.9.net";    // Landsat 'all' NN
-    ThreadLocal<SchillerNeuralNetWrapper> neuralNet;
+//    public static final String NN_NAME = "20x4x2_1012.9.net";    // Landsat 'all' NN
+//    ThreadLocal<SchillerNeuralNetWrapper> neuralNet;
 
 
     @Override
     public void initialize() throws OperatorException {
         setBands();
-        readSchillerNeuralNets();
+//        readSchillerNeuralNets();
         createTargetProduct();
-        extendTargetProduct();
 
+        if (waterMaskProduct != null) {
+            landWaterBand = waterMaskProduct.getBand("land_water_fraction");
+        }
+
+        extendTargetProduct();
     }
 
     @Override
@@ -133,6 +141,11 @@ public class Sentinel2ClassificationOp extends Operator {
         float[] s2MsiReflectance = new float[IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length];
         for (int i = 0; i < IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
             s2ReflectanceTiles[i] = getSourceTile(s2MsiReflBands[i], rectangle);
+        }
+
+        Tile waterFractionTile = null;
+        if (waterMaskProduct != null) {
+            waterFractionTile = getSourceTile(landWaterBand, rectangle);
         }
 
         GeoPos geoPos = null;
@@ -145,7 +158,11 @@ public class Sentinel2ClassificationOp extends Operator {
         final Tile vaaTile = getSourceTile(vaaBand, rectangle);
 
         final Band nnTargetBand = targetProduct.getBand("nn_value");
-        final Tile nnTargetTile = targetTiles.get(nnTargetBand);
+        Tile nnTargetTile = null;
+        if (nnTargetBand != null) {
+            nnTargetTile = targetTiles.get(nnTargetBand);
+        }
+
         try {
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 checkForCancellation();
@@ -154,18 +171,17 @@ public class Sentinel2ClassificationOp extends Operator {
                     // todo: later:
 //                    byte waterMaskSample = WatermaskClassifier.INVALID_VALUE;
 //                    byte waterMaskFraction = WatermaskClassifier.INVALID_VALUE;
-//                    if (!gaUseL1bLandWaterFlag) {
-//                        final GeoCoding geoCoding = sourceProduct.getGeoCoding();
-//                        if (geoCoding.canGetGeoPos()) {
-//                            geoPos = geoCoding.getGeoPos(new PixelPos(x, y), geoPos);
-//                            waterMaskSample = strategy.getWatermaskSample(geoPos.lat, geoPos.lon);
-//                            waterMaskFraction = strategy.getWatermaskFraction(geoCoding, x, y);
-//                        }
+//                    final GeoCoding geoCoding = sourceProduct.getGeoCoding();
+//                    if (geoCoding.canGetGeoPos()) {
+//                        geoPos = geoCoding.getGeoPos(new PixelPos(x, y), geoPos);
+//                        waterMaskSample = strategy.getWatermaskSample(geoPos.lat, geoPos.lon);
+//                        waterMaskFraction = strategy.getWatermaskFraction(geoCoding, x, y);
 //                    }
 
                     // set up pixel properties for given instruments...
                     Sentinel2Algorithm s2MsiAlgorithm = createS2MsiAlgorithm(s2ReflectanceTiles,
                                                                              szaTile, vzaTile, saaTile, vaaTile,
+                                                                             waterFractionTile,
                                                                              s2MsiReflectance,
                                                                              y,
                                                                              x);
@@ -220,7 +236,9 @@ public class Sentinel2ClassificationOp extends Operator {
                             }
                         }
                     }
-                    nnTargetTile.setSample(x, y, nnOutput[0]);
+                    if (nnTargetTile != null) {
+                        nnTargetTile.setSample(x, y, nnOutput[0]);
+                    }
 
                     // for given instrument, compute more pixel properties and write to distinct band
                     for (Band band : targetProduct.getBands()) {
@@ -267,19 +285,23 @@ public class Sentinel2ClassificationOp extends Operator {
 
     private Sentinel2Algorithm createS2MsiAlgorithm(Tile[] s2MsiReflectanceTiles,
                                                     Tile szaTile, Tile vzaTile, Tile saaTile, Tile vaaTile,
+                                                    Tile waterFractionTile,
                                                     float[] s2MsiReflectances,
                                                     int y,
                                                     int x) {
         Sentinel2Algorithm s2MsiAlgorithm = new Sentinel2Algorithm();
 
         for (int i = 0; i < IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
-            s2MsiReflectances[i] = s2MsiReflectanceTiles[i].getSampleFloat(x, y)/10000.0f;
+            s2MsiReflectances[i] = s2MsiReflectanceTiles[i].getSampleFloat(x, y) / 10000.0f;
         }
         s2MsiAlgorithm.setRefl(s2MsiReflectances);
 
-        if (x == 275 && y == 1145)  {
-            System.out.println("x,y = " + x + "," + y);
+        boolean isLand = false;
+        if (waterMaskProduct != null) {
+            final int waterFraction = waterFractionTile.getSampleInt(x, y);
+            isLand = isLandPixel(x, y, waterFraction, s2MsiAlgorithm);
         }
+        s2MsiAlgorithm.setIsLand(isLand);
 
         final double sza = szaTile.getSampleDouble(x, y);
         final double vza = vzaTile.getSampleDouble(x, y);
@@ -288,14 +310,13 @@ public class Sentinel2ClassificationOp extends Operator {
         final double rhoToa442Thresh = calcRhoToa442ThresholdTerm(sza, vza, saa, vaa);
         s2MsiAlgorithm.setRhoToa442Thresh(rhoToa442Thresh);
 
-        SchillerNeuralNetWrapper nnWrapper = neuralNet.get();
-        double[] inputVector = nnWrapper.getInputVector();
-
-        float[] s2ToLandsatReflectances = mapToLandsatReflectances(s2MsiReflectances, inputVector);
-        for (int i = 0; i < inputVector.length; i++) {
-            inputVector[i] = Math.sqrt(s2ToLandsatReflectances[i]);
-        }
-        s2MsiAlgorithm.setNnOutput(nnWrapper.getNeuralNet().calc(inputVector));
+//        SchillerNeuralNetWrapper nnWrapper = neuralNet.get();
+//        double[] inputVector = nnWrapper.getInputVector();
+//        float[] s2ToLandsatReflectances = mapToLandsatReflectances(s2MsiReflectances, inputVector);
+//        for (int i = 0; i < inputVector.length; i++) {
+//            inputVector[i] = Math.sqrt(s2ToLandsatReflectances[i]);
+//        }
+//        s2MsiAlgorithm.setNnOutput(nnWrapper.getNeuralNet().calc(inputVector));
 
 //        final boolean isLand = watermaskFraction < WATERMASK_FRACTION_THRESH;
 //        s2MsiAlgorithm.setL1FlagLand(isLand);
@@ -304,38 +325,61 @@ public class Sentinel2ClassificationOp extends Operator {
         return s2MsiAlgorithm;
     }
 
-    private float[] mapToLandsatReflectances(float[] s2MsiReflectances, double[] inputVector) {
-        //        the net has 8 inputs:
-        //        input  1 is SQRT_coastal_aerosol in [0.255898,1.388849]
-        //        input  2 is SQRT_blue in [0.221542,1.479245]
-        //        input  3 is SQRT_green in [0.170573,1.543012]
-        //        input  4 is SQRT_red in [0.125654,1.678217]
-        //        input  5 is SQRT_near_infrared in [0.082347,1.775742]
-        //        input  6 is SQRT_swir_1 in [0.032031,1.356978]
-        //        input  7 is SQRT_swir_2 in [0.008660,1.840141]
-        //        input  8 is SQRT_cirrus in [0.000000,0.878521]
-
-        // L1 --> B1         440/443
-        // L2 --> B2         480/490
-        // L3 --> B3         560/560
-        // L4 --> B4         655/665
-        // L5 --> B8A        865/865
-        // L6 --> B11        1610/1610
-        // L7 --> B12        2200/2190
-        // L9 --> B10        1370/1375
-
-        float[] mappedToLandsatReflectances = new float[inputVector.length];
-        if (inputVector.length < 8) {
-            throw new OperatorException("Incompatible NN: " + NN_NAME + " - cannot continue.");
+    private boolean isLandPixel(int x, int y, int waterFraction, Sentinel2Algorithm s2MsiAlgorithm) {
+        if (getGeoPos(x, y).lat > WATER_MASK_SOUTH_BOUND) {
+            // values bigger than 100 indicate no data
+            if (waterFraction <= 100) {
+                // todo: this does not work if we have a PixelGeocoding. In that case, waterFraction
+                // is always 0 or 100!! (TS, OD, 20140502)
+                return waterFraction == 0;
+            } else {
+                return s2MsiAlgorithm.aPrioriLandValue() > Sentinel2Algorithm.LAND_THRESH;
+            }
+        } else {
+            return s2MsiAlgorithm.aPrioriLandValue() > Sentinel2Algorithm.LAND_THRESH;
         }
-        System.arraycopy(s2MsiReflectances, 0, mappedToLandsatReflectances, 0, 4);
-        mappedToLandsatReflectances[4] = s2MsiReflectances[8];
-        mappedToLandsatReflectances[5] = s2MsiReflectances[11];
-        mappedToLandsatReflectances[6] = s2MsiReflectances[12];
-        mappedToLandsatReflectances[7] = s2MsiReflectances[10];
-
-        return mappedToLandsatReflectances;
     }
+
+    private GeoPos getGeoPos(int x, int y) {
+        final GeoPos geoPos = new GeoPos();
+        final GeoCoding geoCoding = sourceProduct.getSceneGeoCoding();
+        final PixelPos pixelPos = new PixelPos(x, y);
+        geoCoding.getGeoPos(pixelPos, geoPos);
+        return geoPos;
+    }
+
+//    private float[] mapToLandsatReflectances(float[] s2MsiReflectances, double[] inputVector) {
+//        //        the net has 8 inputs:
+//        //        input  1 is SQRT_coastal_aerosol in [0.255898,1.388849]
+//        //        input  2 is SQRT_blue in [0.221542,1.479245]
+//        //        input  3 is SQRT_green in [0.170573,1.543012]
+//        //        input  4 is SQRT_red in [0.125654,1.678217]
+//        //        input  5 is SQRT_near_infrared in [0.082347,1.775742]
+//        //        input  6 is SQRT_swir_1 in [0.032031,1.356978]
+//        //        input  7 is SQRT_swir_2 in [0.008660,1.840141]
+//        //        input  8 is SQRT_cirrus in [0.000000,0.878521]
+//
+//        // L1 --> B1         440/443
+//        // L2 --> B2         480/490
+//        // L3 --> B3         560/560
+//        // L4 --> B4         655/665
+//        // L5 --> B8A        865/865
+//        // L6 --> B11        1610/1610
+//        // L7 --> B12        2200/2190
+//        // L9 --> B10        1370/1375
+//
+//        float[] mappedToLandsatReflectances = new float[inputVector.length];
+//        if (inputVector.length < 8) {
+//            throw new OperatorException("Incompatible NN: " + NN_NAME + " - cannot continue.");
+//        }
+//        System.arraycopy(s2MsiReflectances, 0, mappedToLandsatReflectances, 0, 4);
+//        mappedToLandsatReflectances[4] = s2MsiReflectances[8];
+//        mappedToLandsatReflectances[5] = s2MsiReflectances[11];
+//        mappedToLandsatReflectances[6] = s2MsiReflectances[12];
+//        mappedToLandsatReflectances[7] = s2MsiReflectances[10];
+//
+//        return mappedToLandsatReflectances;
+//    }
 
     private double calcRhoToa442ThresholdTerm(double sza, double vza, double saa, double vaa) {
         final double thetaScatt = IdepixUtils.calcScatteringAngle(sza, vza, saa, vaa) * MathUtils.DTOR;
@@ -344,14 +388,13 @@ public class Sentinel2ClassificationOp extends Operator {
     }
 
 
-
-    private void readSchillerNeuralNets() {
-        try (InputStream merisLandIS = getClass().getResourceAsStream(NN_NAME)) {
-            neuralNet = SchillerNeuralNetWrapper.create(merisLandIS);
-        } catch (IOException e) {
-            throw new OperatorException("Cannot read Neural Nets: " + e.getMessage());
-        }
-    }
+//    private void readSchillerNeuralNets() {
+//        try (InputStream merisLandIS = getClass().getResourceAsStream(NN_NAME)) {
+//            neuralNet = SchillerNeuralNetWrapper.create(merisLandIS);
+//        } catch (IOException e) {
+//            throw new OperatorException("Cannot read Neural Nets: " + e.getMessage());
+//        }
+//    }
 
     void createTargetProduct() throws OperatorException {
         int sceneWidth = sourceProduct.getSceneRasterWidth();

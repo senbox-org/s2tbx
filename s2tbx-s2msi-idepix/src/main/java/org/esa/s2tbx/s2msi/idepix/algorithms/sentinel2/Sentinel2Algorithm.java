@@ -32,7 +32,7 @@ public class Sentinel2Algorithm {
     private float[] refl;
     private double brr442Thresh;
     private double[] nnOutput;
-    private boolean isWater;
+    private boolean isLand;
 
 
     public boolean isBrightWhite() {
@@ -47,9 +47,10 @@ public class Sentinel2Algorithm {
         // JM, 20160517:
         boolean yellowTest = (Math.abs(refl[3]-refl[2]) < 700.0) && (refl[1] < Math.min(refl[2], refl[3]));
         boolean darkurbanTest = (Math.abs(refl[3]-refl[2]) < 500.0) && (Math.abs(refl[2]-refl[1]) < 500.0) &&
-                (((refl[1]+refl[2]+refl[3])/3.0) < 2000.0);
+                ( (refl[1]+refl[2]+refl[3])/3.0 < 2000.0);
 
-        return !isInvalid() && (threshTest && !isClearSnow() && !yellowTest && !darkurbanTest);
+//        return !isInvalid() && (threshTest && !isClearSnow() && !yellowTest && !darkurbanTest);
+        return !isInvalid() && (threshTest && !isClearSnow() && !yellowTest);
 
     }
 
@@ -66,7 +67,7 @@ public class Sentinel2Algorithm {
         } else {
             return false; // this means: if we have no information about land, we return isClearLand = false
         }
-        return (!isWater && !isCloud() && landValue > LAND_THRESH);
+        return (isLand() && !isCloud() && landValue > LAND_THRESH);
     }
 
     public boolean isClearWater() {
@@ -81,7 +82,7 @@ public class Sentinel2Algorithm {
         } else {
             return false; // this means: if we have no information about water, we return isClearWater = false
         }
-        return (isWater && !isCloud() && waterValue > WATER_THRESH);
+        return (!isLand() && !isCloud() && waterValue > WATER_THRESH);
     }
 
     public boolean isClearSnow() {
@@ -95,12 +96,13 @@ public class Sentinel2Algorithm {
     }
 
     public boolean isLand() {
-        return aPrioriLandValue() > LAND_THRESH;
+//        return aPrioriLandValue() > LAND_THRESH;
+        return isLand;
     }
 
     public boolean isWater() {
-//        return !isInvalid() && !isLand() && isWater;
-        return !isInvalid() && aPrioriWaterValue() > WATER_THRESH;  // todo: check again when we use SRTM water mask
+//        return !isInvalid() && aPrioriWaterValue() > WATER_THRESH;  // todo: check again when we use SRTM water mask
+        return !isInvalid() && !isLand();
     }
 
     public boolean isBright() {
@@ -205,9 +207,9 @@ public class Sentinel2Algorithm {
         this.nnOutput = nnOutput;
     }
 
-//    public void setIsWater(boolean isWater) {
-//        this.isWater = !isInvalid() && isWater;
-//    }
+    public void setIsLand(boolean isLand) {
+        this.isLand = isLand;
+    }
 
     // GETTERS
     public float getNdsiThreshold() {
