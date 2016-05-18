@@ -136,6 +136,8 @@ public class Spot6ProductReader extends AbstractProductReader {
             } else {
                 initProductTiePointGeoCoding(maxResImageMetadata, product);
             }
+            boolean shouldGroup = imageMetadataList.size() > 1;
+            String grouping = "";
             for (ImageMetadata imageMetadata : imageMetadataList) {
                 product.getMetadataRoot().addElement(imageMetadata.getRootElement());
                 int numBands = imageMetadata.getNumBands();
@@ -169,7 +171,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                     Band targetBand = new Band(bandInfos[i].getId(), pixelDataType,
                                                 Math.round(width / factorX),
                                                 Math.round(height / factorY));
-                    targetBand.setSpectralBandIndex(i);
+                    targetBand.setSpectralBandIndex(numBands > 1 ? i : -1);
                     targetBand.setSpectralWavelength(bandInfos[i].getCentralWavelength());
                     targetBand.setSpectralBandwidth(bandInfos[i].getBandwidth());
                     targetBand.setSolarFlux(solarIrradiances[i]);
@@ -182,7 +184,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                     Band[][] srcBands = new Band[tileRows][tileCols];
                     for (int x = 0; x < tileRows; x++) {
                         for (int y = 0; y < tileCols; y++) {
-                            srcBands[x][y] = tiles[x][y].getBandAt(i);
+                            srcBands[x][y] = tiles[x][y].getBandAt(bandInfos[i].getIndex());
                         }
                     }
 
@@ -198,17 +200,16 @@ public class Spot6ProductReader extends AbstractProductReader {
                                             targetBand.getImageToModelTransform());
                     targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
                     if (statistics[i] != null) {
-                        targetBand.setStx(statistics[i]);
-                        targetBand.setImageInfo(
+                        //targetBand.setStx(statistics[i]);
+                        /*targetBand.setImageInfo(
                                 new ImageInfo(
                                         new ColorPaletteDef(new ColorPaletteDef.Point[] {
                                                 new ColorPaletteDef.Point(statistics[i].getMinimum(), Color.BLACK),
-                                                //new ColorPaletteDef.Point(statistics[i].getMean(), Color.GRAY),
+                                                new ColorPaletteDef.Point(statistics[i].getMean(), Color.GRAY),
                                                 new ColorPaletteDef.Point(statistics[i].getMaximum(), Color.WHITE)
-                                        })));//, (int) Math.pow(2, imageMetadata.getPixelNBits()))));
+                                        })));//, (int) Math.pow(2, imageMetadata.getPixelNBits()))));*/
                     }
                     product.addBand(targetBand);
-
                 }
                 addMasks(product, imageMetadata);
                 addGMLMasks(product, imageMetadata);
