@@ -67,15 +67,14 @@ public abstract class S2OrthoProduct10MReaderPlugIn extends S2OrthoProductReader
         DecodeQualification decodeQualification = super.getDecodeQualification(input);
 
         //If decodeQualification is already unable or level is not level 2, the method return the value of parent's method
-        if(decodeQualification==DecodeQualification.UNABLE ||  !(getLevel().equals("L2A")))
+        if (decodeQualification == DecodeQualification.UNABLE || !(getLevel().equals("L2A")))
             return decodeQualification;
 
         //If the level is 2, the plugin is able if it exists the folder with the corresponding resolution
-        if(hasL2ResolutionSpecificFolder(input,"R10m"))
-            decodeQualification=DecodeQualification.INTENDED;
+        if (hasL2ResolutionSpecificFolder(input, "R10m"))
+            decodeQualification = DecodeQualification.INTENDED;
         else
-            decodeQualification=DecodeQualification.UNABLE;
-
+            decodeQualification = DecodeQualification.UNABLE;
 
         return decodeQualification;
     }

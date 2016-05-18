@@ -62,7 +62,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
         DecodeQualification decodeQualification = DecodeQualification.UNABLE;
 
-        if (! (input instanceof File)) {
+        if (!(input instanceof File)) {
             return DecodeQualification.UNABLE;
         }
 
@@ -137,9 +137,9 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         return String.format("Sentinel-2 MSI %s - Native resolutions - %s", getLevel(), epsgToDisplayName(getEPSG()));
     }
 
-    protected boolean hasL2ResolutionSpecificFolder(Object input, String specificFolder){
+    protected boolean hasL2ResolutionSpecificFolder(Object input, String specificFolder) {
 
-        if (! (input instanceof File)) {
+        if (!(input instanceof File)) {
             return false;
         }
 
