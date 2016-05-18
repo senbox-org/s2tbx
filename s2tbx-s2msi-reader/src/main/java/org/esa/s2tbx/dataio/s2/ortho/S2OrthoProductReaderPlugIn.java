@@ -30,6 +30,7 @@ import org.esa.snap.core.datamodel.RGBImageProfileManager;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.regex.Matcher;
 
@@ -61,7 +62,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
         DecodeQualification decodeQualification = DecodeQualification.UNABLE;
 
-        if (! (input instanceof File)) {
+        if (!(input instanceof File)) {
             return DecodeQualification.UNABLE;
         }
 
@@ -83,7 +84,10 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             S2OrthoGranuleMetadataFilename granuleMetadataFilename = S2OrthoGranuleMetadataFilename.create(fileName);
             if (granuleMetadataFilename != null &&
                     (level.equals("L1C") ||
-                            (level.equals("L2A") && !this.getClass().equals(S2OrthoProductReaderPlugIn.class)))) {
+                            (level.equals("L2A") && (this instanceof S2OrthoProduct10MReaderPlugIn ||
+                                    this instanceof S2OrthoProduct20MReaderPlugIn ||
+                                    this instanceof S2OrthoProduct60MReaderPlugIn
+                            )))) {
                 String tileId = granuleMetadataFilename.tileNumber;
                 String epsg = tileIdentifierToEPSG(tileId);
                 if (getEPSG() != null && getEPSG().equalsIgnoreCase(epsg)) {
@@ -132,4 +136,61 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     public String getDescription(Locale locale) {
         return String.format("Sentinel-2 MSI %s - Native resolutions - %s", getLevel(), epsgToDisplayName(getEPSG()));
     }
+
+    protected boolean hasL2ResolutionSpecificFolder(Object input, String specificFolder) {
+
+        if (!(input instanceof File)) {
+            return false;
+        }
+
+        File file = (File) input;
+        String fileNameComplete = file.toString(); //file name with full path
+        String fileName = file.getName(); //file name without path
+
+        if (S2OrthoGranuleMetadataFilename.isGranuleFilename(fileName)) { //when input is a granule
+
+            Path rootPath = new File(fileNameComplete).toPath().getParent();
+            File imgFolder = rootPath.resolve("IMG_DATA").toFile();
+            File[] files = imgFolder.listFiles();
+
+            if (files != null) {
+                for (File imgData : files) {
+                    if (imgData.isDirectory()) {
+                        if (imgData.getName().equals(specificFolder)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+        } else if (S2ProductFilename.isMetadataFilename(fileName)) { //when input is the global xml
+
+            Path rootPath = new File(fileNameComplete).toPath().getParent();
+            File granuleFolder = rootPath.resolve("GRANULE").toFile();
+            File[] files = granuleFolder.listFiles();
+
+            if (files != null) {
+                for (File granule : files) {
+                    if (granule.isDirectory()) {
+                        Path granulePath = new File(granule.toString()).toPath();
+                        File internalGranuleFolder = granulePath.resolve("IMG_DATA").toFile();
+                        File[] files2 = internalGranuleFolder.listFiles();
+                        if (files2 != null) {
+                            for (File imgData : files2) {
+                                if (imgData.isDirectory()) {
+                                    if (imgData.getName().equals(specificFolder)) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+
 }
