@@ -72,51 +72,11 @@ public abstract class S2OrthoProduct20MReaderPlugIn extends S2OrthoProductReader
             return decodeQualification;
 
         //If the level is 2, the plugin is able if it exists the folder with the corresponding resolution
-        File file = (File) input;
-        String fileNameComplete = file.toString(); //file name with full path
-        String fileName = file.getName(); //file name without path
+        if(hasL2ResolutionSpecificFolder(input,"R20m"))
+            decodeQualification=DecodeQualification.INTENDED;
+        else
+            decodeQualification=DecodeQualification.UNABLE;
 
-        //the qualification is set to unable and it is changed only if a folder "R20m" exist into
-        //the img_data folder of granules
-        decodeQualification=DecodeQualification.UNABLE;
-
-        if (S2OrthoGranuleMetadataFilename.isGranuleFilename(fileName)) { //when input is a granule
-            Path rootPath = new File(fileNameComplete).toPath().getParent();
-            File imgFolder = rootPath.resolve("IMG_DATA").toFile();
-            File[] files = imgFolder.listFiles();
-            if (files != null) {
-                for (File imgData : files) {
-                    if (imgData.isDirectory()) {
-                        if (imgData.getName().equals("R20m")) {
-                            return DecodeQualification.INTENDED;
-                        }
-                    }
-                }
-            }
-        } else if (S2ProductFilename.isMetadataFilename(fileName)) { //when input is the global xml
-
-            Path rootPath = new File(fileNameComplete).toPath().getParent();
-            File granuleFolder = rootPath.resolve("GRANULE").toFile();
-            File[] files = granuleFolder.listFiles();
-            if (files != null) {
-                for (File granule : files) {
-                    if (granule.isDirectory()) {
-                        Path granulePath = new File(granule.toString()).toPath();
-                        File internalGranuleFolder = granulePath.resolve("IMG_DATA").toFile();
-                        File[] files2 = internalGranuleFolder.listFiles();
-                        if (files2 != null) {
-                            for (File imgData : files2) {
-                                if (imgData.isDirectory()) {
-                                    if (imgData.getName().equals("R20m")) {
-                                        return DecodeQualification.INTENDED;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         return decodeQualification;
     }
