@@ -40,7 +40,7 @@ public class Utils {
         }
 
         int sizeBuffer = 2048;
-        char[] shortt= new char[sizeBuffer];
+        char[] shortt = new char[sizeBuffer];
 
         //Call CKernel32 interface to execute GetShortPathNameW method
         CKernel32.INSTANCE.GetShortPathNameW(path, shortt, sizeBuffer);
@@ -69,7 +69,7 @@ public class Utils {
         String[] shortenedFragments = GetShortPathName(workingPath).split(Pattern.quote(File.separator));
         String[] fragments = path.split(Pattern.quote(File.separator));
         // if the path did not split, we didn't have the system separator but '/'
-        if(fragments.length == 1) {
+        if (fragments.length == 1) {
             fragments = path.split(Pattern.quote("/"));
         }
 
@@ -87,7 +87,7 @@ public class Utils {
 
     private interface CKernel32 extends Library {
 
-        CKernel32 INSTANCE = (CKernel32) Native.loadLibrary("kernel32", CKernel32.class,W32APIOptions.UNICODE_OPTIONS);
+        CKernel32 INSTANCE = (CKernel32) Native.loadLibrary("kernel32", CKernel32.class, W32APIOptions.UNICODE_OPTIONS);
 
         int GetShortPathNameW(String LongName, char[] ShortName, int BufferCount); //Unicode version of GetShortPathName
     }
