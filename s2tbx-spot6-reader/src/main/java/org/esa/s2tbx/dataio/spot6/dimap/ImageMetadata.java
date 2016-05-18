@@ -45,6 +45,7 @@ public class ImageMetadata extends XmlMetadata {
 
     public class BandInfo {
         String id;
+        int index;
         String unit;
         String description;
         Double gain;
@@ -75,6 +76,10 @@ public class ImageMetadata extends XmlMetadata {
         public Float getCentralWavelength() { return centralWavelength; }
 
         public Float getBandwidth() { return bandwidth; }
+
+        public int getIndex() { return index; }
+
+        public void setIndex(int index) { this.index = index; }
     }
 
     public static ImageMetadata create(Path path) throws IOException {
@@ -232,12 +237,14 @@ public class ImageMetadata extends XmlMetadata {
             for (int i = 0; i < bandInfos.length; i++) {
                 bandInfos[i] = new BandInfo();
                 bandInfos[i].id = "band_1" + String.valueOf(i);
+                bandInfos[i].index = i;
             }
         } else {
-            Arrays.sort(ids);
+            //Arrays.sort(ids);
             for (int i = 0; i < bandInfos.length; i++) {
                 bandInfos[i] = new BandInfo();
                 bandInfos[i].id = ids[i];
+                bandInfos[i].index = i;
                 bandIndices.put(ids[i], i);
                 bandInfos[i].gain = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_BAND_ID, ids[i], Spot6Constants.PATH_IMG_BAND_GAIN, Spot6Constants.STRING_ONE));
                 bandInfos[i].bias = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_BAND_ID, ids[i], Spot6Constants.PATH_IMG_BAND_BIAS, Spot6Constants.STRING_ZERO));
@@ -247,6 +254,7 @@ public class ImageMetadata extends XmlMetadata {
                 bandInfos[i].centralWavelength = (min + max) / 2;
                 bandInfos[i].bandwidth = max - min;
             }
+            Arrays.sort(bandInfos, (o1, o2) -> Double.compare(o1.centralWavelength, o2.centralWavelength));
         }
         return bandInfos;
     }
@@ -304,10 +312,16 @@ public class ImageMetadata extends XmlMetadata {
         Stx[] statistics = new Stx[numBands];
         for (String bandId : bandIndices.keySet()) {
             int i = bandIndices.get(bandId);
+            Double gain = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_BAND_ID, bandId, Spot6Constants.PATH_IMG_BAND_GAIN, Spot6Constants.STRING_ONE));
+            Double bias = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_BAND_ID, bandId, Spot6Constants.PATH_IMG_BAND_BIAS, Spot6Constants.STRING_ZERO));
             Double min = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_HISTOGRAM_BAND, bandId, Spot6Constants.PATH_IMG_HISTOGRAM_MIN, String.valueOf(Double.NaN)));
+            min = min / gain + bias;
             Double max = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_HISTOGRAM_BAND, bandId, Spot6Constants.PATH_IMG_HISTOGRAM_MAX, String.valueOf(Double.NaN)));
+            max = max / gain + bias;
             Double mean = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_HISTOGRAM_BAND, bandId, Spot6Constants.PATH_IMG_HISTOGRAM_MEAN, String.valueOf(Double.NaN)));
+            mean = mean / gain + bias;
             Double stDev = Double.parseDouble(getAttributeSiblingValue(Spot6Constants.PATH_IMG_HISTOGRAM_BAND, bandId, Spot6Constants.PATH_IMG_HISTOGRAM_STDEV, String.valueOf(Double.NaN)));
+            stDev = stDev / gain + bias;
             String valuesList = getAttributeSiblingValue(Spot6Constants.PATH_IMG_HISTOGRAM_BAND, bandId, Spot6Constants.PATH_IMG_HISTOGRAM_VALUES, "");
             if (!(min.isNaN() || max.isNaN() || mean.isNaN() || stDev.isNaN())) {
                 try {

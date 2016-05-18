@@ -114,7 +114,7 @@ public class Spot6Constants {
     public static final String PATH_IMG_TIME_RANGE_MIDDLE = "/dimap_document/geometric_data/refined_model/time/middle";
     public static final String PATH_IMG_TIME_RANGE_END = "/dimap_document/geometric_data/refined_model/time/endt";
     public static final String PATH_IMG_BAND_ID = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_spectral_range/band_id";
-    public static final String PATH_IMG_BAND_MEASURE = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_spectral_range/measure_unit";
+    public static final String PATH_IMG_BAND_MEASURE = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_radiance/measure_unit";
     public static final String PATH_IMG_BAND_MIN = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_spectral_range/min";
     public static final String PATH_IMG_BAND_MAX = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_spectral_range/max";
     public static final String PATH_IMG_BAND_GAIN = "/dimap_document/radiometric_data/radiometric_calibration/instrument_calibration/band_measurement_list/band_radiance/gain";
