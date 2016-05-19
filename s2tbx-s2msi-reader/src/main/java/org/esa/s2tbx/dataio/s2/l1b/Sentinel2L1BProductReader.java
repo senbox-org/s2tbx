@@ -130,9 +130,11 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         String filterTileId = null;
         File productMetadataFile = null;
+        String granuleDirName = null;
 
         // we need to recover parent metadata file if we have a granule
         if (isAGranule) {
+            granuleDirName = metadataFile.getParentFile().getName();
             try {
                 Objects.requireNonNull(metadataFile.getParentFile());
                 Objects.requireNonNull(metadataFile.getParentFile().getParentFile());
@@ -167,7 +169,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         L1bMetadata metadataHeader;
 
         try {
-            metadataHeader = parseHeader(productMetadataFile, getConfig());
+            metadataHeader = parseHeader(productMetadataFile, granuleDirName, getConfig());
         } catch (JDOMException | JAXBException e) {
             SystemUtils.LOG.severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + productMetadataFile.getName());
@@ -331,7 +333,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         for (String bandIndex : bandIndexes) {
             L1BBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
             if (isMultiResolution() || tileBandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
-                Band band = addBand(product, tileBandInfo, null);
+                TileLayout thisBandTileLayout = tileBandInfo.getImageLayout();
+                TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
+
+                float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
+                float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
+
+                Dimension dimension = new Dimension(Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
+
+                Band band = addBand(product, tileBandInfo, dimension);
                 band.setDescription(tileBandInfo.getBandInformation().getDescription());
                 band.setSourceImage(mlif.createSourceImage(tileBandInfo));
             }
