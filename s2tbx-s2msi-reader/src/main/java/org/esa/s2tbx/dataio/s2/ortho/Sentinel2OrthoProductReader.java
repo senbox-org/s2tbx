@@ -69,6 +69,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static org.esa.snap.utils.DateHelper.parseDate;
+
 
 /**
  * <p>
@@ -207,7 +209,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
         product.setAutoGrouping("sun:view:quality");
 
-
+        product.setStartTime(parseDate(productCharacteristics.getProductStartTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+        product.setEndTime(parseDate(productCharacteristics.getProductStopTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         List<BandInfo> bandInfoList = new ArrayList<>();
 
@@ -224,14 +227,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 if (gf != null) {
 
                     String imgFilename = String.format("GRANULE%s%s%s%s", File.separator, tile.getId(),
-                            File.separator,
-                            bandInformation.getImageFileTemplate()
-                                    .replace("{{MISSION_ID}}", gf.missionID)
-                                    .replace("{{SITECENTRE}}", gf.siteCentre)
-                                    .replace("{{CREATIONDATE}}", gf.creationDate)
-                                    .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
-                                    .replace("{{TILENUMBER}}", gf.tileNumber)
-                                    .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
+                                                       File.separator,
+                                                       bandInformation.getImageFileTemplate()
+                                                               .replace("{{MISSION_ID}}", gf.missionID)
+                                                               .replace("{{SITECENTRE}}", gf.siteCentre)
+                                                               .replace("{{CREATIONDATE}}", gf.creationDate)
+                                                               .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
+                                                               .replace("{{TILENUMBER}}", gf.tileNumber)
+                                                               .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
 
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
@@ -305,13 +308,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             try {
                 band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
-                        band.getRasterWidth(),
-                        band.getRasterHeight(),
-                        sceneDescription.getSceneOrigin()[0],
-                        sceneDescription.getSceneOrigin()[1],
-                        pixelSize,
-                        pixelSize,
-                        0.0, 0.0));
+                                                   band.getRasterWidth(),
+                                                   band.getRasterHeight(),
+                                                   sceneDescription.getSceneOrigin()[0],
+                                                   sceneDescription.getSceneOrigin()[1],
+                                                   pixelSize,
+                                                   pixelSize,
+                                                   0.0, 0.0));
             } catch (FactoryException e) {
                 throw new IOException(e);
             } catch (TransformException e) {
@@ -366,8 +369,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             scalings[0] = product.getSceneRasterWidth() / (float) sourceImage.getWidth();
             scalings[1] = product.getSceneRasterHeight() / (float) sourceImage.getHeight();
             PlanarImage scaledImage = SourceImageScaler.scaleMultiLevelImage(targetImage, sourceImage, scalings, null, renderingHints,
-                    band.getNoDataValue(),
-                    Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+                                                                             band.getNoDataValue(),
+                                                                             Interpolation.getInstance(Interpolation.INTERP_NEAREST));
             band.setSourceImage(scaledImage);
         }
     }
@@ -382,7 +385,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     int indexValue = indexCoding.getIndexValue(indexName);
                     String description = indexCoding.getIndex(indexName).getDescription();
                     Mask mask = Mask.BandMathsType.create("scl_" + indexName.toLowerCase(), description, product.getSceneRasterWidth(), product.getSceneRasterHeight(),
-                            String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), ColorIterator.next(), 0.5);
+                                                          String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), ColorIterator.next(), 0.5);
                     product.addMask(mask);
                 }
             }
@@ -397,12 +400,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             if (!maskInfo.isPerBand()) {
                 // cloud masks are provided once and valid for all bands
                 addVectorMask(product, tileList, maskInfo, null, bandInfoList);
-            }
-            else {
+            } else {
                 // for other masks, we have one mask instance for each spectral band
                 for (BandInfo bandInfo : bandInfoList) {
                     if (bandInfo.getBandInformation() instanceof S2SpectralInformation) {
-                        addVectorMask(product, tileList, maskInfo, (S2SpectralInformation)bandInfo.getBandInformation(), bandInfoList);
+                        addVectorMask(product, tileList, maskInfo, (S2SpectralInformation) bandInfo.getBandInformation(), bandInfoList);
                     }
                 }
             }
@@ -482,8 +484,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                 maskInfo.getTransparency(),
                                 referenceBand);
             }
-        }
-        else {
+        } else {
             // This mask is specific to a band
             Band referenceBand = product.getBand(spectralInfo.getPhysicalBand());
             String bandName = spectralInfo.getPhysicalBand();
@@ -572,7 +573,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     private TiePointGrid createTiePointGrid(String name, int gridWidth, int gridHeight, float[] values) {
         double offset = 0.0;
-        double subSampling = 500.0F / ((double)getProductResolution().resolution / (double)S2SpatialResolution.R10M.resolution);
+        double subSampling = 500.0F / ((double) getProductResolution().resolution / (double) S2SpatialResolution.R10M.resolution);
         final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, offset, offset, subSampling, subSampling, values);
         tiePointGrid.setNoDataValue(Double.NaN);
         tiePointGrid.setNoDataValueUsed(true);
@@ -701,17 +702,17 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             // because the size of the image is not necessarily a multiple of the tile size
                             if (y == l1cTileLayout.numYTiles - 1 || x == l1cTileLayout.numXTiles - 1) {
                                 currentLayout = new TileLayout(l1cTileLayout.width, l1cTileLayout.height,
-                                        l1cTileLayout.width - x * l1cTileLayout.tileWidth, l1cTileLayout.height - y * l1cTileLayout.tileHeight,
-                                        l1cTileLayout.numXTiles, l1cTileLayout.numYTiles, l1cTileLayout.numResolutions);
+                                                               l1cTileLayout.width - x * l1cTileLayout.tileWidth, l1cTileLayout.height - y * l1cTileLayout.tileHeight,
+                                                               l1cTileLayout.numXTiles, l1cTileLayout.numYTiles, l1cTileLayout.numResolutions);
                             }
                             opImage = JP2TileOpImage.create(imageFile.toPath(), getCacheDir().toPath(),
-                                    0, y, x, currentLayout, getModel(), DataBuffer.TYPE_USHORT, level);
+                                                            0, y, x, currentLayout, getModel(), DataBuffer.TYPE_USHORT, level);
 
                             if (opImage != null) {
                                 opImage = TranslateDescriptor.create(opImage,
-                                        (float) (internalJp2TileRectangle.x),
-                                        (float) (internalJp2TileRectangle.y),
-                                        Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                                                                     (float) (internalJp2TileRectangle.x),
+                                                                     (float) (internalJp2TileRectangle.y),
+                                                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
                             }
                         } catch (IOException ex) {
                             opImage = ConstantDescriptor.create((float) internalJp2TileRectangle.width, (float) internalJp2TileRectangle.height, new Number[]{0}, null);
@@ -821,9 +822,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 Rectangle scaledRectangle = DefaultMultiLevelSource.getLevelImageBounds(tileRectangle, getModel().getScale(level));
                 // Apply tile translation
                 opImage = TranslateDescriptor.create(opImage,
-                        (float) scaledRectangle.x,
-                        (float) scaledRectangle.y,
-                        Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                                                     (float) scaledRectangle.x,
+                                                     (float) scaledRectangle.y,
+                                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
 
                 logger.fine(String.format("Translate descriptor: %s", ToStringBuilder.reflectionToString(opImage)));
                 logger.log(Level.parse(S2Config.LOG_SCENE), String.format("opImage added for level %d at (%d,%d) with size (%d,%d)%n", level, opImage.getMinX(), opImage.getMinY(), opImage.getWidth(), opImage.getHeight()));
@@ -864,8 +865,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     getModel().getScale(level));
             // Crop accordingly
             RenderedOp croppedMosaic = CropDescriptor.create(mosaicOp,
-                    0.0f, 0.0f, (float) rectangle.width, (float) rectangle.height,
-                    new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                                             0.0f, 0.0f, (float) rectangle.width, (float) rectangle.height,
+                                                             new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             return croppedMosaic;
         }

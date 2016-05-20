@@ -447,6 +447,8 @@ public abstract class S2Metadata {
     public static class ProductCharacteristics {
         private String spacecraft;
         private String datasetProductionDate;
+        private String productStartTime;
+        private String productStopTime;
         private String processingLevel;
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
@@ -465,6 +467,22 @@ public abstract class S2Metadata {
 
         public void setDatasetProductionDate(String datasetProductionDate) {
             this.datasetProductionDate = datasetProductionDate;
+        }
+
+        public String getProductStartTime() {
+            return productStartTime;
+        }
+
+        public void setProductStartTime(String productStartTime) {
+            this.productStartTime = productStartTime;
+        }
+
+        public String getProductStopTime() {
+            return productStopTime;
+        }
+
+        public void setProductStopTime(String productStopTime) {
+            this.productStopTime = productStopTime;
         }
 
         public String getProcessingLevel() {

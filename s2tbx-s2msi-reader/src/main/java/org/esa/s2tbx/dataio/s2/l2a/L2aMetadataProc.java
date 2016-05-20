@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
+import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
@@ -80,16 +81,16 @@ public class L2aMetadataProc extends S2MetadataProc {
     private static S2BandInformation makeSCLInformation(S2SpatialResolution resolution) {
         List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
         /* Using the same colors as in the L2A-PDD */
-        indexList.add(S2IndexBandInformation.makeIndex(0,  new Color(  0,   0,   0), "NODATA", "No data"));
-        indexList.add(S2IndexBandInformation.makeIndex(1,  new Color(255,   0,   0), "SATURATED_DEFECTIVE", "Saturated or defective"));
-        indexList.add(S2IndexBandInformation.makeIndex(2,  new Color( 46,  46,  46), "DARK_FEATURE_SHADOW","Dark feature shadow"));
-        indexList.add(S2IndexBandInformation.makeIndex(3,  new Color(100,  50,   0), "CLOUD_SHADOW", "Cloud shadow"));
-        indexList.add(S2IndexBandInformation.makeIndex(4,  new Color(  0, 128,   0), "VEGETATION", "Vegetation"));
-        indexList.add(S2IndexBandInformation.makeIndex(5,  new Color(255, 230,  90), "BARE_SOIL_DESERT", "Bare soil / Desert"));
-        indexList.add(S2IndexBandInformation.makeIndex(6,  new Color(  0,   0, 255), "WATER", "Water"));
-        indexList.add(S2IndexBandInformation.makeIndex(7,  new Color(129, 129, 129), "CLOUD_LOW_PROBA", "Cloud (low probability)"));
-        indexList.add(S2IndexBandInformation.makeIndex(8,  new Color(193, 193, 193), "CLOUD_MEDIUM_PROBA", "Cloud (medium probability)"));
-        indexList.add(S2IndexBandInformation.makeIndex(9,  new Color(255, 255, 255), "CLOUD_HIGH_PROBA", "Cloud (high probability)"));
+        indexList.add(S2IndexBandInformation.makeIndex(0, new Color(0, 0, 0), "NODATA", "No data"));
+        indexList.add(S2IndexBandInformation.makeIndex(1, new Color(255, 0, 0), "SATURATED_DEFECTIVE", "Saturated or defective"));
+        indexList.add(S2IndexBandInformation.makeIndex(2, new Color(46, 46, 46), "DARK_FEATURE_SHADOW", "Dark feature shadow"));
+        indexList.add(S2IndexBandInformation.makeIndex(3, new Color(100, 50, 0), "CLOUD_SHADOW", "Cloud shadow"));
+        indexList.add(S2IndexBandInformation.makeIndex(4, new Color(0, 128, 0), "VEGETATION", "Vegetation"));
+        indexList.add(S2IndexBandInformation.makeIndex(5, new Color(255, 230, 90), "BARE_SOIL_DESERT", "Bare soil / Desert"));
+        indexList.add(S2IndexBandInformation.makeIndex(6, new Color(0, 0, 255), "WATER", "Water"));
+        indexList.add(S2IndexBandInformation.makeIndex(7, new Color(129, 129, 129), "CLOUD_LOW_PROBA", "Cloud (low probability)"));
+        indexList.add(S2IndexBandInformation.makeIndex(8, new Color(193, 193, 193), "CLOUD_MEDIUM_PROBA", "Cloud (medium probability)"));
+        indexList.add(S2IndexBandInformation.makeIndex(9, new Color(255, 255, 255), "CLOUD_HIGH_PROBA", "Cloud (high probability)"));
         indexList.add(S2IndexBandInformation.makeIndex(10, new Color(100, 200, 255), "THIN_CIRRUS", "Thin cirrus"));
         indexList.add(S2IndexBandInformation.makeIndex(11, new Color(255, 150, 255), "SNOW_ICE", "Snow or Ice"));
         return new S2IndexBandInformation("quality_scene_classification", resolution, makeSCLFileTemplate(), "Scene classification", "", indexList);
@@ -105,17 +106,17 @@ public class L2aMetadataProc extends S2MetadataProc {
         RESOLUTION : 10 | 20 | 60
          */
         return String.format("IMG_DATA%sR{{RESOLUTION}}m%s{{MISSION_ID}}_USER_MSI_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_%s_{{RESOLUTION}}m.jp2",
-                File.separator, File.separator, bandFileId);
+                             File.separator, File.separator, bandFileId);
     }
 
     private static String makeAOTFileTemplate() {
         return String.format("IMG_DATA%sR{{RESOLUTION}}m%s{{MISSION_ID}}_USER_AOT_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2",
-                File.separator, File.separator);
+                             File.separator, File.separator);
     }
 
     private static String makeWVPFileTemplate() {
         return String.format("IMG_DATA%sR{{RESOLUTION}}m%s{{MISSION_ID}}_USER_WVP_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2",
-                File.separator, File.separator);
+                             File.separator, File.separator);
     }
 
     private static String makeSCLFileTemplate() {
@@ -136,8 +137,11 @@ public class L2aMetadataProc extends S2MetadataProc {
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString());
         characteristics.setProcessingLevel(product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value());
 
+        characteristics.setProductStartTime(((ElementNSImpl) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
+        characteristics.setProductStopTime(((ElementNSImpl) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
+
         List<S2BandInformation> aInfo = new ArrayList<>();
-        switch(resolution) {
+        switch (resolution) {
             case R10M:
                 aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M));
