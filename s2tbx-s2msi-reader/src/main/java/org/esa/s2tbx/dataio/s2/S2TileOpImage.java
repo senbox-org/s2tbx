@@ -226,7 +226,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
         if (S2Config.OPJ_DECOMPRESSOR_EXE != null) {
             if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
-                String inputFileName = Utils.GetIterativeShortPathName(imageFile.getPath());
+                String inputFileName = Utils.GetIterativeShortPathNameW(imageFile.getPath());
                 String outputFileName = outputFile.getPath();
 
                 if (inputFileName.length() == 0) {

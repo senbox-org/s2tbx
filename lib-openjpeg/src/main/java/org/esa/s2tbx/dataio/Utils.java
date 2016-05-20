@@ -34,7 +34,8 @@ public class Utils {
         return sw.toString();
     }
 
-    public static String GetShortPathName(String path) {
+    public static String GetShortPathNameW(String path) {
+
         if (!(new File(path).exists())) {
             return "";
         }
@@ -48,13 +49,12 @@ public class Utils {
         return Native.toString(shortt);
     }
 
-    public static String GetIterativeShortPathName(String path) {
+    public static String GetIterativeShortPathNameW(String path) {
         if (!(new File(path).exists())) {
             return "";
         }
 
-
-        String firstTry = GetShortPathName(path);
+        String firstTry = GetShortPathNameW(path);
         if (firstTry.length() != 0) {
             return firstTry;
         }
@@ -63,10 +63,10 @@ public class Utils {
         String workingPath = path;
         while (lenght == 0) {
             workingPath = new File(workingPath).getParent();
-            lenght = GetShortPathName(workingPath).length();
+            lenght = GetShortPathNameW(workingPath).length();
         }
 
-        String[] shortenedFragments = GetShortPathName(workingPath).split(Pattern.quote(File.separator));
+        String[] shortenedFragments = GetShortPathNameW(workingPath).split(Pattern.quote(File.separator));
         String[] fragments = path.split(Pattern.quote(File.separator));
         // if the path did not split, we didn't have the system separator but '/'
         if (fragments.length == 1) {
@@ -76,20 +76,20 @@ public class Utils {
         System.arraycopy(shortenedFragments, 0, fragments, 0, shortenedFragments.length);
 
         String complete = String.join(File.separator, (CharSequence[]) fragments);
-        String shortComplete = GetShortPathName(complete);
+        String shortComplete = GetShortPathNameW(complete);
 
         if (shortComplete.length() != 0) {
             return shortComplete;
         }
 
-        return GetIterativeShortPathName(complete);
+        return GetIterativeShortPathNameW(complete);
     }
 
     private interface CKernel32 extends Library {
 
         CKernel32 INSTANCE = (CKernel32) Native.loadLibrary("kernel32", CKernel32.class, W32APIOptions.UNICODE_OPTIONS);
 
-        int GetShortPathNameW(String LongName, char[] ShortName, int BufferCount); //Unicode version of GetShortPathName
+        int GetShortPathNameW(String LongName, char[] ShortName, int BufferCount); //Unicode version of GetShortPathNameW
     }
 
 }

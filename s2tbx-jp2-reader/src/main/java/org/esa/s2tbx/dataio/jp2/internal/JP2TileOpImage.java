@@ -49,7 +49,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static org.esa.s2tbx.dataio.Utils.GetShortPathName;
+import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
 
 /**
  * A JAI operator for handling JP2 tiles.
@@ -188,7 +188,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         if (!Files.exists(tileFile)) {
             final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getOpjDecompress());
             final Map<String, String> params = new HashMap<String, String>() {{
-                put("-i", GetShortPathName(imageFile.toString()));
+                put("-i", GetIterativeShortPathNameW(imageFile.toString()));
                 put("-r", String.valueOf(level));
                 put("-l", "20");
             }};
