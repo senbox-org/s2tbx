@@ -25,10 +25,22 @@ import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Base class for product reader plugins which follow the logic of checking consistency
@@ -39,6 +51,7 @@ import java.util.logging.Logger;
  */
 public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
 
+    private static Map<Object, String[]> cachedFiles = new WeakHashMap<>();
     protected final ProductContentEnforcer enforcer;
     protected int folderDepth;
 
@@ -46,8 +59,12 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
      * Default constructor
      */
     public BaseProductReaderPlugIn() {
-        folderDepth = 4;
-        enforcer = ProductContentEnforcer.create(getMinimalPatternList(), getExclusionPatternList());
+        folderDepth = 1;
+        String[] patternList = getMinimalPatternList();
+        for (String pattern : patternList) {
+            folderDepth = Math.max(folderDepth, pattern.split("\\[/").length - 1);
+        }
+        enforcer = ProductContentEnforcer.create(patternList, getExclusionPatternList());
         registerRGBProfile();
     }
 
@@ -58,9 +75,22 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
         try {
             virtualDir = getInput(input);
             if (virtualDir != null) {
-                String[] allFiles = virtualDir.listAll();
-                if (enforcer.isConsistent(allFiles)) {
-                    retVal = DecodeQualification.INTENDED;
+                String[] files = null;
+                if (virtualDir.isCompressed()) {
+                    if (!cachedFiles.containsKey(input)) {
+                        cachedFiles.put(input, virtualDir.listAll());
+                    }
+                    files = cachedFiles.get(input);
+                    if (enforcer.isConsistent(files)) {
+                        retVal = DecodeQualification.INTENDED;
+                    }
+                } else {
+                    virtualDir.setFolderDepth(folderDepth);
+                    Pattern[] patternList = enforcer.getMinimalFilePatternList();
+                    files = virtualDir.listAll(patternList);
+                    if (files.length >= patternList.length && enforcer.isConsistent(files)) {
+                        retVal = DecodeQualification.INTENDED;
+                    }
                 }
             }
         } catch (IOException e) {

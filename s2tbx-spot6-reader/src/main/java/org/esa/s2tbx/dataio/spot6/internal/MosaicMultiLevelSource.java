@@ -21,16 +21,19 @@ import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.util.ImageUtils;
 
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,9 +61,10 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
 
     public MosaicMultiLevelSource(Band[][] sourceBands, int imageWidth, int imageHeight,
                                   int tileWidth, int tileHeight, int numTilesX, int numTilesY, int levels, int dataType,
-                                  GeoCoding geoCoding) {
+                                  AffineTransform transform) {
         super(new DefaultMultiLevelModel(levels,
-                                         Product.findImageToModelTransform(geoCoding),
+                                         //Product.findImageToModelTransform(geoCoding),
+                                         transform,
                                          imageWidth, imageHeight));
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
@@ -112,7 +116,7 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
             return null;
         }
 
-        if (imageLayout == null) {
+        //if (imageLayout == null) {
             imageLayout = new ImageLayout();
             imageLayout.setMinX(0);
             imageLayout.setMinY(0);
@@ -120,9 +124,9 @@ public class MosaicMultiLevelSource extends AbstractMultiLevelSource {
             imageLayout.setTileHeight(JAI.getDefaultTileSize().height);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
-            imageLayout.setSampleModel(ImageUtils.createSingleBandedSampleModel(dataType, imageWidth, imageHeight));
+            //imageLayout.setSampleModel(ImageUtils.createSingleBandedSampleModel(dataType, imageWidth, imageHeight));
             //imageLayout.setColorModel(ImageUtils.create8BitGreyscaleColorModel());
-        }
+        //}
 
         RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                       MosaicDescriptor.MOSAIC_TYPE_OVERLAY,

@@ -22,7 +22,15 @@
 
 package nitf.imageio;
 
-import nitf.*;
+import nitf.DownSampler;
+import nitf.IOHandle;
+import nitf.ImageSubheader;
+import nitf.NITFException;
+import nitf.NITFResourceManager;
+import nitf.PixelSkipDownSampler;
+import nitf.Reader;
+import nitf.Record;
+import nitf.SubWindow;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -36,15 +44,26 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import java.awt.*;
 import java.awt.color.ColorSpace;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferDouble;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class NITFReader extends ImageReader {
     private static final Log log = LogFactory.getLog(NITFReader.class);

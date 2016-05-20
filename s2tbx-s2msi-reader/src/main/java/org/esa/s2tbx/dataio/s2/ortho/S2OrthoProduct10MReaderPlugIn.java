@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.s2.ortho;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
+import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.util.SystemUtils;
 
@@ -52,5 +53,25 @@ public abstract class S2OrthoProduct10MReaderPlugIn extends S2OrthoProductReader
     @Override
     public String getDescription(Locale locale) {
         return String.format("Sentinel-2 MSI %s - Resampled at 10m resolution - %s", getLevel(), epsgToDisplayName(getEPSG()));
+    }
+
+    //This method is overriden to make the specific resolution checking in level 2 products
+    @Override
+    public DecodeQualification getDecodeQualification(Object input) {
+
+        //call to S2OrthoProductReaderPlugIn getDecodeQualification(Object input)
+        DecodeQualification decodeQualification = super.getDecodeQualification(input);
+
+        //If decodeQualification is already unable or level is not level 2, the method return the value of parent's method
+        if (decodeQualification == DecodeQualification.UNABLE || !(getLevel().equals("L2A")))
+            return decodeQualification;
+
+        //If the level is 2, the plugin is able if it exists the folder with the corresponding resolution
+        if (hasL2ResolutionSpecificFolder(input, "R10m"))
+            decodeQualification = DecodeQualification.INTENDED;
+        else
+            decodeQualification = DecodeQualification.UNABLE;
+
+        return decodeQualification;
     }
 }

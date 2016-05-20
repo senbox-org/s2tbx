@@ -58,7 +58,7 @@ public class RapidEyeL3ReaderTest {
     public void testReadProductNodes() {
         Date startDate = Calendar.getInstance().getTime();
         //Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "Eritrea/1234567890_metadata.xml");
+        File file = TestUtil.getTestFile(productsFolder + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "100");
         try {
@@ -81,7 +81,7 @@ public class RapidEyeL3ReaderTest {
     public void testReadBandRasterData() {
         Date startDate = Calendar.getInstance().getTime();
         //Product product = new Product("name", "desc", 100, 200);
-        File file = TestUtil.getTestFile(productsFolder + "Eritrea/1234567890_metadata.xml");
+        File file = TestUtil.getTestFile(productsFolder + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");
         //File rasterFile = TestUtil.getTestFile(productsFolder + "mediumImage.tif");
         System.setProperty("snap.dataio.reader.tileWidth", "100");
         System.setProperty("snap.dataio.reader.tileHeight", "200");
@@ -107,13 +107,13 @@ public class RapidEyeL3ReaderTest {
     @Test
     public void testGetProductComponentsOnFileInput() {
         //Product product = new Product("name", "desc", 100, 100);
-        File file = TestUtil.getTestFile(productsFolder + "Eritrea/1234567890_metadata.xml");
+        File file = TestUtil.getTestFile(productsFolder + "Eritrea/13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
             TreeNode<File> components = reader.getProductComponents();
             assertEquals(2, components.getChildren().length);
-            assertEquals("1234567890_metadata.xml", components.getChildren()[0].getId());
-            assertEquals("13N041E-R1C2_2012_RE-3M_1234567890.tif", components.getChildren()[1].getId());
+            assertEquals("13N041E-R1C2_2012_RE1_3a-3M_1234567890_metadata.xml", components.getChildren()[0].getId());
+            assertEquals("13N041E-R1C2_2012_RE1_3a-3M_1234567890.tif", components.getChildren()[1].getId());
         } catch (IOException e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);

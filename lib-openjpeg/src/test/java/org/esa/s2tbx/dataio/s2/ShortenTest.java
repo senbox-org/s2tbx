@@ -49,7 +49,7 @@ public class ShortenTest {
         File directory = new File(mediumPath);
 
         if (directory.mkdirs()) {
-            String shortPath = Utils.GetShortPathName(mediumPath);
+            String shortPath = Utils.GetShortPathNameW(mediumPath);
             Assert.assertEquals("C:\\5A3AA7~1\\S2A_OP~1", shortPath);
             FileUtils.deleteTree(directory.getParentFile());
         }
@@ -66,14 +66,14 @@ public class ShortenTest {
         String mediumPath = "C:\\5A3AA7c3-475c-42a5-9a25-94d6a93c67b7\\S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.JP2";
         File mediumFile = new File(mediumPath);
         if (mediumFile.getParentFile().mkdir() && mediumFile.createNewFile()) {
-            String shortPath = Utils.GetShortPathName(mediumPath);
+            String shortPath = Utils.GetShortPathNameW(mediumPath);
             Assert.assertEquals("C:\\5A3AA7~1\\S2A_OP~1.JP2", shortPath);
             FileUtils.deleteTree(mediumFile.getParentFile());
         }
     }
 
     /**
-     * Test GetIterativeShortPathName returns "" when the path does not exist.
+     * Test GetIterativeShortPathNameW returns "" when the path does not exist.
      * It also tests we cleaned well the files created
      *
      * @throws Exception
@@ -81,7 +81,7 @@ public class ShortenTest {
     @Test
     public void testVeryLongFileName2() throws Exception {
         String nonExistingPath = "C:\\5a3aa7c3-475c-42a5-9a25-94d6a93c67b7";
-        String shortPath = Utils.GetIterativeShortPathName(nonExistingPath);
+        String shortPath = Utils.GetIterativeShortPathNameW(nonExistingPath);
         Assert.assertEquals("", shortPath);
     }
 }

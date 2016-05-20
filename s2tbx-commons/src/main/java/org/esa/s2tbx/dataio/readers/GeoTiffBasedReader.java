@@ -43,8 +43,12 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -241,7 +245,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
             M firstMetadata;
             String metadataProfile;
-            if (rasterMetadataList == null || (firstMetadata = rasterMetadataList.get(0)) == null || ((metadataProfile = firstMetadata.getMetadataProfile()) == null || !metadataProfile.startsWith(getMetadataProfile()))) {
+            if (rasterMetadataList == null || rasterMetadataList.size() == 0 || (firstMetadata = rasterMetadataList.get(0)) == null || ((metadataProfile = firstMetadata.getMetadataProfile()) == null || !metadataProfile.startsWith(getMetadataProfile()))) {
                 IOException ex = new IOException("The selected product is not readable by this reader. Please use the appropriate filter");
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
                 throw ex;
@@ -258,7 +262,9 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
 
             product.setModified(false);
         } else {
-            product.setModified(false);
+            if (product != null) {
+                product.setModified(false);
+            }
         }
         return  product;
     }

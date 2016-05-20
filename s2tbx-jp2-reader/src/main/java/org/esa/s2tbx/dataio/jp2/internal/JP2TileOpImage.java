@@ -36,7 +36,11 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
 import java.awt.*;
-import java.awt.image.*;
+import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +48,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
 
 /**
  * A JAI operator for handling JP2 tiles.
@@ -182,12 +188,14 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         if (!Files.exists(tileFile)) {
             final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getOpjDecompress());
             final Map<String, String> params = new HashMap<String, String>() {{
-                put("-i", imageFile.toString());
+                put("-i", GetIterativeShortPathNameW(imageFile.toString()));
                 put("-r", String.valueOf(level));
                 put("-l", "20");
             }};
             params.put("-o", tileFile.toString());
             params.put("-t", String.valueOf(tileIndex));
+            params.put("-p", String.valueOf(DataBuffer.getDataTypeSize(this.getSampleModel().getDataType())));
+
             if (decompress.execute(params) != 0) {
                 logger.severe(decompress.getLastError());
                 tileFile = null;

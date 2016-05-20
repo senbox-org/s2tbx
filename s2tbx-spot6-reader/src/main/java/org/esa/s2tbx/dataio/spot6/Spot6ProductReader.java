@@ -3,29 +3,53 @@ package org.esa.s2tbx.dataio.spot6;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.readers.ColorIterator;
+import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.s2tbx.dataio.spot6.dimap.ImageMetadata;
+import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
+import org.esa.s2tbx.dataio.spot6.dimap.VolumeComponent;
 import org.esa.s2tbx.dataio.spot6.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.spot6.internal.MosaicMultiLevelSource;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.Mask;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.ProductNodeGroup;
+import org.esa.snap.core.datamodel.Stx;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.util.TreeNode;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.awt.geom.Point2D;
+import java.awt.*;
 import java.awt.image.DataBuffer;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Created by kraftek on 12/7/2015.
+ * Reader for SPOT 6/7 products.
+ *
+ * @author Cosmin Cara
  */
 public class Spot6ProductReader extends AbstractProductReader {
 
     private Spot6ProductReaderPlugin plugIn;
+    private VirtualDirEx productDirectory;
+    private VolumeMetadata metadata;
     private final static Map<Integer, Integer> typeMap = new HashMap<Integer, Integer>() {{
         put(ProductData.TYPE_UINT8, DataBuffer.TYPE_BYTE);
         put(ProductData.TYPE_INT8, DataBuffer.TYPE_BYTE);
@@ -44,30 +68,74 @@ public class Spot6ProductReader extends AbstractProductReader {
     }
 
     @Override
+    public TreeNode<File> getProductComponents() {
+        if (productDirectory.isCompressed()) {
+            return super.getProductComponents();
+        } else {
+            TreeNode<File> result = super.getProductComponents();
+            //if the volume metadata file is present, but it is not in the list, add it!
+            try {
+                File volumeMetadataPhysicalFile = productDirectory.getFile(Spot6Constants.ROOT_METADATA);
+                if (metadata != null) {
+                    addProductComponentIfNotPresent(Spot6Constants.ROOT_METADATA, volumeMetadataPhysicalFile, result);
+                    for (VolumeMetadata component : metadata.getVolumeMetadataList()) {
+                        try {
+                            File fullPathComp = productDirectory.getFile(component.getPath());
+                            addProductComponentIfNotPresent(component.getFileName(), fullPathComp, result);
+                            for (VolumeComponent vComponent: component.getComponents()){
+                                if(vComponent.getType().equals(Spot6Constants.METADATA_FORMAT)){
+                                    File fullPathVComp = productDirectory.getFile(fullPathComp.getParent() + File.separator + vComponent.getPath().toString());
+                                    addProductComponentIfNotPresent(vComponent.getPath().getFileName().toString(), fullPathVComp, result);
+                                    if(vComponent.getComponentMetadata() != null && vComponent.getComponentMetadata() instanceof ImageMetadata){
+                                        ImageMetadata image = (ImageMetadata)vComponent.getComponentMetadata();
+                                        for (String raster : image.getRasterFileNames()){
+                                            addProductComponentIfNotPresent(raster, productDirectory.getFile(fullPathVComp.getParent() + File.separator + raster), result);
+                                        }
+                                        for (ImageMetadata.MaskInfo mask : image.getMasks()){
+                                            addProductComponentIfNotPresent(mask.name, mask.path.toFile(), result);
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (IOException ex) {
+                            logger.warning(ex.getMessage());
+                        }
+                    }
+                }
+            } catch (IOException ex) {
+                logger.warning(ex.getMessage());
+            }
+
+            return result;
+        }
+    }
+
+    @Override
     protected Product readProductNodesImpl() throws IOException {
-        VirtualDirEx productDirectory = plugIn.getInput(getInput());
-        VolumeMetadata metadata = VolumeMetadata.create(plugIn.getFileInput(getInput()).toPath());
+        productDirectory = plugIn.getInput(getInput());
+        metadata = VolumeMetadata.create(productDirectory.getFile(Spot6Constants.ROOT_METADATA).toPath());
         Product product = null;
         if (metadata != null) {
             List<ImageMetadata> imageMetadataList = metadata.getImageMetadataList();
             if (imageMetadataList.size() == 0) {
                 throw new IOException("No raster found");
             }
-            ImageMetadata imageMetadata = imageMetadataList.get(0);
-            int width = imageMetadata.getRasterWidth();
-            int height = imageMetadata.getRasterHeight();
-            product = new Product(imageMetadata.getProductName(),
-                                  imageMetadata.getFormatName(),
+            int width = metadata.getSceneWidth();
+            int height = metadata.getSceneHeight();
+            product = new Product(metadata.getInternalReference(),
+                                  metadata.getProductType(),
                                   width, height);
-            product.getMetadataRoot().addElement(imageMetadata.getRootElement());
-            product.setStartTime(imageMetadata.getProductStartTime());
-            product.setEndTime(imageMetadata.getProductEndTime());
-            product.setDescription(imageMetadata.getProductDescription());
-            ImageMetadata.InsertionPoint origin = imageMetadata.getInsertPoint();
-            if (imageMetadata.hasInsertPoint()) {
-                String projectionCode = imageMetadata.getProjectionCode();
+            product.setFileLocation(new File(metadata.getPath()));
+            ImageMetadata maxResImageMetadata = metadata.getMaxResolutionImage();
+            product.setStartTime(maxResImageMetadata.getProductStartTime());
+            product.setEndTime(maxResImageMetadata.getProductEndTime());
+            product.setDescription(maxResImageMetadata.getProductDescription());
+            //product.setNumResolutionsMax(imageMetadataList.size());
+            ImageMetadata.InsertionPoint origin = maxResImageMetadata.getInsertPoint();
+            if (maxResImageMetadata.hasInsertPoint()) {
+                String crsCode = maxResImageMetadata.getCRSCode();
                 try {
-                    GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(projectionCode),
+                    GeoCoding geoCoding = new CrsGeoCoding(CRS.decode(crsCode),
                                                             width, height,
                                                             origin.x, origin.y,
                                                             origin.stepX, origin.stepY);
@@ -76,55 +144,86 @@ public class Spot6ProductReader extends AbstractProductReader {
                     logger.warning(e.getMessage());
                 }
             } else {
-                initTiePointGeoCoding(imageMetadata, product);
+                initProductTiePointGeoCoding(maxResImageMetadata, product);
             }
+            boolean shouldGroup = imageMetadataList.size() > 1;
+            String grouping = "";
+            for (ImageMetadata imageMetadata : imageMetadataList) {
+                product.getMetadataRoot().addElement(imageMetadata.getRootElement());
+                int numBands = imageMetadata.getNumBands();
+                ImageMetadata.BandInfo[] bandInfos = imageMetadata.getBandsInformation();
 
-            int numBands = imageMetadata.getNumBands();
-            ImageMetadata.BandInfo[] bandInfos = imageMetadata.getBandsInformation();
-            int pixelDataType = imageMetadata.getPixelDataType();
-            int tileRows = imageMetadata.getTileRowsCount();
-            int tileCols = imageMetadata.getTileColsCount();
-            int tileWidth = imageMetadata.getTileWidth();
-            int tileHeight = imageMetadata.getTileHeight();
-            int noDataValue = imageMetadata.getNoDataValue();
+                int pixelDataType = imageMetadata.getPixelDataType();
+                int tileRows = imageMetadata.getTileRowsCount();
+                int tileCols = imageMetadata.getTileColsCount();
+                int tileWidth = imageMetadata.getTileWidth();
+                int tileHeight = imageMetadata.getTileHeight();
+                int noDataValue = imageMetadata.getNoDataValue();
+                int bandWidth = imageMetadata.getRasterWidth();
+                int bandHeight = imageMetadata.getRasterHeight();
+                float factorX = (float) width / bandWidth;
+                float factorY = (float) height / bandHeight;
 
-            Float[] solarIrradiances = imageMetadata.getSolarIrradiances();
-            double[][] scalingAndOffsets = imageMetadata.getScalingAndOffsets();
-            //Stx[] bandsStatistics = imageMetadata.getBandsStatistics();
-            Map<String, int[]> tileInfo = imageMetadata.getRasterTileInfo();
-            Product[][] tiles = new Product[tileCols][tileRows];
-            for (String rasterFile : tileInfo.keySet()) {
-                int[] coords = tileInfo.get(rasterFile);
-                tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
-            }
-            for (int i = 0; i < numBands; i++) {
-                Band virtualBand = new Band(bandInfos[i].getId(), pixelDataType, width, height);
-                virtualBand.setSpectralBandIndex(i);
-                virtualBand.setSolarFlux(solarIrradiances[i]);
-                virtualBand.setUnit(bandInfos[i].getUnit());
-                virtualBand.setNoDataValue(noDataValue);
-                virtualBand.setNoDataValueUsed(true);
-                virtualBand.setScalingFactor(scalingAndOffsets[i][0]/bandInfos[i].getGain());
-                virtualBand.setScalingOffset(scalingAndOffsets[i][1]*bandInfos[i].getBias());
-                //virtualBand.setStx(bandsStatistics[i]);
-                int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
-                Band[][] srcBands = new Band[tileRows][tileCols];
-                for (int x = 0; x < tileRows; x++) {
-                    for (int y = 0; y < tileCols; y++) {
-                        srcBands[x][y] = tiles[x][y].getBandAt(i);
-                    }
+                Float[] solarIrradiances = imageMetadata.getSolarIrradiances();
+                double[][] scalingAndOffsets = imageMetadata.getScalingAndOffsets();
+                Map<String, int[]> tileInfo = imageMetadata.getRasterTileInfo();
+                Product[][] tiles = new Product[tileCols][tileRows];
+                for (String rasterFile : tileInfo.keySet()) {
+                    int[] coords = tileInfo.get(rasterFile);
+                    tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
                 }
-                GeoCoding geoCoding = product.getSceneGeoCoding();
-                MosaicMultiLevelSource bandSource =
-                        new MosaicMultiLevelSource(srcBands,
-                                                   width, height,
-                                                   tileWidth, tileHeight, tileRows, tileCols,
-                                                   levels, typeMap.get(pixelDataType), geoCoding);
-                virtualBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
-                product.addBand(virtualBand);
+                int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
+                if (levels > product.getNumResolutionsMax()) {
+                    product.setNumResolutionsMax(levels);
+                }
+                final Stx[] statistics = imageMetadata.getBandsStatistics();
+                for (int i = 0; i < numBands; i++) {
+                    Band targetBand = new Band(bandInfos[i].getId(), pixelDataType,
+                                                Math.round(width / factorX),
+                                                Math.round(height / factorY));
+                    targetBand.setSpectralBandIndex(numBands > 1 ? i : -1);
+                    targetBand.setSpectralWavelength(bandInfos[i].getCentralWavelength());
+                    targetBand.setSpectralBandwidth(bandInfos[i].getBandwidth());
+                    targetBand.setSolarFlux(solarIrradiances[i]);
+                    targetBand.setUnit(bandInfos[i].getUnit());
+                    targetBand.setNoDataValue(noDataValue);
+                    targetBand.setNoDataValueUsed(true);
+                    targetBand.setScalingFactor(scalingAndOffsets[i][0] / bandInfos[i].getGain());
+                    targetBand.setScalingOffset(scalingAndOffsets[i][1] * bandInfos[i].getBias());
+                    initBandGeoCoding(imageMetadata, targetBand, width, height);
+                    Band[][] srcBands = new Band[tileRows][tileCols];
+                    for (int x = 0; x < tileRows; x++) {
+                        for (int y = 0; y < tileCols; y++) {
+                            srcBands[x][y] = tiles[x][y].getBandAt(bandInfos[i].getIndex());
+                        }
+                    }
 
+                    MosaicMultiLevelSource bandSource =
+                            new MosaicMultiLevelSource(srcBands,
+                                    bandWidth, bandHeight,
+                                    tileWidth, tileHeight, tileRows, tileCols,
+                                    levels, typeMap.get(pixelDataType),
+                                    imageMetadata.isGeocoded() ?
+                                            targetBand.getGeoCoding() != null ?
+                                                    Product.findImageToModelTransform(targetBand.getGeoCoding()) :
+                                                    Product.findImageToModelTransform(product.getSceneGeoCoding()) :
+                                            targetBand.getImageToModelTransform());
+                    targetBand.setSourceImage(new DefaultMultiLevelImage(bandSource));
+                    if (statistics[i] != null) {
+                        //targetBand.setStx(statistics[i]);
+                        /*targetBand.setImageInfo(
+                                new ImageInfo(
+                                        new ColorPaletteDef(new ColorPaletteDef.Point[] {
+                                                new ColorPaletteDef.Point(statistics[i].getMinimum(), Color.BLACK),
+                                                new ColorPaletteDef.Point(statistics[i].getMean(), Color.GRAY),
+                                                new ColorPaletteDef.Point(statistics[i].getMaximum(), Color.WHITE)
+                                        })));//, (int) Math.pow(2, imageMetadata.getPixelNBits()))));*/
+                    }
+                    product.addBand(targetBand);
+                }
+                addMasks(product, imageMetadata);
+                addGMLMasks(product, imageMetadata);
             }
-            //product.setPreferredTileSize(2048, 2048);
             product.setModified(false);
         }
 
@@ -141,66 +240,106 @@ public class Spot6ProductReader extends AbstractProductReader {
                                           ProductData destBuffer, ProgressMonitor pm) throws IOException {
     }
 
-    private void initTiePointGeoCoding(ImageMetadata imageMetadata, Product product) {
+    private void initProductTiePointGeoCoding(ImageMetadata imageMetadata, Product product) {
         float[][] cornerLonsLats = imageMetadata.getCornerLonsLats();
-        int width = product.getSceneRasterWidth();
-        int height = product.getSceneRasterHeight();
-        TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, width, height, cornerLonsLats[1]);
+        int sceneWidth = product.getSceneRasterWidth();
+        int sceneHeight = product.getSceneRasterHeight();
+        TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, sceneWidth , sceneHeight, cornerLonsLats[1]);
         product.addTiePointGrid(latGrid);
-        TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, width, height, cornerLonsLats[0]);
+        TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, sceneWidth, sceneHeight, cornerLonsLats[0]);
         product.addTiePointGrid(lonGrid);
         product.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
     }
 
-    private ProductData createProductData(int dataType, int size) {
-        ProductData buffer;
-        switch (dataType) {
-            case ProductData.TYPE_UINT8:
-                buffer = ProductData.createUnsignedInstance(new byte[size]);
-                break;
-            case ProductData.TYPE_INT8:
-                buffer = ProductData.createInstance(new byte[size]);
-                break;
-            case ProductData.TYPE_UINT16:
-                buffer = ProductData.createUnsignedInstance(new short[size]);
-                break;
-            case ProductData.TYPE_INT16:
-                buffer = ProductData.createInstance(new short[size]);
-                break;
-            case ProductData.TYPE_INT32:
-                buffer = ProductData.createInstance(new int[size]);
-                break;
-            case ProductData.TYPE_UINT32:
-                buffer = ProductData.createUnsignedInstance(new int[size]);
-                break;
-            case ProductData.TYPE_FLOAT32:
-                buffer = ProductData.createInstance(new float[size]);
-                break;
-            default:
-                buffer = ProductData.createUnsignedInstance(new byte[size]);
-                break;
-        }
-        return buffer;
-    }
-
-    private Point2D.Float[][] getTileOrigins(ImageMetadata imageMetadata, ImageMetadata.InsertionPoint origin) {
-        int maxWidth = imageMetadata.getRasterWidth();
-        int maxHeight = imageMetadata.getRasterHeight();
-        int rows = imageMetadata.getTileRowsCount();
-        int cols = imageMetadata.getTileColsCount();
-        int tileMaxWidth = imageMetadata.getTileWidth();
-        int tileMaxHeight = imageMetadata.getTileHeight();
-        Point2D.Float[][] origins = new Point2D.Float[rows][cols];
-        for (int x = 0; x < rows; x++) {
-            for (int y = 0; y < cols; y++) {
-                if (x == 0 && y == 0) {
-                    origins[x][y] = new Point2D.Float(origin.x, origin.y);
-                } else {
-                    origins[x][y] = new Point2D.Float(origin.x + x * tileMaxWidth * origin.stepX,
-                                                      origin.y - y * tileMaxHeight * origin.stepY);
+    private void initBandGeoCoding(ImageMetadata imageMetadata, Band band, int sceneWidth, int sceneHeight) {
+        int bandWidth = imageMetadata.getRasterWidth();
+        int bandHeight = imageMetadata.getRasterHeight();
+        GeoCoding geoCoding = null;
+        ImageMetadata.InsertionPoint insertPoint = imageMetadata.getInsertPoint();
+        String crsCode = imageMetadata.getCRSCode();
+        try {
+            CoordinateReferenceSystem crs = CRS.decode(crsCode);
+            if (imageMetadata.hasInsertPoint()) {
+                    geoCoding = new CrsGeoCoding(crs,
+                            bandWidth, bandHeight,
+                            insertPoint.x, insertPoint.y,
+                            insertPoint.stepX, insertPoint.stepY, 0.0, 0.0);
+            } else {
+                if (sceneWidth != bandWidth) {
+                    AffineTransform2D transform2D = new AffineTransform2D((float) sceneWidth / bandWidth, 0.0, 0.0, (float) sceneHeight / bandHeight, 0.0, 0.0);
+                    band.setImageToModelTransform(transform2D);
                 }
             }
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
         }
-        return origins;
+        band.setGeoCoding(geoCoding);
     }
+
+    private void addMasks(Product target, ImageMetadata metadata) {
+        ProductNodeGroup<Mask> maskGroup = target.getMaskGroup();
+        if (!maskGroup.contains(Spot6Constants.NODATA)) {
+            int noDataValue = metadata.getNoDataValue();
+            maskGroup.add(Mask.BandMathsType.create(Spot6Constants.NODATA, Spot6Constants.NODATA,
+                                                    target.getSceneRasterWidth(), target.getSceneRasterHeight(),
+                                                    String.valueOf(noDataValue), Color.BLACK, 0.5));
+        }
+        if (!maskGroup.contains(Spot6Constants.SATURATED)) {
+            int saturatedValue = metadata.getSaturatedValue();
+            maskGroup.add(Mask.BandMathsType.create(Spot6Constants.SATURATED, Spot6Constants.SATURATED,
+                                                    target.getSceneRasterWidth(), target.getSceneRasterHeight(),
+                                                    String.valueOf(saturatedValue), Color.ORANGE, 0.5));
+        }
+    }
+
+    private void addGMLMasks(Product target, ImageMetadata metadata) {
+        List<ImageMetadata.MaskInfo> gmlMasks = metadata.getMasks();
+        final Iterator<Color> colorIterator = ColorIterator.create();
+        Band refBand = findReferenceBand(target, metadata.getRasterWidth());
+        boolean isMultiSize = this.metadata.getImageMetadataList().size() > 1;
+        gmlMasks.stream().forEach(mask -> {
+            logger.info(String.format("Parsing mask %s of component %s", mask.name, metadata.getFileName()));
+            VectorDataNode node = GMLReader.parse(mask.name, mask.path);
+            if (node != null && node.getFeatureCollection().size() > 0) {
+                node.setOwner(target);
+                String maskName = mask.name;
+                if (isMultiSize) {
+                    String resolution = "_" + new DecimalFormat("#.#").format(metadata.getPixelSize()) + "m";
+                    maskName += resolution.endsWith(".") ? resolution.substring(0, resolution.length() - 1) : resolution;
+                }
+                if (refBand != null) {
+                    target.addMask(maskName, node, mask.description, colorIterator.next(), 0.5, refBand);
+                } else {
+                    target.addMask(mask.name, node, mask.description, colorIterator.next(), 0.5);
+                }
+            }
+        });
+    }
+
+    private Band findReferenceBand(Product product, int width) {
+        Band referenceBand = null;
+        for (Band band : product.getBands()) {
+            if (band.getRasterWidth() == width) {
+                referenceBand = band;
+                break;
+            }
+        }
+        return referenceBand;
+    }
+
+    private void addProductComponentIfNotPresent(String componentId, File componentFile, TreeNode<File> currentComponents) {
+        TreeNode<File> resultComponent = null;
+        for (TreeNode node : currentComponents.getChildren()) {
+            if (node.getId().toLowerCase().equals(componentId.toLowerCase())) {
+                //noinspection unchecked
+                resultComponent = node;
+                break;
+            }
+        }
+        if (resultComponent == null) {
+            resultComponent = new TreeNode<File>(componentId, componentFile);
+            currentComponents.addChild(resultComponent);
+        }
+    }
+
 }

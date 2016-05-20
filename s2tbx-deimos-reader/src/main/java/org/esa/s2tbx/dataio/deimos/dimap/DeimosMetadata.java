@@ -134,6 +134,9 @@ public class DeimosMetadata extends XmlMetadata {
         String[] names = new String[nBands];
         for (int i = 0; i < nBands; i++) {
             names[i] = getAttributeValue(DeimosConstants.PATH_BAND_DESCRIPTION, i, DeimosConstants.DEFAULT_BAND_NAMES[i]);
+            if (names[i].contains(" ")) {
+                names[i] = names[i].replace(" ", "_");
+            }
         }
         return names;
     }

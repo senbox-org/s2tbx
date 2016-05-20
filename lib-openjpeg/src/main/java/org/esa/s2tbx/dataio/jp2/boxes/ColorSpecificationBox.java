@@ -68,6 +68,9 @@ public class ColorSpecificationBox extends Box {
         enumCS = (stream.readInt() & 0x00000000ffffffffL);
         final long profileLength = length - (stream.getStreamPosition() - position);
         profile = new byte[(int) profileLength];
-        stream.read(profile);
+        int bytesRead = stream.read(profile);
+        if (bytesRead != profileLength) {
+            throw new IOException(String.format("Unable to read requested %d bytes from ColorSpecificationBox", profileLength));
+        }
     }
 }

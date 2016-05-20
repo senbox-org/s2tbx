@@ -56,7 +56,7 @@ public class OpenJpegUtils {
 
         String pathToImageFile = jp2FilePath.toAbsolutePath().toString();
         if (SystemUtils.IS_OS_WINDOWS) {
-            pathToImageFile = Utils.GetIterativeShortPathName(pathToImageFile);
+            pathToImageFile = Utils.GetIterativeShortPathNameW(pathToImageFile);
         }
 
         ProcessBuilder builder = new ProcessBuilder(opjdumpPath, "-i", pathToImageFile);

@@ -33,8 +33,16 @@ import org.jdom.input.SAXBuilder;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,7 +61,9 @@ public class L1cMetadata extends S2Metadata {
     protected Logger logger = SystemUtils.LOG;
 
     public static L1cMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws JDOMException, IOException, JAXBException {
-        return new L1cMetadata(new FileInputStream(file), file, file.getParent(), granuleName, config, epsg);
+        try (FileInputStream stream = new FileInputStream(file)) {
+            return new L1cMetadata(stream, file, file.getParent(), granuleName, config, epsg);
+        }
     }
 
     private L1cMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg) throws JDOMException, JAXBException, FileNotFoundException {

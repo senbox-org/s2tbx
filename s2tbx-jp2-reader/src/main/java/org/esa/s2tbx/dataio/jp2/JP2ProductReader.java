@@ -24,8 +24,11 @@ import org.esa.s2tbx.dataio.BucketMap;
 import org.esa.s2tbx.dataio.jp2.internal.JP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
 import org.esa.s2tbx.dataio.jp2.internal.OpjExecutor;
-import org.esa.s2tbx.dataio.jp2.metadata.*;
+import org.esa.s2tbx.dataio.jp2.metadata.CodeStreamInfo;
 import org.esa.s2tbx.dataio.jp2.metadata.ImageInfo;
+import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadata;
+import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadataReader;
+import org.esa.s2tbx.dataio.jp2.metadata.OpjDumpFile;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
@@ -33,7 +36,15 @@ import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 import org.geotools.referencing.CRS;
 
@@ -48,7 +59,10 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
+
+import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
 
 /**
  * Generic reader for JP2 files.
@@ -104,22 +118,36 @@ public class JP2ProductReader extends AbstractProductReader {
         super.close();
     }
 
+    Path createCacheDirRoot(Path inputFile) throws IOException {
+        Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
+        Properties versionProp = new Properties();
+        versionProp.load(Files.newInputStream(versionFile));
+        String version = versionProp.getProperty("project.version");
+        if (version == null)
+        {
+            throw new IOException("Unable to get project.version property from " + versionFile);
+        }
+        tmpFolder = PathUtils.get(SystemUtils.getCacheDir(), "s2tbx", "jp2-reader", version, PathUtils.getFileNameWithoutExtension(inputFile).toLowerCase() + "_cached");
+        if (!Files.exists(tmpFolder)) {
+            Files.createDirectories(tmpFolder);
+        }
+        return tmpFolder;
+    }
+
     @Override
     protected Product readProductNodesImpl() throws IOException {
         if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
         Path inputFile = getFileInput(getInput());
-        tmpFolder = PathUtils.get(SystemUtils.getCacheDir(), PathUtils.getFileNameWithoutExtension(inputFile).toLowerCase() + "_cached");
-        if (!Files.exists(tmpFolder)) {
-            Files.createDirectory(tmpFolder);
-        }
+        tmpFolder = createCacheDirRoot(inputFile);
+
         logger.info("Reading product metadata");
         try {
             OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getOpjDump());
             OpjDumpFile dumpFile = new OpjDumpFile(PathUtils.get(tmpFolder, String.format(JP2ProductReaderConstants.JP2_INFO_FILE, PathUtils.getFileNameWithoutExtension(inputFile))));
             Map<String, String> params = new HashMap<String, String>() {{
-                put("-i", inputFile.toAbsolutePath().toString());
+                put("-i", GetIterativeShortPathNameW(inputFile.toAbsolutePath().toString()));
                 put("-o", dumpFile.getPath());
             }};
             if (dumper.execute(params) == 0) {

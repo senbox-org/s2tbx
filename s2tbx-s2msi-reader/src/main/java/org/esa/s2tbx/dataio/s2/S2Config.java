@@ -69,6 +69,7 @@ public class S2Config {
         int tileIndex = spatialResolution.id;
         tileLayoutForResolution = tileLayouts[tileIndex];
 
+        // TODO : Rewrite ! This code is too messy and misses comments to explain the rationale
         if (tileLayoutForResolution == null) {
             TileLayout nonNullTileLayout = null;
             int resolutionForNonNullTileLayout = 0;
@@ -82,11 +83,12 @@ public class S2Config {
                 }
 
                 if (nonNullTileLayout != null) {
-                    float factor = resolutionForNonNullTileLayout / spatialResolution.resolution;
-                    int width = Math.round(nonNullTileLayout.width * factor);
-                    int height = Math.round(nonNullTileLayout.height * factor);
-                    int tileWidth = Math.round(nonNullTileLayout.tileWidth * factor);
-                    int tileHeight = Math.round(nonNullTileLayout.tileHeight * factor);
+                    // resolutionForNonNullTileLayout is either R20M, either R60M
+                    int factor = resolutionForNonNullTileLayout / S2SpatialResolution.R10M.resolution;
+                    int width = nonNullTileLayout.width * factor;
+                    int height = nonNullTileLayout.height * factor;
+                    int tileWidth = nonNullTileLayout.tileWidth * factor;
+                    int tileHeight = nonNullTileLayout.tileHeight * factor;
                     tileLayoutForResolution =
                             new TileLayout(width, height,
                                     tileWidth, tileHeight,

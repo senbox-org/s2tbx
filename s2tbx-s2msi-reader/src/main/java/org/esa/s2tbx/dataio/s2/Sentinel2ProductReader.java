@@ -26,16 +26,22 @@ import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.quicklooks.Quicklook;
+import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Base class for all Sentinel-2 product readers
@@ -100,7 +106,19 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     protected abstract String getReaderCacheDir();
 
     protected void initCacheDir(File productDir) throws IOException {
-        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir()),
+        Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
+        Properties versionProp = new Properties();
+
+        InputStream inputStream = Files.newInputStream(versionFile);
+        versionProp.load(inputStream);
+
+        String version = versionProp.getProperty("project.version");
+        if (version == null)
+        {
+            throw new IOException("Unable to get project.version property from " + versionFile);
+        }
+
+        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir() +  File.separator + version),
                 productDir.getName());
 
         //noinspection ResultOfMethodCallIgnored
@@ -108,6 +126,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
             throw new IOException("Can't access package cache directory");
         }
+        SystemUtils.LOG.fine("Successfully set up cache dir for product " + productDir.getName() + " to " + cacheDir.toString());
     }
 
     @Override
@@ -124,6 +143,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         if (S2ProductFilename.isMetadataFilename(inputFile.getName())) {
             p = getMosaicProduct(inputFile);
 
+            addQuicklook(p, getQuicklookFile(inputFile));
+
             if (p != null) {
                 p.setModified(false);
             }
@@ -132,6 +153,24 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         return p;
+    }
+
+    private void addQuicklook(final Product product, final File qlFile) {
+        if(qlFile != null) {
+            product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile));
+        }
+    }
+
+    private File getQuicklookFile(final File metadataFile) {
+        File[] files = metadataFile.getParentFile().listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".png") && name.startsWith("S2A_");
+            }
+        });
+        if (files != null && files.length > 0) {
+            return files[0];
+        }
+        return null;
     }
 
     /**
@@ -287,20 +326,22 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         });
     }
 
-    protected Band addBand(Product product, BandInfo bandInfo) {
-        TileLayout thisBandTileLayout = bandInfo.getImageLayout();
-        TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
-
-        float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
-        float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
-
-        Band band;
+    protected Band addBand(Product product, BandInfo bandInfo, Dimension nativeResolutionDimensions) {
+        Dimension dimension = new Dimension();
         if (isMultiResolution()) {
-            band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
+            dimension.width = nativeResolutionDimensions.width;
+            dimension.height = nativeResolutionDimensions.height;
         } else {
-            band = new Band(bandInfo.getBandName(), S2Config.SAMPLE_PRODUCT_DATA_TYPE, product.getSceneRasterWidth(), product.getSceneRasterHeight());
+            dimension.width = product.getSceneRasterWidth();
+            dimension.height = product.getSceneRasterHeight();
         }
-        product.addBand(band);
+
+        Band band = new Band(
+                bandInfo.getBandName(),
+                S2Config.SAMPLE_PRODUCT_DATA_TYPE,
+                dimension.width,
+                dimension.height
+        );
 
         S2BandInformation bandInformation = bandInfo.getBandInformation();
         if (bandInformation instanceof S2SpectralInformation) {
@@ -320,12 +361,15 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             band.setSpectralBandwidth(0);
             band.setSpectralBandIndex(-1);
             band.setSampleCoding(indexBandInfo.getIndexCoding());
+            band.setImageInfo(indexBandInfo.getImageInfo());
         }
         else {
             band.setSpectralWavelength(0);
             band.setSpectralBandwidth(0);
             band.setSpectralBandIndex(-1);
         }
+
+        product.addBand(band);
         return band;
     }
 

@@ -41,8 +41,12 @@ public class OpenJPEGActivator implements Activator {
 
     @Override
     public void start() {
-        Path auxdataDirectory = SystemUtils.getAuxDataPath().resolve("openjpeg");
         Path sourceDirPath = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("auxdata/openjpeg");
+        Path auxdataDirectory = OpenJpegExecRetriever.getOpenJPEGAuxDataPath();
+        if (auxdataDirectory == null) {
+            SystemUtils.LOG.severe("OpenJPEG configuration error: failed to retrieve auxdata path");
+            return;
+        }
         final ResourceInstaller resourceInstaller = new ResourceInstaller(sourceDirPath, auxdataDirectory);
 
         try {
@@ -50,6 +54,7 @@ public class OpenJPEGActivator implements Activator {
             fixUpPermissions(auxdataDirectory);
         } catch (IOException e) {
             SystemUtils.LOG.severe("OpenJPEG configuration error: failed to create " + auxdataDirectory);
+            return;
         }
     }
 

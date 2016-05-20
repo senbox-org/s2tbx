@@ -2,3 +2,6 @@ $SEN2COR_BIN/L2A_Process.py
 --resolution
 $resolution
 $sourceProductFile.Parent
+#if($sceneOnly)
+--sc_only
+#end

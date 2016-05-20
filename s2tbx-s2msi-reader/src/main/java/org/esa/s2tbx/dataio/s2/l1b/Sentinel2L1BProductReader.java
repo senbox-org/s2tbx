@@ -29,19 +29,34 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
-import org.esa.s2tbx.dataio.s2.*;
+import org.esa.s2tbx.dataio.s2.S2BandInformation;
+import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.S2TileOpImage;
+import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.MetadataElement;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.FileUtils;
 import org.jdom.JDOMException;
 
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
@@ -52,16 +67,24 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.esa.s2tbx.dataio.s2.S2Metadata.ProductCharacteristics;
 import static org.esa.s2tbx.dataio.s2.S2Metadata.Tile;
-import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
+import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.convertDoublesToFloats;
+import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.getLatitudes;
+import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.getLongitudes;
 import static org.esa.s2tbx.dataio.s2.l1b.L1bMetadata.parseHeader;
+import static org.esa.snap.utils.DateHelper.parseDate;
 
 // import com.jcabi.aspects.Loggable;
 
@@ -129,9 +152,11 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         String filterTileId = null;
         File productMetadataFile = null;
+        String granuleDirName = null;
 
         // we need to recover parent metadata file if we have a granule
         if (isAGranule) {
+            granuleDirName = metadataFile.getParentFile().getName();
             try {
                 Objects.requireNonNull(metadataFile.getParentFile());
                 Objects.requireNonNull(metadataFile.getParentFile().getParentFile());
@@ -166,7 +191,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         L1bMetadata metadataHeader;
 
         try {
-            metadataHeader = parseHeader(productMetadataFile, getConfig());
+            metadataHeader = parseHeader(productMetadataFile, granuleDirName, getConfig());
         } catch (JDOMException | JAXBException e) {
             SystemUtils.LOG.severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + productMetadataFile.getName());
@@ -273,6 +298,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             product.getMetadataRoot().addElement(metadataElement);
         }
 
+        product.setStartTime(parseDate(productCharacteristics.getProductStartTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+        product.setEndTime(parseDate(productCharacteristics.getProductStopTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         return product;
     }
@@ -328,7 +355,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         for (String bandIndex : bandIndexes) {
             L1BBandInfo tileBandInfo = stringBandInfoMap.get(bandIndex);
             if (isMultiResolution() || tileBandInfo.getBandInformation().getResolution() == this.getProductResolution()) {
-                Band band = addBand(product, tileBandInfo);
+                TileLayout thisBandTileLayout = tileBandInfo.getImageLayout();
+                TileLayout productTileLayout = getConfig().getTileLayout(getProductResolution());
+
+                float factorX = (float) productTileLayout.width / thisBandTileLayout.width;
+                float factorY = (float) productTileLayout.height / thisBandTileLayout.height;
+
+                Dimension dimension = new Dimension(Math.round(product.getSceneRasterWidth() / factorX), Math.round(product.getSceneRasterHeight() / factorY));
+
+                Band band = addBand(product, tileBandInfo, dimension);
                 band.setDescription(tileBandInfo.getBandInformation().getDescription());
                 band.setSourceImage(mlif.createSourceImage(tileBandInfo));
             }

@@ -35,9 +35,14 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import javax.xml.bind.JAXBException;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -56,26 +61,27 @@ public class L1bMetadata extends S2Metadata {
 
     protected Logger logger = SystemUtils.LOG;
 
-
     private ProductCharacteristics productCharacteristics;
 
-    public static L1bMetadata parseHeader(File file, S2Config config) throws JDOMException, IOException, JAXBException {
-        return new L1bMetadata(new FileInputStream(file), file, file.getParent(), config);
-    }
 
+    public static L1bMetadata parseHeader(File file, String granuleName, S2Config config) throws JDOMException, IOException, JAXBException {
+        try (FileInputStream stream = new FileInputStream(file)) {
+            return new L1bMetadata(stream, file, file.getParent(), granuleName, config);
+        }
+    }
 
     public ProductCharacteristics getProductCharacteristics() {
         return productCharacteristics;
     }
 
-    private L1bMetadata(InputStream stream, File file, String parent, S2Config config) throws DataConversionException, JAXBException, FileNotFoundException {
+    private L1bMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config) throws DataConversionException, JAXBException, FileNotFoundException {
         super(config, L1bMetadataProc.getJaxbContext(), PSD_STRING);
 
         try {
             Object userProductOrTile = updateAndUnmarshal(stream);
 
             if (userProductOrTile instanceof Level1B_User_Product) {
-                initProduct(file, parent, userProductOrTile);
+                initProduct(file, parent, granuleName, userProductOrTile);
             } else {
                 initTile(userProductOrTile);
             }
@@ -85,31 +91,36 @@ public class L1bMetadata extends S2Metadata {
         }
     }
 
-
-    private void initProduct(File file, String parent, Object casted
+    private void initProduct(File file, String parent, String granuleName, Object casted
     ) throws IOException, JAXBException, JDOMException {
         Level1B_User_Product product = (Level1B_User_Product) casted;
         productCharacteristics = L1bMetadataProc.getProductOrganization(product);
 
-        Collection<String> tileNames = L1bMetadataProc.getTiles(product);
+        Collection<String> tileNames;
+        if (granuleName == null) {
+            tileNames = L1bMetadataProc.getTiles(product);
+        } else {
+            tileNames = Collections.singletonList(granuleName);
+        }
         List<File> fullTileNamesList = new ArrayList<>();
+
 
         resetTileList();
 
-        for (String granuleName : tileNames) {
-            File nestedMetadata = new File(parent, "GRANULE" + File.separator + granuleName);
+        for (String tileName : tileNames) {
+            File nestedMetadata = new File(parent, "GRANULE" + File.separator + tileName);
 
             if (nestedMetadata.exists()) {
                 logger.log(Level.FINE, "File found: " + nestedMetadata.getAbsolutePath());
-                S2GranuleDirFilename aGranuleDir = S2L1BGranuleDirFilename.create(granuleName);
+                S2GranuleDirFilename aGranuleDir = S2L1BGranuleDirFilename.create(tileName);
                 Guardian.assertNotNull("aGranuleDir", aGranuleDir);
                 String theName = aGranuleDir.getMetadataFilename().name;
 
-                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + granuleName + File.separator + theName);
+                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + tileName + File.separator + theName);
                 if (nestedGranuleMetadata.exists()) {
                     fullTileNamesList.add(nestedGranuleMetadata);
                 } else {
-                    String errorMessage = "Corrupted product: the file for the granule " + granuleName + " is missing";
+                    String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
                     logger.log(Level.WARNING, errorMessage);
                 }
             } else {
@@ -118,7 +129,7 @@ public class L1bMetadata extends S2Metadata {
         }
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
-            try ( FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile) ) {
+            try (FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile)) {
                 Level1B_Granule aGranule = (Level1B_Granule) updateAndUnmarshal(granuleStream);
 
                 Map<S2SpatialResolution, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());

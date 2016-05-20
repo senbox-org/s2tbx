@@ -33,8 +33,16 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import javax.xml.bind.JAXBException;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,7 +60,9 @@ public class L2aMetadata extends S2Metadata {
     protected Logger logger = SystemUtils.LOG;
 
     public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException, JAXBException {
-        return new L2aMetadata(new FileInputStream(file), file, file.getParent(), granuleName, config, epsg, productResolution);
+        try (FileInputStream stream = new FileInputStream(file)) {
+            return new L2aMetadata(stream, file, file.getParent(), granuleName, config, epsg, productResolution);
+        }
     }
 
     private L2aMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, JAXBException, FileNotFoundException {
@@ -108,7 +118,7 @@ public class L2aMetadata extends S2Metadata {
 
                 Map<S2SpatialResolution, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
 
-                Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID_2A().getValue());
+                Tile tile = new Tile(aGranuleMetadataFile.getParentFile().getName());
                 tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
                 tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
@@ -151,7 +161,7 @@ public class L2aMetadata extends S2Metadata {
 
         Map<S2SpatialResolution, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
 
-        Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID_2A().getValue());
+        Tile tile = new Tile(file.getParentFile().getName());
         tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
         tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 

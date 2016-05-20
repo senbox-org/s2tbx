@@ -22,15 +22,26 @@ import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.math3.util.Pair;
 import org.geotools.gml3.GMLConfiguration;
 import org.geotools.xml.StreamingParser;
-import org.jdom2.*;
+import org.jdom2.Attribute;
+import org.jdom2.Content;
 import org.jdom2.Content.CType;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.util.IteratorIterable;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 

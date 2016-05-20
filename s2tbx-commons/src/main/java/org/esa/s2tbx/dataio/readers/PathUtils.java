@@ -19,7 +19,12 @@ package org.esa.s2tbx.dataio.readers;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -67,7 +72,7 @@ public class PathUtils {
     public static List<Path> listFiles(Path basePath, int depth) throws IOException {
         if (basePath == null)
             return null;
-        depth = depth <= 0 ? depth = 255 : depth;
+        depth = depth <= 0 ? 255 : depth;
         List<Path> files = new ArrayList<>();
         Files.walkFileTree(basePath,
                 EnumSet.noneOf(FileVisitOption.class),

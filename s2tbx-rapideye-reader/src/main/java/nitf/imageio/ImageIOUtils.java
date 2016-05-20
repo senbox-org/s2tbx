@@ -36,7 +36,19 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.*;
+import java.awt.image.BandedSampleModel;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferDouble;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.IndexColorModel;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -193,8 +205,8 @@ public class ImageIOUtils {
             int imageHeight = image.getHeight();
             int imageWidth = image.getWidth();
             if (imageHeight > screen.height || imageWidth > screen.width) {
-                double hRatio = (imageHeight - screen.height) / screen.height;
-                double wRatio = (imageWidth - screen.width) / screen.width;
+                double hRatio = (double)(imageHeight - screen.height) / screen.height;
+                double wRatio = (double)(imageWidth - screen.width) / screen.width;
 
                 int w = -1;
                 int h = -1;

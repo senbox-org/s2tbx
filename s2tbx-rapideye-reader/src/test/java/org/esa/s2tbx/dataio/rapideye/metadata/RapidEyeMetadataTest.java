@@ -17,7 +17,6 @@
 
 package org.esa.s2tbx.dataio.rapideye.metadata;
 
-import junit.framework.TestCase;
 import org.apache.commons.lang.SystemUtils;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -32,20 +31,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Ramona Manda
  */
-public class RapidEyeMetadataTest extends TestCase {
+public class RapidEyeMetadataTest {
     private RapidEyeMetadata metadata;
     private String productsFolder = "_rapideye" + File.separator;
-
-    @After
-    public void tearDown(){
-        metadata = null;
-        System.gc();
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -53,6 +47,12 @@ public class RapidEyeMetadataTest extends TestCase {
 
         XmlMetadataParserFactory.registerParser(RapidEyeMetadata.class, new XmlMetadataParser<RapidEyeMetadata>(RapidEyeMetadata.class));
         metadata = XmlMetadata.create(RapidEyeMetadata.class, TestUtil.getTestFile(productsFolder + "2009-04-16T104920_RE4_1B-NAC_3436599_84303_metadata.xml"));
+    }
+
+    @After
+    public void tearDown(){
+        metadata = null;
+        System.gc();
     }
 
     @Test

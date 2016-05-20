@@ -6,5 +6,6 @@
 <map version="2.0">
 
     <mapID target="sen2corInstallation" url="installation/Sen2CorInstallation.html"/>
+    <mapID target="otbInstallation" url="installation/OTBInstallation.html"/>
 
 </map>

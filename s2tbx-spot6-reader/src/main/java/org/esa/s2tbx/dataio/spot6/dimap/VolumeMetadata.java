@@ -32,6 +32,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,6 +70,7 @@ public class VolumeMetadata extends GenericXmlMetadata {
         try (InputStream inputStream = Files.newInputStream(path)) {
             VolumeMetadataParser parser = new VolumeMetadataParser(VolumeMetadata.class);
             result = parser.parse(inputStream);
+            result.setPath(path.toString());
             result.setFileName(path.getFileName().toString());
             String[] titles = result.getAttributeValues(Spot6Constants.PATH_VOL_COMPONENT_TITLE);
             if (titles == null) {
@@ -152,6 +154,32 @@ public class VolumeMetadata extends GenericXmlMetadata {
         return componentMetadata.stream().filter(metadata -> metadata instanceof ImageMetadata).map(metadata -> (ImageMetadata) metadata).collect(Collectors.toList());
     }
 
+    public int getSceneWidth() {
+        return componentMetadata.stream()
+                                .filter(metadata -> metadata instanceof ImageMetadata)
+                                .map(metadata -> (ImageMetadata) metadata)
+                                .map(ImageMetadata::getRasterWidth)
+                                .collect(Collectors.maxBy(Integer::compare))
+                                .get();
+    }
+
+    public int getSceneHeight() {
+        return componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .map(ImageMetadata::getRasterHeight)
+                .collect(Collectors.maxBy(Integer::compare))
+                .get();
+    }
+
+    public ImageMetadata getMaxResolutionImage() {
+        return componentMetadata.stream()
+                .filter(metadata -> metadata instanceof ImageMetadata)
+                .map(metadata -> (ImageMetadata) metadata)
+                .collect(Collectors.maxBy(Comparator.comparingInt(ImageMetadata::getRasterWidth)))
+                .get();
+    }
+
     public String getFormat() {
         return getAttributeValue(Spot6Constants.PATH_VOL_METADATA_FORMAT, Spot6Constants.VALUE_NOT_AVAILABLE);
     }
@@ -218,7 +246,7 @@ public class VolumeMetadata extends GenericXmlMetadata {
     }
 
     public String getProductType() {
-        return getAttributeValue(Spot6Constants.PATH_VOL_PRODUCT_TYPE, Spot6Constants.VALUE_NOT_AVAILABLE);
+        return getAttributeValue(Spot6Constants.PATH_VOL_PRODUCT_TYPE, Spot6Constants.SPOT_PRODUCT);
     }
 
     public String getProductCode() {

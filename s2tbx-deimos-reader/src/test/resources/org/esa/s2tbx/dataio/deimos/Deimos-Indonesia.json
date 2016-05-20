@@ -60,7 +60,7 @@
                 ]
             },
             {
-                "name": "Synthetic Blue",
+                "name": "Synthetic_Blue",
                 "noDataValue": "0.0",
                 "noDataValueUsed": "false",
                 "spectralWavelength": "0.0",

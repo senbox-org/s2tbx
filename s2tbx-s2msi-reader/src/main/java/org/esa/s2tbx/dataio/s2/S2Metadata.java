@@ -35,7 +35,12 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents the Sentinel-2 MSI XML metadata header file.
@@ -447,6 +452,8 @@ public abstract class S2Metadata {
     public static class ProductCharacteristics {
         private String spacecraft;
         private String datasetProductionDate;
+        private String productStartTime;
+        private String productStopTime;
         private String processingLevel;
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
@@ -465,6 +472,22 @@ public abstract class S2Metadata {
 
         public void setDatasetProductionDate(String datasetProductionDate) {
             this.datasetProductionDate = datasetProductionDate;
+        }
+
+        public String getProductStartTime() {
+            return productStartTime;
+        }
+
+        public void setProductStartTime(String productStartTime) {
+            this.productStartTime = productStartTime;
+        }
+
+        public String getProductStopTime() {
+            return productStopTime;
+        }
+
+        public void setProductStopTime(String productStopTime) {
+            this.productStopTime = productStopTime;
         }
 
         public String getProcessingLevel() {

@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: ${s2tbx.nbmSpecVersion}
+OpenIDE-Module-Specification-Version: ${project.nbmSpecVersion}
 AutoUpdate-Show-In-Client: false
 AutoUpdate-Essential-Module: true
 OpenIDE-Module-Layer: org/esa/s2tbx/dataio/rapideye/layer.xml

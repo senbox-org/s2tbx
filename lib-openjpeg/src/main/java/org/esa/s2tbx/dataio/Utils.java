@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import com.sun.jna.win32.W32APIOptions;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -33,25 +34,34 @@ public class Utils {
         return sw.toString();
     }
 
-    public static String GetShortPathName(String path) {
+    public static String GetShortPathNameW(String path) {
+        if (! org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+            return path;
+        }
+
         if (!(new File(path).exists())) {
             return "";
         }
 
         int sizeBuffer = 2048;
-        byte[] shortt = new byte[sizeBuffer];
+        char[] shortt = new char[sizeBuffer];
 
-        //Call CKernel32 interface to execute GetShortPathNameA method
-        CKernel32.INSTANCE.GetShortPathNameA(path, shortt, sizeBuffer);
+        //Call CKernel32 interface to execute GetShortPathNameW method
+        CKernel32.INSTANCE.GetShortPathNameW(path, shortt, sizeBuffer);
+
         return Native.toString(shortt);
     }
 
-    public static String GetIterativeShortPathName(String path) {
+    public static String GetIterativeShortPathNameW(String path) {
+        if (! org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+            return path;
+        }
+
         if (!(new File(path).exists())) {
             return "";
         }
 
-        String firstTry = GetShortPathName(path);
+        String firstTry = GetShortPathNameW(path);
         if (firstTry.length() != 0) {
             return firstTry;
         }
@@ -60,33 +70,33 @@ public class Utils {
         String workingPath = path;
         while (lenght == 0) {
             workingPath = new File(workingPath).getParent();
-            lenght = GetShortPathName(workingPath).length();
+            lenght = GetShortPathNameW(workingPath).length();
         }
 
-        String[] shortenedFragments = GetShortPathName(workingPath).split(Pattern.quote(File.separator));
+        String[] shortenedFragments = GetShortPathNameW(workingPath).split(Pattern.quote(File.separator));
         String[] fragments = path.split(Pattern.quote(File.separator));
         // if the path did not split, we didn't have the system separator but '/'
-        if(fragments.length == 1) {
+        if (fragments.length == 1) {
             fragments = path.split(Pattern.quote("/"));
         }
 
         System.arraycopy(shortenedFragments, 0, fragments, 0, shortenedFragments.length);
 
-        String complete = String.join(File.separator, fragments);
-        String shortComplete = GetShortPathName(complete);
+        String complete = String.join(File.separator, (CharSequence[]) fragments);
+        String shortComplete = GetShortPathNameW(complete);
 
         if (shortComplete.length() != 0) {
             return shortComplete;
         }
 
-        return GetIterativeShortPathName(complete);
+        return GetIterativeShortPathNameW(complete);
     }
 
-    public interface CKernel32 extends Library {
+    private interface CKernel32 extends Library {
 
-        CKernel32 INSTANCE = (CKernel32) Native.loadLibrary("kernel32", CKernel32.class);
+        CKernel32 INSTANCE = (CKernel32) Native.loadLibrary("kernel32", CKernel32.class, W32APIOptions.UNICODE_OPTIONS);
 
-        int GetShortPathNameA(String LongName, byte[] ShortName, int BufferCount);
+        int GetShortPathNameW(String LongName, char[] ShortName, int BufferCount); //Unicode version of GetShortPathNameW
     }
 
 }
