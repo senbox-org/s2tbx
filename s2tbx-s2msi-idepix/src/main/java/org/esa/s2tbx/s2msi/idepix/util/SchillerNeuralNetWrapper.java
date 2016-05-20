@@ -16,8 +16,8 @@
 
 package org.esa.s2tbx.s2msi.idepix.util;
 
-import org.esa.snap.core.nn.NNffbpAlphaTabFast;
 import org.esa.snap.core.gpf.OperatorException;
+import org.esa.snap.core.nn.NNffbpAlphaTabFast;
 import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.IOException;

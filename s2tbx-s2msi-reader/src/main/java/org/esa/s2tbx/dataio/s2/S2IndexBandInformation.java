@@ -21,7 +21,7 @@ import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.datamodel.ImageInfo;
 import org.esa.snap.core.datamodel.IndexCoding;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 

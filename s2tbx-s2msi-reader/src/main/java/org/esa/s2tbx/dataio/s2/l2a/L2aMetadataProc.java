@@ -18,26 +18,40 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.*;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_L2A_Product_Info;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_MASK_LIST;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION_2A;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_QUALITY_INDICATORS_INFO_TILE_L2A;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
+import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_TILE_DESCRIPTION;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
 import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
-import org.esa.s2tbx.dataio.s2.*;
+import org.esa.s2tbx.dataio.s2.S2BandConstants;
+import org.esa.s2tbx.dataio.s2.S2BandInformation;
+import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
+import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.S2MetadataProc;
+import org.esa.s2tbx.dataio.s2.S2MetadataType;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
-import org.esa.snap.core.datamodel.ColorPaletteDef;
-import org.esa.snap.core.datamodel.ImageInfo;
-import org.esa.snap.core.datamodel.IndexCoding;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author opicas-p

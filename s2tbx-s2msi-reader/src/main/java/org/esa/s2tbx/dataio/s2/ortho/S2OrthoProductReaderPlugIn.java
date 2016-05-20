@@ -34,7 +34,9 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.regex.Matcher;
 
-import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.*;
+import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToDisplayName;
+import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
+import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.tileIdentifierToEPSG;
 
 /**
  * @author Norman Fomferra

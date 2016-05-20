@@ -35,7 +35,12 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents the Sentinel-2 MSI XML metadata header file.

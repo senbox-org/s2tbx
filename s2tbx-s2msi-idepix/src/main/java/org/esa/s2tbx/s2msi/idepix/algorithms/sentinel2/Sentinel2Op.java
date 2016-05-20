@@ -1,9 +1,9 @@
 package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
+import org.esa.s2tbx.s2msi.idepix.operators.Sentinel2CloudBufferOp;
 import org.esa.s2tbx.s2msi.idepix.util.AlgorithmSelector;
 import org.esa.s2tbx.s2msi.idepix.util.IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.IdepixUtils;
-import org.esa.s2tbx.s2msi.idepix.operators.Sentinel2CloudBufferOp;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;

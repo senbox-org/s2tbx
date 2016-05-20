@@ -17,7 +17,16 @@
 
 package org.esa.s2tbx.dataio.nitf;
 
-import nitf.*;
+import nitf.BandInfo;
+import nitf.DESegment;
+import nitf.DESubheader;
+import nitf.Field;
+import nitf.FileHeader;
+import nitf.ImageSegment;
+import nitf.ImageSubheader;
+import nitf.NITFException;
+import nitf.Record;
+import nitf.TRE;
 import nitf.imageio.NITFReader;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
