@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import com.sun.jna.win32.W32APIOptions;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -39,10 +40,11 @@ public class Utils {
         }
 
         int sizeBuffer = 2048;
-        byte[] shortt = new byte[sizeBuffer];
+        char[] shortt = new char[sizeBuffer];
 
-        //Call CKernel32 interface to execute GetShortPathNameA method
-        CKernel32.INSTANCE.GetShortPathNameA(path, shortt, sizeBuffer);
+        //Call CKernel32 interface to execute GetShortPathNameW method
+        CKernel32.INSTANCE.GetShortPathNameW(path, shortt, sizeBuffer);
+
         return Native.toString(shortt);
     }
 
@@ -50,6 +52,7 @@ public class Utils {
         if (!(new File(path).exists())) {
             return "";
         }
+
 
         String firstTry = GetShortPathName(path);
         if (firstTry.length() != 0) {
@@ -66,13 +69,13 @@ public class Utils {
         String[] shortenedFragments = GetShortPathName(workingPath).split(Pattern.quote(File.separator));
         String[] fragments = path.split(Pattern.quote(File.separator));
         // if the path did not split, we didn't have the system separator but '/'
-        if(fragments.length == 1) {
+        if (fragments.length == 1) {
             fragments = path.split(Pattern.quote("/"));
         }
 
         System.arraycopy(shortenedFragments, 0, fragments, 0, shortenedFragments.length);
 
-        String complete = String.join(File.separator, fragments);
+        String complete = String.join(File.separator, (CharSequence[]) fragments);
         String shortComplete = GetShortPathName(complete);
 
         if (shortComplete.length() != 0) {
@@ -82,11 +85,11 @@ public class Utils {
         return GetIterativeShortPathName(complete);
     }
 
-    public interface CKernel32 extends Library {
+    private interface CKernel32 extends Library {
 
-        CKernel32 INSTANCE = (CKernel32) Native.loadLibrary("kernel32", CKernel32.class);
+        CKernel32 INSTANCE = (CKernel32) Native.loadLibrary("kernel32", CKernel32.class, W32APIOptions.UNICODE_OPTIONS);
 
-        int GetShortPathNameA(String LongName, byte[] ShortName, int BufferCount);
+        int GetShortPathNameW(String LongName, char[] ShortName, int BufferCount); //Unicode version of GetShortPathName
     }
 
 }
