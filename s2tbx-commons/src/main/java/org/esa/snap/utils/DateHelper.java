@@ -40,14 +40,14 @@ public class DateHelper {
      *
      * @param startDate The first date
      * @param endDate   The second date
-     * @return  The date between the two input dates
+     * @return The date between the two input dates
      */
     public static Date average(Date startDate, Date endDate) {
         Date averageDate = null;
         if (startDate != null && endDate != null) {
             BigInteger averageMillis = BigInteger.valueOf(startDate.getTime())
-                                                 .add(BigInteger.valueOf(endDate.getTime()))
-                                                 .divide(BigInteger.valueOf(2L));
+                    .add(BigInteger.valueOf(endDate.getTime()))
+                    .divide(BigInteger.valueOf(2L));
             averageDate = new Date(averageMillis.longValue());
         }
         return averageDate;
@@ -58,7 +58,7 @@ public class DateHelper {
      *
      * @param startDate The first date
      * @param endDate   The second date
-     * @return  The date between the two input dates
+     * @return The date between the two input dates
      */
     public static ProductData.UTC average(ProductData.UTC startDate, ProductData.UTC endDate) {
         ProductData.UTC average = null;
@@ -76,21 +76,33 @@ public class DateHelper {
      * Why not using <code>ProductData.UTC.parse(text, pattern)</code> method?
      * Because it errors in the case of a format like dd-MM-yyyy'T'HH:mm:ss.SSSSSS (which should be
      * perfectly fine).
-     * @param stringData    The string to be converted into a date
-     * @param dateFormat    The format of the string date
-     * @return  The UTC date representation.
+     *
+     * @param stringData The string to be converted into a date
+     * @param dateFormat The format of the string date
+     * @return The UTC date representation.
      */
     public static ProductData.UTC parseDate(String stringData, String dateFormat) {
         ProductData.UTC parsedDate = null;
         if (stringData != null) {
             try {
                 if (stringData.endsWith("Z"))
-                    stringData = stringData.substring(0,stringData.length() - 1);
+                    stringData = stringData.substring(0, stringData.length() - 1);
                 if (!stringData.contains(".") && dateFormat.contains("."))
                     stringData = stringData + ".000000";
                 Long microseconds = 0L;
-                if(dateFormat.contains(".")) {
-                    microseconds = Long.parseLong(stringData.substring(stringData.indexOf(".") + 1));
+                if (dateFormat.contains(".")) {
+                    String stringMicroseconds = stringData.substring(stringData.indexOf(".") + 1);
+
+                    //check the microseconds length
+                    if (stringMicroseconds.length() > 6) {
+                        //if there are more than 6 digits, the last ones are removed
+                        stringMicroseconds = stringMicroseconds.substring(0, 6);
+                    } else {
+                        //fill until 6 digits
+                        while (stringMicroseconds.length() < 6) stringMicroseconds = stringMicroseconds + "0";
+                    }
+
+                    microseconds = Long.parseLong(stringMicroseconds);
                     stringData = stringData.substring(0, stringData.lastIndexOf("."));
                     dateFormat = dateFormat.substring(0, dateFormat.lastIndexOf("."));
                 }
@@ -100,8 +112,8 @@ public class DateHelper {
                 parsedDate = ProductData.UTC.create(date, microseconds);
             } catch (ParseException e) {
                 Logger.getLogger(DateHelper.class.getName()).warning(String.format("Date not in expected format. Found %s, expected %s",
-                        stringData,
-                        dateFormat));
+                                                                                   stringData,
+                                                                                   dateFormat));
             }
         }
         return parsedDate;
