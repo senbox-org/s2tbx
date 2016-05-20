@@ -22,7 +22,11 @@ import org.esa.snap.core.datamodel.MetadataElement;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by kraftek on 7/15/2015.

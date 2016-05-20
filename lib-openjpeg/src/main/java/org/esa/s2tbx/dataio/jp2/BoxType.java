@@ -19,7 +19,15 @@ package org.esa.s2tbx.dataio.jp2;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.jp2.boxes.*;
+import org.esa.s2tbx.dataio.jp2.boxes.BitsPerComponentBox;
+import org.esa.s2tbx.dataio.jp2.boxes.ColorSpecificationBox;
+import org.esa.s2tbx.dataio.jp2.boxes.ContiguousCodestreamBox;
+import org.esa.s2tbx.dataio.jp2.boxes.FileTypeBox;
+import org.esa.s2tbx.dataio.jp2.boxes.IgnoredBox;
+import org.esa.s2tbx.dataio.jp2.boxes.ImageHeaderBox;
+import org.esa.s2tbx.dataio.jp2.boxes.Jp2HeaderBox;
+import org.esa.s2tbx.dataio.jp2.boxes.Jpeg2000SignatureBox;
+import org.esa.s2tbx.dataio.jp2.boxes.UuidBox;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
