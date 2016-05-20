@@ -35,6 +35,9 @@ public class Utils {
     }
 
     public static String GetShortPathNameW(String path) {
+        if (! org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+            return path;
+        }
 
         if (!(new File(path).exists())) {
             return "";
@@ -50,6 +53,10 @@ public class Utils {
     }
 
     public static String GetIterativeShortPathNameW(String path) {
+        if (! org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+            return path;
+        }
+
         if (!(new File(path).exists())) {
             return "";
         }
