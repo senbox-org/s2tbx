@@ -275,6 +275,9 @@ public class Sentinel2ClassificationOp extends Operator {
             copyReflectances();
         }
 
+        final Band b = ProductUtils.copyBand("sun_zenith", sourceProduct, targetProduct, true);
+        b.setUnit("dl");
+
         if (copyNNValue) {
             targetProduct.addBand("nn_value", ProductData.TYPE_FLOAT32);
         }
