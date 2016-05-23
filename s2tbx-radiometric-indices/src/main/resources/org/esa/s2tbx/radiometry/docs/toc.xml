@@ -15,7 +15,7 @@
 
                     <tocitem text="Radiometric Indices Complete List" target="OperatorsIndexList"/>
 
-                    <tocitem text="Indices to Minimize Soil Noise">
+                    <tocitem text="Soil Indices">
 
                         <tocitem text="SAVI Operator" target="SAVIOperator">
                             <tocitem text="SAVI Algorithm Specification" target="SAVIAlgorithm"/>

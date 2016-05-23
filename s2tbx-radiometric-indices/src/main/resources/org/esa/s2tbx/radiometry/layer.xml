@@ -370,7 +370,7 @@
 
                     </folder>
 
-                    <folder name="Indices to Minimize Soil Noise">
+                    <folder name="Soil Indices">
 
                         <file name="org-esa-s2tbx-radiometry-SaviOpAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-SaviOpAction.instance"/>
