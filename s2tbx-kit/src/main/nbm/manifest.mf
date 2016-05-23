@@ -4,3 +4,4 @@ OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 AutoUpdate-Show-In-Client: true
 AutoUpdate-Essential-Module: false
 
+    
