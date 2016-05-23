@@ -108,7 +108,7 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-s2msi-idepix</artifactId>
-            <version>${snap.version}</version>
+            <version>${s2tbx.version}</version>
         </dependency>
 
     </dependencies>
