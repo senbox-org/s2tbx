@@ -10,10 +10,8 @@
                 <tocitem text="Sen2Cor Installation" target="sen2corInstallation"/>
             </tocitem>
         </tocitem>
-        <tocitem text="Raster">
-            <tocitem text="Image Analysis">
-                <tocitem text="OTB Installation" target="otbInstallation"/>
-            </tocitem>
+        <tocitem text="Optical">
+            <tocitem text="Orfeo Toolbox" target="otbInstallation"/>
         </tocitem>
     </tocitem>
 
