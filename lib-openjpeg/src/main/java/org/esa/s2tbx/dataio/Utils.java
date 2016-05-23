@@ -35,7 +35,7 @@ public class Utils {
     }
 
     public static String GetShortPathNameW(String path) {
-        if (! org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+        if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             return path;
         }
 
@@ -52,8 +52,28 @@ public class Utils {
         return Native.toString(shortt);
     }
 
+
+    public static String GetLongPathNameW(String path) {
+        if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+            return path;
+        }
+
+        if (!(new File(path).exists())) {
+            return "";
+        }
+
+        int sizeBuffer = 2048;
+        char[] longg = new char[sizeBuffer];
+
+        //Call CKernel32 interface to execute GetLongPathNameW method
+        CKernel32.INSTANCE.GetLongPathNameW(path, longg, sizeBuffer);
+
+        return Native.toString(longg);
+    }
+
+
     public static String GetIterativeShortPathNameW(String path) {
-        if (! org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+        if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             return path;
         }
 
@@ -97,6 +117,8 @@ public class Utils {
         CKernel32 INSTANCE = (CKernel32) Native.loadLibrary("kernel32", CKernel32.class, W32APIOptions.UNICODE_OPTIONS);
 
         int GetShortPathNameW(String LongName, char[] ShortName, int BufferCount); //Unicode version of GetShortPathNameW
+
+        int GetLongPathNameW(String ShortName, char[] LongName, int BufferCount);
     }
 
 }
