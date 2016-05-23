@@ -43,6 +43,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.esa.s2tbx.dataio.Utils.GetLongPathNameW;
+
 /**
  * Base class for all Sentinel-2 product readers
  *
@@ -113,13 +115,12 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         versionProp.load(inputStream);
 
         String version = versionProp.getProperty("project.version");
-        if (version == null)
-        {
+        if (version == null) {
             throw new IOException("Unable to get project.version property from " + versionFile);
         }
 
-        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir() +  File.separator + version),
-                productDir.getName());
+        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir() + File.separator + version),
+                            productDir.getName());
 
         //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();
@@ -135,7 +136,16 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         Product p;
 
-        final File inputFile = new File(getInput().toString());
+        final File inputFile;
+
+        String longInput = GetLongPathNameW(getInput().toString());
+        if (longInput.length() != 0) {
+            inputFile = new File(longInput);
+        } else {
+            inputFile = new File(getInput().toString());
+        }
+
+
         if (!inputFile.exists()) {
             throw new FileNotFoundException(inputFile.getPath());
         }
@@ -156,7 +166,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private void addQuicklook(final Product product, final File qlFile) {
-        if(qlFile != null) {
+        if (qlFile != null) {
             product.getQuicklookGroup().add(new Quicklook(product, Quicklook.DEFAULT_QUICKLOOK_NAME, qlFile));
         }
     }
@@ -238,9 +248,9 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 }
             } catch (IOException e) {
                 SystemUtils.LOG.warning("Could not retrieve tile layout for product " +
-                        productMetadataFilePath.toAbsolutePath().toString() +
-                        " error returned: " +
-                        e.getMessage());
+                                                productMetadataFilePath.toAbsolutePath().toString() +
+                                                " error returned: " +
+                                                e.getMessage());
             }
         }
 
@@ -353,17 +363,15 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             band.setNoDataValueUsed(false);
             band.setNoDataValue(0);
             band.setValidPixelExpression(String.format("%s.raw > %s",
-                    bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
-        }
-        else if (bandInformation instanceof S2IndexBandInformation) {
+                                                       bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
+        } else if (bandInformation instanceof S2IndexBandInformation) {
             S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInformation;
             band.setSpectralWavelength(0);
             band.setSpectralBandwidth(0);
             band.setSpectralBandIndex(-1);
             band.setSampleCoding(indexBandInfo.getIndexCoding());
             band.setImageInfo(indexBandInfo.getImageInfo());
-        }
-        else {
+        } else {
             band.setSpectralWavelength(0);
             band.setSpectralBandwidth(0);
             band.setSpectralBandIndex(-1);
