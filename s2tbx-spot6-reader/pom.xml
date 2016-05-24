@@ -33,6 +33,11 @@
         This module enables the Sentinel Toolbox to read SPOT 6 and 7 products
     </description>
 
+    <properties>
+        <snap.reader.tests.class.name>org.esa.s2tbx</snap.reader.tests.class.name>
+        <snap.reader.tests.data.dir>D:\Produits_S2</snap.reader.tests.data.dir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
