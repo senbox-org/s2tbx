@@ -20,6 +20,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
+        <snap.reader.tests.class.name>org.esa.s2tbx.dataio.s2.</snap.reader.tests.class.name>
     </properties>
 
     <dependencies>
