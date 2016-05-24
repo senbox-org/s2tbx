@@ -301,114 +301,111 @@
 
                 <folder name="Radiometric Indices">
 
-                    <folder name="Vegetation Indices">
-
-                        <file name="org-esa-s2tbx-radiometry-DviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-DviOpAction.instance"/>
-                            <attr name="position" intvalue="0"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-RviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-RviOpAction.instance"/>
-                            <attr name="position" intvalue="1"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-PviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PviOpAction.instance"/>
-                            <attr name="position" intvalue="2"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-IpviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IpviOpAction.instance"/>
-                            <attr name="position" intvalue="3"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-WdviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-WdviOpAction.instance"/>
-                            <attr name="position" intvalue="4"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-TndviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-TndviOpAction.instance"/>
-                            <attr name="position" intvalue="5"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-GndviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GndviOpAction.instance"/>
-                            <attr name="position" intvalue="6"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-GemiOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GemiOpAction.instance"/>
-                            <attr name="position" intvalue="7"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-ArviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-ArviOpAction.instance"/>
-                            <attr name="position" intvalue="8"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-Ndi45OpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Ndi45OpAction.instance"/>
-                            <attr name="position" intvalue="9"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-MtciOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MtciOpAction.instance"/>
-                            <attr name="position" intvalue="10"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-McariOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-McariOpAction.instance"/>
-                            <attr name="position" intvalue="11"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-ReipOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-ReipOpAction.instance"/>
-                            <attr name="position" intvalue="12"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-S2repOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-S2repOpAction.instance"/>
-                            <attr name="position" intvalue="13"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-IreciOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IreciOpAction.instance"/>
-                            <attr name="position" intvalue="14"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-PssraOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PssraOpAction.instance"/>
-                            <attr name="position" intvalue="15"/>
-                        </file>
-
-                    </folder>
-
                     <folder name="Soil Indices">
 
                         <file name="org-esa-s2tbx-radiometry-SaviOpAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-SaviOpAction.instance"/>
-                            <attr name="position" intvalue="16"/>
+                            <attr name="position" intvalue="0"/>
                         </file>
                         <file name="org-esa-s2tbx-radiometry-TsaviOpAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-TsaviOpAction.instance"/>
-                            <attr name="position" intvalue="17"/>
+                            <attr name="position" intvalue="1"/>
                         </file>
                         <file name="org-esa-s2tbx-radiometry-MsaviOpAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MsaviOpAction.instance"/>
-                            <attr name="position" intvalue="18"/>
+                            <attr name="position" intvalue="2"/>
                         </file>
                         <file name="org-esa-s2tbx-radiometry-Msavi2OpAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Msavi2OpAction.instance"/>
-                            <attr name="position" intvalue="19"/>
+                            <attr name="position" intvalue="3"/>
                         </file>
                         <file name="org-esa-s2tbx-radiometry-BiOpAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-BiOpAction.instance"/>
-                            <attr name="position" intvalue="20"/>
+                            <attr name="position" intvalue="4"/>
                         </file>
                         <file name="org-esa-s2tbx-radiometry-Bi2OpAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Bi2OpAction.instance"/>
-                            <attr name="position" intvalue="21"/>
+                            <attr name="position" intvalue="5"/>
                         </file>
                         <file name="org-esa-s2tbx-radiometry-RiOpAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-RiOpAction.instance"/>
-                            <attr name="position" intvalue="22"/>
+                            <attr name="position" intvalue="6"/>
                         </file>
                         <file name="org-esa-s2tbx-radiometry-CiOpAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-CiOpAction.instance"/>
-                            <attr name="position" intvalue="23"/>
+                            <attr name="position" intvalue="7"/>
                         </file>
 
                     </folder>
 
-                    <!--folder name="Indices to Minimize Atmospheric Noise">
-                    </folder-->
+                    <folder name="Vegetation Indices">
+
+                        <file name="org-esa-s2tbx-radiometry-DviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-DviOpAction.instance"/>
+                            <attr name="position" intvalue="8"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-RviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-RviOpAction.instance"/>
+                            <attr name="position" intvalue="9"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-PviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PviOpAction.instance"/>
+                            <attr name="position" intvalue="10"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-IpviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IpviOpAction.instance"/>
+                            <attr name="position" intvalue="11"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-WdviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-WdviOpAction.instance"/>
+                            <attr name="position" intvalue="12"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-TndviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-TndviOpAction.instance"/>
+                            <attr name="position" intvalue="13"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-GndviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GndviOpAction.instance"/>
+                            <attr name="position" intvalue="14"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-GemiOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GemiOpAction.instance"/>
+                            <attr name="position" intvalue="15"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-ArviOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-ArviOpAction.instance"/>
+                            <attr name="position" intvalue="16"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-Ndi45OpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Ndi45OpAction.instance"/>
+                            <attr name="position" intvalue="17"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-MtciOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MtciOpAction.instance"/>
+                            <attr name="position" intvalue="18"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-McariOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-McariOpAction.instance"/>
+                            <attr name="position" intvalue="19"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-ReipOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-ReipOpAction.instance"/>
+                            <attr name="position" intvalue="20"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-S2repOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-S2repOpAction.instance"/>
+                            <attr name="position" intvalue="21"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-IreciOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IreciOpAction.instance"/>
+                            <attr name="position" intvalue="22"/>
+                        </file>
+                        <file name="org-esa-s2tbx-radiometry-PssraOpAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PssraOpAction.instance"/>
+                            <attr name="position" intvalue="23"/>
+                        </file>
+
+                    </folder>
 
                     <folder name="Water Indices">
 
