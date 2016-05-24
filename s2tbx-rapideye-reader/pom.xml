@@ -33,6 +33,12 @@
         This module enables the Sentinel Toolbox to read RapidEye products
     </description>
 
+
+    <properties>
+        <snap.reader.tests.class.name>org.esa.s2tbx.dataio.rapideye</snap.reader.tests.class.name>
+        <snap.reader.tests.data.dir>D:\Produits_S2</snap.reader.tests.data.dir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
