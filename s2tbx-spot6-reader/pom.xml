@@ -34,7 +34,7 @@
     </description>
 
     <properties>
-        <snap.reader.tests.class.name>org.esa.s2tbx</snap.reader.tests.class.name>
+        <snap.reader.tests.class.name>org.esa.s2tbx.dataio.spot</snap.reader.tests.class.name>
         <snap.reader.tests.data.dir>D:\Produits_S2</snap.reader.tests.data.dir>
     </properties>
 
