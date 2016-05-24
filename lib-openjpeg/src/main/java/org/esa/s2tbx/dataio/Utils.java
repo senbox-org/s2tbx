@@ -24,6 +24,8 @@ import com.sun.jna.win32.W32APIOptions;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Pattern;
 
 public class Utils {
@@ -35,7 +37,7 @@ public class Utils {
     }
 
     public static String GetShortPathNameW(String path) {
-        if (! org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+        if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             return path;
         }
 
@@ -53,7 +55,7 @@ public class Utils {
     }
 
     public static String GetIterativeShortPathNameW(String path) {
-        if (! org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+        if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             return path;
         }
 
@@ -97,6 +99,23 @@ public class Utils {
         CKernel32 INSTANCE = (CKernel32) Native.loadLibrary("kernel32", CKernel32.class, W32APIOptions.UNICODE_OPTIONS);
 
         int GetShortPathNameW(String LongName, char[] ShortName, int BufferCount); //Unicode version of GetShortPathNameW
+    }
+
+    public static String getMD5sum(String input) {
+
+        MessageDigest messageDigest;
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(input.getBytes());
+            byte[] messageDigestMD5 = messageDigest.digest();
+            StringBuffer stringBuffer = new StringBuffer();
+            for (byte bytes : messageDigestMD5) {
+                stringBuffer.append(String.format("%02x", bytes & 0xff));
+            }
+            return stringBuffer.toString();
+        } catch (NoSuchAlgorithmException exception) {
+            return null;
+        }
     }
 
 }
