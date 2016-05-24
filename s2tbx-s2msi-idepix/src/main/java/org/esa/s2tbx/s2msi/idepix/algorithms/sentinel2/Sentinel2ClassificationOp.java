@@ -275,7 +275,13 @@ public class Sentinel2ClassificationOp extends Operator {
             copyReflectances();
         }
 
-        final Band b = ProductUtils.copyBand("sun_zenith", sourceProduct, targetProduct, true);
+        Band b = ProductUtils.copyBand("sun_zenith", sourceProduct, targetProduct, true);
+        b.setUnit("dl");
+        b = ProductUtils.copyBand("view_zenith", sourceProduct, targetProduct, true);
+        b.setUnit("dl");
+        b = ProductUtils.copyBand("sun_azimuth", sourceProduct, targetProduct, true);
+        b.setUnit("dl");
+        b = ProductUtils.copyBand("view_azimuth", sourceProduct, targetProduct, true);
         b.setUnit("dl");
 
         if (copyNNValue) {
