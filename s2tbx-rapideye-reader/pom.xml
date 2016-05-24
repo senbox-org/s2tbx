@@ -36,7 +36,6 @@
 
     <properties>
         <snap.reader.tests.class.name>org.esa.s2tbx.dataio.rapideye</snap.reader.tests.class.name>
-        <snap.reader.tests.data.dir>D:\Produits_S2</snap.reader.tests.data.dir>
     </properties>
 
     <dependencies>
