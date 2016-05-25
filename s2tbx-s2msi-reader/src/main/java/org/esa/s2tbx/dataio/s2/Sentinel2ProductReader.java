@@ -188,8 +188,10 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      *
      * @param metadataFilePath the path to the product metadata file
      * @param isGranule        true if it is the metadata file of a granule
+     * @return false when every tileLayout is null
      */
-    protected void updateTileLayout(Path metadataFilePath, boolean isGranule) {
+    protected boolean updateTileLayout(Path metadataFilePath, boolean isGranule) {
+        boolean valid = false;
         for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
             TileLayout tileLayout;
             if (isGranule) {
@@ -199,7 +201,11 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, layoutResolution);
             }
             config.updateTileLayout(layoutResolution, tileLayout);
+            if(tileLayout != null) {
+                valid = true;
+            }
         }
+        return valid;
     }
 
 

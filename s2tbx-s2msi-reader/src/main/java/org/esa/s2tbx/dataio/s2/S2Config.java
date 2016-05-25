@@ -123,4 +123,5 @@ public class S2Config {
     public void updateTileLayout(S2SpatialResolution resolution, TileLayout tileLayout) {
         tileLayouts[resolution.id] = tileLayout;
     }
+
 }
