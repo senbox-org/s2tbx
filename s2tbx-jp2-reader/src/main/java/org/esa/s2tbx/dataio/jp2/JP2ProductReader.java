@@ -63,6 +63,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.areOpenJpegExecutablesOK;
 
 /**
  * Generic reader for JP2 files.
@@ -139,10 +140,16 @@ public class JP2ProductReader extends AbstractProductReader {
         if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
+
+        if(!areOpenJpegExecutablesOK(OpenJpegExecRetriever.getOpjDump(),OpenJpegExecRetriever.getOpjDecompress())){
+            throw new IOException("Not valid OpenJpeg executables");
+        }
+
         Path inputFile = getFileInput(getInput());
         tmpFolder = createCacheDirRoot(inputFile);
 
         logger.info("Reading product metadata");
+
         try {
             OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getOpjDump());
             OpjDumpFile dumpFile = new OpjDumpFile(PathUtils.get(tmpFolder, String.format(JP2ProductReaderConstants.JP2_INFO_FILE, PathUtils.getFileNameWithoutExtension(inputFile))));
