@@ -17,18 +17,6 @@
 
                     <tocitem text="Soil Indices">
 
-                        <tocitem text="SAVI Operator" target="SAVIOperator">
-                            <tocitem text="SAVI Algorithm Specification" target="SAVIAlgorithm"/>
-                        </tocitem>
-                        <tocitem text="TSAVI Operator" target="TSAVIOperator">
-                            <tocitem text="TSAVI Algorithm Specification" target="TSAVIAlgorithm"/>
-                        </tocitem>
-                        <tocitem text="MSAVI Operator" target="MSAVIOperator">
-                            <tocitem text="MSAVI Algorithm Specification" target="MSAVIAlgorithm"/>
-                        </tocitem>
-                        <tocitem text="MSAVI2 Operator" target="MSAVI2Operator">
-                            <tocitem text="MSAVI2 Algorithm Specification" target="MSAVI2Algorithm"/>
-                        </tocitem>
                         <tocitem text="BI Operator" target="BIOperator">
                             <tocitem text="BI Algorithm Specification" target="BIAlgorithm"/>
                         </tocitem>
@@ -46,6 +34,18 @@
 
                     <tocitem text="Vegetation Indices">
 
+                        <tocitem text="SAVI Operator" target="SAVIOperator">
+                            <tocitem text="SAVI Algorithm Specification" target="SAVIAlgorithm"/>
+                        </tocitem>
+                        <tocitem text="TSAVI Operator" target="TSAVIOperator">
+                            <tocitem text="TSAVI Algorithm Specification" target="TSAVIAlgorithm"/>
+                        </tocitem>
+                        <tocitem text="MSAVI Operator" target="MSAVIOperator">
+                            <tocitem text="MSAVI Algorithm Specification" target="MSAVIAlgorithm"/>
+                        </tocitem>
+                        <tocitem text="MSAVI2 Operator" target="MSAVI2Operator">
+                            <tocitem text="MSAVI2 Algorithm Specification" target="MSAVI2Algorithm"/>
+                        </tocitem>
                         <tocitem text="DVI Operator" target="DVIOperator">
                             <tocitem text="DVI Algorithm Specification" target="DVIAlgorithm"/>
                         </tocitem>

@@ -18,7 +18,7 @@ import java.util.Map;
 @OperatorMetadata(
         alias = "TsaviOp",
         version="1.0",
-        category = "Optical/Thematic Land Processing/Radiometric Indices/Soil Indices",
+        category = "Optical/Thematic Land Processing/Radiometric Indices/Vegetation Indices",
         description = "This retrieves the Transformed Soil Adjusted Vegetation Index (TSAVI).",
         authors = "Cosmin Cara",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
