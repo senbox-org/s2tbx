@@ -15,7 +15,7 @@ import java.util.Map;
 @OperatorMetadata(
         alias = "ArviOp",
         version="1.0",
-        category = "Optical/Thematic Land Processing/Radiometric Indices/Indices to Minimize Atmospheric Noise",
+        category = "Optical/Thematic Land Processing/Radiometric Indices/Vegetation Indices",
         description = "Atmospherically Resistant Vegetation Index belongs to a family of indices with built-in atmospheric corrections.",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")

@@ -97,9 +97,6 @@
 
                     </tocitem>
 
-                    <!--tocitem text="Indices to Minimize Atmospheric Noise">
-                    </tocitem-->
-
                     <tocitem text="Water Indices">
 
                         <tocitem text="NDWI Operator" target="NDWIOperator">
