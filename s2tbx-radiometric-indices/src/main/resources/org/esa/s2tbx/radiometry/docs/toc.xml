@@ -15,23 +15,6 @@
 
                     <tocitem text="Radiometric Indices Complete List" target="OperatorsIndexList"/>
 
-                    <tocitem text="Soil Indices">
-
-                        <tocitem text="BI Operator" target="BIOperator">
-                            <tocitem text="BI Algorithm Specification" target="BIAlgorithm"/>
-                        </tocitem>
-                        <tocitem text="BI2 Operator" target="BI2Operator">
-                            <tocitem text="BI2 Algorithm Specification" target="BI2Algorithm"/>
-                        </tocitem>
-                         <tocitem text="RI Operator" target="RIOperator">
-                            <tocitem text="RI Algorithm Specification" target="RIAlgorithm"/>
-                        </tocitem>
-                        <tocitem text="CI Operator" target="CIOperator">
-                            <tocitem text="CI Algorithm Specification" target="CIAlgorithm"/>
-                        </tocitem>
-
-                    </tocitem>
-
                     <tocitem text="Vegetation Indices">
 
                         <tocitem text="SAVI Operator" target="SAVIOperator">
@@ -113,6 +96,23 @@
                         </tocitem>
                         <tocitem text="NDTI Operator" target="NDTIOperator">
                             <tocitem text="NDTI Algorithm Specification" target="NDTIAlgorithm"/>
+                        </tocitem>
+
+                    </tocitem>
+
+                    <tocitem text="Soil Indices">
+
+                        <tocitem text="BI Operator" target="BIOperator">
+                            <tocitem text="BI Algorithm Specification" target="BIAlgorithm"/>
+                        </tocitem>
+                        <tocitem text="BI2 Operator" target="BI2Operator">
+                            <tocitem text="BI2 Algorithm Specification" target="BI2Algorithm"/>
+                        </tocitem>
+                        <tocitem text="RI Operator" target="RIOperator">
+                            <tocitem text="RI Algorithm Specification" target="RIAlgorithm"/>
+                        </tocitem>
+                        <tocitem text="CI Operator" target="CIOperator">
+                            <tocitem text="CI Algorithm Specification" target="CIAlgorithm"/>
                         </tocitem>
 
                     </tocitem>
