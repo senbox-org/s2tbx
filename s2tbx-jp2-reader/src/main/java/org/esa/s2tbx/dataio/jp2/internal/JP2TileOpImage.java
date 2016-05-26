@@ -195,6 +195,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
             params.put("-o", tileFile.toString());
             params.put("-t", String.valueOf(tileIndex));
             params.put("-p", String.valueOf(DataBuffer.getDataTypeSize(this.getSampleModel().getDataType())));
+            params.put("-T", "ALL_CPUS");
 
             if (decompress.execute(params) != 0) {
                 logger.severe(decompress.getLastError());
