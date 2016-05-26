@@ -121,4 +121,26 @@ public class Utils {
         int GetLongPathNameW(String ShortName, char[] LongName, int BufferCount);
     }
 
+    /**
+     * Method for computing the difference between file1 lastModified time and file2  lastModified time.
+     *
+     * @param file1
+     * @param file2
+     * @return OL if it is not possible to compute, in other case time1-time2
+     */
+    public static long diffLastModifiedTimes(File file1, File file2) {
+
+        try {
+            long time1 = file1.lastModified();
+            long time2 = file2.lastModified();
+
+            if ((time1 != 0L) && (time2 != 0L)) {
+                return (time1 - time2);
+            } else {
+                return 0L;
+            }
+        } catch (Exception e) {
+            return 0L;
+        }
+    }
 }
