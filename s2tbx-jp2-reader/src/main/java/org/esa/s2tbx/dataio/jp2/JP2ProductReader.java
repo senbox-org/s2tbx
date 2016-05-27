@@ -53,6 +53,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -123,7 +124,14 @@ public class JP2ProductReader extends AbstractProductReader {
     Path createCacheDirRoot(Path inputFile) throws IOException {
         Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
         Properties versionProp = new Properties();
-        versionProp.load(Files.newInputStream(versionFile));
+
+        try (InputStream inputStream = Files.newInputStream(versionFile)){
+            versionProp.load(inputStream);
+        } catch (IOException e) {
+            SystemUtils.LOG.severe("JP2-reader configuration error: Failed to read " + versionFile.toString());
+            return null;
+        }
+
         String version = versionProp.getProperty("project.version");
         if (version == null) {
             throw new IOException("Unable to get project.version property from " + versionFile);
