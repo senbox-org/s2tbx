@@ -69,8 +69,7 @@ public class OpenJpegExecRetriever {
         Path versionFile = ResourceInstaller.findModuleCodeBasePath(OpenJpegExecRetriever.class).resolve("version/version.properties");
         Properties versionProp = new Properties();
 
-        try {
-            InputStream inputStream = Files.newInputStream(versionFile);
+        try (InputStream inputStream = Files.newInputStream(versionFile)){
             versionProp.load(inputStream);
         } catch (IOException e) {
             SystemUtils.LOG.severe("OpenJPEG configuration error: failed to read " + versionFile.toString());
