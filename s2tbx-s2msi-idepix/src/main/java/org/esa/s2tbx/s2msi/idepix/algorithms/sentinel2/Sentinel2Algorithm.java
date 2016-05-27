@@ -53,10 +53,10 @@ public class Sentinel2Algorithm {
         // JM, 20160524:
         final boolean gcw = tc4CirrusValue()  < GCW_THRESH;
         final boolean tcw = tc4Value()  < TCW_TC_THRESH && ndwiValue() < TCW_NDWI_THRESH;
-        final boolean cw = refl[10] > CW_THRESH && elevation > ELEVATION_THRESH;
+        final boolean cw = refl[10] > CW_THRESH && elevation < ELEVATION_THRESH;
         final boolean acw = isB3B11Water() && (gcw || tcw || cw);
         final boolean gcl = tc4CirrusValue()  < GCL_THRESH;
-        final boolean cl = refl[10] > CL_THRESH && elevation > ELEVATION_THRESH;
+        final boolean cl = refl[10] > CL_THRESH && elevation < ELEVATION_THRESH;
         final boolean acl = ! isB3B11Water() && (gcl || cl);
 
         return !isInvalid() && !isClearSnow() && (acw || acl);
