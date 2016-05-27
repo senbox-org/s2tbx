@@ -329,7 +329,6 @@ public class Sentinel2ClassificationOp extends Operator {
             s2MsiReflectances[i] = s2MsiReflectanceTiles[i].getSampleFloat(x, y) / 10000.0f;
         }
         s2MsiAlgorithm.setRefl(s2MsiReflectances);
-        s2MsiAlgorithm.setRefl01(s2MsiReflectances);
 
         boolean isLand = false;
         if (waterMaskProduct != null) {
