@@ -53,6 +53,7 @@ import java.awt.geom.Point2D;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,6 +64,8 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.areOpenJpegExecutablesOK;
+import static org.esa.s2tbx.dataio.Utils.getMD5sum;
 
 /**
  * Generic reader for JP2 files.
@@ -121,13 +124,25 @@ public class JP2ProductReader extends AbstractProductReader {
     Path createCacheDirRoot(Path inputFile) throws IOException {
         Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
         Properties versionProp = new Properties();
-        versionProp.load(Files.newInputStream(versionFile));
+
+        try (InputStream inputStream = Files.newInputStream(versionFile)){
+            versionProp.load(inputStream);
+        } catch (IOException e) {
+            SystemUtils.LOG.severe("JP2-reader configuration error: Failed to read " + versionFile.toString());
+            return null;
+        }
+
         String version = versionProp.getProperty("project.version");
-        if (version == null)
-        {
+        if (version == null) {
             throw new IOException("Unable to get project.version property from " + versionFile);
         }
-        tmpFolder = PathUtils.get(SystemUtils.getCacheDir(), "s2tbx", "jp2-reader", version, PathUtils.getFileNameWithoutExtension(inputFile).toLowerCase() + "_cached");
+
+        String md5sum = getMD5sum(inputFile.toString());
+        if (md5sum == null) {
+            throw new IOException("Unable to get md5sum of path " + inputFile.toString());
+        }
+
+        tmpFolder = PathUtils.get(SystemUtils.getCacheDir(), "s2tbx", "jp2-reader", version, md5sum, PathUtils.getFileNameWithoutExtension(inputFile).toLowerCase() + "_cached");
         if (!Files.exists(tmpFolder)) {
             Files.createDirectories(tmpFolder);
         }
@@ -139,10 +154,16 @@ public class JP2ProductReader extends AbstractProductReader {
         if (getReaderPlugIn().getDecodeQualification(super.getInput()) == DecodeQualification.UNABLE) {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
+
+        if(!areOpenJpegExecutablesOK(OpenJpegExecRetriever.getOpjDump(),OpenJpegExecRetriever.getOpjDecompress())){
+            throw new IOException("Not valid OpenJpeg executables");
+        }
+
         Path inputFile = getFileInput(getInput());
         tmpFolder = createCacheDirRoot(inputFile);
 
         logger.info("Reading product metadata");
+
         try {
             OpjExecutor dumper = new OpjExecutor(OpenJpegExecRetriever.getOpjDump());
             OpjDumpFile dumpFile = new OpjDumpFile(PathUtils.get(tmpFolder, String.format(JP2ProductReaderConstants.JP2_INFO_FILE, PathUtils.getFileNameWithoutExtension(inputFile))));
@@ -171,9 +192,9 @@ public class JP2ProductReader extends AbstractProductReader {
                         GeoCoding geoCoding = null;
                         try {
                             geoCoding = new CrsGeoCoding(CRS.decode(crsGeocoding.replace("::", ":")),
-                                    imageWidth, imageHeight,
-                                    origin.getX(), origin.getY(),
-                                    metadata.getStepX(), -metadata.getStepY());
+                                                         imageWidth, imageHeight,
+                                                         origin.getX(), origin.getY(),
+                                                         metadata.getStepX(), -metadata.getStepY());
                         } catch (Exception gEx) {
                             try {
                                 float oX = (float) origin.getX();
@@ -240,8 +261,9 @@ public class JP2ProductReader extends AbstractProductReader {
 
     /**
      * Returns a File object from the input of the reader.
+     *
      * @param input the input object
-     * @return  Either a new instance of File, if the input represents the file name, or the casted input File.
+     * @return Either a new instance of File, if the input represents the file name, or the casted input File.
      */
     protected Path getFileInput(Object input) {
         if (input instanceof String) {

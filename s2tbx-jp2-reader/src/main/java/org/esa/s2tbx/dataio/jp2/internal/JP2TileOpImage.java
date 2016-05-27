@@ -41,6 +41,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,6 +51,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
+import static org.esa.s2tbx.dataio.Utils.diffLastModifiedTimes;
 
 /**
  * A JAI operator for handling JP2 tiles.
@@ -185,7 +187,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
 
     protected Path decompressTile(int tileIndex, int level) throws IOException {
         Path tileFile = PathUtils.get(cacheDir, PathUtils.getFileNameWithoutExtension(imageFile).toLowerCase() + "_tile_" + String.valueOf(tileIndex) + "_" + String.valueOf(level) + ".tif");
-        if (!Files.exists(tileFile)) {
+        if ((!Files.exists(tileFile)) || (diffLastModifiedTimes(tileFile.toFile(), imageFile.toFile()) < 0L)) {
             final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getOpjDecompress());
             final Map<String, String> params = new HashMap<String, String>() {{
                 put("-i", GetIterativeShortPathNameW(imageFile.toString()));

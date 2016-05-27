@@ -26,31 +26,40 @@ public class Sentinel2Algorithm {
     static final float WHITE_THRESH = 0.9f;
     static final float NDVI_THRESH = 0.5f;
 
-    static final float TC_THRESH = 2100.0f; // what's this?
     static final float NDWI_THRESH = 0.25f;  // what's this?
+
+    static final float B3B11_THRESH = 1.0f;
+    static final float TC1_THRESH = 0.36f;
+
+    static final float GCW_THRESH = -0.1f;
+    static final float TCW_TC_THRESH = -0.08f;
+    static final float TCW_NDWI_THRESH = 0.4f;
+    static final float CW_THRESH = 0.01f;
+    static final float ELEVATION_THRESH = 2000.0f;
+    static final float GCL_THRESH = -0.11f;
+    static final float CL_THRESH = 0.01f;
 
     private float[] refl;
     private double brr442Thresh;
+    private double elevation;
     private double[] nnOutput;
     private boolean isLand;
-
 
     public boolean isBrightWhite() {
         return !isInvalid() && (whiteValue() + brightValue() > getBrightWhiteThreshold());
     }
 
     public boolean isCloud() {
-        boolean threshTest = whiteValue() + brightValue() + pressureValue() + temperatureValue() > CLOUD_THRESH;
+        // JM, 20160524:
+        final boolean gcw = tc4CirrusValue()  < GCW_THRESH;
+        final boolean tcw = tc4Value()  < TCW_TC_THRESH && ndwiValue() < TCW_NDWI_THRESH;
+        final boolean cw = refl[10] > CW_THRESH && elevation < ELEVATION_THRESH;
+        final boolean acw = isB3B11Water() && (gcw || tcw || cw);
+        final boolean gcl = tc4CirrusValue()  < GCL_THRESH;
+        final boolean cl = refl[10] > CL_THRESH && elevation < ELEVATION_THRESH;
+        final boolean acl = ! isB3B11Water() && (gcl || cl);
 
-//        return !isInvalid() && (threshTest && !isClearSnow());
-
-        // JM, 20160517:
-        boolean yellowTest = (Math.abs(refl[3]-refl[2]) < 700.0) && (refl[1] < Math.min(refl[2], refl[3]));
-        boolean darkurbanTest = (Math.abs(refl[3]-refl[2]) < 500.0) && (Math.abs(refl[2]-refl[1]) < 500.0) &&
-                ( (refl[1]+refl[2]+refl[3])/3.0 < 2000.0);
-
-//        return !isInvalid() && (threshTest && !isClearSnow() && !yellowTest && !darkurbanTest);
-        return !isInvalid() && (threshTest && !isClearSnow() && !yellowTest);
+        return !isInvalid() && !isClearSnow() && (acw || acl);
 
     }
 
@@ -87,8 +96,9 @@ public class Sentinel2Algorithm {
 
     public boolean isClearSnow() {
 //        return (!isInvalid() && isLand() && isBrightWhite() && ndsiValue() > getNdsiThreshold());
-        return (!isInvalid() && isLand() && ndsiValue() > getNdsiThreshold() &&
-        !((ndwiValue() > getNdwiThreshold()) && (tcValue() < getTcThreshold() )));  // JM, 20160517
+        return  !isInvalid() && isLand() &&
+                ndsiValue() > getNdsiThreshold() &&
+                !(isB3B11Water() && (tc1Value() < getTc1Threshold()));  // JM, 20160526
     }
 
     public boolean isSeaIce() {
@@ -121,19 +131,33 @@ public class Sentinel2Algorithm {
         return false;
     }
 
+    public boolean isB3B11Water() {
+        return b3b11Value() > B3B11_THRESH;
+    }
+
     public boolean isInvalid() {
         return false;
     }
 
     // feature values
-    public float tcValue() {
-        // what is TC?
-        return 0.3029f*refl[1] + 0.2786f*refl[2] + 0.4733f*refl[3] + 0.5599f*refl[8] + 0.508f*refl[11] + 0.1872f*refl[12];
+    public float b3b11Value() {
+        return (refl[2] / refl[11]);
+    }
+
+    public float tc1Value() {
+        return (0.3029f*refl[1] + 0.2786f*refl[2] + 0.4733f*refl[3] + 0.5599f*refl[8] + 0.508f*refl[11] + 0.1872f*refl[12]);
+    }
+
+    public float tc4Value() {
+        return (-0.8239f*refl[1] + 0.0849f*refl[2] + 0.4396f*refl[3] - 0.058f*refl[8] + 0.2013f*refl[11] - 0.2773f* refl[12]);
+    }
+
+    public float tc4CirrusValue() {
+        return (-0.8239f*refl[1] + 0.0849f*refl[2] + 0.4396f*refl[3] - 0.058f*refl[8] + 0.2013f*refl[11] - 0.2773f* refl[12] - refl[10]);
     }
 
     public float ndwiValue() {
-        // what is NDWI?
-        return (refl[8] - refl[11]) / (refl[8] + refl[11]);
+        return ((refl[8]-refl[11])/(refl[8]+refl[11]));
     }
 
     public float spectralFlatnessValue() {
@@ -211,6 +235,10 @@ public class Sentinel2Algorithm {
         this.isLand = isLand;
     }
 
+    public void setElevation(double elevation) {
+        this.elevation = elevation;
+    }
+
     // GETTERS
     public float getNdsiThreshold() {
         return NDSI_THRESH;
@@ -224,8 +252,8 @@ public class Sentinel2Algorithm {
         return NDWI_THRESH;
     }
 
-    public float getTcThreshold() {
-        return TC_THRESH;
+    public float getTc1Threshold() {
+        return TC1_THRESH;
     }
 
     public float getBrightThreshold() {

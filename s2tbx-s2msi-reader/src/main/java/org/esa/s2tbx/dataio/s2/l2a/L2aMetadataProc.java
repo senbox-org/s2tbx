@@ -50,6 +50,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -235,13 +236,23 @@ public class L2aMetadataProc extends S2MetadataProc {
 
         List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
 
+        //New list with only granules with different granuleIdentifier
+        List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> aGranuleListReduced = new ArrayList<>();
+        Map<String, A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> mapGranules = new LinkedHashMap<>(aGranuleList.size());
+        for (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List granule : aGranuleList) {
+            mapGranules.put(granule.getGranules().getGranuleIdentifier(), granule);
+        }
+        for (Map.Entry<String, A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> granule : mapGranules.entrySet()) {
+            aGranuleListReduced.add(granule.getValue());
+        }
+
         Transformer tileSelector = o -> {
             A_L2A_Product_Info.L2A_Product_Organisation.Granule_List ali = (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List) o;
             A_PRODUCT_ORGANIZATION_2A.Granules gr = ali.getGranules();
             return gr.getGranuleIdentifier();
         };
 
-        return CollectionUtils.collect(aGranuleList, tileSelector);
+        return CollectionUtils.collect(aGranuleListReduced, tileSelector);
     }
 
     public static S2DatastripFilename getDatastrip(Level2A_User_Product product) {

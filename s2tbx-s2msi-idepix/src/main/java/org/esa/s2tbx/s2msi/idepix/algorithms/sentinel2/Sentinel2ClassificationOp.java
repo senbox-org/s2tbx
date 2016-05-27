@@ -20,6 +20,7 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.math.MathUtils;
+import org.esa.snap.dem.gpf.AddElevationOp;
 
 import java.awt.*;
 import java.util.Map;
@@ -120,6 +121,13 @@ public class Sentinel2ClassificationOp extends Operator {
     Band glintRiskBand;
     Band radioLandBand;
     Band radioWaterBand;
+    Band b3b11Band;
+    Band tc1Band;
+    Band tc4Band;
+    Band tc4CirrusBand;
+    Band ndwiBand;
+
+    private Product elevationProduct;
 
 
 //    public static final String NN_NAME = "20x4x2_1012.9.net";    // Landsat 'all' NN
@@ -135,6 +143,11 @@ public class Sentinel2ClassificationOp extends Operator {
         if (waterMaskProduct != null) {
             landWaterBand = waterMaskProduct.getBand("land_water_fraction");
         }
+
+        AddElevationOp elevationOp = new AddElevationOp();
+        elevationOp.setParameterDefaultValues();
+        elevationOp.setSourceProduct(sourceProduct);
+        elevationProduct = elevationOp.getTargetProduct();
 
         extendTargetProduct();
     }
@@ -168,6 +181,9 @@ public class Sentinel2ClassificationOp extends Operator {
             nnTargetTile = targetTiles.get(nnTargetBand);
         }
 
+        final Band elevationBand = targetProduct.getBand("elevation");
+        final Tile elevationTile = getSourceTile(elevationBand, rectangle);
+
         try {
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 checkForCancellation();
@@ -187,6 +203,7 @@ public class Sentinel2ClassificationOp extends Operator {
                     Sentinel2Algorithm s2MsiAlgorithm = createS2MsiAlgorithm(s2ReflectanceTiles,
                                                                              szaTile, vzaTile, saaTile, vaaTile,
                                                                              waterFractionTile,
+                                                                             elevationTile,
                                                                              s2MsiReflectance,
                                                                              y,
                                                                              x);
@@ -283,6 +300,8 @@ public class Sentinel2ClassificationOp extends Operator {
         b.setUnit("dl");
         b = ProductUtils.copyBand("view_azimuth", sourceProduct, targetProduct, true);
         b.setUnit("dl");
+        b = ProductUtils.copyBand("elevation", elevationProduct, targetProduct, true);
+        b.setUnit("m");
 
         if (copyNNValue) {
             targetProduct.addBand("nn_value", ProductData.TYPE_FLOAT32);
@@ -300,6 +319,7 @@ public class Sentinel2ClassificationOp extends Operator {
     private Sentinel2Algorithm createS2MsiAlgorithm(Tile[] s2MsiReflectanceTiles,
                                                     Tile szaTile, Tile vzaTile, Tile saaTile, Tile vaaTile,
                                                     Tile waterFractionTile,
+                                                    Tile elevationTile,
                                                     float[] s2MsiReflectances,
                                                     int y,
                                                     int x) {
@@ -321,6 +341,8 @@ public class Sentinel2ClassificationOp extends Operator {
         final double vza = vzaTile.getSampleDouble(x, y);
         final double saa = saaTile.getSampleDouble(x, y);
         final double vaa = vaaTile.getSampleDouble(x, y);
+        final double elevation = elevationTile.getSampleDouble(x, y);
+        s2MsiAlgorithm.setElevation(elevation);
         final double rhoToa442Thresh = calcRhoToa442ThresholdTerm(sza, vza, saa, vaa);
         s2MsiAlgorithm.setRhoToa442Thresh(rhoToa442Thresh);
 
@@ -453,6 +475,27 @@ public class Sentinel2ClassificationOp extends Operator {
             radioWaterBand = targetProduct.addBand("radiometric_water_value", ProductData.TYPE_FLOAT32);
             IdepixUtils.setNewBandProperties(radioWaterBand, "Radiometric Water Value", "",
                                              IdepixConstants.NO_DATA_VALUE, true);
+
+            b3b11Band = targetProduct.addBand("b3b11_value", ProductData.TYPE_FLOAT32);
+            IdepixUtils.setNewBandProperties(b3b11Band, "B3 B11 Value", "",
+                                             IdepixConstants.NO_DATA_VALUE, true);
+
+            tc1Band = targetProduct.addBand("tc1_value", ProductData.TYPE_FLOAT32);
+            IdepixUtils.setNewBandProperties(tc1Band, "TC1 Value", "",
+                                             IdepixConstants.NO_DATA_VALUE, true);
+
+            tc4Band = targetProduct.addBand("tc4_value", ProductData.TYPE_FLOAT32);
+            IdepixUtils.setNewBandProperties(tc4Band, "TC4 Value", "",
+                                             IdepixConstants.NO_DATA_VALUE, true);
+
+            tc4CirrusBand = targetProduct.addBand("tc4cirrus_water_value", ProductData.TYPE_FLOAT32);
+            IdepixUtils.setNewBandProperties(tc4CirrusBand, "TC4 Cirrus Value", "",
+                                             IdepixConstants.NO_DATA_VALUE, true);
+
+            ndwiBand = targetProduct.addBand("ndwi_value", ProductData.TYPE_FLOAT32);
+            IdepixUtils.setNewBandProperties(ndwiBand, "NDWI Value", "",
+                                             IdepixConstants.NO_DATA_VALUE, true);
+
         }
 
     }
@@ -479,6 +522,16 @@ public class Sentinel2ClassificationOp extends Operator {
             targetTile.setSample(x, y, s2Algorithm.radiometricLandValue());
         } else if (band == radioWaterBand) {
             targetTile.setSample(x, y, s2Algorithm.radiometricWaterValue());
+        } else if (band == b3b11Band) {
+            targetTile.setSample(x, y, s2Algorithm.b3b11Value());
+        } else if (band == tc1Band) {
+            targetTile.setSample(x, y, s2Algorithm.tc1Value());
+        } else if (band == tc4Band) {
+            targetTile.setSample(x, y, s2Algorithm.tc4Value());
+        } else if (band == tc4CirrusBand) {
+            targetTile.setSample(x, y, s2Algorithm.tc4CirrusValue());
+        } else if (band == ndwiBand) {
+            targetTile.setSample(x, y, s2Algorithm.ndwiValue());
         }
     }
 

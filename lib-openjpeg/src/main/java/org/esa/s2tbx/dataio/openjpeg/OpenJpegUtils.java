@@ -161,4 +161,36 @@ public class OpenJpegUtils {
         return new TileLayout(Width, Height, tileWidth, tileHeight, xTiles, yTiles, resolutions);
 
     }
+
+    public static boolean areOpenJpegExecutablesOK(String opjdumpPath, String opjdecompPath) {
+
+        ProcessBuilder builder = new ProcessBuilder(opjdumpPath, "-h");
+        builder.redirectErrorStream(true);
+
+        CommandOutput exit;
+        try {
+            exit = OpenJpegUtils.runProcess(builder);
+        } catch (Exception e) {
+            return false;
+        }
+
+        if (exit.getErrorCode() != 1) {
+            return false;
+        }
+
+        builder = new ProcessBuilder(opjdecompPath, "-h");
+        builder.redirectErrorStream(true);
+
+        try {
+            exit = OpenJpegUtils.runProcess(builder);
+        } catch (Exception e) {
+            return false;
+        }
+
+        if (exit.getErrorCode() != 1) {
+            return false;
+        }
+
+        return true;
+    }
 }

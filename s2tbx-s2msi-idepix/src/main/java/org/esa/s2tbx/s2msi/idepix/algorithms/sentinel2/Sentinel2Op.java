@@ -135,13 +135,13 @@ public class Sentinel2Op extends Operator {
 
         final Map<String, Object> pixelClassificationParameters = createPixelClassificationParameters();
 
-        final Product prelimClassifProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2ClassificationOp.class),
+        s2ClassifProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2ClassificationOp.class),
                                            pixelClassificationParameters, inputProducts);
 
-        AddElevationOp elevationOp = new AddElevationOp();
-        elevationOp.setParameterDefaultValues();
-        elevationOp.setSourceProduct(prelimClassifProduct);
-        s2ClassifProduct = elevationOp.getTargetProduct();
+//        AddElevationOp elevationOp = new AddElevationOp();
+//        elevationOp.setParameterDefaultValues();
+//        elevationOp.setSourceProduct(prelimClassifProduct);
+//        s2ClassifProduct = elevationOp.getTargetProduct();
 
         if (refineClassificationNearCoastlines || computeCloudShadow || computeCloudBuffer) {
             // Post Cloud Classification: coastline refinement, cloud shadow, cloud buffer
