@@ -64,6 +64,14 @@ public class S2IndexBandInformation extends S2BandInformation {
         return indexCoding;
     }
 
+    public List<Color> getColors() {
+        List<Color> colorList = new ArrayList<>();
+        for (S2IndexBandIndex index : indexList) {
+            colorList.add(index.color);
+        }
+        return colorList;
+    }
+
     public static S2IndexBandIndex makeIndex(int sample, Color color, String label, String description) {
         return new S2IndexBandIndex(sample, color, label, description);
     }

@@ -86,6 +86,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -408,17 +409,26 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
-    private void addIndexMasks(Product product, List<BandInfo> bandInfoList) {
+    private void addIndexMasks(Product product, List<BandInfo> bandInfoList) throws IOException {
         for (BandInfo bandInfo : bandInfoList) {
             if (bandInfo.getBandInformation() instanceof S2IndexBandInformation) {
                 S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) bandInfo.getBandInformation();
                 IndexCoding indexCoding = indexBandInformation.getIndexCoding();
                 product.getIndexCodingGroup().add(indexCoding);
+
+                List<Color> colors = indexBandInformation.getColors();
+                Iterator<Color> colorIterator = colors.iterator();
+
                 for (String indexName : indexCoding.getIndexNames()) {
                     int indexValue = indexCoding.getIndexValue(indexName);
                     String description = indexCoding.getIndex(indexName).getDescription();
+                    if (!colorIterator.hasNext()) {
+                        // we should never be here : programming error.
+                        throw new IOException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding"));
+                    }
+                    Color color = colorIterator.next();
                     Mask mask = Mask.BandMathsType.create("scl_" + indexName.toLowerCase(), description, product.getSceneRasterWidth(), product.getSceneRasterHeight(),
-                                                          String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), ColorIterator.next(), 0.5);
+                                                          String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), color, 0.5);
                     product.addMask(mask);
                 }
             }
