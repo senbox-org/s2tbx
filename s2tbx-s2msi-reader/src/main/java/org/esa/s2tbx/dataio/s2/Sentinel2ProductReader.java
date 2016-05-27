@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.esa.s2tbx.dataio.Utils.GetLongPathNameW;
+import static org.esa.s2tbx.dataio.Utils.getMD5sum;
 
 /**
  * Base class for all Sentinel-2 product readers
@@ -119,7 +120,12 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             throw new IOException("Unable to get project.version property from " + versionFile);
         }
 
-        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir() + File.separator + version),
+        String md5sum = getMD5sum(productDir.toString());
+        if (md5sum == null) {
+            throw new IOException("Unable to get md5sum of path " + productDir.toString());
+        }
+
+        cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir() + File.separator + version + File.separator + md5sum),
                             productDir.getName());
 
         //noinspection ResultOfMethodCallIgnored
