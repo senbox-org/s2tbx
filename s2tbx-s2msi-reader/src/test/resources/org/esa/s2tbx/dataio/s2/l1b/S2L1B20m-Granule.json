@@ -1,0 +1,100 @@
+{
+  "id": "S2L1B20m-Granule",
+  "decodeQualification": "INTENDED",
+  "expectedContent": {
+    "sceneWidth": 1276,
+    "sceneHeight": 1152,
+    "bands": [
+      {
+        "name": "D11B11",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "1610.0",
+        "spectralBandwidth": "172.0",
+        "expectedPixels": [
+          {
+            "x": 639,
+            "y": 577,
+            "value": 672
+          }
+        ]
+      },
+	  {
+        "name": "D11B12",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "2190.0",
+        "spectralBandwidth": "276.0",
+        "expectedPixels": [
+          {
+            "x": 639,
+            "y": 577,
+            "value": 661
+          }
+        ]
+      },
+	  {
+        "name": "D11B5",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "705.0",
+        "spectralBandwidth": "97.0",
+        "expectedPixels": [
+          {
+            "x": 639,
+            "y": 577,
+            "value": 374
+          }
+        ]
+      },
+	  {
+        "name": "D11B6",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "740.0",
+        "spectralBandwidth": "40.0",
+        "expectedPixels": [
+          {
+            "x": 639,
+            "y": 577,
+            "value": 335
+          }
+        ]
+      },
+	  {
+        "name": "D11B7",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "783.0",
+        "spectralBandwidth": "71.0",
+        "expectedPixels": [
+          {
+            "x": 639,
+            "y": 577,
+            "value": 337
+          }
+        ]
+      },
+	  {
+        "name": "D11B8A",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "865.0",
+        "spectralBandwidth": "79.0",
+        "expectedPixels": [
+          {
+            "x": 639,
+            "y": 577,
+            "value": 383
+          }
+        ]
+      }
+    ],
+	"metadata": [
+      {
+        "path": "Granules/Level-1B_Granule_ID/General_Info/SENSING_TIME",
+        "value": "2016-04-03T18:25:00.841271Z"
+      }
+    ]
+  }
+}
