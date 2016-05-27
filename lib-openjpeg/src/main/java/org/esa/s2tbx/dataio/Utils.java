@@ -24,6 +24,8 @@ import com.sun.jna.win32.W32APIOptions;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Pattern;
 
 public class Utils {
@@ -143,4 +145,22 @@ public class Utils {
             return 0L;
         }
     }
+    
+    public static String getMD5sum(String input) {
+
+        MessageDigest messageDigest;
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(input.getBytes());
+            byte[] messageDigestMD5 = messageDigest.digest();
+            StringBuffer stringBuffer = new StringBuffer();
+            for (byte bytes : messageDigestMD5) {
+                stringBuffer.append(String.format("%02x", bytes & 0xff));
+            }
+            return stringBuffer.toString();
+        } catch (NoSuchAlgorithmException exception) {
+            return null;
+        }
+    }
+
 }
