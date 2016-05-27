@@ -40,7 +40,6 @@ public class Sentinel2Algorithm {
     static final float CL_THRESH = 0.01f;
 
     private float[] refl;
-    private float[] refl01; // reflectances normalized from [0,10000] to [0,1]
     private double brr442Thresh;
     private double elevation;
     private double[] nnOutput;
@@ -54,10 +53,10 @@ public class Sentinel2Algorithm {
         // JM, 20160524:
         final boolean gcw = tc4CirrusValue()  < GCW_THRESH;
         final boolean tcw = tc4Value()  < TCW_TC_THRESH && ndwiValue() < TCW_NDWI_THRESH;
-        final boolean cw = refl[10] > CW_THRESH && elevation > ELEVATION_THRESH;
+        final boolean cw = refl[10] > CW_THRESH && elevation < ELEVATION_THRESH;
         final boolean acw = isB3B11Water() && (gcw || tcw || cw);
         final boolean gcl = tc4CirrusValue()  < GCL_THRESH;
-        final boolean cl = refl[10] > CL_THRESH && elevation > ELEVATION_THRESH;
+        final boolean cl = refl[10] > CL_THRESH && elevation < ELEVATION_THRESH;
         final boolean acl = ! isB3B11Water() && (gcl || cl);
 
         return !isInvalid() && !isClearSnow() && (acw || acl);
@@ -142,23 +141,23 @@ public class Sentinel2Algorithm {
 
     // feature values
     public float b3b11Value() {
-        return (refl01[2] / refl01[11]);
+        return (refl[2] / refl[11]);
     }
 
     public float tc1Value() {
-        return (0.3029f*refl01[1] + 0.2786f*refl01[2] + 0.4733f*refl01[3] + 0.5599f*refl01[8] + 0.508f*refl01[11] + 0.1872f*refl01[12]);
+        return (0.3029f*refl[1] + 0.2786f*refl[2] + 0.4733f*refl[3] + 0.5599f*refl[8] + 0.508f*refl[11] + 0.1872f*refl[12]);
     }
 
     public float tc4Value() {
-        return (-0.8239f*refl01[1] + 0.0849f*refl01[2] + 0.4396f*refl01[3] - 0.058f*refl01[8] + 0.2013f*refl01[11] - 0.2773f* refl01[12]);
+        return (-0.8239f*refl[1] + 0.0849f*refl[2] + 0.4396f*refl[3] - 0.058f*refl[8] + 0.2013f*refl[11] - 0.2773f* refl[12]);
     }
 
     public float tc4CirrusValue() {
-        return (-0.8239f*refl01[1] + 0.0849f*refl01[2] + 0.4396f*refl01[3] - 0.058f*refl01[8] + 0.2013f*refl01[11] - 0.2773f* refl01[12] - refl01[10]);
+        return (-0.8239f*refl[1] + 0.0849f*refl[2] + 0.4396f*refl[3] - 0.058f*refl[8] + 0.2013f*refl[11] - 0.2773f* refl[12] - refl[10]);
     }
 
     public float ndwiValue() {
-        return ((refl01[8]-refl01[11])/(refl01[8]+refl01[11]));
+        return ((refl[8]-refl[11])/(refl[8]+refl[11]));
     }
 
     public float spectralFlatnessValue() {
@@ -226,17 +225,6 @@ public class Sentinel2Algorithm {
 
     public void setRefl(float[] refl) {
         this.refl = refl;
-        refl01 = new float[refl.length];
-        for (int i = 0; i < refl.length; i++) {
-            refl01[i] = refl[i]/10000.0f;
-        }
-    }
-
-    public void setRefl01(float[] refl) {
-        refl01 = new float[refl.length];
-        for (int i = 0; i < refl.length; i++) {
-            refl01[i] = refl[i]/10000.0f;
-        }
     }
 
     public void setNnOutput(double[] nnOutput) {
