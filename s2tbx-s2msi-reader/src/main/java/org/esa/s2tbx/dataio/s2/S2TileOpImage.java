@@ -239,8 +239,8 @@ public class S2TileOpImage extends SingleBandedOpImage {
                         "-i", inputFileName,
                         "-o", outputFileName,
                         "-r", getLevel() + "",
-                        "-threads", tileIndex + "",
-                        "-T", "ALL_CPUS");
+                        "-t", tileIndex + "",
+                        "-threads", "ALL_CPUS");
             } else {
                 SystemUtils.LOG.fine("Writing to " + outputFile.getPath());
 
@@ -251,7 +251,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
                         "-o", outputFile.getPath(),
                         "-r", getLevel() + "",
                         "-t", tileIndex + "",
-                        "-T", "ALL_CPUS" );
+                        "-threads", "ALL_CPUS" );
             }
         } else {
             throw new UnexpectedException("OpenJpeg decompressor is not set");
