@@ -18,7 +18,6 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
 
-import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 import com.vividsolutions.jts.geom.Coordinate;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GRANULE_DIMENSIONS;
 import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
@@ -43,6 +42,7 @@ import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BDatastripFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.SystemUtils;
+import org.w3c.dom.Element;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -54,7 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.as3DCoordinates;
+import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
 
 /**
  * @author opicas-p
@@ -99,8 +99,8 @@ public class L1bMetadataProc extends S2MetadataProc {
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString());
         characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value());
 
-        characteristics.setProductStartTime(((ElementNSImpl) product.getGeneral_Info().getProduct_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
-        characteristics.setProductStopTime(((ElementNSImpl) product.getGeneral_Info().getProduct_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
+        characteristics.setProductStartTime(((Element) product.getGeneral_Info().getProduct_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
+        characteristics.setProductStopTime(((Element) product.getGeneral_Info().getProduct_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
 
         List<S2BandInformation> aInfo = new ArrayList<>();
 
