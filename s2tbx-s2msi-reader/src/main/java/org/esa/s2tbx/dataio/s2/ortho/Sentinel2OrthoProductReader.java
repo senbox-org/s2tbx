@@ -86,6 +86,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -143,7 +144,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     @Override
     protected Product getMosaicProduct(File metadataFile) throws IOException {
 
-        if(!areOpenJpegExecutablesOK(S2Config.OPJ_INFO_EXE,S2Config.OPJ_DECOMPRESSOR_EXE)){
+        if (!areOpenJpegExecutablesOK(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
             throw new IOException("Not valid OpenJpeg executables");
         }
 
@@ -408,17 +409,26 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
-    private void addIndexMasks(Product product, List<BandInfo> bandInfoList) {
+    private void addIndexMasks(Product product, List<BandInfo> bandInfoList) throws IOException {
         for (BandInfo bandInfo : bandInfoList) {
             if (bandInfo.getBandInformation() instanceof S2IndexBandInformation) {
                 S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) bandInfo.getBandInformation();
                 IndexCoding indexCoding = indexBandInformation.getIndexCoding();
                 product.getIndexCodingGroup().add(indexCoding);
+
+                List<Color> colors = indexBandInformation.getColors();
+                Iterator<Color> colorIterator = colors.iterator();
+
                 for (String indexName : indexCoding.getIndexNames()) {
                     int indexValue = indexCoding.getIndexValue(indexName);
                     String description = indexCoding.getIndex(indexName).getDescription();
+                    if (!colorIterator.hasNext()) {
+                        // we should never be here : programming error.
+                        throw new IOException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding"));
+                    }
+                    Color color = colorIterator.next();
                     Mask mask = Mask.BandMathsType.create("scl_" + indexName.toLowerCase(), description, product.getSceneRasterWidth(), product.getSceneRasterHeight(),
-                                                          String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), ColorIterator.next(), 0.5);
+                                                          String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), color, 0.5);
                     product.addMask(mask);
                 }
             }
@@ -448,66 +458,86 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         List<EopPolygon> productPolygons = new ArrayList<>();
 
         for (S2Metadata.Tile tile : tileList) {
-            for (S2Metadata.MaskFilename maskFilename : tile.getMaskFilenames()) {
 
-                // We are only interested in a single mask main type
-                if (!maskFilename.getType().equals(maskInfo.getMainType())) {
-                    continue;
-                }
+            if (tile.getMaskFilenames() != null) {
+                for (S2Metadata.MaskFilename maskFilename : tile.getMaskFilenames()) {
 
-                if (spectralInfo != null) {
-                    // We are only interested in masks for a certain band
-                    if (!maskFilename.getBandId().equals(String.format("%s", spectralInfo.getBandId()))) {
+                    // We are only interested in a single mask main type
+                    if (!maskFilename.getType().equals(maskInfo.getMainType())) {
                         continue;
                     }
+
+                    if (spectralInfo != null) {
+                        // We are only interested in masks for a certain band
+                        if (!maskFilename.getBandId().equals(String.format("%s", spectralInfo.getBandId()))) {
+                            continue;
+                        }
+                    }
+
+                    // Read all polygons from the mask file
+                    GmlFilter gmlFilter = new GmlFilter();
+                    List<EopPolygon> polygonsForTile = gmlFilter.parse(maskFilename.getName()).getSecond();
+
+                    // We are interested only in a single subtype
+                    polygonsForTile = polygonsForTile.stream().filter(p -> p.getType().equals(maskInfo.getSubType())).collect(Collectors.toList());
+
+                    // Merge polygons from this tile to product polygon list
+                    productPolygons.addAll(polygonsForTile);
                 }
-
-                // Read all polygons from the mask file
-                GmlFilter gmlFilter = new GmlFilter();
-                List<EopPolygon> polygonsForTile = gmlFilter.parse(maskFilename.getName()).getSecond();
-
-                // We are interested only in a single subtype
-                polygonsForTile = polygonsForTile.stream().filter(p -> p.getType().equals(maskInfo.getSubType())).collect(Collectors.toList());
-
-                // Merge polygons from this tile to product polygon list
-                productPolygons.addAll(polygonsForTile);
             }
         }
 
-        // TODO : why do we use this here ?
-        final SimpleFeatureType type = Placemark.createGeometryFeatureType();
-        // TODO : why "S2L1CMasks" ?
-        final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
+        if (!productPolygons.isEmpty()) {
 
-        for (int index = 0; index < productPolygons.size(); index++) {
-            Polygon polygon = productPolygons.get(index).getPolygon();
+            // TODO : why do we use this here ?
+            final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+            // TODO : why "S2L1CMasks" ?
+            final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
 
-            Object[] data1 = {polygon, String.format("Polygon-%s", index)};
-            SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
-            collection.add(f1);
-        }
+            for (int index = 0; index < productPolygons.size(); index++) {
+                Polygon polygon = productPolygons.get(index).getPolygon();
 
-        if (spectralInfo == null) {
-            // This mask is not specific to a band
-            // So we need one version of it for each resolution present in the band list
-            for (S2SpatialResolution resolution : S2SpatialResolution.values()) {
-                // Find a band with this resolution
-                Band referenceBand = null;
-                for (BandInfo bandInfo : bandInfoList) {
-                    if (bandInfo.getBandInformation().getResolution() == resolution) {
-                        referenceBand = product.getBand(bandInfo.getBandInformation().getPhysicalBand());
-                        break;
+                Object[] data1 = {polygon, String.format("Polygon-%s", index)};
+                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+                collection.add(f1);
+            }
+
+            if (spectralInfo == null) {
+                // This mask is not specific to a band
+                // So we need one version of it for each resolution present in the band list
+                for (S2SpatialResolution resolution : S2SpatialResolution.values()) {
+                    // Find a band with this resolution
+                    Band referenceBand = null;
+                    for (BandInfo bandInfo : bandInfoList) {
+                        if (bandInfo.getBandInformation().getResolution() == resolution) {
+                            referenceBand = product.getBand(bandInfo.getBandInformation().getPhysicalBand());
+                            break;
+                        }
                     }
-                }
 
-                // We may not find a band with this resolution
-                if (referenceBand == null) {
-                    continue;
-                }
+                    // We may not find a band with this resolution
+                    if (referenceBand == null) {
+                        continue;
+                    }
 
-                // We need a different name for each resolution version
-                String description = maskInfo.getDescription();
-                String snapName = String.format("%s_%dm", maskInfo.getSnapName(), resolution.resolution);
+                    // We need a different name for each resolution version
+                    String description = maskInfo.getDescription();
+                    String snapName = String.format("%s_%dm", maskInfo.getSnapName(), resolution.resolution);
+                    VectorDataNode vdn = new VectorDataNode(snapName, collection);
+                    vdn.setOwner(product);
+                    product.addMask(snapName,
+                                    vdn,
+                                    description,
+                                    maskInfo.getColor(),
+                                    maskInfo.getTransparency(),
+                                    referenceBand);
+                }
+            } else {
+                // This mask is specific to a band
+                Band referenceBand = product.getBand(spectralInfo.getPhysicalBand());
+                String bandName = spectralInfo.getPhysicalBand();
+                String snapName = maskInfo.getSnapNameForBand(bandName);
+                String description = maskInfo.getDescriptionForBand(bandName);
                 VectorDataNode vdn = new VectorDataNode(snapName, collection);
                 vdn.setOwner(product);
                 product.addMask(snapName,
@@ -517,20 +547,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                 maskInfo.getTransparency(),
                                 referenceBand);
             }
-        } else {
-            // This mask is specific to a band
-            Band referenceBand = product.getBand(spectralInfo.getPhysicalBand());
-            String bandName = spectralInfo.getPhysicalBand();
-            String snapName = maskInfo.getSnapNameForBand(bandName);
-            String description = maskInfo.getDescriptionForBand(bandName);
-            VectorDataNode vdn = new VectorDataNode(snapName, collection);
-            vdn.setOwner(product);
-            product.addMask(snapName,
-                            vdn,
-                            description,
-                            maskInfo.getColor(),
-                            maskInfo.getTransparency(),
-                            referenceBand);
         }
     }
 

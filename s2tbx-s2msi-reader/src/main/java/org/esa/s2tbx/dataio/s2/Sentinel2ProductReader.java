@@ -112,8 +112,12 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
         Properties versionProp = new Properties();
 
-        InputStream inputStream = Files.newInputStream(versionFile);
-        versionProp.load(inputStream);
+        try (InputStream inputStream = Files.newInputStream(versionFile)) {
+            versionProp.load(inputStream);
+        } catch (IOException e) {
+            SystemUtils.LOG.severe("S2MSI-reader configuration error: Failed to read " + versionFile.toString());
+            throw new IOException("Failed to read " + versionFile);
+        }
 
         String version = versionProp.getProperty("project.version");
         if (version == null) {
