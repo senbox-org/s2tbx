@@ -1,0 +1,14 @@
+{
+    "testProducts": [
+        {
+            "id": "S2L1C-60m-Valencia-31",
+            "relativePath": "S2\\L1C\\Valencia\\S2A_OPER_PRD_MSIL1C_PDMC_20160527T172127_R051_V20160511T105343_20160511T105343.SAFE\\S2A_OPER_MTD_SAFL1C_PDMC_20160527T172127_R051_V20160511T105343_20160511T105343.xml",
+            "description": "Sentinel2 L1C product in an archive"
+        },
+		{
+            "id": "S2L1C-60m-Valencia-31SBD",
+            "relativePath": "S2\\L1C\\Valencia\\S2A_OPER_PRD_MSIL1C_PDMC_20160527T172127_R051_V20160511T105343_20160511T105343.SAFE\\GRANULE\\S2A_OPER_MSI_L1C_TL_SGS__20160511T162431_A004624_T31SBD_N02.02\\S2A_OPER_MTD_L1C_TL_SGS__20160511T162431_A004624_T31SBD.xml",
+            "description": "Sentinel2 L1C granule in an archive"
+        }
+    ]
+}
