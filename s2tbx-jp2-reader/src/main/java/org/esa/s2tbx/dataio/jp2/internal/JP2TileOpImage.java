@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.jp2.internal;
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
+import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.s2tbx.dataio.readers.PathUtils;
@@ -194,7 +195,15 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                 put("-r", String.valueOf(level));
                 put("-l", "20");
             }};
-            params.put("-o", tileFile.toString());
+            String tileFileName;
+            if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS && (tileFile.getParent() != null)) {
+                tileFileName = Utils.GetIterativeShortPathNameW(tileFile.getParent().toString()) + File.separator + tileFile.getName(tileFile.getNameCount()-1);
+            }
+            else {
+                tileFileName = tileFile.toString();
+            }
+
+            params.put("-o", tileFileName);
             params.put("-t", String.valueOf(tileIndex));
             params.put("-p", String.valueOf(DataBuffer.getDataTypeSize(this.getSampleModel().getDataType())));
 
