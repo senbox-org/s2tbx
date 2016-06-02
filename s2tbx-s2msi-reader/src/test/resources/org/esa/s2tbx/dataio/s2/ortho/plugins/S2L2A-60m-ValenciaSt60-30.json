@@ -1,0 +1,1980 @@
+{
+    "id": "S2L2A-60m-ValenciaSt60-30",
+    "decodeQualification": "INTENDED",
+    "expectedContent": {
+        "sceneWidth": 1830,
+        "sceneHeight": 3496,
+        "startTime": "11-MAY-2016 10:53:43.672000",
+        "endTime": "11-MAY-2016 10:53:43.672000",
+        "geoCoding": {
+            "coordinates": [
+                {
+                    "x": 11.5,
+                    "y": 3453.5,
+                    "lat": 38.76102342166603,
+                    "lon": -0.6906897424178506
+                },
+                {
+                    "x": 1052.5,
+                    "y": 3465.5,
+                    "lat": 38.738140980786646,
+                    "lon": 0.027075612868326035
+                },
+                {
+                    "x": 1520.5,
+                    "y": 2896.5,
+                    "lat": 39.036459328493436,
+                    "lon": 0.36411530758876726
+                },
+                {
+                    "x": 619.5,
+                    "y": 1421.5,
+                    "lat": 39.849317658091884,
+                    "lon": -0.2282699128862951
+                },
+                {
+                    "x": 95.5,
+                    "y": 76.5,
+                    "lat": 40.58392970058678,
+                    "lon": -0.569598692927777
+                },
+                {
+                    "x": 1655.5,
+                    "y": 36.5,
+                    "lat": 40.57697398528326,
+                    "lon": 0.5358140934714326
+                },
+                {
+                    "x": 1576.5,
+                    "y": 1353.5,
+                    "lat": 39.86804844560033,
+                    "lon": 0.44369821558087447
+                },
+                {
+                    "x": 540.5,
+                    "y": 700.5,
+                    "lat": 40.23994735493254,
+                    "lon": -0.2681073378609404
+                }
+            ],
+            "reverseAccuracy": 2.4831388145685196E-7
+        },
+        "indexCodings": [
+            {
+                "name": "quality_scene_classification",
+                "samples": [
+                    {
+                        "name": "NODATA",
+                        "value": 0,
+                        "description": "No data"
+                    },
+                    {
+                        "name": "SATURATED_DEFECTIVE",
+                        "value": 1,
+                        "description": "Saturated or defective"
+                    },
+                    {
+                        "name": "DARK_FEATURE_SHADOW",
+                        "value": 2,
+                        "description": "Dark feature shadow"
+                    },
+                    {
+                        "name": "CLOUD_SHADOW",
+                        "value": 3,
+                        "description": "Cloud shadow"
+                    },
+                    {
+                        "name": "VEGETATION",
+                        "value": 4,
+                        "description": "Vegetation"
+                    },
+                    {
+                        "name": "BARE_SOIL_DESERT",
+                        "value": 5,
+                        "description": "Bare soil / Desert"
+                    },
+                    {
+                        "name": "WATER",
+                        "value": 6,
+                        "description": "Water"
+                    },
+                    {
+                        "name": "CLOUD_LOW_PROBA",
+                        "value": 7,
+                        "description": "Cloud (low probability)"
+                    },
+                    {
+                        "name": "CLOUD_MEDIUM_PROBA",
+                        "value": 8,
+                        "description": "Cloud (medium probability)"
+                    },
+                    {
+                        "name": "CLOUD_HIGH_PROBA",
+                        "value": 9,
+                        "description": "Cloud (high probability)"
+                    },
+                    {
+                        "name": "THIN_CIRRUS",
+                        "value": 10,
+                        "description": "Thin cirrus"
+                    },
+                    {
+                        "name": "SNOW_ICE",
+                        "value": 11,
+                        "description": "Snow or Ice"
+                    }
+                ]
+            }
+        ],
+        "bands": [
+            {
+                "name": "B1",
+                "description": "Reflectance in band B1",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "443.0",
+                "spectralBandwidth": "58.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 1134.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 1001.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 817.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 294.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 11830.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 648.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 567.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 3351.0
+                    }
+                ]
+            },
+            {
+                "name": "B2",
+                "description": "Reflectance in band B2",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "490.0",
+                "spectralBandwidth": "130.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 1455.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 504.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 745.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 238.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 10326.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 714.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 486.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 3995.0
+                    }
+                ]
+            },
+            {
+                "name": "B3",
+                "description": "Reflectance in band B3",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "560.0",
+                "spectralBandwidth": "100.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 1530.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 717.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 672.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 362.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 9551.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 1037.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 315.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 3769.0
+                    }
+                ]
+            },
+            {
+                "name": "B4",
+                "description": "Reflectance in band B4",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "665.0",
+                "spectralBandwidth": "90.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 1475.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 771.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 684.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 355.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 9265.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 1444.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 238.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 3576.0
+                    }
+                ]
+            },
+            {
+                "name": "B5",
+                "description": "Reflectance in band B5",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "705.0",
+                "spectralBandwidth": "97.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 1875.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 1184.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 730.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 739.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 9643.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 1845.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 236.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 3884.0
+                    }
+                ]
+            },
+            {
+                "name": "B6",
+                "description": "Reflectance in band B6",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "740.0",
+                "spectralBandwidth": "40.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 2479.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 1924.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 715.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 1503.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 9319.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 2475.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 212.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 4125.0
+                    }
+                ]
+            },
+            {
+                "name": "B7",
+                "description": "Reflectance in band B7",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "783.0",
+                "spectralBandwidth": "71.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 2604.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 2133.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 741.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 1713.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 9075.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 2703.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 211.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 4058.0
+                    }
+                ]
+            },
+            {
+                "name": "B8A",
+                "description": "Reflectance in band B8A",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "865.0",
+                "spectralBandwidth": "79.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 2766.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 2340.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 739.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 1920.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 8825.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 2920.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 221.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 4002.0
+                    }
+                ]
+            },
+            {
+                "name": "B9",
+                "description": "Reflectance in band B9",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "945.0",
+                "spectralBandwidth": "79.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 3217.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 2581.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 663.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 2104.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 14726.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 2932.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 128.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 4593.0
+                    }
+                ]
+            },
+            {
+                "name": "B11",
+                "description": "Reflectance in band B11",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "1610.0",
+                "spectralBandwidth": "172.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 2552.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 1741.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 695.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 1489.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 6032.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 2914.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 246.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 3577.0
+                    }
+                ]
+            },
+            {
+                "name": "B12",
+                "description": "Reflectance in band B12",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "2190.0",
+                "spectralBandwidth": "276.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 2057.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 1250.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 642.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 902.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 4417.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 2010.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 212.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 2580.0
+                    }
+                ]
+            },
+            {
+                "name": "quality_aot",
+                "description": "Aerosol Optical Thickness",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "none (x 1000)",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 195.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 195.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 195.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 230.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 230.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 230.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 230.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 230.0
+                    }
+                ]
+            },
+            {
+                "name": "quality_wvp",
+                "description": "Water Vapour",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "cm (x 1000)",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 995.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 1121.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 1037.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 1023.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 797.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 1563.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 797.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 796.0
+                    }
+                ]
+            },
+            {
+                "name": "quality_cloud_confidence",
+                "description": "Cloud Confidence",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "%",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 1.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 100.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 100.0
+                    }
+                ]
+            },
+            {
+                "name": "quality_snow_confidence",
+                "description": "Snow Confidence",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "%",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 0.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 0.0
+                    }
+                ]
+            },
+            {
+                "name": "quality_scene_classification",
+                "description": "Scene classification",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 7.0
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 4.0
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 2.0
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 4.0
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 9.0
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 5.0
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 6.0
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 9.0
+                    }
+                ]
+            },
+            {
+                "name": "sun_zenith",
+                "description": "Solar zenith angle",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "°",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 24.31991
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 23.9827
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 24.094969
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 25.046
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 25.821688
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 25.369951
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 24.784868
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 25.39972
+                    }
+                ]
+            },
+            {
+                "name": "sun_azimuth",
+                "description": "Solar azimuth angle",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "°",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 144.2575
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 145.68678
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 146.70941
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 146.37994
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 146.46565
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 148.63342
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 147.74709
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 146.7055
+                    }
+                ]
+            },
+            {
+                "name": "view_zenith",
+                "description": "Viewing incidence zenith angle",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "°",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 1.6064745
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 5.152288
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 6.659677
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 1.9251599
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 3.7152212
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 4.470347
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 5.396375
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 1.6518974
+                    }
+                ]
+            },
+            {
+                "name": "view_azimuth",
+                "description": "Viewing incidence azimuth angle",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "°",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "0.0",
+                "spectralBandwidth": "0.0",
+                "expectedPixels": [
+                    {
+                        "x": 11,
+                        "y": 3453,
+                        "value": 44.914825
+                    },
+                    {
+                        "x": 1052,
+                        "y": 3465,
+                        "value": 264.53424
+                    },
+                    {
+                        "x": 1520,
+                        "y": 2896,
+                        "value": 299.09222
+                    },
+                    {
+                        "x": 619,
+                        "y": 1421,
+                        "value": 213.56763
+                    },
+                    {
+                        "x": 95,
+                        "y": 76,
+                        "value": 132.69508
+                    },
+                    {
+                        "x": 1655,
+                        "y": 36,
+                        "value": 264.96735
+                    },
+                    {
+                        "x": 1576,
+                        "y": 1353,
+                        "value": 265.68524
+                    },
+                    {
+                        "x": 540,
+                        "y": 700,
+                        "value": 31.282253
+                    }
+                ]
+            }
+        ],
+        "masks": [
+            {
+                "name": "detector_footprint_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B1"
+            },
+            {
+                "name": "detector_footprint_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B2"
+            },
+            {
+                "name": "detector_footprint_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B3"
+            },
+            {
+                "name": "detector_footprint_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B4"
+            },
+            {
+                "name": "detector_footprint_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B5"
+            },
+            {
+                "name": "detector_footprint_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B6"
+            },
+            {
+                "name": "detector_footprint_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B7"
+            },
+            {
+                "name": "detector_footprint_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B8A"
+            },
+            {
+                "name": "detector_footprint_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B9"
+            },
+            {
+                "name": "detector_footprint_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B11"
+            },
+            {
+                "name": "detector_footprint_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,0,0",
+                "description": "Detector footprint mask - B12"
+            },
+            {
+                "name": "nodata_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B1"
+            },
+            {
+                "name": "nodata_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B2"
+            },
+            {
+                "name": "nodata_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B3"
+            },
+            {
+                "name": "nodata_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B4"
+            },
+            {
+                "name": "nodata_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B5"
+            },
+            {
+                "name": "nodata_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B6"
+            },
+            {
+                "name": "nodata_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B7"
+            },
+            {
+                "name": "nodata_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B8A"
+            },
+            {
+                "name": "nodata_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B9"
+            },
+            {
+                "name": "nodata_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B11"
+            },
+            {
+                "name": "nodata_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,0,0",
+                "description": "Radiometric quality mask - No–data pixels - B12"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B1"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B2"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B3"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B4"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B5"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B6"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B7"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B8A"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B9"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B11"
+            },
+            {
+                "name": "partially_corrected_crosstalk_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,0,0",
+                "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B12"
+            },
+            {
+                "name": "saturated_l1a_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B1"
+            },
+            {
+                "name": "saturated_l1a_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B2"
+            },
+            {
+                "name": "saturated_l1a_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B3"
+            },
+            {
+                "name": "saturated_l1a_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B4"
+            },
+            {
+                "name": "saturated_l1a_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B5"
+            },
+            {
+                "name": "saturated_l1a_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B6"
+            },
+            {
+                "name": "saturated_l1a_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B7"
+            },
+            {
+                "name": "saturated_l1a_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B8A"
+            },
+            {
+                "name": "saturated_l1a_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B9"
+            },
+            {
+                "name": "saturated_l1a_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B11"
+            },
+            {
+                "name": "saturated_l1a_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,255",
+                "description": "Radiometric quality mask - Saturated pixels before on-ground radiometric processing - B12"
+            },
+            {
+                "name": "saturated_l1b_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B1"
+            },
+            {
+                "name": "saturated_l1b_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B2"
+            },
+            {
+                "name": "saturated_l1b_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B3"
+            },
+            {
+                "name": "saturated_l1b_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B4"
+            },
+            {
+                "name": "saturated_l1b_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B5"
+            },
+            {
+                "name": "saturated_l1b_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B6"
+            },
+            {
+                "name": "saturated_l1b_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B7"
+            },
+            {
+                "name": "saturated_l1b_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B8A"
+            },
+            {
+                "name": "saturated_l1b_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B9"
+            },
+            {
+                "name": "saturated_l1b_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B11"
+            },
+            {
+                "name": "saturated_l1b_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,178",
+                "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B12"
+            },
+            {
+                "name": "defective_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B1"
+            },
+            {
+                "name": "defective_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B2"
+            },
+            {
+                "name": "defective_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B3"
+            },
+            {
+                "name": "defective_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B4"
+            },
+            {
+                "name": "defective_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B5"
+            },
+            {
+                "name": "defective_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B6"
+            },
+            {
+                "name": "defective_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B7"
+            },
+            {
+                "name": "defective_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B8A"
+            },
+            {
+                "name": "defective_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B9"
+            },
+            {
+                "name": "defective_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B11"
+            },
+            {
+                "name": "defective_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,0,124",
+                "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B12"
+            },
+            {
+                "name": "ancillary_lost_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B1"
+            },
+            {
+                "name": "ancillary_lost_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B2"
+            },
+            {
+                "name": "ancillary_lost_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B3"
+            },
+            {
+                "name": "ancillary_lost_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B4"
+            },
+            {
+                "name": "ancillary_lost_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B5"
+            },
+            {
+                "name": "ancillary_lost_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B6"
+            },
+            {
+                "name": "ancillary_lost_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B7"
+            },
+            {
+                "name": "ancillary_lost_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B8A"
+            },
+            {
+                "name": "ancillary_lost_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B9"
+            },
+            {
+                "name": "ancillary_lost_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B11"
+            },
+            {
+                "name": "ancillary_lost_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "255,200,0",
+                "description": "Technical quality mask - Ancillary lost data - B12"
+            },
+            {
+                "name": "ancillary_degraded_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B1"
+            },
+            {
+                "name": "ancillary_degraded_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B2"
+            },
+            {
+                "name": "ancillary_degraded_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B3"
+            },
+            {
+                "name": "ancillary_degraded_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B4"
+            },
+            {
+                "name": "ancillary_degraded_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B5"
+            },
+            {
+                "name": "ancillary_degraded_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B6"
+            },
+            {
+                "name": "ancillary_degraded_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B7"
+            },
+            {
+                "name": "ancillary_degraded_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B8A"
+            },
+            {
+                "name": "ancillary_degraded_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B9"
+            },
+            {
+                "name": "ancillary_degraded_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B11"
+            },
+            {
+                "name": "ancillary_degraded_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,255,0",
+                "description": "Technical quality mask - Ancillary degraded data - B12"
+            },
+            {
+                "name": "msi_lost_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B1"
+            },
+            {
+                "name": "msi_lost_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B2"
+            },
+            {
+                "name": "msi_lost_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B3"
+            },
+            {
+                "name": "msi_lost_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B4"
+            },
+            {
+                "name": "msi_lost_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B5"
+            },
+            {
+                "name": "msi_lost_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B6"
+            },
+            {
+                "name": "msi_lost_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B7"
+            },
+            {
+                "name": "msi_lost_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B8A"
+            },
+            {
+                "name": "msi_lost_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B9"
+            },
+            {
+                "name": "msi_lost_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B11"
+            },
+            {
+                "name": "msi_lost_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,178,0",
+                "description": "Technical quality mask - MSI lost data - B12"
+            },
+            {
+                "name": "msi_degraded_B1",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B1"
+            },
+            {
+                "name": "msi_degraded_B2",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B2"
+            },
+            {
+                "name": "msi_degraded_B3",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B3"
+            },
+            {
+                "name": "msi_degraded_B4",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B4"
+            },
+            {
+                "name": "msi_degraded_B5",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B5"
+            },
+            {
+                "name": "msi_degraded_B6",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B6"
+            },
+            {
+                "name": "msi_degraded_B7",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B7"
+            },
+            {
+                "name": "msi_degraded_B8A",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B8A"
+            },
+            {
+                "name": "msi_degraded_B9",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B9"
+            },
+            {
+                "name": "msi_degraded_B11",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B11"
+            },
+            {
+                "name": "msi_degraded_B12",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "0,124,0",
+                "description": "Technical quality mask - MSI degraded data - B12"
+            },
+            {
+                "name": "opaque_clouds_60m",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "178,178,0",
+                "description": "Finer cloud mask - Opaque clouds"
+            },
+            {
+                "name": "cirrus_clouds_60m",
+                "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+                "color": "124,124,0",
+                "description": "Finer cloud mask - Cirrus clouds"
+            },
+            {
+                "name": "scl_nodata",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "0,0,0",
+                "description": "No data"
+            },
+            {
+                "name": "scl_saturated_defective",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "255,0,0",
+                "description": "Saturated or defective"
+            },
+            {
+                "name": "scl_dark_feature_shadow",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "46,46,46",
+                "description": "Dark feature shadow"
+            },
+            {
+                "name": "scl_cloud_shadow",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "100,50,0",
+                "description": "Cloud shadow"
+            },
+            {
+                "name": "scl_vegetation",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "0,128,0",
+                "description": "Vegetation"
+            },
+            {
+                "name": "scl_bare_soil_desert",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "255,230,90",
+                "description": "Bare soil / Desert"
+            },
+            {
+                "name": "scl_water",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "0,0,255",
+                "description": "Water"
+            },
+            {
+                "name": "scl_cloud_low_proba",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "129,129,129",
+                "description": "Cloud (low probability)"
+            },
+            {
+                "name": "scl_cloud_medium_proba",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "193,193,193",
+                "description": "Cloud (medium probability)"
+            },
+            {
+                "name": "scl_cloud_high_proba",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "255,255,255",
+                "description": "Cloud (high probability)"
+            },
+            {
+                "name": "scl_thin_cirrus",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "100,200,255",
+                "description": "Thin cirrus"
+            },
+            {
+                "name": "scl_snow_ice",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "255,150,255",
+                "description": "Snow or Ice"
+            }
+        ],
+        "metadata": [
+            {
+                "path": "Level-2A_DataStrip_ID/Satellite_Ancillary_Data_Info/Attitudes/Corrected_Attitudes/Values[440]/QUATERNION_VALIDITY",
+                "value": "true"
+            },
+            {
+                "path": "Granules/Level-2A_Tile_ID[4]/General_Info/DATASTRIP_ID_2A",
+                "value": "S2A_USER_MSI_L2A_DS_SGS__20160511T162431_S20160511T105343_N02.02"
+            },
+            {
+                "path": "Level-2A_DataStrip_ID/Image_Data_Info/Radiometric_Info/Reflectance_Conversion/Solar_Irradiance_List/SOLAR_IRRADIANCE[13]",
+                "value": "85.25"
+            },
+            {
+                "path": "Granules/Level-2A_Tile_ID[2]/Quality_Indicators_Info/L2A_Image_Content_QI/BARE_SOILS_PERCENTAGE",
+                "value": "15.464839"
+            },
+            {
+                "path": "Granules/Level-2A_Tile_ID/Geometric_Info/Tile_Geocoding/Size[2]/RESOLUTION",
+                "value": "20"
+            },
+            {
+                "path": "Level-2A_DataStrip_ID/Satellite_Ancillary_Data_Info/Attitudes/Corrected_Attitudes/Values[4195]/GPS_TIME",
+                "value": "2016-05-11T10:59:41.3"
+            },
+            {
+                "path": "Granules/Level-2A_Tile_ID[2]/Geometric_Info/Tile_Geocoding/Size[3]/NROWS",
+                "value": "1830"
+            },
+            {
+                "path": "Level-2A_DataStrip_ID/Auxiliary_Data_Info/GIPP_List/GIPP_FILENAME[15]",
+                "value": "S2__OPER_GIP_PROBAS_MPC__20160503T000221_V20150622T000000_20200101T000000_B00"
+            },
+            {
+                "path": "Level-2A_DataStrip_ID/Satellite_Ancillary_Data_Info/Attitudes/Corrected_Attitudes/Values[4398]/AOCS_MODE",
+                "value": "2"
+            },
+            {
+                "path": "Level-2A_DataStrip_ID/General_Info/Datastrip_Time_Info/METADATALEVEL",
+                "value": "Brief"
+            }
+        ]
+    }
+}
