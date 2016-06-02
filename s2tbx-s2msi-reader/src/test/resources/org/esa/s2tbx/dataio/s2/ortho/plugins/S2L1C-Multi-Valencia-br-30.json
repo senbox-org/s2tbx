@@ -1,0 +1,867 @@
+{
+    "id": "S2L1C-Multi-Valencia-br-30",
+    "decodeQualification": "INTENDED",
+    "expectedContent": {
+        "sceneWidth": 10980,
+        "sceneHeight": 20976,
+        "startTime": "11-MAY-2016 10:53:43.672000",
+        "endTime": "11-MAY-2016 10:53:43.672000",
+        "geoCoding": {
+            "coordinates": [
+                {
+                    "x": 136.5,
+                    "y": 9001.5,
+                    "lat": 39.816024693693535,
+                    "lon": -0.6478722782794595
+                },
+                {
+                    "x": 4358.5,
+                    "y": 8900.5,
+                    "lat": 39.81407153522593,
+                    "lon": -0.15475392245600164
+                },
+                {
+                    "x": 10404.5,
+                    "y": 557.5,
+                    "lat": 40.54482139445262,
+                    "lon": 0.589785687982687
+                },
+                {
+                    "x": 3986.5,
+                    "y": 185.5,
+                    "lat": 40.59935320239639,
+                    "lon": -0.16566051939046755
+                },
+                {
+                    "x": 3108.5,
+                    "y": 20688.5,
+                    "lat": 38.756517073658095,
+                    "lon": -0.341087734514478
+                },
+                {
+                    "x": 6689.5,
+                    "y": 20317.5,
+                    "lat": 38.77980691860978,
+                    "lon": 0.07194020206139795
+                },
+                {
+                    "x": 9661.5,
+                    "y": 15183.5,
+                    "lat": 39.23213372017784,
+                    "lon": 0.43582014349793724
+                },
+                {
+                    "x": 980.5,
+                    "y": 13426.5,
+                    "lat": 39.41563757736589,
+                    "lon": -0.5633637823657826
+                },
+                {
+                    "x": 1825.5,
+                    "y": 1874.5,
+                    "lat": 40.453329092198416,
+                    "lon": -0.4266222433210314
+                }
+            ],
+            "reverseAccuracy": 1.6284175217151642E-6
+        },
+        "bands": [
+            {
+                "name": "B1",
+                "description": "Reflectance in band B1",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "443.0",
+                "spectralBandwidth": "58.0",
+                "expectedPixels": [
+                    {
+                        "x": 22,
+                        "y": 1500,
+                        "value": 1278.0
+                    },
+                    {
+                        "x": 726,
+                        "y": 1483,
+                        "value": 2508.0
+                    },
+                    {
+                        "x": 1734,
+                        "y": 92,
+                        "value": 1547.0
+                    },
+                    {
+                        "x": 664,
+                        "y": 30,
+                        "value": 1102.0
+                    },
+                    {
+                        "x": 518,
+                        "y": 3448,
+                        "value": 2328.0
+                    },
+                    {
+                        "x": 1114,
+                        "y": 3386,
+                        "value": 4085.0
+                    },
+                    {
+                        "x": 1610,
+                        "y": 2530,
+                        "value": 1461.0
+                    },
+                    {
+                        "x": 163,
+                        "y": 2237,
+                        "value": 1365.0
+                    },
+                    {
+                        "x": 304,
+                        "y": 312,
+                        "value": 1163.0
+                    }
+                ]
+            },
+            {
+                "name": "B2",
+                "description": "Reflectance in band B2",
+                "bandWidth": 10980,
+                "bandHeight": 20976,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "490.0",
+                "spectralBandwidth": "130.0",
+                "expectedPixels": [
+                    {
+                        "x": 136,
+                        "y": 9001,
+                        "value": 1042.0
+                    },
+                    {
+                        "x": 4358,
+                        "y": 8900,
+                        "value": 3070.0
+                    },
+                    {
+                        "x": 10404,
+                        "y": 557,
+                        "value": 1436.0
+                    },
+                    {
+                        "x": 3986,
+                        "y": 185,
+                        "value": 808.0
+                    },
+                    {
+                        "x": 3108,
+                        "y": 20688,
+                        "value": 1976.0
+                    },
+                    {
+                        "x": 6689,
+                        "y": 20317,
+                        "value": 4887.0
+                    },
+                    {
+                        "x": 9661,
+                        "y": 15183,
+                        "value": 1206.0
+                    },
+                    {
+                        "x": 980,
+                        "y": 13426,
+                        "value": 1098.0
+                    },
+                    {
+                        "x": 1825,
+                        "y": 1874,
+                        "value": 912.0
+                    }
+                ]
+            },
+            {
+                "name": "B3",
+                "description": "Reflectance in band B3",
+                "bandWidth": 10980,
+                "bandHeight": 20976,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "560.0",
+                "spectralBandwidth": "100.0",
+                "expectedPixels": [
+                    {
+                        "x": 136,
+                        "y": 9001,
+                        "value": 1033.0
+                    },
+                    {
+                        "x": 4358,
+                        "y": 8900,
+                        "value": 2751.0
+                    },
+                    {
+                        "x": 10404,
+                        "y": 557,
+                        "value": 1263.0
+                    },
+                    {
+                        "x": 3986,
+                        "y": 185,
+                        "value": 704.0
+                    },
+                    {
+                        "x": 3108,
+                        "y": 20688,
+                        "value": 1990.0
+                    },
+                    {
+                        "x": 6689,
+                        "y": 20317,
+                        "value": 4715.0
+                    },
+                    {
+                        "x": 9661,
+                        "y": 15183,
+                        "value": 838.0
+                    },
+                    {
+                        "x": 980,
+                        "y": 13426,
+                        "value": 1042.0
+                    },
+                    {
+                        "x": 1825,
+                        "y": 1874,
+                        "value": 870.0
+                    }
+                ]
+            },
+            {
+                "name": "B4",
+                "description": "Reflectance in band B4",
+                "bandWidth": 10980,
+                "bandHeight": 20976,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "665.0",
+                "spectralBandwidth": "90.0",
+                "expectedPixels": [
+                    {
+                        "x": 136,
+                        "y": 9001,
+                        "value": 979.0
+                    },
+                    {
+                        "x": 4358,
+                        "y": 8900,
+                        "value": 2713.0
+                    },
+                    {
+                        "x": 10404,
+                        "y": 557,
+                        "value": 748.0
+                    },
+                    {
+                        "x": 3986,
+                        "y": 185,
+                        "value": 518.0
+                    },
+                    {
+                        "x": 3108,
+                        "y": 20688,
+                        "value": 1872.0
+                    },
+                    {
+                        "x": 6689,
+                        "y": 20317,
+                        "value": 5005.0
+                    },
+                    {
+                        "x": 9661,
+                        "y": 15183,
+                        "value": 705.0
+                    },
+                    {
+                        "x": 980,
+                        "y": 13426,
+                        "value": 1075.0
+                    },
+                    {
+                        "x": 1825,
+                        "y": 1874,
+                        "value": 813.0
+                    }
+                ]
+            },
+            {
+                "name": "B5",
+                "description": "Reflectance in band B5",
+                "bandWidth": 5490,
+                "bandHeight": 10488,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "705.0",
+                "spectralBandwidth": "97.0",
+                "expectedPixels": [
+                    {
+                        "x": 68,
+                        "y": 4500,
+                        "value": 1319.0
+                    },
+                    {
+                        "x": 2179,
+                        "y": 4450,
+                        "value": 2888.0
+                    },
+                    {
+                        "x": 5202,
+                        "y": 278,
+                        "value": 634.0
+                    },
+                    {
+                        "x": 1993,
+                        "y": 92,
+                        "value": 847.0
+                    },
+                    {
+                        "x": 1554,
+                        "y": 10344,
+                        "value": 2117.0
+                    },
+                    {
+                        "x": 3344,
+                        "y": 10158,
+                        "value": 5169.0
+                    },
+                    {
+                        "x": 4830,
+                        "y": 7591,
+                        "value": 696.0
+                    },
+                    {
+                        "x": 490,
+                        "y": 6713,
+                        "value": 1628.0
+                    },
+                    {
+                        "x": 912,
+                        "y": 937,
+                        "value": 1159.0
+                    }
+                ]
+            },
+            {
+                "name": "B6",
+                "description": "Reflectance in band B6",
+                "bandWidth": 5490,
+                "bandHeight": 10488,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "740.0",
+                "spectralBandwidth": "40.0",
+                "expectedPixels": [
+                    {
+                        "x": 68,
+                        "y": 4500,
+                        "value": 2031.0
+                    },
+                    {
+                        "x": 2179,
+                        "y": 4450,
+                        "value": 3225.0
+                    },
+                    {
+                        "x": 5202,
+                        "y": 278,
+                        "value": 538.0
+                    },
+                    {
+                        "x": 1993,
+                        "y": 92,
+                        "value": 1747.0
+                    },
+                    {
+                        "x": 1554,
+                        "y": 10344,
+                        "value": 2727.0
+                    },
+                    {
+                        "x": 3344,
+                        "y": 10158,
+                        "value": 5649.0
+                    },
+                    {
+                        "x": 4830,
+                        "y": 7591,
+                        "value": 663.0
+                    },
+                    {
+                        "x": 490,
+                        "y": 6713,
+                        "value": 2237.0
+                    },
+                    {
+                        "x": 912,
+                        "y": 937,
+                        "value": 1890.0
+                    }
+                ]
+            },
+            {
+                "name": "B7",
+                "description": "Reflectance in band B7",
+                "bandWidth": 5490,
+                "bandHeight": 10488,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "783.0",
+                "spectralBandwidth": "71.0",
+                "expectedPixels": [
+                    {
+                        "x": 68,
+                        "y": 4500,
+                        "value": 2299.0
+                    },
+                    {
+                        "x": 2179,
+                        "y": 4450,
+                        "value": 3418.0
+                    },
+                    {
+                        "x": 5202,
+                        "y": 278,
+                        "value": 508.0
+                    },
+                    {
+                        "x": 1993,
+                        "y": 92,
+                        "value": 2043.0
+                    },
+                    {
+                        "x": 1554,
+                        "y": 10344,
+                        "value": 2968.0
+                    },
+                    {
+                        "x": 3344,
+                        "y": 10158,
+                        "value": 5906.0
+                    },
+                    {
+                        "x": 4830,
+                        "y": 7591,
+                        "value": 669.0
+                    },
+                    {
+                        "x": 490,
+                        "y": 6713,
+                        "value": 2473.0
+                    },
+                    {
+                        "x": 912,
+                        "y": 937,
+                        "value": 2165.0
+                    }
+                ]
+            },
+            {
+                "name": "B8",
+                "description": "Reflectance in band B8",
+                "bandWidth": 10980,
+                "bandHeight": 20976,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "842.0",
+                "spectralBandwidth": "175.0",
+                "expectedPixels": [
+                    {
+                        "x": 136,
+                        "y": 9001,
+                        "value": 2268.0
+                    },
+                    {
+                        "x": 4358,
+                        "y": 8900,
+                        "value": 3802.0
+                    },
+                    {
+                        "x": 10404,
+                        "y": 557,
+                        "value": 518.0
+                    },
+                    {
+                        "x": 3986,
+                        "y": 185,
+                        "value": 2063.0
+                    },
+                    {
+                        "x": 3108,
+                        "y": 20688,
+                        "value": 3272.0
+                    },
+                    {
+                        "x": 6689,
+                        "y": 20317,
+                        "value": 5874.0
+                    },
+                    {
+                        "x": 9661,
+                        "y": 15183,
+                        "value": 611.0
+                    },
+                    {
+                        "x": 980,
+                        "y": 13426,
+                        "value": 2449.0
+                    },
+                    {
+                        "x": 1825,
+                        "y": 1874,
+                        "value": 2163.0
+                    }
+                ]
+            },
+            {
+                "name": "B8A",
+                "description": "Reflectance in band B8A",
+                "bandWidth": 5490,
+                "bandHeight": 10488,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "865.0",
+                "spectralBandwidth": "79.0",
+                "expectedPixels": [
+                    {
+                        "x": 68,
+                        "y": 4500,
+                        "value": 2525.0
+                    },
+                    {
+                        "x": 2179,
+                        "y": 4450,
+                        "value": 3577.0
+                    },
+                    {
+                        "x": 5202,
+                        "y": 278,
+                        "value": 474.0
+                    },
+                    {
+                        "x": 1993,
+                        "y": 92,
+                        "value": 2239.0
+                    },
+                    {
+                        "x": 1554,
+                        "y": 10344,
+                        "value": 3201.0
+                    },
+                    {
+                        "x": 3344,
+                        "y": 10158,
+                        "value": 6257.0
+                    },
+                    {
+                        "x": 4830,
+                        "y": 7591,
+                        "value": 640.0
+                    },
+                    {
+                        "x": 490,
+                        "y": 6713,
+                        "value": 2637.0
+                    },
+                    {
+                        "x": 912,
+                        "y": 937,
+                        "value": 2369.0
+                    }
+                ]
+            },
+            {
+                "name": "B9",
+                "description": "Reflectance in band B9",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "945.0",
+                "spectralBandwidth": "79.0",
+                "expectedPixels": [
+                    {
+                        "x": 22,
+                        "y": 1500,
+                        "value": 1227.0
+                    },
+                    {
+                        "x": 726,
+                        "y": 1483,
+                        "value": 1641.0
+                    },
+                    {
+                        "x": 1734,
+                        "y": 92,
+                        "value": 146.0
+                    },
+                    {
+                        "x": 664,
+                        "y": 30,
+                        "value": 993.0
+                    },
+                    {
+                        "x": 518,
+                        "y": 3448,
+                        "value": 1761.0
+                    },
+                    {
+                        "x": 1114,
+                        "y": 3386,
+                        "value": 2220.0
+                    },
+                    {
+                        "x": 1610,
+                        "y": 2530,
+                        "value": 243.0
+                    },
+                    {
+                        "x": 163,
+                        "y": 2237,
+                        "value": 959.0
+                    },
+                    {
+                        "x": 304,
+                        "y": 312,
+                        "value": 1279.0
+                    }
+                ]
+            },
+            {
+                "name": "B10",
+                "description": "Reflectance in band B10",
+                "bandWidth": 1830,
+                "bandHeight": 3496,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "1375.0",
+                "spectralBandwidth": "75.0",
+                "expectedPixels": [
+                    {
+                        "x": 22,
+                        "y": 1500,
+                        "value": 15.0
+                    },
+                    {
+                        "x": 726,
+                        "y": 1483,
+                        "value": 71.0
+                    },
+                    {
+                        "x": 1734,
+                        "y": 92,
+                        "value": 6.0
+                    },
+                    {
+                        "x": 664,
+                        "y": 30,
+                        "value": 14.0
+                    },
+                    {
+                        "x": 518,
+                        "y": 3448,
+                        "value": 64.0
+                    },
+                    {
+                        "x": 1114,
+                        "y": 3386,
+                        "value": 33.0
+                    },
+                    {
+                        "x": 1610,
+                        "y": 2530,
+                        "value": 6.0
+                    },
+                    {
+                        "x": 163,
+                        "y": 2237,
+                        "value": 16.0
+                    },
+                    {
+                        "x": 304,
+                        "y": 312,
+                        "value": 24.0
+                    }
+                ]
+            },
+            {
+                "name": "B11",
+                "description": "Reflectance in band B11",
+                "bandWidth": 5490,
+                "bandHeight": 10488,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "1610.0",
+                "spectralBandwidth": "172.0",
+                "expectedPixels": [
+                    {
+                        "x": 68,
+                        "y": 4500,
+                        "value": 2093.0
+                    },
+                    {
+                        "x": 2179,
+                        "y": 4450,
+                        "value": 3670.0
+                    },
+                    {
+                        "x": 5202,
+                        "y": 278,
+                        "value": 352.0
+                    },
+                    {
+                        "x": 1993,
+                        "y": 92,
+                        "value": 1503.0
+                    },
+                    {
+                        "x": 1554,
+                        "y": 10344,
+                        "value": 3141.0
+                    },
+                    {
+                        "x": 3344,
+                        "y": 10158,
+                        "value": 5344.0
+                    },
+                    {
+                        "x": 4830,
+                        "y": 7591,
+                        "value": 515.0
+                    },
+                    {
+                        "x": 490,
+                        "y": 6713,
+                        "value": 2616.0
+                    },
+                    {
+                        "x": 912,
+                        "y": 937,
+                        "value": 2214.0
+                    }
+                ]
+            },
+            {
+                "name": "B12",
+                "description": "Reflectance in band B12",
+                "bandWidth": 5490,
+                "bandHeight": 10488,
+                "geophysicalUnit": "dl",
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "2190.0",
+                "spectralBandwidth": "276.0",
+                "expectedPixels": [
+                    {
+                        "x": 68,
+                        "y": 4500,
+                        "value": 1386.0
+                    },
+                    {
+                        "x": 2179,
+                        "y": 4450,
+                        "value": 2638.0
+                    },
+                    {
+                        "x": 5202,
+                        "y": 278,
+                        "value": 278.0
+                    },
+                    {
+                        "x": 1993,
+                        "y": 92,
+                        "value": 754.0
+                    },
+                    {
+                        "x": 1554,
+                        "y": 10344,
+                        "value": 2080.0
+                    },
+                    {
+                        "x": 3344,
+                        "y": 10158,
+                        "value": 3841.0
+                    },
+                    {
+                        "x": 4830,
+                        "y": 7591,
+                        "value": 436.0
+                    },
+                    {
+                        "x": 490,
+                        "y": 6713,
+                        "value": 1757.0
+                    },
+                    {
+                        "x": 912,
+                        "y": 937,
+                        "value": 1350.0
+                    }
+                ]
+            }
+        ],
+        "metadata": [
+            {
+                "path": "Level-1C_DataStrip_ID/Image_Data_Info/Sensor_Configuration/Source_Packet_Description/Source_Packet_Counters_List/Detector_List/Detector[9]/Band_List/Band[4]/DATA_STRIP_START",
+                "value": "1"
+            },
+            {
+                "path": "Level-1C_DataStrip_ID/Image_Data_Info/Sensor_Configuration/Source_Packet_Description/Degradation_Summary/NUMBER_OF_KEPT_DEGRADED_PACKETS",
+                "value": "0"
+            },
+            {
+                "path": "Level-1C_User_Product/Auxiliary_Data_Info/GIPP_List/GIPP_FILENAME[118]",
+                "value": "S2A_OPER_GIP_VIEDIR_MPC__20151117T131049_V20150703T000000_21000101T000000_B02"
+            },
+            {
+                "path": "Granules/Level-1C_Tile_ID[2]/Geometric_Info/Tile_Geocoding/Size[3]/NCOLS",
+                "value": "1830"
+            },
+            {
+                "path": "Level-1C_User_Product/Geometric_Info/Product_Footprint/Product_Footprint/Global_Footprint/EXT_POS_LIST",
+                "value": " 39.72681533153163 -0.666833532004746 39.68174868862507 -0.6683164153028662 39.63822758400475 -0.669814465441394 39.63822589660372 -0.669748499372448 38.73821864423846 -0.699362547294467 38.73199481959889 -0.4513490295249727 38.7099201955759 -0.450260110444942 38.72072909948093 -0.0024207517423706 38.70656329494251 0.562073143742716 38.73438773863113 0.5634901168824535 38.74036995699254 0.811348073446155 39.640447018776314 0.7831725744294168 39.64044856303257 0.783235343452924 39.68397299682337 0.781810062036048 39.7290432642928 0.780399208087329 39.72904166228604 0.7803342121335288 40.62894899386581 0.750865220008873 40.61007472822743 -0.0008741657455752 40.62664940733135 -0.63579176628713 39.72681358103935 -0.6667652260829942 39.72681533153163 -0.666833532004746"
+            },
+            {
+                "path": "Granules/Level-1C_Tile_ID[3]/Geometric_Info/Tile_Geocoding/Size[2]/NROWS",
+                "value": "5490"
+            },
+            {
+                "path": "Level-1C_User_Product/Auxiliary_Data_Info/GIPP_List/GIPP_FILENAME[65]",
+                "value": "S2A_OPER_GIP_R2EOB2_MPC__20150827T165847_V20150819T000000_99999999T999999_B07"
+            },
+            {
+                "path": "Level-1C_DataStrip_ID/Image_Data_Info/Sensor_Configuration/Source_Packet_Description/Degradation_Summary/DEGRADATIONPERCENTAGE",
+                "value": "0"
+            },
+            {
+                "path": "Granules/Level-1C_Tile_ID[2]/Geometric_Info/Tile_Geocoding/Size/NROWS",
+                "value": "10980"
+            },
+            {
+                "path": "Level-1C_DataStrip_ID/Image_Data_Info/Sensor_Configuration/Source_Packet_Description/Source_Packet_Counters_List/Detector_List/Detector/Band_List/Band/NB_OF_SOURCE_PACKETS",
+                "value": "4824"
+            }
+        ]
+    }
+}
