@@ -12,17 +12,7 @@ import org.esa.s2tbx.dataio.spot6.dimap.VolumeMetadata;
 import org.esa.s2tbx.dataio.spot6.internal.MosaicMultiLevelSource;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.ProductNodeGroup;
-import org.esa.snap.core.datamodel.Stx;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
-import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.TreeNode;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
@@ -32,12 +22,11 @@ import java.awt.*;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -60,11 +49,13 @@ public class Spot6ProductReader extends AbstractProductReader {
         put(ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT);
     }};
     private final Logger logger;
+    private Set<WeakReference<Product>> tileRefs;
 
     protected Spot6ProductReader(Spot6ProductReaderPlugin readerPlugIn) {
         super(readerPlugIn);
         plugIn = readerPlugIn;
         logger = Logger.getLogger(Spot6ProductReader.class.getName());
+        tileRefs = new HashSet<>();
     }
 
     @Override
@@ -171,6 +162,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                 for (String rasterFile : tileInfo.keySet()) {
                     int[] coords = tileInfo.get(rasterFile);
                     tiles[coords[0]][coords[1]] = ProductIO.readProduct(Paths.get(imageMetadata.getPath()).resolve(rasterFile).toFile());
+                    tileRefs.add(new WeakReference<Product>(tiles[coords[0]][coords[1]]));
                 }
                 int levels = tiles[0][0].getBandAt(0).getSourceImage().getModel().getLevelCount();
                 if (levels > product.getNumResolutionsMax()) {
@@ -228,6 +220,21 @@ public class Spot6ProductReader extends AbstractProductReader {
         }
 
         return product;
+    }
+
+    @Override
+    public void close() throws IOException {
+        System.gc();
+        for (WeakReference<Product> ref : tileRefs) {
+            Product product = ref.get();
+            if (product != null) {
+                product.closeIO();
+                product = null;
+            }
+            ref.clear();
+        }
+
+        super.close();
     }
 
     @Override

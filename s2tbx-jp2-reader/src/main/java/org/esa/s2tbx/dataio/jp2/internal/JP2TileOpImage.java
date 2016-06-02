@@ -36,11 +36,7 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
 import java.awt.*;
-import java.awt.image.DataBuffer;
-import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
+import java.awt.image.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,6 +53,11 @@ import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
  * @author Cosmin Cara
  */
 public class JP2TileOpImage extends SingleBandedOpImage {
+
+    // We need this sort of cache to hold the tile rectangles because
+    // it seems that the TIFFImageReader.getImageWidth() goes into the stream
+    // each time and, therefore, takes unnecessary time
+    private static final Map<Path, Rectangle> tileDims = new HashMap<>();
 
     private final TileLayout tileLayout;
     private final Path imageFile;
@@ -135,14 +136,16 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                 int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth;
                 int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight;
                 imageReader.setInput(tile);
-                int fileTileWidth = imageReader.getImageWidth();
-                int fileTileHeight = imageReader.getImageHeight();
+                Rectangle fileTileRect = tileDims.get(tile);
+                if (fileTileRect == null) {
+                    fileTileRect = new Rectangle(0, 0, imageReader.getImageWidth(), imageReader.getImageHeight());
+                    tileDims.put(tile, fileTileRect);
+                }
                 if (fileTileOriginX == 0 && tileLayout.tileWidth == tileWidth
                         && fileTileOriginY == 0 && tileLayout.tileHeight == tileHeight
                         && tileWidth * tileHeight == dataBuffer.getSize()) {
                     readTileImage = imageReader.read();
                 } else {
-                    final Rectangle fileTileRect = new Rectangle(0, 0, fileTileWidth, fileTileHeight);
                     final Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
                     final Rectangle intersection = fileTileRect.intersection(tileRect);
                     if (!intersection.isEmpty()) {
@@ -157,8 +160,6 @@ public class JP2TileOpImage extends SingleBandedOpImage {
 
         } catch (IOException e) {
             logger.severe(e.getMessage());
-        } finally {
-            imageReader.close();
         }
     }
 
@@ -181,7 +182,6 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         return new Dimension(width < JAI.getDefaultTileSize().width ? width : JAI.getDefaultTileSize().width,
                 height < JAI.getDefaultTileSize().height ? height : JAI.getDefaultTileSize().height);
     }
-
 
     protected Path decompressTile(int tileIndex, int level) throws IOException {
         Path tileFile = PathUtils.get(cacheDir, PathUtils.getFileNameWithoutExtension(imageFile).toLowerCase() + "_tile_" + String.valueOf(tileIndex) + "_" + String.valueOf(level) + ".tif");
@@ -206,12 +206,10 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         return tileFile;
     }
 
-
     @Override
     public synchronized void dispose() {
         imageReader.close();
     }
-
 
     @Override
     protected void finalize() throws Throwable {
@@ -222,6 +220,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     private class ImageReader {
         TIFFImageReader imageReader;
         ImageInputStream inputStream;
+        Path currentPath;
 
         public ImageReader() throws IOException {
             Iterator<javax.imageio.ImageReader> imageReaders = ImageIO.getImageReadersByFormatName("tiff");
@@ -238,8 +237,14 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         }
 
         public void setInput(Path input) throws IOException {
-            inputStream = ImageIO.createImageInputStream(input.toFile());
-            imageReader.setInput(inputStream);
+            // Try to avoid closing and reopening the same input stream.
+            if (currentPath == null || !Files.isSameFile(currentPath, input)) {
+                if (inputStream != null) {
+                    close();
+                }
+                inputStream = ImageIO.createImageInputStream(input.toFile());
+                imageReader.setInput(inputStream);
+            }
         }
 
         public int getImageWidth() throws IOException {
