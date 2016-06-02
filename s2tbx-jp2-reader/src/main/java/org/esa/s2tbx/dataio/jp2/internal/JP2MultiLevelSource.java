@@ -24,12 +24,7 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 
-import javax.media.jai.BorderExtender;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
+import javax.media.jai.*;
 import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
@@ -56,6 +51,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     private final int dataType;
     private final Logger logger;
     private final int bandIndex;
+    private final TileImageDisposer tileManager;
 
     /**
      * Constructs an instance of a single band multi-level image source
@@ -85,6 +81,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         logger = Logger.getLogger(JP2MultiLevelSource.class.getName());
         tileLayout = new TileLayout(imageWidth, imageHeight, tileWidth, tileHeight, numTilesX, numTilesY, levels);
         this.bandIndex = bandIndex;
+        this.tileManager = new TileImageDisposer();
     }
 
     /**
@@ -117,6 +114,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
                 try {
                     opImage = createTileImage(x, y, level);
                     if (opImage != null) {
+                        tileManager.registerForDisposal(opImage);
                         opImage = TranslateDescriptor.create(opImage,
                                                              (float) (y * layout.tileWidth * factorX),
                                                              (float) (x * layout.tileHeight * factorY),
@@ -168,6 +166,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     @Override
     public synchronized void reset() {
         super.reset();
+        tileManager.disposeAll();
     }
 
     private int scaleValue(int source, int level) {
