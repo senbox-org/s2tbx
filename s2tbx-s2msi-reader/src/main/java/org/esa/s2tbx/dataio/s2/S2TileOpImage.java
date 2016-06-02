@@ -229,6 +229,8 @@ public class S2TileOpImage extends SingleBandedOpImage {
                 String inputFileName = Utils.GetIterativeShortPathNameW(imageFile.getPath());
                 String outputFileName = outputFile.getPath();
 
+                String outputNameShort = Utils.GetIterativeShortPathNameW(outputFile.getParent()) + File.separator + outputFile.getName();
+
                 if (inputFileName.length() == 0) {
                     inputFileName = imageFile.getPath();
                 }
@@ -237,9 +239,10 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
                 builder = new ProcessBuilder(S2Config.OPJ_DECOMPRESSOR_EXE,
                         "-i", inputFileName,
-                        "-o", outputFileName,
+                        "-o", outputNameShort,
                         "-r", getLevel() + "",
-                        "-t", tileIndex + "");
+                        "-t", tileIndex + "",
+                        "-threads", "ALL_CPUS");
             } else {
                 SystemUtils.LOG.fine("Writing to " + outputFile.getPath());
 
@@ -249,7 +252,8 @@ public class S2TileOpImage extends SingleBandedOpImage {
                         "-i", imageFile.getPath(),
                         "-o", outputFile.getPath(),
                         "-r", getLevel() + "",
-                        "-t", tileIndex + "");
+                        "-t", tileIndex + "",
+                        "-threads", "ALL_CPUS" );
             }
         } else {
             throw new UnexpectedException("OpenJpeg decompressor is not set");

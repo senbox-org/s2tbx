@@ -1,0 +1,68 @@
+{
+  "id": "S2L1C60m-Demo01",
+  "decodeQualification": "INTENDED",
+  "expectedContent": {
+    "sceneWidth": 3496,
+    "sceneHeight": 1830,
+    "geoCoding": {
+      "coordinates": [
+        {
+          "x": 1459,
+          "y": 503,
+          "lat": 33.1613888,
+          "lon": -112.2061111
+        }
+      ]
+    },
+    "bands": [
+      {
+        "name": "B1",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "443.0",
+        "spectralBandwidth": "58.0",
+        "expectedPixels": [
+          {
+            "x": 2108,
+            "y": 910,
+            "value": 1900
+          }
+        ]
+      },
+	  {
+        "name": "B2",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "490.0",
+        "spectralBandwidth": "130.0",
+        "expectedPixels": [
+          {
+            "x": 2108,
+            "y": 910,
+            "value": 1675
+          }
+        ]
+      },
+	  {
+        "name": "B5",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "705.0",
+        "spectralBandwidth": "97.0",
+        "expectedPixels": [
+          {
+            "x": 2108,
+            "y": 910,
+            "value": 2942
+          }
+        ]
+      }
+    ],
+	"metadata": [
+      {
+        "path": "Level-1B_User_Product/General_Info/Product_Info/GENERATION_TIME",
+        "value": "2016-04-24T02:13:42.000856Z"
+      }
+    ]
+  }
+}

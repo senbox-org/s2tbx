@@ -414,6 +414,7 @@
                             <snap.reader.tests.execute>${snap.reader.tests.execute}</snap.reader.tests.execute>
                             <snap.reader.tests.failOnMissingData>${snap.reader.tests.failOnMissingData}</snap.reader.tests.failOnMissingData>
                             <snap.reader.tests.data.dir>${snap.reader.tests.data.dir}</snap.reader.tests.data.dir>
+                            <snap.reader.tests.class.name>${snap.reader.tests.class.name}</snap.reader.tests.class.name>
                         </systemPropertyVariables>
                         <argLine>-Xmx1024M -Dfile.encoding=UTF-8</argLine>
                     </configuration>

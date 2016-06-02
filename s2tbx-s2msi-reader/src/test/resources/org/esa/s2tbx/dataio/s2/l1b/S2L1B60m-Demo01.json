@@ -1,0 +1,130 @@
+{
+  "id": "S2L1B60m-Demo01",
+  "decodeQualification": "INTENDED",
+  "expectedContent": {
+    "sceneWidth": 1276,
+    "sceneHeight": 768,
+    "bands": [
+      {
+        "name": "D11B1",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "443.0",
+        "spectralBandwidth": "58.0",
+        "expectedPixels": [
+          {
+            "x": 184,
+            "y": 269,
+            "value": 306
+          },
+          {
+            "x": 1083,
+            "y": 587,
+            "value": 313
+          }
+        ]
+      },
+	  {
+        "name": "D11B10",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "1375.0",
+        "spectralBandwidth": "75.0",
+        "expectedPixels": [
+          {
+            "x": 184,
+            "y": 269,
+            "value": 13
+          },
+          {
+            "x": 1083,
+            "y": 587,
+            "value": 15
+          }
+        ]
+      },
+	  {
+        "name": "D11B9",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "945.0",
+        "spectralBandwidth": "79.0",
+        "expectedPixels": [
+          {
+            "x": 184,
+            "y": 269,
+            "value": 276
+          },
+          {
+            "x": 1083,
+            "y": 587,
+            "value": 226
+          }
+        ]
+      },
+	  {
+        "name": "D12B1",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "443.0",
+        "spectralBandwidth": "58.0",
+        "expectedPixels": [
+          {
+            "x": 184,
+            "y": 269,
+            "value": 383
+          },
+          {
+            "x": 1083,
+            "y": 587,
+            "value": 381
+          }
+        ]
+      },
+	  {
+        "name": "D12B10",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "1375.0",
+        "spectralBandwidth": "75.0",
+        "expectedPixels": [
+          {
+            "x": 184,
+            "y": 269,
+            "value": 15
+          },
+          {
+            "x": 1083,
+            "y": 587,
+            "value": 21
+          }
+        ]
+      },
+	  {
+        "name": "D12B9",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "945.0",
+        "spectralBandwidth": "79.0",
+        "expectedPixels": [
+          {
+            "x": 184,
+            "y": 269,
+            "value": 343
+          },
+          {
+            "x": 1083,
+            "y": 587,
+            "value": 402
+          }
+        ]
+      }
+    ],
+	"metadata": [
+      {
+        "path": "Level-1B_User_Product/General_Info/Product_Info/GENERATION_TIME",
+        "value": "2016-04-04T10:26:35.000431Z"
+      }
+    ]
+  }
+}

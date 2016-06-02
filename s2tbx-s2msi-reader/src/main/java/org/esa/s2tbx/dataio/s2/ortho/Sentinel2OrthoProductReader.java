@@ -86,6 +86,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -94,6 +95,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.areOpenJpegExecutablesOK;
 import static org.esa.snap.utils.DateHelper.parseDate;
 
 
@@ -141,6 +143,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     @Override
     protected Product getMosaicProduct(File metadataFile) throws IOException {
+
+        if (!areOpenJpegExecutablesOK(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
+            throw new IOException("Not valid OpenJpeg executables");
+        }
+
         Objects.requireNonNull(metadataFile);
 
         boolean isAGranule = S2OrthoGranuleMetadataFilename.isGranuleFilename(metadataFile.getName());
@@ -151,7 +158,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         TimeProbe timeProbe = TimeProbe.start();
         // update the tile layout
-        updateTileLayout(metadataFile.toPath(), isAGranule);
+        if (!updateTileLayout(metadataFile.toPath(), isAGranule)) {
+            throw new IOException(String.format("Unable to retrieve the tile layout associated to metadata file [%s]", metadataFile.getName()));
+        }
         SystemUtils.LOG.fine(String.format("[timeprobe] updateTileLayout : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
 
         String filterTileId = null;
@@ -400,17 +409,26 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
-    private void addIndexMasks(Product product, List<BandInfo> bandInfoList) {
+    private void addIndexMasks(Product product, List<BandInfo> bandInfoList) throws IOException {
         for (BandInfo bandInfo : bandInfoList) {
             if (bandInfo.getBandInformation() instanceof S2IndexBandInformation) {
                 S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) bandInfo.getBandInformation();
                 IndexCoding indexCoding = indexBandInformation.getIndexCoding();
                 product.getIndexCodingGroup().add(indexCoding);
+
+                List<Color> colors = indexBandInformation.getColors();
+                Iterator<Color> colorIterator = colors.iterator();
+
                 for (String indexName : indexCoding.getIndexNames()) {
                     int indexValue = indexCoding.getIndexValue(indexName);
                     String description = indexCoding.getIndex(indexName).getDescription();
+                    if (!colorIterator.hasNext()) {
+                        // we should never be here : programming error.
+                        throw new IOException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding"));
+                    }
+                    Color color = colorIterator.next();
                     Mask mask = Mask.BandMathsType.create("scl_" + indexName.toLowerCase(), description, product.getSceneRasterWidth(), product.getSceneRasterHeight(),
-                                                          String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), ColorIterator.next(), 0.5);
+                                                          String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), color, 0.5);
                     product.addMask(mask);
                 }
             }
@@ -439,7 +457,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private void addVectorMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, S2SpectralInformation spectralInfo, List<BandInfo> bandInfoList) {
         List<EopPolygon> productPolygons = new ArrayList<>();
 
+        boolean maskFilesFound = false;
         for (S2Metadata.Tile tile : tileList) {
+
+            if (tile.getMaskFilenames() == null) {
+                continue;
+            }
+
             for (S2Metadata.MaskFilename maskFilename : tile.getMaskFilenames()) {
 
                 // We are only interested in a single mask main type
@@ -454,6 +478,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                 }
 
+                maskFilesFound = true;
+
                 // Read all polygons from the mask file
                 GmlFilter gmlFilter = new GmlFilter();
                 List<EopPolygon> polygonsForTile = gmlFilter.parse(maskFilename.getName()).getSecond();
@@ -464,6 +490,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 // Merge polygons from this tile to product polygon list
                 productPolygons.addAll(polygonsForTile);
             }
+        }
+
+        if (!maskFilesFound) {
+            return;
         }
 
         // TODO : why do we use this here ?
@@ -524,6 +554,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             maskInfo.getTransparency(),
                             referenceBand);
         }
+
     }
 
     private void addTiePointGridBand(Product product, S2Metadata metadataHeader, S2OrthoSceneLayout sceneDescription, String name, int tiePointGridIndex, String description, String unit) {

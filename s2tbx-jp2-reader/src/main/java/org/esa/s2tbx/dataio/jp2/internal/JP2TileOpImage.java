@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.jp2.internal;
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
+import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.s2tbx.dataio.readers.PathUtils;
@@ -36,7 +37,12 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
 import java.awt.*;
-import java.awt.image.*;
+import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,6 +52,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
+import static org.esa.s2tbx.dataio.Utils.diffLastModifiedTimes;
 
 /**
  * A JAI operator for handling JP2 tiles.
@@ -185,16 +192,25 @@ public class JP2TileOpImage extends SingleBandedOpImage {
 
     protected Path decompressTile(int tileIndex, int level) throws IOException {
         Path tileFile = PathUtils.get(cacheDir, PathUtils.getFileNameWithoutExtension(imageFile).toLowerCase() + "_tile_" + String.valueOf(tileIndex) + "_" + String.valueOf(level) + ".tif");
-        if (!Files.exists(tileFile)) {
+        if ((!Files.exists(tileFile)) || (diffLastModifiedTimes(tileFile.toFile(), imageFile.toFile()) < 0L)) {
             final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getOpjDecompress());
             final Map<String, String> params = new HashMap<String, String>() {{
                 put("-i", GetIterativeShortPathNameW(imageFile.toString()));
                 put("-r", String.valueOf(level));
                 put("-l", "20");
             }};
-            params.put("-o", tileFile.toString());
+            String tileFileName;
+            if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS && (tileFile.getParent() != null)) {
+                tileFileName = Utils.GetIterativeShortPathNameW(tileFile.getParent().toString()) + File.separator + tileFile.getName(tileFile.getNameCount()-1);
+            }
+            else {
+                tileFileName = tileFile.toString();
+            }
+
+            params.put("-o", tileFileName);
             params.put("-t", String.valueOf(tileIndex));
             params.put("-p", String.valueOf(DataBuffer.getDataTypeSize(this.getSampleModel().getDataType())));
+            params.put("-threads", "ALL_CPUS");
 
             if (decompress.execute(params) != 0) {
                 logger.severe(decompress.getLastError());

@@ -17,7 +17,6 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
 import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_L2A_Product_Info;
@@ -41,15 +40,17 @@ import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
+import org.w3c.dom.Element;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.awt.*;
+import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -151,8 +152,8 @@ public class L2aMetadataProc extends S2MetadataProc {
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString());
         characteristics.setProcessingLevel(product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value());
 
-        characteristics.setProductStartTime(((ElementNSImpl) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
-        characteristics.setProductStopTime(((ElementNSImpl) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
+        characteristics.setProductStartTime(((Element) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
+        characteristics.setProductStopTime(((Element) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
 
         List<S2BandInformation> aInfo = new ArrayList<>();
         switch (resolution) {
@@ -235,13 +236,23 @@ public class L2aMetadataProc extends S2MetadataProc {
 
         List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
 
+        //New list with only granules with different granuleIdentifier
+        List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> aGranuleListReduced = new ArrayList<>();
+        Map<String, A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> mapGranules = new LinkedHashMap<>(aGranuleList.size());
+        for (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List granule : aGranuleList) {
+            mapGranules.put(granule.getGranules().getGranuleIdentifier(), granule);
+        }
+        for (Map.Entry<String, A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> granule : mapGranules.entrySet()) {
+            aGranuleListReduced.add(granule.getValue());
+        }
+
         Transformer tileSelector = o -> {
             A_L2A_Product_Info.L2A_Product_Organisation.Granule_List ali = (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List) o;
             A_PRODUCT_ORGANIZATION_2A.Granules gr = ali.getGranules();
             return gr.getGranuleIdentifier();
         };
 
-        return CollectionUtils.collect(aGranuleList, tileSelector);
+        return CollectionUtils.collect(aGranuleListReduced, tileSelector);
     }
 
     public static S2DatastripFilename getDatastrip(Level2A_User_Product product) {

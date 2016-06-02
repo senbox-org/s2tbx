@@ -86,10 +86,6 @@ public abstract class BaseIndexOp extends Operator {
         ProductUtils.copyMasks(sourceProduct, targetProduct);
         ProductUtils.copyOverlayMasks(sourceProduct, targetProduct);
 
-        for (MaskDescriptor maskDescriptor : getMaskDescriptors()) {
-            targetProduct.addMask(maskDescriptor.name, maskDescriptor.expression, maskDescriptor.description, maskDescriptor.color, maskDescriptor.transparency);
-        }
-
         loadSourceBands(sourceProduct);
 
         Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
@@ -103,6 +99,11 @@ public abstract class BaseIndexOp extends Operator {
 
         targetProduct.getFlagCodingGroup().add(flagCoding);
         targetProduct.addBand(flagsOutputBand);
+
+        for (MaskDescriptor maskDescriptor : getMaskDescriptors()) {
+                targetProduct.addMask(maskDescriptor.name, maskDescriptor.expression, maskDescriptor.description, maskDescriptor.color, maskDescriptor.transparency);
+        }
+
     }
 
     protected void addMaskDescriptor(String name, String expression, String description, Color color, double transparency) {
