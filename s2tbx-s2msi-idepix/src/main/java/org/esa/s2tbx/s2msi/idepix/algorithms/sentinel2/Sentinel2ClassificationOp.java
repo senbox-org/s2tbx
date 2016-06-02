@@ -53,6 +53,21 @@ public class Sentinel2ClassificationOp extends Operator {
             description = " Write all Feature Values to the target product")
     private boolean copyFeatureValues;
 
+    @Parameter(defaultValue = "0.01",
+            label = " Threshold CW_THRESH",
+            description = " Threshold CW_THRESH")
+    private double cwThresh;
+
+    @Parameter(defaultValue = "-0.11",
+            label = " Threshold GCL_THRESH",
+            description = " Threshold GCL_THRESH")
+    private double gclThresh;
+
+    @Parameter(defaultValue = "0.01",
+            label = " Threshold CL_THRESH",
+            description = " Threshold CL_THRESH")
+    private double clThresh;
+
     // NN stuff is deactivated unless we have a better net
 
     //    @Parameter(defaultValue = "1.95",
@@ -345,6 +360,10 @@ public class Sentinel2ClassificationOp extends Operator {
         s2MsiAlgorithm.setElevation(elevation);
         final double rhoToa442Thresh = calcRhoToa442ThresholdTerm(sza, vza, saa, vaa);
         s2MsiAlgorithm.setRhoToa442Thresh(rhoToa442Thresh);
+
+        s2MsiAlgorithm.setCwThresh(cwThresh);
+        s2MsiAlgorithm.setGclThresh(gclThresh);
+        s2MsiAlgorithm.setClThresh(clThresh);
 
 //        SchillerNeuralNetWrapper nnWrapper = neuralNet.get();
 //        double[] inputVector = nnWrapper.getInputVector();

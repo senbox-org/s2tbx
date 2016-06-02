@@ -14,7 +14,6 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.dem.gpf.AddElevationOp;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,43 +47,43 @@ public class Sentinel2Op extends Operator {
 
     // NN stuff is deactivated unless we have a better net
 
-//    @Parameter(defaultValue = "1.95",
+    //    @Parameter(defaultValue = "1.95",
 //            label = " NN cloud ambiguous lower boundary",
 //            description = " NN cloud ambiguous lower boundary")
 //    private double nnCloudAmbiguousLowerBoundaryValue;
     private double nnCloudAmbiguousLowerBoundaryValue = 1.95;
 
-//    @Parameter(defaultValue = "3.45",
+    //    @Parameter(defaultValue = "3.45",
 //            label = " NN cloud ambiguous/sure separation value",
 //            description = " NN cloud ambiguous cloud ambiguous/sure separation value")
 //    private double nnCloudAmbiguousSureSeparationValue;
     private double nnCloudAmbiguousSureSeparationValue = 3.45;
 
-//    @Parameter(defaultValue = "4.3",
+    //    @Parameter(defaultValue = "4.3",
 //            label = " NN cloud sure/snow separation value",
 //            description = " NN cloud ambiguous cloud sure/snow separation value")
 //    private double nnCloudSureSnowSeparationValue;
     private double nnCloudSureSnowSeparationValue = 4.3;
 
-//    @Parameter(defaultValue = "false",
+    //    @Parameter(defaultValue = "false",
 //            label = " Apply NN for pixel classification purely (not combined with feature value approach)",
 //            description = " Apply NN for pixelclassification purely (not combined with feature value  approach)")
 //    private boolean applyNNPure;
     private boolean applyNNPure = false;
 
-//    @Parameter(defaultValue = "false",
+    //    @Parameter(defaultValue = "false",
 //            label = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)",
 //            description = " Ignore NN and only use feature value approach for pixel classification (if set, overrides previous option)")
 //    private boolean ignoreNN;
     boolean ignoreNN = true;       // currently bad results. Wait for better S2 NN.
 
-//    @Parameter(defaultValue = "true",
+    //    @Parameter(defaultValue = "true",
 //            label = " Write NN output value to the target product",
 //            description = " Write NN output value to the target product")
 //    private boolean copyNNValue = true;
     private boolean copyNNValue = false;
 
-//    @Parameter(defaultValue = "true",
+    //    @Parameter(defaultValue = "true",
 //            label = " Refine pixel classification near coastlines",
 //            description = "Refine pixel classification near coastlines. ")
     private boolean refineClassificationNearCoastlines = false; // todo later
@@ -100,6 +99,21 @@ public class Sentinel2Op extends Operator {
             label = " Width of cloud buffer (# of pixels)",
             description = " The width of the 'safety buffer' around a pixel identified as cloudy.")
     private int cloudBufferWidth;
+
+    @Parameter(defaultValue = "0.01",
+            label = " Threshold CW_THRESH",
+            description = " Threshold CW_THRESH")
+    private double cwThresh;
+
+    @Parameter(defaultValue = "-0.11",
+            label = " Threshold GCL_THRESH",
+            description = " Threshold GCL_THRESH")
+    private double gclThresh;
+
+    @Parameter(defaultValue = "0.01",
+            label = " Threshold CL_THRESH",
+            description = " Threshold CL_THRESH")
+    private double clThresh;
 
 
     @SourceProduct(alias = "l1cProduct",
@@ -136,7 +150,7 @@ public class Sentinel2Op extends Operator {
         final Map<String, Object> pixelClassificationParameters = createPixelClassificationParameters();
 
         s2ClassifProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2ClassificationOp.class),
-                                           pixelClassificationParameters, inputProducts);
+                                             pixelClassificationParameters, inputProducts);
 
 //        AddElevationOp elevationOp = new AddElevationOp();
 //        elevationOp.setParameterDefaultValues();
@@ -188,7 +202,7 @@ public class Sentinel2Op extends Operator {
             params = new HashMap<>();
             params.put("cloudBufferWidth", cloudBufferWidth);
             postProcessingProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2CloudBufferOp.class),
-                                                        params, input);
+                                                      params, input);
         } else {
             postProcessingProduct = classifiedProduct;
         }
@@ -204,6 +218,9 @@ public class Sentinel2Op extends Operator {
         gaCloudClassificationParameters.put("nnCloudAmbiguousSureSeparationValue", nnCloudAmbiguousSureSeparationValue);
         gaCloudClassificationParameters.put("nnCloudSureSnowSeparationValue", nnCloudSureSnowSeparationValue);
         gaCloudClassificationParameters.put("cloudBufferWidth", cloudBufferWidth);
+        gaCloudClassificationParameters.put("cwThresh", cwThresh);
+        gaCloudClassificationParameters.put("gclThresh", gclThresh);
+        gaCloudClassificationParameters.put("clThresh", clThresh);
 
         return gaCloudClassificationParameters;
     }
