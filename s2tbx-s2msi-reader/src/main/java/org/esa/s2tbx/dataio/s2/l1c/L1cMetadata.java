@@ -26,6 +26,7 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
+import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.jdom.JDOMException;
@@ -119,7 +120,7 @@ public class L1cMetadata extends S2Metadata {
         }
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
-            try( FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile) ) {
+            try (FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile)) {
                 Level1C_Tile aTile = (Level1C_Tile) updateAndUnmarshal(granuleStream);
                 Map<S2SpatialResolution, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
@@ -156,6 +157,16 @@ public class L1cMetadata extends S2Metadata {
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
             MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
+
+            MetadataElement generalInfo = aGranule.getElement("General_Info");
+            if (generalInfo != null) {
+                MetadataAttribute tileIdAttr = generalInfo.getAttribute("TILE_ID");
+                if (tileIdAttr != null) {
+                    String newName = tileIdAttr.getData().toString();
+                    if (newName.length() > 56)
+                        aGranule.setName("Level-1C_Tile_" + newName.substring(50, 55));
+                }
+            }
             granulesMetaData.addElement(aGranule);
         }
 

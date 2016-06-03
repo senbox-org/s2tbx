@@ -27,6 +27,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
+import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.SystemUtils;
@@ -155,6 +156,17 @@ public class L1bMetadata extends S2Metadata {
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
             MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
+
+            MetadataElement generalInfo = aGranule.getElement("General_Info");
+            if (generalInfo != null) {
+                MetadataAttribute tileIdAttr = generalInfo.getAttribute("GRANULE_ID");
+                if (tileIdAttr != null) {
+                    String newName = tileIdAttr.getData().toString();
+                    if (newName.length() > 62)
+                        aGranule.setName("Level-1B_Granule_" + newName.substring(51, 61));
+                }
+            }
+
             granulesMetaData.addElement(aGranule);
         }
 
