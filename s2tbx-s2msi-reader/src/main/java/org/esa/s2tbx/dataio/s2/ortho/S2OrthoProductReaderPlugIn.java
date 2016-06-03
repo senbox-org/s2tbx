@@ -48,6 +48,8 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     // Product level: L1C, L2A...
     private String level = "";
 
+    private String resolution = "Multi";
+
     public S2OrthoProductReaderPlugIn() {
         RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Natural Colors", new String[]{"B4", "B3", "B2"}));
@@ -56,6 +58,14 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     protected String getLevel() {
         return level;
+    }
+
+    protected String getResolution() {
+        return resolution;
+    }
+
+    protected void setResolution(String resolution) {
+        this.resolution = resolution;
     }
 
     @Override
@@ -76,8 +86,19 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         if (!matcher.matches()) {
             return DecodeQualification.UNABLE;
         }
+
         if (!file.isFile()) {
-            return DecodeQualification.UNABLE;
+            File xmlFile = getInputXmlFileFromDirectory(file);
+            if (xmlFile == null) {
+                return DecodeQualification.UNABLE;
+            }
+            fileName = xmlFile.getName();
+            file = xmlFile;
+            matcher.reset();
+            matcher = PATTERN.matcher(fileName);
+            if (!matcher.matches()) {
+                return DecodeQualification.UNABLE;
+            }
         }
 
         // test for granule filename first as it is more restrictive
@@ -86,15 +107,14 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             S2OrthoGranuleMetadataFilename granuleMetadataFilename = S2OrthoGranuleMetadataFilename.create(fileName);
             if (granuleMetadataFilename != null &&
                     (level.equals("L1C") ||
-                            (level.equals("L2A") && (this instanceof S2OrthoProduct10MReaderPlugIn ||
-                                    this instanceof S2OrthoProduct20MReaderPlugIn ||
-                                    this instanceof S2OrthoProduct60MReaderPlugIn
-                            )))) {
+                            (level.equals("L2A") && (!getResolution().equals("Multi"))))) {
                 String tileId = granuleMetadataFilename.tileNumber;
                 String epsg = tileIdentifierToEPSG(tileId);
                 if (getEPSG() != null && getEPSG().equalsIgnoreCase(epsg)) {
                     decodeQualification = DecodeQualification.INTENDED;
                 }
+                if (level.equals("L2A") && !checkGranuleSpecificFolder(file, getResolution()))
+                    return DecodeQualification.UNABLE;
             }
         } else if (S2ProductFilename.isMetadataFilename(fileName)) {
             level = matcher.group(4).substring(3);
@@ -102,18 +122,17 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             if (productFilename != null) {
                 if (level.equals("L1C") ||
                         // no multi-resolution for L2A products
-                        (level.equals("L2A") &&
-                                (this instanceof S2OrthoProduct10MReaderPlugIn ||
-                                        this instanceof S2OrthoProduct20MReaderPlugIn ||
-                                        this instanceof S2OrthoProduct60MReaderPlugIn
-                                ))) {
+                        (level.equals("L2A") && (!getResolution().equals("Multi")))) {
                     crsCache.ensureIsCached(file.getAbsolutePath());
                     if (getEPSG() != null && crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
                         decodeQualification = DecodeQualification.INTENDED;
                     }
+                    if (level.equals("L2A") && !checkMetadataSpecificFolder(file, getResolution()))
+                        return DecodeQualification.UNABLE;
                 }
             }
         }
+
 
         return decodeQualification;
     }
@@ -139,50 +158,46 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         return String.format("Sentinel-2 MSI %s - Native resolutions - %s", getLevel(), epsgToDisplayName(getEPSG()));
     }
 
-    protected boolean hasL2ResolutionSpecificFolder(Object input, String specificFolder) {
 
-        if (!(input instanceof File)) {
-            return false;
-        }
+    protected boolean checkGranuleSpecificFolder(File fileGranule, String specificFolder) {
 
-        File file = (File) input;
-        String fileNameComplete = file.toString(); //file name with full path
-        String fileName = file.getName(); //file name without path
+        if (specificFolder.equals("Multi"))
+            return true;
+        Path rootPath = fileGranule.toPath().getParent();
+        File imgFolder = rootPath.resolve("IMG_DATA").toFile();
+        File[] files = imgFolder.listFiles();
 
-        if (S2OrthoGranuleMetadataFilename.isGranuleFilename(fileName)) { //when input is a granule
-
-            Path rootPath = new File(fileNameComplete).toPath().getParent();
-            File imgFolder = rootPath.resolve("IMG_DATA").toFile();
-            File[] files = imgFolder.listFiles();
-
-            if (files != null) {
-                for (File imgData : files) {
-                    if (imgData.isDirectory()) {
-                        if (imgData.getName().equals(specificFolder)) {
-                            return true;
-                        }
+        if (files != null) {
+            for (File imgData : files) {
+                if (imgData.isDirectory()) {
+                    if (imgData.getName().equals("R" + specificFolder)) {
+                        return true;
                     }
                 }
             }
+        }
+        return false;
+    }
 
-        } else if (S2ProductFilename.isMetadataFilename(fileName)) { //when input is the global xml
+    protected boolean checkMetadataSpecificFolder(File fileMetadata, String specificFolder) {
 
-            Path rootPath = new File(fileNameComplete).toPath().getParent();
-            File granuleFolder = rootPath.resolve("GRANULE").toFile();
-            File[] files = granuleFolder.listFiles();
+        if (specificFolder.equals("Multi"))
+            return true;
+        Path rootPath = fileMetadata.toPath().getParent();
+        File granuleFolder = rootPath.resolve("GRANULE").toFile();
+        File[] files = granuleFolder.listFiles();
 
-            if (files != null) {
-                for (File granule : files) {
-                    if (granule.isDirectory()) {
-                        Path granulePath = new File(granule.toString()).toPath();
-                        File internalGranuleFolder = granulePath.resolve("IMG_DATA").toFile();
-                        File[] files2 = internalGranuleFolder.listFiles();
-                        if (files2 != null) {
-                            for (File imgData : files2) {
-                                if (imgData.isDirectory()) {
-                                    if (imgData.getName().equals(specificFolder)) {
-                                        return true;
-                                    }
+        if (files != null) {
+            for (File granule : files) {
+                if (granule.isDirectory()) {
+                    Path granulePath = new File(granule.toString()).toPath();
+                    File internalGranuleFolder = granulePath.resolve("IMG_DATA").toFile();
+                    File[] files2 = internalGranuleFolder.listFiles();
+                    if (files2 != null) {
+                        for (File imgData : files2) {
+                            if (imgData.isDirectory()) {
+                                if (imgData.getName().equals("R" + specificFolder)) {
+                                    return true;
                                 }
                             }
                         }
@@ -190,7 +205,6 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
                 }
             }
         }
-
         return false;
     }
 
