@@ -34,6 +34,11 @@ import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
  */
 public abstract class S2OrthoProduct20MReaderPlugIn extends S2OrthoProductReaderPlugIn {
 
+    public S2OrthoProduct20MReaderPlugIn() {
+        super();
+        setResolution("20m");
+    }
+
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader 20M");
@@ -55,24 +60,4 @@ public abstract class S2OrthoProduct20MReaderPlugIn extends S2OrthoProductReader
         return String.format("Sentinel-2 MSI %s - Resampled at 20m resolution - %s", getLevel(), epsgToDisplayName(getEPSG()));
     }
 
-
-    //This method is overriden to make the specific resolution checking in level 2 products
-    @Override
-    public DecodeQualification getDecodeQualification(Object input) {
-
-        //call to S2OrthoProductReaderPlugIn getDecodeQualification(Object input)
-        DecodeQualification decodeQualification = super.getDecodeQualification(input);
-
-        //If decodeQualification is already unable or level is not level 2, the method return the value of parent's method
-        if (decodeQualification == DecodeQualification.UNABLE || !(getLevel().equals("L2A")))
-            return decodeQualification;
-
-        //If the level is 2, the plugin is able if it exists the folder with the corresponding resolution
-        if (hasL2ResolutionSpecificFolder(input, "R20m"))
-            decodeQualification = DecodeQualification.INTENDED;
-        else
-            decodeQualification = DecodeQualification.UNABLE;
-
-        return decodeQualification;
-    }
 }
