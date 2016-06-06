@@ -275,10 +275,9 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
     @Override
     public synchronized void dispose() {
-
-        if (!cacheDir.delete()) {
-            SystemUtils.LOG.severe("Failed to delete cache dir! :" + cacheDir.getAbsolutePath());
-        }
+//        if (!cacheDir.delete()) {
+//            SystemUtils.LOG.severe("Failed to delete cache dir! :" + cacheDir.getAbsolutePath());
+//        }
     }
 
 
