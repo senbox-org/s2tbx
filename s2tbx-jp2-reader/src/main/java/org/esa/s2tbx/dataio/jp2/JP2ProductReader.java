@@ -54,7 +54,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.areOpenJpegExecutablesOK;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.s2tbx.dataio.Utils.getMD5sum;
 
 /**
@@ -145,8 +145,8 @@ public class JP2ProductReader extends AbstractProductReader {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
 
-        if(!areOpenJpegExecutablesOK(OpenJpegExecRetriever.getOpjDump(),OpenJpegExecRetriever.getOpjDecompress())){
-            throw new IOException("Not valid OpenJpeg executables");
+        if(!validateOpenJpegExecutables(OpenJpegExecRetriever.getOpjDump(),OpenJpegExecRetriever.getOpjDecompress())){
+            throw new IOException("Invalid OpenJpeg executables");
         }
 
         Path inputFile = getFileInput(getInput());

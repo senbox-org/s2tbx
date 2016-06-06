@@ -78,7 +78,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.areOpenJpegExecutablesOK;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.s2tbx.dataio.s2.S2Metadata.ProductCharacteristics;
 import static org.esa.s2tbx.dataio.s2.S2Metadata.Tile;
 import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.convertDoublesToFloats;
@@ -141,8 +141,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     @Override
     protected Product getMosaicProduct(File metadataFile) throws IOException {
 
-        if(!areOpenJpegExecutablesOK(S2Config.OPJ_INFO_EXE,S2Config.OPJ_DECOMPRESSOR_EXE)){
-            throw new IOException("Not valid OpenJpeg executables");
+        if(!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE,S2Config.OPJ_DECOMPRESSOR_EXE)){
+            throw new IOException("Invalid OpenJpeg executables");
         }
 
         boolean isAGranule = S2L1BGranuleMetadataFilename.isGranuleFilename(metadataFile.getName());
@@ -152,7 +152,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         if (!updateTileLayout(metadataFile.toPath(), isAGranule)) {
-            throw new IOException(String.format("Unable to retrieve the tile layout associated to metadata file [%s]", metadataFile.getName()));
+            throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataFile.getName()));
         }
 
         Objects.requireNonNull(metadataFile);

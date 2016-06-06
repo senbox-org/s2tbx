@@ -95,7 +95,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.areOpenJpegExecutablesOK;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.snap.utils.DateHelper.parseDate;
 
 
@@ -144,8 +144,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     @Override
     protected Product getMosaicProduct(File metadataFile) throws IOException {
 
-        if (!areOpenJpegExecutablesOK(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
-            throw new IOException("Not valid OpenJpeg executables");
+        if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
+            throw new IOException("Invalid OpenJpeg executables");
         }
 
         Objects.requireNonNull(metadataFile);
@@ -159,7 +159,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         TimeProbe timeProbe = TimeProbe.start();
         // update the tile layout
         if (!updateTileLayout(metadataFile.toPath(), isAGranule)) {
-            throw new IOException(String.format("Unable to retrieve the tile layout associated to metadata file [%s]", metadataFile.getName()));
+            throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataFile.getName()));
         }
         SystemUtils.LOG.fine(String.format("[timeprobe] updateTileLayout : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
 
