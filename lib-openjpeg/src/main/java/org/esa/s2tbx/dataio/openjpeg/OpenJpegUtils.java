@@ -162,7 +162,7 @@ public class OpenJpegUtils {
 
     }
 
-    public static boolean areOpenJpegExecutablesOK(String opjdumpPath, String opjdecompPath) {
+    public static boolean validateOpenJpegExecutables(String opjdumpPath, String opjdecompPath) {
 
         ProcessBuilder builder = new ProcessBuilder(opjdumpPath, "-h");
         builder.redirectErrorStream(true);

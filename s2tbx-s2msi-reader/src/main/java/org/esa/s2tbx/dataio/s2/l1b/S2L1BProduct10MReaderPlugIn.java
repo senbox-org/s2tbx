@@ -42,6 +42,6 @@ public class S2L1BProduct10MReaderPlugIn extends S2L1BProductReaderPlugIn {
 
     @Override
     public String getDescription(Locale locale) {
-        return String.format("Sentinel-2 MSI %s - 1Om bands", getLevel());
+        return String.format("Sentinel-2 MSI %s - 10m bands", getLevel());
     }
 }
