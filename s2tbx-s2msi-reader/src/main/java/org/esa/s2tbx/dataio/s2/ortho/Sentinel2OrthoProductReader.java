@@ -162,6 +162,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataFile.getName()));
         }
         SystemUtils.LOG.fine(String.format("[timeprobe] updateTileLayout : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+        System.out.println(String.format("[timeprobe] updateTileLayout : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+
 
         String filterTileId = null;
         File rootMetaDataFile = null;
@@ -204,6 +206,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         S2Metadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
         SystemUtils.LOG.fine(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+        System.out.println(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
         timeProbe.reset();
 
         S2OrthoSceneLayout sceneDescription = S2OrthoSceneLayout.create(metadataHeader);
@@ -289,6 +292,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
         }
         SystemUtils.LOG.fine(String.format("[timeprobe] product initialisation : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+        System.out.println(String.format("[timeprobe] product initialisation : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
         timeProbe.reset();
 
         if (!bandInfoList.isEmpty()) {
@@ -296,19 +300,23 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                      bandInfoList,
                      sceneDescription);
             SystemUtils.LOG.fine(String.format("[timeprobe] addBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            System.out.println(String.format("[timeprobe] addBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
 
             scaleBands(product, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] scaleBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            System.out.println(String.format("[timeprobe] scalaBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
             addVectorMasks(product, tileList, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            System.out.println(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
             addIndexMasks(product, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] addIndexMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            System.out.println(String.format("[timeprobe] addIndexMasksBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
         }
 
@@ -318,6 +326,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", VIEW_ZENITH_GRID_INDEX, "Viewing incidence zenith angle", "°");
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", VIEW_AZIMUTH_GRID_INDEX, "Viewing incidence azimuth angle", "°");
             SystemUtils.LOG.fine(String.format("[timeprobe] addTiePointGridBand : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            System.out.println(String.format("[timeprobe] addTiePointGridBand : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
         }
 
@@ -436,10 +445,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     private void addVectorMasks(Product product, List<S2Metadata.Tile> tileList, List<BandInfo> bandInfoList) throws IOException {
+
+
         for (MaskInfo maskInfo : MaskInfo.values()) {
             if (!maskInfo.isPresentAtLevel(getMaskLevel()))
                 continue;
 
+            TimeProbe timeProbe = TimeProbe.start();
             if (!maskInfo.isPerBand()) {
                 // cloud masks are provided once and valid for all bands
                 addVectorMask(product, tileList, maskInfo, null, bandInfoList);
@@ -451,11 +463,18 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                 }
             }
+            System.out.println(String.format("[timeprobe] maskInfo %s : %s ms",maskInfo.getMainType(), timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            timeProbe.reset();
         }
     }
 
     private void addVectorMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, S2SpectralInformation spectralInfo, List<BandInfo> bandInfoList) {
-        List<EopPolygon> productPolygons = new ArrayList<>();
+        List<EopPolygon> [] productPolygons = new List[maskInfo.getSubType().length];
+        for(int i =0;i<maskInfo.getSubType().length;i++)
+        {
+            productPolygons[i]=new ArrayList<>();
+        }
+
 
         boolean maskFilesFound = false;
         for (S2Metadata.Tile tile : tileList) {
@@ -484,11 +503,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 GmlFilter gmlFilter = new GmlFilter();
                 List<EopPolygon> polygonsForTile = gmlFilter.parse(maskFilename.getName()).getSecond();
 
-                // We are interested only in a single subtype
-                polygonsForTile = polygonsForTile.stream().filter(p -> p.getType().equals(maskInfo.getSubType())).collect(Collectors.toList());
-
-                // Merge polygons from this tile to product polygon list
-                productPolygons.addAll(polygonsForTile);
+                for(int i = 0; i<maskInfo.getSubType().length;i++)
+                {
+                    final int pos = i;
+                    productPolygons[i].addAll(polygonsForTile.stream().filter(p -> p.getType().equals(maskInfo.getSubType()[pos])).collect(Collectors.toList()));
+                }
             }
         }
 
@@ -496,65 +515,67 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             return;
         }
 
-        // TODO : why do we use this here ?
-        final SimpleFeatureType type = Placemark.createGeometryFeatureType();
-        // TODO : why "S2L1CMasks" ?
-        final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
 
-        for (int index = 0; index < productPolygons.size(); index++) {
-            Polygon polygon = productPolygons.get(index).getPolygon();
+        for(int i = 0; i<maskInfo.getSubType().length;i++) {
+            // TODO : why do we use this here ?
+            final SimpleFeatureType type = Placemark.createGeometryFeatureType();
+            // TODO : why "S2L1CMasks" ?
+            final DefaultFeatureCollection collection = new DefaultFeatureCollection("S2L1CMasks", type);
 
-            Object[] data1 = {polygon, String.format("Polygon-%s", index)};
-            SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
-            collection.add(f1);
-        }
+            for (int index = 0; index < productPolygons[i].size(); index++) {
+                Polygon polygon = productPolygons[i].get(index).getPolygon();
 
-        if (spectralInfo == null) {
-            // This mask is not specific to a band
-            // So we need one version of it for each resolution present in the band list
-            for (S2SpatialResolution resolution : S2SpatialResolution.values()) {
-                // Find a band with this resolution
-                Band referenceBand = null;
-                for (BandInfo bandInfo : bandInfoList) {
-                    if (bandInfo.getBandInformation().getResolution() == resolution) {
-                        referenceBand = product.getBand(bandInfo.getBandInformation().getPhysicalBand());
-                        break;
+                Object[] data1 = {polygon, String.format("Polygon-%s", index)};
+                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+                collection.add(f1);
+            }
+
+            if (spectralInfo == null) {
+                // This mask is not specific to a band
+                // So we need one version of it for each resolution present in the band list
+                for (S2SpatialResolution resolution : S2SpatialResolution.values()) {
+                    // Find a band with this resolution
+                    Band referenceBand = null;
+                    for (BandInfo bandInfo : bandInfoList) {
+                        if (bandInfo.getBandInformation().getResolution() == resolution) {
+                            referenceBand = product.getBand(bandInfo.getBandInformation().getPhysicalBand());
+                            break;
+                        }
                     }
-                }
 
-                // We may not find a band with this resolution
-                if (referenceBand == null) {
-                    continue;
-                }
+                    // We may not find a band with this resolution
+                    if (referenceBand == null) {
+                        continue;
+                    }
 
-                // We need a different name for each resolution version
-                String description = maskInfo.getDescription();
-                String snapName = String.format("%s_%dm", maskInfo.getSnapName(), resolution.resolution);
+                    // We need a different name for each resolution version
+                    String description = maskInfo.getDescription(i);
+                    String snapName = String.format("%s_%dm", maskInfo.getSnapName()[i], resolution.resolution);
+                    VectorDataNode vdn = new VectorDataNode(snapName, collection);
+                    vdn.setOwner(product);
+                    product.addMask(snapName,
+                                    vdn,
+                                    description,
+                                    maskInfo.getColor()[i],
+                                    maskInfo.getTransparency()[i],
+                                    referenceBand);
+                }
+            } else {
+                // This mask is specific to a band
+                Band referenceBand = product.getBand(spectralInfo.getPhysicalBand());
+                String bandName = spectralInfo.getPhysicalBand();
+                String snapName = maskInfo.getSnapNameForBand(bandName,i);
+                String description = maskInfo.getDescriptionForBand(bandName,i);
                 VectorDataNode vdn = new VectorDataNode(snapName, collection);
                 vdn.setOwner(product);
                 product.addMask(snapName,
                                 vdn,
                                 description,
-                                maskInfo.getColor(),
-                                maskInfo.getTransparency(),
+                                maskInfo.getColor()[i],
+                                maskInfo.getTransparency()[i],
                                 referenceBand);
             }
-        } else {
-            // This mask is specific to a band
-            Band referenceBand = product.getBand(spectralInfo.getPhysicalBand());
-            String bandName = spectralInfo.getPhysicalBand();
-            String snapName = maskInfo.getSnapNameForBand(bandName);
-            String description = maskInfo.getDescriptionForBand(bandName);
-            VectorDataNode vdn = new VectorDataNode(snapName, collection);
-            vdn.setOwner(product);
-            product.addMask(snapName,
-                            vdn,
-                            description,
-                            maskInfo.getColor(),
-                            maskInfo.getTransparency(),
-                            referenceBand);
         }
-
     }
 
     private void addTiePointGridBand(Product product, S2Metadata metadataHeader, S2OrthoSceneLayout sceneDescription, String name, int tiePointGridIndex, String description, String unit) {

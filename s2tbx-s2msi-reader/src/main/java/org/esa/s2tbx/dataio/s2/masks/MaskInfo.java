@@ -30,144 +30,86 @@ public enum MaskInfo {
 
     MSK_DETFOO(
             "MSK_DETFOO",
-            "DETECTOR_FOOTPRINT",
+            new String[]{"DETECTOR_FOOTPRINT"},
             "Detector footprint mask",
             null,
-            "detector_footprint",
+            new String[]{"detector_footprint"},
             true,
-            MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_NODATA_NODATA(
+            new int[]{MaskInfo.L1C | MaskInfo.L2A},
+            new Color[]{ColorIterator.next()},
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY}),
+    MSK_NODATA(
             "MSK_NODATA",
-            "QT_NODATA_PIXELS",
+            new String[]{"QT_NODATA_PIXELS", "QT_PARTIALLY_CORRECTED_PIXELS"},
             "Radiometric quality mask",
-            "No–data pixels",
-            "nodata",
+            new String[]{"No–data pixels", "Pixels partially corrected during cross-talk processing"},
+            new String[]{"nodata", "partially_corrected_crosstalk"},
             true,
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_NODATA_CROSSTALK(
-            "MSK_NODATA",
-            "QT_PARTIALLY_CORRECTED_PIXELS",
-            "Radiometric quality mask",
-            "Pixels partially corrected during cross-talk processing",
-            "partially_corrected_crosstalk",
-            true,
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_SATURA_L1A(
+            new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
+            new Color[]{ColorIterator.next(), ColorIterator.next()},
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY}),
+    MSK_SATURA(
             "MSK_SATURA",
-            "QT_SATURATED_PIXELS_L1A",
+            new String[]{"QT_SATURATED_PIXELS_L1A", "QT_SATURATED_PIXELS_L1B"},
             "Radiometric quality mask",
-            "Saturated pixels before on-ground radiometric processing",
-            "saturated_l1a",
+            new String[]{"Saturated pixels before on-ground radiometric processing", "Saturated pixels after on-ground radiometric processing"},
+            new String[]{"saturated_l1a", "saturated_l1b"},
             true,
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_SATURA_L1B(
-            "MSK_SATURA",
-            "QT_SATURATED_PIXELS_L1B",
-            "Radiometric quality mask",
-            "Saturated pixels after on-ground radiometric processing",
-            "saturated_l1b",
-            true,
-            MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
+            new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
+            new Color[]{ColorIterator.next(), ColorIterator.next()},
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY}),
     MSK_DEFECT(
             "MSK_DEFECT",
-            "QT_DEFECTIVE_PIXELS",
+            new String[]{"QT_DEFECTIVE_PIXELS"},
             "Radiometric quality mask",
-            "Defective pixels (matching defective columns)",
-            "defective",
+            new String[]{"Defective pixels (matching defective columns)"},
+            new String[]{"defective"},
             true,
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_TECQUA_ANC_LOST(
+            new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
+            new Color[]{ColorIterator.next()},
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY}),
+    MSK_TECQUA(
             "MSK_TECQUA",
-            "ANC_LOST",
+            new String[]{"ANC_LOST", "ANC_DEG", "MSI_LOST", "MSI_DEG"},
             "Technical quality mask",
-            "Ancillary lost data",
-            "ancillary_lost",
+            new String[]{"Ancillary lost data", "Ancillary degraded data", "MSI lost data", "MSI degraded data"},
+            new String[]{"ancillary_lost", "ancillary_degraded", "msi_lost", "msi_degraded"},
             true,
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            Color.ORANGE,
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_TECQUA_ANC_DEG(
-            "MSK_TECQUA",
-            "ANC_DEG",
-            "Technical quality mask",
-            "Ancillary degraded data",
-            "ancillary_degraded",
-            true,
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_TECQUA_MSI_LOST(
-            "MSK_TECQUA",
-            "MSI_LOST",
-            "Technical quality mask",
-            "MSI lost data",
-            "msi_lost",
-            true,
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_TECQUA_MSI_DEG(
-            "MSK_TECQUA",
-            "MSI_DEG",
-            "Technical quality mask",
-            "MSI degraded data",
-            "msi_degraded",
-            true,
-            MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
+            new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
+            new Color[]{Color.ORANGE, ColorIterator.next(), ColorIterator.next(), ColorIterator.next()},
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY}),
+
     MSK_CLOLOW(
             "MSK_CLOLOW",
-            "CLOUD_INV",
+            new String[]{"CLOUD_INV"},
             "Coarse cloud mask",
             null,
-            "coarse_cloud",
+            new String[]{"coarse_cloud"},
             true,
-            MaskInfo.L1A | MaskInfo.L1B,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_CLOUDS_OPAQUE(
+            new int[]{MaskInfo.L1A | MaskInfo.L1B},
+            new Color[]{ColorIterator.next()},
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY}),
+    MSK_CLOUDS(
             "MSK_CLOUDS",
-            "OPAQUE",
+            new String[]{"OPAQUE", "CIRRUS"},
             "Finer cloud mask",
-            "Opaque clouds",
-            "opaque_clouds",
+            new String[]{"Opaque clouds", "Cirrus clouds"},
+            new String[]{"opaque_clouds", "cirrus_clouds"},
             false,
-            MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY),
-    MSK_CLOUDS_CIRRUS(
-            "MSK_CLOUDS",
-            "CIRRUS",
-            "Finer cloud mask",
-            "Cirrus clouds",
-            "cirrus_clouds",
-            false,
-            MaskInfo.L1C | MaskInfo.L2A,
-            ColorIterator.next(),
-            MaskInfo.DEFAULT_TRANSPARENCY);
+            new int[]{MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1C | MaskInfo.L2A},
+            new Color[]{ColorIterator.next(), ColorIterator.next()},
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY});
+
 
     private final String mainType;
-    private final String subType;
+    private final String [] subType;
     private final String mainDescription;
-    private final String subDescription;
-    private final String snapName;
+    private final String [] subDescription;
+    private final String [] snapName;
     private final boolean perBand;
-    private final int levels;
-    private final Color color;
-    private final double transparency;
+    private final int [] levels;
+    private final Color [] color;
+    private final double [] transparency;
 
     public static final int L1A = (1 << 0);
     public static final int L1B = (1 << 1);
@@ -176,7 +118,7 @@ public enum MaskInfo {
 
     private static final double DEFAULT_TRANSPARENCY = 0.5;
 
-    MaskInfo(String mainType, String subType, String mainDescription, String subDescription, String snapName, boolean perBand, int levels, Color color, double transparency) {
+    MaskInfo(String mainType, String [] subType, String mainDescription, String [] subDescription, String [] snapName, boolean perBand, int [] levels, Color [] color, double [] transparency) {
         this.mainType = mainType;
         this.subType = subType;
         this.mainDescription = mainDescription;
@@ -192,47 +134,84 @@ public enum MaskInfo {
         return mainType;
     }
 
-    public String getSubType() {
+    public String [] getSubType() {
         return subType;
     }
 
-    public String getSnapName() {
+    public String [] getSnapName() {
         return snapName;
     }
 
-    public String getSnapNameForBand(String bandName) {
-        return String.format("%s_%s", snapName, bandName);
+    public int [] getLevels() {
+        return levels;
     }
 
-    public String getDescription() {
+    public String getSnapNameForBand(String bandName,int index) {
+        if(!validateIndex(index)) {
+            return null;
+        }
+        return String.format("%s_%s", snapName[index], bandName);
+    }
+
+    public String getDescription(int index) {
+
         String description;
-        if (subDescription == null) {
+        if (subDescription == null || !validateIndex(index)) {
             description = mainDescription;
         }
         else {
-            description = String.format("%s - %s", mainDescription, subDescription);
+            description = String.format("%s - %s", mainDescription, subDescription[index]);
         }
         return description;
     }
 
-    public String getDescriptionForBand(String bandName) {
-        return String.format("%s - %s", getDescription(), bandName);
+    public String getDescriptionForBand(String bandName,int index) {
+        if(!validateIndex(index)) {
+            return null;
+        }
+        return String.format("%s - %s", getDescription(index), bandName);
     }
 
-    public Color getColor() {
+    public Color [] getColor() {
         return color;
     }
 
-    public double getTransparency() {
+    public double [] getTransparency() {
         return transparency;
     }
 
+    public boolean isPresentAtLevel(int level,String sub) {
+
+        int levels = 0;
+        for(int i=0;i<getSubType().length;i++)
+        {
+            if(getSubType()[i].equals(sub)){
+                return (levels & level) != 0;
+            }
+        }
+
+        return false;
+    }
+
     public boolean isPresentAtLevel(int level) {
-        return (levels & level) != 0;
+
+        for(int i=0;i<getSubType().length;i++)
+        {
+            if((this.getLevels()[i] & level) != 0) return true;
+        }
+
+        return false;
     }
 
     public boolean isPerBand() {
         return this.perBand;
+    }
+
+    private boolean validateIndex(int index) {
+        if(index>=0 && index<subType.length)
+            return true;
+
+        return false;
     }
 
 }
