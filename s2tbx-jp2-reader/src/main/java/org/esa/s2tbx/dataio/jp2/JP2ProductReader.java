@@ -24,11 +24,8 @@ import org.esa.s2tbx.dataio.BucketMap;
 import org.esa.s2tbx.dataio.jp2.internal.JP2MultiLevelSource;
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
 import org.esa.s2tbx.dataio.jp2.internal.OpjExecutor;
-import org.esa.s2tbx.dataio.jp2.metadata.CodeStreamInfo;
+import org.esa.s2tbx.dataio.jp2.metadata.*;
 import org.esa.s2tbx.dataio.jp2.metadata.ImageInfo;
-import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadata;
-import org.esa.s2tbx.dataio.jp2.metadata.Jp2XmlMetadataReader;
-import org.esa.s2tbx.dataio.jp2.metadata.OpjDumpFile;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
@@ -36,14 +33,7 @@ import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 import org.geotools.referencing.CRS;
@@ -64,7 +54,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.areOpenJpegExecutablesOK;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.s2tbx.dataio.Utils.getMD5sum;
 
 /**
@@ -106,18 +96,18 @@ public class JP2ProductReader extends AbstractProductReader {
                 MultiLevelImage sourceImage = band.getSourceImage();
                 if (sourceImage != null) {
                     sourceImage.reset();
+                    sourceImage.dispose();
                     sourceImage = null;
                 }
             }
         }
         List<Path> files = PathUtils.listFiles(tmpFolder);
-        ;
+        tmpFolder.toFile().deleteOnExit();
         if (files != null) {
             for (Path file : files) {
-                Files.delete(file);
+                file.toFile().deleteOnExit();
             }
         }
-        Files.delete(tmpFolder);
         super.close();
     }
 
@@ -155,8 +145,8 @@ public class JP2ProductReader extends AbstractProductReader {
             throw new IOException("The selected product cannot be read with the current reader.");
         }
 
-        if(!areOpenJpegExecutablesOK(OpenJpegExecRetriever.getOpjDump(),OpenJpegExecRetriever.getOpjDecompress())){
-            throw new IOException("Not valid OpenJpeg executables");
+        if(!validateOpenJpegExecutables(OpenJpegExecRetriever.getOpjDump(),OpenJpegExecRetriever.getOpjDecompress())){
+            throw new IOException("Invalid OpenJpeg executables");
         }
 
         Path inputFile = getFileInput(getInput());

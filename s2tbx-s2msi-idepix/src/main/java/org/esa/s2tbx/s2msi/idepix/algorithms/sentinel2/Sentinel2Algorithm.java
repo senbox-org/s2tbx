@@ -34,16 +34,21 @@ public class Sentinel2Algorithm {
     static final float GCW_THRESH = -0.1f;
     static final float TCW_TC_THRESH = -0.08f;
     static final float TCW_NDWI_THRESH = 0.4f;
-    static final float CW_THRESH = 0.01f;
     static final float ELEVATION_THRESH = 2000.0f;
-    static final float GCL_THRESH = -0.11f;
-    static final float CL_THRESH = 0.01f;
+
+//    static final float CW_THRESH = 0.01f;
+//    static final float GCL_THRESH = -0.11f;
+//    static final float CL_THRESH = 0.01f;
 
     private float[] refl;
     private double brr442Thresh;
     private double elevation;
     private double[] nnOutput;
     private boolean isLand;
+
+    private double cwThresh;
+    private double gclThresh;
+    private double clThresh;
 
     public boolean isBrightWhite() {
         return !isInvalid() && (whiteValue() + brightValue() > getBrightWhiteThreshold());
@@ -53,10 +58,10 @@ public class Sentinel2Algorithm {
         // JM, 20160524:
         final boolean gcw = tc4CirrusValue()  < GCW_THRESH;
         final boolean tcw = tc4Value()  < TCW_TC_THRESH && ndwiValue() < TCW_NDWI_THRESH;
-        final boolean cw = refl[10] > CW_THRESH && elevation < ELEVATION_THRESH;
+        final boolean cw = refl[10] > cwThresh && elevation < ELEVATION_THRESH;
         final boolean acw = isB3B11Water() && (gcw || tcw || cw);
-        final boolean gcl = tc4CirrusValue()  < GCL_THRESH;
-        final boolean cl = refl[10] > CL_THRESH && elevation < ELEVATION_THRESH;
+        final boolean gcl = tc4CirrusValue()  < gclThresh;
+        final boolean cl = refl[10] > clThresh && elevation < ELEVATION_THRESH;
         final boolean acl = ! isB3B11Water() && (gcl || cl);
 
         return !isInvalid() && !isClearSnow() && (acw || acl);
@@ -237,6 +242,18 @@ public class Sentinel2Algorithm {
 
     public void setElevation(double elevation) {
         this.elevation = elevation;
+    }
+
+    public void setCwThresh(double cwThresh) {
+        this.cwThresh = cwThresh;
+    }
+
+    public void setGclThresh(double gclThresh) {
+        this.gclThresh = gclThresh;
+    }
+
+    public void setClThresh(double clThresh) {
+        this.clThresh = clThresh;
     }
 
     // GETTERS

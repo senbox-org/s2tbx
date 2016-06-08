@@ -17,12 +17,16 @@
 
 package org.esa.s2tbx.dataio;
 
+import com.sun.media.imageio.stream.FileChannelImageInputStream;
 import com.sun.media.imageioimpl.stream.ChannelImageInputStreamSpi;
 
+import javax.imageio.stream.FileCacheImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 
 /**
  * Wrapper over <code>ChannelImageInputStreamSpi</code>.
@@ -36,8 +40,31 @@ public class FileImageInputStreamSpi extends ChannelImageInputStreamSpi {
     public ImageInputStream createInputStreamInstance(Object input, boolean useCache, File cacheDir) throws IOException {
         if (!File.class.isInstance(input))
             throw new IllegalArgumentException("This SPI accepts only java.io.File");
+        ImageInputStream stream = null;
         File inputFile = (File) input;
-        return super.createInputStreamInstance(new RandomAccessFile(inputFile.getAbsolutePath(), "r").getChannel(), useCache, cacheDir);
+        // We need to make sure the underlying channel is closed, because it may hold a reference to our file and
+        // the respective Java classes do not close it.
+        //return super.createInputStreamInstance(new RandomAccessFile(inputFile.getAbsolutePath(), "r").getChannel(), useCache, cacheDir);
+        FileChannel channel = new RandomAccessFile(inputFile.getAbsolutePath(), "r").getChannel();
+        if (useCache) {
+            stream = new FileCacheImageInputStream(Channels.newInputStream(channel), cacheDir) {
+                @Override
+                public void close() throws IOException {
+                    channel.close();
+                    super.close();
+                }
+            };
+        } else {
+            stream = new FileChannelImageInputStream(channel) {
+                @Override
+                public void close() throws IOException {
+                    channel.close();
+                    super.close();
+                }
+            };
+        }
+
+        return stream;
     }
 
     @Override

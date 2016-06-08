@@ -30,6 +30,22 @@ import java.awt.image.DataBuffer;
  * @author Norman Fomferra
  */
 public class S2Config {
+
+    public enum Sentinel2ProductLevel {
+        LEVEL_L1A,
+        LEVEL_L1B,
+        LEVEL_L1C,
+        LEVEL_L2A,
+        LEVEL_UNKNOWN
+    }
+
+    public enum Sentinel2InputType {
+        INPUT_TYPE_PRODUCT_METADATA,
+        INPUT_TYPE_GRANULE_METADATA
+    }
+
+    public static final String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_.*";
+
     public static final boolean DEBUG = Boolean.getBoolean("org.esa.s2tbx.dataio.s2.l1c.S2Config.DEBUG");
     public static final boolean NODUMP = Boolean.getBoolean("org.esa.s2tbx.dataio.s2.l1c.S2Config.NODUMP");
 
@@ -122,6 +138,14 @@ public class S2Config {
      */
     public void updateTileLayout(S2SpatialResolution resolution, TileLayout tileLayout) {
         tileLayouts[resolution.id] = tileLayout;
+    }
+
+    public static Sentinel2ProductLevel levelString2ProductLevel(String level){
+        if(level.equals("L1A")) { return Sentinel2ProductLevel.LEVEL_L1A;}
+        if(level.equals("L1B")) { return Sentinel2ProductLevel.LEVEL_L1B;}
+        if(level.equals("L1C")) { return Sentinel2ProductLevel.LEVEL_L1C;}
+        if(level.equals("L2A")) { return Sentinel2ProductLevel.LEVEL_L2A;}
+        return Sentinel2ProductLevel.LEVEL_UNKNOWN;
     }
 
 }

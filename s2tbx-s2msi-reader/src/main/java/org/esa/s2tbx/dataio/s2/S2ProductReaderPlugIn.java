@@ -21,6 +21,7 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -50,7 +51,33 @@ public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
     @Override
     public SnapFileFilter getProductFileFilter() {
         return new SnapFileFilter(null,
-                getDefaultFileExtensions(),
-                "Sentinel-2 MSI product or tile");
+                                  getDefaultFileExtensions(),
+                                  "Sentinel-2 MSI product or tile");
     }
+
+
+    public static File getInputXmlFileFromDirectory(File file) {
+        if (!file.isDirectory()) {
+            return null;
+        }
+        Matcher matcher;
+        String fileName = "";
+        // If it is a directory, search inside for a valid xml file
+        String[] listXmlFiles = file.list((f, s) -> s.endsWith(".xml"));
+        int countValidXml = 0;
+        for (int i = 0; i < listXmlFiles.length; i++) {
+            matcher = PATTERN.matcher(listXmlFiles[i]);
+            if (matcher.matches()) {
+                countValidXml++;
+                fileName = listXmlFiles[i];
+            }
+        }
+        // If there are more than one valid file, it is considered an invalid input
+        if (countValidXml != 1) {
+            return null;
+        }
+
+        return new File(file.getAbsolutePath() + File.separator + fileName);
+    }
+
 }

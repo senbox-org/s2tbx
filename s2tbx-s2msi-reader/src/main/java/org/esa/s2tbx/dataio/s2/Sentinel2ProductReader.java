@@ -148,13 +148,21 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         final File inputFile;
 
+        File file;
+
         String longInput = GetLongPathNameW(getInput().toString());
         if (longInput.length() != 0) {
-            inputFile = new File(longInput);
+            file = new File(longInput);
         } else {
-            inputFile = new File(getInput().toString());
+            file = new File(getInput().toString());
         }
 
+        if (file.isDirectory() && (getReaderPlugIn() instanceof S2ProductReaderPlugIn)) {
+            inputFile = ((S2ProductReaderPlugIn) getReaderPlugIn()).getInputXmlFileFromDirectory(file);
+            setInput(inputFile);
+        } else {
+            inputFile = file;
+        }
 
         if (!inputFile.exists()) {
             throw new FileNotFoundException(inputFile.getPath());
@@ -211,7 +219,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, layoutResolution);
             }
             config.updateTileLayout(layoutResolution, tileLayout);
-            if(tileLayout != null) {
+            if (tileLayout != null) {
                 valid = true;
             }
         }
