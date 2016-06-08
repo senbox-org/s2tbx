@@ -56,7 +56,7 @@ public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
     }
 
 
-    public File getInputXmlFileFromDirectory(File file) {
+    public static File getInputXmlFileFromDirectory(File file) {
         if (!file.isDirectory()) {
             return null;
         }
