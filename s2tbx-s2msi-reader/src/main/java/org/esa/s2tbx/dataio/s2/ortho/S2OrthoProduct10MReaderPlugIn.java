@@ -18,9 +18,6 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
-import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
-import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
-import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.util.SystemUtils;
 
@@ -36,18 +33,17 @@ public abstract class S2OrthoProduct10MReaderPlugIn extends S2OrthoProductReader
 
     public S2OrthoProduct10MReaderPlugIn() {
         super();
-        setResolution("10m");
+    }
+
+    @Override
+    protected String getResolution() {
+        return "10m";
     }
 
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info(String.format("Building product reader 10M - %s", getEPSG()));
-
-        if (getLevel() != null && getLevel().equals("L2A")) {
-            return new Sentinel2L2AProductReader(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_10M, getEPSG());
-        } else {
-            return new Sentinel2L1CProductReader(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_10M, getEPSG());
-        }
+        return new Sentinel2OrthoProductReaderProxy(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_10M, getEPSG());
     }
 
     @Override
