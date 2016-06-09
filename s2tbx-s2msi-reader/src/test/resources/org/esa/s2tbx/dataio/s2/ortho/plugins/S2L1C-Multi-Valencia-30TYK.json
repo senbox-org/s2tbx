@@ -2059,10 +2059,6 @@
                 "value": "true"
             },
             {
-                "path": "Granules/Level-1C_Tile_ID/General_Info/DATASTRIP_ID",
-                "value": "S2A_OPER_MSI_L1C_DS_SGS__20160511T162431_S20160511T105343_N02.02"
-            },
-            {
                 "path": "Level-1C_DataStrip_ID/Image_Data_Info/Radiometric_Info/Reflectance_Conversion/Solar_Irradiance_List/SOLAR_IRRADIANCE[13]",
                 "value": "85.25"
             },
@@ -2071,20 +2067,8 @@
                 "value": "S2A_OPER_GIP_VIEDIR_MPC__20151117T131049_V20150703T000000_21000101T000000_B02"
             },
             {
-                "path": "Granules/Level-1C_Tile_ID/Quality_Indicators_Info/Image_Content_QI/CLOUDY_PIXEL_PERCENTAGE",
-                "value": "9.7625"
-            },
-            {
-                "path": "Granules/Level-1C_Tile_ID/Geometric_Info/Tile_Geocoding/Size[2]/RESOLUTION",
-                "value": "20"
-            },
-            {
                 "path": "Level-1C_User_Product/Quality_Indicators_Info/Technical_Quality_Assessment/DEGRADED_MSI_DATA_PERCENTAGE",
                 "value": "0"
-            },
-            {
-                "path": "Granules/Level-1C_Tile_ID/Geometric_Info/Tile_Geocoding/Geoposition[2]/ULX",
-                "value": "699960"
             },
             {
                 "path": "Level-1C_DataStrip_ID/Satellite_Ancillary_Data_Info/Ephemeris/GPS_Points_List/GPS_Point[78]/GDOP",

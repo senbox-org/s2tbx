@@ -835,16 +835,8 @@
                 "value": "S2A_OPER_GIP_VIEDIR_MPC__20151117T131049_V20150703T000000_21000101T000000_B02"
             },
             {
-                "path": "Granules/Level-1C_Tile_ID[2]/Geometric_Info/Tile_Geocoding/Size[3]/NCOLS",
-                "value": "1830"
-            },
-            {
                 "path": "Level-1C_User_Product/Geometric_Info/Product_Footprint/Product_Footprint/Global_Footprint/EXT_POS_LIST",
                 "value": " 39.72681533153163 -0.666833532004746 39.68174868862507 -0.6683164153028662 39.63822758400475 -0.669814465441394 39.63822589660372 -0.669748499372448 38.73821864423846 -0.699362547294467 38.73199481959889 -0.4513490295249727 38.7099201955759 -0.450260110444942 38.72072909948093 -0.0024207517423706 38.70656329494251 0.562073143742716 38.73438773863113 0.5634901168824535 38.74036995699254 0.811348073446155 39.640447018776314 0.7831725744294168 39.64044856303257 0.783235343452924 39.68397299682337 0.781810062036048 39.7290432642928 0.780399208087329 39.72904166228604 0.7803342121335288 40.62894899386581 0.750865220008873 40.61007472822743 -0.0008741657455752 40.62664940733135 -0.63579176628713 39.72681358103935 -0.6667652260829942 39.72681533153163 -0.666833532004746"
-            },
-            {
-                "path": "Granules/Level-1C_Tile_ID[3]/Geometric_Info/Tile_Geocoding/Size[2]/NROWS",
-                "value": "5490"
             },
             {
                 "path": "Level-1C_User_Product/Auxiliary_Data_Info/GIPP_List/GIPP_FILENAME[65]",
@@ -853,10 +845,6 @@
             {
                 "path": "Level-1C_DataStrip_ID/Image_Data_Info/Sensor_Configuration/Source_Packet_Description/Degradation_Summary/DEGRADATIONPERCENTAGE",
                 "value": "0"
-            },
-            {
-                "path": "Granules/Level-1C_Tile_ID[2]/Geometric_Info/Tile_Geocoding/Size/NROWS",
-                "value": "10980"
             },
             {
                 "path": "Level-1C_DataStrip_ID/Image_Data_Info/Sensor_Configuration/Source_Packet_Description/Source_Packet_Counters_List/Detector_List/Detector/Band_List/Band/NB_OF_SOURCE_PACKETS",
