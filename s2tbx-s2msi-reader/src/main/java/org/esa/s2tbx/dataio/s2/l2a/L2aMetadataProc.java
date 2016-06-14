@@ -188,7 +188,7 @@ public class L2aMetadataProc extends S2MetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
+                //aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M));
                 //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M));
@@ -210,7 +210,7 @@ public class L2aMetadataProc extends S2MetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R60M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R60M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
+                //aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R60M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M));
                 //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M));

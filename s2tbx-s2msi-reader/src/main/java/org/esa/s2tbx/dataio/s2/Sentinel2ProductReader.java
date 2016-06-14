@@ -62,7 +62,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     private S2Config config;
     private File cacheDir;
-    private final ProductInterpretation interpretation;
+    protected final ProductInterpretation interpretation;
 
 
     public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation) {

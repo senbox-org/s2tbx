@@ -107,7 +107,7 @@ public class S2ProductCRSCache {
     }
 
     /* Ensure the given product is in cache */
-    synchronized void ensureIsCached(String productFileName) {
+    public synchronized void ensureIsCached(String productFileName) {
         if (!cache.containsKey(productFileName)) {
             S2ProductCRSCacheEntry s2ProductCRSCacheEntry = new S2ProductCRSCacheEntry(productFileName);
             cache.put(productFileName, s2ProductCRSCacheEntry);
@@ -136,7 +136,7 @@ public class S2ProductCRSCache {
         return cache.get(productFileName).getLevel();
     }
 
-    synchronized S2Config.Sentinel2InputType getInputType(String productFileName) {
+    public synchronized S2Config.Sentinel2InputType getInputType(String productFileName) {
         if (!cache.containsKey(productFileName)) {
             throw new RuntimeException(String.format("The product %s was not parsed or does not contain any granule", productFileName));
         }

@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.s2.ortho;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
+import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
@@ -83,12 +84,12 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
         //if product is level2, check the specific folder
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !checkMetadataSpecificFolder(file, getResolution()))
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(file, getResolution()))
             return DecodeQualification.UNABLE;
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !checkGranuleSpecificFolder(file, getResolution()))
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(file, getResolution()))
             return DecodeQualification.UNABLE;
 
-       // level=S2Config.Sentinel2ProductLevel.LEVEL_L2A;
+        level=S2Config.Sentinel2ProductLevel.LEVEL_L2A;
         return DecodeQualification.INTENDED;
     }
 
@@ -108,56 +109,6 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     @Override
     public String getDescription(Locale locale) {
         return String.format("Sentinel-2 MSI %s - Native resolutions - %s", getLevel(), epsgToDisplayName(getEPSG()));
-    }
-
-
-    protected boolean checkGranuleSpecificFolder(File fileGranule, String specificFolder) {
-
-        if (specificFolder.equals("Multi"))
-            return false;
-        Path rootPath = fileGranule.toPath().getParent();
-        File imgFolder = rootPath.resolve("IMG_DATA").toFile();
-        File[] files = imgFolder.listFiles();
-
-        if (files != null) {
-            for (File imgData : files) {
-                if (imgData.isDirectory()) {
-                    if (imgData.getName().equals("R" + specificFolder)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    protected boolean checkMetadataSpecificFolder(File fileMetadata, String specificFolder) {
-
-        if (specificFolder.equals("Multi"))
-            return false;
-        Path rootPath = fileMetadata.toPath().getParent();
-        File granuleFolder = rootPath.resolve("GRANULE").toFile();
-        File[] files = granuleFolder.listFiles();
-
-        if (files != null) {
-            for (File granule : files) {
-                if (granule.isDirectory()) {
-                    Path granulePath = new File(granule.toString()).toPath();
-                    File internalGranuleFolder = granulePath.resolve("IMG_DATA").toFile();
-                    File[] files2 = internalGranuleFolder.listFiles();
-                    if (files2 != null) {
-                        for (File imgData : files2) {
-                            if (imgData.isDirectory()) {
-                                if (imgData.getName().equals("R" + specificFolder)) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     public static File preprocessInput(Object input){
