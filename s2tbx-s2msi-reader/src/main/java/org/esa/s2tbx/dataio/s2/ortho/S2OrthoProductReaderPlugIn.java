@@ -98,7 +98,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     @Override
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info(String.format("Building product reader - %s", getEPSG()));
-        return new Sentinel2OrthoProductReaderProxy(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_MULTI, getEPSG());
+        return new Sentinel2OrthoProductReaderProxy(this, getEPSG());
     }
 
     @Override

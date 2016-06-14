@@ -54,23 +54,13 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
 
     static final String L2A_CACHE_DIR = "l2a-reader";
 
-    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation, String epsgCode) {
-        super(readerPlugIn, interpretation, epsgCode);
+    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
+        super(readerPlugIn, epsgCode);
     }
 
     @Override
     public S2SpatialResolution getProductResolution() {
-        switch (interpretation) {
-            case RESOLUTION_10M:
-                return S2SpatialResolution.R10M;
-            case RESOLUTION_20M:
-                return S2SpatialResolution.R20M;
-            case RESOLUTION_60M:
-                return S2SpatialResolution.R60M;
-            case RESOLUTION_MULTI:
-                return getSpatialResolutionL2();
-        }
-        throw new IllegalStateException("Unknown product interpretation");
+        return getSpatialResolutionL2();
     }
 
     @Override
