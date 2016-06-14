@@ -71,6 +71,19 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-cache</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-cache-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-s2msi-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -140,6 +153,8 @@
             <artifactId>s2tbx-radiometric-indices</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+
 
         <dependency>
             <groupId>org.esa.snap</groupId>
