@@ -95,7 +95,7 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader L1B Multisize...");
 
-        return new Sentinel2L1BProductReader(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_MULTI);
+        return new Sentinel2L1BProductReader(this, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_MULTI);
     }
 
     @Override

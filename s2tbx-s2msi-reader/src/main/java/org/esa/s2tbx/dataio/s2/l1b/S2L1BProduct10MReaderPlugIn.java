@@ -32,7 +32,7 @@ public class S2L1BProduct10MReaderPlugIn extends S2L1BProductReaderPlugIn {
     public ProductReader createReaderInstance() {
         SystemUtils.LOG.info("Building product reader L1B 10M");
 
-        return new Sentinel2L1BProductReader(this, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_10M);
+        return new Sentinel2L1BProductReader(this, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_10M);
     }
 
     @Override

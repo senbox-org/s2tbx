@@ -124,8 +124,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private final String epsgCode;
     protected final Logger logger;
 
-    public Sentinel2OrthoProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation, String epsgCode) {
-        super(readerPlugIn, interpretation);
+    public Sentinel2OrthoProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
+        super(readerPlugIn);
         logger = SystemUtils.LOG;
         this.epsgCode = epsgCode;
     }
