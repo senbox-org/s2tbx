@@ -26,6 +26,8 @@
     <url>https://github.com/senbox-org/s2tbx</url>
 
     <modules>
+        <module>s2tbx-cache</module>
+        <module>s2tbx-cache-ui</module>
         <module>s2tbx-s2msi-reader</module>
         <module>s2tbx-jp2-reader</module>
         <module>lib-openjpeg</module>
@@ -119,6 +121,12 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-ui</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-runtime</artifactId>
                 <version>${snap.version}</version>
             </dependency>
 
