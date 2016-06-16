@@ -120,6 +120,8 @@ public abstract class S2Metadata {
      * for small changes.
      */
     static InputStream changePSDIfRequired(InputStream xmlStream, String psdNumber) throws IOException {
+        if (psdNumber==null) return xmlStream;
+
         InputStream updatedXmlStream;
 
         String xmlStreamAsString = IOUtils.toString(xmlStream);

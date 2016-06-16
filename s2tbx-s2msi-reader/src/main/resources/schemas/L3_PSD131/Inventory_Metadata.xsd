@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-12.sentinel2.eo.esa.int/PSD/Inventory_Metadata.xsd" xmlns:date_time="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/SY/date_time/" xmlns:item="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/DataAccess/item/" xmlns:center="https://psd-12.sentinel2.eo.esa.int/DICO/1.0/PDGS/center/" targetNamespace="https://psd-12.sentinel2.eo.esa.int/PSD/Inventory_Metadata.xsd" elementFormDefault="qualified" version="12">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-12.sentinel2.eo.esa.int/PSD/Inventory_Metadata.xsd" xmlns:date_time="https://psd-12.sentinel2.eo.esa.int/DICO/12/SY/date_time/" xmlns:item="https://psd-12.sentinel2.eo.esa.int/DICO/12/DataAccess/item/" xmlns:center="https://psd-12.sentinel2.eo.esa.int/DICO/12/PDGS/center/" targetNamespace="https://psd-12.sentinel2.eo.esa.int/PSD/Inventory_Metadata.xsd" elementFormDefault="qualified" version="12">
 	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/12/DataAccess/item/" schemaLocation="DICO/12/DataAccess/item/item.xsd"/>
 	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/12/PDGS/center/" schemaLocation="DICO/12/PDGS/center/center.xsd"/>
 	<xs:import namespace="https://psd-12.sentinel2.eo.esa.int/DICO/12/SY/date_time/" schemaLocation="DICO/12/SY/date_time/date_time.xsd"/>
@@ -23,7 +23,7 @@
 						<xs:documentation>Datastrip PDI_ID (Applicable to Granule and Tile PDI linked to a Datastrip PDI)</xs:documentation>
 					</xs:annotation>
 					<xs:simpleType>
-						<xs:restriction base="item:Datastrip_ID"/>
+						<xs:restriction base="item:DATASTRIP_ID"/>
 					</xs:simpleType>
 				</xs:element>
 				<xs:element name="Group_ID">

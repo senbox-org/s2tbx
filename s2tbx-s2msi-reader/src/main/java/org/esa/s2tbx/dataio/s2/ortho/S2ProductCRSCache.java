@@ -60,7 +60,7 @@ public class S2ProductCRSCache {
                 S2OrthoGranuleMetadataFilename granuleMetadataFilename = S2OrthoGranuleMetadataFilename.create(fileName);
                 if (granuleMetadataFilename != null &&
                         (level == S2Config.Sentinel2ProductLevel.LEVEL_L1C || level == S2Config.Sentinel2ProductLevel.LEVEL_L2A
-                                )) {
+                                || level == S2Config.Sentinel2ProductLevel.LEVEL_L3)) {
                     String tileId = granuleMetadataFilename.tileNumber;
                     String epsg = tileIdentifierToEPSG(tileId);
                     epsgCodeList.add(epsg);
@@ -70,7 +70,8 @@ public class S2ProductCRSCache {
                 level = S2Config.levelString2ProductLevel(matcher.group(4).substring(3));
                 S2ProductFilename productFilename = S2ProductFilename.create(fileName);
                 if (productFilename != null) {
-                    if (level == S2Config.Sentinel2ProductLevel.LEVEL_L1C || level == S2Config.Sentinel2ProductLevel.LEVEL_L2A) {
+                    if (level == S2Config.Sentinel2ProductLevel.LEVEL_L1C || level == S2Config.Sentinel2ProductLevel.LEVEL_L2A
+                            || level == S2Config.Sentinel2ProductLevel.LEVEL_L3) {
                         Path rootPath = productFile.toPath().getParent();
                         File granuleFolder = rootPath.resolve("GRANULE").toFile();
                         for (File granule : granuleFolder.listFiles()) {
