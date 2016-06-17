@@ -7,6 +7,7 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.FlagCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -42,6 +43,19 @@ public class Sentinel2ClassificationOp extends Operator {
     public static final double RHO_TOA_442_THRESHOLD = 0.03;
 
     private static final float WATER_MASK_SOUTH_BOUND = -58.0f;
+    private static final String VALID_PIXEL_EXPRESSION = "detector_footprint_B1 " +
+            "and detector_footprint_B2 " +
+            "and detector_footprint_B3 " +
+            "and detector_footprint_B4 " +
+            "and detector_footprint_B5 " +
+            "and detector_footprint_B6 " +
+            "and detector_footprint_B7 " +
+            "and detector_footprint_B8 " +
+            "and detector_footprint_B8A " +
+            "and detector_footprint_B9 " +
+            "and detector_footprint_B10 " +
+            "and detector_footprint_B11 " +
+            "and detector_footprint_B12";
 
     @Parameter(defaultValue = "true",
             label = " Write TOA Reflectances to the target product",
@@ -125,6 +139,8 @@ public class Sentinel2ClassificationOp extends Operator {
     Band saaBand;
     Band vaaBand;
 
+    Mask validPixelMask;
+
     // features:
     Band temperatureBand;
     Band brightBand;
@@ -152,6 +168,14 @@ public class Sentinel2ClassificationOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
         setBands();
+
+        validPixelMask = Mask.BandMathsType.create("__valid_pixel_mask", null,
+                                                   getSourceProduct().getSceneRasterWidth(),
+                                                   getSourceProduct().getSceneRasterHeight(),
+                                                   VALID_PIXEL_EXPRESSION,
+                                                   Color.GREEN, 0.0);
+        validPixelMask.setOwner(getSourceProduct());
+
 //        readSchillerNeuralNets();
         createTargetProduct();
 
@@ -198,6 +222,7 @@ public class Sentinel2ClassificationOp extends Operator {
 
         final Band elevationBand = targetProduct.getBand("elevation");
         final Tile elevationTile = getSourceTile(elevationBand, rectangle);
+        final Tile validPixelTile = getSourceTile(validPixelMask, rectangle);
 
         try {
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
@@ -219,6 +244,7 @@ public class Sentinel2ClassificationOp extends Operator {
                                                                              szaTile, vzaTile, saaTile, vaaTile,
                                                                              waterFractionTile,
                                                                              elevationTile,
+                                                                             validPixelTile,
                                                                              s2MsiReflectance,
                                                                              y,
                                                                              x);
@@ -335,6 +361,7 @@ public class Sentinel2ClassificationOp extends Operator {
                                                     Tile szaTile, Tile vzaTile, Tile saaTile, Tile vaaTile,
                                                     Tile waterFractionTile,
                                                     Tile elevationTile,
+                                                    Tile validPixelTile,
                                                     float[] s2MsiReflectances,
                                                     int y,
                                                     int x) {
@@ -364,6 +391,9 @@ public class Sentinel2ClassificationOp extends Operator {
         s2MsiAlgorithm.setCwThresh(cwThresh);
         s2MsiAlgorithm.setGclThresh(gclThresh);
         s2MsiAlgorithm.setClThresh(clThresh);
+
+        final boolean isValid = validPixelTile.getSampleBoolean(x, y);
+        s2MsiAlgorithm.setInvalid(!isValid);
 
 //        SchillerNeuralNetWrapper nnWrapper = neuralNet.get();
 //        double[] inputVector = nnWrapper.getInputVector();
