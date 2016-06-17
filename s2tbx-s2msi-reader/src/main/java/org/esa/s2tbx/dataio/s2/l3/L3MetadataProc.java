@@ -3,9 +3,7 @@ package org.esa.s2tbx.dataio.s2.l3;
 import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
 import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
 import https.psd_13_sentinel2_eo_esa_int.dico._13.pdgs.dimap.A_L3_Product_Info;
-import https.psd_13_sentinel2_eo_esa_int.dico._13.pdgs.dimap.A_MASK_LIST;
 import https.psd_13_sentinel2_eo_esa_int.dico._13.pdgs.dimap.A_PRODUCT_ORGANIZATION_3;
-import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_QUALITY_INDICATORS_INFO_TILE_L3;
 import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
 import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_TILE_DESCRIPTION;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_3.Level3_User_Product;
@@ -15,7 +13,6 @@ import org.apache.commons.collections.Transformer;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
-import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -23,6 +20,8 @@ import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
+import org.esa.snap.core.datamodel.ColorPaletteDef;
+import org.esa.snap.core.util.SystemUtils;
 import org.w3c.dom.Element;
 
 import javax.xml.bind.JAXBContext;
@@ -30,6 +29,7 @@ import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,11 +38,16 @@ import java.util.List;
 import java.util.Map;
 
 import static java.awt.Color.getHSBColor;
+import static java.lang.Math.floor;
+import static org.esa.s2tbx.dataio.s2.l3.L3Metadata.MOSAIC_BAND_NAME;
+import static org.esa.snap.core.datamodel.ColorPaletteDef.loadColorPaletteDef;
 
 /**
  * Created by obarrile on 15/06/2016.
  */
 public class L3MetadataProc extends S2MetadataProc {
+
+    private static String paletteRelativePath = "\\color_palettes\\spectrum.cpd";
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level3_User_Product.class.getClassLoader();
@@ -61,11 +66,6 @@ public class L3MetadataProc extends S2MetadataProc {
                 bandConstant.getWavelengthMax(),
                 bandConstant.getWavelengthCentral());
     }
-
-
-
-
-
 
 
     public static L3Metadata.ProductCharacteristics getProductOrganization(Level3_User_Product product, S2SpatialResolution resolution) {
@@ -94,12 +94,6 @@ public class L3MetadataProc extends S2MetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M));
 
-                /*aInfo.add(makeAOTInformation(S2SpatialResolution.R10M));
-                aInfo.add(makeWVPInformation(S2SpatialResolution.R10M));
-                aInfo.add(makeCLDInformation(S2SpatialResolution.R20M));
-                aInfo.add(makeSNWInformation(S2SpatialResolution.R20M));*/
-
-                // SCL only generated at 20m and 60m. upsample the 20m version
                 aInfo.add(makeMSCInformation(S2SpatialResolution.R20M, 0));
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
                 break;
@@ -118,11 +112,6 @@ public class L3MetadataProc extends S2MetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M));
 
-               /* aInfo.add(makeAOTInformation(S2SpatialResolution.R20M));
-                aInfo.add(makeWVPInformation(S2SpatialResolution.R20M));
-                aInfo.add(makeCLDInformation(S2SpatialResolution.R20M));
-                aInfo.add(makeSNWInformation(S2SpatialResolution.R20M));*/
-
                 aInfo.add(makeMSCInformation(S2SpatialResolution.R20M, 0));
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
                 break;
@@ -140,11 +129,6 @@ public class L3MetadataProc extends S2MetadataProc {
                 //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R60M));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R60M));
-
-              /*  aInfo.add(makeAOTInformation(S2SpatialResolution.R60M));
-                aInfo.add(makeWVPInformation(S2SpatialResolution.R60M));
-                aInfo.add(makeCLDInformation(S2SpatialResolution.R60M));
-                aInfo.add(makeSNWInformation(S2SpatialResolution.R60M));*/
 
                 aInfo.add(makeMSCInformation(S2SpatialResolution.R60M, 0));
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R60M));
@@ -178,27 +162,50 @@ public class L3MetadataProc extends S2MetadataProc {
 
     public static S2BandInformation makeMSCInformation(S2SpatialResolution resolution, int indexMax) {
         List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
-        /* Using the same colors as in the L2A-PDD */
 
+        if(indexMax > 0) {
+            //build color index using ColorPalette file
+            try {
+                String palettePath = SystemUtils.getAuxDataPath() + paletteRelativePath;
+                ColorPaletteDef colorPalette = loadColorPaletteDef(new File(palettePath));
+                int numPoints = colorPalette.getNumPoints();
+                float interval = ((float) numPoints - 1) / indexMax;
+
+                for (int i = 0; i <= indexMax; i++) {
+                    float f = interval * i;
+                    int point1 = (int) floor(f);
+                    float dec = f - point1;
+
+                    int red,green,blue;
+                    if(point1<numPoints-1) {
+                        red = (int) (colorPalette.getColors()[point1].getRed() + (colorPalette.getColors()[point1 + 1].getRed() - colorPalette.getColors()[point1].getRed()) * dec);
+                        green = (int) (colorPalette.getColors()[point1].getGreen() + (colorPalette.getColors()[point1 + 1].getGreen() - colorPalette.getColors()[point1].getGreen()) * dec);
+                        blue = (int) (colorPalette.getColors()[point1].getBlue() + (colorPalette.getColors()[point1 + 1].getBlue() - colorPalette.getColors()[point1].getBlue()) * dec);
+                    } else {
+                        red = colorPalette.getColors()[point1].getRed();
+                        green = colorPalette.getColors()[point1].getGreen();
+                        blue = colorPalette.getColors()[point1].getBlue();
+                    }
+
+                    indexList.add(S2IndexBandInformation.makeIndex(i, new Color(red, green, blue), String.valueOf(i), String.valueOf(i)));
+                }
+                return new S2IndexBandInformation(MOSAIC_BAND_NAME, resolution, makeMSCFileTemplate(), "Pixel count", "", indexList, "msc_");
+
+            } catch (IOException e) {
+
+            }
+        }
+
+        //Default color index
         for(int i = 0; i <= indexMax; i++) {
-            /*double d = 0;
-            if (indexMax != 0) d = 2*i*255.0/indexMax;
-
-            if(i < indexMax/2) {
-
-                indexList.add(S2IndexBandInformation.makeIndex(i, new Color(255, (int)d, 0),  String.valueOf(i), String.valueOf(i)));
-            } else {
-                d = d - 255;
-                if( d < 0) d = 0;
-                indexList.add(S2IndexBandInformation.makeIndex(i, new Color(255-(int)d, 255, 0),  String.valueOf(i), String.valueOf(i)));
-            }*/
-
             float f = 0;
             f = i*(float)1.0/(indexMax+1);
+            f = (float) 0.75 - f;
+            if (f < 0) f++;
             indexList.add(S2IndexBandInformation.makeIndex(i, getHSBColor(f, (float)1.0, (float)1.0),  String.valueOf(i), String.valueOf(i)));
-
         }
-        return new S2IndexBandInformation("mosaic_info", resolution, makeMSCFileTemplate(), "Pixel count", "", indexList, "msc_");
+        return new S2IndexBandInformation(MOSAIC_BAND_NAME, resolution, makeMSCFileTemplate(), "Pixel count", "", indexList, "msc_");
+
     }
 
     private static String makeSCLFileTemplate() {
@@ -294,7 +301,6 @@ public class L3MetadataProc extends S2MetadataProc {
             tgeox.setNumCols(asize.getNCOLS());
             tgeox.setNumRows(asize.getNROWS());
         }
-
         return resolutions;
     }
 
@@ -367,26 +373,6 @@ public class L3MetadataProc extends S2MetadataProc {
             ag2.setDetectorId(Integer.parseInt(angleGrid.getDetectorId()));
             darr[index] = ag2;
         }
-
         return darr;
-    }
-
-    public static S2Metadata.MaskFilename[] getMasks(Level3_Tile aTile, File file) {
-        /*A_QUALITY_INDICATORS_INFO_TILE_L3 qualityInfo = aTile.getQuality_Indicators_Info();
-
-        S2Metadata.MaskFilename[] maskFileNamesArray = null;
-        if (qualityInfo != null) {
-            List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getL3_Pixel_Level_QI().getPVI_FILENAME();
-            List<L3Metadata.MaskFilename> aMaskList = new ArrayList<>();
-            for (A_MASK_LIST.MASK_FILENAME filename : masks) {
-                File QIData = new File(file.getParent(), "QI_DATA");
-                File GmlData = new File(QIData, filename.getValue());
-                aMaskList.add(new L3Metadata.MaskFilename(filename.getBandId(), filename.getType(), GmlData));
-            }
-
-            maskFileNamesArray = aMaskList.toArray(new L3Metadata.MaskFilename[aMaskList.size()]);
-        }
-        return maskFileNamesArray;*/
-        return null;
     }
 }

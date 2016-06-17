@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.s2.l3;
 
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_3_tile_metadata.Level3_Tile;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_3.Level3_User_Product;
 import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_L3_PIXEL_LEVEL_QI;
 import org.esa.s2tbx.dataio.Utils;
@@ -11,7 +10,6 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
-import org.esa.s2tbx.dataio.s2.l3.L3MetadataProc;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -41,6 +39,7 @@ import static org.esa.s2tbx.dataio.s2.l3.L3MetadataProc.makeMSCInformation;
 public class L3Metadata extends S2Metadata {
 
     private static final String PSD_STRING = null;
+    public static final String MOSAIC_BAND_NAME = "quality_mosaic_info";
 
     protected Logger logger = SystemUtils.LOG;
 
@@ -123,15 +122,19 @@ public class L3Metadata extends S2Metadata {
                 tile.setTileGeometries(geoms);
                 tile.setSunAnglesGrid(L3MetadataProc.getSunGrid(aTile));
                 tile.setViewingIncidenceAnglesGrids(L3MetadataProc.getAnglesGrid(aTile));
-                tile.setMaskFilenames(L3MetadataProc.getMasks(aTile, aGranuleMetadataFile));
+                //tile.setMaskFilenames(L3MetadataProc.getMasks(aTile, aGranuleMetadataFile));
                 addTileToList(tile);
             }
         }
 
         // Updates mosaic band
         for(int i = 0; i<getProductCharacteristics().getBandInformations().length; i++) {
-            if(getProductCharacteristics().getBandInformations()[i].getPhysicalBand().equals("mosaic_info")) {
-                getProductCharacteristics().getBandInformations()[i]=makeMSCInformation(productResolution, countInputs);
+            if(getProductCharacteristics().getBandInformations()[i].getPhysicalBand().equals(MOSAIC_BAND_NAME)) {
+                if(countInputs > 0) {
+                    getProductCharacteristics().getBandInformations()[i] = makeMSCInformation(productResolution, countInputs);
+                }else {
+                    getProductCharacteristics().getBandInformations()[i] = makeMSCInformation(productResolution, 1);
+                }
             }
         }
 
@@ -180,8 +183,8 @@ public class L3Metadata extends S2Metadata {
         tile.setSunAnglesGrid(L3MetadataProc.getSunGrid(aTile));
         tile.setViewingIncidenceAnglesGrids(L3MetadataProc.getAnglesGrid(aTile));
 
-        L3MetadataProc.getMasks(aTile, file);
-        tile.setMaskFilenames(L3MetadataProc.getMasks(aTile, file));
+        //L3MetadataProc.getMasks(aTile, file);
+        //tile.setMaskFilenames(L3MetadataProc.getMasks(aTile, file));
 
         addTileToList(tile);
     }

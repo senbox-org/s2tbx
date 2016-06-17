@@ -85,7 +85,6 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
     }
 
 
-
     private S2SpatialResolution getSpatialResolutionL3() {
         S2ProductCRSCache crsCache = new S2ProductCRSCache();
         File file = S2OrthoProductReaderPlugIn.preprocessInput(getInput());
