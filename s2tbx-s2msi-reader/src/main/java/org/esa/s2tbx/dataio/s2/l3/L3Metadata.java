@@ -156,7 +156,7 @@ public class L3Metadata extends S2Metadata {
                 if (tileIdAttr != null) {
                     String newName = tileIdAttr.getData().toString();
                     if (newName.length() > 56)
-                        aGranule.setName("Level-1C_Tile_" + newName.substring(50, 55));
+                        aGranule.setName("Level-03_Tile_" + newName.substring(50, 55));
                 }
             }
 

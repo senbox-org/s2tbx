@@ -37,6 +37,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.awt.Color.getHSBColor;
+
 /**
  * Created by obarrile on 15/06/2016.
  */
@@ -171,7 +173,7 @@ public class L3MetadataProc extends S2MetadataProc {
         indexList.add(S2IndexBandInformation.makeIndex(10, new Color(100, 200, 255), "THIN_CIRRUS", "Thin cirrus"));
         indexList.add(S2IndexBandInformation.makeIndex(11, new Color(255, 150, 255), "SNOW_ICE", "Snow or Ice"));
         indexList.add(S2IndexBandInformation.makeIndex(12, new Color(255, 127, 39), "URBAN_AREAS", "Urban areas"));
-        return new S2IndexBandInformation("quality_scene_classification", resolution, makeSCLFileTemplate(), "Scene classification", "", indexList);
+        return new S2IndexBandInformation("quality_scene_classification", resolution, makeSCLFileTemplate(), "Scene classification", "", indexList, "scl_");
     }
 
     public static S2BandInformation makeMSCInformation(S2SpatialResolution resolution, int indexMax) {
@@ -179,7 +181,7 @@ public class L3MetadataProc extends S2MetadataProc {
         /* Using the same colors as in the L2A-PDD */
 
         for(int i = 0; i <= indexMax; i++) {
-            double d = 0;
+            /*double d = 0;
             if (indexMax != 0) d = 2*i*255.0/indexMax;
 
             if(i < indexMax/2) {
@@ -189,10 +191,14 @@ public class L3MetadataProc extends S2MetadataProc {
                 d = d - 255;
                 if( d < 0) d = 0;
                 indexList.add(S2IndexBandInformation.makeIndex(i, new Color(255-(int)d, 255, 0),  String.valueOf(i), String.valueOf(i)));
-            }
+            }*/
+
+            float f = 0;
+            f = i*(float)1.0/(indexMax+1);
+            indexList.add(S2IndexBandInformation.makeIndex(i, getHSBColor(f, (float)1.0, (float)1.0),  String.valueOf(i), String.valueOf(i)));
 
         }
-        return new S2IndexBandInformation("mosaic_info", resolution, makeMSCFileTemplate(), "Pixel count", "", indexList);
+        return new S2IndexBandInformation("mosaic_info", resolution, makeMSCFileTemplate(), "Pixel count", "", indexList, "msc_");
     }
 
     private static String makeSCLFileTemplate() {
