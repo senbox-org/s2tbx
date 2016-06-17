@@ -49,6 +49,7 @@ public class Sentinel2Algorithm {
     private double cwThresh;
     private double gclThresh;
     private double clThresh;
+    private boolean isInvalid;
 
     public boolean isBrightWhite() {
         return !isInvalid() && (whiteValue() + brightValue() > getBrightWhiteThreshold());
@@ -141,7 +142,7 @@ public class Sentinel2Algorithm {
     }
 
     public boolean isInvalid() {
-        return false;
+        return isInvalid;
     }
 
     // feature values
@@ -313,4 +314,7 @@ public class Sentinel2Algorithm {
         return UNCERTAINTY_VALUE;
     }
 
+    public void setInvalid(boolean isInvalid) {
+        this.isInvalid = isInvalid;
+    }
 }
