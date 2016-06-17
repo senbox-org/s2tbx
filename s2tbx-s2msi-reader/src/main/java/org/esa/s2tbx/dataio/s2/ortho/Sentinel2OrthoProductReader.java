@@ -307,7 +307,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             SystemUtils.LOG.fine(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
-            addIndexMasks(product, bandInfoList);
+            addIndexMasks(product, bandInfoList, sceneDescription);
             SystemUtils.LOG.fine(String.format("[timeprobe] addIndexMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
         }
@@ -409,12 +409,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
-    private void addIndexMasks(Product product, List<BandInfo> bandInfoList) throws IOException {
+    private void addIndexMasks(Product product, List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription) throws IOException {
         for (BandInfo bandInfo : bandInfoList) {
             if (bandInfo.getBandInformation() instanceof S2IndexBandInformation) {
                 S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) bandInfo.getBandInformation();
                 IndexCoding indexCoding = indexBandInformation.getIndexCoding();
                 product.getIndexCodingGroup().add(indexCoding);
+
+                Dimension dimension = sceneDescription.getSceneDimension(bandInfo.getBandInformation().getResolution());
 
                 List<Color> colors = indexBandInformation.getColors();
                 Iterator<Color> colorIterator = colors.iterator();
@@ -427,7 +429,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         throw new IOException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding"));
                     }
                     Color color = colorIterator.next();
-                    Mask mask = Mask.BandMathsType.create("scl_" + indexName.toLowerCase(), description, product.getSceneRasterWidth(), product.getSceneRasterHeight(),
+                    Mask mask = Mask.BandMathsType.create("scl_" + indexName.toLowerCase(), description, dimension.width, dimension.height,
                                                           String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), color, 0.5);
                     product.addMask(mask);
                 }
