@@ -195,20 +195,12 @@
                 "value": "7686"
             },
             {
-                "path": "Granules/Level-1B_Granule_ID/General_Info/Archiving_Info/ARCHIVING_CENTRE",
-                "value": "SGS_"
-            },
-            {
                 "path": "Level-1B_DataStrip_ID/Satellite_Ancillary_Data_Info/Thermal_Data/IMU_Sensorplate_List/IMU_Sensorplate[40]/T",
                 "value": "7696"
             },
             {
                 "path": "Level-1B_DataStrip_ID/Satellite_Ancillary_Data_Info/Lost_Source_Packet_List/Lost_Source_Packet[25]/STRUCTURIDENTIFIER",
                 "value": "105"
-            },
-            {
-                "path": "Granules/Level-1B_Granule_ID/Geometric_Info/Granule_Dimensions/Size/NROWS",
-                "value": "2304"
             },
             {
                 "path": "Level-1B_User_Product/General_Info/Product_Info/Datatake/SENSING_ORBIT_DIRECTION",
@@ -224,10 +216,6 @@
             },
             {
                 "path": "Level-1B_DataStrip_ID/General_Info/Archiving_Info/ARCHIVING_CENTRE",
-                "value": "SGS_"
-            },
-            {
-                "path": "Granules/Level-1B_Granule_ID/General_Info/Archiving_Info/ARCHIVING_CENTRE",
                 "value": "SGS_"
             }
         ]

@@ -626,10 +626,6 @@
             {
                 "path": "Level-1B_DataStrip_ID/Satellite_Ancillary_Data_Info/Thermal_Data/IMU_Sensorplate_List/IMU_Sensorplate[3]/T",
                 "value": "7686"
-            },
-            {
-                "path": "Granules/Level-1B_Granule_ID[4]/General_Info/Archiving_Info/ARCHIVING_CENTRE",
-                "value": "SGS_"
             }
         ]
     }
