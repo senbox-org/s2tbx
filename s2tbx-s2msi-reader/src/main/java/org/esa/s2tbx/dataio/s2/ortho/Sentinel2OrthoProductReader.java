@@ -30,6 +30,7 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 import org.esa.s2tbx.dataio.s2.ColorIterator;
+import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
@@ -341,7 +342,22 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         if (!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
 
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B1", VIEW_ZENITH_B01_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
+            ArrayList<TiePointGrid> anglesTiePointGrids = new ArrayList<>();
+
+            HashMap<String, TiePointGrid[]> tiePointGridsMap = new HashMap<>();
+            for (S2Metadata.Tile tile : tileList) {
+                TiePointGrid[] tiePointGrids = createL1cTileTiePointGrids(metadataHeader, tile.getId());
+                if (tiePointGrids != null) {
+                    tiePointGridsMap.put(tile.getId(), tiePointGrids);
+                }
+            }
+
+            addAnglesBands(product, metadataHeader, sceneDescription, tiePointGridsMap);
+
+
+
+
+           /* addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B1", VIEW_ZENITH_B01_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B1", VIEW_AZIMUTH_B01_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B2", VIEW_ZENITH_B02_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B2", VIEW_AZIMUTH_B02_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
@@ -371,7 +387,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", SUN_ZENITH_GRID_INDEX, "Solar zenith angle", "°");
             addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", SUN_AZIMUTH_GRID_INDEX, "Solar azimuth angle", "°");
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", VIEW_ZENITH_GRID_INDEX, "Viewing incidence zenith angle", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", VIEW_AZIMUTH_GRID_INDEX, "Viewing incidence azimuth angle", "°");
+            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", VIEW_AZIMUTH_GRID_INDEX, "Viewing incidence azimuth angle", "°"); */
 
 
             SystemUtils.LOG.fine(String.format("[timeprobe] addTiePointGridBand : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
@@ -382,6 +398,25 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     }
 
     abstract protected int getMaskLevel();
+
+    private void addAnglesBands(Product product, S2Metadata metadataHeader, S2OrthoSceneLayout sceneDescription, HashMap<String, TiePointGrid[]> tiePointGridsMap ) {
+
+        TiePointGrid[] tiePointGrid = tiePointGridsMap.get(metadataHeader.getTileList().get(0).getId());
+        for (int i = 0; i<tiePointGrid.length; i++) {
+            final Band band = product.addBand(tiePointGrid[i].getName(), ProductData.TYPE_FLOAT32);
+            if(tiePointGrid[i].getName().startsWith(""))
+            band.setDescription("descriptionnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
+            band.setUnit("°");
+            band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription,
+                                                                                                    metadataHeader,
+                                                                                                    Product.findImageToModelTransform(product.getSceneGeoCoding()),
+                                                                                                    4,
+                                                                                                    i, tiePointGridsMap)));
+        }
+
+    }
+
+
 
     private void addBands(Product product, List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription) throws IOException {
         for (BandInfo bandInfo : bandInfoList) {
@@ -657,14 +692,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 bandId = grid.getBandId();
                 if (iLastBandId != bandId) {
                     if (iLastBandId >= 0) {
-                        String viewZenithID = "view_zenith_B" + iLastBandId;
-                        String viewAzimuthID = "view_azimuth_B" + iLastBandId;
                         float[] zeniths = new float[gridWidth * gridHeight];
                         float[] azimuths = new float[gridWidth * gridHeight];
                         System.arraycopy(viewingZeniths, 0, zeniths, 0, gridWidth * gridHeight);
                         System.arraycopy(viewingAzimuths, 0, azimuths, 0, gridWidth * gridHeight);
-                        listTiePointGrid.add(createTiePointGrid(viewZenithID, gridWidth, gridHeight, zeniths));
-                        listTiePointGrid.add(createTiePointGrid(viewAzimuthID, gridWidth, gridHeight, azimuths));
+                        listTiePointGrid.add(createTiePointGrid("view_zenith", S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, zeniths));
+                        listTiePointGrid.add(createTiePointGrid("view_azimuth", S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, azimuths));
                     }
                     Arrays.fill(viewingZeniths, Float.NaN);
                     Arrays.fill(viewingAzimuths, Float.NaN);
@@ -698,16 +731,17 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 }
             }
             if (iLastBandId > 0) {
-                String viewZenithID = "view_zenith_B" + iLastBandId;
-                String viewAzimuthID = "view_azimuth_B" + iLastBandId;
                 float[] zeniths = new float[gridWidth * gridHeight];
+                float[] azimuths = new float[gridWidth * gridHeight];
                 System.arraycopy(viewingZeniths, 0, zeniths, 0, gridWidth * gridHeight);
-                listTiePointGrid.add(createTiePointGrid(viewZenithID, gridWidth, gridHeight, zeniths));
-                listTiePointGrid.add(createTiePointGrid(viewAzimuthID, gridWidth, gridHeight, viewingAzimuths));
+                System.arraycopy(viewingAzimuths, 0, azimuths, 0, gridWidth * gridHeight);
+                listTiePointGrid.add(createTiePointGrid("view_zenith", S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, zeniths));
+                listTiePointGrid.add(createTiePointGrid("view_azimuth", S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, azimuths));
             }
 
-            listTiePointGrid.add(createTiePointGrid("view_zenith", gridWidth, gridHeight, viewingZeniths));
-            listTiePointGrid.add(createTiePointGrid("view_azimuth", gridWidth, gridHeight, viewingAzimuths));
+            //todo hacer la media
+            listTiePointGrid.add(createTiePointGrid("view_zenith", null, gridWidth, gridHeight, viewingZeniths));
+            listTiePointGrid.add(createTiePointGrid("view_azimuth", null, gridWidth, gridHeight, viewingAzimuths));
 
 
 
@@ -718,8 +752,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     sunAzimuths[index] = sunAnglesGrid.getAzimuth()[y][x];
                 }
             }
-            listTiePointGrid.add(createTiePointGrid("sun_zenith", gridWidth, gridHeight, sunZeniths));
-            listTiePointGrid.add(createTiePointGrid("sun_azimuth", gridWidth, gridHeight, sunAzimuths));
+            listTiePointGrid.add(createTiePointGrid("sun_zenith", null, gridWidth, gridHeight, sunZeniths));
+            listTiePointGrid.add(createTiePointGrid("sun_azimuth", null, gridWidth, gridHeight, sunAzimuths));
 
             tiePointGrid = listTiePointGrid.toArray(new TiePointGrid[listTiePointGrid.size()]);
         }
@@ -731,6 +765,21 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         double offset = 0.0;
         double subSampling = 500.0F / ((double) getProductResolution().resolution / (double) S2SpatialResolution.R10M.resolution);
         final TiePointGrid tiePointGrid = new TiePointGrid(name, gridWidth, gridHeight, offset, offset, subSampling, subSampling, values);
+        tiePointGrid.setNoDataValue(Double.NaN);
+        tiePointGrid.setNoDataValueUsed(true);
+        return tiePointGrid;
+    }
+
+    private TiePointGrid createTiePointGrid(String name, String bandName, int gridWidth, int gridHeight, float[] values) {
+        double offset = 0.0;
+        double subSampling = 500.0F / ((double) getProductResolution().resolution / (double) S2SpatialResolution.R10M.resolution);
+        String fullName;
+        if (bandName == null) {
+            fullName = name;
+        } else {
+            fullName = name + "_" + bandName;
+        }
+        final TiePointGrid tiePointGrid = new TiePointGrid(fullName, gridWidth, gridHeight, offset, offset, subSampling, subSampling, values);
         tiePointGrid.setNoDataValue(Double.NaN);
         tiePointGrid.setNoDataValueUsed(true);
         return tiePointGrid;
@@ -940,11 +989,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             tiePointGridsMap = new HashMap<>();
         }
 
-        public TiePointGridL1cSceneMultiLevelSource(S2OrthoSceneLayout sceneDescription, S2Metadata metadata, AffineTransform imageToModelTransform, int numResolutions) {
+        public TiePointGridL1cSceneMultiLevelSource(S2OrthoSceneLayout sceneDescription, S2Metadata metadata, AffineTransform imageToModelTransform, int numResolutions, int tiePointGridIndex, HashMap<String, TiePointGrid[]> tiePointGridsMap) {
             super(sceneDescription, getProductResolution(), imageToModelTransform, numResolutions);
             this.metadata = metadata;
-            this.tiePointGridIndex = -1;
-            tiePointGridsMap = new HashMap<>();
+            this.tiePointGridIndex = tiePointGridIndex;
+            this.tiePointGridsMap = tiePointGridsMap;
         }
 
         protected PlanarImage createL1cTileImage(String tileId, int level) throws IOException {
