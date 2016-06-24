@@ -58,6 +58,7 @@ import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.SourceImageScaler;
+import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.FileUtils;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -78,9 +79,18 @@ import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -96,6 +106,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static java.awt.image.DataBuffer.*;
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.snap.utils.DateHelper.parseDate;
 
@@ -117,36 +128,10 @@ import static org.esa.snap.utils.DateHelper.parseDate;
  */
 public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader {
 
-    static final int VIEW_ZENITH_B01_GRID_INDEX = 0;
-    static final int VIEW_AZIMUTH_B01_GRID_INDEX = 1;
-    static final int VIEW_ZENITH_B02_GRID_INDEX = 2;
-    static final int VIEW_AZIMUTH_B02_GRID_INDEX = 3;
-    static final int VIEW_ZENITH_B03_GRID_INDEX = 4;
-    static final int VIEW_AZIMUTH_B03_GRID_INDEX = 5;
-    static final int VIEW_ZENITH_B04_GRID_INDEX = 6;
-    static final int VIEW_AZIMUTH_B04_GRID_INDEX = 7;
-    static final int VIEW_ZENITH_B05_GRID_INDEX = 8;
-    static final int VIEW_AZIMUTH_B05_GRID_INDEX = 9;
-    static final int VIEW_ZENITH_B06_GRID_INDEX = 10;
-    static final int VIEW_AZIMUTH_B06_GRID_INDEX = 11;
-    static final int VIEW_ZENITH_B07_GRID_INDEX = 12;
-    static final int VIEW_AZIMUTH_B07_GRID_INDEX = 13;
-    static final int VIEW_ZENITH_B08_GRID_INDEX = 14;
-    static final int VIEW_AZIMUTH_B08_GRID_INDEX = 15;
-    static final int VIEW_ZENITH_B8A_GRID_INDEX = 16;
-    static final int VIEW_AZIMUTH_B8A_GRID_INDEX = 17;
-    static final int VIEW_ZENITH_B09_GRID_INDEX = 18;
-    static final int VIEW_AZIMUTH_B09_GRID_INDEX = 19;
-    static final int VIEW_ZENITH_B10_GRID_INDEX = 20;
-    static final int VIEW_AZIMUTH_B10_GRID_INDEX = 21;
-    static final int VIEW_ZENITH_B11_GRID_INDEX = 22;
-    static final int VIEW_AZIMUTH_B11_GRID_INDEX = 23;
-    static final int VIEW_ZENITH_B12_GRID_INDEX = 24;
-    static final int VIEW_AZIMUTH_B12_GRID_INDEX = 25;
-    static final int VIEW_ZENITH_GRID_INDEX = 26;
-    static final int VIEW_AZIMUTH_GRID_INDEX = 27;
-    static final int SUN_ZENITH_GRID_INDEX = 28;
-    static final int SUN_AZIMUTH_GRID_INDEX = 29;
+    static final String VIEW_ZENITH_PREFIX = "view_zenith";
+    static final String VIEW_AZIMUTH_PREFIX = "view_azimuth";
+    static final String SUN_ZENITH_PREFIX = "sun_zenith";
+    static final String SUN_AZIMUTH_PREFIX = "sun_azimuth";
 
 
     private final String epsgCode;
@@ -342,8 +327,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         if (!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
 
-            ArrayList<TiePointGrid> anglesTiePointGrids = new ArrayList<>();
-
             HashMap<String, TiePointGrid[]> tiePointGridsMap = new HashMap<>();
             for (S2Metadata.Tile tile : tileList) {
                 TiePointGrid[] tiePointGrids = createL1cTileTiePointGrids(metadataHeader, tile.getId());
@@ -353,42 +336,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
 
             addAnglesBands(product, metadataHeader, sceneDescription, tiePointGridsMap);
-
-
-
-
-           /* addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B1", VIEW_ZENITH_B01_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B1", VIEW_AZIMUTH_B01_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B2", VIEW_ZENITH_B02_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B2", VIEW_AZIMUTH_B02_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B3", VIEW_ZENITH_B03_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B3", VIEW_AZIMUTH_B03_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B4", VIEW_ZENITH_B04_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B4", VIEW_AZIMUTH_B04_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B5", VIEW_ZENITH_B05_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B5", VIEW_AZIMUTH_B05_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B6", VIEW_ZENITH_B06_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B6", VIEW_AZIMUTH_B06_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B7", VIEW_ZENITH_B07_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B7", VIEW_AZIMUTH_B07_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B8", VIEW_ZENITH_B08_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B8", VIEW_AZIMUTH_B08_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B8A", VIEW_ZENITH_B8A_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B8A", VIEW_AZIMUTH_B8A_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B9", VIEW_ZENITH_B09_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B9", VIEW_AZIMUTH_B09_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B10", VIEW_ZENITH_B10_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B10", VIEW_AZIMUTH_B10_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B11", VIEW_ZENITH_B11_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B11", VIEW_AZIMUTH_B11_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith_B12", VIEW_ZENITH_B12_GRID_INDEX, "Viewing incidence zenith angle - Band 1", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth_B12", VIEW_AZIMUTH_B12_GRID_INDEX, "Viewing incidence azimuth angle - Band 1", "°");
-
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_zenith", SUN_ZENITH_GRID_INDEX, "Solar zenith angle", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "sun_azimuth", SUN_AZIMUTH_GRID_INDEX, "Solar azimuth angle", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", VIEW_ZENITH_GRID_INDEX, "Viewing incidence zenith angle", "°");
-            addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", VIEW_AZIMUTH_GRID_INDEX, "Viewing incidence azimuth angle", "°"); */
-
 
             SystemUtils.LOG.fine(String.format("[timeprobe] addTiePointGridBand : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
@@ -404,14 +351,82 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         TiePointGrid[] tiePointGrid = tiePointGridsMap.get(metadataHeader.getTileList().get(0).getId());
         for (int i = 0; i<tiePointGrid.length; i++) {
             final Band band = product.addBand(tiePointGrid[i].getName(), ProductData.TYPE_FLOAT32);
-            if(tiePointGrid[i].getName().startsWith(""))
-            band.setDescription("descriptionnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
+            String description = "";
+            if(tiePointGrid[i].getName().startsWith(VIEW_ZENITH_PREFIX)) {
+                description = "Viewing incidence zenith angle";
+            }
+            if(tiePointGrid[i].getName().startsWith(VIEW_AZIMUTH_PREFIX)) {
+                description = "Viewing incidence azimuth angle";
+            }
+            if(tiePointGrid[i].getName().startsWith(SUN_ZENITH_PREFIX)) {
+                description = "Solar zenith angle";
+            }
+            if(tiePointGrid[i].getName().startsWith(SUN_AZIMUTH_PREFIX)) {
+                description = "Solar azimuth angle";
+            }
+
+            band.setDescription(description);
             band.setUnit("°");
+
+
+
             band.setSourceImage(new DefaultMultiLevelImage(new TiePointGridL1cSceneMultiLevelSource(sceneDescription,
                                                                                                     metadataHeader,
                                                                                                     Product.findImageToModelTransform(product.getSceneGeoCoding()),
                                                                                                     4,
                                                                                                     i, tiePointGridsMap)));
+
+
+
+
+
+
+
+
+            //pruebas////////////////////////////////////////////////////////////////////////
+
+            /*
+            //create image
+            ArrayList<RenderedImage> tileImages = new ArrayList<>();
+
+            int[] bandOffsets = {0};
+            SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, 23, 23, 1, 1, bandOffsets);
+            // ...and data buffer (where the pixels are stored)
+            DataBuffer buffer = new DataBufferFloat(23*23*1);
+
+            // Wrap it in a writable raster
+            WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
+            raster.setPixels(0, 0, 23, 23, tiePointGrid[i].getTiePoints());
+            ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+            ColorModel colorModel = new ComponentColorModel(colorSpace, true, false, Transparency.TRANSLUCENT, TYPE_FLOAT);
+
+            // And finally create an image with this raster
+            BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
+            final PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
+            final PlanarImage planarImage2 = PlanarImage.wrapRenderedImage(image);
+
+
+            //move image
+            planarImage.
+            TranslateDescriptor.create(
+
+
+            //hago el mosaico
+            tileImages.add(planarImage);
+            tileImages.add(planarImage2);
+
+            ImageLayout imageLayout = new ImageLayout();
+            imageLayout.setMinX(0);
+            imageLayout.setMinY(0);
+            imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileGridXOffset(0);
+            imageLayout.setTileGridYOffset(0);
+            RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
+                                                          MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                          null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
+                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+            band.setSourceImage(mosaicOp);*/
         }
 
     }
@@ -687,7 +702,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             S2Metadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.getViewingIncidenceAnglesGrids();
 
             int iLastBandId = -1;
-            int bandId = -1;
+            int bandId;
             for (S2Metadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
                 bandId = grid.getBandId();
                 if (iLastBandId != bandId) {
@@ -696,8 +711,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         float[] azimuths = new float[gridWidth * gridHeight];
                         System.arraycopy(viewingZeniths, 0, zeniths, 0, gridWidth * gridHeight);
                         System.arraycopy(viewingAzimuths, 0, azimuths, 0, gridWidth * gridHeight);
-                        listTiePointGrid.add(createTiePointGrid("view_zenith", S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, zeniths));
-                        listTiePointGrid.add(createTiePointGrid("view_azimuth", S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, azimuths));
+                        listTiePointGrid.add(createTiePointGrid(VIEW_ZENITH_PREFIX, S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, zeniths));
+                        listTiePointGrid.add(createTiePointGrid(VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, azimuths));
                     }
                     Arrays.fill(viewingZeniths, Float.NaN);
                     Arrays.fill(viewingAzimuths, Float.NaN);
@@ -735,13 +750,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 float[] azimuths = new float[gridWidth * gridHeight];
                 System.arraycopy(viewingZeniths, 0, zeniths, 0, gridWidth * gridHeight);
                 System.arraycopy(viewingAzimuths, 0, azimuths, 0, gridWidth * gridHeight);
-                listTiePointGrid.add(createTiePointGrid("view_zenith", S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, zeniths));
-                listTiePointGrid.add(createTiePointGrid("view_azimuth", S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, azimuths));
+                listTiePointGrid.add(createTiePointGrid(VIEW_ZENITH_PREFIX, S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, zeniths));
+                listTiePointGrid.add(createTiePointGrid(VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(iLastBandId).getFilenameBandId(), gridWidth, gridHeight, azimuths));
             }
 
             //todo hacer la media
-            listTiePointGrid.add(createTiePointGrid("view_zenith", null, gridWidth, gridHeight, viewingZeniths));
-            listTiePointGrid.add(createTiePointGrid("view_azimuth", null, gridWidth, gridHeight, viewingAzimuths));
+            listTiePointGrid.add(createTiePointGrid(VIEW_ZENITH_PREFIX, null, gridWidth, gridHeight, viewingZeniths));
+            listTiePointGrid.add(createTiePointGrid(VIEW_AZIMUTH_PREFIX, null, gridWidth, gridHeight, viewingAzimuths));
 
 
 
@@ -752,8 +767,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     sunAzimuths[index] = sunAnglesGrid.getAzimuth()[y][x];
                 }
             }
-            listTiePointGrid.add(createTiePointGrid("sun_zenith", null, gridWidth, gridHeight, sunZeniths));
-            listTiePointGrid.add(createTiePointGrid("sun_azimuth", null, gridWidth, gridHeight, sunAzimuths));
+            listTiePointGrid.add(createTiePointGrid(SUN_ZENITH_PREFIX, null, gridWidth, gridHeight, sunZeniths));
+            listTiePointGrid.add(createTiePointGrid(SUN_AZIMUTH_PREFIX, null, gridWidth, gridHeight, sunAzimuths));
 
             tiePointGrid = listTiePointGrid.toArray(new TiePointGrid[listTiePointGrid.size()]);
         }
@@ -911,7 +926,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                                l1cTileLayout.numXTiles, l1cTileLayout.numYTiles, l1cTileLayout.numResolutions);
                             }
                             opImage = JP2TileOpImage.create(imageFile.toPath(), getCacheDir().toPath(),
-                                                            0, y, x, currentLayout, getModel(), DataBuffer.TYPE_USHORT, level);
+                                                            0, y, x, currentLayout, getModel(), TYPE_USHORT, level);
 
                             if (opImage != null) {
                                 opImage = TranslateDescriptor.create(opImage,
