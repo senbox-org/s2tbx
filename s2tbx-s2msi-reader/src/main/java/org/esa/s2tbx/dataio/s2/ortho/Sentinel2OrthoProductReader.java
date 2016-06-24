@@ -162,7 +162,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataFile.getName()));
         }
         SystemUtils.LOG.fine(String.format("[timeprobe] updateTileLayout : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
-        System.out.println(String.format("[timeprobe] updateTileLayout : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
 
 
         String filterTileId = null;
@@ -206,7 +205,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         S2Metadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
         SystemUtils.LOG.fine(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
-        System.out.println(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
         timeProbe.reset();
 
         S2OrthoSceneLayout sceneDescription = S2OrthoSceneLayout.create(metadataHeader);
@@ -292,7 +290,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
         }
         SystemUtils.LOG.fine(String.format("[timeprobe] product initialisation : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
-        System.out.println(String.format("[timeprobe] product initialisation : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
         timeProbe.reset();
 
         if (!bandInfoList.isEmpty()) {
@@ -300,23 +297,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                      bandInfoList,
                      sceneDescription);
             SystemUtils.LOG.fine(String.format("[timeprobe] addBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
-            System.out.println(String.format("[timeprobe] addBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
 
             scaleBands(product, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] scaleBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
-            System.out.println(String.format("[timeprobe] scalaBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
             addVectorMasks(product, tileList, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
-            System.out.println(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
             addIndexMasks(product, bandInfoList, sceneDescription);
             SystemUtils.LOG.fine(String.format("[timeprobe] addIndexMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
-            System.out.println(String.format("[timeprobe] addIndexMasksBands : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
         }
 
@@ -326,7 +319,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_zenith", VIEW_ZENITH_GRID_INDEX, "Viewing incidence zenith angle", "°");
             addTiePointGridBand(product, metadataHeader, sceneDescription, "view_azimuth", VIEW_AZIMUTH_GRID_INDEX, "Viewing incidence azimuth angle", "°");
             SystemUtils.LOG.fine(String.format("[timeprobe] addTiePointGridBand : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
-            System.out.println(String.format("[timeprobe] addTiePointGridBand : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
         }
 
@@ -465,7 +457,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                 }
             }
-            System.out.println(String.format("[timeprobe] maskInfo %s : %s ms",maskInfo.getMainType(), timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
         }
     }
