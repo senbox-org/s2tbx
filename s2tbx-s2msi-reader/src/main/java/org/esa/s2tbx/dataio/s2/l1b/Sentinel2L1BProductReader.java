@@ -137,6 +137,13 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     @Override
+    public S2SpatialResolution getProductResolution() {
+        if(interpretation == ProductInterpretation.RESOLUTION_20M) return S2SpatialResolution.R20M;
+        if(interpretation == ProductInterpretation.RESOLUTION_60M) return S2SpatialResolution.R60M;
+        return S2SpatialResolution.R10M;
+    }
+
+    @Override
     public boolean isMultiResolution() {
         return interpretation == ProductInterpretation.RESOLUTION_MULTI;
     }
