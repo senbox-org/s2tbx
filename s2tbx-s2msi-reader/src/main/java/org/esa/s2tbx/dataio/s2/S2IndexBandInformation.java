@@ -40,7 +40,7 @@ public class S2IndexBandInformation extends S2BandInformation {
                                   String unit,
                                   List<S2IndexBandIndex> indexList,
                                   String prefix) {
-        super(physicalBand, resolution, imageFileTemplate, description, unit);
+        super(physicalBand, resolution, imageFileTemplate, description, unit, 1.0);
         this.indexList = indexList;
         this.prefix = prefix;
     }

@@ -26,17 +26,20 @@ public class S2BandInformation {
     private String imageFileTemplate;
     private String description;
     private String unit;
+    private double quantificationValue;
 
     public S2BandInformation(String physicalBand,
                              S2SpatialResolution resolution,
                              String imageFileTemplate,
                              String description,
-                             String unit) {
+                             String unit,
+                             double quantificationValue) {
         this.physicalBand = physicalBand;
         this.resolution = resolution;
         this.imageFileTemplate = imageFileTemplate;
         this.description = description;
         this.unit = unit;
+        this.quantificationValue = quantificationValue;
     }
 
     public String getPhysicalBand() {
@@ -70,4 +73,13 @@ public class S2BandInformation {
     public String getUnit() {
         return unit;
     }
+
+    public double getQuantificationValue() {
+        return quantificationValue;
+    }
+    
+    public double getScalingFactor() {
+        return 1.0 / quantificationValue;
+    }
+
 }

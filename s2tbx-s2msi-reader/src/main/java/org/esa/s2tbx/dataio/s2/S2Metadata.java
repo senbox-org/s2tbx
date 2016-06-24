@@ -459,6 +459,7 @@ public abstract class S2Metadata {
         private String processingLevel;
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
+        private double quantificationValue;
 
         public String getSpacecraft() {
             return spacecraft;
@@ -521,5 +522,12 @@ public abstract class S2Metadata {
         }
 
 
+        public double getQuantificationValue() {
+            return quantificationValue;
+        }
+
+        public void setQuantificationValue(double quantificationValue) {
+            this.quantificationValue = quantificationValue;
+        }
     }
 }
