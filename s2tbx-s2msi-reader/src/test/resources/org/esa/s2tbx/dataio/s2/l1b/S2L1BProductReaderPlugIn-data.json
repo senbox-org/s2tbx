@@ -1,0 +1,14 @@
+{
+    "testProducts": [
+        {
+            "id": "S2L1B-Multi-Maricopa",
+            "relativePath": "S2/L1B/Maricopa/S2A_OPER_PRD_MSIL1B_PDMC_20160404T102635_R084_V20160403T182456_20160403T182504.SAFE/S2A_OPER_MTD_SAFL1B_PDMC_20160404T102635_R084_V20160403T182456_20160403T182504.xml",
+            "description": "Sentinel2 L1B product in an archive"
+        },
+		{
+            "id": "S2L1B-Multi-Maricopa-D11-182504",
+            "relativePath": "S2/L1B/Maricopa/S2A_OPER_PRD_MSIL1B_PDMC_20160404T102635_R084_V20160403T182456_20160403T182504.SAFE/GRANULE/S2A_OPER_MSI_L1B_GR_SGS__20160404T011433_S20160403T182504_D11_N02.01/S2A_OPER_MTD_L1B_GR_SGS__20160404T011433_S20160403T182504_D11.xml",
+            "description": "Sentinel2 L1B granule in an archive"
+        }
+    ]
+}

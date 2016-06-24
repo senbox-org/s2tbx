@@ -7,6 +7,7 @@ generated-sources/
 *.iws
 *.class
 *~
+*.pyc
 
 #generated sources
 s2tbx-reader-cs/src/main/generated-sources/

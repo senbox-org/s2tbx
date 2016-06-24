@@ -1,0 +1,75 @@
+<root>
+  <key>SFSTextureExtraction</key>
+  <exec>otbcli_SFSTextureExtraction</exec>
+  <longname>SFS Texture Extraction</longname>
+  <group>Feature Extraction</group>
+  <description>Computes Structural Feature Set textures on every pixel of the input image selected channel</description>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_InputImage">ParameterRaster</parameter_type>
+    <key>in</key>
+    <name>Input Image</name>
+    <description>The input image to compute the features on.</description>
+    <optional>False</optional>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_Int">ParameterNumber</parameter_type>
+    <key>channel</key>
+    <name>Selected Channel</name>
+    <description>The selected channel index</description>
+    <minValue/>
+    <maxValue/>
+    <default>1</default>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_Float">ParameterNumber</parameter_type>
+    <key>parameters.spethre</key>
+    <name>Spectral Threshold</name>
+    <description>Spectral Threshold</description>
+    <minValue/>
+    <maxValue/>
+    <default>50</default>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_Int">ParameterNumber</parameter_type>
+    <key>parameters.spathre</key>
+    <name>Spatial Threshold</name>
+    <description>Spatial Threshold</description>
+    <minValue/>
+    <maxValue/>
+    <default>100</default>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_Int">ParameterNumber</parameter_type>
+    <key>parameters.nbdir</key>
+    <name>Number of Direction</name>
+    <description>Number of Direction</description>
+    <minValue/>
+    <maxValue/>
+    <default>20</default>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_Float">ParameterNumber</parameter_type>
+    <key>parameters.alpha</key>
+    <name>Alpha</name>
+    <description>Alpha</description>
+    <minValue/>
+    <maxValue/>
+    <default>1</default>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_Int">ParameterNumber</parameter_type>
+    <key>parameters.maxcons</key>
+    <name>Ratio Maximum Consideration Number</name>
+    <description>Ratio Maximum Consideration Number</description>
+    <minValue/>
+    <maxValue/>
+    <default>5</default>
+  </parameter>
+  <parameter>
+    <parameter_type source_parameter_type="ParameterType_OutputImage">OutputRaster</parameter_type>
+    <key>out</key>
+    <name>Feature Output Image</name>
+    <description>Output image containing the SFS texture features.</description>
+    <hidden/>
+  </parameter>
+<cli_args_template>-in {in} -channel {channel} -ram 512 -parameters.spethre {parameters.spethre} -parameters.spathre {parameters.spathre} -parameters.nbdir {parameters.nbdir} -parameters.alpha {parameters.alpha} -parameters.maxcons {parameters.maxcons} -out {out}</cli_args_template></root>

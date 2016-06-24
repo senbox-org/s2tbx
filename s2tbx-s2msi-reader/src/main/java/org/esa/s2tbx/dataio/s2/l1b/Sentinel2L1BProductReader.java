@@ -116,11 +116,36 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
     static final String L1B_CACHE_DIR = "l1b-reader";
 
+    public enum ProductInterpretation {
+        RESOLUTION_10M,
+        RESOLUTION_20M,
+        RESOLUTION_60M,
+        RESOLUTION_MULTI
+    }
+
     protected final Logger logger;
+    protected final ProductInterpretation interpretation;
 
     public Sentinel2L1BProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation) {
-        super(readerPlugIn, interpretation);
+        super(readerPlugIn);
+        this.interpretation = interpretation;
         logger = SystemUtils.LOG;
+    }
+
+    public ProductInterpretation getInterpretation() {
+        return interpretation;
+    }
+
+    @Override
+    public S2SpatialResolution getProductResolution() {
+        if(interpretation == ProductInterpretation.RESOLUTION_20M) return S2SpatialResolution.R20M;
+        if(interpretation == ProductInterpretation.RESOLUTION_60M) return S2SpatialResolution.R60M;
+        return S2SpatialResolution.R10M;
+    }
+
+    @Override
+    public boolean isMultiResolution() {
+        return interpretation == ProductInterpretation.RESOLUTION_MULTI;
     }
 
     @Override

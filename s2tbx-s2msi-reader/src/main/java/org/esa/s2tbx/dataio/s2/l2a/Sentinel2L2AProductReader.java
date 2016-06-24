@@ -21,6 +21,8 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
+import org.esa.s2tbx.dataio.s2.ortho.S2ProductCRSCache;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.jdom.JDOMException;
@@ -52,8 +54,13 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
 
     static final String L2A_CACHE_DIR = "l2a-reader";
 
-    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation, String epsgCode) {
-        super(readerPlugIn, interpretation, epsgCode);
+    public Sentinel2L2AProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
+        super(readerPlugIn, epsgCode);
+    }
+
+    @Override
+    public S2SpatialResolution getProductResolution() {
+        return getSpatialResolutionL2();
     }
 
     @Override
@@ -101,5 +108,27 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     @Override
     protected int getMaskLevel() {
         return MaskInfo.L2A;
+    }
+
+
+
+    private S2SpatialResolution getSpatialResolutionL2() {
+        S2ProductCRSCache crsCache = new S2ProductCRSCache();
+        File file = S2OrthoProductReaderPlugIn.preprocessInput(getInput());
+        if(file == null) {
+            return S2SpatialResolution.R10M;
+        }
+        crsCache.ensureIsCached(file.getAbsolutePath());
+
+        S2Config.Sentinel2InputType type = crsCache.getInputType(file.getAbsolutePath());
+        if(type.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)) {
+            if (L2aUtils.checkGranuleSpecificFolder(file, "10m")) return S2SpatialResolution.R10M;
+            if (L2aUtils.checkGranuleSpecificFolder(file, "20m")) return S2SpatialResolution.R20M;
+            return S2SpatialResolution.R60M;
+        }
+
+        if (L2aUtils.checkMetadataSpecificFolder(file, "10m")) return S2SpatialResolution.R10M;
+        if (L2aUtils.checkMetadataSpecificFolder(file, "20m")) return S2SpatialResolution.R20M;
+        return S2SpatialResolution.R60M;
     }
 }

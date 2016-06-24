@@ -53,21 +53,16 @@ import static org.esa.s2tbx.dataio.Utils.getMD5sum;
  */
 public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
-    public enum ProductInterpretation {
-        RESOLUTION_10M,
-        RESOLUTION_20M,
-        RESOLUTION_60M,
-        RESOLUTION_MULTI
-    }
+
 
     private S2Config config;
     private File cacheDir;
-    private final ProductInterpretation interpretation;
 
 
-    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn, ProductInterpretation interpretation) {
+
+    public Sentinel2ProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
-        this.interpretation = interpretation;
+
         this.config = new S2Config();
     }
 
@@ -78,26 +73,14 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return config;
     }
 
-    public ProductInterpretation getInterpretation() {
-        return interpretation;
-    }
+
 
     public S2SpatialResolution getProductResolution() {
-        switch (interpretation) {
-            case RESOLUTION_10M:
-                return S2SpatialResolution.R10M;
-            case RESOLUTION_20M:
-                return S2SpatialResolution.R20M;
-            case RESOLUTION_60M:
-                return S2SpatialResolution.R60M;
-            case RESOLUTION_MULTI:
-                return S2SpatialResolution.R10M;
-        }
-        throw new IllegalStateException("Unknown product interpretation");
+        return S2SpatialResolution.R10M;
     }
 
     public boolean isMultiResolution() {
-        return interpretation == ProductInterpretation.RESOLUTION_MULTI;
+        return true;
     }
 
     public File getCacheDir() {
@@ -148,13 +131,21 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         final File inputFile;
 
+        File file;
+
         String longInput = GetLongPathNameW(getInput().toString());
         if (longInput.length() != 0) {
-            inputFile = new File(longInput);
+            file = new File(longInput);
         } else {
-            inputFile = new File(getInput().toString());
+            file = new File(getInput().toString());
         }
 
+        if (file.isDirectory() && (getReaderPlugIn() instanceof S2ProductReaderPlugIn)) {
+            inputFile = ((S2ProductReaderPlugIn) getReaderPlugIn()).getInputXmlFileFromDirectory(file);
+            setInput(inputFile);
+        } else {
+            inputFile = file;
+        }
 
         if (!inputFile.exists()) {
             throw new FileNotFoundException(inputFile.getPath());
@@ -211,7 +202,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 tileLayout = retrieveTileLayoutFromProduct(metadataFilePath, layoutResolution);
             }
             config.updateTileLayout(layoutResolution, tileLayout);
-            if(tileLayout != null) {
+            if (tileLayout != null) {
                 valid = true;
             }
         }

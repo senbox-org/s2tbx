@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: 4.0.0
+OpenIDE-Module-Implementation-Version: 4.0.0
+OpenIDE-Module-Name: Segmentation.watershed
+OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
+OpenIDE-Module-Java-Dependencies: Java > 1.8
+OpenIDE-Module-Type: STA
+OpenIDE-Module: org.esa.s2tbx.Segmentation.watershed
+OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
+OpenIDE-Module-Install: org/esa/snap/utils/ModuleInstaller.class
+AutoUpdate-Show-In-Client: false

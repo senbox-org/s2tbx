@@ -1,0 +1,6 @@
+-in1
+$sourceProductFile
+-in2
+$sourceProductFile
+-out
+$targetProductFile

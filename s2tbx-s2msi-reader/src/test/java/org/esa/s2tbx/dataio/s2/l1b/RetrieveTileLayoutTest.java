@@ -67,7 +67,7 @@ public class RetrieveTileLayoutTest {
     @Test
     public void testRetrieveLayoutForL1B10m() {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
-        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_10M);
+        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_10M);
         TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, S2SpatialResolution.R10M);
         TileLayout realTileLayout = new TileLayout(2552, 18432, 2592, 2304, 1, 8, 5);
         Assert.assertTrue(retrievedTileLayout!= null && retrievedTileLayout.equals(realTileLayout));
@@ -76,7 +76,7 @@ public class RetrieveTileLayoutTest {
     @Test
     public void testRetrieveLayoutForL1B20m() {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
-        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_20M);
+        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_20M);
         TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, S2SpatialResolution.R20M);
         TileLayout realTileLayout = new TileLayout(1276, 9216, 1296, 1152, 1, 8, 5);
         Assert.assertTrue(retrievedTileLayout!= null && retrievedTileLayout.equals(realTileLayout));
@@ -85,7 +85,7 @@ public class RetrieveTileLayoutTest {
     @Test
     public void testRetrieveLayoutForL1B60m() {
         Path productPath = sentinel2TestProductsPath.resolve(L1B_PRODUCT_NAME);
-        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2ProductReader.ProductInterpretation.RESOLUTION_60M);
+        Sentinel2L1BProductReader productReader = new Sentinel2L1BProductReader(null, Sentinel2L1BProductReader.ProductInterpretation.RESOLUTION_60M);
         TileLayout retrievedTileLayout = productReader.retrieveTileLayoutFromProduct(productPath, S2SpatialResolution.R60M);
         TileLayout realTileLayout =  new TileLayout(1276, 3072, 1296, 384, 1, 8, 5);
         Assert.assertTrue(retrievedTileLayout!= null && retrievedTileLayout.equals(realTileLayout));

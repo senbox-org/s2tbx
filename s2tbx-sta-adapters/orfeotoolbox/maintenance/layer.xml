@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Tools">
+            <file name="org-esa-snap-ui-tooladapter-actions-ExecuteToolAdapterAction.instance"/>
+            <attr name="displayName" stringvalue="{{displayname}}"/>
+            <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Optical">
+            <folder name="Thematic Land Processing">
+                <file name="org-esa-snap-ui-tooladapter-actions-ExecuteToolAdapterAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Tools/org-esa-snap-ui-tooladapter-actions-ExecuteToolAdapterAction.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
