@@ -429,7 +429,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         throw new IOException(String.format("Unexpected error when creating index masks : colors list does not have the same size as index coding"));
                     }
                     Color color = colorIterator.next();
-                    Mask mask = Mask.BandMathsType.create("scl_" + indexName.toLowerCase(), description, dimension.width, dimension.height,
+                    Mask mask = Mask.BandMathsType.create(indexBandInformation.getPrefix() + indexName.toLowerCase(), description, dimension.width, dimension.height,
                                                           String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), color, 0.5);
                     product.addMask(mask);
                 }

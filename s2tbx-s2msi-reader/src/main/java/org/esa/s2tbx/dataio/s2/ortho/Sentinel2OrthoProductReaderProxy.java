@@ -5,6 +5,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
+import org.esa.s2tbx.dataio.s2.l3.Sentinel2L3ProductReader;
 import org.esa.snap.core.dataio.IllegalFileFormatException;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -67,6 +68,8 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
                 reader = new Sentinel2L2AProductReader(readerPlugIn, epsgCode);
             } else if (level == S2Config.Sentinel2ProductLevel.LEVEL_L1C) {
                 reader = new Sentinel2L1CProductReader(readerPlugIn, epsgCode);
+            } else if (level == S2Config.Sentinel2ProductLevel.LEVEL_L3) {
+                reader = new Sentinel2L3ProductReader(readerPlugIn, epsgCode);
             } else {
                 throw new IOException("Invalid input");
             }

@@ -36,6 +36,7 @@ public class S2Config {
         LEVEL_L1B,
         LEVEL_L1C,
         LEVEL_L2A,
+        LEVEL_L3,
         LEVEL_UNKNOWN
     }
 
@@ -145,6 +146,7 @@ public class S2Config {
         if(level.equals("L1B")) { return Sentinel2ProductLevel.LEVEL_L1B;}
         if(level.equals("L1C")) { return Sentinel2ProductLevel.LEVEL_L1C;}
         if(level.equals("L2A")) { return Sentinel2ProductLevel.LEVEL_L2A;}
+        if(level.equals("L03")) { return Sentinel2ProductLevel.LEVEL_L3;}
         return Sentinel2ProductLevel.LEVEL_UNKNOWN;
     }
 
