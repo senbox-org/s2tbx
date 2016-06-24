@@ -93,6 +93,19 @@ public class L2aMetadataProc extends S2MetadataProc {
         return new S2BandInformation("quality_snow_confidence", resolution, makeSNWFileTemplate(), "Snow Confidence", "%");
     }
 
+    private static S2BandInformation makeDDVInformation(S2SpatialResolution resolution) {
+        List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
+        /* Using the same colors as in the L2A-PDD */
+        indexList.add(S2IndexBandInformation.makeIndex(0, new Color(255, 255, 255), "NODATA", "No data"));
+        //indexList.add(S2IndexBandInformation.makeIndex(1, new Color(192, 192, 192), "NOT USED", "Not used"));
+        indexList.add(S2IndexBandInformation.makeIndex(2, new Color(0, 0, 0), "DARK_FEATURE", "Dark feature"));
+        //indexList.add(S2IndexBandInformation.makeIndex(3, new Color(192, 192, 192), "NOT USED", "Not used"));
+        indexList.add(S2IndexBandInformation.makeIndex(4, new Color(0, 160, 0), "DDV", "Dark Dense Vegetation"));
+        indexList.add(S2IndexBandInformation.makeIndex(5, new Color(192, 192, 192), "BACKGROUND", "Background"));
+        indexList.add(S2IndexBandInformation.makeIndex(6, new Color(0, 0, 255), "WATER", "Water"));
+        return new S2IndexBandInformation("quality_dense_dark_vegetation", resolution, makeDDVFileTemplate(), "Dense Dark Vegetation", "", indexList, "ddv_");
+    }
+
     private static S2BandInformation makeSCLInformation(S2SpatialResolution resolution) {
         List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
         /* Using the same colors as in the L2A-PDD */
@@ -108,7 +121,7 @@ public class L2aMetadataProc extends S2MetadataProc {
         indexList.add(S2IndexBandInformation.makeIndex(9, new Color(255, 255, 255), "CLOUD_HIGH_PROBA", "Cloud (high probability)"));
         indexList.add(S2IndexBandInformation.makeIndex(10, new Color(100, 200, 255), "THIN_CIRRUS", "Thin cirrus"));
         indexList.add(S2IndexBandInformation.makeIndex(11, new Color(255, 150, 255), "SNOW_ICE", "Snow or Ice"));
-        return new S2IndexBandInformation("quality_scene_classification", resolution, makeSCLFileTemplate(), "Scene classification", "", indexList);
+        return new S2IndexBandInformation("quality_scene_classification", resolution, makeSCLFileTemplate(), "Scene classification", "", indexList, "scl_");
     }
 
     private static String makeSpectralBandImageFileTemplate(String bandFileId) {
@@ -146,6 +159,10 @@ public class L2aMetadataProc extends S2MetadataProc {
         return String.format("QI_DATA%s{{MISSION_ID}}_USER_SNW_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2", File.separator);
     }
 
+    private static String makeDDVFileTemplate() {
+        return String.format("QI_DATA%s{{MISSION_ID}}_USER_DDV_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2", File.separator);
+    }
+
     public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product, S2SpatialResolution resolution) {
         L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
         characteristics.setSpacecraft(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME());
@@ -176,6 +193,7 @@ public class L2aMetadataProc extends S2MetadataProc {
                 aInfo.add(makeWVPInformation(S2SpatialResolution.R10M));
                 aInfo.add(makeCLDInformation(S2SpatialResolution.R20M));
                 aInfo.add(makeSNWInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeDDVInformation(S2SpatialResolution.R20M));
 
                 // SCL only generated at 20m and 60m. upsample the 20m version
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
@@ -199,6 +217,7 @@ public class L2aMetadataProc extends S2MetadataProc {
                 aInfo.add(makeWVPInformation(S2SpatialResolution.R20M));
                 aInfo.add(makeCLDInformation(S2SpatialResolution.R20M));
                 aInfo.add(makeSNWInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeDDVInformation(S2SpatialResolution.R20M));
 
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
                 break;
@@ -221,6 +240,7 @@ public class L2aMetadataProc extends S2MetadataProc {
                 aInfo.add(makeWVPInformation(S2SpatialResolution.R60M));
                 aInfo.add(makeCLDInformation(S2SpatialResolution.R60M));
                 aInfo.add(makeSNWInformation(S2SpatialResolution.R60M));
+                aInfo.add(makeDDVInformation(S2SpatialResolution.R60M));
 
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R60M));
                 break;
