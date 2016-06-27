@@ -361,6 +361,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         );
 
         S2BandInformation bandInformation = bandInfo.getBandInformation();
+        band.setScalingFactor(bandInformation.getScalingFactor());
+
         if (bandInformation instanceof S2SpectralInformation) {
             S2SpectralInformation spectralInfo = (S2SpectralInformation) bandInformation;
             band.setSpectralWavelength((float) spectralInfo.getWavelengthCentral());
@@ -371,6 +373,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             band.setNoDataValue(0);
             band.setValidPixelExpression(String.format("%s.raw > %s",
                                                        bandInfo.getBandName(), S2Config.RAW_NO_DATA_THRESHOLD));
+
         } else if (bandInformation instanceof S2IndexBandInformation) {
             S2IndexBandInformation indexBandInfo = (S2IndexBandInformation) bandInformation;
             band.setSpectralWavelength(0);

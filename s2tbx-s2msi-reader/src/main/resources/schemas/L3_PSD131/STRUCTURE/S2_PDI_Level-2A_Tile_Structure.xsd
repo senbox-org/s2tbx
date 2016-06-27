@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://pdgs.s2.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd"
+	targetNamespace="http://pdgs.s2.esa.int/PSD/S2_PDI_Level-2A_Tile_Structure.xsd"
+	elementFormDefault="qualified" version="13">
+	<xs:element name="Level-2A_Tile"
+				type="Level-2A_Tile"/>
+	<xs:complexType name="Level-2A_Tile">
+		<xs:annotation>
+			<xs:documentation>Folder</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Level-2A_Tile_Metadata_File">
+				<xs:annotation>
+					<xs:documentation>XML Main Metadata File (DIMAP_S2_Level-2A_Tile.xsd)</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="General_Info"/>
+						<xs:element name="Geometric_Info">
+							<xs:complexType/>
+						</xs:element>
+						<xs:element name="Quality_Indicators_Info">
+							<xs:complexType/>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="IMG_DATA">
+				<xs:annotation>
+					<xs:documentation>Image Folder. Surface reflectance Image data in JPEG2000 format, one file per band and per resolution. Image File naming convention = PDI_ID_BandIndex.JP2</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="R10m">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Surface_reflectance" maxOccurs="4">
+										<xs:annotation>
+											<xs:documentation>4 channels (B2, B3, B4, B8) omitting the original 20m and 60m channels</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Resampled_AOT">
+										<xs:annotation>
+											<xs:documentation>1 file: Aerosol Optical Thickness map (at 550nm)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Water_Vapour">
+										<xs:annotation>
+											<xs:documentation>1 file: Scene-average Water Vapour map</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="R20m">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Surface_reflectance" maxOccurs="9">
+										<xs:annotation>
+											<xs:documentation>9 channels (B2, B3, B4, B5, B6, B7, B8a, B11, B12), omitting the original 60m channels</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Resampled_AOT">
+										<xs:annotation>
+											<xs:documentation>1 file: Aerosol Optical Thickness map (at 550nm)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Water_Vapour">
+										<xs:annotation>
+											<xs:documentation>1 file: Scene-average Water Vapour map</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="R60m">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Surface_reflectance" maxOccurs="11">
+										<xs:annotation>
+											<xs:documentation>11 channels (B1, B2, B3, B4, B5, B6, B7, B8a, B9, B11, B12) excluding the 1375 nm cirrus band B10, as it does not contains surface information</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Resampled_AOT">
+										<xs:annotation>
+											<xs:documentation>1 file: Aerosol Optical Thickness map (at 550nm)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Water_Vapour">
+										<xs:annotation>
+											<xs:documentation>1 file: Scene-average Water Vapour map</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="Scene_Classification_Tile" maxOccurs="1">
+							<xs:annotation>
+								<xs:documentation>Image data in JPEG2000 format, Scene Classification image provides an attribute to each pixel to indicate its type (cloud, snow, vegetation, land, water, etc...). Image File naming convention = PDI_ID_SC.JP2. Available at 20m and 60m resolution.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="QI_DATA">
+				<xs:annotation>
+					<xs:documentation>Folder</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Cloud_Confidence">
+							<xs:annotation>
+								<xs:documentation>Raster mask values range from 0 for high confidence clear sky to 100 for high confidence cloudy. Unsigned Integer. JPEG2000. 8bit. available at 20m and 60m resolution.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Snow_Ice_Confidence">
+							<xs:annotation>
+								<xs:documentation>Raster mask values range from 0 for high confidence NO snow/ice to 100 for high confidence snow/ice. Unsigned Integer. JPEG2000. 8bit. available at 20m and 60m resolution.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Preview_Image">
+							<xs:annotation>
+								<xs:documentation>PVI Preview Image file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="L1C_Quality_Masks">
+							<xs:annotation>
+								<xs:documentation>Level-1C Quality Indicators at pixel level</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="Radiometric_QM">
+										<xs:annotation>
+											<xs:documentation>These masks are derived from Level-1B processing and are provided for each band and tile (defective pixels mask, saturated pixels mask and no-data pixels mask). GML vector file</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Technical_QM">
+										<xs:annotation>
+											<xs:documentation>These L1C technical quality masks (MSI lost data, MSI degraded data, ancillary lost data, ancillary degraded data) are provided for each band and tile. GML vector file.</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="Detector_Footprint">
+										<xs:annotation>
+											<xs:documentation>Mask providing the ground footprint of each detector within a tile. GMLvector file.</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

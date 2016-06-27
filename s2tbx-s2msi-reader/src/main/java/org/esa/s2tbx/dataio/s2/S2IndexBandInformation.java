@@ -31,15 +31,22 @@ import java.util.List;
 public class S2IndexBandInformation extends S2BandInformation {
 
     private final List<S2IndexBandIndex> indexList;
+    private final String prefix;
 
     public S2IndexBandInformation(String physicalBand,
                                   S2SpatialResolution resolution,
                                   String imageFileTemplate,
                                   String description,
                                   String unit,
-                                  List<S2IndexBandIndex> indexList) {
-        super(physicalBand, resolution, imageFileTemplate, description, unit);
+                                  List<S2IndexBandIndex> indexList,
+                                  String prefix) {
+        super(physicalBand, resolution, imageFileTemplate, description, unit, 1.0);
         this.indexList = indexList;
+        this.prefix = prefix;
+    }
+
+    public String getPrefix() {
+        return prefix;
     }
 
     public ImageInfo getImageInfo() {
