@@ -67,6 +67,8 @@ public class S2Config {
     public static final short FILL_CODE_OUT_OF_Y_BOUNDS = DEBUG ? (short) 3 : 0;
     public static final short FILL_CODE_MOSAIC_BG = DEBUG ? (short) 4 : 0;
 
+    public static final double FILL_CODE_MOSAIC_ANGLES = Double.NaN;
+
     public static final short RAW_NO_DATA_THRESHOLD = DEBUG ? (short) 4 : (short) 0;
 
     public static final String MTD_EXT = ".xml";

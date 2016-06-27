@@ -185,6 +185,7 @@ public abstract class S2Metadata {
         private String horizontalCsName;
         private String horizontalCsCode;
         private Map<S2SpatialResolution, TileGeometry> tileGeometries;
+        private int anglesResolution;
         private AnglesGrid sunAnglesGrid;
         private AnglesGrid[] viewingIncidenceAnglesGrids;
         private MaskFilename[] maskFilenames;
@@ -238,6 +239,14 @@ public abstract class S2Metadata {
 
         public void setViewingIncidenceAnglesGrids(AnglesGrid[] viewingIncidenceAnglesGrids) {
             this.viewingIncidenceAnglesGrids = viewingIncidenceAnglesGrids;
+        }
+
+        public int getAnglesResolution() {
+            return anglesResolution;
+        }
+
+        public void setAnglesResolution(int anglesResolution) {
+            this.anglesResolution = anglesResolution;
         }
 
         public String getDetectorId() {

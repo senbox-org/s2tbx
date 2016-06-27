@@ -135,6 +135,13 @@ public class L1cMetadata extends S2Metadata {
                 }
 
                 tile.setTileGeometries(geoms);
+                try {
+                    tile.setAnglesResolution((int) aTile.getGeometric_Info().getTile_Angles().getSun_Angles_Grid().getAzimuth().getCOL_STEP().getValue());
+                } catch (Exception e) {
+                    logger.warning("Angles resolution cannot be obtained");
+                    tile.setAnglesResolution(5000);
+                }
+
                 tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(aTile));
                 tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(aTile));
 

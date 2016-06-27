@@ -130,6 +130,13 @@ public class L2aMetadata extends S2Metadata {
                 }
 
                 tile.setTileGeometries(geoms);
+                try {
+                    tile.setAnglesResolution((int) aTile.getGeometric_Info().getTile_Angles().getSun_Angles_Grid().getAzimuth().getCOL_STEP().getValue());
+                } catch (Exception e) {
+                    logger.warning("Angles resolution cannot be obtained");
+                    tile.setAnglesResolution(5000);
+                }
+
                 tile.setSunAnglesGrid(L2aMetadataProc.getSunGrid(aTile));
                 tile.setViewingIncidenceAnglesGrids(L2aMetadataProc.getAnglesGrid(aTile));
                 tile.setMaskFilenames(L2aMetadataProc.getMasks(aTile, aGranuleMetadataFile));
