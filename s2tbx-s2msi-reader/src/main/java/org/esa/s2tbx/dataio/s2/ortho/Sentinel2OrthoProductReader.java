@@ -419,11 +419,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 BufferedImage image2 = new BufferedImage(colorModel2, raster2, colorModel2.isAlphaPremultiplied(), null);
                 opImage = PlanarImage.wrapRenderedImage(image2);
 
-                /*
-                 * Translate the images
-                 */
-
-                // Apply tile translation
+                // Translate tile
                 float transX=(bandAnglesGrids2[0].originX-masterOriginX)/bandAnglesGrids2[0].getResX();
                 float transY=(bandAnglesGrids2[0].originY-masterOriginY)/bandAnglesGrids2[0].getResY();
 
@@ -466,7 +462,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             Band band;
             if(bandAnglesGrid[i].getBand() != null) {
-                band = new Band(bandAnglesGrid[i].getPrefix() + "_" + bandAnglesGrid[i].getBand().getFilenameBandId(), ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
+                band = new Band(bandAnglesGrid[i].getPrefix() + "_" + bandAnglesGrid[i].getBand().getPhysicalName(), ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
+            } else if (bandAnglesGrid[i].getPrefix().equals(VIEW_AZIMUTH_PREFIX) || bandAnglesGrid[i].getPrefix().equals(VIEW_ZENITH_PREFIX)){
+                band = new Band(bandAnglesGrid[i].getPrefix()+ "_mean", ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
             } else {
                 band = new Band(bandAnglesGrid[i].getPrefix(), ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
             }
@@ -496,10 +494,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                    resX,
                                                    resY,
                                                    0.0, 0.0));
-            } catch (FactoryException e) {
-                //throw new IOException(e);
-            } catch (TransformException e) {
-                //throw new IOException(e);
+            } catch (Exception e) {
+                continue;
             }
 
             band.setImageToModelTransform(product.findImageToModelTransform(band.getGeoCoding()));
