@@ -40,6 +40,7 @@ public class L3Metadata extends S2Metadata {
 
     private static final String PSD_STRING = null;
     public static final String MOSAIC_BAND_NAME = "quality_mosaic_info";
+    private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
 
     protected Logger logger = SystemUtils.LOG;
 
@@ -120,6 +121,13 @@ public class L3Metadata extends S2Metadata {
                 }
 
                 tile.setTileGeometries(geoms);
+                try {
+                    tile.setAnglesResolution((int) aTile.getGeometric_Info().getTile_Angles().getSun_Angles_Grid().getAzimuth().getCOL_STEP().getValue());
+                } catch (Exception e) {
+                    logger.warning("Angles resolution cannot be obtained");
+                    tile.setAnglesResolution(DEFAULT_ANGLES_RESOLUTION);
+                }
+
                 tile.setSunAnglesGrid(L3MetadataProc.getSunGrid(aTile));
                 tile.setViewingIncidenceAnglesGrids(L3MetadataProc.getAnglesGrid(aTile));
                 //tile.setMaskFilenames(L3MetadataProc.getMasks(aTile, aGranuleMetadataFile));
