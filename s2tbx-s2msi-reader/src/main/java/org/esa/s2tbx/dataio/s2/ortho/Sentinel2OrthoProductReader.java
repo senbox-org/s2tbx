@@ -159,7 +159,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         TimeProbe timeProbe = TimeProbe.start();
         // update the tile layout
         if (!updateTileLayout(metadataFile.toPath(), isAGranule)) {
-            throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataFile.getName()));
+            throw new IOException(String.format("Unable to get metadata from JP2 images associated to product [%s]", metadataFile.getName()));
         }
         SystemUtils.LOG.fine(String.format("[timeprobe] updateTileLayout : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
 
