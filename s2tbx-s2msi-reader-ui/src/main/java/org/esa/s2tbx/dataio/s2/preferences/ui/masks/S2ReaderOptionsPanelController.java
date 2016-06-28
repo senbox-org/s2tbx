@@ -1,33 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.esa.s2tbx.dataio.s2.preferences.ui;
+package org.esa.s2tbx.dataio.s2.preferences.ui.masks;
 
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
+/**
+ * Created by obarrile on 27/06/2016.
+ */
+
 @OptionsPanelController.SubRegistration(
         location = "S2TBX",
-        displayName = "#LBL_Sentinel2ToolboxCacheOption_DisplayName",
-        keywords = "#LBL_Sentinel2ToolboxCacheOption_Keywords",
-        keywordsCategory = "LBL_Sentinel2ToolboxCacheOption_Category_General"
+        displayName = "Sentinel-2 Reader Masks",
+        keywords = "S2TBX,masks",
+        keywordsCategory = "S2TBX"
 )
-@org.openide.util.NbBundle.Messages({
-        "LBL_Sentinel2ToolboxCacheOption_DisplayName=Sentinel-2 Cache",
-        "LBL_Sentinel2ToolboxCacheOption_Keywords=S2TBX",
-        "LBL_Sentinel2ToolboxCacheOption_Category_General=S2TBX"
-})
-public final class S2CacheOptionsPanelController extends OptionsPanelController {
 
-    private S2CacheOptionsPanel panel;
+public class S2ReaderOptionsPanelController extends OptionsPanelController {
+    private S2ReaderOptionsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
@@ -71,9 +64,9 @@ public final class S2CacheOptionsPanelController extends OptionsPanelController 
         pcs.removePropertyChangeListener(l);
     }
 
-    private S2CacheOptionsPanel getPanel() {
+    private S2ReaderOptionsPanel getPanel() {
         if (panel == null) {
-            panel = new S2CacheOptionsPanel(this);
+            panel = new S2ReaderOptionsPanel(this);
         }
         return panel;
     }
@@ -84,7 +77,5 @@ public final class S2CacheOptionsPanelController extends OptionsPanelController 
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-        getPanel().updateLayer();
     }
-
 }

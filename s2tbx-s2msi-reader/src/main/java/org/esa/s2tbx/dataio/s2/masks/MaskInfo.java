@@ -18,8 +18,10 @@
 package org.esa.s2tbx.dataio.s2.masks;
 
 import org.esa.s2tbx.dataio.s2.ColorIterator;
+import org.esa.snap.runtime.Config;
 
 import java.awt.*;
+import java.util.prefs.Preferences;
 
 /**
  * S2-MSI Masks model
@@ -37,7 +39,8 @@ public enum MaskInfo {
             true,
             new int[]{MaskInfo.L1C | MaskInfo.L2A},
             new Color[]{ColorIterator.next()},
-            new double[]{MaskInfo.DEFAULT_TRANSPARENCY}),
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY},
+            MaskCategory.DETECTOR_FOOTPRINT),
     MSK_NODATA(
             "MSK_NODATA",
             new String[]{"QT_NODATA_PIXELS", "QT_PARTIALLY_CORRECTED_PIXELS"},
@@ -47,7 +50,8 @@ public enum MaskInfo {
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
             new Color[]{ColorIterator.next(), ColorIterator.next()},
-            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY}),
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY},
+            MaskCategory.RADIOMETRIC_QUALITY),
     MSK_SATURA(
             "MSK_SATURA",
             new String[]{"QT_SATURATED_PIXELS_L1A", "QT_SATURATED_PIXELS_L1B"},
@@ -57,7 +61,8 @@ public enum MaskInfo {
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
             new Color[]{ColorIterator.next(), ColorIterator.next()},
-            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY}),
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY},
+            MaskCategory.RADIOMETRIC_QUALITY),
     MSK_DEFECT(
             "MSK_DEFECT",
             new String[]{"QT_DEFECTIVE_PIXELS"},
@@ -67,7 +72,8 @@ public enum MaskInfo {
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
             new Color[]{ColorIterator.next()},
-            new double[]{MaskInfo.DEFAULT_TRANSPARENCY}),
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY},
+            MaskCategory.RADIOMETRIC_QUALITY),
     MSK_TECQUA(
             "MSK_TECQUA",
             new String[]{"ANC_LOST", "ANC_DEG", "MSI_LOST", "MSI_DEG"},
@@ -77,7 +83,8 @@ public enum MaskInfo {
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
             new Color[]{Color.ORANGE, ColorIterator.next(), ColorIterator.next(), ColorIterator.next()},
-            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY}),
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY},
+            MaskCategory.TECHNICAL_QUALITY),
 
     MSK_CLOLOW(
             "MSK_CLOLOW",
@@ -88,7 +95,8 @@ public enum MaskInfo {
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B},
             new Color[]{ColorIterator.next()},
-            new double[]{MaskInfo.DEFAULT_TRANSPARENCY}),
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY},
+            MaskCategory.CLOUD),
     MSK_CLOUDS(
             "MSK_CLOUDS",
             new String[]{"OPAQUE", "CIRRUS"},
@@ -98,7 +106,8 @@ public enum MaskInfo {
             false,
             new int[]{MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1C | MaskInfo.L2A},
             new Color[]{ColorIterator.next(), ColorIterator.next()},
-            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY});
+            new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY},
+            MaskCategory.CLOUD);
 
 
     private final String mainType;
@@ -110,6 +119,7 @@ public enum MaskInfo {
     private final int [] levels;
     private final Color [] color;
     private final double [] transparency;
+    private final MaskCategory category;
 
     public static final int L1A = (1 << 0);
     public static final int L1B = (1 << 1);
@@ -119,7 +129,7 @@ public enum MaskInfo {
 
     private static final double DEFAULT_TRANSPARENCY = 0.5;
 
-    MaskInfo(String mainType, String [] subType, String mainDescription, String [] subDescription, String [] snapName, boolean perBand, int [] levels, Color [] color, double [] transparency) {
+    MaskInfo(String mainType, String [] subType, String mainDescription, String [] subDescription, String [] snapName, boolean perBand, int [] levels, Color [] color, double [] transparency, MaskCategory category) {
         this.mainType = mainType;
         this.subType = subType;
         this.mainDescription = mainDescription;
@@ -129,6 +139,7 @@ public enum MaskInfo {
         this.levels = levels;
         this.color = color;
         this.transparency = transparency;
+        this.category = category;
     }
 
     public String getMainType() {
@@ -215,4 +226,28 @@ public enum MaskInfo {
         return false;
     }
 
+    public boolean isValid() {
+        final Preferences preferences = Config.instance("s2tbx").load().preferences();
+        return preferences.getBoolean(category.getKey(), false);
+    }
+
+    public enum MaskCategory {
+
+        DETECTOR_FOOTPRINT ("s2tbx.dataio.detectorFootprintMasks"),
+        RADIOMETRIC_QUALITY ("s2tbx.dataio.radiometricQualityMasks"),
+        TECHNICAL_QUALITY ("s2tbx.dataio.technicalQualityMasks"),
+        CLOUD ("s2tbx.dataio.cloudMasks");
+
+        private final String key;
+
+        MaskCategory(String key) {
+            this.key = key;
+        }
+
+        public String getKey() {
+            return key;
+        }
+    }
+
 }
+
