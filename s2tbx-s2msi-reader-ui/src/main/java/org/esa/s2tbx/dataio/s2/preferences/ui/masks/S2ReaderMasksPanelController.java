@@ -19,8 +19,8 @@ import java.beans.PropertyChangeSupport;
         keywordsCategory = "S2TBX"
 )
 
-public class S2ReaderOptionsPanelController extends OptionsPanelController {
-    private S2ReaderOptionsPanel panel;
+public class S2ReaderMasksPanelController extends OptionsPanelController {
+    private S2ReaderMasksPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
@@ -64,9 +64,9 @@ public class S2ReaderOptionsPanelController extends OptionsPanelController {
         pcs.removePropertyChangeListener(l);
     }
 
-    private S2ReaderOptionsPanel getPanel() {
+    private S2ReaderMasksPanel getPanel() {
         if (panel == null) {
-            panel = new S2ReaderOptionsPanel(this);
+            panel = new S2ReaderMasksPanel(this);
         }
         return panel;
     }
