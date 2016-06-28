@@ -226,7 +226,7 @@ public enum MaskInfo {
         return false;
     }
 
-    public boolean isValid() {
+    public boolean isEnabled() {
         final Preferences preferences = Config.instance("s2tbx").load().preferences();
         return preferences.getBoolean(category.getKey(), false);
     }

@@ -640,7 +640,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         for (MaskInfo maskInfo : MaskInfo.values()) {
             if (!maskInfo.isPresentAtLevel(getMaskLevel()))
                 continue;
-            if (!maskInfo.isValid())
+            if (!maskInfo.isEnabled())
                 continue;
 
 
