@@ -210,6 +210,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         S2OrthoSceneLayout sceneDescription = S2OrthoSceneLayout.create(metadataHeader);
         logger.fine("Scene Description: " + sceneDescription);
 
+        // Check sceneDescription because a NullPointerException can be launched:
+        // An error can be reproduced with a L2A product with 2 tiles in zone UTM30 and 2 other tiles in zone UTM31.
+        // The process is stopped and the tiles in zone UTM 31 are empty
+        // The execution does not finish when updating tileLayout at the beginning of this method
+        // because the tile layout is obtained with the tile in zone UTM 30.
+        // But the sceneLayout is computed with the tiles that are in the zone UTM 31 if we select this PlugIn
+        if (sceneDescription.getTileIds().size() == 0) {
+            throw new IOException(String.format("No valid tiles associated to product [%s]", metadataFile.getName()));
+        }
+        if (sceneDescription.getSceneDimension(getProductResolution()) == null) {
+            throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
+        }
+
         File productDir = getProductDir(rootMetaDataFile);
         initCacheDir(productDir);
 
