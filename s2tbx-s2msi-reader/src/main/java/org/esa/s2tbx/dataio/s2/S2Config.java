@@ -32,12 +32,12 @@ import java.awt.image.DataBuffer;
 public class S2Config {
 
     public enum Sentinel2ProductLevel {
-        LEVEL_L1A,
-        LEVEL_L1B,
-        LEVEL_L1C,
-        LEVEL_L2A,
-        LEVEL_L3,
-        LEVEL_UNKNOWN
+        L1A,
+        L1B,
+        L1C,
+        L2A,
+        L3,
+        UNKNOWN
     }
 
     public enum Sentinel2InputType {
@@ -142,12 +142,12 @@ public class S2Config {
     }
 
     public static Sentinel2ProductLevel levelString2ProductLevel(String level){
-        if(level.equals("L1A")) { return Sentinel2ProductLevel.LEVEL_L1A;}
-        if(level.equals("L1B")) { return Sentinel2ProductLevel.LEVEL_L1B;}
-        if(level.equals("L1C")) { return Sentinel2ProductLevel.LEVEL_L1C;}
-        if(level.equals("L2A")) { return Sentinel2ProductLevel.LEVEL_L2A;}
-        if(level.equals("L03")) { return Sentinel2ProductLevel.LEVEL_L3;}
-        return Sentinel2ProductLevel.LEVEL_UNKNOWN;
+        if(level.equals("L1A")) { return Sentinel2ProductLevel.L1A;}
+        if(level.equals("L1B")) { return Sentinel2ProductLevel.L1B;}
+        if(level.equals("L1C")) { return Sentinel2ProductLevel.L1C;}
+        if(level.equals("L2A")) { return Sentinel2ProductLevel.L2A;}
+        if(level.equals("L03")) { return Sentinel2ProductLevel.L3;}
+        return Sentinel2ProductLevel.UNKNOWN;
     }
 
 }

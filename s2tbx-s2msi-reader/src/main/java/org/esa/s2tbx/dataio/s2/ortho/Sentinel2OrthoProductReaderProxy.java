@@ -64,11 +64,11 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
             crsCache.ensureIsCached(file.getAbsolutePath());
             S2Config.Sentinel2ProductLevel level = crsCache.getProductLevel(file.getAbsolutePath());
 
-            if (level == S2Config.Sentinel2ProductLevel.LEVEL_L2A) {
+            if (level == S2Config.Sentinel2ProductLevel.L2A) {
                 reader = new Sentinel2L2AProductReader(readerPlugIn, epsgCode);
-            } else if (level == S2Config.Sentinel2ProductLevel.LEVEL_L1C) {
+            } else if (level == S2Config.Sentinel2ProductLevel.L1C) {
                 reader = new Sentinel2L1CProductReader(readerPlugIn, epsgCode);
-            } else if (level == S2Config.Sentinel2ProductLevel.LEVEL_L3) {
+            } else if (level == S2Config.Sentinel2ProductLevel.L3) {
                 reader = new Sentinel2L3ProductReader(readerPlugIn, epsgCode);
             } else {
                 throw new IOException("Invalid input");
