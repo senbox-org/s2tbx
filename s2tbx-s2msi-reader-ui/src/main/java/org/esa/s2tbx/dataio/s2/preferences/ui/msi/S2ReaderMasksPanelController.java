@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.preferences.ui.masks;
+package org.esa.s2tbx.dataio.s2.preferences.ui.msi;
 
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;

@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.preferences.ui.masks;
+package org.esa.s2tbx.dataio.s2.preferences.ui.msi;
 
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.runtime.Config;
