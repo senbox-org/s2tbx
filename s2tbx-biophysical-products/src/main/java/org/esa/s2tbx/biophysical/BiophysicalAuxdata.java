@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
  */
 public class BiophysicalAuxdata {
 
-    public enum BiophysicalIndicatorCoeffs {
+    public enum BiophysicalVariableCoeffs {
 
         NORMALISATION("Normalisation"),
         DENORMALISATION("Denormalisation"),
@@ -30,7 +30,7 @@ public class BiophysicalAuxdata {
 
         private String id;
 
-        BiophysicalIndicatorCoeffs(String id) {
+        BiophysicalVariableCoeffs(String id) {
             this.id = id;
         }
 
@@ -39,70 +39,70 @@ public class BiophysicalAuxdata {
         }
     }
 
-    private final BiophysicalIndicator biophysicalIndicator;
-    private final HashMap<BiophysicalIndicatorCoeffs, double [][]> coeffsMap = new HashMap<>();
+    private final BiophysicalVariable biophysicalVariable;
+    private final HashMap<BiophysicalVariableCoeffs, double [][]> coeffsMap = new HashMap<>();
 
-    private BiophysicalAuxdata(BiophysicalIndicator biophysicalIndicator) throws IOException {
-        this.biophysicalIndicator = biophysicalIndicator;
-        readIndicatorData(this.biophysicalIndicator);
+    private BiophysicalAuxdata(BiophysicalVariable biophysicalVariable) throws IOException {
+        this.biophysicalVariable = biophysicalVariable;
+        readBiophysicalVariableData(this.biophysicalVariable);
     }
 
-    public static BiophysicalAuxdata makeBiophysicalAuxdata(BiophysicalIndicator biophysicalIndicator) throws IOException {
-        return new BiophysicalAuxdata(biophysicalIndicator);
+    public static BiophysicalAuxdata makeBiophysicalAuxdata(BiophysicalVariable biophysicalVariable) throws IOException {
+        return new BiophysicalAuxdata(biophysicalVariable);
     }
 
-    public double [][] getCoeffs(BiophysicalIndicatorCoeffs coeff) {
+    public double [][] getCoeffs(BiophysicalVariableCoeffs coeff) {
         return this.coeffsMap.get(coeff);
     }
 
-    void readIndicatorData(BiophysicalIndicator indicator) throws IOException {
-        Path indicatorDataDir = BiophysicalActivator.getAuxDataDir().resolve("2_1").resolve(indicator.name());
-        for (BiophysicalIndicatorCoeffs coeffs : BiophysicalIndicatorCoeffs.values()) {
-            Path indicatorDataFilename = indicatorDataDir.resolve(indicator.name() + "_" + coeffs.getId());
+    void readBiophysicalVariableData(BiophysicalVariable variable) throws IOException {
+        Path biophysicalVariableDataDir = BiophysicalActivator.getAuxDataDir().resolve("2_1").resolve(variable.name());
+        for (BiophysicalVariableCoeffs coeffs : BiophysicalVariableCoeffs.values()) {
+            Path biophysicalVariableDataFilename = biophysicalVariableDataDir.resolve(variable.name() + "_" + coeffs.getId());
             double [][]  csvTable = null;
             try {
-                csvTable = readCsvToTable(indicatorDataFilename);
+                csvTable = readCsvToTable(biophysicalVariableDataFilename);
             } catch (IOException e) {
                 // Some coefficients are not yet available (TestCases for Cw and FCover for example).
                 // They won't be available for further processing
-                SystemUtils.LOG.warning(String.format("Error when loading coefficients %s for indicator %s. They won't be available.", coeffs.toString(), indicator.toString()));
+                SystemUtils.LOG.warning(String.format("Error when loading coefficients %s for variable %s. They won't be available.", coeffs.toString(), variable.toString()));
             }
             this.coeffsMap.put(coeffs, csvTable);
         }
     }
 
-    static double[][] readCsvToTable(Path indicatorDataFilename) throws IOException {
-        int nbLines = getNumberOfLines(indicatorDataFilename);
-        int nbCols = getNumberOfColumns(indicatorDataFilename);
+    static double[][] readCsvToTable(Path biophysicalVariableDataFilename) throws IOException {
+        int nbLines = getNumberOfLines(biophysicalVariableDataFilename);
+        int nbCols = getNumberOfColumns(biophysicalVariableDataFilename);
         double[][] tableData = new double[nbLines][nbCols];
 
-        try (BufferedReader reader = Files.newBufferedReader(indicatorDataFilename)) {
+        try (BufferedReader reader = Files.newBufferedReader(biophysicalVariableDataFilename)) {
             readTable(tableData, reader);
         } catch (IOException e) {
-            SystemUtils.LOG.severe("Error when reading " + indicatorDataFilename);
+            SystemUtils.LOG.severe("Error when reading " + biophysicalVariableDataFilename);
             throw e;
         }
 
         return tableData;
     }
 
-    static int getNumberOfLines(Path indicatorDataFilename) throws IOException {
-        try (LineNumberReader lnr = new LineNumberReader(Files.newBufferedReader(indicatorDataFilename))) {
+    static int getNumberOfLines(Path biophysicalVariableDataFilename) throws IOException {
+        try (LineNumberReader lnr = new LineNumberReader(Files.newBufferedReader(biophysicalVariableDataFilename))) {
             lnr.skip(Long.MAX_VALUE);
             return lnr.getLineNumber();
         } catch (IOException e) {
-            SystemUtils.LOG.severe("Error when reading " + indicatorDataFilename);
+            SystemUtils.LOG.severe("Error when reading " + biophysicalVariableDataFilename);
             throw e;
         }
     }
 
-    static int getNumberOfColumns(Path indicatorDataFilename) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(indicatorDataFilename)) {
+    static int getNumberOfColumns(Path biophysicalVariableDataFilename) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(biophysicalVariableDataFilename)) {
             String line = reader.readLine();
             int countCommas = line.length() - line.replace(",", "").length();
             return countCommas + 1;
         } catch (IOException e) {
-            SystemUtils.LOG.severe("Error when reading " + indicatorDataFilename);
+            SystemUtils.LOG.severe("Error when reading " + biophysicalVariableDataFilename);
             throw e;
         }
     }

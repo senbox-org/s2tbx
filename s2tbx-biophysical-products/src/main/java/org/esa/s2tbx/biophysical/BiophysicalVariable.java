@@ -3,7 +3,7 @@ package org.esa.s2tbx.biophysical;
 /**
  * Created by jmalik on 20/06/16.
  */
-public enum BiophysicalIndicator {
+public enum BiophysicalVariable {
     LAI("LAI"),
     LAI_Cab("LAI_Cab"),
     LAI_Cw("LAI_Cw"),
@@ -12,7 +12,7 @@ public enum BiophysicalIndicator {
 
     private String description;
 
-    BiophysicalIndicator(String description) {
+    BiophysicalVariable(String description) {
         this.description = description;
     }
 

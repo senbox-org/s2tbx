@@ -15,8 +15,8 @@ import re
 import openpyxl
 
 AUXDATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'src/main/resources/auxdata/2_1')
-BIOPHYSICAL_INDICATORS = ['LAI', 'LAI_Cab', 'LAI_Cw', 'FAPAR', 'FCOVER']
-FILENAME_TEMPLATE = 'Algo_S2_V2.1_SL2T_{indicator}.xlsx'
+BIOPHYSICAL_VARIABLES = ['LAI', 'LAI_Cab', 'LAI_Cw', 'FAPAR', 'FCOVER']
+FILENAME_TEMPLATE = 'Algo_S2_V2.1_SL2T_{variable}.xlsx'
 CELL_RE = re.compile('([A-Z]+)([0-9]+)')
 
 def letter_range(start, stop):
@@ -71,39 +71,39 @@ def extract_table_to_csv(ws, filename, ul_cell, lr_cell):
         if os.path.exists(filename):
             os.remove(filename)
 
-def process_indicator(indicator):
-    target_dir = os.path.join(AUXDATA_DIR, indicator)
+def process_variable(variable):
+    target_dir = os.path.join(AUXDATA_DIR, variable)
     if not os.path.exists(target_dir):
         os.mkdir(target_dir)
     
-    source_file = os.path.join(AUXDATA_DIR, FILENAME_TEMPLATE.format(indicator=indicator))
+    source_file = os.path.join(AUXDATA_DIR, FILENAME_TEMPLATE.format(variable=variable))
     wb = openpyxl.load_workbook(filename = source_file)
     
     # Normalisation
     ws = wb[u'Normalisation']
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Normalisation' % indicator), 'B6', 'C16')
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Denormalisation' % indicator), 'B23', 'C23')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Normalisation' % variable), 'B6', 'C16')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Denormalisation' % variable), 'B23', 'C23')
 
     # Extreme cases
     ws = wb[u'Extreme Cases']
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_ExtremeCases' % indicator), 'B10', 'D10')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_ExtremeCases' % variable), 'B10', 'D10')
     
     # Weights
     ws = wb[u'Weights']
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Weights_Layer1_Neurons' % indicator), 'B6', 'L10')
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Weights_Layer1_Bias' % indicator), 'B11', 'F11')
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Weights_Layer2_Neurons' % indicator), 'B15', 'F15')
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Weights_Layer2_Bias' % indicator), 'B16', 'B16')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Weights_Layer1_Neurons' % variable), 'B6', 'L10')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Weights_Layer1_Bias' % variable), 'B11', 'F11')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Weights_Layer2_Neurons' % variable), 'B15', 'F15')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_Weights_Layer2_Bias' % variable), 'B16', 'B16')
     
     # Test Cases
     ws = wb[u'Test_Cases']
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_TestCases' % indicator), 'A2', 'L101')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_TestCases' % variable), 'A2', 'L101')
 
     # Definition Domain
     ws = wb[u'Definition_Domain']
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_DefinitionDomain_MinMax' % indicator), 'B4', 'I5')
-    extract_table_to_csv(ws, os.path.join(target_dir, '%s_DefinitionDomain_Grid' % indicator), 'A10', 'H11048')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_DefinitionDomain_MinMax' % variable), 'B4', 'I5')
+    extract_table_to_csv(ws, os.path.join(target_dir, '%s_DefinitionDomain_Grid' % variable), 'A10', 'H11048')
 
 if __name__ == '__main__':
-    for indicator in BIOPHYSICAL_INDICATORS:
-        process_indicator(indicator)
+    for variable in BIOPHYSICAL_VARIABLES:
+        process_variable(variable)

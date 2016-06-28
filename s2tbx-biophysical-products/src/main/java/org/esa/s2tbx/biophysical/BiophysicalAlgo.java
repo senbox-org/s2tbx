@@ -122,7 +122,7 @@ public class BiophysicalAlgo {
         /*
          * First, check independently for each band if it is within bounds
          */
-        double [][] bandMinMax = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.DEFINITION_DOMAIN_MINMAX);
+        double [][] bandMinMax = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.DEFINITION_DOMAIN_MINMAX);
 
         if (bandMinMax != null) {
             for (int i = 0; i < bandMinMax[0].length; i++) {
@@ -140,7 +140,7 @@ public class BiophysicalAlgo {
          */
 
         // Build projection in grid
-        double [][] definitionDomain = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.DEFINITION_DOMAIN_GRID);
+        double [][] definitionDomain = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.DEFINITION_DOMAIN_GRID);
 
         if (definitionDomain != null) {
             int [] gridProjection = new int[definitionDomain[0].length];
@@ -180,7 +180,7 @@ public class BiophysicalAlgo {
     }
 
     private void processOutputOutOfRange(Result result) {
-        double [][] extremeCases = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.EXTREME_CASES);
+        double [][] extremeCases = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.EXTREME_CASES);
 
         double rawOutput = result.getOutputValue();
 
@@ -208,12 +208,12 @@ public class BiophysicalAlgo {
     private void initNN() {
         JnnNet localNet = new JnnNet();
 
-        double [][] normalisation = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.NORMALISATION);
-        double [][] denormalisation = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.DENORMALISATION);
-        double [][] layer1_weights = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.WEIGHTS_LAYER1_NEURONS);
-        double [][] layer1_bias = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.WEIGHTS_LAYER1_BIAS);
-        double [][] layer2_weights = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.WEIGHTS_LAYER2_NEURONS);
-        double [][] layer2_bias = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.WEIGHTS_LAYER2_BIAS);
+        double [][] normalisation = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.NORMALISATION);
+        double [][] denormalisation = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.DENORMALISATION);
+        double [][] layer1_weights = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.WEIGHTS_LAYER1_NEURONS);
+        double [][] layer1_bias = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.WEIGHTS_LAYER1_BIAS);
+        double [][] layer2_weights = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.WEIGHTS_LAYER2_NEURONS);
+        double [][] layer2_bias = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.WEIGHTS_LAYER2_BIAS);
 
         localNet.setNumLayers(3);
         localNet.setInputLayerIndex(0);
@@ -263,7 +263,7 @@ public class BiophysicalAlgo {
             hiddenLayer.setUnitAt(i, hiddenUnit);
         }
 
-        // Create output layer (indicator : 1 unit)
+        // Create output layer (1 unit)
         JnnLayer outputLayer = new JnnLayer();
         outputLayer.setNumUnits(layer2_weights.length);
         outputLayer.setInputFunction(JnnConstants.NN_FUNC_SUM_1);

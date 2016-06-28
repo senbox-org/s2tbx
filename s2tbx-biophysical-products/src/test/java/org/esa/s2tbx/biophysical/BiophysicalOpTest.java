@@ -59,7 +59,7 @@ public class BiophysicalOpTest {
 
     @Test
     public void testOpLAI() throws Exception {
-        Product sourceProduct = createTestProduct(BiophysicalIndicator.LAI);
+        Product sourceProduct = createTestProduct(BiophysicalVariable.LAI);
 
         Map<String, Object> parameters = new HashMap<String, Object>() {{
             put("computeLAI", true);
@@ -71,14 +71,14 @@ public class BiophysicalOpTest {
 
         Product targetProduct = GPF.createProduct("BiophysicalOp", parameters, sourceProduct);
         assertNotNull(targetProduct);
-        Band indicatorBand = targetProduct.getBand("lai");
-        assertNotNull(indicatorBand);
+        Band biophysicalVariableBand = targetProduct.getBand("lai");
+        assertNotNull(biophysicalVariableBand);
 
         Band flagBand = targetProduct.getBand("lai_flags");
         assertNotNull(flagBand);
 
         float[] actualOutput = new float[width*height];
-        indicatorBand.readPixels(0, 0, width, height, actualOutput, ProgressMonitor.NULL);
+        biophysicalVariableBand.readPixels(0, 0, width, height, actualOutput, ProgressMonitor.NULL);
 
         int[] actualFlag = new int[width*height];
         flagBand.readPixels(0, 0, width, height, actualFlag, ProgressMonitor.NULL);
@@ -98,9 +98,9 @@ public class BiophysicalOpTest {
         }
     }
 
-    public Product createTestProduct(BiophysicalIndicator indicator) throws IOException {
-        BiophysicalAuxdata auxdata = BiophysicalAuxdata.makeBiophysicalAuxdata(indicator);
-        double [][] testCases = auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.TEST_CASES);
+    public Product createTestProduct(BiophysicalVariable biophysicalVariable) throws IOException {
+        BiophysicalAuxdata auxdata = BiophysicalAuxdata.makeBiophysicalAuxdata(biophysicalVariable);
+        double [][] testCases = auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.TEST_CASES);
 
         width = testCases.length;
         height = 1;

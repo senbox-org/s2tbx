@@ -37,9 +37,9 @@ public class BiophysicalAuxdataTest {
 
     @Test
     public void readAuxdata() throws Exception {
-        BiophysicalAuxdata laiData = BiophysicalAuxdata.makeBiophysicalAuxdata(BiophysicalIndicator.LAI);
+        BiophysicalAuxdata laiData = BiophysicalAuxdata.makeBiophysicalAuxdata(BiophysicalVariable.LAI);
 
-        double [][] normalisation = laiData.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.NORMALISATION);
+        double [][] normalisation = laiData.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.NORMALISATION);
         assertNotNull(normalisation);
         assertEquals(11, normalisation.length);
         assertEquals(2, normalisation[0].length);

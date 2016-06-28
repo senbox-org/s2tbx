@@ -29,7 +29,6 @@ import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
-import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.gpf.pointop.PixelOperator;
 import org.esa.snap.core.gpf.pointop.ProductConfigurer;
 import org.esa.snap.core.gpf.pointop.Sample;
@@ -55,7 +54,7 @@ import java.util.Map;
         copyright = "CS SI (foss-contact@c-s.fr)")
 public class BiophysicalOp extends PixelOperator {
 
-    private Map<BiophysicalIndicator, BiophysicalAlgo> algos = new HashMap<>();
+    private Map<BiophysicalVariable, BiophysicalAlgo> algos = new HashMap<>();
 
     @SourceProduct(alias = "source", description = "The source product.")
     private Product sourceProduct;
@@ -108,9 +107,9 @@ public class BiophysicalOp extends PixelOperator {
 
     private void loadAuxData() throws OperatorException {
         try {
-            for (BiophysicalIndicator indicator : BiophysicalIndicator.values()) {
-                if (isComputed(indicator)) {
-                    algos.put(indicator, new BiophysicalAlgo(BiophysicalAuxdata.makeBiophysicalAuxdata(indicator)));
+            for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
+                if (isComputed(biophysicalVariable)) {
+                    algos.put(biophysicalVariable, new BiophysicalAlgo(BiophysicalAuxdata.makeBiophysicalAuxdata(biophysicalVariable)));
                 }
             }
         } catch(IOException e) {
@@ -131,11 +130,11 @@ public class BiophysicalOp extends PixelOperator {
     protected void configureTargetSamples(TargetSampleConfigurer sampleConfigurer) throws OperatorException {
 
         int sampleIndex = 0;
-        for (BiophysicalIndicator indicator : BiophysicalIndicator.values()) {
-            if (isComputed(indicator)) {
-                sampleConfigurer.defineSample(sampleIndex, indicator.getSampleName());
+        for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
+            if (isComputed(biophysicalVariable)) {
+                sampleConfigurer.defineSample(sampleIndex, biophysicalVariable.getSampleName());
                 sampleIndex++;
-                sampleConfigurer.defineSample(sampleIndex, indicator.getSampleName() + "_flags");
+                sampleConfigurer.defineSample(sampleIndex, biophysicalVariable.getSampleName() + "_flags");
                 sampleIndex++;
             }
         }
@@ -176,11 +175,11 @@ public class BiophysicalOp extends PixelOperator {
         Product tp = productConfigurer.getTargetProduct();
         // todo setDescription
 
-        for (BiophysicalIndicator indicator : BiophysicalIndicator.values()) {
-            if (isComputed(indicator)) {
+        for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
+            if (isComputed(biophysicalVariable)) {
                 // Add biophysical variable band
-                final Band biophysicalVariableBand = tp.addBand(indicator.getBandName(), ProductData.TYPE_FLOAT32);
-                biophysicalVariableBand.setDescription(indicator.getDescription());
+                final Band biophysicalVariableBand = tp.addBand(biophysicalVariable.getBandName(), ProductData.TYPE_FLOAT32);
+                biophysicalVariableBand.setDescription(biophysicalVariable.getDescription());
                 // todo setUnit
                 // todo better setDescription
                 // todo setValidPixelExpression
@@ -189,7 +188,7 @@ public class BiophysicalOp extends PixelOperator {
 
 
                 // Add corresponding flag band
-                String flagBandName = String.format("%s_flags", indicator.getBandName());
+                String flagBandName = String.format("%s_flags", biophysicalVariable.getBandName());
                 final Band biophysicalVariableFlagBand = tp.addBand(flagBandName, ProductData.TYPE_UINT8);
                 final FlagCoding biophysicalVariableFlagCoding = new FlagCoding(flagBandName);
                 for (BiophysicalFlag flagDef : BiophysicalFlag.values()) {
@@ -200,7 +199,7 @@ public class BiophysicalOp extends PixelOperator {
 
                 // Add a mask for each flag
                 for (BiophysicalFlag flagDef : BiophysicalFlag.values()) {
-                    String maskName = String.format("%s_%s", indicator.getBandName(), flagDef.getName().toLowerCase());
+                    String maskName = String.format("%s_%s", biophysicalVariable.getBandName(), flagDef.getName().toLowerCase());
                     tp.addMask(maskName,
                                String.format("%s.%s", flagBandName, flagDef.getName()),
                                flagDef.getDescription(),
@@ -250,9 +249,9 @@ public class BiophysicalOp extends PixelOperator {
         input[10] = Math.cos(MathUtils.DTOR * sourceSamples[L2BInput.SUN_AZIMUTH.getIndex()].getDouble() - sourceSamples[L2BInput.VIEW_AZIMUTH.getIndex()].getDouble());
 
         int targetIndex = 0;
-        for (BiophysicalIndicator indicator : BiophysicalIndicator.values()) {
-            if (isComputed(indicator)) {
-                BiophysicalAlgo algo = algos.get(indicator);
+        for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
+            if (isComputed(biophysicalVariable)) {
+                BiophysicalAlgo algo = algos.get(biophysicalVariable);
                 BiophysicalAlgo.Result result = algo.process(input);
                 targetSamples[targetIndex].set(result.getOutputValue());
                 targetIndex++;
@@ -267,8 +266,8 @@ public class BiophysicalOp extends PixelOperator {
         }
     }
 
-    private boolean isComputed(BiophysicalIndicator indicator) {
-        switch (indicator) {
+    private boolean isComputed(BiophysicalVariable biophysicalVariable) {
+        switch (biophysicalVariable) {
             case LAI:
                 return computeLAI;
             case LAI_Cab:
@@ -281,7 +280,7 @@ public class BiophysicalOp extends PixelOperator {
                 return computeFcover;
             default:
                 // this is a programming error
-                throw new AssertionError(String.format("Wrong indicator value %s", indicator));
+                throw new AssertionError(String.format("Wrong biophysical variable value %s", biophysicalVariable));
         }
     }
 

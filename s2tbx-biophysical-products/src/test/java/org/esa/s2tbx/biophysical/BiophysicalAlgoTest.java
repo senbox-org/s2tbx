@@ -38,36 +38,36 @@ public class BiophysicalAlgoTest {
 
     @Test
     public void testLAI() throws IOException {
-        testIndicator(BiophysicalIndicator.LAI);
+        testVariable(BiophysicalVariable.LAI);
     }
 
     @Test
     public void testCW() throws IOException {
         // No test case for Cw
-        //testIndicator(BiophysicalIndicator.LAI_Cw);
+        //testVariable(BiophysicalVariable.LAI_Cw);
     }
 
     @Test
     public void testCAB() throws IOException {
-        testIndicator(BiophysicalIndicator.LAI_Cab);
+        testVariable(BiophysicalVariable.LAI_Cab);
     }
 
     @Test
     public void testFAPAR() throws IOException {
-        testIndicator(BiophysicalIndicator.FAPAR);
+        testVariable(BiophysicalVariable.FAPAR);
     }
 
     @Test
     public void testFCOVER() throws IOException {
         // No test case for FCOVER
-        //testIndicator(BiophysicalIndicator.FCOVER);
+        //testVariable(BiophysicalVariable.FCOVER);
     }
 
-    private void testIndicator(BiophysicalIndicator indicator) throws IOException {
-        BiophysicalAuxdata indicatorData = BiophysicalAuxdata.makeBiophysicalAuxdata(indicator);
-        BiophysicalAlgo indicatorAlgo = new BiophysicalAlgo(indicatorData);
+    private void testVariable(BiophysicalVariable biophysicalVariable) throws IOException {
+        BiophysicalAuxdata biophysicalVariableData = BiophysicalAuxdata.makeBiophysicalAuxdata(biophysicalVariable);
+        BiophysicalAlgo biophysicalAlgo = new BiophysicalAlgo(biophysicalVariableData);
 
-        double [][] testData = indicatorData.getCoeffs(BiophysicalAuxdata.BiophysicalIndicatorCoeffs.TEST_CASES);
+        double [][] testData = biophysicalVariableData.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.TEST_CASES);
         for (int testCase = 0; testCase < testData.length; ++testCase) {
             double[] testCaseData = testData[testCase];
 
@@ -76,7 +76,7 @@ public class BiophysicalAlgoTest {
                 input[i] = testCaseData[i];
             }
 
-            BiophysicalAlgo.Result result = indicatorAlgo.process(input);
+            BiophysicalAlgo.Result result = biophysicalAlgo.process(input);
 
             double computedIndicator = result.getOutputValue();
             double expectedIndicator = testCaseData[testCaseData.length -1];
