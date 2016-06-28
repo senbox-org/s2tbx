@@ -81,4 +81,11 @@ public enum S2BandConstants {
     public double getWavelengthCentral() {
         return wavelengthCentral;
     }
+
+    public static S2BandConstants getBand(int bandIndex) {
+        for (S2BandConstants band : S2BandConstants.values()) {
+            if (band.getBandIndex() == bandIndex) return band;
+        }
+        return null;
+    }
 }

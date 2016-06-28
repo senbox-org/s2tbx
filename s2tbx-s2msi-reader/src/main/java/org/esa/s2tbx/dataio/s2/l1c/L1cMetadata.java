@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 public class L1cMetadata extends S2Metadata {
 
     private static final String PSD_STRING = "13";
+    private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
 
     protected Logger logger = SystemUtils.LOG;
 
@@ -135,6 +136,13 @@ public class L1cMetadata extends S2Metadata {
                 }
 
                 tile.setTileGeometries(geoms);
+                try {
+                    tile.setAnglesResolution((int) aTile.getGeometric_Info().getTile_Angles().getSun_Angles_Grid().getAzimuth().getCOL_STEP().getValue());
+                } catch (Exception e) {
+                    logger.warning("Angles resolution cannot be obtained");
+                    tile.setAnglesResolution(DEFAULT_ANGLES_RESOLUTION);
+                }
+
                 tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(aTile));
                 tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(aTile));
 
