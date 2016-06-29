@@ -1,0 +1,103 @@
+<!--
+  ~ Copyright (C) 2010 Brockmann Consult GmbH (info@brockmann-consult.de)
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>Biophysical Processor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">Biophysical Processor Description</td>
+        <td class="header" align="right"><img src="images/snap_header.jpg" border=0></td>
+    </tr>
+</table>
+
+
+
+<h3>Processor Description</h3>
+
+<h4>I/O Parameters Tab</h4>
+
+<h5>Source Product Group</h5>
+
+<p class="i1">
+    <b>Name: </b>
+    Used to select the spectral source product. The source product shall
+    be a Sentinel-2 L2A product. Use the <b>...</b> button to
+    open a data product currently not opened in the Sentinel Toolbox.
+    The algorithm is calibrated for top-of-canopy reflectances and depends
+    on the acquisition geometry, so it requires slope-effect corrected reflectances
+    to give optimal results
+</p>
+
+<h5>Target Product Group</h5>
+
+<p class="i1">
+    <b>Name:</b>
+    Used to specify the name of the target product.
+</p>
+
+<p class="i1">
+    <b>Save to:</b>
+    Used to specify whether the target product should be saved to the file system. The
+    combo box presents a list of file formats.
+</p>
+
+<p class="i1">
+    <b>Open in SNAP:</b>
+    Used to specify whether the target product should be opened in the Sentinel Toolbox.
+    When the target product is not saved, it is opened in the Sentinel Toolbox automatically.
+</p>
+
+<h4>Processing Parameters Tab</h4>
+
+<ol>
+    <p class="i1">
+        <b>Compute LAI: </b><br>
+        Enable/Disable the computation of LAI (Leaf Area Index) in the output product
+    </p>
+
+    <p class="i1">
+        <b>Compute Cab: </b><br>
+        Enable/Disable the computation of Cab (Chlorophyll content in the leaf) in the output product
+    </p>
+
+    <p class="i1">
+        <b>Compute CWC: </b><br>
+        Enable/Disable the computation of CWC (Canopy Water Content) in the output product
+    </p>
+
+    <p class="i1">
+        <b>Compute FAPAR: </b><br>
+        Enable/Disable the computation of FAPAR (Fraction of Absorbed Photosynthetically Active Radiation) in the output product
+    </p>
+
+    <p class="i1">
+        <b>Compute FVC: </b><br>
+        Enable/Disable the computation of FVC (Fraction of Vegetation Cover) in the output product
+    </p>
+</ol>
+
+<hr>
+
+<br>
+<hr>
+</body>
+</html>

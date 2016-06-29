@@ -1,0 +1,65 @@
+<!--
+  ~ Copyright (C) 2010 Brockmann Consult GmbH (info@brockmann-consult.de)
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>Biophysical Processor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">Biophysical Processor Algorithm Specifications</td>
+        <td class="header" align="right"><img src="images/snap_header.jpg" border=0></td>
+    </tr>
+</table>
+
+<p>
+    The proposed algorithm is based on methods that have already been proven to be efficient.
+</p>
+<p>
+    They have been implemented to generate biophysical products from VEGETATION, MERIS, SPOT, and LANDSAT sensors.
+    It mainly consists in generating a comprehensive database of vegetation characteristics
+    and the associated SENTINEL2 top of canopy (TOC) reflectances.
+    Neural networks are then trained to estimate the canopy characteristics from the
+    TOC reflectances along with set corresponding angles defining the observational configuration.
+</p>
+<p>
+    For each biophysical variable, one particular neural network is calibrated.
+    Each neural network is composed of :
+    <ul>
+        <li>
+            one input layer, made of 11 normalized input data :
+            B3, B4, B5, B6, B7, B8a, B11, B12,
+            cos(viewing_zenith), cos(sun_zenith), cos(relative_azimuth_angle)
+        </li>
+        <li>
+            one hidden layer with 5 neurons with tangent sigmoid transfer functions
+        </li>
+        <li>
+            one output layer with a linear transfer function
+        </li>
+    </ul>
+</p>
+<p>
+    The actual algorithm running in SNAP runs the prediction step of the neural network, from the set
+    of precomputed coefficients computed during the training phase.
+</p>
+<hr>
+</body>
+</html>
