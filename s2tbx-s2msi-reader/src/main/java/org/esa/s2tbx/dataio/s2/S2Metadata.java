@@ -518,6 +518,15 @@ public abstract class S2Metadata {
             this.bandInformations = bandInformations;
         }
 
+        public void addBandInformation(S2BandInformation bandInformation) {
+            ArrayList<S2BandInformation> newBandInformations = new ArrayList<>();
+            for(int i = 0; i<this.getBandInformations().length ; i++) {
+                newBandInformations.add(this.getBandInformations()[i]);
+            }
+            newBandInformations.add(bandInformation);
+            this.setBandInformations((S2BandInformation[]) newBandInformations.toArray());
+        }
+
         public String getMetaDataLevel() {
             return metaDataLevel;
         }

@@ -18,9 +18,23 @@
 package org.esa.s2tbx.dataio.s2;
 
 
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoSceneLayout;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Nicolas Ducoin
  */
 public class S2MetadataProc {
-
+    public static S2IndexBandInformation makeTileInformation(S2SpatialResolution resolution, S2OrthoSceneLayout sceneDescription) {
+        List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
+        int index = 1;
+        for(String tileId : sceneDescription.getTileIds()) {
+            indexList.add(S2IndexBandInformation.makeIndex(index, new Color(255, 255, 255), tileId, tileId));
+            index++;
+        }
+        return new S2IndexBandInformation("Tile_Index", resolution, "", "Tile Index", "", indexList, "tile_");
+    }
 }

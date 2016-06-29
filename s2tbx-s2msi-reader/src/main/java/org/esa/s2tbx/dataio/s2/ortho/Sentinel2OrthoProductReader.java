@@ -114,6 +114,7 @@ import java.util.stream.Collectors;
 
 import static java.awt.image.DataBuffer.*;
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
+import static org.esa.s2tbx.dataio.s2.S2MetadataProc.makeTileInformation;
 import static org.esa.snap.utils.DateHelper.parseDate;
 
 
@@ -344,6 +345,22 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             SystemUtils.LOG.fine(String.format("[timeprobe] addIndexMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
         }
+
+        //add TileIndex
+        ArrayList<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
+        for(S2SpatialResolution res: sceneDescription.sceneDimensions.keySet()) {
+            listTileIndexBandInformation.add(makeTileInformation(res, sceneDescription));
+        }
+
+        if (!listTileIndexBandInformation.isEmpty()) {
+            for (S2IndexBandInformation bandInformation : listTileIndexBandInformation) {
+                addTileIndex(product,
+                             bandInformation,sceneDescription);
+            }
+            SystemUtils.LOG.fine(String.format("[timeprobe] addTileIndex : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            timeProbe.reset();
+        }
+
 
         if (!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
 
@@ -767,6 +784,46 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
+    private void addTileIndex(Product product, S2IndexBandInformation s2BandInfo, S2OrthoSceneLayout sceneDescription) throws IOException {
+
+        BandInfo bandInfo = new BandInfo(null, s2BandInfo, null);
+        Dimension dimension = sceneDescription.getSceneDimension(s2BandInfo.getResolution());
+        Band band = addBand(product, bandInfo, dimension);
+        band.setDescription(s2BandInfo.getDescription());
+        band.setUnit(s2BandInfo.getUnit());
+
+        double pixelSize = 0;
+        if (isMultiResolution()) {
+            pixelSize = (double) s2BandInfo.getResolution().resolution;
+        } else {
+            pixelSize = (double) getProductResolution().resolution;
+        }
+
+        try {
+            band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
+                                               band.getRasterWidth(),
+                                               band.getRasterHeight(),
+                                               sceneDescription.getSceneOrigin()[0],
+                                               sceneDescription.getSceneOrigin()[1],
+                                               pixelSize,
+                                               pixelSize,
+                                               0.0, 0.0));
+        } catch (FactoryException e) {
+            throw new IOException(e);
+        } catch (TransformException e) {
+            throw new IOException(e);
+        }
+
+        MultiLevelImageFactory mlif = new TileIndexMultiLevelImageFactory(
+                sceneDescription,
+                Product.findImageToModelTransform(band.getGeoCoding()));
+
+        band.setSourceImage(mlif.createSourceImage(bandInfo));
+    }
+
+
+
+
     private boolean isValidAngle(float value) {
         return !Float.isNaN(value) && !Float.isInfinite(value);
     }
@@ -949,7 +1006,25 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
+    private class TileIndexMultiLevelImageFactory extends MultiLevelImageFactory {
 
+        private final S2OrthoSceneLayout sceneDescription;
+
+        public TileIndexMultiLevelImageFactory(S2OrthoSceneLayout sceneDescription, AffineTransform imageToModelTransform) {
+            super(imageToModelTransform);
+
+            SystemUtils.LOG.fine("Model factory: " + ToStringBuilder.reflectionToString(imageToModelTransform));
+
+            this.sceneDescription = sceneDescription;
+        }
+
+        @Override
+        public MultiLevelImage createSourceImage(BandInfo bandInfo) {
+            TileIndexMultiLevelSource tileIndex = new TileIndexMultiLevelSource(sceneDescription, (S2IndexBandInformation) bandInfo.getBandInformation(), imageToModelTransform);
+            SystemUtils.LOG.fine("TileIndex: " + tileIndex);
+            return new DefaultMultiLevelImage(tileIndex);
+        }
+    }
     /**
      * A MultiLevelSource for a scene made of multiple L1C tiles.
      */
@@ -1068,6 +1143,86 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
              */
             // Get dimension at level 0
             S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
+            Dimension bandDimensionLevel0 = sceneDescription.getSceneDimension(bandNativeResolution);
+            // Compute dimension at level 'level' according to "J2K rule"
+            Rectangle bandRectangle = DefaultMultiLevelSource.getLevelImageBounds(
+                    new Rectangle(bandDimensionLevel0.width, bandDimensionLevel0.height),
+                    getModel().getScale(level));
+            // Crop accordingly
+            RenderedOp croppedMosaic = CropDescriptor.create(mosaicOp,
+                                                             0.0f, 0.0f, (float) bandRectangle.width, (float) bandRectangle.height,
+                                                             new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+
+            return croppedMosaic;
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        }
+    }
+
+
+    private final class TileIndexMultiLevelSource extends AbstractL1cSceneMultiLevelSource {
+        private final S2IndexBandInformation bandInfo;
+
+        public TileIndexMultiLevelSource(S2OrthoSceneLayout sceneDescription, S2IndexBandInformation bandInfo, AffineTransform imageToModelTransform) {
+            super(sceneDescription, bandInfo.getResolution(), imageToModelTransform, 5);
+            this.bandInfo = bandInfo;
+        }
+
+        protected RenderedImage createImage(int level) {
+            ArrayList<RenderedImage> tileImages = new ArrayList<>();
+
+            S2IndexBandInformation indexBandInformation = (S2IndexBandInformation) bandInfo;
+
+            IndexCoding indexCoding = indexBandInformation.getIndexCoding();
+
+            List<Color> colors = indexBandInformation.getColors();
+            Iterator<Color> colorIterator = colors.iterator();
+
+            for (String indexName : indexCoding.getIndexNames()) {
+                int indexValue = indexCoding.getIndexValue(indexName);
+                String description = indexCoding.getIndex(indexName).getDescription();
+                Color color = colorIterator.next();
+            }
+
+            for (String tileId : sceneDescription.getTileIds()) {
+                // Get the band native resolution
+                S2SpatialResolution bandNativeResolution = bandInfo.getResolution();
+                // Get the position of the tile in full scene at level 0
+                Rectangle tileRectangleL0 = sceneDescription.getTilePositionInScene(tileId, bandNativeResolution);
+                // Get the position of the L1C tile in full scene at current requested level
+                //Rectangle l1cTileRectangle = DefaultMultiLevelSource.getLevelImageBounds(l1cTileRectangleL0, getModel().getScale(level));
+                int indexValue = indexCoding.getIndexValue(tileId);
+                PlanarImage opImage;
+                opImage = ConstantDescriptor.create((float) tileRectangleL0.width, (float) tileRectangleL0.height, new Number[]{indexValue}, null);
+                tileImages.add(opImage);
+            }
+
+            if (tileImages.isEmpty()) {
+                logger.warning("No tile images for mosaic");
+                return null;
+            }
+
+            ImageLayout imageLayout = new ImageLayout();
+            imageLayout.setMinX(0);
+            imageLayout.setMinY(0);
+            imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
+            imageLayout.setTileGridXOffset(0);
+            imageLayout.setTileGridYOffset(0);
+
+            RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
+                                                          MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
+                                                          null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
+                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+
+            /*
+             * Adjust size of output image
+             */
+            // Get dimension at level 0
+            S2SpatialResolution bandNativeResolution = bandInfo.getResolution();
             Dimension bandDimensionLevel0 = sceneDescription.getSceneDimension(bandNativeResolution);
             // Compute dimension at level 'level' according to "J2K rule"
             Rectangle bandRectangle = DefaultMultiLevelSource.getLevelImageBounds(
