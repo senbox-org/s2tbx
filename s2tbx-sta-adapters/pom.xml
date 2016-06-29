@@ -18,6 +18,7 @@
     <modules>
         <module>orfeotoolbox</module>
         <module>sen2cor</module>
+        <module>sen2three</module>
     </modules>
 
     <dependencies>

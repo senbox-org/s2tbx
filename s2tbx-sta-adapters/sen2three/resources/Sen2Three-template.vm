@@ -4,4 +4,4 @@ $resolution
 #if($clean)
 --clean
 #end
-$sourceProductFolder
+$sourceFolder

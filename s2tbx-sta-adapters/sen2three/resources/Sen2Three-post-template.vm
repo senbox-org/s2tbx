@@ -1,26 +1,27 @@
-#if($sourceProductFolder.FileLocation.Directory)
-    #set($fileList = $sourceProductFolder.FileLocation.listFiles())
+#if($sourceFolder.Directory)
+    #set($fileList = $sourceFolder.listFiles())
     #foreach($file in $fileList)
         #if($file.Name.contains("L03"))
-            #set($targetName=$file.AbsolutePath)
+            #set($targetFolder=$file)
+			#if($targetFolder.Directory)
+				#set($fileList2 = $targetFolder.listFiles())
+				#foreach($file2 in $fileList2)
+					#if($file2.Name.contains("L03"))
+						#set($targetName=$file2.AbsolutePath)
+					#end
+				#end
+			#end
         #end
     #end
-#else
-    #set($fileList = $sourceProductFolder.Parent.FileLocation.listFiles())
-    #foreach($file in $fileList)
-        #if($file.Name.contains("L03"))
-            #set($targetName=$file.AbsolutePath)
-        #end
-    #end
-#end
-#set($fileClass=$sourceProductFolder.Class.forName("java.io.File"))
-#set($stringClass = $sourceProductFolder.Class.forName("java.lang.String"))
-#set($paramList = [$targetName])
-#set($paramArray = $paramList.toArray())
-#set($ctors = $fileClass.Constructors)
+	#set($fileClass=$sourceProductFile.Class.forName("java.io.File"))
+	#set($stringClass = $sourceProductFile.Class.forName("java.lang.String"))
+	#set($paramList = [$targetName])
+	#set($paramArray = $paramList.toArray())
+	#set($ctors = $fileClass.Constructors)
 
-#foreach ($ctor in $ctors)
-    #if ($ctor.toString() == "public java.io.File(java.lang.String)")
-        #set($targetProductFile = $ctor.newInstance($paramArray))
-    #end
+	#foreach ($ctor in $ctors)
+		#if ($ctor.toString() == "public java.io.File(java.lang.String)")
+			#set($targetProductFile = $ctor.newInstance($paramArray))
+		#end
+	#end
 #end

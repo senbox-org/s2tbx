@@ -4,7 +4,7 @@
     <folder name="Actions">
         <folder name="Tools">
             <file name="org-esa-snap-ui-tooladapter-actions-ExecuteToolAdapterAction.instance"/>
-            <attr name="displayName" stringvalue="SEN2COR"/>
+            <attr name="displayName" stringvalue="SEN2THREE"/>
             <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
         </folder>
     </folder>
