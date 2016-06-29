@@ -333,15 +333,12 @@ public class Sentinel2ClassificationOp extends Operator {
             copyReflectances();
         }
 
-        Band b = ProductUtils.copyBand("sun_zenith", sourceProduct, targetProduct, true);
-        b.setUnit("dl");
-        b = ProductUtils.copyBand("view_zenith", sourceProduct, targetProduct, true);
-        b.setUnit("dl");
-        b = ProductUtils.copyBand("sun_azimuth", sourceProduct, targetProduct, true);
-        b.setUnit("dl");
-        b = ProductUtils.copyBand("view_azimuth", sourceProduct, targetProduct, true);
-        b.setUnit("dl");
-        b = ProductUtils.copyBand("elevation", elevationProduct, targetProduct, true);
+        for (String s2MsiAnnotationBandName : IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES) {
+            Band b = ProductUtils.copyBand(s2MsiAnnotationBandName, sourceProduct, targetProduct, true);
+            b.setUnit("dl");
+        }
+
+        Band b = ProductUtils.copyBand("elevation", elevationProduct, targetProduct, true);
         b.setUnit("m");
 
         if (copyNNValue) {
@@ -368,7 +365,7 @@ public class Sentinel2ClassificationOp extends Operator {
         Sentinel2Algorithm s2MsiAlgorithm = new Sentinel2Algorithm();
 
         for (int i = 0; i < IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
-            s2MsiReflectances[i] = s2MsiReflectanceTiles[i].getSampleFloat(x, y) / 10000.0f;
+            s2MsiReflectances[i] = s2MsiReflectanceTiles[i].getSampleFloat(x, y);
         }
         s2MsiAlgorithm.setRefl(s2MsiReflectances);
 

@@ -47,9 +47,9 @@ public class IdepixConstants {
 
     public static final String[] S2_MSI_ANNOTATION_BAND_NAMES = {
             "sun_zenith",
-            "view_zenith",
+            "view_zenith_mean",
             "sun_azimuth",
-            "view_azimuth",
+            "view_azimuth_mean",
     };
 
     public static final float[] S2_MSI_WAVELENGTHS = {
