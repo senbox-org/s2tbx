@@ -100,6 +100,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -347,15 +348,40 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         //add TileIndex
+        List<BandInfo> tileInfoList = new ArrayList<>();
         ArrayList<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
         for(S2SpatialResolution res: sceneDescription.sceneDimensions.keySet()) {
             listTileIndexBandInformation.add(makeTileInformation(res, sceneDescription));
         }
+        // Verify access to granule image files, and store absolute location
+        for (S2BandInformation bandInformation : listTileIndexBandInformation) {
+            HashMap<String, File> tileFileMap = new HashMap<>();
+            for (S2Metadata.Tile tile : tileList) {
+                S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
+                if (gf != null) {
+
+                    String imgFilename = Paths.get("GRANULE", tile.getId()).toString();
+                    logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
+
+                    File file = new File(productDir, imgFilename);
+                    if (file.exists()) {
+                        tileFileMap.put(tile.getId(), file);
+                    } else {
+                        logger.warning(String.format("Warning: missing file %s\n", file));
+                    }
+                }
+            }
+
+            if (!tileFileMap.isEmpty()) {
+                BandInfo tileInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+                tileInfoList.add(tileInfo);
+            }
+        }
 
         if (!listTileIndexBandInformation.isEmpty()) {
-            for (S2IndexBandInformation bandInformation : listTileIndexBandInformation) {
+            for (BandInfo bandInfo : tileInfoList) {
                 addTileIndex(product,
-                             bandInformation,sceneDescription);
+                             bandInfo,sceneDescription);
             }
             SystemUtils.LOG.fine(String.format("[timeprobe] addTileIndex : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
@@ -784,17 +810,17 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
-    private void addTileIndex(Product product, S2IndexBandInformation s2BandInfo, S2OrthoSceneLayout sceneDescription) throws IOException {
+    private void addTileIndex(Product product, BandInfo bandInfo, S2OrthoSceneLayout sceneDescription) throws IOException {
 
-        BandInfo bandInfo = new BandInfo(null, s2BandInfo, null);
-        Dimension dimension = sceneDescription.getSceneDimension(s2BandInfo.getResolution());
+
+        Dimension dimension = sceneDescription.getSceneDimension(bandInfo.getBandInformation().getResolution());
         Band band = addBand(product, bandInfo, dimension);
-        band.setDescription(s2BandInfo.getDescription());
-        band.setUnit(s2BandInfo.getUnit());
+        band.setDescription(bandInfo.getBandInformation().getDescription());
+        band.setUnit(bandInfo.getBandInformation().getUnit());
 
         double pixelSize = 0;
         if (isMultiResolution()) {
-            pixelSize = (double) s2BandInfo.getResolution().resolution;
+            pixelSize = (double) bandInfo.getBandInformation().getResolution().resolution;
         } else {
             pixelSize = (double) getProductResolution().resolution;
         }
@@ -1196,14 +1222,23 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 //Rectangle l1cTileRectangle = DefaultMultiLevelSource.getLevelImageBounds(l1cTileRectangleL0, getModel().getScale(level));
                 int indexValue = indexCoding.getIndexValue(tileId);
                 PlanarImage opImage;
-                opImage = ConstantDescriptor.create((float) tileRectangleL0.width, (float) tileRectangleL0.height, new Number[]{indexValue}, null);
+                opImage = ConstantDescriptor.create((float) tileRectangleL0.width, (float) tileRectangleL0.height, new Integer[]{indexValue}, null);
+                System.out.println(opImage.getWidth() + opImage.getHeight());
+                System.out.println(opImage.getMinX());
+                opImage = TranslateDescriptor.create(opImage,
+                                                     (float) (tileRectangleL0.x),
+                                                     (float) (tileRectangleL0.y),
+                                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
                 tileImages.add(opImage);
             }
 
+            System.out.println(tileImages.size());
             if (tileImages.isEmpty()) {
                 logger.warning("No tile images for mosaic");
                 return null;
             }
+
+
 
             ImageLayout imageLayout = new ImageLayout();
             imageLayout.setMinX(0);
@@ -1215,7 +1250,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                          null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
+                                                          null, null, new double[][]{{Integer.MIN_VALUE + 1}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
             /*

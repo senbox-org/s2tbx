@@ -35,6 +35,6 @@ public class S2MetadataProc {
             indexList.add(S2IndexBandInformation.makeIndex(index, new Color(255, 255, 255), tileId, tileId));
             index++;
         }
-        return new S2IndexBandInformation("Tile_Index", resolution, "", "Tile Index", "", indexList, "tile_");
+        return new S2IndexBandInformation("Tile_Index"+ resolution.name(), resolution, "", "Tile Index", "", indexList, "tile_");
     }
 }
