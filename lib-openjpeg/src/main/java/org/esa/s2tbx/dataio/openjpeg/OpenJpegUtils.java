@@ -75,6 +75,10 @@ public class OpenJpegUtils {
         }
         tileLayout = OpenJpegUtils.parseOpjDump(exit.getTextOutput());
 
+        if (tileLayout.numResolutions == 0) {
+            return null;
+        }
+
         return tileLayout;
     }
 
@@ -90,16 +94,16 @@ public class OpenJpegUtils {
         final Process process = builder.start();
         try (BufferedReader outReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             while (!isStopped) {
+                if (!process.isAlive()) {
+                    isStopped = true;
+                } else {
+                    Thread.yield();
+                }
                 while (outReader.ready()) {
                     String line = outReader.readLine();
                     if (line != null && !line.isEmpty()) {
                         output.append(line);
                     }
-                }
-                if (!process.isAlive()) {
-                    isStopped = true;
-                } else {
-                    Thread.yield();
                 }
             }
             outReader.close();

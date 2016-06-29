@@ -36,11 +36,12 @@ public class S2SpectralInformation extends S2BandInformation {
                                  String imageFileTemplate,
                                  String description,
                                  String unit,
+                                 double quantificationValue,
                                  int bandId,
                                  double wavelengthMin,
                                  double wavelengthMax,
                                  double wavelengthCentral) {
-        super(physicalBand, resolution, imageFileTemplate, description, unit);
+        super(physicalBand, resolution, imageFileTemplate, description, unit, quantificationValue);
         this.bandId = bandId;
         this.wavelengthMin = wavelengthMin;
         this.wavelengthMax = wavelengthMax;

@@ -8,6 +8,6 @@ generated-sources/
 *.class
 *~
 *.pyc
-
+*.java.orig
 #generated sources
 s2tbx-reader-cs/src/main/generated-sources/

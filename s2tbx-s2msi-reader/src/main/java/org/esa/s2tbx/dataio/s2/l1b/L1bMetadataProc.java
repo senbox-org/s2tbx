@@ -68,12 +68,17 @@ public class L1bMetadataProc extends S2MetadataProc {
     }
 
     private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution) {
+        // TODO we should implement scaling factor here, using PHYSICAL_GAINS metadata per band, to provide physical radiance.
+        final double quantification = 1.0;
+        final String unit = "";
+
         return new S2SpectralInformation(
                 bandConstant.getPhysicalName(),
                 resolution,
                 makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),
                 "Radiance in band " + bandConstant.getPhysicalName(),
-                "",
+                unit,
+                quantification,
                 bandConstant.getBandIndex(),
                 bandConstant.getWavelengthMin(),
                 bandConstant.getWavelengthMax(),

@@ -41,7 +41,7 @@ import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
 public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     private static S2ProductCRSCache crsCache = new S2ProductCRSCache();
-    private S2Config.Sentinel2ProductLevel level = S2Config.Sentinel2ProductLevel.LEVEL_UNKNOWN;
+    private S2Config.Sentinel2ProductLevel level = S2Config.Sentinel2ProductLevel.UNKNOWN;
 
     public S2OrthoProductReaderPlugIn() {
         RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
@@ -71,7 +71,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         level = crsCache.getProductLevel(file.getAbsolutePath());
         S2Config.Sentinel2InputType  inputType = crsCache.getInputType(file.getAbsolutePath());
 
-        if((level != S2Config.Sentinel2ProductLevel.LEVEL_L1C)  && (level != S2Config.Sentinel2ProductLevel.LEVEL_L2A)) {
+        if((level != S2Config.Sentinel2ProductLevel.L1C)  && (level != S2Config.Sentinel2ProductLevel.L2A) && (level != S2Config.Sentinel2ProductLevel.L3)) {
             return DecodeQualification.UNABLE;
         }
 
@@ -79,17 +79,17 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             return DecodeQualification.UNABLE;
         }
 
-        if (level != S2Config.Sentinel2ProductLevel.LEVEL_L2A) {
+        if (level != S2Config.Sentinel2ProductLevel.L2A && level != S2Config.Sentinel2ProductLevel.L3) {
             return DecodeQualification.INTENDED;
         }
 
-        //if product is level2, check the specific folder
+        //if product is level2 or level3, check the specific folder
         if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(file, getResolution()))
             return DecodeQualification.UNABLE;
         if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(file, getResolution()))
             return DecodeQualification.UNABLE;
 
-        level=S2Config.Sentinel2ProductLevel.LEVEL_L2A;
+        //level=S2Config.Sentinel2ProductLevel.L2A;
         return DecodeQualification.INTENDED;
     }
 

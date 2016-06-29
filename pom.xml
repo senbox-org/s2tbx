@@ -40,6 +40,7 @@
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-radiometric-indices</module>
+        <module>s2tbx-biophysical-products</module>
         <module>s2tbx-kit</module>
     </modules>
 
@@ -234,6 +235,12 @@
 
             <!-- Other Third parties -->
             <dependency>
+                <groupId>com.bc.jnn</groupId>
+                <artifactId>jnn</artifactId>
+                <version>1.7</version>
+            </dependency>
+
+            <dependency>
                 <groupId>net.java.dev.jna</groupId>
                 <artifactId>jna</artifactId>
                 <version>4.2.1</version>
@@ -424,7 +431,7 @@
                             <snap.reader.tests.data.dir>${snap.reader.tests.data.dir}</snap.reader.tests.data.dir>
                             <snap.reader.tests.class.name>${snap.reader.tests.class.name}</snap.reader.tests.class.name>
                         </systemPropertyVariables>
-                        <argLine>-Xmx1024M -Dfile.encoding=UTF-8</argLine>
+                        <argLine>-Xmx1024M -Dfile.encoding=UTF-8 -da:org.geotools.referencing.operation.projection.MapProjection</argLine>
                     </configuration>
                 </plugin>
 

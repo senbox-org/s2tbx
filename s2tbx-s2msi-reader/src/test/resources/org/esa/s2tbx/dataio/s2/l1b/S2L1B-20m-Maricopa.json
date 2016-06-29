@@ -1,0 +1,840 @@
+{
+    "id": "S2L1B-20m-Maricopa",
+    "decodeQualification": "INTENDED",
+    "expectedContent": {
+        "sceneWidth": 1276,
+        "sceneHeight": 2304,
+        "startTime": "03-APR-2016 18:24:56.765302",
+        "endTime": "03-APR-2016 18:25:04.449044",
+        "tiePointGrids": [
+            {
+                "name": "D12B2,latitude",
+                "offsetX": "0.0",
+                "offsetY": "0.0",
+                "subSamplingX": "2552.0",
+                "subSamplingY": "2304.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 33.026752
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 33.011803
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 32.952885
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 32.87533
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 32.61661
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 32.59618
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 32.713017
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 32.745415
+                    }
+                ]
+            },
+            {
+                "name": "D12B2,longitude",
+                "offsetX": "0.0",
+                "offsetY": "0.0",
+                "subSamplingX": "2552.0",
+                "subSamplingY": "2304.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": -111.82874
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": -111.79643
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": -111.726204
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": -111.821175
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": -111.941956
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": -111.83166
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": -111.87759
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": -111.784355
+                    }
+                ]
+            },
+            {
+                "name": "D11B3,latitude",
+                "offsetX": "0.0",
+                "offsetY": "0.0",
+                "subSamplingX": "2552.0",
+                "subSamplingY": "2304.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 33.08771
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 33.0735
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 33.016342
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 32.937305
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 32.677624
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 32.65951
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 32.774776
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 32.808865
+                    }
+                ]
+            },
+            {
+                "name": "D11B3,longitude",
+                "offsetX": "0.0",
+                "offsetY": "0.0",
+                "subSamplingX": "2552.0",
+                "subSamplingY": "2304.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": -112.086205
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": -112.054504
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": -111.98569
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": -112.07927
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": -112.19888
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": -112.09036
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": -112.13525
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": -112.043434
+                    }
+                ]
+            }
+        ],
+        "bands": [
+            {
+                "name": "D11B11",
+                "description": "Radiance in band B11",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "1610.0",
+                "spectralBandwidth": "172.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 900.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 450.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 988.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 596.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 987.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 894.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 565.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 1021.0
+                    }
+                ]
+            },
+            {
+                "name": "D11B12",
+                "description": "Radiance in band B12",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "2190.0",
+                "spectralBandwidth": "276.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 369.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 402.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 766.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 211.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 868.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 782.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 415.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 879.0
+                    }
+                ]
+            },
+            {
+                "name": "D11B5",
+                "description": "Radiance in band B5",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "705.0",
+                "spectralBandwidth": "97.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 550.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 331.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 568.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 309.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 596.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 580.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 392.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 640.0
+                    }
+                ]
+            },
+            {
+                "name": "D11B6",
+                "description": "Radiance in band B6",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "740.0",
+                "spectralBandwidth": "40.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 420.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 528.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 542.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 598.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 536.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 507.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 364.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 585.0
+                    }
+                ]
+            },
+            {
+                "name": "D11B7",
+                "description": "Radiance in band B7",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "783.0",
+                "spectralBandwidth": "71.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 432.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 589.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 478.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 530.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 506.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 459.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 322.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 512.0
+                    }
+                ]
+            },
+            {
+                "name": "D11B8A",
+                "description": "Radiance in band B8A",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "865.0",
+                "spectralBandwidth": "79.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 452.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 514.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 467.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 505.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 485.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 440.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 301.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 486.0
+                    }
+                ]
+            },
+            {
+                "name": "D12B11",
+                "description": "Radiance in band B11",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "1610.0",
+                "spectralBandwidth": "172.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 865.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 735.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 607.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 695.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 923.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 843.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 484.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 1021.0
+                    }
+                ]
+            },
+            {
+                "name": "D12B12",
+                "description": "Radiance in band B12",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "2190.0",
+                "spectralBandwidth": "276.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 717.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 808.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 307.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 650.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 874.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 780.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 471.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 943.0
+                    }
+                ]
+            },
+            {
+                "name": "D12B5",
+                "description": "Radiance in band B5",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "705.0",
+                "spectralBandwidth": "97.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 510.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 594.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 587.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 344.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 713.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 479.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 327.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 732.0
+                    }
+                ]
+            },
+            {
+                "name": "D12B6",
+                "description": "Radiance in band B6",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "740.0",
+                "spectralBandwidth": "40.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 484.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 512.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 532.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 326.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 584.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 454.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 296.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 653.0
+                    }
+                ]
+            },
+            {
+                "name": "D12B7",
+                "description": "Radiance in band B7",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "783.0",
+                "spectralBandwidth": "71.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 422.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 468.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 479.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 326.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 556.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 404.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 269.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 584.0
+                    }
+                ]
+            },
+            {
+                "name": "D12B8A",
+                "description": "Radiance in band B8A",
+                "bandWidth": 1276,
+                "bandHeight": 2304,
+                "noDataValue": "0.0",
+                "noDataValueUsed": "false",
+                "spectralWavelength": "865.0",
+                "spectralBandwidth": "79.0",
+                "expectedPixels": [
+                    {
+                        "x": 0,
+                        "y": 9,
+                        "value": 407.0
+                    },
+                    {
+                        "x": 316,
+                        "y": 42,
+                        "value": 457.0
+                    },
+                    {
+                        "x": 1071,
+                        "y": 247,
+                        "value": 479.0
+                    },
+                    {
+                        "x": 454,
+                        "y": 763,
+                        "value": 331.0
+                    },
+                    {
+                        "x": 79,
+                        "y": 2227,
+                        "value": 513.0
+                    },
+                    {
+                        "x": 1084,
+                        "y": 2185,
+                        "value": 409.0
+                    },
+                    {
+                        "x": 386,
+                        "y": 1656,
+                        "value": 233.0
+                    },
+                    {
+                        "x": 1106,
+                        "y": 1370,
+                        "value": 562.0
+                    }
+                ]
+            }
+        ],
+        "metadata": [
+            {
+                "path": "Level-1B_DataStrip_ID/Satellite_Ancillary_Data_Info/Thermal_Data/IMU_Sensorplate_List/IMU_Sensorplate[3]/T",
+                "value": "7686"
+            }
+        ]
+    }
+}

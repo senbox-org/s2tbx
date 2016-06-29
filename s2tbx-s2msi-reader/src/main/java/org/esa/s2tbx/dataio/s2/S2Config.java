@@ -32,11 +32,12 @@ import java.awt.image.DataBuffer;
 public class S2Config {
 
     public enum Sentinel2ProductLevel {
-        LEVEL_L1A,
-        LEVEL_L1B,
-        LEVEL_L1C,
-        LEVEL_L2A,
-        LEVEL_UNKNOWN
+        L1A,
+        L1B,
+        L1C,
+        L2A,
+        L3,
+        UNKNOWN
     }
 
     public enum Sentinel2InputType {
@@ -66,6 +67,8 @@ public class S2Config {
     public static final short FILL_CODE_OUT_OF_X_BOUNDS = DEBUG ? (short) 2 : 0;
     public static final short FILL_CODE_OUT_OF_Y_BOUNDS = DEBUG ? (short) 3 : 0;
     public static final short FILL_CODE_MOSAIC_BG = DEBUG ? (short) 4 : 0;
+
+    public static final double FILL_CODE_MOSAIC_ANGLES = Double.NaN;
 
     public static final short RAW_NO_DATA_THRESHOLD = DEBUG ? (short) 4 : (short) 0;
 
@@ -141,11 +144,12 @@ public class S2Config {
     }
 
     public static Sentinel2ProductLevel levelString2ProductLevel(String level){
-        if(level.equals("L1A")) { return Sentinel2ProductLevel.LEVEL_L1A;}
-        if(level.equals("L1B")) { return Sentinel2ProductLevel.LEVEL_L1B;}
-        if(level.equals("L1C")) { return Sentinel2ProductLevel.LEVEL_L1C;}
-        if(level.equals("L2A")) { return Sentinel2ProductLevel.LEVEL_L2A;}
-        return Sentinel2ProductLevel.LEVEL_UNKNOWN;
+        if(level.equals("L1A")) { return Sentinel2ProductLevel.L1A;}
+        if(level.equals("L1B")) { return Sentinel2ProductLevel.L1B;}
+        if(level.equals("L1C")) { return Sentinel2ProductLevel.L1C;}
+        if(level.equals("L2A")) { return Sentinel2ProductLevel.L2A;}
+        if(level.equals("L03")) { return Sentinel2ProductLevel.L3;}
+        return Sentinel2ProductLevel.UNKNOWN;
     }
 
 }

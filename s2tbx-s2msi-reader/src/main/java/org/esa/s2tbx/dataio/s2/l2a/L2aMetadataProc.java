@@ -64,33 +64,47 @@ public class L2aMetadataProc extends S2MetadataProc {
         return JAXBContext.newInstance(S2MetadataType.L2A, s2c);
     }
 
-    private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution) {
+    private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution, double quantification) {
         return new S2SpectralInformation(
                 bandConstant.getPhysicalName(),
                 resolution,
                 makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),
                 "Reflectance in band " + bandConstant.getPhysicalName(),
                 "dl",
+                quantification,
                 bandConstant.getBandIndex(),
                 bandConstant.getWavelengthMin(),
                 bandConstant.getWavelengthMax(),
                 bandConstant.getWavelengthCentral());
     }
 
-    private static S2BandInformation makeAOTInformation(S2SpatialResolution resolution) {
-        return new S2BandInformation("quality_aot", resolution, makeAOTFileTemplate(), "Aerosol Optical Thickness", "none (x 1000)");
+    private static S2BandInformation makeAOTInformation(S2SpatialResolution resolution, double quantification) {
+        return new S2BandInformation("quality_aot", resolution, makeAOTFileTemplate(), "Aerosol Optical Thickness", "none", quantification);
     }
 
-    private static S2BandInformation makeWVPInformation(S2SpatialResolution resolution) {
-        return new S2BandInformation("quality_wvp", resolution, makeWVPFileTemplate(), "Water Vapour", "cm (x 1000)");
+    private static S2BandInformation makeWVPInformation(S2SpatialResolution resolution, double quantification) {
+        return new S2BandInformation("quality_wvp", resolution, makeWVPFileTemplate(), "Water Vapour", "cm", quantification);
     }
 
     private static S2BandInformation makeCLDInformation(S2SpatialResolution resolution) {
-        return new S2BandInformation("quality_cloud_confidence", resolution, makeCLDFileTemplate(), "Cloud Confidence", "%");
+        return new S2BandInformation("quality_cloud_confidence", resolution, makeCLDFileTemplate(), "Cloud Confidence", "%", 1.0);
     }
 
     private static S2BandInformation makeSNWInformation(S2SpatialResolution resolution) {
-        return new S2BandInformation("quality_snow_confidence", resolution, makeSNWFileTemplate(), "Snow Confidence", "%");
+        return new S2BandInformation("quality_snow_confidence", resolution, makeSNWFileTemplate(), "Snow Confidence", "%", 1.0);
+    }
+
+    private static S2BandInformation makeDDVInformation(S2SpatialResolution resolution) {
+        List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
+        /* Using the same colors as in the L2A-PDD */
+        indexList.add(S2IndexBandInformation.makeIndex(0, new Color(255, 255, 255), "NODATA", "No data"));
+        //indexList.add(S2IndexBandInformation.makeIndex(1, new Color(192, 192, 192), "NOT USED", "Not used"));
+        indexList.add(S2IndexBandInformation.makeIndex(2, new Color(0, 0, 0), "DARK_FEATURE", "Dark feature"));
+        //indexList.add(S2IndexBandInformation.makeIndex(3, new Color(192, 192, 192), "NOT USED", "Not used"));
+        indexList.add(S2IndexBandInformation.makeIndex(4, new Color(0, 160, 0), "DDV", "Dark Dense Vegetation"));
+        indexList.add(S2IndexBandInformation.makeIndex(5, new Color(192, 192, 192), "BACKGROUND", "Background"));
+        indexList.add(S2IndexBandInformation.makeIndex(6, new Color(0, 0, 255), "WATER", "Water"));
+        return new S2IndexBandInformation("quality_dense_dark_vegetation", resolution, makeDDVFileTemplate(), "Dense Dark Vegetation", "", indexList, "ddv_");
     }
 
     private static S2BandInformation makeSCLInformation(S2SpatialResolution resolution) {
@@ -108,7 +122,7 @@ public class L2aMetadataProc extends S2MetadataProc {
         indexList.add(S2IndexBandInformation.makeIndex(9, new Color(255, 255, 255), "CLOUD_HIGH_PROBA", "Cloud (high probability)"));
         indexList.add(S2IndexBandInformation.makeIndex(10, new Color(100, 200, 255), "THIN_CIRRUS", "Thin cirrus"));
         indexList.add(S2IndexBandInformation.makeIndex(11, new Color(255, 150, 255), "SNOW_ICE", "Snow or Ice"));
-        return new S2IndexBandInformation("quality_scene_classification", resolution, makeSCLFileTemplate(), "Scene classification", "", indexList);
+        return new S2IndexBandInformation("quality_scene_classification", resolution, makeSCLFileTemplate(), "Scene classification", "", indexList, "scl_");
     }
 
     private static String makeSpectralBandImageFileTemplate(String bandFileId) {
@@ -146,81 +160,95 @@ public class L2aMetadataProc extends S2MetadataProc {
         return String.format("QI_DATA%s{{MISSION_ID}}_USER_SNW_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2", File.separator);
     }
 
+    private static String makeDDVFileTemplate() {
+        return String.format("QI_DATA%s{{MISSION_ID}}_USER_DDV_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2", File.separator);
+    }
+
     public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product, S2SpatialResolution resolution) {
         L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
         characteristics.setSpacecraft(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME());
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString());
         characteristics.setProcessingLevel(product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value());
-
         characteristics.setProductStartTime(((Element) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
         characteristics.setProductStopTime(((Element) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
+
+        double boaQuantification = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getL1C_L2A_Quantification_Values_List().getL2A_BOA_QUANTIFICATION_VALUE().getValue();
+        characteristics.setQuantificationValue(boaQuantification);
+
+        double aotQuantification = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getL1C_L2A_Quantification_Values_List().getL2A_AOT_QUANTIFICATION_VALUE().getValue();
+
+        double wvpQuantification = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getL1C_L2A_Quantification_Values_List().getL2A_WVP_QUANTIFICATION_VALUE().getValue();
+
 
         List<S2BandInformation> aInfo = new ArrayList<>();
         switch (resolution) {
             case R10M:
-                aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R10M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M));
-                //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R10M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M, boaQuantification));
+                //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification));
 
-                aInfo.add(makeAOTInformation(S2SpatialResolution.R10M));
-                aInfo.add(makeWVPInformation(S2SpatialResolution.R10M));
+                aInfo.add(makeAOTInformation(S2SpatialResolution.R10M, aotQuantification));
+                aInfo.add(makeWVPInformation(S2SpatialResolution.R10M, wvpQuantification));
                 aInfo.add(makeCLDInformation(S2SpatialResolution.R20M));
                 aInfo.add(makeSNWInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeDDVInformation(S2SpatialResolution.R20M));
 
                 // SCL only generated at 20m and 60m. upsample the 20m version
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
                 break;
             case R20M:
-                aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M));
-                //aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M));
-                //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M, boaQuantification));
+                //aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M, boaQuantification));
+                //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification));
 
-                aInfo.add(makeAOTInformation(S2SpatialResolution.R20M));
-                aInfo.add(makeWVPInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeAOTInformation(S2SpatialResolution.R20M, aotQuantification));
+                aInfo.add(makeWVPInformation(S2SpatialResolution.R20M, wvpQuantification));
                 aInfo.add(makeCLDInformation(S2SpatialResolution.R20M));
                 aInfo.add(makeSNWInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeDDVInformation(S2SpatialResolution.R20M));
 
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
                 break;
             case R60M:
-                aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R60M));
-                //aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M));
-                //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R60M));
-                aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R60M));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R60M, boaQuantification));
+                //aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M, boaQuantification));
+                //aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R60M, boaQuantification));
+                aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R60M, boaQuantification));
 
-                aInfo.add(makeAOTInformation(S2SpatialResolution.R60M));
-                aInfo.add(makeWVPInformation(S2SpatialResolution.R60M));
+                aInfo.add(makeAOTInformation(S2SpatialResolution.R60M, aotQuantification));
+                aInfo.add(makeWVPInformation(S2SpatialResolution.R60M, wvpQuantification));
                 aInfo.add(makeCLDInformation(S2SpatialResolution.R60M));
                 aInfo.add(makeSNWInformation(S2SpatialResolution.R60M));
+                aInfo.add(makeDDVInformation(S2SpatialResolution.R60M));
 
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R60M));
                 break;

@@ -1,9 +1,0 @@
-{
-    "testProducts": [
-        {
-            "id": "S2L1C60m-Demo01",
-            "relativePath": "S2A_OPER_PRD_MSIL1C_PDMC_20160424T021342_R084_V20160423T182433_20160423T182433.SAFE\\S2A_OPER_MTD_SAFL1C_PDMC_20160424T021342_R084_V20160423T182433_20160423T182433.xml",
-            "description": "Sentinel2 L1C product in an archive"
-        }
-    ]
-}

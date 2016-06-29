@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2015 sp2 (http://www.altova.com) by Yasar Kurt (Telespazio VEGA Deutschland GmbH) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="https://psd-13.sentinel2.eo.esa.int/PSD/User_Product_Level-3.xsd" xmlns:dimap="https://psd-13.sentinel2.eo.esa.int/DICO/13/PDGS/dimap/" targetNamespace="https://psd-13.sentinel2.eo.esa.int/PSD/User_Product_Level-3.xsd" elementFormDefault="qualified" version="13">
+	<xs:import namespace="https://psd-13.sentinel2.eo.esa.int/DICO/13/PDGS/dimap/" schemaLocation="DICO/13/PDGS/dimap/dimap3.xsd"/>
+	<xs:element name="Level-3_User_Product" type="Level-3_User_Product"/>
+	<xs:complexType name="Level-3_User_Product">
+		<xs:sequence>
+			<xs:element name="General_Info" type="dimap:A_PRODUCT_INFO_USERL3"/>
+			<xs:element name="Geometric_Info" type="dimap:A_GEOMETRIC_INFO_USER1C"/>
+			<xs:element name="L3_Auxiliary_Data_Info" type="dimap:AN_AUXILIARY_DATA_INFO_USERL3"/>
+			<xs:element name="L3_Quality_Indicators_Info" type="dimap:A_QUALITY_INDICATORS_INFO_USERL3"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

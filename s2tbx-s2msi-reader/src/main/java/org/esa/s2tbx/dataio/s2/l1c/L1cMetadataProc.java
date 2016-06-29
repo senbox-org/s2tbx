@@ -65,13 +65,14 @@ public class L1cMetadataProc extends S2MetadataProc {
         return JAXBContext.newInstance(S2MetadataType.L1C, s2c);
     }
 
-    private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution) {
+    private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution, double quantification) {
         return new S2SpectralInformation(
                 bandConstant.getPhysicalName(),
                 resolution,
                 makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),
                 "Reflectance in band " + bandConstant.getPhysicalName(),
                 "dl",
+                quantification,
                 bandConstant.getBandIndex(),
                 bandConstant.getWavelengthMin(),
                 bandConstant.getWavelengthMax(),
@@ -101,6 +102,9 @@ public class L1cMetadataProc extends S2MetadataProc {
         characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value());
         characteristics.setMetaDataLevel(product.getGeneral_Info().getProduct_Info().getQuery_Options().getMETADATA_LEVEL());
 
+        double toaQuantification = product.getGeneral_Info().getProduct_Image_Characteristics().getQUANTIFICATION_VALUE().getValue();
+        characteristics.setQuantificationValue(toaQuantification);
+
         List<S2BandInformation> aInfo = new ArrayList<>();
         /*
          * User products do not provide these information
@@ -126,19 +130,19 @@ public class L1cMetadataProc extends S2MetadataProc {
             }
         }
         */
-        aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R10M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R10M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, toaQuantification));
 
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));

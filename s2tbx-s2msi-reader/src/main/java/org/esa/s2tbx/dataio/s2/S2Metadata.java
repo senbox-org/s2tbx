@@ -120,6 +120,8 @@ public abstract class S2Metadata {
      * for small changes.
      */
     static InputStream changePSDIfRequired(InputStream xmlStream, String psdNumber) throws IOException {
+        if (psdNumber==null) return xmlStream;
+
         InputStream updatedXmlStream;
 
         String xmlStreamAsString = IOUtils.toString(xmlStream);
@@ -185,6 +187,7 @@ public abstract class S2Metadata {
         private String horizontalCsName;
         private String horizontalCsCode;
         private Map<S2SpatialResolution, TileGeometry> tileGeometries;
+        private int anglesResolution;
         private AnglesGrid sunAnglesGrid;
         private AnglesGrid[] viewingIncidenceAnglesGrids;
         private MaskFilename[] maskFilenames;
@@ -238,6 +241,14 @@ public abstract class S2Metadata {
 
         public void setViewingIncidenceAnglesGrids(AnglesGrid[] viewingIncidenceAnglesGrids) {
             this.viewingIncidenceAnglesGrids = viewingIncidenceAnglesGrids;
+        }
+
+        public int getAnglesResolution() {
+            return anglesResolution;
+        }
+
+        public void setAnglesResolution(int anglesResolution) {
+            this.anglesResolution = anglesResolution;
         }
 
         public String getDetectorId() {
@@ -457,6 +468,7 @@ public abstract class S2Metadata {
         private String processingLevel;
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
+        private double quantificationValue;
 
         public String getSpacecraft() {
             return spacecraft;
@@ -519,5 +531,12 @@ public abstract class S2Metadata {
         }
 
 
+        public double getQuantificationValue() {
+            return quantificationValue;
+        }
+
+        public void setQuantificationValue(double quantificationValue) {
+            this.quantificationValue = quantificationValue;
+        }
     }
 }
