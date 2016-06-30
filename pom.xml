@@ -40,7 +40,7 @@
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-radiometric-indices</module>
-        <module>s2tbx-biophysical-products</module>
+        <module>s2tbx-biophysical</module>
         <module>s2tbx-kit</module>
     </modules>
 
@@ -387,6 +387,13 @@
                     <artifactId>nbm-maven-plugin</artifactId>
                     <version>3.14</version>
                     <extensions>true</extensions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.help</groupId>
+                            <artifactId>javahelp</artifactId>
+                            <version>${javahelp.version}</version>
+                        </dependency>
+                    </dependencies>
                     <configuration>
                         <moduleType>normal</moduleType>
                         <licenseName>GPL 3</licenseName>

@@ -62,17 +62,17 @@ public class BiophysicalOp extends PixelOperator {
     @Parameter(defaultValue = "true", label = "Compute LAI", description = "Compute LAI (Leaf Area Index)")
     private boolean computeLAI;
 
-    @Parameter(defaultValue = "true", label = "Compute Cab", description = "Compute Cab (Chlorophyll content in the leaf)")
-    private boolean computeCab;
-
-    @Parameter(defaultValue = "true", label = "Compute CWC", description = "Compute Cw (Canopy Water Content)")
-    private boolean computeCw;
-
     @Parameter(defaultValue = "true", label = "Compute FAPAR", description = "Compute FAPAR (Fraction of Absorbed Photosynthetically Active Radiation)")
     private boolean computeFapar;
 
     @Parameter(defaultValue = "true", label = "Compute FVC", description = "Compute FVC (Fraction of Vegetation Cover)")
     private boolean computeFcover;
+
+    @Parameter(defaultValue = "true", label = "Compute Cab", description = "Compute Cab (Chlorophyll content in the leaf)")
+    private boolean computeCab;
+
+    @Parameter(defaultValue = "true", label = "Compute CWC", description = "Compute Cw (Canopy Water Content)")
+    private boolean computeCw;
 
     /**
      * Configures all source samples that this operator requires for the computation of target samples.
@@ -180,7 +180,7 @@ public class BiophysicalOp extends PixelOperator {
                 // Add biophysical variable band
                 final Band biophysicalVariableBand = tp.addBand(biophysicalVariable.getBandName(), ProductData.TYPE_FLOAT32);
                 biophysicalVariableBand.setDescription(biophysicalVariable.getDescription());
-                // todo setUnit
+                biophysicalVariableBand.setUnit(biophysicalVariable.getUnit());
                 // todo better setDescription
                 // todo setValidPixelExpression
                 // todo setNoDataValueUsed (see flhmci)
