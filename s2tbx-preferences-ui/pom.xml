@@ -10,8 +10,8 @@
     </parent>
 
 
-    <artifactId>s2tbx-cache-ui</artifactId>
-    <name>Sentinel-2 Cache Manager User Interface</name>
+    <artifactId>s2tbx-preferences-ui</artifactId>
+    <name>Sentinel-2 Preferences User Interface</name>
 
     <packaging>nbm</packaging>
 
@@ -67,19 +67,6 @@
             <artifactId>org-netbeans-modules-javahelp</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-preferences-ui</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-cache</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
 
     </dependencies>
 

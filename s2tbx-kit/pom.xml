@@ -71,6 +71,12 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-preferences-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-cache</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -85,6 +91,12 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-s2msi-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-s2msi-reader-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
 

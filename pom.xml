@@ -26,9 +26,11 @@
     <url>https://github.com/senbox-org/s2tbx</url>
 
     <modules>
+        <module>s2tbx-preferences-ui</module>
         <module>s2tbx-cache</module>
         <module>s2tbx-cache-ui</module>
         <module>s2tbx-s2msi-reader</module>
+        <module>s2tbx-s2msi-reader-ui</module>
         <module>s2tbx-jp2-reader</module>
         <module>lib-openjpeg</module>
         <module>s2tbx-commons</module>
