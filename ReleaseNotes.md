@@ -164,14 +164,15 @@ NDI45, MTCI, MCARI, REIP, S2REP, IRECI, PSSRa
 
 ### List of solved issues
 
-
+To be completed
 
 
 
 Changes in S2TBX 3.0
------------------
+--------------------
 
-* Main features
+### Main features
+
   * S2-MSI reader: many fixes and improvements, including
     * Big S2 datasets could lead to "Too many file opened" exceptions.
     * Angles grid now strictly fit to image in terms of size.
@@ -196,7 +197,8 @@ Changes in S2TBX 3.0
     * Segmentation-watershed
     * SFSTextureExtraction
 
-* Solved issues
+### Solved issues
+
   * [SIITBX-90] - 'Export mask definition(s) to XML file does not work
   * [SIITBX-103] - Add Licences for each module
   * [SIITBX-128] - Nicely handle products with subset of bands
@@ -227,7 +229,9 @@ Changes in S2TBX 3.0
 
 
 Changes in S2TBX 2.0
------------------
+--------------------
+
+### Main features
 
 * S2-MSI reader
   * L1C
@@ -252,7 +256,8 @@ Changes in S2TBX 2.0
 * RapidEye reader
 * Deimos reader
 
-* Closed issues :
+### Solved issues
+
     * [SIITBX-38] - L1C Reader Implementation
     * [SIITBX-39] - L2A Reader Implementation
     * [SIITBX-40] - L1B Reader implementation
