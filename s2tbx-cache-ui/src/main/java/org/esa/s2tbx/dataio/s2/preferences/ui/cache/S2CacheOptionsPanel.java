@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.esa.s2tbx.dataio.s2.preferences.ui;
+package org.esa.s2tbx.dataio.s2.preferences.ui.cache;
 
 import com.bc.ceres.swing.TableLayout;
 import org.esa.s2tbx.dataio.cache.S2CacheUtils;

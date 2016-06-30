@@ -10,8 +10,8 @@
     </parent>
 
 
-    <artifactId>s2tbx-cache-ui</artifactId>
-    <name>Sentinel-2 Cache Manager User Interface</name>
+    <artifactId>s2tbx-s2msi-reader-ui</artifactId>
+    <name>Sentinel-2 MSI Reader User Interface</name>
 
     <packaging>nbm</packaging>
 
@@ -76,7 +76,7 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-cache</artifactId>
+            <artifactId>s2tbx-s2msi-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
 
