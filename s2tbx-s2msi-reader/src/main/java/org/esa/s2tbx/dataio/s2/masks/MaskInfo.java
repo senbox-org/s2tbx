@@ -228,7 +228,8 @@ public enum MaskInfo {
 
     public boolean isEnabled() {
         final Preferences preferences = Config.instance("s2tbx").load().preferences();
-        return preferences.getBoolean(category.getKey(), false);
+        final boolean DEFAULT_MASK_ENABLEMENT = true;
+        return preferences.getBoolean(category.getKey(), DEFAULT_MASK_ENABLEMENT);
     }
 
     public enum MaskCategory {
