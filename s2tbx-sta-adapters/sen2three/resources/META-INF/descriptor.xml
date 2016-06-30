@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?><operator>
+<operator>
   <name>org.esa.s2tbx.sen2three</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Sen2Three</alias>
   <label>SEN2THREE</label>
   <version>0.9.0</version>
   <description>Sen2Three Processor</description>
-  <authors/>
-  <copyright/>
+  <authors></authors>
+  <copyright></copyright>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>
   <menuLocation>Menu/Optical/Thematic Land Processing</menuLocation>
@@ -14,26 +14,23 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$PYTHON_BIN</mainToolFileLocation>
   <workingDir>$SEN2THREE_HOME</workingDir>
-  <templateType>VELOCITY</templateType>
-  <template>
-    <file>Sen2Three-template.vm</file>
-  </template>
+  <templateFileLocation>Sen2Three-template.vm</templateFileLocation>
   <progressPattern>Progress\[%\]: (\d{1,3})\.(?:.+)</progressPattern>
   <errorPattern>[\s\S]+(?:UserWarning|Error): (.+)</errorPattern>
   <variables>
     <variable>
       <key>SEN2THREE_HOME</key>
-      <value/>
+      <value></value>
       <isShared>false</isShared>
     </variable>
     <variable>
       <key>SEN2THREE_BIN</key>
-      <value/>
+      <value></value>
       <isShared>false</isShared>
     </variable>
     <osvariable>
       <key>PYTHON_BIN</key>
-      <value/>
+      <value></value>
       <isShared>false</isShared>
       <windows>python.exe</windows>
       <linux>python</linux>
@@ -44,36 +41,35 @@
   <parameters>
     <parameter>
       <name>targetProductFile</name>
+      <alias></alias>
       <dataType>java.io.File</dataType>
-      <description>Output file</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
     </parameter>
-    <templateparameter>
+    <parameter>
       <name>postExecuteTemplate</name>
       <dataType>java.io.File</dataType>
       <defaultValue>Sen2Three-post-template.vm</defaultValue>
-      <description> Post execution template</description>
+      <description></description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>TemplateAfterExecution</parameterType>
-      <parameters/>
-      <template>
-        <file>Sen2Three-post-template.vm</file>
-      </template>
-    </templateparameter>
+      <toolParameterDescriptors/>
+    </parameter>
     <parameter>
       <name>clean</name>
       <dataType>java.lang.Boolean</dataType>
-      <defaultValue>false</defaultValue>
       <description>Clean</description>
+      <label>Clean</label>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>resolution</name>
@@ -87,6 +83,7 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>sourceFolder</name>
@@ -95,6 +92,7 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>FolderParameter</parameterType>
+      <toolParameterDescriptors/>
     </parameter>
   </parameters>
   <source>user</source>
@@ -103,5 +101,4 @@
   <sourceProductDescriptors/>
   <targetPropertyDescriptors/>
   <numSourceProducts>0</numSourceProducts>
-  <templateType>VELOCITY</templateType>
 </operator>

@@ -13,7 +13,8 @@
     <packaging>nbm</packaging>
 
     <name>Sentinel-2 SEN2THREE processor</name>
-    <description>TBD</description>
+    <description>Sen2Three is a level 3 processor for the spatio temporal synthesis of bottom atmospheric corrected level 2A (or alternatively) uncorrected top of atmosphere level 1C images, retrieved by the Sentinel 2 Multi Spectral Instrument (MSI).
+    </description>
 
     <build>
         <sourceDirectory>../src/main/java</sourceDirectory>
@@ -38,11 +39,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestFile>src/main/nbm/manifest.mf</manifestFile>
-                    </archive>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

@@ -10,4 +10,3 @@ OpenIDE-Module: org.esa.s2tbx.sen2three
 OpenIDE-Module-Alias: Sen2Three
 OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
 OpenIDE-Module-Install: org/esa/snap/utils/ModuleInstaller.class
-AutoUpdate-Show-In-Client: false
