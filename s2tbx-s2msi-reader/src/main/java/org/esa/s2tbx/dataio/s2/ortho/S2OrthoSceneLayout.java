@@ -24,10 +24,9 @@ import org.esa.s2tbx.dataio.s2.S2SceneDescription;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 
 import java.awt.*;
+import java.awt.List;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Provides information about the scene layout
@@ -143,11 +142,24 @@ public class S2OrthoSceneLayout extends S2SceneDescription {
         return tileInfoMap.keySet();
     }
 
+    public java.util.List<String> getOrderedTileIds() {
+        Set<String> tileIds = this.getTileIds();
+        java.util.List<String> tileIdsOrder = asSortedList(tileIds);
+        return tileIdsOrder;
+    }
+
     public Rectangle getTilePositionInScene(String tileId, S2SpatialResolution resolution) {
         return tileInfoMap.get(tileId).getPositionInScene(resolution);
     }
 
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
+
+    public static
+    <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
+        java.util.List<T> list = new ArrayList<T>(c);
+        java.util.Collections.sort(list);
+        return list;
     }
 }

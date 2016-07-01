@@ -19,20 +19,35 @@ package org.esa.s2tbx.dataio.s2;
 
 
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoSceneLayout;
+import org.esa.snap.core.datamodel.ColorPaletteDef;
+import org.esa.snap.core.util.SystemUtils;
 
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.awt.Color.getHSBColor;
+import static java.lang.Math.floor;
+import static org.esa.s2tbx.dataio.s2.l3.L3Metadata.MOSAIC_BAND_NAME;
+import static org.esa.snap.core.datamodel.ColorPaletteDef.loadColorPaletteDef;
 
 /**
  * @author Nicolas Ducoin
  */
 public class S2MetadataProc {
+
     public static S2IndexBandInformation makeTileInformation(S2SpatialResolution resolution, S2OrthoSceneLayout sceneDescription) {
         List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
+        int numberOfTiles = sceneDescription.getOrderedTileIds().size();
         int index = 1;
-        for(String tileId : sceneDescription.getTileIds()) {
-            indexList.add(S2IndexBandInformation.makeIndex(index, new Color(255, 255, 255), tileId, tileId));
+        for(String tileId : sceneDescription.getOrderedTileIds()) {
+            float f = 0;
+            f = (index-1)*(float)1.0/(numberOfTiles+1);
+            f = (float) 0.75 - f;
+            if (f < 0) f++;
+            indexList.add(S2IndexBandInformation.makeIndex(index, getHSBColor(f, (float)1.0, (float)1.0), tileId, tileId));
             index++;
         }
         return new S2IndexBandInformation("Tile_Index"+ resolution.name(), resolution, "", "Tile Index", "", indexList, "tile_");
