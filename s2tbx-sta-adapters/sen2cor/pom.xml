@@ -13,9 +13,7 @@
     <packaging>nbm</packaging>
 
     <name>Sentinel-2 SEN2COR processor</name>
-    <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products.
-        To use it you first have to download and install the processor from http://s2tbx.telespazio-vega.de/sen2cor/sen2cor-2.0.3.zip
-        At the root of the archive, the SETUP.pdf file contains instructions to install the Sen2Cor. Follow these instruction before integrating this processor into SNAP.</description>
+    <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products</description>
 
     <build>
         <sourceDirectory>../src/main/java</sourceDirectory>

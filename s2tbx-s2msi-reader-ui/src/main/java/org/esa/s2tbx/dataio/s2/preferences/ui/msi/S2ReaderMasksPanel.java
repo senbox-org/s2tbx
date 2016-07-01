@@ -80,13 +80,13 @@ public class S2ReaderMasksPanel extends javax.swing.JPanel {
         final Preferences preferences = Config.instance("s2tbx").load().preferences();
 
         detectorFootprintMasks.setSelected(
-                preferences.getBoolean("s2tbx.dataio.detectorFootprintMasks", false));
+                preferences.getBoolean("s2tbx.dataio.detectorFootprintMasks", true));
         radiometricQualityMasks.setSelected(
-                preferences.getBoolean("s2tbx.dataio.radiometricQualityMasks", false));
+                preferences.getBoolean("s2tbx.dataio.radiometricQualityMasks", true));
         technicalQualityMasks.setSelected(
-                preferences.getBoolean("s2tbx.dataio.technicalQualityMasks", false));
+                preferences.getBoolean("s2tbx.dataio.technicalQualityMasks", true));
         cloudMasks.setSelected(
-                preferences.getBoolean("s2tbx.dataio.cloudMasks", false));
+                preferences.getBoolean("s2tbx.dataio.cloudMasks", true));
     }
 
     void store() {

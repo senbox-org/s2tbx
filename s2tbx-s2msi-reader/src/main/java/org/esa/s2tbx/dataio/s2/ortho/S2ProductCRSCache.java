@@ -21,6 +21,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
+import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -74,6 +75,14 @@ public class S2ProductCRSCache {
                             || level == S2Config.Sentinel2ProductLevel.L3) {
                         Path rootPath = productFile.toPath().getParent();
                         File granuleFolder = rootPath.resolve("GRANULE").toFile();
+                        if(!granuleFolder.exists() || !granuleFolder.isDirectory()) {
+                            SystemUtils.LOG.warning("Invalid Sentinel-2 product: 'GRANULE' folder containing at least one granule is required");
+                            return;
+                        }
+                        if(granuleFolder.listFiles() == null || granuleFolder.listFiles().length == 0) {
+                            SystemUtils.LOG.warning("Invalid Sentinel-2 product: 'GRANULE' folder must contain at least one granule");
+                            return;
+                        }
                         for (File granule : granuleFolder.listFiles()) {
                             if (granule.isDirectory()) {
                                 S2OrthoGranuleDirFilename granuleDirFilename = S2OrthoGranuleDirFilename.create(granule.getName());
