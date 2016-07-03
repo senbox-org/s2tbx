@@ -869,12 +869,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         Arrays.fill(viewingAzimuthsCount, 0);
         for (S2BandAnglesGrid grid : listBandAnglesGrid) {
             for(int i = 0 ; i < grid.getData().length ; i++) {
-                if(grid.getPrefix().equals(VIEW_ZENITH_PREFIX) && isValidAngle(grid.getData()[i])) {
-                    viewingZeniths[i] = viewingZeniths[i] + grid.getData()[i];
+                float gridData = grid.getData()[i];
+                if(grid.getPrefix().equals(VIEW_ZENITH_PREFIX)) {
+                    viewingZeniths[i] = viewingZeniths[i] + gridData;
                     viewingZenithsCount[i]++;
                 }
-                if(grid.getPrefix().equals(VIEW_AZIMUTH_PREFIX) && isValidAngle(grid.getData()[i])) {
-                    viewingAzimuths[i] = viewingAzimuths[i] + grid.getData()[i];
+                if(grid.getPrefix().equals(VIEW_AZIMUTH_PREFIX)) {
+                    viewingAzimuths[i] = viewingAzimuths[i] + gridData;
                     viewingAzimuthsCount[i]++;
                 }
             }
