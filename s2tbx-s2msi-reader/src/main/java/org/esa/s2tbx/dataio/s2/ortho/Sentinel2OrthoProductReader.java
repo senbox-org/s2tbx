@@ -498,6 +498,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             band.setDescription(description);
             band.setUnit("°");
+            band.setNoDataValue(Double.NaN);
+            band.setNoDataValueUsed(true);
 
             try {
                 band.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
