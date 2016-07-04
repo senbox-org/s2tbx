@@ -15,7 +15,7 @@ import java.util.Map;
 @OperatorMetadata(
         alias = "NdwiOp",
         version="1.0",
-        category = "Optical/Thematic Land Processing/Radiometric Indices/Water Indices",
+        category = "Optical/Thematic Land Processing/Water Radiometric Indices",
         description = "The Normalized Difference Water Index was developed for the extraction of water features",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")

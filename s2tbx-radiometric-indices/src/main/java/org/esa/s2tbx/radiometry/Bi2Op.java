@@ -15,7 +15,7 @@ import java.util.Map;
 @OperatorMetadata(
         alias = "Bi2Op",
         version="1.0",
-        category = "Optical/Thematic Land Processing/Radiometric Indices/Soil Indices",
+        category = "Optical/Thematic Land Processing/Soil Radiometric Indices",
         description = "The Brightness index represents the average of the brightness of a satellite image.\n" +
                 "This index is sensitive to the brightness of soils which is highly correlated with the humidity and the presence of salts in surface",
         authors = "Dragos Mihailescu",
