@@ -358,7 +358,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             List<BandInfo> tileInfoList = new ArrayList<>();
             ArrayList<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
 
-            //generate an arraylist with the resolution used in bandInfoList
+            //look for the resolutions used in bandInfoList for generating the Tile index for them
             ArrayList<S2SpatialResolution> resolutions = new ArrayList<>();
             for(BandInfo bandInfo : bandInfoList) {
                 if(!resolutions.contains(bandInfo.getBandInformation().getResolution())) {
