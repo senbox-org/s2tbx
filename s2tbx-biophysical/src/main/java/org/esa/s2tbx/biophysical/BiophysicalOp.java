@@ -333,10 +333,10 @@ public class BiophysicalOp extends PixelOperator {
         B8A(5, "B8A"),
         B11(6, "B11"),
         B12(7, "B12"),
-        VIEW_ZENITH(8, "view_zenith"),
+        VIEW_ZENITH(8, "view_zenith_mean"),
         SUN_ZENITH(9, "sun_zenith"),
         SUN_AZIMUTH(10, "sun_azimuth"),
-        VIEW_AZIMUTH(11, "view_azimuth");
+        VIEW_AZIMUTH(11, "view_azimuth_mean");
 
         private final int index;
         private final String bandName;
