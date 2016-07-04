@@ -163,6 +163,11 @@ public abstract class VirtualDirEx extends VirtualDir {
         return found != null ? found.toArray(new String[found.size()]) : null;
     }
 
+    @Override
+    public String[] listAllFiles() throws IOException {
+        return listAll();
+    }
+
     /**
      * List all the files contained in this virtual directory instance.
      * @return  An array of file names

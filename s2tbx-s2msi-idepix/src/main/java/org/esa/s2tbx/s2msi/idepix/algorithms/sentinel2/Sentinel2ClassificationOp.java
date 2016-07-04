@@ -43,26 +43,40 @@ public class Sentinel2ClassificationOp extends Operator {
     public static final double RHO_TOA_442_THRESHOLD = 0.03;
 
     private static final float WATER_MASK_SOUTH_BOUND = -58.0f;
-    private static final String VALID_PIXEL_EXPRESSION = "detector_footprint_B1 " +
-            "and detector_footprint_B2 " +
-            "and detector_footprint_B3 " +
-            "and detector_footprint_B4 " +
-            "and detector_footprint_B5 " +
-            "and detector_footprint_B6 " +
-            "and detector_footprint_B7 " +
-            "and detector_footprint_B8 " +
-            "and detector_footprint_B8A " +
-            "and detector_footprint_B9 " +
-            "and detector_footprint_B10 " +
-            "and detector_footprint_B11 " +
-            "and detector_footprint_B12";
+//    private static final String VALID_PIXEL_EXPRESSION = "detector_footprint_B1 " +
+//            "and detector_footprint_B2 " +
+//            "and detector_footprint_B3 " +
+//            "and detector_footprint_B4 " +
+//            "and detector_footprint_B5 " +
+//            "and detector_footprint_B6 " +
+//            "and detector_footprint_B7 " +
+//            "and detector_footprint_B8 " +
+//            "and detector_footprint_B8A " +
+//            "and detector_footprint_B9 " +
+//            "and detector_footprint_B10 " +
+//            "and detector_footprint_B11 " +
+//            "and detector_footprint_B12";
 
-    @Parameter(defaultValue = "true",
+    private static final String VALID_PIXEL_EXPRESSION = "B1.raw > 0 " +
+            "and B2.raw > 0 " +
+            "and B3.raw > 0 " +
+            "and B4.raw > 0 " +
+            "and B5.raw > 0 " +
+            "and B6.raw > 0 " +
+            "and B7.raw > 0 " +
+            "and B8.raw > 0 " +
+            "and B8A.raw > 0 " +
+            "and B9.raw > 0 " +
+            "and B11.raw > 0 " +
+            "and B12.raw > 0";
+
+
+    @Parameter(defaultValue = "false",
             label = " Write TOA Reflectances to the target product",
             description = " Write TOA Reflectances to the target product")
     private boolean copyToaReflectances;
 
-    @Parameter(defaultValue = "true",
+    @Parameter(defaultValue = "false",
             label = " Write Feature Values to the target product",
             description = " Write all Feature Values to the target product")
     private boolean copyFeatureValues;

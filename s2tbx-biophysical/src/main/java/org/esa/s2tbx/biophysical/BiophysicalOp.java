@@ -48,7 +48,7 @@ import java.util.Map;
  */
 @OperatorMetadata(
         alias = "BiophysicalOp",
-        category = "Optical Processing/Thematic Land Processing",
+        category = "Optical/Thematic Land Processing",
         description = "The 'Biophysical Processor' operator retrieves LAI from atmospherically corrected Sentinel-2 products",
         authors = "Julien Malik",
         copyright = "CS SI (foss-contact@c-s.fr)")
