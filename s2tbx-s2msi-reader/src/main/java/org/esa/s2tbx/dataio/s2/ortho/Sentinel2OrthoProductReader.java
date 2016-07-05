@@ -353,23 +353,25 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             timeProbe.reset();
         }
 
-        //add TileIndex
+        //add TileIndex if there are more than 1 tile
         if(sceneDescription.getOrderedTileIds().size()>1) {
             List<BandInfo> tileInfoList = new ArrayList<>();
             ArrayList<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
+            ArrayList<S2SpatialResolution> resolutions = new ArrayList<>(); //to store the resolutions previously used
 
-            //look for the resolutions used in bandInfoList for generating the Tile index for them
-            ArrayList<S2SpatialResolution> resolutions = new ArrayList<>();
+            //look for the resolutions used in bandInfoList for generating the tile index only for them
             for(BandInfo bandInfo : bandInfoList) {
                 if(!resolutions.contains(bandInfo.getBandInformation().getResolution())) {
                     resolutions.add(bandInfo.getBandInformation().getResolution());
                 }
             }
+
+            //for each resolution, add the tile information
             for(S2SpatialResolution res: resolutions) {
                 listTileIndexBandInformation.add(makeTileInformation(res, sceneDescription));
             }
 
-            // Verify access to granule image files, and store absolute location
+            // Verify existence of granule folders, store location and add BandInfo to tileInfoList
             for (S2BandInformation bandInformation : listTileIndexBandInformation) {
                 HashMap<String, File> tileFileMap = new HashMap<>();
                 for (S2Metadata.Tile tile : tileList) {
@@ -387,7 +389,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                         }
                     }
                 }
-
                 if (!tileFileMap.isEmpty()) {
                     BandInfo tileInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
                     if(tileInfo != null) {
@@ -1110,7 +1111,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             for (String tileId : sceneDescription.getOrderedTileIds()) {
 
-                System.out.println("BandL1cSceneMultiLevelSource Tile: " + tileId);
                 /*
                  * Get the a PlanarImage of the tile at native resolution, with a [0,0] origin
                  */
@@ -1244,9 +1244,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
 
             for (String tileId : sceneDescription.getOrderedTileIds()) {
-
-
-                System.out.println("TileIndexMultiLevelSource Tile: " + tileId);
                 // Get the band native resolution
                 S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
                 // Get the position of the tile in full scene at level 0
@@ -1268,8 +1265,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
 
                 //opImage = ConstantDescriptor.create((float) tileRectangleL0.width, (float) tileRectangleL0.height, new Integer[]{indexValue}, null);
-                System.out.println(opImage.getWidth() + opImage.getHeight());
-                System.out.println(opImage.getMinX());
                 opImage = TranslateDescriptor.create(opImage,
                                                      (float) (tileRectangle.x),
                                                      (float) (tileRectangle.y),
@@ -1277,8 +1272,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 tileImages.add(opImage);
             }
 
-
-            System.out.println(tileImages.size());
             if (tileImages.isEmpty()) {
                 logger.warning("No tile images for mosaic");
                 return null;
