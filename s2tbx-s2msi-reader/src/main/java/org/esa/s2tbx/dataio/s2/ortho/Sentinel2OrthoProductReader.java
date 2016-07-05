@@ -354,7 +354,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         //add TileIndex if there are more than 1 tile
-        if(sceneDescription.getOrderedTileIds().size()>1) {
+        if(sceneDescription.getOrderedTileIds().size()>1 && !bandInfoList.isEmpty()) {
+            ArrayList<S2SpatialResolution> resolutions = new ArrayList<>();
+            //look for the resolutions used in bandInfoList for generating the tile index only for them
+            for(BandInfo bandInfo : bandInfoList) {
+                if(!resolutions.contains(bandInfo.getBandInformation().getResolution())) {
+                    resolutions.add(bandInfo.getBandInformation().getResolution());
+                }
+            }
+            addTileIndexes(product, resolutions, tileList, sceneDescription);
+
+        }
+
+        /*if(sceneDescription.getOrderedTileIds().size()>1) {
             List<BandInfo> tileInfoList = new ArrayList<>();
             ArrayList<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
             ArrayList<S2SpatialResolution> resolutions = new ArrayList<>(); //to store the resolutions previously used
@@ -406,7 +418,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 SystemUtils.LOG.fine(String.format("[timeprobe] addTileIndex : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
                 timeProbe.reset();
             }
-        }
+        }*/
 
 
         if (!"Brief".equalsIgnoreCase(productCharacteristics.getMetaDataLevel())) {
@@ -835,9 +847,58 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
+    private void addTileIndexes(Product product, ArrayList<S2SpatialResolution> resolutions, List<S2Metadata.Tile> tileList, S2OrthoSceneLayout sceneDescription) {
+
+        if(resolutions.isEmpty() || tileList.isEmpty()) {
+            return;
+        }
+
+        List<BandInfo> tileInfoList = new ArrayList<>();
+        ArrayList<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
+
+        //for each resolution, add the tile information
+        for(S2SpatialResolution res: resolutions) {
+            listTileIndexBandInformation.add(makeTileInformation(res, sceneDescription));
+        }
+
+        // Create BandInfo and add to tileInfoList
+        for (S2BandInformation bandInformation : listTileIndexBandInformation) {
+            HashMap<String, File> tileFileMap = new HashMap<>();
+            for (S2Metadata.Tile tile : tileList) {
+                tileFileMap.put(tile.getId(), null); //it is not necessary any file
+            }
+
+            if (!tileFileMap.isEmpty()) {
+                BandInfo tileInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+                if(tileInfo != null) {
+                    tileInfoList.add(tileInfo);
+                }
+            }
+        }
+
+        if(tileInfoList.isEmpty()) {
+            return;
+        }
+
+        //Add the bands
+        for (BandInfo bandInfo : tileInfoList) {
+            try {
+                addTileIndex(product,
+                             bandInfo, sceneDescription);
+            } catch (Exception e) {
+                logger.warning(String.format("It has not been possible to add tile index for resolution %s\n", bandInfo.getBandInformation().getResolution().toString()));
+            }
+        }
+
+        //Add the index masks
+        try {
+            addIndexMasks(product, tileInfoList, sceneDescription);
+        } catch (IOException e) {
+
+        }
+    }
+
     private void addTileIndex(Product product, BandInfo bandInfo, S2OrthoSceneLayout sceneDescription) throws IOException {
-
-
         Dimension dimension = sceneDescription.getSceneDimension(bandInfo.getBandInformation().getResolution());
         Band band = addBand(product, bandInfo, dimension);
         band.setDescription(bandInfo.getBandInformation().getDescription());

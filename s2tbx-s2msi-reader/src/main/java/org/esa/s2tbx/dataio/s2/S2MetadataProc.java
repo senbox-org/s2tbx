@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.s2;
 
 
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoSceneLayout;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.util.SystemUtils;
 
@@ -47,9 +48,13 @@ public class S2MetadataProc {
             f = (index-1)*(float)1.0/(numberOfTiles+1);
             f = (float) 0.75 - f;
             if (f < 0) f++;
-            indexList.add(S2IndexBandInformation.makeIndex(index, getHSBColor(f, (float)1.0, (float)1.0), tileId, tileId));
+            if(S2OrthoGranuleDirFilename.create(tileId).tileNumber!=null) {
+                indexList.add(S2IndexBandInformation.makeIndex(index, getHSBColor(f, (float) 1.0, (float) 1.0), S2OrthoGranuleDirFilename.create(tileId).tileNumber, tileId));
+            } else {
+                indexList.add(S2IndexBandInformation.makeIndex(index, getHSBColor(f, (float) 1.0, (float) 1.0), tileId, tileId));
+            }
             index++;
         }
-        return new S2IndexBandInformation("Tile_Index"+ resolution.name(), resolution, "", "Tile Index", "", indexList, "tile_");
+        return new S2IndexBandInformation("Tile_Index_" + resolution.name(), resolution, "", "Tile Index", "", indexList, "tile_" + resolution.name() + "_");
     }
 }
