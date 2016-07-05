@@ -15,7 +15,7 @@ import java.util.Map;
 @OperatorMetadata(
         alias = "MndwiOp",
         version="1.0",
-        category = "Optical/Thematic Land Processing/Radiometric Indices/Water Indices",
+        category = "Optical/Thematic Land Processing/Water Radiometric Indices",
         description = "Modified Normalized Difference Water Index, allowing for the measurement of surface water extent",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")

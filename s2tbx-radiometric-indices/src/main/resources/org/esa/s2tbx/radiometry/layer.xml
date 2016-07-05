@@ -10,7 +10,8 @@
                 <attr name="dialogTitle" stringvalue="SAVI"/>
                 <attr name="helpId" stringvalue="SAVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_savi"/>
-                <attr name="ShortDescription" stringvalue="Generates SAVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates SAVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-TsaviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -20,7 +21,8 @@
                 <attr name="dialogTitle" stringvalue="TSAVI"/>
                 <attr name="helpId" stringvalue="TSAVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_tsavi"/>
-                <attr name="ShortDescription" stringvalue="Generates TSAVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates TSAVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-IpviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -30,7 +32,8 @@
                 <attr name="dialogTitle" stringvalue="IPVI"/>
                 <attr name="helpId" stringvalue="IPVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_ipvi"/>
-                <attr name="ShortDescription" stringvalue="Generates IPVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates IPVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-RviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -40,7 +43,8 @@
                 <attr name="dialogTitle" stringvalue="RVI"/>
                 <attr name="helpId" stringvalue="RVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_rvi"/>
-                <attr name="ShortDescription" stringvalue="Generates RVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates RVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-DviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -50,7 +54,8 @@
                 <attr name="dialogTitle" stringvalue="DVI"/>
                 <attr name="helpId" stringvalue="DVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_dvi"/>
-                <attr name="ShortDescription" stringvalue="Generates DVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates DVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-WdviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -60,7 +65,8 @@
                 <attr name="dialogTitle" stringvalue="WDVI"/>
                 <attr name="helpId" stringvalue="WDVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_wdvi"/>
-                <attr name="ShortDescription" stringvalue="Generates WDVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates WDVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-PviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -70,7 +76,8 @@
                 <attr name="dialogTitle" stringvalue="PVI"/>
                 <attr name="helpId" stringvalue="PVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_pvi"/>
-                <attr name="ShortDescription" stringvalue="Generates PVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates PVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-MsaviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -80,7 +87,8 @@
                 <attr name="dialogTitle" stringvalue="MSAVI"/>
                 <attr name="helpId" stringvalue="MSAVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_msavi"/>
-                <attr name="ShortDescription" stringvalue="Generates MSAVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates MSAVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-Msavi2OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -90,7 +98,8 @@
                 <attr name="dialogTitle" stringvalue="MSAVI2"/>
                 <attr name="helpId" stringvalue="MSAVI2Operator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_msavi2"/>
-                <attr name="ShortDescription" stringvalue="Generates MSAVI2 from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates MSAVI2 from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-GemiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -100,7 +109,8 @@
                 <attr name="dialogTitle" stringvalue="GEMI"/>
                 <attr name="helpId" stringvalue="GEMIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_gemi"/>
-                <attr name="ShortDescription" stringvalue="Generates GEMI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates GEMI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-TndviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -110,7 +120,8 @@
                 <attr name="dialogTitle" stringvalue="TNDVI"/>
                 <attr name="helpId" stringvalue="TNDVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_tndvi"/>
-                <attr name="ShortDescription" stringvalue="Generates TNDVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates TNDVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-NdwiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -120,7 +131,8 @@
                 <attr name="dialogTitle" stringvalue="NDWI"/>
                 <attr name="helpId" stringvalue="NDWIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_ndwi"/>
-                <attr name="ShortDescription" stringvalue="Generates NDWI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates NDWI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-Ndwi2OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -130,7 +142,8 @@
                 <attr name="dialogTitle" stringvalue="NDWI2"/>
                 <attr name="helpId" stringvalue="NDWI2Operator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_ndwi2"/>
-                <attr name="ShortDescription" stringvalue="Generates NDWI2 from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates NDWI2 from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-MndwiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -140,7 +153,8 @@
                 <attr name="dialogTitle" stringvalue="MNDWI"/>
                 <attr name="helpId" stringvalue="MNDWIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_mndwi"/>
-                <attr name="ShortDescription" stringvalue="Generates MNDWI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates MNDWI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-NdtiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -150,7 +164,8 @@
                 <attr name="dialogTitle" stringvalue="NDTI"/>
                 <attr name="helpId" stringvalue="NDTIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_ndti"/>
-                <attr name="ShortDescription" stringvalue="Generates NDTI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates NDTI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-GndviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -160,7 +175,8 @@
                 <attr name="dialogTitle" stringvalue="GNDVI"/>
                 <attr name="helpId" stringvalue="GNDVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_gndvi"/>
-                <attr name="ShortDescription" stringvalue="Generates GNDVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates GNDVI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-PssraOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -170,7 +186,8 @@
                 <attr name="dialogTitle" stringvalue="PSSRa"/>
                 <attr name="helpId" stringvalue="PSSRaOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_pssra"/>
-                <attr name="ShortDescription" stringvalue="Generates PSSRa from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates PSSRa from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-Ndi45OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -180,7 +197,8 @@
                 <attr name="dialogTitle" stringvalue="NDI45"/>
                 <attr name="helpId" stringvalue="NDI45Operator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_ndi45"/>
-                <attr name="ShortDescription" stringvalue="Generates NDI45 from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates NDI45 from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-MtciOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -190,7 +208,8 @@
                 <attr name="dialogTitle" stringvalue="MTCI"/>
                 <attr name="helpId" stringvalue="MTCIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_mtci"/>
-                <attr name="ShortDescription" stringvalue="Generates MTCI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates MTCI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-McariOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -200,7 +219,8 @@
                 <attr name="dialogTitle" stringvalue="MCARI"/>
                 <attr name="helpId" stringvalue="MCARIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_mcari"/>
-                <attr name="ShortDescription" stringvalue="Generates MCARI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates MCARI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-IreciOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -210,7 +230,8 @@
                 <attr name="dialogTitle" stringvalue="IRECI"/>
                 <attr name="helpId" stringvalue="IRECIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_ireci"/>
-                <attr name="ShortDescription" stringvalue="Generates IRECI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates IRECI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-S2repOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -220,7 +241,8 @@
                 <attr name="dialogTitle" stringvalue="S2REP"/>
                 <attr name="helpId" stringvalue="S2REPOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_s2rep"/>
-                <attr name="ShortDescription" stringvalue="Generates S2REP from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates S2REP from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-NdpiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -230,7 +252,8 @@
                 <attr name="dialogTitle" stringvalue="NDPI"/>
                 <attr name="helpId" stringvalue="NDPIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_ndpi"/>
-                <attr name="ShortDescription" stringvalue="Generates NDPI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates NDPI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-CiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -240,7 +263,8 @@
                 <attr name="dialogTitle" stringvalue="CI"/>
                 <attr name="helpId" stringvalue="CIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_ci"/>
-                <attr name="ShortDescription" stringvalue="Generates CI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates CI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-BiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -250,7 +274,8 @@
                 <attr name="dialogTitle" stringvalue="BI"/>
                 <attr name="helpId" stringvalue="BIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_bi"/>
-                <attr name="ShortDescription" stringvalue="Generates BI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates BI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-Bi2OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -260,7 +285,8 @@
                 <attr name="dialogTitle" stringvalue="BI2"/>
                 <attr name="helpId" stringvalue="BI2Operator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_bi2"/>
-                <attr name="ShortDescription" stringvalue="Generates BI2 from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates BI2 from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-RiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -270,7 +296,8 @@
                 <attr name="dialogTitle" stringvalue="RI"/>
                 <attr name="helpId" stringvalue="RIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_ri"/>
-                <attr name="ShortDescription" stringvalue="Generates RI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates RI from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-ReipOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -280,7 +307,8 @@
                 <attr name="dialogTitle" stringvalue="REIP"/>
                 <attr name="helpId" stringvalue="REIPOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_reip"/>
-                <attr name="ShortDescription" stringvalue="Generates REIP from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates REIP from a source product with at least two spectral bands."/>
             </file>
             <file name="org-esa-s2tbx-radiometry-ArviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
@@ -290,7 +318,8 @@
                 <attr name="dialogTitle" stringvalue="ARVI"/>
                 <attr name="helpId" stringvalue="ARVIOperator"/>
                 <attr name="targetProductNameSuffix" stringvalue="_arvi"/>
-                <attr name="ShortDescription" stringvalue="Generates ARVI from a source product with at least two spectral bands."/>
+                <attr name="ShortDescription"
+                      stringvalue="Generates ARVI from a source product with at least two spectral bands."/>
             </file>
         </folder>
     </folder>
@@ -298,139 +327,162 @@
     <folder name="Menu">
         <folder name="Optical">
             <folder name="Thematic Land Processing">
-
-                <folder name="Radiometric Indices">
-
-                    <folder name="Vegetation Indices">
-                        <file name="org-esa-s2tbx-radiometry-SaviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-SaviOpAction.instance"/>
-                            <attr name="position" intvalue="0"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-TsaviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-TsaviOpAction.instance"/>
-                            <attr name="position" intvalue="1"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-MsaviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MsaviOpAction.instance"/>
-                            <attr name="position" intvalue="2"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-Msavi2OpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Msavi2OpAction.instance"/>
-                            <attr name="position" intvalue="3"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-DviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-DviOpAction.instance"/>
-                            <attr name="position" intvalue="4"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-RviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-RviOpAction.instance"/>
-                            <attr name="position" intvalue="5"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-PviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PviOpAction.instance"/>
-                            <attr name="position" intvalue="6"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-IpviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IpviOpAction.instance"/>
-                            <attr name="position" intvalue="7"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-WdviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-WdviOpAction.instance"/>
-                            <attr name="position" intvalue="8"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-TndviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-TndviOpAction.instance"/>
-                            <attr name="position" intvalue="9"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-GndviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GndviOpAction.instance"/>
-                            <attr name="position" intvalue="10"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-GemiOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GemiOpAction.instance"/>
-                            <attr name="position" intvalue="11"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-ArviOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-ArviOpAction.instance"/>
-                            <attr name="position" intvalue="12"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-Ndi45OpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Ndi45OpAction.instance"/>
-                            <attr name="position" intvalue="13"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-MtciOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MtciOpAction.instance"/>
-                            <attr name="position" intvalue="14"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-McariOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-McariOpAction.instance"/>
-                            <attr name="position" intvalue="15"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-ReipOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-ReipOpAction.instance"/>
-                            <attr name="position" intvalue="16"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-S2repOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-S2repOpAction.instance"/>
-                            <attr name="position" intvalue="17"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-IreciOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IreciOpAction.instance"/>
-                            <attr name="position" intvalue="18"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-PssraOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PssraOpAction.instance"/>
-                            <attr name="position" intvalue="19"/>
-                        </file>
-
-                    </folder>
-
-                    <folder name="Water Indices">
-
-                        <file name="org-esa-s2tbx-radiometry-NdwiOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-NdwiOpAction.instance"/>
-                            <attr name="position" intvalue="0"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-Ndwi2OpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Ndwi2OpAction.instance"/>
-                            <attr name="position" intvalue="1"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-MndwiOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MndwiOpAction.instance"/>
-                            <attr name="position" intvalue="2"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-NdpiOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-NdpiOpAction.instance"/>
-                            <attr name="position" intvalue="3"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-NdtiOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-NdtiOpAction.instance"/>
-                            <attr name="position" intvalue="4"/>
-                        </file>
-
-                    </folder>
-
-                    <folder name="Soil Indices">
-                        <file name="org-esa-s2tbx-radiometry-BiOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-BiOpAction.instance"/>
-                            <attr name="position" intvalue="0"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-Bi2OpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Bi2OpAction.instance"/>
-                            <attr name="position" intvalue="1"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-RiOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-RiOpAction.instance"/>
-                            <attr name="position" intvalue="2"/>
-                        </file>
-                        <file name="org-esa-s2tbx-radiometry-CiOpAction.shadow">
-                            <attr name="originalFile" stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-CiOpAction.instance"/>
-                            <attr name="position" intvalue="3"/>
-                        </file>
-                    </folder>
+                <folder name="Vegetation Radiometric Indices">
+                    <file name="org-esa-s2tbx-radiometry-SaviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-SaviOpAction.instance"/>
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-TsaviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-TsaviOpAction.instance"/>
+                        <attr name="position" intvalue="1"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-MsaviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MsaviOpAction.instance"/>
+                        <attr name="position" intvalue="2"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-Msavi2OpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Msavi2OpAction.instance"/>
+                        <attr name="position" intvalue="3"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-DviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-DviOpAction.instance"/>
+                        <attr name="position" intvalue="4"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-RviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-RviOpAction.instance"/>
+                        <attr name="position" intvalue="5"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-PviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PviOpAction.instance"/>
+                        <attr name="position" intvalue="6"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-IpviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IpviOpAction.instance"/>
+                        <attr name="position" intvalue="7"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-WdviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-WdviOpAction.instance"/>
+                        <attr name="position" intvalue="8"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-TndviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-TndviOpAction.instance"/>
+                        <attr name="position" intvalue="9"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-GndviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GndviOpAction.instance"/>
+                        <attr name="position" intvalue="10"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-GemiOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-GemiOpAction.instance"/>
+                        <attr name="position" intvalue="11"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-ArviOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-ArviOpAction.instance"/>
+                        <attr name="position" intvalue="12"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-Ndi45OpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Ndi45OpAction.instance"/>
+                        <attr name="position" intvalue="13"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-MtciOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MtciOpAction.instance"/>
+                        <attr name="position" intvalue="14"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-McariOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-McariOpAction.instance"/>
+                        <attr name="position" intvalue="15"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-ReipOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-ReipOpAction.instance"/>
+                        <attr name="position" intvalue="16"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-S2repOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-S2repOpAction.instance"/>
+                        <attr name="position" intvalue="17"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-IreciOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-IreciOpAction.instance"/>
+                        <attr name="position" intvalue="18"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-PssraOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-PssraOpAction.instance"/>
+                        <attr name="position" intvalue="19"/>
+                    </file>
 
                 </folder>
 
+                <folder name="Water Radiometric Indices">
+
+                    <file name="org-esa-s2tbx-radiometry-NdwiOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-NdwiOpAction.instance"/>
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-Ndwi2OpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Ndwi2OpAction.instance"/>
+                        <attr name="position" intvalue="1"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-MndwiOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-MndwiOpAction.instance"/>
+                        <attr name="position" intvalue="2"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-NdpiOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-NdpiOpAction.instance"/>
+                        <attr name="position" intvalue="3"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-NdtiOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-NdtiOpAction.instance"/>
+                        <attr name="position" intvalue="4"/>
+                    </file>
+
+                </folder>
+
+                <folder name="Soil Radiometric Indices">
+                    <file name="org-esa-s2tbx-radiometry-BiOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-BiOpAction.instance"/>
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-Bi2OpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-Bi2OpAction.instance"/>
+                        <attr name="position" intvalue="1"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-RiOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-RiOpAction.instance"/>
+                        <attr name="position" intvalue="2"/>
+                    </file>
+                    <file name="org-esa-s2tbx-radiometry-CiOpAction.shadow">
+                        <attr name="originalFile"
+                              stringvalue="Actions/Operators/org-esa-s2tbx-radiometry-CiOpAction.instance"/>
+                        <attr name="position" intvalue="3"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

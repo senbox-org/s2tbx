@@ -15,7 +15,7 @@ import java.util.Map;
 @OperatorMetadata(
         alias = "MtciOp",
         version="1.0",
-        category = "Optical/Thematic Land Processing/Radiometric Indices/Vegetation Indices",
+        category = "Optical/Thematic Land Processing/Vegetation Radiometric Indices",
         description = "The Meris Terrestrial Chlorophyll Index,  aims at estimating the Red Edge Position (REP).\n" +
                       "This is the maximum slant point in the red and near-infrared region of the vegetal spectral reflectance.\n" +
                       "It is useful for observing the chlorophyll contents, vegetation senescence, and stress for " +

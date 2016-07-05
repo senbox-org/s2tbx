@@ -50,7 +50,8 @@ import static org.esa.snap.core.datamodel.ColorPaletteDef.loadColorPaletteDef;
  */
 public class L3MetadataProc extends S2MetadataProc {
 
-    private static String paletteRelativePath = "\\color_palettes\\spectrum.cpd";
+    private static String paletteRelativePath = "color_palettes";
+    private static String paletteSpectrum = "spectrum.cpd";
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level3_User_Product.class.getClassLoader();
@@ -171,7 +172,7 @@ public class L3MetadataProc extends S2MetadataProc {
         if(indexMax > 0) {
             //build color index using ColorPalette file
             try {
-                String palettePath = SystemUtils.getAuxDataPath() + paletteRelativePath;
+                String palettePath = SystemUtils.getAuxDataPath().resolve(paletteRelativePath).resolve(paletteSpectrum).toString();
                 ColorPaletteDef colorPalette = loadColorPaletteDef(new File(palettePath));
                 int numPoints = colorPalette.getNumPoints();
                 float interval = ((float) numPoints - 1) / indexMax;

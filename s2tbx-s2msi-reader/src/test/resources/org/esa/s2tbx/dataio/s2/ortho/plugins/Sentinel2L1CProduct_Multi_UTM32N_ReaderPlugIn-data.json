@@ -1,0 +1,14 @@
+{
+    "testProducts": [
+        {
+            "id": "S2L3-60m-Darmstadt",
+            "relativePath": "S2/L3/Darmstadt/60m/S2A_USER_PRD_MSIL03_PDMC_20150812T193220_R108_V20161231T235959_20161231T235959.SAFE/S2A_USER_MTD_SAFL03_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.xml",
+            "description": "Sentinel2 L3 product in an archive"
+        },
+        {
+            "id": "S2L3-10m-Darmstadt",
+            "relativePath": "S2/L3/Darmstadt/10m/S2A_USER_PRD_MSIL03_PDMC_20150812T193220_R108_V20161231T235959_20161231T235959.SAFE/S2A_USER_MTD_SAFL03_PDMC_20150812T193220_R108_V20150730T103914_20150730T103914.xml",
+            "description": "Sentinel2 L3 product in an archive"
+        }
+    ]
+}

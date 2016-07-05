@@ -19,6 +19,21 @@
             "id": "S2L1C-Multi-Valencia-ex-30SYJ",
             "relativePath": "S2/L1C/Valencia/ex/S2A_OPER_PRD_MSIL1C_PDMC_20160527T174718_R051_V20160511T105343_20160511T105343.SAFE/GRANULE/S2A_OPER_MSI_L1C_TL_SGS__20160511T162431_A004624_T30SYJ_N02.02/S2A_OPER_MTD_L1C_TL_SGS__20160511T162431_A004624_T30SYJ.xml",
             "description": "Sentinel2 L1C granule in an archive"
+        },
+        {
+            "id": "S2L2A-10m-ex-Valencia-30",
+            "relativePath": "S2/L2A/Valencia/ex/10m/S2A_USER_PRD_MSIL2A_PDMC_20160527T174718_R051_V20160511T105343_20160511T105343.SAFE/S2A_USER_MTD_SAFL2A_PDMC_20160527T174718_R051_V20160511T105343_20160511T105343.xml",
+            "description": "Sentinel2 L2A product in an archive"
+        },
+        {
+            "id": "S2L2A-60m-ex-Valencia-30",
+            "relativePath": "S2/L2A/Valencia/ex/60m/S2A_USER_PRD_MSIL2A_PDMC_20160527T174718_R051_V20160511T105343_20160511T105343.SAFE/S2A_USER_MTD_SAFL2A_PDMC_20160527T174718_R051_V20160511T105343_20160511T105343.xml",
+            "description": "Sentinel2 L2A product in an archive"
+        },
+        {
+            "id": "S2L2A-20m-ex-Valencia-30SYJ",
+            "relativePath": "S2/L2A/Valencia/ex/20m/S2A_USER_PRD_MSIL2A_PDMC_20160527T174718_R051_V20160511T105343_20160511T105343.SAFE/GRANULE/S2A_USER_MSI_L2A_TL_SGS__20160511T162431_A004624_T30SYJ_N02.02/S2A_USER_MTD_L2A_TL_SGS__20160511T162431_A004624_T30SYJ.xml",
+            "description": "Sentinel2 L2A product in an archive"
         }
     ]
 }
