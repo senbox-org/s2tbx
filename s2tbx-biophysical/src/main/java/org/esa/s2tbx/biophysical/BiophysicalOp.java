@@ -246,7 +246,7 @@ public class BiophysicalOp extends PixelOperator {
         // cos(Sun_Zenith)
         input[9] = Math.cos(MathUtils.DTOR * sourceSamples[L2BInput.SUN_ZENITH.getIndex()].getDouble());
         // cos(Relative_Azimuth)
-        input[10] = Math.cos(MathUtils.DTOR * sourceSamples[L2BInput.SUN_AZIMUTH.getIndex()].getDouble() - sourceSamples[L2BInput.VIEW_AZIMUTH.getIndex()].getDouble());
+        input[10] = Math.cos(MathUtils.DTOR * (sourceSamples[L2BInput.SUN_AZIMUTH.getIndex()].getDouble() - sourceSamples[L2BInput.VIEW_AZIMUTH.getIndex()].getDouble()));
 
         int targetIndex = 0;
         for (BiophysicalVariable biophysicalVariable : BiophysicalVariable.values()) {
