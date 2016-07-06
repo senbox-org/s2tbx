@@ -142,7 +142,7 @@ public class BiophysicalAlgo {
         // Build projection in grid
         double [][] definitionDomain = this.auxdata.getCoeffs(BiophysicalAuxdata.BiophysicalVariableCoeffs.DEFINITION_DOMAIN_GRID);
 
-        if (definitionDomain != null) {
+        if (bandMinMax != null && definitionDomain != null) {
             int [] gridProjection = new int[definitionDomain[0].length];
             for (int i = 0; i < gridProjection.length; i++) {
                 double bandMin = bandMinMax[0][i];
