@@ -176,6 +176,7 @@ NDI45, MTCI, MCARI, REIP, S2REP, IRECI, PSSRa
     * [SIITBX-181] - L1C products are missing time information
     * [SIITBX-187] -  Error opening S2 image : IllegalArgumentException: dataType out of range! 
     * [SIITBX-188] - Problem reading L2A files with GPT
+    * [SIITBX-191] - No intended reader for Spot 6 products
     * [SIITBX-192] - L1B reader at 60m actually reads 20m bands
     * [SIITBX-193] - S2 reader cannot read "old" 12 bpp product
     * [SIITBX-194] - L2A scene classification has wrong colors
