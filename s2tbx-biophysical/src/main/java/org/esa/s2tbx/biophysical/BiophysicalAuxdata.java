@@ -99,6 +99,9 @@ public class BiophysicalAuxdata {
     static int getNumberOfColumns(Path biophysicalVariableDataFilename) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(biophysicalVariableDataFilename)) {
             String line = reader.readLine();
+            if (line == null) {
+                throw new IOException("Error when reading first line of " + biophysicalVariableDataFilename);
+            }
             int countCommas = line.length() - line.replace(",", "").length();
             return countCommas + 1;
         } catch (IOException e) {
