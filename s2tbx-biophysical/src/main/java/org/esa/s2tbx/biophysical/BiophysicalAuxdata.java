@@ -88,7 +88,7 @@ public class BiophysicalAuxdata {
 
     static int getNumberOfLines(Path biophysicalVariableDataFilename) throws IOException {
         try (LineNumberReader lnr = new LineNumberReader(Files.newBufferedReader(biophysicalVariableDataFilename))) {
-            lnr.skip(Long.MAX_VALUE);
+            long n = lnr.skip(Long.MAX_VALUE);
             return lnr.getLineNumber();
         } catch (IOException e) {
             SystemUtils.LOG.severe("Error when reading " + biophysicalVariableDataFilename);
