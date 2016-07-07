@@ -96,4 +96,8 @@ public class S2OrthoGranuleDirFilename extends S2GranuleDirFilename {
             return null;
         }
     }
+
+    public String getTileID () {
+        return tileNumber;
+    }
 }

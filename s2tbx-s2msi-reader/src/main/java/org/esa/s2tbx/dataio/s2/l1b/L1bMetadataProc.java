@@ -30,6 +30,7 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
@@ -53,7 +54,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
+import static java.awt.Color.getHSBColor;
 import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.*;
 
 /**
@@ -235,6 +239,36 @@ public class L1bMetadataProc extends S2MetadataProc {
         }
 
         return resolutions;
+    }
+
+    public static S2IndexBandInformation makeTileInformation(String detector, S2SpatialResolution resolution, L1bSceneDescription sceneDescription) {
+
+        List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
+        List<String> tiles = new ArrayList<>();
+
+        for(String tileId : sceneDescription.getOrderedTileIds()) {
+            String detectorId = ((S2L1BGranuleDirFilename) S2L1BGranuleDirFilename.create(tileId)).getDetectorId();
+            if (detectorId.equals(detector)) {
+                tiles.add(tileId);
+            }
+        }
+
+        int numberOfTiles = tiles.size();
+        int index = 1;
+
+        for(String tileId : tiles) {
+            float f;
+            f = (index-1)*(float)1.0/(numberOfTiles+1);
+            f = (float) 0.75 - f;
+            if (f < 0) f++;
+            if(S2L1BGranuleDirFilename.create(tileId).getTileID()!=null) {
+                indexList.add(S2IndexBandInformation.makeIndex(index, getHSBColor(f, (float) 1.0, (float) 1.0), S2L1BGranuleDirFilename.create(tileId).getTileID(), tileId));
+            } else {
+                indexList.add(S2IndexBandInformation.makeIndex(index, getHSBColor(f, (float) 1.0, (float) 1.0), tileId, tileId));
+            }
+            index++;
+        }
+        return new S2IndexBandInformation(detector + "_" + resolution.name(), resolution, "", "Tile Index", "", indexList, "tile_" + resolution.name() + "_");
     }
 
     /*

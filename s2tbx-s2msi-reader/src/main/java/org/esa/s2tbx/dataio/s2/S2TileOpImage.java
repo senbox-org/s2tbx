@@ -183,7 +183,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
         return FileUtils.exchangeExtension(outputFile, "_0.pgx");
     }
 
-    protected static Dimension getTileDimAtResolutionLevel(int fullTileWidth, int fullTileHeight, int level) {
+    public static Dimension getTileDimAtResolutionLevel(int fullTileWidth, int fullTileHeight, int level) {
         int width = getSizeAtResolutionLevel(fullTileWidth, level);
         int height = getSizeAtResolutionLevel(fullTileHeight, level);
         return getTileDim(width, height);
@@ -203,7 +203,7 @@ public class S2TileOpImage extends SingleBandedOpImage {
      * @param level    the resolution level
      * @return the reduced size at the given level
      */
-    protected static int getSizeAtResolutionLevel(int fullSize, int level) {
+    public static int getSizeAtResolutionLevel(int fullSize, int level) {
         int size = fullSize >> level;
         int sizeTest = size << level;
         if (sizeTest < fullSize) {

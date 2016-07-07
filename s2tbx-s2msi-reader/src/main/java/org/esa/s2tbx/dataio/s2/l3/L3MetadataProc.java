@@ -19,6 +19,7 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.util.SystemUtils;
@@ -48,7 +49,7 @@ import static org.esa.snap.core.datamodel.ColorPaletteDef.loadColorPaletteDef;
 /**
  * Created by obarrile on 15/06/2016.
  */
-public class L3MetadataProc extends S2MetadataProc {
+public class L3MetadataProc extends S2OrthoMetadataProc {
 
     private static String paletteRelativePath = "color_palettes";
     private static String paletteSpectrum = "spectrum.cpd";

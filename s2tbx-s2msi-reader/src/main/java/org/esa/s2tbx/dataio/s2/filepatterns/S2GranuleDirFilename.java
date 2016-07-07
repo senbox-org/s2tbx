@@ -47,4 +47,6 @@ public abstract class S2GranuleDirFilename {
 
     public abstract S2GranuleImageFilename getImageFilename(String bandId);
 
+    public abstract String getTileID ();
+
 }

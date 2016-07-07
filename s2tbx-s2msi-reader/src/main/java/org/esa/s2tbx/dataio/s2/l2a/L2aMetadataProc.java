@@ -39,6 +39,7 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.w3c.dom.Element;
 
@@ -57,7 +58,7 @@ import java.util.Map;
 /**
  * @author opicas-p
  */
-public class L2aMetadataProc extends S2MetadataProc {
+public class L2aMetadataProc extends S2OrthoMetadataProc {
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level2A_User_Product.class.getClassLoader();
