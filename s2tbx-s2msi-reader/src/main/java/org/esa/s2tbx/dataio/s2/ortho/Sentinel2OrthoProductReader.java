@@ -24,13 +24,13 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.math3.util.Precision;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
-import org.esa.s2tbx.dataio.s2.ColorIterator;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGrid;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -50,22 +50,17 @@ import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.Placemark;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.SourceImageScaler;
-import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.FileUtils;
-import org.esa.snap.core.util.jai.JAIDebug;
-import org.esa.snap.core.util.jai.JAIUtils;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
@@ -86,7 +81,6 @@ import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
@@ -97,8 +91,10 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,9 +104,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import static java.awt.image.DataBuffer.*;
@@ -339,6 +333,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             addVectorMasks(product, tileList, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
+            System.out.println(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
             addIndexMasks(product, bandInfoList, sceneDescription);
@@ -658,11 +653,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                 }
             }
+            System.out.println("AddVectorMasks " + maskInfo.getMainType() + " : " + timeProbe.elapsed(TimeUnit.MILLISECONDS));
             timeProbe.reset();
         }
     }
 
     private void addVectorMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, S2SpectralInformation spectralInfo, List<BandInfo> bandInfoList) {
+
         List<EopPolygon> [] productPolygons = new List[maskInfo.getSubType().length];
         for(int i =0;i<maskInfo.getSubType().length;i++)
         {
@@ -671,6 +668,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
 
         boolean maskFilesFound = false;
+        TimeProbe time = TimeProbe.start();
         for (S2Metadata.Tile tile : tileList) {
 
             if (tile.getMaskFilenames() == null) {
@@ -693,9 +691,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                 maskFilesFound = true;
 
-                // Read all polygons from the mask file
-                GmlFilter gmlFilter = new GmlFilter();
-                List<EopPolygon> polygonsForTile = gmlFilter.parse(maskFilename.getName()).getSecond();
+                List<EopPolygon> polygonsForTile;
+
+
+                //TODO : boolean in preferences?
+                if(true) {
+                    // Read all polygons from the mask file
+                    GmlFilter gmlFilter = new GmlFilter();
+                    polygonsForTile = gmlFilter.parse(maskFilename.getName()).getSecond();
+
+                } else {
+                    //Without GMLFilter
+                    polygonsForTile = readPolygons(maskFilename.getName().getAbsolutePath());
+                }
 
                 for(int i = 0; i<maskInfo.getSubType().length;i++)
                 {
@@ -705,10 +713,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
         }
 
+
         if (!maskFilesFound) {
             return;
         }
-
 
         for(int i = 0; i<maskInfo.getSubType().length;i++) {
             // TODO : why do we use this here ?
@@ -1117,4 +1125,82 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         return bandNames;
     }
+
+    private List<EopPolygon> readPolygons (String maskFilename) {
+        List<EopPolygon> polygonsForTile = new ArrayList<>();
+        String line;
+        String polygonWKT;
+        String type = "";
+
+        WKTReader wkt = new WKTReader();
+
+        FileReader f = null;
+        try {
+            f = new FileReader(maskFilename);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BufferedReader b = new BufferedReader(f);
+        try {
+            while((line = b.readLine())!=null) {
+                if(line.contains("<gml:posList srsDimension")) {
+                    String polygon = line.substring(line.indexOf(">")+1, line.indexOf("</gml:posList>"));
+                    polygonWKT = convertToWKTPolygon (polygon, readPolygonDimension (line));
+                    EopPolygon polyg = new EopPolygon("id", type, (Polygon) wkt.read(polygonWKT));
+                    polygonsForTile.add(polyg);
+                }
+                else if(line.contains("</eop:maskType>")) {
+                    type = line.substring(line.indexOf(">")+1, line.indexOf("</eop:maskType>"));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        try {
+            b.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return polygonsForTile;
+    }
+
+    private int readPolygonDimension (String line) {
+        String label = "srsDimension=\"";
+        int position = line.indexOf(label);
+        if(position == -1) {
+            return 0;
+        }
+        try {
+            int dimension = Integer.parseInt(line.substring(position + label.length(), position + label.length() + 1));
+            return dimension;
+        } catch (Exception e){
+            return 0;
+        }
+    }
+
+    private String convertToWKTPolygon (String line, int dimension) {
+        StringBuilder output = new StringBuilder("POLYGON((");
+
+        int pos = 0, end;
+        int count=0;
+        while ((end = line.indexOf(' ', pos)) >= 0) {
+            output = output.append(line.substring(pos, end));
+            pos = end + 1;
+            count ++;
+            if(count == dimension) {
+                output = output.append(",");
+                count = 0;
+            } else {
+                output = output.append(" ");
+            }
+        }
+
+        //add last coordinate
+        output = output.append(line.substring(line.lastIndexOf(' ')+1));
+        output = output.append("))");
+        return output.toString();
+    }
 }
+
