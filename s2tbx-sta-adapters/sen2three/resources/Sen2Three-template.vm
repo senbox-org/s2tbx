@@ -1,0 +1,7 @@
+$SEN2THREE_BIN/L3_Process.py
+--resolution
+$resolution
+#if($clean)
+--clean
+#end
+$sourceFolder

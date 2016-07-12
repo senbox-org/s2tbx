@@ -1,0 +1,26 @@
+#if($sourceFolder.Directory)
+    #set($fileList = $sourceFolder.listFiles())
+    #foreach($file in $fileList)
+        #if($file.Name.contains("L03"))
+            #set($targetFolder=$file)
+			#if($targetFolder.Directory)
+				#set($fileList2 = $targetFolder.listFiles())
+				#foreach($file2 in $fileList2)
+					#if($file2.Name.contains("L03"))
+						#set($targetName=$file2.AbsolutePath)
+					#end
+				#end
+			#end
+        #end
+    #end
+	#set($fileClass=$targetFolder.Class.forName("java.io.File"))
+	#set($paramList = [$targetName])
+	#set($paramArray = $paramList.toArray())
+	#set($ctors = $fileClass.Constructors)
+
+	#foreach ($ctor in $ctors)
+		#if ($ctor.toString() == "public java.io.File(java.lang.String)")
+			#set($targetProductFile = $ctor.newInstance($paramArray))
+		#end
+	#end
+#end
