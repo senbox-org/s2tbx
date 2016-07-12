@@ -3,7 +3,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Sen2Cor</alias>
   <label>SEN2COR</label>
-  <version>2.0.3</version>
+  <version>2.1.2</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
   <authors></authors>
   <copyright></copyright>
@@ -14,7 +14,9 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$PYTHON_BIN</mainToolFileLocation>
   <workingDir>$SEN2COR_HOME</workingDir>
-  <templateFileLocation>Sen2Cor-template.vm</templateFileLocation>
+  <template>
+    <file>Sen2Cor-template.vm</file>
+  </template>
   <progressPattern>Progress\[%\]: (\d{1,3})\.(?:.+)</progressPattern>
   <errorPattern>[\s\S]+(?:UserWarning|Error): (.+)</errorPattern>
   <variables>
@@ -41,15 +43,14 @@
   <parameters>
     <parameter>
       <name>targetProductFile</name>
-      <alias></alias>
       <dataType>java.io.File</dataType>
+      <description>Output file</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
-    <parameter>
+    <templateparameter>
       <name>postExecuteTemplate</name>
       <dataType>java.io.File</dataType>
       <defaultValue>Sen2Cor-post-template.vm</defaultValue>
@@ -58,18 +59,19 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>TemplateAfterExecution</parameterType>
-      <toolParameterDescriptors/>
-    </parameter>
+      <parameters/>
+      <template>
+        <file>Sen2Cor-post-template.vm</file>
+      </template>
+    </templateparameter>
     <parameter>
       <name>sceneOnly</name>
       <dataType>java.lang.Boolean</dataType>
       <description>Scene Only</description>
-      <label>Scene Only</label>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>resolution</name>
@@ -83,7 +85,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
   </parameters>
   <source>user</source>
@@ -96,4 +97,5 @@
   </sourceProductDescriptors>
   <targetPropertyDescriptors/>
   <numSourceProducts>1</numSourceProducts>
+  <templateType>VELOCITY</templateType>
 </operator>
