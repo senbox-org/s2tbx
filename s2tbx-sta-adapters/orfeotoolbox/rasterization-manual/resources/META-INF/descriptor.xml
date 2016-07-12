@@ -14,7 +14,7 @@
   <workingDir>/tmp</workingDir>
   <templateFileLocation>rasterization-manual-template.vm</templateFileLocation>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
-  <errorPattern>itk::ERROR(.+)</errorPattern>
+  <errorPattern>(?:ERROR:|itk::ERROR)(.+)</errorPattern>
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
@@ -23,6 +23,7 @@
       <linux>/usr/bin</linux>
       <macosx></macosx>
       <isTransient>false</isTransient>
+      <isShared>true</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINRASTERIZATION_MANUAL_EXEC</key>
@@ -31,9 +32,21 @@
       <linux>otbcli_Rasterization</linux>
       <macosx>otbcli_Rasterization</macosx>
       <isTransient>false</isTransient>
+      <isShared>true</isShared>
     </osvariable>
   </variables>
   <parameters>
+    <parameter>
+      <name>in_str</name>
+      <alias>Input vector dataset</alias>
+      <dataType>java.io.File</dataType>
+      <description>The input vector dataset to be rasterized</description>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
     <parameter>
       <name>targetProductFile</name>
       <alias>targetProductFile</alias>
@@ -181,11 +194,7 @@
   <source>user</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>false</isHandlingOutputName>
-  <sourceProductDescriptors>
-    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
-      <name>sourceProduct 1</name>
-    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
-  </sourceProductDescriptors>
+  <sourceProductDescriptors/>
   <targetPropertyDescriptors/>
   <numSourceProducts>1</numSourceProducts>
 </operator>

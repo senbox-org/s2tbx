@@ -1,3 +1,5 @@
+-in
+$in_str
 -out
 $targetProductFile
 -szx
