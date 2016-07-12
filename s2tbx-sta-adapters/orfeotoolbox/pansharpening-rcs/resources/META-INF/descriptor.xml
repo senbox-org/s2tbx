@@ -32,7 +32,7 @@
       <linux>otbcli_Pansharpening</linux>
       <macosx>otbcli_Pansharpening</macosx>
       <isTransient>false</isTransient>
-      <isShared>true</isShared>
+      <isShared>false</isShared>
     </osvariable>
   </variables>
   <parameters>

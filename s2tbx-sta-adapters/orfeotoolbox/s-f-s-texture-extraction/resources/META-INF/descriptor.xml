@@ -32,7 +32,7 @@
       <linux>otbcli_SFSTextureExtraction</linux>
       <macosx>otbcli_SFSTextureExtraction</macosx>
       <isTransient>false</isTransient>
-      <isShared>true</isShared>
+      <isShared>false</isShared>
     </osvariable>
   </variables>
   <parameters>

@@ -32,7 +32,7 @@
       <linux>otbcli_HaralickTextureExtraction</linux>
       <macosx>otbcli_HaralickTextureExtraction</macosx>
       <isTransient>false</isTransient>
-      <isShared>true</isShared>
+      <isShared>false</isShared>
     </osvariable>
   </variables>
   <parameters>

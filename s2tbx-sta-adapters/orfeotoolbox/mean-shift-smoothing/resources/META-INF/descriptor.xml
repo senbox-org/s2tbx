@@ -32,7 +32,7 @@
       <linux>otbcli_MeanShiftSmoothing</linux>
       <macosx>otbcli_MeanShiftSmoothing</macosx>
       <isTransient>false</isTransient>
-      <isShared>true</isShared>
+      <isShared>false</isShared>
     </osvariable>
   </variables>
   <parameters>

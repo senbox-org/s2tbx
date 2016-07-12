@@ -32,7 +32,7 @@
       <linux>otbcli_MultivariateAlterationDetector</linux>
       <macosx>otbcli_MultivariateAlterationDetector</macosx>
       <isTransient>false</isTransient>
-      <isShared>true</isShared>
+      <isShared>false</isShared>
     </osvariable>
   </variables>
   <parameters>

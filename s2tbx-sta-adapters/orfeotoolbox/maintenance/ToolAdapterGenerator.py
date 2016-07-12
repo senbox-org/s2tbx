@@ -183,7 +183,7 @@ def getVariables(appName, envVarTool):
     submet = ET.SubElement(met, "isTransient")
     submet.text = "false"
     submet = ET.SubElement(met, "isShared")
-    submet.text = "true"
+    submet.text = "false"
 
     # met = ET.SubElement(root, "osvariable")
     #
