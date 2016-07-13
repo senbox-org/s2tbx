@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>Segmentation-cc</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
@@ -12,21 +13,24 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINSEGMENTATION_CC_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
-  <templateFileLocation>segmentation-cc-template.vm</templateFileLocation>
+  <templateType>VELOCITY</templateType>
+  <template>
+    <file>segmentation-cc-template.vm</file>
+  </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
   <errorPattern>itk::ERROR(.+)</errorPattern>
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value></value>
-      <windows></windows>
+      <value/>
+      <windows/>
       <linux>/usr/bin</linux>
-      <macosx></macosx>
+      <macosx/>
       <isTransient>false</isTransient>
     </osvariable>
     <osvariable>
       <key>OTB_BINSEGMENTATION_CC_EXEC</key>
-      <value></value>
+      <value/>
       <windows>otbcli_Segmentation.bat</windows>
       <linux>otbcli_Segmentation</linux>
       <macosx>otbcli_Segmentation</macosx>
@@ -36,29 +40,24 @@
   <parameters>
     <parameter>
       <name>sourceProductFile</name>
-      <alias>sourceProductFile</alias>
       <dataType>java.io.File</dataType>
       <description>The input image to segment</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>expr_string</name>
-      <alias>Condition</alias>
       <dataType>java.lang.String</dataType>
       <description>User defined connection condition, written as a mathematical expression. Available variables are p(i)b(i), intensity_p(i) and distance (example of expression : distance &lt; 10 )</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>out_str</name>
-      <alias>Output vector file</alias>
       <dataType>java.io.File</dataType>
       <defaultValue>segmentation-cc.shp</defaultValue>
       <description>The output vector file or database (name can be anything understood by OGR)</description>
@@ -66,11 +65,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>outmode_string</name>
-      <alias>Writing mode for the output vector file</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>ulco</defaultValue>
       <description>This allows setting the writing behaviour for the output vector file. Please note that the actual behaviour depends on the file format.</description>
@@ -78,11 +75,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>neighbor_bool</name>
-      <alias>8-neighbor connectivity</alias>
       <dataType>java.lang.Boolean</dataType>
       <defaultValue>True</defaultValue>
       <description>Activate 8-Neighborhood connectivity (default is 4).</description>
@@ -90,11 +85,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>stitch_bool</name>
-      <alias>Stitch polygons</alias>
       <dataType>java.lang.Boolean</dataType>
       <defaultValue>True</defaultValue>
       <description>Scan polygons on each side of tiles and stitch polygons which connect by more than one pixel.</description>
@@ -102,11 +95,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>minsize_int</name>
-      <alias>Minimum object size</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1</defaultValue>
       <description>Objects whose size is below the minimum object size (area in pixels) will be ignored during vectorization.</description>
@@ -114,11 +105,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>simplify_float</name>
-      <alias>Simplify polygons</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.1</defaultValue>
       <description>Simplify polygons according to a given tolerance (in pixel). This option allows reducing the size of the output file or database.</description>
@@ -126,11 +115,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>layername_string</name>
-      <alias>Layer name</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>layer</defaultValue>
       <description>Name of the layer in the vector file or database (default is Layer).</description>
@@ -138,11 +125,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>fieldname_string</name>
-      <alias>Geometry index field name</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>DN</defaultValue>
       <description>Name of the field holding the geometry index in the output vector file or database.</description>
@@ -150,11 +135,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>tilesize_int</name>
-      <alias>Tiles size</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1024</defaultValue>
       <description>User defined tiles size for tile-based segmentation. Optimal tile size is selected according to available RAM if null.</description>
@@ -162,11 +145,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>startlabel_int</name>
-      <alias>Starting geometry index</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1</defaultValue>
       <description>Starting value of the geometry index field</description>
@@ -174,10 +155,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
   </parameters>
-  <source>user</source>
+  <source>package</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>true</isHandlingOutputName>
   <sourceProductDescriptors>

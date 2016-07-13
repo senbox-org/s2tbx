@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>Rasterization-manual</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
@@ -12,21 +13,24 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINRASTERIZATION_MANUAL_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
-  <templateFileLocation>rasterization-manual-template.vm</templateFileLocation>
+  <templateType>VELOCITY</templateType>
+  <template>
+    <file>rasterization-manual-template.vm</file>
+  </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
   <errorPattern>itk::ERROR(.+)</errorPattern>
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value></value>
-      <windows></windows>
+      <value/>
+      <windows/>
       <linux>/usr/bin</linux>
-      <macosx></macosx>
+      <macosx/>
       <isTransient>false</isTransient>
     </osvariable>
     <osvariable>
       <key>OTB_BINRASTERIZATION_MANUAL_EXEC</key>
-      <value></value>
+      <value/>
       <windows>otbcli_Rasterization.bat</windows>
       <linux>otbcli_Rasterization</linux>
       <macosx>otbcli_Rasterization</macosx>
@@ -36,18 +40,15 @@
   <parameters>
     <parameter>
       <name>targetProductFile</name>
-      <alias>targetProductFile</alias>
       <dataType>java.io.File</dataType>
       <description>An output image containing the rasterized vector dataset</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>szx_int</name>
-      <alias>Output size x</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>0</defaultValue>
       <description>Output size along x axis (useless if support image is given)</description>
@@ -55,11 +56,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>szy_int</name>
-      <alias>Output size y</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>0</defaultValue>
       <description>Output size along y axis (useless if support image is given)</description>
@@ -67,11 +66,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>epsg_int</name>
-      <alias>Output EPSG code</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>0</defaultValue>
       <description>EPSG code for the output projection reference system (EPSG 4326 for WGS84, 32631 for UTM31N...,useless if support image is given)</description>
@@ -79,11 +76,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>orx_float</name>
-      <alias>Output Upper-left x</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.0</defaultValue>
       <description>Output upper-left corner x coordinate (useless if support image is given)</description>
@@ -91,11 +86,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>ory_float</name>
-      <alias>Output Upper-left y</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.0</defaultValue>
       <description>Output upper-left corner y coordinate (useless if support image is given)</description>
@@ -103,11 +96,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>spx_float</name>
-      <alias>Spacing (GSD) x</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.0</defaultValue>
       <description>Spacing (ground sampling distance) along x axis (useless if support image is given)</description>
@@ -115,11 +106,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>spy_float</name>
-      <alias>Spacing (GSD) y</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.0</defaultValue>
       <description>Spacing (ground sampling distance) along y axis (useless if support image is given)</description>
@@ -127,11 +116,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>background_float</name>
-      <alias>Background value</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0</defaultValue>
       <description>Default value for pixels not belonging to any geometry</description>
@@ -139,11 +126,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>mode_string</name>
-      <alias>Rasterization mode</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>binary</defaultValue>
       <description>Choice of rasterization modes</description>
@@ -151,11 +136,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>foreground_float</name>
-      <alias>Foreground value</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>255</defaultValue>
       <description>Value for pixels inside a geometry</description>
@@ -163,11 +146,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>field_string</name>
-      <alias>The attribute field to burn</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>DN</defaultValue>
       <description>Name of the attribute field to burn</description>
@@ -175,10 +156,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
   </parameters>
-  <source>user</source>
+  <source>package</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>false</isHandlingOutputName>
   <sourceProductDescriptors>

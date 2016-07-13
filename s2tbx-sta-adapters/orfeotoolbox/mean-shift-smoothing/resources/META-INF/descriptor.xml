@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>MeanShiftSmoothing</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
@@ -12,21 +13,24 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINMEAN_SHIFT_SMOOTHING_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
-  <templateFileLocation>mean-shift-smoothing-template.vm</templateFileLocation>
+  <templateType>VELOCITY</templateType>
+  <template>
+    <file>mean-shift-smoothing-template.vm</file>
+  </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
   <errorPattern>itk::ERROR(.+)</errorPattern>
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value></value>
-      <windows></windows>
+      <value/>
+      <windows/>
       <linux>/usr/bin</linux>
-      <macosx></macosx>
+      <macosx/>
       <isTransient>false</isTransient>
     </osvariable>
     <osvariable>
       <key>OTB_BINMEAN_SHIFT_SMOOTHING_EXEC</key>
-      <value></value>
+      <value/>
       <windows>otbcli_MeanShiftSmoothing.bat</windows>
       <linux>otbcli_MeanShiftSmoothing</linux>
       <macosx>otbcli_MeanShiftSmoothing</macosx>
@@ -36,40 +40,33 @@
   <parameters>
     <parameter>
       <name>sourceProductFile</name>
-      <alias>sourceProductFile</alias>
       <dataType>java.io.File</dataType>
       <description>The input image.</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>targetProductFile</name>
-      <alias>targetProductFile</alias>
       <dataType>java.io.File</dataType>
       <description>The filtered output image.</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>targetProductFile</name>
-      <alias>targetProductFile</alias>
       <dataType>java.io.File</dataType>
       <description> The spatial image output. Spatial image output is a displacement map (pixel position after convergence).</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>spatialr_int</name>
-      <alias>Spatial radius</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>5</defaultValue>
       <description>Spatial radius of the neighborhood.</description>
@@ -77,11 +74,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>ranger_float</name>
-      <alias>Range radius</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>15</defaultValue>
       <description>Range radius defining the radius (expressed in radiometry unit) in the multi-spectral space.</description>
@@ -89,11 +84,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>thres_float</name>
-      <alias>Mode convergence threshold</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.1</defaultValue>
       <description>Algorithm iterative scheme will stop if mean-shift vector is below this threshold or if iteration number reached maximum number of iterations.</description>
@@ -101,11 +94,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>maxiter_int</name>
-      <alias>Maximum number of iterations</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>100</defaultValue>
       <description>Algorithm iterative scheme will stop if convergence hasn't been reached after the maximum number of iterations.</description>
@@ -113,11 +104,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>rangeramp_float</name>
-      <alias>Range radius coefficient</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0</defaultValue>
       <description>This coefficient makes dependent the ranger of the colorimetry of the filtered pixel : y = rangeramp*x+ranger.</description>
@@ -125,11 +114,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>modesearch_bool</name>
-      <alias>Mode search.</alias>
       <dataType>java.lang.Boolean</dataType>
       <defaultValue>True</defaultValue>
       <description>If activated pixel iterative convergence is stopped if the path . Be careful, with this option, the result will slightly depend on thread number</description>
@@ -137,10 +124,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
   </parameters>
-  <source>user</source>
+  <source>package</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>false</isHandlingOutputName>
   <sourceProductDescriptors>

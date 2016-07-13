@@ -7,5 +7,6 @@ OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Type: STA
 OpenIDE-Module: org.esa.s2tbx.MeanShiftSmoothing
 OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
-OpenIDE-Module-Install: org/esa/snap/utils/ModuleInstaller.class
+OpenIDE-Module-Alias: MeanShiftSmoothing
+OpenIDE-Module-Short-Description: Mean Shift Smoothing
 AutoUpdate-Show-In-Client: false

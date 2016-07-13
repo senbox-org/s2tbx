@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>Rasterization-image</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
@@ -12,21 +13,24 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINRASTERIZATION_IMAGE_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
-  <templateFileLocation>rasterization-image-template.vm</templateFileLocation>
+  <templateType>VELOCITY</templateType>
+  <template>
+    <file>rasterization-image-template.vm</file>
+  </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
   <errorPattern>itk::ERROR(.+)</errorPattern>
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value></value>
-      <windows></windows>
+      <value/>
+      <windows/>
       <linux>/usr/bin</linux>
-      <macosx></macosx>
+      <macosx/>
       <isTransient>false</isTransient>
     </osvariable>
     <osvariable>
       <key>OTB_BINRASTERIZATION_IMAGE_EXEC</key>
-      <value></value>
+      <value/>
       <windows>otbcli_Rasterization.bat</windows>
       <linux>otbcli_Rasterization</linux>
       <macosx>otbcli_Rasterization</macosx>
@@ -36,18 +40,15 @@
   <parameters>
     <parameter>
       <name>targetProductFile</name>
-      <alias>targetProductFile</alias>
       <dataType>java.io.File</dataType>
       <description>An output image containing the rasterized vector dataset</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>background_float</name>
-      <alias>Background value</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0</defaultValue>
       <description>Default value for pixels not belonging to any geometry</description>
@@ -55,11 +56,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>mode_string</name>
-      <alias>Rasterization mode</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>binary</defaultValue>
       <description>Choice of rasterization modes</description>
@@ -67,11 +66,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>foreground_float</name>
-      <alias>Foreground value</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>255</defaultValue>
       <description>Value for pixels inside a geometry</description>
@@ -79,11 +76,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>field_string</name>
-      <alias>The attribute field to burn</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>DN</defaultValue>
       <description>Name of the attribute field to burn</description>
@@ -91,10 +86,9 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
   </parameters>
-  <source>user</source>
+  <source>package</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>false</isHandlingOutputName>
   <sourceProductDescriptors>
