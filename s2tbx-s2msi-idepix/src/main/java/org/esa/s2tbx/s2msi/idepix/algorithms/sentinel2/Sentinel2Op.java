@@ -35,7 +35,7 @@ public class Sentinel2Op extends Operator {
     private static final int OVERSAMPLING_FACTOR_X = 3;
     private static final int OVERSAMPLING_FACTOR_Y = 3;
 
-    @Parameter(defaultValue = "false",
+    @Parameter(defaultValue = "true",
             label = " Write TOA Reflectances to the target product",
             description = " Write TOA Reflectances to the target product")
     private boolean copyToaReflectances;

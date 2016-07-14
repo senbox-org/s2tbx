@@ -71,7 +71,7 @@ public class Sentinel2ClassificationOp extends Operator {
             "and B12.raw > 0";
 
 
-    @Parameter(defaultValue = "false",
+    @Parameter(defaultValue = "true",
             label = " Write TOA Reflectances to the target product",
             description = " Write TOA Reflectances to the target product")
     private boolean copyToaReflectances;
@@ -312,6 +312,7 @@ public class Sentinel2ClassificationOp extends Operator {
                                 }
                             }
                         }
+
                     }
                     if (nnTargetTile != null) {
                         nnTargetTile.setSample(x, y, nnOutput[0]);
@@ -600,6 +601,9 @@ public class Sentinel2ClassificationOp extends Operator {
         targetTile.setSample(x, y, IdepixConstants.F_INVALID, s2Algorithm.isInvalid());
         targetTile.setSample(x, y, IdepixConstants.F_CLOUD, s2Algorithm.isCloud());
         targetTile.setSample(x, y, IdepixConstants.F_CLOUD_SURE, s2Algorithm.isCloud());
+        targetTile.setSample(x, y, IdepixConstants.F_CLOUD_AMBIGUOUS, s2Algorithm.isCloudAmbiguous());
+        targetTile.setSample(x, y, IdepixConstants.F_CIRRUS_SURE, s2Algorithm.isCirrus());
+        targetTile.setSample(x, y, IdepixConstants.F_CIRRUS_AMBIGUOUS, s2Algorithm.isCirrusAmbiguous());
         targetTile.setSample(x, y, IdepixConstants.F_CLOUD_SHADOW, false); // not computed here
         targetTile.setSample(x, y, IdepixConstants.F_CLEAR_LAND, s2Algorithm.isClearLand());
         targetTile.setSample(x, y, IdepixConstants.F_CLEAR_WATER, s2Algorithm.isClearWater());
