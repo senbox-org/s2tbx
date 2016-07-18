@@ -35,7 +35,7 @@ public class Sentinel2Op extends Operator {
     private static final int OVERSAMPLING_FACTOR_X = 3;
     private static final int OVERSAMPLING_FACTOR_Y = 3;
 
-    @Parameter(defaultValue = "false",
+    @Parameter(defaultValue = "true",
             label = " Write TOA Reflectances to the target product",
             description = " Write TOA Reflectances to the target product")
     private boolean copyToaReflectances;
@@ -94,6 +94,9 @@ public class Sentinel2Op extends Operator {
 
     @Parameter(defaultValue = "true", label = " Compute a cloud buffer")
     private boolean computeCloudBuffer;
+
+    @Parameter(defaultValue = "true", label = " Compute a cloud buffer also for cloud ambiguous pixels")
+    private boolean computeCloudBufferForCloudAmbiguous;
 
     @Parameter(defaultValue = "2", interval = "[0,100]",
             label = " Width of cloud buffer (# of pixels)",
@@ -191,21 +194,23 @@ public class Sentinel2Op extends Operator {
         Map<String, Object> params = new HashMap<>();
         params.put("cloudBufferWidth", cloudBufferWidth);
         params.put("gaComputeCloudBuffer", computeCloudBuffer);
+        params.put("computeCloudBufferForCloudAmbiguous", computeCloudBufferForCloudAmbiguous);
         params.put("gaComputeCloudShadow", computeCloudShadow);
         params.put("gaRefineClassificationNearCoastlines", refineClassificationNearCoastlines);
         final Product classifiedProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2PostProcessOp.class),
                                                             params, input);
 
-        if (computeCloudBuffer) {
-            input = new HashMap<>();
-            input.put("classifiedProduct", classifiedProduct);
-            params = new HashMap<>();
-            params.put("cloudBufferWidth", cloudBufferWidth);
-            postProcessingProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2CloudBufferOp.class),
-                                                      params, input);
-        } else {
-            postProcessingProduct = classifiedProduct;
-        }
+//        if (computeCloudBuffer) {
+//            input = new HashMap<>();
+//            input.put("classifiedProduct", classifiedProduct);
+//            params = new HashMap<>();
+//            params.put("cloudBufferWidth", cloudBufferWidth);
+//            postProcessingProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2CloudBufferOp.class),
+//                                                      params, input);
+//        } else {
+//            postProcessingProduct = classifiedProduct;
+//        }
+        postProcessingProduct = classifiedProduct;
     }
 
     private Map<String, Object> createPixelClassificationParameters() {

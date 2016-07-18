@@ -13,18 +13,20 @@ public class IdepixConstants {
     public static final int F_CLOUD_SURE = 3;
     public static final int F_CLOUD_BUFFER = 4;
     public static final int F_CLOUD_SHADOW = 5;
-    public static final int F_COASTLINE = 6;
-    public static final int F_CLEAR_SNOW = 7;
-    public static final int F_CLEAR_LAND = 8;
-    public static final int F_CLEAR_WATER = 9;
-    public static final int F_LAND = 10;
-    public static final int F_WATER = 11;
-    public static final int F_BRIGHT = 12;
-    public static final int F_WHITE = 13;
-    public static final int F_BRIGHTWHITE = 14;
-    public static final int F_HIGH = 15;
-    public static final int F_VEG_RISK = 16;
-    public static final int F_SEAICE = 17;
+    public static final int F_CIRRUS_AMBIGUOUS = 6;
+    public static final int F_CIRRUS_SURE = 7;
+    public static final int F_COASTLINE = 8;
+    public static final int F_CLEAR_SNOW = 9;
+    public static final int F_CLEAR_LAND = 10;
+    public static final int F_CLEAR_WATER = 11;
+    public static final int F_LAND = 12;
+    public static final int F_WATER = 13;
+    public static final int F_BRIGHT = 14;
+    public static final int F_WHITE = 15;
+    public static final int F_BRIGHTWHITE = 16;
+    public static final int F_HIGH = 17;
+    public static final int F_VEG_RISK = 18;
+    public static final int F_SEAICE = 19;
 
     public static final int NO_DATA_VALUE = -1;
 

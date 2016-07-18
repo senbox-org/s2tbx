@@ -28,6 +28,8 @@ public class IdepixUtils {
     public static final String F_CLOUD_SURE_DESCR_TEXT = "Fully opaque clouds with full confidence of their detection";
     public static final String F_CLOUD_BUFFER_DESCR_TEXT = "A buffer of n pixels around a cloud. n is a user supplied parameter. Applied to pixels masked as 'cloud'";
     public static final String F_CLOUD_SHADOW_DESCR_TEXT = "Pixels is affect by a cloud shadow";
+    public static final String F_CIRRUS_AMBIGUOUS_DESCR_TEXT = "Cirrus clouds, or clouds where the detection level is uncertain";
+    public static final String F_CIRRUS_SURE_DESCR_TEXT = "Cirrus clouds with full confidence of their detection";
     public static final String F_COASTLINE_DESCR_TEXT = "Pixels at a coastline";
     public static final String F_CLEAR_SNOW_DESCR_TEXT = "Clear snow/ice pixels";
     public static final String F_CLEAR_LAND_DESCR_TEXT = "Clear land pixels";
@@ -123,6 +125,8 @@ public class IdepixUtils {
         flagCoding.addFlag("F_CLOUD_SURE", BitSetter.setFlag(0, IdepixConstants.F_CLOUD_SURE), F_CLOUD_SURE_DESCR_TEXT);
         flagCoding.addFlag("F_CLOUD_BUFFER", BitSetter.setFlag(0, IdepixConstants.F_CLOUD_BUFFER), F_CLOUD_BUFFER_DESCR_TEXT);
         flagCoding.addFlag("F_CLOUD_SHADOW", BitSetter.setFlag(0, IdepixConstants.F_CLOUD_SHADOW), F_CLOUD_SHADOW_DESCR_TEXT);
+        flagCoding.addFlag("F_CIRRUS_AMBIGUOUS", BitSetter.setFlag(0, IdepixConstants.F_CIRRUS_AMBIGUOUS), F_CIRRUS_AMBIGUOUS_DESCR_TEXT);
+        flagCoding.addFlag("F_CIRRUS_SURE", BitSetter.setFlag(0, IdepixConstants.F_CIRRUS_SURE), F_CIRRUS_SURE_DESCR_TEXT);
         flagCoding.addFlag("F_COASTLINE", BitSetter.setFlag(0, IdepixConstants.F_COASTLINE), F_COASTLINE_DESCR_TEXT);
         flagCoding.addFlag("F_CLEAR_SNOW", BitSetter.setFlag(0, IdepixConstants.F_CLEAR_SNOW), F_CLEAR_SNOW_DESCR_TEXT);
         flagCoding.addFlag("F_CLEAR_LAND", BitSetter.setFlag(0, IdepixConstants.F_CLEAR_LAND), F_CLEAR_LAND_DESCR_TEXT);
@@ -176,6 +180,16 @@ public class IdepixUtils {
                                          F_CLOUD_SHADOW_DESCR_TEXT, w, h,
                                          "pixel_classif_flags.F_CLOUD_SHADOW",
                                          Color.cyan, 0.5f);
+        gaCloudProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("lc_cirrus_sure",
+                                         F_CIRRUS_SURE_DESCR_TEXT, w, h,
+                                         "pixel_classif_flags.F_CIRRUS_SURE",
+                                         getRandomColour(r), 0.5f);
+        gaCloudProduct.getMaskGroup().add(index++, mask);
+        mask = Mask.BandMathsType.create("lc_cirrus_ambiguous",
+                                         F_CIRRUS_AMBIGUOUS_DESCR_TEXT, w, h,
+                                         "pixel_classif_flags.F_CIRRUS_AMBIGUOUS",
+                                         getRandomColour(r), 0.5f);
         gaCloudProduct.getMaskGroup().add(index++, mask);
         mask = Mask.BandMathsType.create("lc_coastline",
                                          F_COASTLINE_DESCR_TEXT, w, h,
