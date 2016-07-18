@@ -375,20 +375,23 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         int heightAnglesTile = 0;
         float resX = 0;
         float resY = 0;
+        //double lowerY = Integer.MAX_VALUE;
         S2BandAnglesGrid[] bandAnglesGrid = null;
         //Search upper-left tile
         for (String tileId : sceneDescription.getTileIds()) {
             //test all S2SpatialResolutions because sometimes not all are available
             for (S2SpatialResolution s2res : S2SpatialResolution.values()) {
-                if (sceneDescription.getTilePositionInScene(tileId, s2res).getX() == 0 && sceneDescription.getTilePositionInScene(tileId, s2res).getY() == 0) {
-                    bandAnglesGrid = bandAnglesGridsMap.get(tileId);
-                    masterOriginX = bandAnglesGrid[0].originX;
-                    masterOriginY = bandAnglesGrid[0].originY;
+                bandAnglesGrid = bandAnglesGridsMap.get(tileId);
+               // if (sceneDescription.getTilePositionInScene(tileId, s2res).getX() == 0 && sceneDescription.getTilePositionInScene(tileId, s2res).getY() < lowerY) {
                     widthAnglesTile = bandAnglesGrid[0].getWidth();
                     heightAnglesTile = bandAnglesGrid[0].getHeight();
                     resX = bandAnglesGrid[0].getResX();
                     resY = bandAnglesGrid[0].getResY();
-                }
+                    //lowerY = sceneDescription.getTilePositionInScene(tileId, s2res).getY();
+                //}
+                if (masterOriginX > bandAnglesGrid[0].originX) masterOriginX = bandAnglesGrid[0].originX;
+                if (masterOriginY < bandAnglesGrid[0].originY) masterOriginY = bandAnglesGrid[0].originY;
+
             }
         }
 
@@ -401,41 +404,29 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             int[] bandOffsets = {0};
             SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, widthAnglesTile, heightAnglesTile, 1, widthAnglesTile, bandOffsets);
-            //data buffer (where the pixels are stored)
-            DataBuffer buffer = new DataBufferFloat(widthAnglesTile*heightAnglesTile*1);
-
-            // Wrap it in a writable raster
-            WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
-            raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrid[i].getData());
             ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.TRANSLUCENT, TYPE_FLOAT);
-
-            // Create an image with the raster
-            BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
-            final PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
+            PlanarImage opImage;
 
             //Mosaic of planar image
             ArrayList<PlanarImage> tileImages = new ArrayList<>();
 
             for (String tileId : sceneDescription.getTileIds()) {
-                PlanarImage opImage = null;
 
-                DataBuffer buffer2 = new DataBufferFloat(widthAnglesTile*heightAnglesTile*1);
-
+                DataBuffer buffer = new DataBufferFloat(widthAnglesTile*heightAnglesTile*1);
                 // Wrap it in a writable raster
-                WritableRaster raster2 = Raster.createWritableRaster(sampleModel, buffer2, null);
-                S2BandAnglesGrid[] bandAnglesGrids2 = bandAnglesGridsMap.get(tileId);
-                raster2.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrids2[i].getData());
-                ColorSpace colorSpace2 = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-                ColorModel colorModel2 = new ComponentColorModel(colorSpace2, false, false, Transparency.TRANSLUCENT, TYPE_FLOAT);
+                WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
+                S2BandAnglesGrid[] bandAnglesGrids = bandAnglesGridsMap.get(tileId);
+                raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrids[i].getData());
+
 
                 // And finally create an image with this raster
-                BufferedImage image2 = new BufferedImage(colorModel2, raster2, colorModel2.isAlphaPremultiplied(), null);
-                opImage = PlanarImage.wrapRenderedImage(image2);
+                BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
+                opImage = PlanarImage.wrapRenderedImage(image);
 
                 // Translate tile
-                float transX=(bandAnglesGrids2[0].originX-masterOriginX)/bandAnglesGrids2[0].getResX();
-                float transY=(bandAnglesGrids2[0].originY-masterOriginY)/bandAnglesGrids2[0].getResY();
+                float transX=(bandAnglesGrids[0].originX-masterOriginX)/bandAnglesGrids[0].getResX();
+                float transY=(bandAnglesGrids[0].originY-masterOriginY)/bandAnglesGrids[0].getResY();
 
                 opImage = TranslateDescriptor.create(opImage,
                                                      transX,
@@ -443,12 +434,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                      Interpolation.getInstance(Interpolation.INTERP_BILINEAR), null);
 
 
+
                 if(opImage.getMinX()<minX) minX = opImage.getMinX();
                 if(opImage.getMinY()<minY) minY = opImage.getMinY();
 
+                //Crop output image because with bilinear interpolation some pixels (last column and row) are NaN.
+                opImage = CropDescriptor.create(opImage,
+                                                opImage.getMinX() + 0.0f, opImage.getMinY() + 0.0f, (float) opImage.getWidth()-1, (float) opImage.getHeight()-1,
+                                                null);
                 // Feed the image list for mosaic
                 tileImages.add(opImage);
             }
+
+
 
             if (tileImages.isEmpty()) {
                 logger.warning("No tile images for angles mosaic");
@@ -465,13 +463,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                          null, null,new double[][] {{0.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES},
+                                                          null, null,new double[][] {{-1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
-
-            //Crop output image because with bilinear interpolation some pixels (last column and row) are NaN.
-            mosaicOp = CropDescriptor.create(mosaicOp,
-                                             0.0f, 0.0f, (float) mosaicOp.getWidth()-1, (float) mosaicOp.getHeight()-1,
-                                             new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
 
             Band band;
