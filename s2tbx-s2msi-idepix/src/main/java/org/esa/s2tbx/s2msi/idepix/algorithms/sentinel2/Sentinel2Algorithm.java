@@ -57,7 +57,7 @@ public class Sentinel2Algorithm {
     private double lat;
     static final float ELEVATION_SNOW_THRESH = 3000.0f;
     static final float VISBRIGHT_THRESH = 0.12f;
-    static final float TCL_TRESH = -0.065f;
+    static final float TCL_TRESH = -0.085f;
     static final float CLA_THRESH = 0.0035f;
 
     public boolean isBrightWhite() {
@@ -99,7 +99,7 @@ public class Sentinel2Algorithm {
 
     // Add an ambiguous cirrus test   (JM 20160713)
     public boolean isCirrusAmbiguous() {
-        final boolean cla = refl[10] > clThresh && elevation < ELEVATION_THRESH;
+        final boolean cla = refl[10] > CLA_THRESH && elevation < ELEVATION_THRESH;
 //        return !isInvalid() && !isClearSnow() && !isCloud() && !isCloudAmbiguous() && !isCirrus() && (cla);
         return !isInvalid() && !isClearSnow() && (cla); // suggestion OD
     }
