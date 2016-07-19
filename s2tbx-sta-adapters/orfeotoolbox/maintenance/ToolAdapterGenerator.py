@@ -140,10 +140,10 @@ def getVariables(appName, envVarTool):
     <variables>
         <osvariable>
             <key>OTB_BIN_DIR</key>
-            <value></value>
-            <windows>C:/Documents/TOto</windows>
+            <value/>
+            <windows/>
             <linux>/usr/bin</linux>
-            <macosx>ValueForMac</macosx>
+            <macosx/>
             <isTransient>false</isTransient>
         </osvariable>
     </variables>
@@ -253,8 +253,12 @@ def getXMLRoot(applicationName, info, vmFile, version, envVarTool):
     met = ET.SubElement(root, "workingDir")
     met.text = "/tmp"
 
-    met = ET.SubElement(root, "templateFileLocation")
-    met.text = os.path.basename(vmFile)
+    met = ET.SubElement(root, "templateType")
+    met.text = "VELOCITY"
+
+    met = ET.SubElement(root, "template")
+    templateFile = ET.SubElement(met, "file")
+    templateFile.text = os.path.basename(vmFile)
 
     met = ET.SubElement(root, "progressPattern")
     met.text = ".*: (\d{1,3})%(?:.+)"
@@ -573,7 +577,7 @@ def manageToolParameters(dicInfo):
             #TBD
             met = ET.SubElement(root, "parameterType")
             met.text = "RegularParameter"
-            met = ET.SubElement(root, "toolParameterDescriptors")
+            #met = ET.SubElement(root, "toolParameterDescriptors")
             XMLParamList.append(root)
 
 

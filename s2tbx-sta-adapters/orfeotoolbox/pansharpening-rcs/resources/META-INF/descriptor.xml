@@ -12,7 +12,10 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINPANSHARPENING_RCS_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
-  <templateFileLocation>pansharpening-rcs-template.vm</templateFileLocation>
+  <templateType>VELOCITY</templateType>
+  <template>
+    <file>pansharpening-rcs-template.vm</file>
+  </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
   <errorPattern>(?:ERROR:|itk::ERROR)(.+)</errorPattern>
   <variables>
@@ -45,7 +48,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
   </parameters>
   <source>user</source>

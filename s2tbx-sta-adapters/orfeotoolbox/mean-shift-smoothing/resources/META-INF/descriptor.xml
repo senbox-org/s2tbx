@@ -12,7 +12,10 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINMEAN_SHIFT_SMOOTHING_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
-  <templateFileLocation>mean-shift-smoothing-template.vm</templateFileLocation>
+  <templateType>VELOCITY</templateType>
+  <template>
+    <file>mean-shift-smoothing-template.vm</file>
+  </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
   <errorPattern>(?:ERROR:|itk::ERROR)(.+)</errorPattern>
   <variables>
@@ -45,7 +48,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>targetProductFile</name>
@@ -56,7 +58,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>spatialr_int</name>
@@ -68,7 +69,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>ranger_float</name>
@@ -80,7 +80,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>thres_float</name>
@@ -92,7 +91,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>maxiter_int</name>
@@ -104,7 +102,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>rangeramp_float</name>
@@ -116,7 +113,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>modesearch_bool</name>
@@ -128,7 +124,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
   </parameters>
   <source>user</source>

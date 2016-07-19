@@ -12,7 +12,10 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINSEGMENTATION_MPROFILES_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
-  <templateFileLocation>segmentation-mprofiles-template.vm</templateFileLocation>
+  <templateType>VELOCITY</templateType>
+  <template>
+    <file>segmentation-mprofiles-template.vm</file>
+  </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
   <errorPattern>(?:ERROR:|itk::ERROR)(.+)</errorPattern>
   <variables>
@@ -46,7 +49,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>start_int</name>
@@ -58,7 +60,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>step_int</name>
@@ -70,7 +71,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>sigma_float</name>
@@ -82,7 +82,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>out_str</name>
@@ -94,7 +93,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>outmode_string</name>
@@ -106,7 +104,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>neighbor_bool</name>
@@ -118,7 +115,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>stitch_bool</name>
@@ -130,7 +126,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>minsize_int</name>
@@ -142,7 +137,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>simplify_float</name>
@@ -154,7 +148,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>layername_string</name>
@@ -166,7 +159,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>fieldname_string</name>
@@ -178,7 +170,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>tilesize_int</name>
@@ -190,7 +181,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>startlabel_int</name>
@@ -202,7 +192,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
   </parameters>
   <source>user</source>
