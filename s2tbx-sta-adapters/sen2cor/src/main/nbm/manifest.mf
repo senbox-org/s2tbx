@@ -9,4 +9,3 @@ OpenIDE-Module-Short-Description: Sen2Cor
 OpenIDE-Module: org.esa.s2tbx.sen2cor
 OpenIDE-Module-Alias: Sen2Cor
 OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
-OpenIDE-Module-Install: org/esa/snap/utils/ModuleInstaller.class

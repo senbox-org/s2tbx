@@ -22,17 +22,17 @@
   <variables>
     <variable>
       <key>SEN2COR_HOME</key>
-      <value></value>
+      <value>C:\Users\kraftek.C-S\documents\sen2cor</value>
       <isShared>false</isShared>
     </variable>
     <variable>
       <key>SEN2COR_BIN</key>
-      <value></value>
+      <value>C:\Anaconda\Lib\site-packages\sen2cor-2.2.1-py2.7.egg/sen2cor</value>
       <isShared>false</isShared>
     </variable>
     <osvariable>
       <key>PYTHON_BIN</key>
-      <value></value>
+      <value>python.exe</value>
       <isShared>false</isShared>
       <windows>python.exe</windows>
       <linux>python</linux>

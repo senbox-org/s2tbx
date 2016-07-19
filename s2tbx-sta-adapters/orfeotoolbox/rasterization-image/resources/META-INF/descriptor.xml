@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>Rasterization-image</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
@@ -21,16 +22,16 @@
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value></value>
-      <windows></windows>
+      <value/>
+      <windows/>
       <linux>/usr/bin</linux>
-      <macosx></macosx>
+      <macosx/>
       <isTransient>false</isTransient>
       <isShared>true</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINRASTERIZATION_IMAGE_EXEC</key>
-      <value></value>
+      <value/>
       <windows>otbcli_Rasterization.bat</windows>
       <linux>otbcli_Rasterization</linux>
       <macosx>otbcli_Rasterization</macosx>
@@ -51,7 +52,6 @@
     </parameter>
     <parameter>
       <name>targetProductFile</name>
-      <alias>targetProductFile</alias>
       <dataType>java.io.File</dataType>
       <description>An output image containing the rasterized vector dataset</description>
       <valueSet/>
@@ -61,7 +61,6 @@
     </parameter>
     <parameter>
       <name>background_float</name>
-      <alias>Background value</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0</defaultValue>
       <description>Default value for pixels not belonging to any geometry</description>
@@ -72,7 +71,6 @@
     </parameter>
     <parameter>
       <name>mode_string</name>
-      <alias>Rasterization mode</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>binary</defaultValue>
       <description>Choice of rasterization modes</description>
@@ -83,7 +81,6 @@
     </parameter>
     <parameter>
       <name>foreground_float</name>
-      <alias>Foreground value</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>255</defaultValue>
       <description>Value for pixels inside a geometry</description>
@@ -94,7 +91,6 @@
     </parameter>
     <parameter>
       <name>field_string</name>
-      <alias>The attribute field to burn</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>DN</defaultValue>
       <description>Name of the attribute field to burn</description>
@@ -104,7 +100,7 @@
       <parameterType>RegularParameter</parameterType>
     </parameter>
   </parameters>
-  <source>user</source>
+  <source>package</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>false</isHandlingOutputName>
   <sourceProductDescriptors/>

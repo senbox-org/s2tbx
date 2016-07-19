@@ -16,7 +16,6 @@
     <description>Adapters for the Standalone Tools of the Sentinel-2 Toolbox</description>
 
     <modules>
-        <module>orfeotoolbox</module>
         <module>sen2cor</module>
         <module>sen2three</module>
     </modules>
