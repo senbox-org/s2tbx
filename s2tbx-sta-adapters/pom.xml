@@ -18,6 +18,7 @@
     <modules>
         <module>sen2cor</module>
         <module>sen2three</module>
+        <module>orfeotoolbox</module>
     </modules>
 
     <dependencies>
@@ -57,8 +58,7 @@
                     </execution>
                 </executions>
             </plugin>
-<!--
-Temporarily remove the update center preparation here
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
@@ -72,13 +72,13 @@ Temporarily remove the update center preparation here
                     <brandingToken>${brandingToken}</brandingToken>
                     <useOSGiDependencies>false</useOSGiDependencies>
                     <requiresRestart>true</requiresRestart>
-                    <keystore>${project.basedir}/../keystore/s2tbx.ks</keystore>
+                    <keystore>${project.basedir}/../../../keystore/s2tbx.ks</keystore>
                     <keystorealias>snap</keystorealias>
                     <keystorepassword>snap-123</keystorepassword>
                     <sourceManifestFile>target/nbm/manifest.mf</sourceManifestFile>
                 </configuration>
             </plugin>
--->
+
         </plugins>
     </build>
 </project>
