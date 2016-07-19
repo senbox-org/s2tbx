@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 4.0.0.0
-OpenIDE-Module-Implementation-Version: 4.0.0.0
+OpenIDE-Module-Specification-Version: 4.0.1
+OpenIDE-Module-Implementation-Version: 4.0.1
 OpenIDE-Module-Name: Sentinel-2 SEN2THREE Processor
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Java-Dependencies: Java > 1.8
@@ -9,4 +9,3 @@ OpenIDE-Module-Short-Description: Sen2Three
 OpenIDE-Module: org.esa.s2tbx.sen2three
 OpenIDE-Module-Alias: Sen2Three
 OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
-OpenIDE-Module-Install: org/esa/snap/utils/ModuleInstaller.class

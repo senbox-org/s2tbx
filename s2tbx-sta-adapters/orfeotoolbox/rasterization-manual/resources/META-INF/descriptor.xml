@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>Rasterization-manual</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
@@ -22,16 +21,16 @@
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value/>
-      <windows/>
+      <value></value>
+      <windows></windows>
       <linux>/usr/bin</linux>
-      <macosx/>
+      <macosx></macosx>
       <isTransient>false</isTransient>
       <isShared>true</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINRASTERIZATION_MANUAL_EXEC</key>
-      <value/>
+      <value></value>
       <windows>otbcli_Rasterization.bat</windows>
       <linux>otbcli_Rasterization</linux>
       <macosx>otbcli_Rasterization</macosx>
@@ -52,6 +51,7 @@
     </parameter>
     <parameter>
       <name>targetProductFile</name>
+      <alias>targetProductFile</alias>
       <dataType>java.io.File</dataType>
       <description>An output image containing the rasterized vector dataset</description>
       <valueSet/>
@@ -61,6 +61,7 @@
     </parameter>
     <parameter>
       <name>szx_int</name>
+      <alias>Output size x</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>0</defaultValue>
       <description>Output size along x axis (useless if support image is given)</description>
@@ -71,6 +72,7 @@
     </parameter>
     <parameter>
       <name>szy_int</name>
+      <alias>Output size y</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>0</defaultValue>
       <description>Output size along y axis (useless if support image is given)</description>
@@ -81,6 +83,7 @@
     </parameter>
     <parameter>
       <name>epsg_int</name>
+      <alias>Output EPSG code</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>0</defaultValue>
       <description>EPSG code for the output projection reference system (EPSG 4326 for WGS84, 32631 for UTM31N...,useless if support image is given)</description>
@@ -91,6 +94,7 @@
     </parameter>
     <parameter>
       <name>orx_float</name>
+      <alias>Output Upper-left x</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.0</defaultValue>
       <description>Output upper-left corner x coordinate (useless if support image is given)</description>
@@ -101,6 +105,7 @@
     </parameter>
     <parameter>
       <name>ory_float</name>
+      <alias>Output Upper-left y</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.0</defaultValue>
       <description>Output upper-left corner y coordinate (useless if support image is given)</description>
@@ -111,6 +116,7 @@
     </parameter>
     <parameter>
       <name>spx_float</name>
+      <alias>Spacing (GSD) x</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.0</defaultValue>
       <description>Spacing (ground sampling distance) along x axis (useless if support image is given)</description>
@@ -121,6 +127,7 @@
     </parameter>
     <parameter>
       <name>spy_float</name>
+      <alias>Spacing (GSD) y</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.0</defaultValue>
       <description>Spacing (ground sampling distance) along y axis (useless if support image is given)</description>
@@ -131,6 +138,7 @@
     </parameter>
     <parameter>
       <name>background_float</name>
+      <alias>Background value</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0</defaultValue>
       <description>Default value for pixels not belonging to any geometry</description>
@@ -141,6 +149,7 @@
     </parameter>
     <parameter>
       <name>mode_string</name>
+      <alias>Rasterization mode</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>binary</defaultValue>
       <description>Choice of rasterization modes</description>
@@ -151,6 +160,7 @@
     </parameter>
     <parameter>
       <name>foreground_float</name>
+      <alias>Foreground value</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>255</defaultValue>
       <description>Value for pixels inside a geometry</description>
@@ -161,6 +171,7 @@
     </parameter>
     <parameter>
       <name>field_string</name>
+      <alias>The attribute field to burn</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>DN</defaultValue>
       <description>Name of the attribute field to burn</description>
@@ -170,7 +181,7 @@
       <parameterType>RegularParameter</parameterType>
     </parameter>
   </parameters>
-  <source>package</source>
+  <source>user</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>false</isHandlingOutputName>
   <sourceProductDescriptors/>
