@@ -117,7 +117,8 @@ public class Sentinel2Algorithm {
         } else {
             return false; // this means: if we have no information about land, we return isClearLand = false
         }
-        return (isLand() && !isCloud() && landValue > LAND_THRESH);
+        return (isLand() && !isCloud() && !isCloudAmbiguous() && !isCirrus() && !isCirrusAmbiguous() &&
+                landValue > LAND_THRESH);
     }
 
     public boolean isClearWater() {
@@ -132,7 +133,8 @@ public class Sentinel2Algorithm {
         } else {
             return false; // this means: if we have no information about water, we return isClearWater = false
         }
-        return (!isLand() && !isCloud() && waterValue > WATER_THRESH);
+        return (!isLand() && !isCloud() && !isCloudAmbiguous() && !isCirrus() && !isCirrusAmbiguous() &&
+                waterValue > WATER_THRESH);
     }
 
     public boolean isClearSnow() {
