@@ -24,23 +24,23 @@ public class Ndi45Op extends BaseIndexOp{
     // constants
     public static final String BAND_NAME = "ndi45";
 
-    @Parameter(label = "Red factor", defaultValue = "1.0F", description = "The value of the red source band is multiplied by this value.")
-    private float redFactor;
+    @Parameter(label = "Red (B4) factor", defaultValue = "1.0F", description = "The value of the red source band (B4) is multiplied by this value.")
+    private float redB4Factor;
 
-    @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
-    private float nirFactor;
+    @Parameter(label = "Red (B5) factor", defaultValue = "1.0F", description = "The value of the red source band (B5) is multiplied by this value.")
+    private float redB5Factor;
 
-    @Parameter(label = "Red source band",
-            description = "The red band for the NDI45 computation. If not provided, the " +
+    @Parameter(label = "Red source band 4",
+            description = "The red band (B4) for the NDI45 computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
-    private String redSourceBand;
+    private String redSourceBand4;
 
-    @Parameter(label = "NIR source band",
-            description = "The near-infrared band for the NDI45 computation. If not provided," +
-                    " the operator will try to find the best fitting band.",
+    @Parameter(label = "Red source band 5",
+            description = "The red band (B5) for the NDI45 computation. If not provided, the " +
+                    "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
-    private String nirSourceBand;
+    private String redSourceBand5;
 
     @Override
     public String getBandName() {
@@ -51,8 +51,8 @@ public class Ndi45Op extends BaseIndexOp{
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
         pm.beginTask("Computing NDI45", rectangle.height);
         try {
-            Tile redTile = getSourceTile(getSourceProduct().getBand(redSourceBand), rectangle);
-            Tile nirTile = getSourceTile(getSourceProduct().getBand(nirSourceBand), rectangle);
+            Tile redB4Tile = getSourceTile(getSourceProduct().getBand(redSourceBand4), rectangle);
+            Tile redB5Tile = getSourceTile(getSourceProduct().getBand(redSourceBand5), rectangle);
 
             Tile ndi45 = targetTiles.get(targetProduct.getBand(BAND_NAME));
             Tile ndi45Flags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
@@ -62,10 +62,10 @@ public class Ndi45Op extends BaseIndexOp{
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
-                    final float nir = nirFactor * nirTile.getSampleFloat(x, y);
-                    final float red = redFactor * redTile.getSampleFloat(x, y);
+                    final float redB5 = redB5Factor * redB5Tile.getSampleFloat(x, y);
+                    final float redB4 = redB4Factor * redB4Tile.getSampleFloat(x, y);
 
-                    ndi45Value = (nir - red) / (nir + red);
+                    ndi45Value = (redB5 - redB4) / (redB5 + redB4);
 
                     ndi45FlagsValue = 0;
                     if (Float.isNaN(ndi45Value) || Float.isInfinite(ndi45Value)) {
@@ -91,19 +91,19 @@ public class Ndi45Op extends BaseIndexOp{
 
     @Override
     protected void loadSourceBands(Product product) throws OperatorException {
-        if (redSourceBand == null) {
-            redSourceBand = findBand(650, 680, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand + "' as red input band.");
+        if (redSourceBand4 == null) {
+            redSourceBand4 = findBand(650, 680, product);
+            getLogger().info("Using band '" + redSourceBand4 + "' as red input band (B4).");
         }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(698, 713, product); /* (800, 900) */
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
+        if (redSourceBand5 == null) {
+            redSourceBand5 = findBand(698, 713, product);
+            getLogger().info("Using band '" + redSourceBand5 + "' as red input band (B5).");
         }
-        if (redSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band. Please specify band.");
+        if (redSourceBand4 == null) {
+            throw new OperatorException("Unable to find band that could be used as red input band (B4). Please specify band.");
         }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
+        if (redSourceBand4 == null) {
+            throw new OperatorException("Unable to find band that could be used as red input band (B5). Please specify band.");
         }
     }
 

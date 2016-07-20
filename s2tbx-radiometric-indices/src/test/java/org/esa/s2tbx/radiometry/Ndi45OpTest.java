@@ -10,10 +10,10 @@ public class Ndi45OpTest extends BaseIndexOpTest<Ndi45Op> {
 
     @Override
     public void setUp() throws Exception {
-        setupBands(new String[] { "RED", "NIR" }, 3, 3, new float[] { 665, 705 }, new float[] { 1, 2 }, new float[] { 9, 10 });
+        setupBands(new String[] { "RED (B4)", "RED (B5)" }, 3, 3, new float[] { 665, 705 }, new float[] { 1, 2 }, new float[] { 9, 10 });
         setOperatorParameters(new HashMap<String, Float>() {{
-            put("redFactor", 1.0f);
-            put("nirFactor", 1.0f);
+            put("redB4Factor", 1.0f);
+            put("redB5Factor", 1.0f);
         }});
         setTargetValues(new float[] {
                 0.333333f, 0.200000f, 0.142857f,
