@@ -333,7 +333,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             addVectorMasks(product, tileList, bandInfoList);
             SystemUtils.LOG.fine(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
-            System.out.println(String.format("[timeprobe] addVectorMasks : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
 
             addIndexMasks(product, bandInfoList, sceneDescription);
@@ -640,8 +639,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             if (!maskInfo.isEnabled())
                 continue;
 
-
-            TimeProbe timeProbe = TimeProbe.start();
             if (!maskInfo.isPerBand()) {
                 // cloud masks are provided once and valid for all bands
                 addVectorMask(product, tileList, maskInfo, null, bandInfoList);
@@ -653,8 +650,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                 }
             }
-            System.out.println("AddVectorMasks " + maskInfo.getMainType() + " : " + timeProbe.elapsed(TimeUnit.MILLISECONDS));
-            timeProbe.reset();
         }
     }
 
@@ -693,17 +688,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                 List<EopPolygon> polygonsForTile;
 
-
-                //TODO : boolean in preferences?
-                if(true) {
-                    // Read all polygons from the mask file
-                    GmlFilter gmlFilter = new GmlFilter();
-                    polygonsForTile = gmlFilter.parse(maskFilename.getName()).getSecond();
-
-                } else {
-                    //Without GMLFilter
-                    polygonsForTile = readPolygons(maskFilename.getName().getAbsolutePath());
-                }
+                polygonsForTile = readPolygons(maskFilename.getName().getAbsolutePath());
 
                 for(int i = 0; i<maskInfo.getSubType().length;i++)
                 {
@@ -1153,15 +1138,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     type = line.substring(line.indexOf(">")+1, line.indexOf("</eop:maskType>"));
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            logger.warning(String.format("Warning: missing polygon in mask %s\n", maskFilename));
         }
         try {
             b.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warning(String.format("Warning: impossible to close BufferedReader\n"));
         }
         return polygonsForTile;
     }
@@ -1180,7 +1163,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
     }
 
-    private String convertToWKTPolygon (String line, int dimension) {
+    private String convertToWKTPolygon (String line, int dimension) throws IOException{
+
+        if(dimension <=0) throw new IOException("Invalid dimension");
+
         StringBuilder output = new StringBuilder("POLYGON((");
 
         int pos = 0, end;
@@ -1196,7 +1182,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 output = output.append(" ");
             }
         }
-
         //add last coordinate
         output = output.append(line.substring(line.lastIndexOf(' ')+1));
         output = output.append("))");
