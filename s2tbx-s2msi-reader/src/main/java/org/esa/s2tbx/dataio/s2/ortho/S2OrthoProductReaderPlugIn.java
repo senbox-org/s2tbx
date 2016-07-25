@@ -47,6 +47,14 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         RGBImageProfileManager manager = RGBImageProfileManager.getInstance();
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Natural Colors", new String[]{"B4", "B3", "B2"}));
         manager.addProfile(new RGBImageProfile("Sentinel 2 MSI False-color Infrared", new String[]{"B8", "B4", "B3"}));
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI False-color Urban", new String[]{"B12", "B11", "B4"}));
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Agriculture", new String[]{"B11", "B8", "B2"}));
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Atmospheric penetration", new String[]{"B12", "B11", "B8A"}));
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Healthy Vegetation", new String[]{"B8", "B11", "B2"}));
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Land/Water", new String[]{"B8", "B11", "B4"}));
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Natural with Atmospherical Removal", new String[]{"B12", "B8", "B3"}));
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Shortwave Infrared", new String[]{"B12", "B8", "B4"}));
+        manager.addProfile(new RGBImageProfile("Sentinel 2 MSI Vegetation Analysis", new String[]{"B11", "B8", "B4"}));
     }
 
     protected S2Config.Sentinel2ProductLevel getLevel() {
