@@ -9,5 +9,6 @@ generated-sources/
 *~
 *.pyc
 *.java.orig
+*.swp
 #generated sources
 s2tbx-reader-cs/src/main/generated-sources/
