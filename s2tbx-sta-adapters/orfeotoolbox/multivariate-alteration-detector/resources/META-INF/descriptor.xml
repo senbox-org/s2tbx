@@ -3,7 +3,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>MultivariateAlterationDetector</alias>
   <label>MultivariateAlterationDetector</label>
-  <version>5.2</version>
+  <version>4.0.1.0</version>
   <description>Multivariate Alteration Detector</description>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>
