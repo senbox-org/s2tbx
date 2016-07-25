@@ -24,8 +24,10 @@ else
   ADAPTER_VERSION=$NEW_VERSION
 fi
 
-find s2tbx-sta-adapters -name "manifest.mf"  | xargs sed -i "s@OpenIDE-Module-Specification-Version.*@OpenIDE-Module-Specification-Version: $ADAPTER_VERSION@"
-find s2tbx-sta-adapters -name "manifest.mf"  | xargs sed -i "s@OpenIDE-Module-Implementation-Version.*@OpenIDE-Module-Implementation-Version: $ADAPTER_VERSION@"
+for manifest_filename in manifest.mf MANIFEST.MF ; do 
+find s2tbx-sta-adapters -name "$manifest_filename"  | xargs sed -i "s@OpenIDE-Module-Specification-Version.*@OpenIDE-Module-Specification-Version: $ADAPTER_VERSION@"
+find s2tbx-sta-adapters -name "$manifest_filename"  | xargs sed -i "s@OpenIDE-Module-Implementation-Version.*@OpenIDE-Module-Implementation-Version: $ADAPTER_VERSION@"
+done
 
 # Adapters also have a descriptor.xml with a harcoded version...
 find s2tbx-sta-adapters -name "descriptor.xml" | xargs sed -i "s@<version>.*</version>@<version>$ADAPTER_VERSION</version>@"

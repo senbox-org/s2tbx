@@ -4,7 +4,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Rasterization-manual</alias>
   <label>Rasterization-manual</label>
-  <version>5.2</version>
+  <version>4.0.1.0</version>
   <description>Rasterize a vector dataset.</description>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>
