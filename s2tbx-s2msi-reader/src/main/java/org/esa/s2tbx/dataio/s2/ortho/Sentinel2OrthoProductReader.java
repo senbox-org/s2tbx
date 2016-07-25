@@ -102,6 +102,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -114,6 +115,7 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import static java.awt.image.DataBuffer.*;
+import static java.lang.Math.ceil;
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.snap.utils.DateHelper.parseDate;
 
@@ -370,28 +372,23 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private void addAnglesBands(Product product, S2Metadata metadataHeader, S2OrthoSceneLayout sceneDescription, HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap ) {
 
         float masterOriginX = Float.MAX_VALUE, masterOriginY = -Float.MAX_VALUE;
-        int minX = 0, minY = 0;
         int widthAnglesTile = 0;
         int heightAnglesTile = 0;
         float resX = 0;
         float resY = 0;
-        //double lowerY = Integer.MAX_VALUE;
+
         S2BandAnglesGrid[] bandAnglesGrid = null;
-        //Search upper-left tile
-        for (String tileId : sceneDescription.getTileIds()) {
+        //Search upper-left
+        for (String tileId : asSortedList(sceneDescription.getTileIds())) {
             //test all S2SpatialResolutions because sometimes not all are available
             for (S2SpatialResolution s2res : S2SpatialResolution.values()) {
                 bandAnglesGrid = bandAnglesGridsMap.get(tileId);
-               // if (sceneDescription.getTilePositionInScene(tileId, s2res).getX() == 0 && sceneDescription.getTilePositionInScene(tileId, s2res).getY() < lowerY) {
-                    widthAnglesTile = bandAnglesGrid[0].getWidth();
-                    heightAnglesTile = bandAnglesGrid[0].getHeight();
-                    resX = bandAnglesGrid[0].getResX();
-                    resY = bandAnglesGrid[0].getResY();
-                    //lowerY = sceneDescription.getTilePositionInScene(tileId, s2res).getY();
-                //}
+                widthAnglesTile = bandAnglesGrid[0].getWidth();
+                heightAnglesTile = bandAnglesGrid[0].getHeight();
+                resX = bandAnglesGrid[0].getResX();
+                resY = bandAnglesGrid[0].getResY();
                 if (masterOriginX > bandAnglesGrid[0].originX) masterOriginX = bandAnglesGrid[0].originX;
                 if (masterOriginY < bandAnglesGrid[0].originY) masterOriginY = bandAnglesGrid[0].originY;
-
             }
         }
 
@@ -411,14 +408,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             //Mosaic of planar image
             ArrayList<PlanarImage> tileImages = new ArrayList<>();
 
-            for (String tileId : sceneDescription.getTileIds()) {
+            for (String tileId : asSortedList(sceneDescription.getTileIds())) {
 
                 DataBuffer buffer = new DataBufferFloat(widthAnglesTile*heightAnglesTile*1);
                 // Wrap it in a writable raster
                 WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
                 S2BandAnglesGrid[] bandAnglesGrids = bandAnglesGridsMap.get(tileId);
                 raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrids[i].getData());
-
 
                 // And finally create an image with this raster
                 BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
@@ -427,26 +423,17 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 // Translate tile
                 float transX=(bandAnglesGrids[0].originX-masterOriginX)/bandAnglesGrids[0].getResX();
                 float transY=(bandAnglesGrids[0].originY-masterOriginY)/bandAnglesGrids[0].getResY();
-
                 opImage = TranslateDescriptor.create(opImage,
                                                      transX,
                                                      -transY,
                                                      Interpolation.getInstance(Interpolation.INTERP_BILINEAR), null);
 
+                //Crop output image because with bilinear interpolation some pixels are 0.0
+                opImage = cropBordersIfAreZero(opImage);
 
-
-                if(opImage.getMinX()<minX) minX = opImage.getMinX();
-                if(opImage.getMinY()<minY) minY = opImage.getMinY();
-
-                //Crop output image because with bilinear interpolation some pixels (last column and row) are NaN.
-                opImage = CropDescriptor.create(opImage,
-                                                opImage.getMinX() + 0.0f, opImage.getMinY() + 0.0f, (float) opImage.getWidth()-1, (float) opImage.getHeight()-1,
-                                                null);
                 // Feed the image list for mosaic
                 tileImages.add(opImage);
             }
-
-
 
             if (tileImages.isEmpty()) {
                 logger.warning("No tile images for angles mosaic");
@@ -454,8 +441,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
 
             ImageLayout imageLayout = new ImageLayout();
-            imageLayout.setMinX(minX);
-            imageLayout.setMinY(minY);
+            imageLayout.setMinX(0);
+            imageLayout.setMinY(0);
             imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
@@ -465,6 +452,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                           null, null,new double[][] {{-1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+
+            //Crop Mosaic if there are lines outside the scene
+            mosaicOp = (RenderedOp) cropBordersOutsideScene(mosaicOp, resX, resY, sceneDescription);
 
 
             Band band;
@@ -512,7 +502,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             //set source image mut be done after setGeocoding and setImageToModelTransform
             band.setSourceImage(mosaicOp);
             product.addBand(band);
-
         }
 
     }
@@ -1109,5 +1098,102 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         return bandNames;
+    }
+
+    public static
+    <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
+        java.util.List<T> list = new ArrayList<T>(c);
+        java.util.Collections.sort(list);
+        return list;
+    }
+
+    /**
+     * Check the content of first and last rows and columns, and if all the pixels are zero, they are removed
+     * @param planarImage
+     * @return
+     */
+    public static PlanarImage cropBordersIfAreZero (PlanarImage planarImage) {
+
+        //First row
+        boolean remove=true;
+        for(int i = 0; i<planarImage.getWidth(); i++) {
+            if(planarImage.copyData().getSampleFloat(planarImage.getMinX()+i,planarImage.getMinY(),0) != 0){
+                remove= false;
+                break;
+            }
+        }
+        if(remove) {
+            planarImage = CropDescriptor.create(planarImage, planarImage.getMinX() + 0.0f, planarImage.getMinY() + 1.0f, (float) planarImage.getWidth(), (float) planarImage.getHeight()-1, null);
+        }
+
+        //Last row
+        remove=true;
+        for(int i = 0; i<planarImage.getWidth(); i++) {
+            if(planarImage.copyData().getSampleFloat(planarImage.getMinX()+i,planarImage.getMinY()+planarImage.getHeight()-1,0) != 0){
+                remove= false;
+                break;
+            }
+        }
+        if(remove) {
+            planarImage = CropDescriptor.create(planarImage, planarImage.getMinX() + 0.0f, planarImage.getMinY() + 0.0f, (float) planarImage.getWidth(), (float) planarImage.getHeight()-1, null);
+        }
+
+        //First column
+        remove=true;
+        for(int i = 0; i<planarImage.getHeight(); i++) {
+            if(planarImage.copyData().getSampleFloat(planarImage.getMinX(),planarImage.getMinY()+i,0) != 0){
+                remove= false;
+                break;
+            }
+        }
+        if(remove) {
+            planarImage = CropDescriptor.create(planarImage, planarImage.getMinX() + 1.0f, planarImage.getMinY() + 0.0f, (float) planarImage.getWidth()-1, (float) planarImage.getHeight(), null);
+        }
+
+        //Last column
+        remove=true;
+        for(int i = 0; i<planarImage.getHeight(); i++) {
+            if(planarImage.copyData().getSampleFloat(planarImage.getMinX()+planarImage.getWidth()-1,planarImage.getMinY()+i,0) != 0){
+                remove= false;
+                break;
+            }
+        }
+        if(remove) {
+            planarImage = CropDescriptor.create(planarImage, planarImage.getMinX() + 0.0f, planarImage.getMinY() + 0.0f, (float) planarImage.getWidth()-1, (float) planarImage.getHeight(), null);
+        }
+
+        return planarImage;
+    }
+
+    /**
+     * The origin of planarImage and sceneLayout must be the same.
+     * Compute the number of the pixels needed to cover the scene and remove the rows and columns outside the scene in planarImage.
+     * @param planarImage
+     * @param resX
+     * @param resY
+     * @param sceneLayout
+     * @return
+     */
+    public static PlanarImage cropBordersOutsideScene (PlanarImage planarImage, float resX, float resY, S2OrthoSceneLayout sceneLayout) {
+
+        int sceneHeight = 0;
+        int sceneWidth = 0;
+        if(sceneLayout.sceneDimensions.size()<=0) {
+            return planarImage;
+        }
+        for(S2SpatialResolution resolution : S2SpatialResolution.values()) {
+            if (sceneLayout.sceneDimensions.get(resolution) != null) {
+                sceneHeight = sceneLayout.getSceneDimension(resolution).height*resolution.resolution;
+                sceneWidth = sceneLayout.getSceneDimension(resolution).width*resolution.resolution;
+                break;
+            }
+        }
+
+        int rowNumber = (int) ceil(sceneHeight/resY);
+        int colNumber = (int) ceil(sceneWidth/resX);
+        planarImage = CropDescriptor.create(planarImage,
+                                            planarImage.getMinX() + 0.0f, planarImage.getMinY() + 0.0f, (float) colNumber, (float) rowNumber,
+                                                null);
+        return planarImage;
     }
 }
