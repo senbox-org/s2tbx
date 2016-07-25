@@ -3,7 +3,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Sen2Cor</alias>
   <label>SEN2COR</label>
-  <version>4.0.1.0</version>
+  <version>2.1.2</version>
   <description>Sen2Cor Atmospheric Correction Processor</description>
   <authors></authors>
   <copyright></copyright>

@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>Pansharpening-lmvm</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Pansharpening-lmvm</alias>
   <label>Pansharpening-lmvm</label>
-  <version>4.0.1.0</version>
+  <version>5.2</version>
   <description>Perform P+XS pansharpening</description>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>
@@ -18,46 +17,31 @@
     <file>pansharpening-lmvm-template.vm</file>
   </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
-  <errorPattern>itk::ERROR(.+)</errorPattern>
+  <errorPattern>(?:ERROR:|itk::ERROR)(.+)</errorPattern>
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value/>
-      <windows/>
+      <value></value>
+      <windows></windows>
       <linux>/usr/bin</linux>
-      <macosx/>
+      <macosx></macosx>
       <isTransient>false</isTransient>
+      <isShared>true</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINPANSHARPENING_LMVM_EXEC</key>
-      <value/>
+      <value></value>
       <windows>otbcli_Pansharpening.bat</windows>
       <linux>otbcli_Pansharpening</linux>
       <macosx>otbcli_Pansharpening</macosx>
       <isTransient>false</isTransient>
+      <isShared>false</isShared>
     </osvariable>
   </variables>
   <parameters>
     <parameter>
-      <name>sourceProductFile</name>
-      <dataType>java.io.File</dataType>
-      <description> Input panchromatic image.</description>
-      <valueSet/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
-      <name>sourceProductFile</name>
-      <dataType>java.io.File</dataType>
-      <description> Input XS image.</description>
-      <valueSet/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
       <name>targetProductFile</name>
+      <alias>targetProductFile</alias>
       <dataType>java.io.File</dataType>
       <description> Output image.</description>
       <valueSet/>
@@ -67,6 +51,7 @@
     </parameter>
     <parameter>
       <name>radiusx_int</name>
+      <alias>X radius</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>3</defaultValue>
       <description>Set the x radius of the sliding window.</description>
@@ -77,6 +62,7 @@
     </parameter>
     <parameter>
       <name>radiusy_int</name>
+      <alias>Y radius</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>3</defaultValue>
       <description>Set the y radius of the sliding window.</description>
@@ -86,12 +72,15 @@
       <parameterType>RegularParameter</parameterType>
     </parameter>
   </parameters>
-  <source>package</source>
+  <source>user</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>false</isHandlingOutputName>
   <sourceProductDescriptors>
     <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
-      <name>sourceProduct 1</name>
+      <name>Input PAN Image</name>
+    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
+      <name>Input XS Image</name>
     </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
   </sourceProductDescriptors>
   <targetPropertyDescriptors/>

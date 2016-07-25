@@ -1,12 +1,12 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 4.0.1.0
-OpenIDE-Module-Implementation-Version: 4.0.1.0
-OpenIDE-Module-Name: Pansharpening-rcs
+OpenIDE-Module-Specification-Version: 5.0.0
+OpenIDE-Module-Implementation-Version: 5.0.0
+OpenIDE-Module-Name: Pansharpening.rcs
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Type: STA
+OpenIDE-Module-Short-Description: Pansharpening (rcs)
 OpenIDE-Module: org.esa.s2tbx.Pansharpening.rcs
-OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
 OpenIDE-Module-Alias: Pansharpening-rcs
-OpenIDE-Module-Short-Description: PanSharpening RCS
+OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
 AutoUpdate-Show-In-Client: false

@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <operator>
   <name>Segmentation-watershed</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Segmentation-watershed</alias>
   <label>Segmentation-watershed</label>
-  <version>4.0.1.0</version>
+  <version>5.2</version>
   <description>Performs segmentation of an image, and output either a raster or a vector file. In vector mode, large input datasets are supported.</description>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>
@@ -18,37 +17,31 @@
     <file>segmentation-watershed-template.vm</file>
   </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
-  <errorPattern>itk::ERROR(.+)</errorPattern>
+  <errorPattern>(?:ERROR:|itk::ERROR)(.+)</errorPattern>
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
-      <value/>
-      <windows/>
+      <value></value>
+      <windows></windows>
       <linux>/usr/bin</linux>
-      <macosx/>
+      <macosx></macosx>
       <isTransient>false</isTransient>
+      <isShared>true</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINSEGMENTATION_WATERSHED_EXEC</key>
-      <value/>
+      <value></value>
       <windows>otbcli_Segmentation.bat</windows>
       <linux>otbcli_Segmentation</linux>
       <macosx>otbcli_Segmentation</macosx>
       <isTransient>false</isTransient>
+      <isShared>false</isShared>
     </osvariable>
   </variables>
   <parameters>
     <parameter>
-      <name>sourceProductFile</name>
-      <dataType>java.io.File</dataType>
-      <description>The input image to segment</description>
-      <valueSet/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-    </parameter>
-    <parameter>
       <name>threshold_float</name>
+      <alias>Depth Threshold</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.01</defaultValue>
       <description>Depth threshold Units in percentage of the maximum depth in the image.</description>
@@ -59,6 +52,7 @@
     </parameter>
     <parameter>
       <name>level_float</name>
+      <alias>Flood Level</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.1</defaultValue>
       <description>flood level for generating the merge tree from the initial segmentation (between 0 and 1)</description>
@@ -69,6 +63,7 @@
     </parameter>
     <parameter>
       <name>out_str</name>
+      <alias>Output vector file</alias>
       <dataType>java.io.File</dataType>
       <defaultValue>segmentation-watershed.shp</defaultValue>
       <description>The output vector file or database (name can be anything understood by OGR)</description>
@@ -79,6 +74,7 @@
     </parameter>
     <parameter>
       <name>outmode_string</name>
+      <alias>Writing mode for the output vector file</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>ulco</defaultValue>
       <description>This allows setting the writing behaviour for the output vector file. Please note that the actual behaviour depends on the file format.</description>
@@ -89,6 +85,7 @@
     </parameter>
     <parameter>
       <name>neighbor_bool</name>
+      <alias>8-neighbor connectivity</alias>
       <dataType>java.lang.Boolean</dataType>
       <defaultValue>True</defaultValue>
       <description>Activate 8-Neighborhood connectivity (default is 4).</description>
@@ -99,6 +96,7 @@
     </parameter>
     <parameter>
       <name>stitch_bool</name>
+      <alias>Stitch polygons</alias>
       <dataType>java.lang.Boolean</dataType>
       <defaultValue>True</defaultValue>
       <description>Scan polygons on each side of tiles and stitch polygons which connect by more than one pixel.</description>
@@ -109,6 +107,7 @@
     </parameter>
     <parameter>
       <name>minsize_int</name>
+      <alias>Minimum object size</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1</defaultValue>
       <description>Objects whose size is below the minimum object size (area in pixels) will be ignored during vectorization.</description>
@@ -119,6 +118,7 @@
     </parameter>
     <parameter>
       <name>simplify_float</name>
+      <alias>Simplify polygons</alias>
       <dataType>java.lang.Float</dataType>
       <defaultValue>0.1</defaultValue>
       <description>Simplify polygons according to a given tolerance (in pixel). This option allows reducing the size of the output file or database.</description>
@@ -129,6 +129,7 @@
     </parameter>
     <parameter>
       <name>layername_string</name>
+      <alias>Layer name</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>layer</defaultValue>
       <description>Name of the layer in the vector file or database (default is Layer).</description>
@@ -139,6 +140,7 @@
     </parameter>
     <parameter>
       <name>fieldname_string</name>
+      <alias>Geometry index field name</alias>
       <dataType>java.lang.String</dataType>
       <defaultValue>DN</defaultValue>
       <description>Name of the field holding the geometry index in the output vector file or database.</description>
@@ -149,6 +151,7 @@
     </parameter>
     <parameter>
       <name>tilesize_int</name>
+      <alias>Tiles size</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1024</defaultValue>
       <description>User defined tiles size for tile-based segmentation. Optimal tile size is selected according to available RAM if null.</description>
@@ -159,6 +162,7 @@
     </parameter>
     <parameter>
       <name>startlabel_int</name>
+      <alias>Starting geometry index</alias>
       <dataType>java.lang.Integer</dataType>
       <defaultValue>1</defaultValue>
       <description>Starting value of the geometry index field</description>
@@ -168,12 +172,12 @@
       <parameterType>RegularParameter</parameterType>
     </parameter>
   </parameters>
-  <source>package</source>
+  <source>user</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>true</isHandlingOutputName>
   <sourceProductDescriptors>
     <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
-      <name>sourceProduct 1</name>
+      <name>Input Image</name>
     </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
   </sourceProductDescriptors>
   <targetPropertyDescriptors/>
