@@ -86,8 +86,7 @@
             <artifactId>s2tbx-cache-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-
+        
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-s2msi-reader</artifactId>
@@ -175,7 +174,6 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-rcp</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
