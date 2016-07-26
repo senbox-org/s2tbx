@@ -713,11 +713,11 @@ def run_ToolAdapterGenerator(outputDir, xmlDescriptionProcessing, createAdapter=
                                                                            createAdapter)
     vmFile = generateTemplateVM(resourceDirectory, applicationName, stringVM, lowerToolName)
     rootVar = generateDescriptorXml(metaInfDirectory, applicationName, xmlDescriptionProcessing, vmFile, dicResult,
-                          XMLParamList, "5.2", hasOutputRaster, envVarTool, inputParameterNames)
+                          XMLParamList, "4.0.1.0", hasOutputRaster, envVarTool, inputParameterNames)
 
     if createAdapter:
         createPom(toolDirectory, dicResult, lowerToolName)
-        createManifest(metaInfDirectory, dicResult, "5.0.0")
+        createManifest(metaInfDirectory, dicResult, "4.0.1.0")
 
 
 

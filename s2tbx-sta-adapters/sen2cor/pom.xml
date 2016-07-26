@@ -16,7 +16,6 @@
     <description>Performs atmospheric correction on Sentinel 2 L1C products, thereby creating L2A products</description>
 
     <build>
-        <sourceDirectory>../src/main/java</sourceDirectory>
         <resources>
             <resource>
                 <directory>resources</directory>

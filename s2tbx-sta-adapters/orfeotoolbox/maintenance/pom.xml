@@ -16,7 +16,6 @@
     <description>{{description}}</description>
 
     <build>
-        <sourceDirectory>../../src/main/java</sourceDirectory>
         <resources>
             <resource>
                 <directory>resources</directory>
