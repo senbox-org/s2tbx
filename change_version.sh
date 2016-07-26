@@ -1,5 +1,4 @@
 #!/bin/bash
-
 die() {
 message=$1
 
