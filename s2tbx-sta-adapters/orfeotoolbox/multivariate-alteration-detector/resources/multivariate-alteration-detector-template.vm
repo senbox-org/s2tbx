@@ -1,6 +1,6 @@
 -in1
-$sourceProductFile
+$sourceProductFile[0]
 -in2
-$sourceProductFile
+$sourceProductFile[1]
 -out
 $targetProductFile

@@ -12,9 +12,12 @@
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$OTB_BIN_DIR/$OTB_BINSEGMENTATION_MEANSHIFT_EXEC</mainToolFileLocation>
   <workingDir>/tmp</workingDir>
-  <templateFileLocation>segmentation-meanshift-template.vm</templateFileLocation>
+  <templateType>VELOCITY</templateType>
+  <template>
+    <file>segmentation-meanshift-template.vm</file>
+  </template>
   <progressPattern>.*: (\d{1,3})%(?:.+)</progressPattern>
-  <errorPattern>itk::ERROR(.+)</errorPattern>
+  <errorPattern>(?:ERROR:|itk::ERROR)(.+)</errorPattern>
   <variables>
     <osvariable>
       <key>OTB_BIN_DIR</key>
@@ -23,6 +26,7 @@
       <linux>/usr/bin</linux>
       <macosx></macosx>
       <isTransient>false</isTransient>
+      <isShared>true</isShared>
     </osvariable>
     <osvariable>
       <key>OTB_BINSEGMENTATION_MEANSHIFT_EXEC</key>
@@ -31,20 +35,10 @@
       <linux>otbcli_Segmentation</linux>
       <macosx>otbcli_Segmentation</macosx>
       <isTransient>false</isTransient>
+      <isShared>false</isShared>
     </osvariable>
   </variables>
   <parameters>
-    <parameter>
-      <name>sourceProductFile</name>
-      <alias>sourceProductFile</alias>
-      <dataType>java.io.File</dataType>
-      <description>The input image to segment</description>
-      <valueSet/>
-      <notNull>false</notNull>
-      <notEmpty>false</notEmpty>
-      <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
-    </parameter>
     <parameter>
       <name>spatialr_int</name>
       <alias>Spatial radius</alias>
@@ -55,7 +49,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>ranger_float</name>
@@ -67,7 +60,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>thres_float</name>
@@ -79,7 +71,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>maxiter_int</name>
@@ -91,7 +82,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>minsize_int</name>
@@ -103,7 +93,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>out_str</name>
@@ -115,7 +104,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>outmode_string</name>
@@ -127,7 +115,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>neighbor_bool</name>
@@ -139,7 +126,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>stitch_bool</name>
@@ -151,7 +137,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>minsize_int</name>
@@ -163,7 +148,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>simplify_float</name>
@@ -175,7 +159,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>layername_string</name>
@@ -187,7 +170,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>fieldname_string</name>
@@ -199,7 +181,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>tilesize_int</name>
@@ -211,7 +192,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>startlabel_int</name>
@@ -223,7 +203,6 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
-      <toolParameterDescriptors/>
     </parameter>
   </parameters>
   <source>user</source>
@@ -231,7 +210,7 @@
   <isHandlingOutputName>true</isHandlingOutputName>
   <sourceProductDescriptors>
     <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
-      <name>sourceProduct 1</name>
+      <name>Input Image</name>
     </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
   </sourceProductDescriptors>
   <targetPropertyDescriptors/>

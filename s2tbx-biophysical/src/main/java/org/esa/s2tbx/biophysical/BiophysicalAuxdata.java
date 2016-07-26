@@ -88,7 +88,7 @@ public class BiophysicalAuxdata {
 
     static int getNumberOfLines(Path biophysicalVariableDataFilename) throws IOException {
         try (LineNumberReader lnr = new LineNumberReader(Files.newBufferedReader(biophysicalVariableDataFilename))) {
-            lnr.skip(Long.MAX_VALUE);
+            long n = lnr.skip(Long.MAX_VALUE);
             return lnr.getLineNumber();
         } catch (IOException e) {
             SystemUtils.LOG.severe("Error when reading " + biophysicalVariableDataFilename);
@@ -99,6 +99,9 @@ public class BiophysicalAuxdata {
     static int getNumberOfColumns(Path biophysicalVariableDataFilename) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(biophysicalVariableDataFilename)) {
             String line = reader.readLine();
+            if (line == null) {
+                throw new IOException("Error when reading first line of " + biophysicalVariableDataFilename);
+            }
             int countCommas = line.length() - line.replace(",", "").length();
             return countCommas + 1;
         } catch (IOException e) {

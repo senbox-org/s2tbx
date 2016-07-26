@@ -1,10 +1,10 @@
 <operator>
-  <name>org.esa.s2tbx.sen2cor</name>
+  <name>org.esa.s2tbx.sen2three</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
-  <alias>Sen2Cor</alias>
-  <label>SEN2COR</label>
-  <version>2.1.2</version>
-  <description>Sen2Cor Atmospheric Correction Processor</description>
+  <alias>Sen2Three</alias>
+  <label>SEN2THREE</label>
+  <version>0.9.0</version>
+  <description>Sen2Three Processor</description>
   <authors></authors>
   <copyright></copyright>
   <internal>false</internal>
@@ -13,26 +13,24 @@
   <preprocessTool>false</preprocessTool>
   <writeForProcessing>false</writeForProcessing>
   <mainToolFileLocation>$PYTHON_BIN</mainToolFileLocation>
-  <workingDir>$SEN2COR_HOME</workingDir>
-  <template>
-    <file>Sen2Cor-template.vm</file>
-  </template>
+  <workingDir>$SEN2THREE_HOME</workingDir>
+  <templateFileLocation>Sen2Three-template.vm</templateFileLocation>
   <progressPattern>Progress\[%\]: (\d{1,3})\.(?:.+)</progressPattern>
   <errorPattern>[\s\S]+(?:UserWarning|Error): (.+)</errorPattern>
   <variables>
     <variable>
-      <key>SEN2COR_HOME</key>
-      <value>C:\Users\kraftek.C-S\documents\sen2cor</value>
+      <key>SEN2THREE_HOME</key>
+      <value></value>
       <isShared>false</isShared>
     </variable>
     <variable>
-      <key>SEN2COR_BIN</key>
-      <value>C:\Anaconda\Lib\site-packages\sen2cor-2.2.1-py2.7.egg/sen2cor</value>
+      <key>SEN2THREE_BIN</key>
+      <value></value>
       <isShared>false</isShared>
     </variable>
     <osvariable>
       <key>PYTHON_BIN</key>
-      <value>python.exe</value>
+      <value></value>
       <isShared>false</isShared>
       <windows>python.exe</windows>
       <linux>python</linux>
@@ -43,35 +41,35 @@
   <parameters>
     <parameter>
       <name>targetProductFile</name>
+      <alias></alias>
       <dataType>java.io.File</dataType>
-      <description>Output file</description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
     </parameter>
-    <templateparameter>
+    <parameter>
       <name>postExecuteTemplate</name>
       <dataType>java.io.File</dataType>
-      <defaultValue>Sen2Cor-post-template.vm</defaultValue>
+      <defaultValue>Sen2Three-post-template.vm</defaultValue>
       <description></description>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>TemplateAfterExecution</parameterType>
-      <parameters/>
-      <template>
-        <file>Sen2Cor-post-template.vm</file>
-      </template>
-    </templateparameter>
+      <toolParameterDescriptors/>
+    </parameter>
     <parameter>
-      <name>sceneOnly</name>
+      <name>clean</name>
       <dataType>java.lang.Boolean</dataType>
-      <description>Scene Only</description>
+      <description>Clean</description>
+      <label>Clean</label>
       <valueSet/>
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
     </parameter>
     <parameter>
       <name>resolution</name>
@@ -85,17 +83,22 @@
       <notNull>false</notNull>
       <notEmpty>false</notEmpty>
       <parameterType>RegularParameter</parameterType>
+      <toolParameterDescriptors/>
+    </parameter>
+    <parameter>
+      <name>sourceFolder</name>
+      <dataType>java.io.File</dataType>
+      <valueSet/>
+      <notNull>false</notNull>
+      <notEmpty>false</notEmpty>
+      <parameterType>FolderParameter</parameterType>
+      <toolParameterDescriptors/>
     </parameter>
   </parameters>
   <source>user</source>
   <isSystem>false</isSystem>
   <isHandlingOutputName>true</isHandlingOutputName>
-  <sourceProductDescriptors>
-    <org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
-      <name>sourceProduct</name>
-    </org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor>
-  </sourceProductDescriptors>
+  <sourceProductDescriptors/>
   <targetPropertyDescriptors/>
-  <numSourceProducts>1</numSourceProducts>
-  <templateType>VELOCITY</templateType>
+  <numSourceProducts>0</numSourceProducts>
 </operator>

@@ -1,6 +1,7 @@
 package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.s2msi.idepix.operators.Sentinel2CloudBuffer;
 import org.esa.s2tbx.s2msi.idepix.util.IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
@@ -10,6 +11,7 @@ import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
+import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.RectangleExtender;
@@ -48,6 +50,15 @@ public class Sentinel2PostProcessOp extends Operator {
     @SourceProduct(alias = "s2Cloud")
     private Product s2CloudProduct;
 
+    @Parameter(defaultValue = "true", label = " Compute a cloud buffer")
+    private boolean computeCloudBuffer;
+
+    @Parameter(defaultValue = "true", label = " Compute a cloud buffer also for cloud ambiguous pixels")
+    private boolean computeCloudBufferForCloudAmbiguous;
+
+    @Parameter(defaultValue = "2", label = "Width of cloud buffer (# of pixels)")
+    private int cloudBufferWidth;
+
     private Band origClassifFlagBand;
     private RectangleExtender rectCalculator;
 
@@ -58,8 +69,8 @@ public class Sentinel2PostProcessOp extends Operator {
 
         origClassifFlagBand = s2CloudProduct.getBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS);
 
-        int extendedWidth = 3;
-        int extendedHeight = 3; // todo: what do we need?
+        int extendedWidth = computeCloudBuffer ? Math.max(3, cloudBufferWidth) : 3;
+        int extendedHeight = extendedWidth;
 
         rectCalculator = new RectangleExtender(new Rectangle(l1cProduct.getSceneRasterWidth(),
                                                              l1cProduct.getSceneRasterHeight()),
@@ -99,6 +110,35 @@ public class Sentinel2PostProcessOp extends Operator {
                         combineFlags(x, y, classifFlagTile, targetTile);
                         setCloudShadow(x, y, classifFlagTile, targetTile);
                     }
+                }
+            }
+        }
+
+        if (computeCloudBuffer) {
+            for (int y = srcRectangle.y; y < srcRectangle.y + srcRectangle.height; y++) {
+                checkForCancellation();
+                for (int x = srcRectangle.x; x < srcRectangle.x + srcRectangle.width; x++) {
+
+                    if (targetRectangle.contains(x, y)) {
+                        IdepixUtils.combineFlags(x, y, classifFlagTile, targetTile);
+                    }
+                    final boolean isCloudSure = classifFlagTile.getSampleBit(x, y, IdepixConstants.F_CLOUD_SURE);
+                    final boolean isCloudAmbiguous = classifFlagTile.getSampleBit(x, y, IdepixConstants.F_CLOUD_AMBIGUOUS);
+                    final boolean doSimpleCloudBuffer =
+                            computeCloudBufferForCloudAmbiguous ? isCloudSure || isCloudAmbiguous : isCloudSure;
+                    if (doSimpleCloudBuffer) {
+                        Sentinel2CloudBuffer.computeSimpleCloudBuffer(x, y,
+                                                                      targetTile,
+                                                                      srcRectangle,
+                                                                      cloudBufferWidth,
+                                                                      IdepixConstants.F_CLOUD_BUFFER);
+                    }
+                }
+            }
+            for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
+                checkForCancellation();
+                for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
+                    IdepixUtils.consolidateCloudAndBuffer(targetTile, x, y);
                 }
             }
         }

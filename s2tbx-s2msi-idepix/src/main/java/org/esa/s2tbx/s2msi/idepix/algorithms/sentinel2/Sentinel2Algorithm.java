@@ -17,11 +17,11 @@ public class Sentinel2Algorithm {
 
     static final float BRIGHTWHITE_THRESH = 1.5f;
     static final float NDSI_THRESH = 0.6f;
-//    static final float CLOUD_THRESH = 1.65f;   // changed back, 20160503 todo: further check how this works
+    //    static final float CLOUD_THRESH = 1.65f;   // changed back, 20160503 todo: further check how this works
 //    static final float CLOUD_THRESH = 2.0f;  // OD, 20160422
     static final float CLOUD_THRESH = 1.8f;  // JM, 20160517
     static final float BRIGHT_THRESH = 0.25f;  // changed back, 20160503 todo: further check how this works
-//    static final float BRIGHT_THRESH = 0.8f;  // OD, 20160422
+    //    static final float BRIGHT_THRESH = 0.8f;  // OD, 20160422
     static final float BRIGHT_FOR_WHITE_THRESH = 0.8f;
     static final float WHITE_THRESH = 0.9f;
     static final float NDVI_THRESH = 0.5f;
@@ -29,7 +29,6 @@ public class Sentinel2Algorithm {
     static final float NDWI_THRESH = 0.25f;  // what's this?
 
     static final float B3B11_THRESH = 1.0f;
-    static final float TC1_THRESH = 0.36f;
 
     static final float GCW_THRESH = -0.1f;
     static final float TCW_TC_THRESH = -0.08f;
@@ -51,22 +50,58 @@ public class Sentinel2Algorithm {
     private double clThresh;
     private boolean isInvalid;
 
+    //////////////////////////////////////
+    //We need latitude from the product. Represented here as "lat"
+    static final float TC1_THRESH = 0.36f;
+
+    private double lat;
+    static final float ELEVATION_SNOW_THRESH = 3000.0f;
+    static final float VISBRIGHT_THRESH = 0.12f;
+    static final float TCL_TRESH = -0.085f;
+    static final float CLA_THRESH = 0.0035f;
+
     public boolean isBrightWhite() {
         return !isInvalid() && (whiteValue() + brightValue() > getBrightWhiteThreshold());
     }
 
     public boolean isCloud() {
         // JM, 20160524:
-        final boolean gcw = tc4CirrusValue()  < GCW_THRESH;
-        final boolean tcw = tc4Value()  < TCW_TC_THRESH && ndwiValue() < TCW_NDWI_THRESH;
+        final boolean gcw = tc4CirrusValue() < GCW_THRESH;
+        final boolean tcw = tc4Value() < TCW_TC_THRESH && ndwiValue() < TCW_NDWI_THRESH;
+//        final boolean cw = refl[10] > cwThresh && elevation < ELEVATION_THRESH;
+//        final boolean acw = isB3B11Water() && (gcw || tcw || cw);
+        final boolean acw = isB3B11Water() && (gcw || tcw); // JM 20160713
+//        final boolean gcl = tc4CirrusValue() < gclThresh;
+        // JM 20160713:
+        final boolean gcl = !isB3B11Water() && tc4CirrusValue()  < gclThresh && visbrightValue() > VISBRIGHT_THRESH;
+//        final boolean cl = refl[10] > clThresh && elevation < ELEVATION_THRESH;
+//        final boolean acl = !isB3B11Water() && (gcl || cl);
+
+//        return !isInvalid() && !isClearSnow() && (acw || acl);
+        return !isInvalid() && !isClearSnow() && (acw || gcl);    // JM 20160713
+
+    }
+
+    // Add an ambiguous haze test isCloudAmbiguous()  (JM 20160713)
+    public boolean isCloudAmbiguous() {
+        final boolean tcl = !isB3B11Water() && tc4CirrusValue()  < TCL_TRESH && visbrightValue() > VISBRIGHT_THRESH;
+        return !isInvalid() && !isClearSnow() && !isCloud() && (tcl);
+    }
+
+    // Add a cirrus test(JM 20160713)
+    public boolean isCirrus() {
         final boolean cw = refl[10] > cwThresh && elevation < ELEVATION_THRESH;
-        final boolean acw = isB3B11Water() && (gcw || tcw || cw);
-        final boolean gcl = tc4CirrusValue()  < gclThresh;
         final boolean cl = refl[10] > clThresh && elevation < ELEVATION_THRESH;
-        final boolean acl = ! isB3B11Water() && (gcl || cl);
 
-        return !isInvalid() && !isClearSnow() && (acw || acl);
+//        return !isInvalid() && !isClearSnow() && !isCloud() && !isCloudAmbiguous() && (cw || cl);
+        return !isInvalid() && !isClearSnow() && (cw || cl);  // suggestion OD
+    }
 
+    // Add an ambiguous cirrus test   (JM 20160713)
+    public boolean isCirrusAmbiguous() {
+        final boolean cla = refl[10] > CLA_THRESH && elevation < ELEVATION_THRESH;
+//        return !isInvalid() && !isClearSnow() && !isCloud() && !isCloudAmbiguous() && !isCirrus() && (cla);
+        return !isInvalid() && !isClearSnow() && (cla); // suggestion OD
     }
 
     public boolean isClearLand() {
@@ -82,7 +117,8 @@ public class Sentinel2Algorithm {
         } else {
             return false; // this means: if we have no information about land, we return isClearLand = false
         }
-        return (isLand() && !isCloud() && landValue > LAND_THRESH);
+        return (isLand() && !isCloud() && !isCloudAmbiguous() && !isCirrus() && !isCirrusAmbiguous() &&
+                landValue > LAND_THRESH);
     }
 
     public boolean isClearWater() {
@@ -97,14 +133,24 @@ public class Sentinel2Algorithm {
         } else {
             return false; // this means: if we have no information about water, we return isClearWater = false
         }
-        return (!isLand() && !isCloud() && waterValue > WATER_THRESH);
+        return (!isLand() && !isCloud() && !isCloudAmbiguous() && !isCirrus() && !isCirrusAmbiguous() &&
+                waterValue > WATER_THRESH);
     }
 
     public boolean isClearSnow() {
 //        return (!isInvalid() && isLand() && isBrightWhite() && ndsiValue() > getNdsiThreshold());
-        return  !isInvalid() && isLand() &&
+//        return  !isInvalid() && isLand() &&
+//                ndsiValue() > getNdsiThreshold() &&
+//                !(isB3B11Water() && (tc1Value() < getTc1Threshold()));  // JM, 20160526
+
+        // JM 20160713:
+        return (!isInvalid() && isLand() && !(lat < 30 && lat > -30) &&
                 ndsiValue() > getNdsiThreshold() &&
-                !(isB3B11Water() && (tc1Value() < getTc1Threshold()));  // JM, 20160526
+                !(isB3B11Water() && (tc1Value() < getTc1Threshold()))) ||
+                (!isInvalid() && isLand() && (lat < 30 && lat > -30) &&
+                        elevation > getElevationSnowThreshold() &&
+                        ndsiValue() > getNdsiThreshold() &&
+                        !(isB3B11Water() && (tc1Value() < getTc1Threshold())));
     }
 
     public boolean isSeaIce() {
@@ -150,20 +196,25 @@ public class Sentinel2Algorithm {
         return (refl[2] / refl[11]);
     }
 
+    // new value, JM 20160713
+    public float visbrightValue() {
+        return (refl[1] + refl[2] + refl[3]) / 3;
+    }
+
     public float tc1Value() {
-        return (0.3029f*refl[1] + 0.2786f*refl[2] + 0.4733f*refl[3] + 0.5599f*refl[8] + 0.508f*refl[11] + 0.1872f*refl[12]);
+        return (0.3029f * refl[1] + 0.2786f * refl[2] + 0.4733f * refl[3] + 0.5599f * refl[8] + 0.508f * refl[11] + 0.1872f * refl[12]);
     }
 
     public float tc4Value() {
-        return (-0.8239f*refl[1] + 0.0849f*refl[2] + 0.4396f*refl[3] - 0.058f*refl[8] + 0.2013f*refl[11] - 0.2773f* refl[12]);
+        return (-0.8239f * refl[1] + 0.0849f * refl[2] + 0.4396f * refl[3] - 0.058f * refl[8] + 0.2013f * refl[11] - 0.2773f * refl[12]);
     }
 
     public float tc4CirrusValue() {
-        return (-0.8239f*refl[1] + 0.0849f*refl[2] + 0.4396f*refl[3] - 0.058f*refl[8] + 0.2013f*refl[11] - 0.2773f* refl[12] - refl[10]);
+        return (-0.8239f * refl[1] + 0.0849f * refl[2] + 0.4396f * refl[3] - 0.058f * refl[8] + 0.2013f * refl[11] - 0.2773f * refl[12] - refl[10]);
     }
 
     public float ndwiValue() {
-        return ((refl[8]-refl[11])/(refl[8]+refl[11]));
+        return ((refl[8] - refl[11]) / (refl[8] + refl[11]));
     }
 
     public float spectralFlatnessValue() {
@@ -316,5 +367,9 @@ public class Sentinel2Algorithm {
 
     public void setInvalid(boolean isInvalid) {
         this.isInvalid = isInvalid;
+    }
+
+    public double getElevationSnowThreshold() {
+        return ELEVATION_SNOW_THRESH;
     }
 }

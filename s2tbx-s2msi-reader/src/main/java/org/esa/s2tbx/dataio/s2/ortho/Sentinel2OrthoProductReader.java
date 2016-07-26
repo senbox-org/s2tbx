@@ -24,11 +24,14 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.math3.util.Precision;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
+import org.esa.s2tbx.dataio.s2.ColorIterator;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGrid;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -48,17 +51,22 @@ import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.Placemark;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.SourceImageScaler;
+import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.core.util.jai.JAIDebug;
+import org.esa.snap.core.util.jai.JAIUtils;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
@@ -79,6 +87,7 @@ import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
@@ -89,21 +98,27 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import static java.awt.image.DataBuffer.*;
+import static java.lang.Math.ceil;
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc.makeTileInformation;
 import static org.esa.snap.utils.DateHelper.parseDate;
@@ -377,25 +392,23 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     private void addAnglesBands(Product product, S2Metadata metadataHeader, S2OrthoSceneLayout sceneDescription, HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap ) {
 
         float masterOriginX = Float.MAX_VALUE, masterOriginY = -Float.MAX_VALUE;
-        int minX = 0, minY = 0;
         int widthAnglesTile = 0;
         int heightAnglesTile = 0;
         float resX = 0;
         float resY = 0;
+
         S2BandAnglesGrid[] bandAnglesGrid = null;
-        //Search upper-left tile
-        for (String tileId : sceneDescription.getTileIds()) {
+        //Search upper-left
+        for (String tileId : asSortedList(sceneDescription.getTileIds())) {
             //test all S2SpatialResolutions because sometimes not all are available
             for (S2SpatialResolution s2res : S2SpatialResolution.values()) {
-                if (sceneDescription.getTilePositionInScene(tileId, s2res).getX() == 0 && sceneDescription.getTilePositionInScene(tileId, s2res).getY() == 0) {
-                    bandAnglesGrid = bandAnglesGridsMap.get(tileId);
-                    masterOriginX = bandAnglesGrid[0].originX;
-                    masterOriginY = bandAnglesGrid[0].originY;
-                    widthAnglesTile = bandAnglesGrid[0].getWidth();
-                    heightAnglesTile = bandAnglesGrid[0].getHeight();
-                    resX = bandAnglesGrid[0].getResX();
-                    resY = bandAnglesGrid[0].getResY();
-                }
+                bandAnglesGrid = bandAnglesGridsMap.get(tileId);
+                widthAnglesTile = bandAnglesGrid[0].getWidth();
+                heightAnglesTile = bandAnglesGrid[0].getHeight();
+                resX = bandAnglesGrid[0].getResX();
+                resY = bandAnglesGrid[0].getResY();
+                if (masterOriginX > bandAnglesGrid[0].originX) masterOriginX = bandAnglesGrid[0].originX;
+                if (masterOriginY < bandAnglesGrid[0].originY) masterOriginY = bandAnglesGrid[0].originY;
             }
         }
 
@@ -408,50 +421,35 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             int[] bandOffsets = {0};
             SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, widthAnglesTile, heightAnglesTile, 1, widthAnglesTile, bandOffsets);
-            //data buffer (where the pixels are stored)
-            DataBuffer buffer = new DataBufferFloat(widthAnglesTile*heightAnglesTile*1);
-
-            // Wrap it in a writable raster
-            WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
-            raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrid[i].getData());
             ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.TRANSLUCENT, TYPE_FLOAT);
-
-            // Create an image with the raster
-            BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
-            final PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
+            PlanarImage opImage;
 
             //Mosaic of planar image
             ArrayList<PlanarImage> tileImages = new ArrayList<>();
 
-            for (String tileId : sceneDescription.getOrderedTileIds()) {
-                PlanarImage opImage = null;
+            for (String tileId : asSortedList(sceneDescription.getTileIds())) {
 
-                DataBuffer buffer2 = new DataBufferFloat(widthAnglesTile*heightAnglesTile*1);
-
+                DataBuffer buffer = new DataBufferFloat(widthAnglesTile*heightAnglesTile*1);
                 // Wrap it in a writable raster
-                WritableRaster raster2 = Raster.createWritableRaster(sampleModel, buffer2, null);
-                S2BandAnglesGrid[] bandAnglesGrids2 = bandAnglesGridsMap.get(tileId);
-                raster2.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrids2[i].getData());
-                ColorSpace colorSpace2 = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-                ColorModel colorModel2 = new ComponentColorModel(colorSpace2, false, false, Transparency.TRANSLUCENT, TYPE_FLOAT);
+                WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
+                S2BandAnglesGrid[] bandAnglesGrids = bandAnglesGridsMap.get(tileId);
+                raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrids[i].getData());
 
                 // And finally create an image with this raster
-                BufferedImage image2 = new BufferedImage(colorModel2, raster2, colorModel2.isAlphaPremultiplied(), null);
-                opImage = PlanarImage.wrapRenderedImage(image2);
+                BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
+                opImage = PlanarImage.wrapRenderedImage(image);
 
                 // Translate tile
-                float transX=(bandAnglesGrids2[0].originX-masterOriginX)/bandAnglesGrids2[0].getResX();
-                float transY=(bandAnglesGrids2[0].originY-masterOriginY)/bandAnglesGrids2[0].getResY();
-
+                float transX=(bandAnglesGrids[0].originX-masterOriginX)/bandAnglesGrids[0].getResX();
+                float transY=(bandAnglesGrids[0].originY-masterOriginY)/bandAnglesGrids[0].getResY();
                 opImage = TranslateDescriptor.create(opImage,
                                                      transX,
                                                      -transY,
                                                      Interpolation.getInstance(Interpolation.INTERP_BILINEAR), null);
 
-
-                if(opImage.getMinX()<minX) minX = opImage.getMinX();
-                if(opImage.getMinY()<minY) minY = opImage.getMinY();
+                //Crop output image because with bilinear interpolation some pixels are 0.0
+                opImage = cropBordersIfAreZero(opImage);
 
                 // Feed the image list for mosaic
                 tileImages.add(opImage);
@@ -463,8 +461,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
 
             ImageLayout imageLayout = new ImageLayout();
-            imageLayout.setMinX(minX);
-            imageLayout.setMinY(minY);
+            imageLayout.setMinX(0);
+            imageLayout.setMinY(0);
             imageLayout.setTileWidth(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
@@ -472,13 +470,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
-                                                          null, null,new double[][] {{0.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES},
+                                                          null, null,new double[][] {{-1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES},
                                                           new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
 
-            //Crop output image because with bilinear interpolation some pixels (last column and row) are NaN.
-            mosaicOp = CropDescriptor.create(mosaicOp,
-                                             0.0f, 0.0f, (float) mosaicOp.getWidth()-1, (float) mosaicOp.getHeight()-1,
-                                             new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+            //Crop Mosaic if there are lines outside the scene
+            mosaicOp = (RenderedOp) cropBordersOutsideScene(mosaicOp, resX, resY, sceneDescription);
 
 
             Band band;
@@ -526,7 +522,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             //set source image mut be done after setGeocoding and setImageToModelTransform
             band.setSourceImage(mosaicOp);
             product.addBand(band);
-
         }
 
     }
@@ -652,8 +647,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             if (!maskInfo.isEnabled())
                 continue;
 
-
-            TimeProbe timeProbe = TimeProbe.start();
             if (!maskInfo.isPerBand()) {
                 // cloud masks are provided once and valid for all bands
                 addVectorMask(product, tileList, maskInfo, null, bandInfoList);
@@ -665,11 +658,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                 }
             }
-            timeProbe.reset();
         }
     }
 
     private void addVectorMask(Product product, List<S2Metadata.Tile> tileList, MaskInfo maskInfo, S2SpectralInformation spectralInfo, List<BandInfo> bandInfoList) {
+
         List<EopPolygon> [] productPolygons = new List[maskInfo.getSubType().length];
         for(int i =0;i<maskInfo.getSubType().length;i++)
         {
@@ -678,6 +671,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
 
         boolean maskFilesFound = false;
+        TimeProbe time = TimeProbe.start();
         for (S2Metadata.Tile tile : tileList) {
 
             if (tile.getMaskFilenames() == null) {
@@ -700,9 +694,9 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                 maskFilesFound = true;
 
-                // Read all polygons from the mask file
-                GmlFilter gmlFilter = new GmlFilter();
-                List<EopPolygon> polygonsForTile = gmlFilter.parse(maskFilename.getName()).getSecond();
+                List<EopPolygon> polygonsForTile;
+
+                polygonsForTile = readPolygons(maskFilename.getName().getAbsolutePath());
 
                 for(int i = 0; i<maskInfo.getSubType().length;i++)
                 {
@@ -712,10 +706,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
         }
 
+
         if (!maskFilesFound) {
             return;
         }
-
 
         for(int i = 0; i<maskInfo.getSubType().length;i++) {
             // TODO : why do we use this here ?
@@ -1335,4 +1329,178 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return bandNames;
     }
 
+    public static
+    <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
+        java.util.List<T> list = new ArrayList<T>(c);
+        java.util.Collections.sort(list);
+        return list;
+    }
+
+    /**
+     * Check the content of first and last rows and columns, and if all the pixels are zero, they are removed
+     * @param planarImage
+     * @return
+     */
+    public static PlanarImage cropBordersIfAreZero (PlanarImage planarImage) {
+
+        //First row
+        boolean remove=true;
+        for(int i = 0; i<planarImage.getWidth(); i++) {
+            if(planarImage.copyData().getSampleFloat(planarImage.getMinX()+i,planarImage.getMinY(),0) != 0){
+                remove= false;
+                break;
+            }
+        }
+        if(remove) {
+            planarImage = CropDescriptor.create(planarImage, planarImage.getMinX() + 0.0f, planarImage.getMinY() + 1.0f, (float) planarImage.getWidth(), (float) planarImage.getHeight()-1, null);
+        }
+
+        //Last row
+        remove=true;
+        for(int i = 0; i<planarImage.getWidth(); i++) {
+            if(planarImage.copyData().getSampleFloat(planarImage.getMinX()+i,planarImage.getMinY()+planarImage.getHeight()-1,0) != 0){
+                remove= false;
+                break;
+            }
+        }
+        if(remove) {
+            planarImage = CropDescriptor.create(planarImage, planarImage.getMinX() + 0.0f, planarImage.getMinY() + 0.0f, (float) planarImage.getWidth(), (float) planarImage.getHeight()-1, null);
+        }
+
+        //First column
+        remove=true;
+        for(int i = 0; i<planarImage.getHeight(); i++) {
+            if(planarImage.copyData().getSampleFloat(planarImage.getMinX(),planarImage.getMinY()+i,0) != 0){
+                remove= false;
+                break;
+            }
+        }
+        if(remove) {
+            planarImage = CropDescriptor.create(planarImage, planarImage.getMinX() + 1.0f, planarImage.getMinY() + 0.0f, (float) planarImage.getWidth()-1, (float) planarImage.getHeight(), null);
+        }
+
+        //Last column
+        remove=true;
+        for(int i = 0; i<planarImage.getHeight(); i++) {
+            if(planarImage.copyData().getSampleFloat(planarImage.getMinX()+planarImage.getWidth()-1,planarImage.getMinY()+i,0) != 0){
+                remove= false;
+                break;
+            }
+        }
+        if(remove) {
+            planarImage = CropDescriptor.create(planarImage, planarImage.getMinX() + 0.0f, planarImage.getMinY() + 0.0f, (float) planarImage.getWidth()-1, (float) planarImage.getHeight(), null);
+        }
+
+        return planarImage;
+    }
+
+    /**
+     * The origin of planarImage and sceneLayout must be the same.
+     * Compute the number of the pixels needed to cover the scene and remove the rows and columns outside the scene in planarImage.
+     * @param planarImage
+     * @param resX
+     * @param resY
+     * @param sceneLayout
+     * @return
+     */
+    public static PlanarImage cropBordersOutsideScene (PlanarImage planarImage, float resX, float resY, S2OrthoSceneLayout sceneLayout) {
+
+        int sceneHeight = 0;
+        int sceneWidth = 0;
+        if(sceneLayout.sceneDimensions.size()<=0) {
+            return planarImage;
+        }
+        for(S2SpatialResolution resolution : S2SpatialResolution.values()) {
+            if (sceneLayout.sceneDimensions.get(resolution) != null) {
+                sceneHeight = sceneLayout.getSceneDimension(resolution).height*resolution.resolution;
+                sceneWidth = sceneLayout.getSceneDimension(resolution).width*resolution.resolution;
+                break;
+            }
+        }
+
+        int rowNumber = (int) ceil(sceneHeight/resY);
+        int colNumber = (int) ceil(sceneWidth/resX);
+        planarImage = CropDescriptor.create(planarImage,
+                                            planarImage.getMinX() + 0.0f, planarImage.getMinY() + 0.0f, (float) colNumber, (float) rowNumber,
+                                                null);
+        return planarImage;
+    }
+
+    private List<EopPolygon> readPolygons (String maskFilename) {
+        List<EopPolygon> polygonsForTile = new ArrayList<>();
+        String line;
+        String polygonWKT;
+        String type = "";
+
+        WKTReader wkt = new WKTReader();
+
+        FileReader f = null;
+        try {
+            f = new FileReader(maskFilename);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BufferedReader b = new BufferedReader(f);
+        try {
+            while((line = b.readLine())!=null) {
+                if(line.contains("<gml:posList srsDimension")) {
+                    String polygon = line.substring(line.indexOf(">")+1, line.indexOf("</gml:posList>"));
+                    polygonWKT = convertToWKTPolygon (polygon, readPolygonDimension (line));
+                    EopPolygon polyg = new EopPolygon("id", type, (Polygon) wkt.read(polygonWKT));
+                    polygonsForTile.add(polyg);
+                }
+                else if(line.contains("</eop:maskType>")) {
+                    type = line.substring(line.indexOf(">")+1, line.indexOf("</eop:maskType>"));
+                }
+            }
+        } catch (Exception e) {
+            logger.warning(String.format("Warning: missing polygon in mask %s\n", maskFilename));
+        }
+        try {
+            b.close();
+        } catch (IOException e) {
+            logger.warning(String.format("Warning: impossible to close BufferedReader\n"));
+        }
+        return polygonsForTile;
+    }
+
+    private int readPolygonDimension (String line) {
+        String label = "srsDimension=\"";
+        int position = line.indexOf(label);
+        if(position == -1) {
+            return 0;
+        }
+        try {
+            int dimension = Integer.parseInt(line.substring(position + label.length(), position + label.length() + 1));
+            return dimension;
+        } catch (Exception e){
+            return 0;
+        }
+    }
+
+    private String convertToWKTPolygon (String line, int dimension) throws IOException{
+
+        if(dimension <=0) throw new IOException("Invalid dimension");
+
+        StringBuilder output = new StringBuilder("POLYGON((");
+
+        int pos = 0, end;
+        int count=0;
+        while ((end = line.indexOf(' ', pos)) >= 0) {
+            output = output.append(line.substring(pos, end));
+            pos = end + 1;
+            count ++;
+            if(count == dimension) {
+                output = output.append(",");
+                count = 0;
+            } else {
+                output = output.append(" ");
+            }
+        }
+        //add last coordinate
+        output = output.append(line.substring(line.lastIndexOf(' ')+1));
+        output = output.append("))");
+        return output.toString();
+    }
 }
+

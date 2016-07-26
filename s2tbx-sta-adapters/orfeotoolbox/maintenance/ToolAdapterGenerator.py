@@ -98,12 +98,6 @@ def generateStructure(outputDir, lowerToolName, createAdapter=False):
             ├── META-INF
             │   ├── descriptor.xml
             │   └── MANIFEST.MF
-            ├── org
-            │   └── esa
-            │       └── snap
-            │           └── ui
-            │               └── tooladapter
-            │                   └── layer.xml
             ├── Sen2Cor-post-template.vm
 
 
@@ -116,15 +110,13 @@ def generateStructure(outputDir, lowerToolName, createAdapter=False):
     if not createAdapter:
         metaInfDirectory = os.path.join(toolDirectory, "META-INF")
         resourceDirectory = toolDirectory
-        layerDirectory = None
     else:
         resourceDirectory = os.path.join(toolDirectory, "resources")
         createDirectory(resourceDirectory, "resourceDirectory")
         metaInfDirectory = os.path.join(resourceDirectory, "META-INF")
-        layerDirectory = os.path.join(resourceDirectory, "org", "esa", "snap", "ui", "tooladapter")
-        createDirectories(layerDirectory, "layerDirectory")
+
     createDirectory(metaInfDirectory, "metaInfDirectory")
-    return resourceDirectory, metaInfDirectory, toolDirectory, layerDirectory
+    return resourceDirectory, metaInfDirectory, toolDirectory
 
 
 def generateTemplateVM(outputDir, applicationName, param, lowerToolName):
@@ -148,10 +140,10 @@ def getVariables(appName, envVarTool):
     <variables>
         <osvariable>
             <key>OTB_BIN_DIR</key>
-            <value></value>
-            <windows>C:/Documents/TOto</windows>
+            <value/>
+            <windows/>
             <linux>/usr/bin</linux>
-            <macosx>ValueForMac</macosx>
+            <macosx/>
             <isTransient>false</isTransient>
         </osvariable>
     </variables>
@@ -173,7 +165,8 @@ def getVariables(appName, envVarTool):
     submet.text = ""
     submet = ET.SubElement(met, "isTransient")
     submet.text = "false"
-
+    submet = ET.SubElement(met, "isShared")
+    submet.text = "true"
 
     met = ET.SubElement(root, "osvariable")
 
@@ -189,7 +182,8 @@ def getVariables(appName, envVarTool):
     submet.text = appName
     submet = ET.SubElement(met, "isTransient")
     submet.text = "false"
-
+    submet = ET.SubElement(met, "isShared")
+    submet.text = "false"
 
     # met = ET.SubElement(root, "osvariable")
     #
@@ -259,20 +253,24 @@ def getXMLRoot(applicationName, info, vmFile, version, envVarTool):
     met = ET.SubElement(root, "workingDir")
     met.text = "/tmp"
 
-    met = ET.SubElement(root, "templateFileLocation")
-    met.text = os.path.basename(vmFile)
+    met = ET.SubElement(root, "templateType")
+    met.text = "VELOCITY"
+
+    met = ET.SubElement(root, "template")
+    templateFile = ET.SubElement(met, "file")
+    templateFile.text = os.path.basename(vmFile)
 
     met = ET.SubElement(root, "progressPattern")
     met.text = ".*: (\d{1,3})%(?:.+)"
 
     met = ET.SubElement(root, "errorPattern")
-    met.text = "itk::ERROR(.+)"
+    met.text = "(?:ERROR:|itk::ERROR)(.+)"
 
 
     return root
 
 
-def addClosing(root, hasOutputRaster):
+def addClosing(root, hasOutputRaster, inputParameterNames):
     """
     Add last xml fields for root
     <source>user</source>
@@ -301,10 +299,12 @@ def addClosing(root, hasOutputRaster):
     met.text = str(not hasOutputRaster).lower()
 
     #TBD
+    # For all products, get the name
     met = ET.SubElement(root, "sourceProductDescriptors")
-    submet = ET.SubElement(met, "org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor")
-    subsubmet = ET.SubElement(submet, "name")
-    subsubmet.text = "sourceProduct 1"
+    for inputParameterName in inputParameterNames:
+        submet = ET.SubElement(met, "org.esa.snap.core.gpf.descriptor.DefaultSourceProductDescriptor")
+        subsubmet = ET.SubElement(submet, "name")
+        subsubmet.text = inputParameterName
 
     #TBD for raster is true
     met = ET.SubElement(root, "targetPropertyDescriptors")
@@ -328,7 +328,7 @@ def getParameters(XMLParamList):
 
 
 def generateDescriptorXml(outputDir, applicationName, xmlDescriptionProcessing, vmFile, info, XMLParamList,
-                          version, hasOutputRaster, envVarTool):
+                          version, hasOutputRaster, envVarTool, inputParameterNames):
     """
     Generate the description.xml file which contains the description of parameters
     :param outputDir:
@@ -346,7 +346,7 @@ def generateDescriptorXml(outputDir, applicationName, xmlDescriptionProcessing, 
     root.append(getVariables(info["exec"], envVarTool))
     root.append(getParameters(XMLParamList))
 
-    addClosing(root, hasOutputRaster)
+    addClosing(root, hasOutputRaster, inputParameterNames)
     tree = ET.ElementTree(root)
 
     f = open(descriptorXml, "w")
@@ -384,11 +384,16 @@ def manageToolParameters(dicInfo):
                       'ParameterType_Empty': ['java.lang.Boolean', 'bool'], # TBD
                       "ParameterType_InputImage": ['java.io.File', 'str'],
                       "ParameterType_OutputImage": ['java.io.File', 'str'],
-                      "ParameterType_OutputVectorData": ['java.io.File', 'str']
-    }
+                      "ParameterType_OutputVectorData": ['java.io.File', 'str'],
+                      "ParameterType_InputFilename": ['java.io.File', 'str']
+
+                      }
 
     orderParam = []
     hasOutputRaster = False
+    inputParameterIndex = 0
+    inputParameterNames = []
+
     # go throught all parameters, get information to create S2TBX xml
     for param in toolsProcessingParameters:
 
@@ -425,18 +430,21 @@ def manageToolParameters(dicInfo):
                 # WARNING : suppose that there is only one raster input, else use sourceProductFile
                 if typeParam == "ParameterType_InputImage" and dicParameters[key]["type_processing2"] == "ParameterRaster":
                     logger.debug("ParameterType_InputImage & ParameterRaster")
-                    dicParameters[key]["name"] = "sourceProductFile"
+                    #dicParameters[key]["name"] = "sourceProductFile[{}]".format(inputParameterIndex)
+                    dicParameters[key]["name"] = "sourceProductFile[{}]".format(inputParameterIndex)
+                    inputParameterNames.append(param.xpath("./name/text()")[0])
+                    inputParameterIndex += 1
                     logger.debug("Changed key: {}".format(dicParameters[key]))
 
                 #case of output raster
                 if typeParam == "ParameterType_OutputImage" and dicParameters[key]["type_processing2"] == "OutputRaster":
                     logger.debug("ParameterType_OutputImage & OutputRaster")
                     dicParameters[key]["name"] = "targetProductFile"
-                    logger.debug("Changed key: {}".format(dicParameters[key]))
                     hasOutputRaster = True
 
-                #case of output vector
-                if typeParam == "ParameterType_OutputVectorData" and dicParameters[key]["type_processing2"] == "OutputVector":
+                # case of output vector
+                if typeParam == "ParameterType_OutputVectorData" and dicParameters[key][
+                    "type_processing2"] == "OutputVector":
                     logger.debug("ParameterType_OutputVectorData & OutputVector")
                     dicParameters[key]["default"] = appName.lower() + ".shp"
 
@@ -482,24 +490,50 @@ def manageToolParameters(dicInfo):
 
     stringVMList = []
     XMLParamList = []
+    commandLine = dicInfo["cli_args_template"].split()
+
+    # create the template string
+    for i in range(len(commandLine)):
+        commandLineElement = commandLine[i]
+
+        if commandLineElement.startswith("-"):
+            #we check the parameter is in the dic (optional parameter without default are removed)
+            paramKey = commandLineElement[1:len(commandLineElement)]
+            if paramKey in dicParameters:
+                stringVMList.append(commandLineElement)
+                nextCommandLineElement = commandLine[i+1]
+                #we replace parameters values surrouded by {}, we just append others
+                if nextCommandLineElement.startswith("{") and nextCommandLineElement.endswith("}"):
+                    parameterDic = dicParameters[paramKey]
+
+                    if parameterDic["name"].startswith("sourceProductFile"):
+                        logging.debug("Case of sourceProductFile")
+                        if inputParameterIndex > 1:
+                            paramName = parameterDic["name"]
+                        else:
+                            paramName ="sourceProductFile"
+                    elif parameterDic["name"].startswith("targetProductFile"):
+                        logging.debug("Case of targetProductFile")
+                        paramName = "targetProductFile"
+
+                    else:
+                        # .split(".")[-1] to avoir paramName like mode.vector.out that does not work
+                        paramName = parameterDic.get("key", "unknown_key").split(".")[-1] + "_" + \
+                                    parameterDic.get("type", "unknown_type")[1]
+
+                    stringVMList.append("$" + paramName)
+                else:
+                    stringVMList.append(nextCommandLineElement)
+
+    stringVM = "\n".join(stringVMList)
+
     for parameterDesc in orderParam:  # , parameterDic in dicParameters.iteritems():
+
         parameterDic = dicParameters[parameterDesc]
 
         # print parameterDic["type"]
         logging.debug("Parameter type {}".format(parameterDic["type"]))
 
-        if parameterDic["name"] == "sourceProductFile":
-            logging.debug("Case of sourceProductFile")
-            paramName = "sourceProductFile"
-        elif parameterDic["name"] == "targetProductFile":
-            logging.debug("Case of targetProductFile")
-            paramName = "targetProductFile"
-        else:
-            #.split(".")[-1] to avoir paramName like mode.vector.out that does not work
-            paramName = parameterDic.get("key", "unknown_key").split(".")[-1] + "_" + parameterDic.get("type", "unknown_type")[1]
-        #creating string for vm file
-        stringVMList.append("-" + parameterDic.get("key", "unknown_key"))
-        stringVMList.append("$" +paramName)
 
         #creating node
         # <parameter>
@@ -514,37 +548,41 @@ def manageToolParameters(dicInfo):
         #   <parameterType>RegularParameter</parameterType>
         #   <toolParameterDescriptors/>
         # </parameter>
-        root = ET.Element("parameter")
+        if not parameterDic["name"].startswith("sourceProductFile") :
 
-        met = ET.SubElement(root, "name")
-        met.text = paramName
-        met = ET.SubElement(root, "alias")
-        met.text = parameterDic.get("name", "unknown_description")
-        met = ET.SubElement(root, "dataType")
-        met.text = parameterDic.get("type", "unknown_type")[0]
-        if "default" in parameterDic:
-            met = ET.SubElement(root, "defaultValue")
-            met.text = parameterDic["default"]
-        met = ET.SubElement(root, "description")
-        met.text = parameterDic.get("description", "unknown_description")
-        met = ET.SubElement(root, "valueSet")
-        met = ET.SubElement(root, "notNull")
-        met.text = "false"
-        met = ET.SubElement(root, "notEmpty")
-        met.text = "false"
-        #TBD
-        met = ET.SubElement(root, "parameterType")
-        met.text = "RegularParameter"
-        met = ET.SubElement(root, "toolParameterDescriptors")
-        XMLParamList.append(root)
+            if parameterDic["name"].startswith("targetProductFile") :
+                paramName = "targetProductFile"
+            else :
+                paramName = parameterDic.get("key", "unknown_key").split(".")[-1] + "_" + \
+                            parameterDic.get("type", "unknown_type")[1]
+
+            root = ET.Element("parameter")
+
+            met = ET.SubElement(root, "name")
+            met.text = paramName
+            met = ET.SubElement(root, "alias")
+            met.text = parameterDic.get("name", "unknown_description")
+            met = ET.SubElement(root, "dataType")
+            met.text = parameterDic.get("type", "unknown_type")[0]
+            if "default" in parameterDic:
+                met = ET.SubElement(root, "defaultValue")
+                met.text = parameterDic["default"]
+            met = ET.SubElement(root, "description")
+            met.text = parameterDic.get("description", "unknown_description")
+            met = ET.SubElement(root, "valueSet")
+            met = ET.SubElement(root, "notNull")
+            met.text = "false"
+            met = ET.SubElement(root, "notEmpty")
+            met.text = "false"
+            #TBD
+            met = ET.SubElement(root, "parameterType")
+            met.text = "RegularParameter"
+            #met = ET.SubElement(root, "toolParameterDescriptors")
+            XMLParamList.append(root)
 
 
-    stringVM = "\n".join(stringVMList)
 
-    return dicParameters, stringVM, XMLParamList, hasOutputRaster
-
-
-
+    return dicParameters, stringVM, XMLParamList, hasOutputRaster, inputParameterNames
 
 
 def getInfoFromProcessingXML(xmlDescriptionProcessing):
@@ -555,9 +593,12 @@ def getInfoFromProcessingXML(xmlDescriptionProcessing):
 
     dicXpath = {
             "key":"./key",
+            "longname":"./longname",
             "description": "./description",
             "exec": "./exec",
-            "parameters": "./parameter"
+            "parameters": "./parameter",
+            "cli_args_template": "./cli_args_template"
+
     }
     dicResult = {}
 
@@ -600,7 +641,7 @@ def createPom(toolDirectory, dicResult, lowerToolName):
     try:
         dom = ET.parse(sourcePomFile)
     except ExpatError:
-        raise MainXMLError("Error: Error parsing " + xmlDescriptionProcessing +
+        raise MainXMLError("Error: Error parsing " + sourcePomFile +
                            ". This XML is not readeable.")
     else:
         dicXpath = {
@@ -629,39 +670,6 @@ def createPom(toolDirectory, dicResult, lowerToolName):
 
         f.close()
 
-
-def createLayer(layerDirectory, dicResult):
-    """
-    Create layer.xml file
-    :param layerDirectory:
-    :param dicResult:
-    :return:
-    """
-    sourceLayerFile = os.path.join(os.path.dirname(__file__), "layer.xml")
-    layerXml = os.path.join(layerDirectory, "layer.xml")
-    try:
-        dom = ET.parse(sourceLayerFile)
-    except ExpatError:
-        raise MainXMLError("Error: Error parsing " + xmlDescriptionProcessing +
-                           ". This XML is not readeable.")
-    else:
-        stringValueXpath = '//filesystem/folder[@name="Actions"]/folder[@name="Tools"]/attr[@name="displayName"]'
-        newValue = dicResult["key"]
-
-        root = dom.getroot()
-        r = root.xpath(stringValueXpath)
-        # print r
-        if len(r) == 1:
-            response = r[0]
-            response.set("stringvalue", newValue)
-
-        tree = ET.ElementTree(root)
-        f = open(layerXml, "w")
-        f.write(ET.tostring(dom, pretty_print=True,encoding="UTF-8")) # xml_declaration=True, standalone='No',
-
-        f.close()
-
-
 def createManifest(toolDirectory, dicResult, version):
     """
     Creates MANIFEST.MF
@@ -680,11 +688,12 @@ OpenIDE-Module-Name: {appKeySplitted}
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Type: STA
+OpenIDE-Module-Short-Description: {longName}
 OpenIDE-Module: org.esa.s2tbx.{appKeySplitted}
+OpenIDE-Module-Alias: {appKey}
 OpenIDE-Module-Module-Dependencies: org.esa.snap.snap.sta, org.esa.snap.snap.sta.ui
-OpenIDE-Module-Install: org/esa/snap/utils/ModuleInstaller.class
 AutoUpdate-Show-In-Client: false
-""".format(version=version, appKeySplitted=appKeySplitted)
+""".format(version=version, appKeySplitted=appKeySplitted, longName=dicResult['longname'], appKey=dicResult['key'] )
 
     with open(manifestFile, "w") as f:
         f.write(manifest)
@@ -697,19 +706,18 @@ def run_ToolAdapterGenerator(outputDir, xmlDescriptionProcessing, createAdapter=
         lowerToolName = lowerToolName[1:]
     envVarTool = "OTB_BIN" + lowerToolName.upper().replace("-", "_") +"_EXEC"
 
-    dicParameters, stringVM, XMLParamList, hasOutputRaster =manageToolParameters(dicResult)
+    dicParameters, stringVM, XMLParamList, hasOutputRaster, inputParameterNames =manageToolParameters(dicResult)
 
-    resourceDirectory, metaInfDirectory, toolDirectory, layerDirectory = generateStructure(outputDir,
-                                                                                           lowerToolName,
-                                                                                           createAdapter)
+    resourceDirectory, metaInfDirectory, toolDirectory = generateStructure(outputDir,
+                                                                           lowerToolName,
+                                                                           createAdapter)
     vmFile = generateTemplateVM(resourceDirectory, applicationName, stringVM, lowerToolName)
     rootVar = generateDescriptorXml(metaInfDirectory, applicationName, xmlDescriptionProcessing, vmFile, dicResult,
-                          XMLParamList, "5.2", hasOutputRaster, envVarTool)
+                          XMLParamList, "5.2", hasOutputRaster, envVarTool, inputParameterNames)
 
     if createAdapter:
         createPom(toolDirectory, dicResult, lowerToolName)
-        createLayer(layerDirectory, dicResult)
-        createManifest(metaInfDirectory, dicResult, "4.0.0")
+        createManifest(metaInfDirectory, dicResult, "5.0.0")
 
 
 
