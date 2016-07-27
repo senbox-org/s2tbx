@@ -399,7 +399,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         S2BandAnglesGrid[] bandAnglesGrid = null;
         //Search upper-left
-        for (String tileId : asSortedList(sceneDescription.getTileIds())) {
+        for (String tileId : sceneDescription.getOrderedTileIds()) {
             //test all S2SpatialResolutions because sometimes not all are available
             for (S2SpatialResolution s2res : S2SpatialResolution.values()) {
                 bandAnglesGrid = bandAnglesGridsMap.get(tileId);
@@ -428,7 +428,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             //Mosaic of planar image
             ArrayList<PlanarImage> tileImages = new ArrayList<>();
 
-            for (String tileId : asSortedList(sceneDescription.getTileIds())) {
+            for (String tileId : sceneDescription.getOrderedTileIds()) {
 
                 DataBuffer buffer = new DataBufferFloat(widthAnglesTile*heightAnglesTile*1);
                 // Wrap it in a writable raster
@@ -1327,13 +1327,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
         return bandNames;
-    }
-
-    public static
-    <T extends Comparable<? super T>> java.util.List<T> asSortedList(Collection<T> c) {
-        java.util.List<T> list = new ArrayList<T>(c);
-        java.util.Collections.sort(list);
-        return list;
     }
 
     /**
