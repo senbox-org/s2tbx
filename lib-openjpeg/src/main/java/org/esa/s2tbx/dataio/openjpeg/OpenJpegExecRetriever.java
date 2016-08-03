@@ -66,7 +66,7 @@ public class OpenJpegExecRetriever {
     }
 
     public static Path getOpenJPEGAuxDataPath() {
-        Path versionFile = ResourceInstaller.findModuleCodeBasePath(OpenJpegExecRetriever.class).resolve("version/version.properties");
+        Path versionFile = ResourceInstaller.findModuleCodeBasePath(OpenJpegExecRetriever.class).resolve("version"+ File.separator +"version.properties");
         Properties versionProp = new Properties();
 
         try (InputStream inputStream = Files.newInputStream(versionFile)){
@@ -101,10 +101,10 @@ public class OpenJpegExecRetriever {
 
     /* The different OS for which OpenJPEG executables are released */
     private enum OSCategory {
-        WIN_32("openjpeg-2.1.0-win32", "bin/opj_compress.exe", "bin/opj_decompress.exe", "bin/opj_dump.exe"),
-        WIN_64("openjpeg-2.1.0-win64", "bin/opj_compress.exe", "bin/opj_decompress.exe", "bin/opj_dump.exe"),
-        LINUX_64("openjpeg-2.1.0-linux64",   "bin/opj_compress",     "bin/opj_decompress",     "bin/opj_dump"),
-        MAC_OS_X("openjpeg-2.1.0-macosx", "bin/opj_compress",     "bin/opj_decompress",     "bin/opj_dump"),
+        WIN_32("openjpeg-2.1.0-win32", "bin" + File.separator + "opj_compress.exe", "bin" + File.separator + "opj_decompress.exe", "bin" + File.separator + "opj_dump.exe"),
+        WIN_64("openjpeg-2.1.0-win64", "bin" + File.separator + "opj_compress.exe", "bin" + File.separator + "opj_decompress.exe", "bin" + File.separator + "opj_dump.exe"),
+        LINUX_64("openjpeg-2.1.0-linux64",   "bin" + File.separator + "opj_compress",     "bin" + File.separator + "opj_decompress",     "bin" + File.separator + "opj_dump"),
+        MAC_OS_X("openjpeg-2.1.0-macosx", "bin" + File.separator + "opj_compress",     "bin" + File.separator + "opj_decompress",     "bin" + File.separator + "opj_dump"),
         UNSUPPORTED(null, null, null, null);
 
         String directory;
@@ -120,7 +120,7 @@ public class OpenJpegExecRetriever {
         }
 
         String getCompressor() {
-            return String.format("%s%s%s", directory, File.separator, decompressor);
+            return String.format("%s%s%s", directory, File.separator, compressor);
         }
 
         String getDecompressor() {
