@@ -15,9 +15,9 @@ public class GemiOpTest extends BaseIndexOpTest<GemiOp> {
             put("nirFactor", 1.0f);
         }});
         setTargetValues(new float[] {
-                0.0f, 3.988636f, 3.587500f,
-                3.462719f, 3.403533f, 3.369444f,
-                3.347446f, 3.332143f, 3.320913f } );
+                0.0f, 2.707644f, 2.249722f,
+                2.091528f, 2.010337f, 1.960665f,
+                1.927050f, 1.902755f, 1.884358f } );
         super.setUp();
     }
 }
