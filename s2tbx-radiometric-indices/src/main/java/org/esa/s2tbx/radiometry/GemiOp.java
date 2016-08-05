@@ -68,7 +68,7 @@ public class GemiOp extends BaseIndexOp {
 
                     final float eta = ( 2*(nir*nir - red*red) + 1.5f*nir + 0.5f*red ) / (nir + red + 0.5f);
 
-                    gemiValue = (3f/4f)*eta - (red - 0.125f)/(1 - red);
+                    gemiValue = eta * (1f - 0.25f*eta) - (red - 0.125f)/(1 - red);
 
                     gemiFlagValue = 0;
                     if (Float.isNaN(gemiValue) || Float.isInfinite(gemiValue)) {

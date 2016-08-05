@@ -29,7 +29,7 @@ public class PviOp extends BaseIndexOp{
     @Parameter(label = "NIR factor", defaultValue = "1.0F", description = "The value of the NIR source band is multiplied by this value.")
     private float nirFactor;
 
-    @Parameter(label = "The angle between the soil line and the NIR axis", defaultValue = "45.0", description = "Soil line has an arbitrary slope and passes through origin. Ranges -1 to +1")
+    @Parameter(label = "Angle between soil line and NIR axis (in degrees)", defaultValue = "45.0", description = "Soil line has an arbitrary slope and passes through origin.")
     private float angleSoilLineNIRAxis;
 
     @Parameter(label = "Red source band",
