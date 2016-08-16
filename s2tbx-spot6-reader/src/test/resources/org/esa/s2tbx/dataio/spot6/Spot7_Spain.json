@@ -23,7 +23,7 @@
     "bands": [
       {
         "name": "B0",
-        "noDataValue": "11126.092482",
+        "noDataValue": "4388.696514",
         "noDataValueUsed": "true",
         "spectralWavelength": "491.0",
         "spectralBandwidth": "68.0",
@@ -31,7 +31,7 @@
           {
             "x": 374,
             "y": 247,
-            "value": 11193.145507
+            "value": 4454.074218
           },
           {
             "x": 587,
@@ -61,7 +61,7 @@
       },
       {
         "name": "B2",
-        "noDataValue": "1453.838625",
+        "noDataValue": "3685.728312",
         "noDataValueUsed": "true",
         "spectralWavelength": "665.0",
         "spectralBandwidth": "64.0",
@@ -69,7 +69,7 @@
           {
             "x": 374,
             "y": 247,
-            "value": 1522.523681
+            "value": 3756.173339
           },
           {
             "x": 1139,
