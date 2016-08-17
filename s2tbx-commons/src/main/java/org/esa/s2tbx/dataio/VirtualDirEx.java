@@ -94,7 +94,8 @@ public abstract class VirtualDirEx extends VirtualDir {
                 return null;
             }
         } else {
-            return new VirtualDirWrapper(VirtualDir.create(file));
+            VirtualDir virtualDir = VirtualDir.create(file);
+            return virtualDir == null ? null : new VirtualDirWrapper(virtualDir);
         }
     }
 
