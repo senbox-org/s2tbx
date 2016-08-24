@@ -613,6 +613,30 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     Color color = colorIterator.next();
                     Mask mask = Mask.BandMathsType.create(indexBandInformation.getPrefix() + indexName.toLowerCase(), description, dimension.width, dimension.height,
                                                           String.format("%s.raw == %d", indexBandInformation.getPhysicalBand(), indexValue), color, 0.5);
+
+                    //set geoCoding
+                    double pixelSize = 0;
+                    if (isMultiResolution()) {
+                        pixelSize = (double) bandInfo.getBandInformation().getResolution().resolution;
+                    } else {
+                        pixelSize = (double) getProductResolution().resolution;
+                    }
+
+                    try {
+                        mask.setGeoCoding(new CrsGeoCoding(CRS.decode(epsgCode),
+                                                           mask.getRasterWidth(),
+                                                           mask.getRasterHeight(),
+                                                           sceneDescription.getSceneOrigin()[0],
+                                                           sceneDescription.getSceneOrigin()[1],
+                                                           pixelSize,
+                                                           pixelSize,
+                                                           0.0, 0.0));
+                    } catch (FactoryException e) {
+                        throw new IOException(e);
+                    } catch (TransformException e) {
+                        throw new IOException(e);
+                    }
+                    
                     product.addMask(mask);
                 }
             }
