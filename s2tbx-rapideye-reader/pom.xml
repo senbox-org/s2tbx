@@ -23,7 +23,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>4.0.1</version>
+        <version>4.0.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-rapideye-reader</artifactId>
