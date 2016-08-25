@@ -115,7 +115,9 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
         if (imageFile != null) {
-            return new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
+            JP2TileOpImage jp2TileOpImage = new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
+            jp2TileOpImage.setTileCache(null); // the MosaicOpImage will be in the cache
+            return jp2TileOpImage;
         } else {
             int targetWidth = tileLayout.tileWidth;
             int targetHeight = tileLayout.tileHeight;
