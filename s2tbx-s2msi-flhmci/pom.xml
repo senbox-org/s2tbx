@@ -26,7 +26,8 @@
     <packaging>nbm</packaging>
 
     <name>S2 FLH/MCI Processor</name>
-    <description>The S2 FLH/MCI Processor calculates the Fluorescence Line Height and the Maximum Chlorophyll Index by exploiting the height of a measurement over a specific baseline.</description>
+    <description>The S2 FLH/MCI Processor calculates the Fluorescence Line Height and the Maximum Chlorophyll Index by exploiting the height
+        of a measurement over a specific baseline.</description>
 
     <dependencies>
         <dependency>
@@ -44,6 +45,7 @@
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>ceres-binding</artifactId>
+            <version>${snap.version}</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
