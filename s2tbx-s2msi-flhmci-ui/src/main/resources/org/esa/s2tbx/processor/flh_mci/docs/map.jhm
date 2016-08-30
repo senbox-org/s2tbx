@@ -5,8 +5,8 @@
 
 <map version="2.0">
 
-    <mapID target="flhMciScientificTool" url="flh_mci/FlhMciTool.html"/>
-    <mapID target="flhMciAlgorithmSpec" url="flh_mci/FlhMciAlgorithmSpecification.html"/>
-    <mapID target="flhMciProcessorDesc" url="flh_mci/FlhMciProcessorDescription.html"/>
+    <mapID target="s2flhMciScientificTool" url="flh_mci/FlhMciTool.html"/>
+    <mapID target="s2flhMciAlgorithmSpec" url="flh_mci/FlhMciAlgorithmSpecification.html"/>
+    <mapID target="s2flhMciProcessorDesc" url="flh_mci/FlhMciProcessorDescription.html"/>
 
 </map>

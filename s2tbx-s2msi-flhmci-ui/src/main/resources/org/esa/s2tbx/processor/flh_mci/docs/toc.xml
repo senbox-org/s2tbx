@@ -10,9 +10,9 @@
     <tocitem text="Sentinel Toolbox Application">
         <tocitem text="Optical">
             <tocitem text="Thematic Water Processing">
-                <tocitem text="FLH/MCI Processor" target="flhMciScientificTool">
-                    <tocitem text="Algorithm Specification" target="flhMciAlgorithmSpec"/>
-                    <tocitem text="Processor Description" target="flhMciProcessorDesc"/>
+                <tocitem text="S2 FLH/MCI Processor" target="s2flhMciScientificTool">
+                    <tocitem text="Algorithm Specification" target="s2flhMciAlgorithmSpec"/>
+                    <tocitem text="Processor Description" target="s2flhMciProcessorDesc"/>
                 </tocitem>
             </tocitem>
         </tocitem>
