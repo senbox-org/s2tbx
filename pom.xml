@@ -38,6 +38,8 @@
         <module>s2tbx-spot6-reader</module>
         <module>s2tbx-s2msi-idepix</module>
         <module>s2tbx-s2msi-idepix-ui</module>
+        <module>s2tbx-s2msi-flhmci</module>
+        <module>s2tbx-s2msi-flhmci-ui</module>
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-sta-adapters-help</module>
