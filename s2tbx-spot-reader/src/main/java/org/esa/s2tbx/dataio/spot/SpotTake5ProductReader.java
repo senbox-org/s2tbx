@@ -241,6 +241,8 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                                             SpotConstants.SPOT4_TAKE5_TAG_ORTHO_VAP_EAU + SpotConstants.BAND_GROUP_SEPARATOR +
                                             SpotConstants.SPOT4_TAKE5_GROUP_MASKS);
             product.setModified(false);
+
+            BaseProductReaderPlugIn.setBandColorPalettes(product, SpotTake5ProductReaderPlugin.SPOT_TAKE5_COLOR_PALETTE_FILE_NAME);
         }
         return product;
     }

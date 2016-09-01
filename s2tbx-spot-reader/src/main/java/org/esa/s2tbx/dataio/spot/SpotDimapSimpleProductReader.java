@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -92,7 +93,7 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
         }
         product.setModified(false);
 
-        setBandColorPalettes(product, SPOT_COLOR_PALETTE_FILE_NAME);
+        BaseProductReaderPlugIn.setBandColorPalettes(product, SpotDimapProductReaderPlugin.SPOT_DIMAP_COLOR_PALETTE_FILE_NAME);
 
         return product;
     }

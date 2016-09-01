@@ -22,6 +22,7 @@ import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
+import org.openide.modules.OnStart;
 
 import java.util.Locale;
 
@@ -32,6 +33,7 @@ import java.util.Locale;
  * @author  Cosmin Cara
  */
 public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
+    public static final String DEIMOS_COLOR_PALETTE_FILE_NAME = "deimos_gradient_red.cpd";
 
     @Override
     public Class[] getInputTypes() {
@@ -72,4 +74,18 @@ public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("DEIMOS-1", new String[] { "Red", "Green", "NIR" }));
     }
 
+    /**
+     * Startup class invoked by NetBeans that copies the color palette file.
+     */
+    @OnStart
+    public static class StartOp implements Runnable {
+
+        public StartOp() {
+        }
+
+        @Override
+        public void run() {
+            copyColorPaletteFileFromResources(DeimosProductReaderPlugin.class.getClassLoader(), "org/esa/s2tbx/dataio/deimos/", DEIMOS_COLOR_PALETTE_FILE_NAME);
+        }
+    }
 }

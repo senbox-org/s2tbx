@@ -21,10 +21,18 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.ColorPaletteDef;
+import org.esa.snap.core.datamodel.ImageInfo;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
@@ -39,6 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -218,6 +227,57 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
                     }
                 });
         return files;
+    }
+
+    public static void copyColorPaletteFileFromResources(ClassLoader classLoader, String resourcesFolderPath, String fileName) {
+        URL url = classLoader.getResource(resourcesFolderPath + fileName);
+        if (url != null) {
+            try {
+                InputStream inputStream = url.openConnection().getInputStream();
+                try {
+                    Path destionationFolderPath = SystemUtils.getAuxDataPath().resolve("color_palettes");
+                    File destinationFile = new File(destionationFolderPath.toFile(), fileName);
+                    FileOutputStream outStream = new FileOutputStream(destinationFile);
+                    try {
+                        byte[] buffer = new byte[1024];
+                        int length;
+                        while ((length = inputStream.read(buffer)) > 0){
+                            outStream.write(buffer, 0, length);
+                        }
+                    } finally {
+                        outStream.close();
+                    }
+                } finally {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                SystemUtils.LOG.log(Level.SEVERE, "Unable to copy the color palette file '" + fileName +"' from the resources.", e);
+            }
+        }
+    }
+
+    public static void setBandColorPalettes(Product product, String fileName) {
+        Path destionationFolderPath = SystemUtils.getAuxDataPath().resolve("color_palettes");
+        File destinationFile = new File(destionationFolderPath.toFile(), fileName);
+        if (destinationFile.exists() && destinationFile.isFile()) {
+            try {
+                ColorPaletteDef colorPalette = ColorPaletteDef.loadColorPaletteDef(destinationFile);
+                int numBands = product.getNumBands();
+                for (int idx = 0; idx < numBands; idx++) {
+                    Band band = product.getBandAt(idx);
+                    if (band.getImageInfo() == null) {
+                        band.setImageInfo(new ImageInfo(colorPalette));
+                    } else {
+                        double minSample = colorPalette.getFirstPoint().getSample();
+                        double maxSample = colorPalette.getLastPoint().getSample();
+                        boolean autoDistribute = colorPalette.isAutoDistribute();
+                        band.getImageInfo().setColorPaletteDef(colorPalette, minSample,maxSample, autoDistribute);
+                    }
+                }
+            } catch (IOException e) {
+                SystemUtils.LOG.log(Level.SEVERE, "Unable to load the color palette from the file '" + fileName +"'.", e);
+            }
+        }
     }
 
     /**

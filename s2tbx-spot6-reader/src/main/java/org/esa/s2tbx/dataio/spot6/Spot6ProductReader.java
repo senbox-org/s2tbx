@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.spot6;
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
 import org.esa.s2tbx.dataio.VirtualDirEx;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.readers.ColorIterator;
 import org.esa.s2tbx.dataio.readers.GMLReader;
 import org.esa.s2tbx.dataio.readers.GeoTiffBasedReader;
@@ -15,7 +16,6 @@ import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.TreeNode;
-import org.esa.snap.rcp.colormanip.ColorPaletteManager;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -37,12 +37,6 @@ import java.util.logging.Logger;
  * @author Cosmin Cara
  */
 public class Spot6ProductReader extends AbstractProductReader {
-    protected static final String SPOT6_COLOR_PALETTE_FILE_NAME = "gradient_spot6_blue.cpd";
-
-    static {
-        ColorPaletteManager.getDefault().copyColorPaletteFileFromResources(Spot6ProductReader.class.getClassLoader(), "org/esa/s2tbx/dataio/spot6/", SPOT6_COLOR_PALETTE_FILE_NAME);
-    }
-
     private Spot6ProductReaderPlugin plugIn;
     private VirtualDirEx productDirectory;
     private VolumeMetadata metadata;
@@ -224,7 +218,7 @@ public class Spot6ProductReader extends AbstractProductReader {
                 addGMLMasks(product, imageMetadata);
             }
             product.setModified(false);
-            GeoTiffBasedReader.setBandColorPalettes(product, Spot6ProductReader.SPOT6_COLOR_PALETTE_FILE_NAME);
+            BaseProductReaderPlugIn.setBandColorPalettes(product, Spot6ProductReaderPlugin.SPOT6_COLOR_PALETTE_FILE_NAME);
         }
 
         return product;

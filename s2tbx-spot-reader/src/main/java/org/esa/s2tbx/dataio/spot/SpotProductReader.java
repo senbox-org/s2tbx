@@ -24,12 +24,6 @@ import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.rcp.colormanip.ColorPaletteManager;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.logging.Level;
 
 /**
  * This is the base class for SPOT DIMAP readers, which regroups common
@@ -38,12 +32,6 @@ import java.util.logging.Level;
  * @author Cosmin Cara
  */
 public abstract class SpotProductReader extends GeoTiffBasedReader<SpotDimapMetadata> {
-    protected static final String SPOT_COLOR_PALETTE_FILE_NAME = "7_spot_colors.cpd";
-
-    static {
-        ColorPaletteManager.getDefault().copyColorPaletteFileFromResources(SpotProductReader.class.getClassLoader(), "org/esa/s2tbx/dataio/spot/", SPOT_COLOR_PALETTE_FILE_NAME);
-    }
-
     protected SpotSceneMetadata wrappingMetadata;
 
     protected SpotProductReader(ProductReaderPlugIn readerPlugIn) {

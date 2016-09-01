@@ -33,18 +33,14 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.TreeNode;
-import org.esa.snap.rcp.colormanip.ColorPaletteManager;
 import org.geotools.metadata.InvalidMetadataException;
 
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -63,7 +59,6 @@ public class SpotDimapProductReader extends AbstractProductReader {
 
     static {
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new SpotDimapMetadata.SpotDimapMetadataParser(SpotDimapMetadata.class));
-        ColorPaletteManager.getDefault().copyColorPaletteFileFromResources(SpotDimapProductReader.class.getClassLoader(), "org/esa/s2tbx/dataio/spot/", SpotProductReader.SPOT_COLOR_PALETTE_FILE_NAME);
     }
 
     protected SpotDimapProductReader(ProductReaderPlugIn readerPlugIn) {
@@ -97,7 +92,7 @@ public class SpotDimapProductReader extends AbstractProductReader {
         internalReader.setMetadata(metadata);
         internalReader.setProductDirectory(productDirectory);
         Product internalProduct = internalReader.readProductNodes(getInput(), null);
-        GeoTiffBasedReader.setBandColorPalettes(internalProduct, SpotProductReader.SPOT_COLOR_PALETTE_FILE_NAME);
+        BaseProductReaderPlugIn.setBandColorPalettes(internalProduct, SpotDimapProductReaderPlugin.SPOT_DIMAP_COLOR_PALETTE_FILE_NAME);
         return internalProduct;
     }
 

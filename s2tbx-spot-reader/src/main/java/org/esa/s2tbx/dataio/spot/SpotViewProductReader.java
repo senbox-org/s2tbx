@@ -123,6 +123,8 @@ public class SpotViewProductReader extends AbstractProductReader {
             initialiseInputStream(zipDir.getFile(SpotConstants.SPOTVIEW_RASTER_FILENAME), metadata.getRasterJavaByteOrder());
 
             product.setModified(false);
+
+            BaseProductReaderPlugIn.setBandColorPalettes(product, SpotViewProductReaderPlugin.SPOT_VIEW_COLOR_PALETTE_FILE_NAME);
         }
         return product;
     }

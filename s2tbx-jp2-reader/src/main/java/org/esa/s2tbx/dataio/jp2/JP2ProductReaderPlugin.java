@@ -18,11 +18,13 @@
 package org.esa.s2tbx.dataio.jp2;
 
 import org.esa.s2tbx.dataio.jp2.internal.JP2ProductReaderConstants;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
+import org.openide.modules.OnStart;
 
 import java.io.File;
 import java.util.Locale;
@@ -33,6 +35,8 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class JP2ProductReaderPlugin implements ProductReaderPlugIn {
+    public static final String JP2_COLOR_PALETTE_FILE_NAME = "jp2_cc_general.cpd";
+
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         DecodeQualification result = DecodeQualification.UNABLE;
@@ -81,5 +85,20 @@ public class JP2ProductReaderPlugin implements ProductReaderPlugIn {
     @Override
     public SnapFileFilter getProductFileFilter() {
         return new SnapFileFilter(getFormatNames()[0], getDefaultFileExtensions()[0], JP2ProductReaderConstants.DESCRIPTION);
+    }
+
+    /**
+     * Startup class invoked by NetBeans that copies the color palette file.
+     */
+    @OnStart
+    public static class StartOp implements Runnable {
+
+        public StartOp() {
+        }
+
+        @Override
+        public void run() {
+            BaseProductReaderPlugIn.copyColorPaletteFileFromResources(JP2ProductReaderPlugin.class.getClassLoader(), "org/esa/s2tbx/dataio/jp2/", JP2_COLOR_PALETTE_FILE_NAME);
+        }
     }
 }

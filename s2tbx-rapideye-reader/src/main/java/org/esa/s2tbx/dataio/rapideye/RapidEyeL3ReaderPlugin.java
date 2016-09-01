@@ -22,6 +22,7 @@ import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
+import org.openide.modules.OnStart;
 
 import java.util.Locale;
 
@@ -30,6 +31,7 @@ import java.util.Locale;
  * RE L3 products have a GeoTIFF raster.
  */
 public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
+    public static final String RAPID_EYE_L3_COLOR_PALETTE_FILE_NAME = "meris_rapid_eye_l3_cloud.cpd";
 
     @Override
     public Class[] getInputTypes() {
@@ -65,5 +67,20 @@ public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("RapidEye L3", new String[] { "red", "green", "blue" }));
+    }
+
+    /**
+     * Startup class invoked by NetBeans that copies the color palette file.
+     */
+    @OnStart
+    public static class StartOp implements Runnable {
+
+        public StartOp() {
+        }
+
+        @Override
+        public void run() {
+            copyColorPaletteFileFromResources(RapidEyeL3ReaderPlugin.class.getClassLoader(), "org/esa/s2tbx/dataio/rapideye/", RAPID_EYE_L3_COLOR_PALETTE_FILE_NAME);
+        }
     }
 }

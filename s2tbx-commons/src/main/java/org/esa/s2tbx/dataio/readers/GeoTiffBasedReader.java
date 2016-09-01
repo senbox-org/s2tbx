@@ -31,7 +31,6 @@ import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
-import org.esa.snap.rcp.colormanip.ColorPaletteManager;
 import org.esa.snap.utils.CollectionHelper;
 
 import javax.imageio.spi.IIORegistry;
@@ -491,18 +490,6 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                 }*/
             }
             return result;
-        }
-    }
-
-    public static void setBandColorPalettes(Product product, String fileName) {
-        ColorPaletteDef existingColorPaletteDef = ColorPaletteManager.getDefault().findColorPaletteByFileName(fileName);
-        if (existingColorPaletteDef != null) {
-            ImageInfo imageInfo = new ImageInfo(existingColorPaletteDef);
-            int numBands = product.getNumBands();
-            for (int idx = 0; idx < numBands; idx++) {
-                Band band = product.getBandAt(idx);
-                band.setImageInfo(imageInfo);
-            }
         }
     }
 

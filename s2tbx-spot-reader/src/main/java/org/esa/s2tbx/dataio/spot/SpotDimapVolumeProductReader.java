@@ -21,6 +21,7 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.BandMatrix;
 import org.esa.s2tbx.dataio.ByteArrayOutputStream;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.snap.core.dataio.ProductReader;
@@ -124,7 +125,7 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
         }
         rootProduct.setModified(false);
 
-        setBandColorPalettes(rootProduct, SPOT_COLOR_PALETTE_FILE_NAME);
+        BaseProductReaderPlugIn.setBandColorPalettes(rootProduct, SpotDimapProductReaderPlugin.SPOT_DIMAP_COLOR_PALETTE_FILE_NAME);
 
         return rootProduct;
     }

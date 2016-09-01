@@ -21,6 +21,7 @@ import org.esa.s2tbx.dataio.spot6.dimap.Spot6Constants;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
+import org.openide.modules.OnStart;
 
 import java.io.File;
 import java.util.Locale;
@@ -31,6 +32,7 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class Spot6ProductReaderPlugin extends BaseProductReaderPlugIn {
+    public static final String SPOT6_COLOR_PALETTE_FILE_NAME = "gradient_spot6_blue.cpd";
 
     public Spot6ProductReaderPlugin() {
         super();
@@ -79,5 +81,20 @@ public class Spot6ProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("SPOT 6/7", Spot6Constants.SPOT6_RGB_PROFILE));
+    }
+
+    /**
+     * Startup class invoked by NetBeans that copies the color palette file.
+     */
+    @OnStart
+    public static class StartOp implements Runnable {
+
+        public StartOp() {
+        }
+
+        @Override
+        public void run() {
+            copyColorPaletteFileFromResources(Spot6ProductReaderPlugin.class.getClassLoader(), "org/esa/s2tbx/dataio/spot6/", SPOT6_COLOR_PALETTE_FILE_NAME);
+        }
     }
 }

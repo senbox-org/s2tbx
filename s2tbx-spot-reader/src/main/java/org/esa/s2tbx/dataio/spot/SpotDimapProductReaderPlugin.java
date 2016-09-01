@@ -22,6 +22,7 @@ import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
+import org.openide.modules.OnStart;
 
 import java.util.Locale;
 
@@ -32,6 +33,7 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class SpotDimapProductReaderPlugin extends BaseProductReaderPlugIn {
+    public static final String SPOT_DIMAP_COLOR_PALETTE_FILE_NAME = "7_spot_colors.cpd";
 
     @Override
     public Class[] getInputTypes() {
@@ -72,4 +74,18 @@ public class SpotDimapProductReaderPlugin extends BaseProductReaderPlugIn {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("SPOT", new String[] { "XS1", "XS2", "XS3" }));
     }
 
+    /**
+     * Startup class invoked by NetBeans that copies the color palette file.
+     */
+    @OnStart
+    public static class StartOp implements Runnable {
+
+        public StartOp() {
+        }
+
+        @Override
+        public void run() {
+            copyColorPaletteFileFromResources(SpotDimapProductReaderPlugin.class.getClassLoader(), "org/esa/s2tbx/dataio/spot/", SPOT_DIMAP_COLOR_PALETTE_FILE_NAME);
+        }
+    }
 }
