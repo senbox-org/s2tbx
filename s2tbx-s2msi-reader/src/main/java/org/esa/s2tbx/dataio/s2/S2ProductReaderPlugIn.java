@@ -50,7 +50,7 @@ public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(null,
+        return new SnapFileFilter(getFormatName(),
                                   getDefaultFileExtensions(),
                                   "Sentinel-2 MSI product or tile");
     }
