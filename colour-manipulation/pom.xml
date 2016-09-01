@@ -24,12 +24,19 @@
         <version>5.0.0-SNAPSHOT</version>
     </parent>
 
+    <groupId>org.esa.s2tbx</groupId>
     <artifactId>colour-manipulation</artifactId>
     <packaging>nbm</packaging>
 
     <name>SNAP Colour manipulation form</name>
     <description>SNAP Colour manipulation form(TBD)</description>
 
+    <properties>
+        <snap.version>5.0.0-SNAPSHOT</snap.version>
+        <s2tbx.version>5.0.0-SNAPSHOT</s2tbx.version>
+        <netbeans.version>RELEASE802</netbeans.version>
+    </properties>
+	
     <build>
         <plugins>
             <plugin>
@@ -66,6 +73,31 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-annotations-common</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>	
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-autoupdate-ui</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+		<dependency>
+			<groupId>org.netbeans.api</groupId>
+			<artifactId>org-openide-windows</artifactId>
+			<version>${netbeans.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.esa.snap</groupId>
+			<artifactId>ceres-jai</artifactId>
+			<version>${snap.version}</version>
+		</dependency>
+        <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-core</artifactId>
         </dependency>
@@ -73,7 +105,11 @@
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-rcp</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-ui</artifactId>
+        </dependency>
+		
     </dependencies>
 
 </project>

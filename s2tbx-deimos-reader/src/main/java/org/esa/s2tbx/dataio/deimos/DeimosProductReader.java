@@ -21,11 +21,16 @@ import org.esa.s2tbx.dataio.deimos.dimap.DeimosConstants;
 import org.esa.s2tbx.dataio.deimos.dimap.DeimosMetadata;
 import org.esa.s2tbx.dataio.readers.GeoTiffBasedReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.GeoCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.TiePointGeoCoding;
-import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.rcp.colormanip.ColorPaletteManager;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This product reader is intended for reading DEIMOS-1 files
@@ -34,6 +39,11 @@ import org.esa.snap.core.datamodel.TiePointGrid;
  * @author  Cosmin Cara
  */
 public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
+    private static final String DEIMOS_COLOR_PALETTE_FILE_NAME = "deimos_gradient_red.cpd";
+
+    static {
+        ColorPaletteManager.getDefault().copyColorPaletteFileFromResources(DeimosProductReader.class.getClassLoader(), "org/esa/s2tbx/dataio/deimos/", DEIMOS_COLOR_PALETTE_FILE_NAME);
+    }
 
     protected DeimosProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
@@ -101,8 +111,16 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
     }
 
     @Override
+    protected Product readProductNodesImpl() throws IOException {
+        Product product = super.readProductNodesImpl();
+        setBandColorPalettes(product, DEIMOS_COLOR_PALETTE_FILE_NAME);
+        return  product;
+    }
+
+    @Override
     protected void addBands(Product product, DeimosMetadata componentMetadata, int componentIndex) {
         super.addBands(product, componentMetadata, componentIndex);
+
         if (DeimosConstants.PROCESSING_1R.equals(componentMetadata.getProcessingLevel())) {
             initGeoCoding(product);
         }

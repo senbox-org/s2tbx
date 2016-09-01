@@ -124,6 +124,8 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
         }
         rootProduct.setModified(false);
 
+        setBandColorPalettes(rootProduct, SPOT_COLOR_PALETTE_FILE_NAME);
+
         return rootProduct;
     }
 
@@ -181,8 +183,7 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
         }
     }
 
-    void addBands(Product product, SpotDimapMetadata componentMetadata)
-    {
+    private void addBands(Product product, SpotDimapMetadata componentMetadata) {
         String[] bandUnits = componentMetadata.getBandUnits();
         try {
             if (SpotConstants.DIMAP.equals(componentMetadata.getFormatName())) {

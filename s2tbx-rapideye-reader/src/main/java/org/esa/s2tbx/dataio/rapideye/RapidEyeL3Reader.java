@@ -21,7 +21,9 @@ import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.s2tbx.dataio.readers.GeoTiffBasedReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.rcp.colormanip.ColorPaletteManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,9 +34,21 @@ import java.io.IOException;
  * @author  Cosmin Cara
  */
 public class RapidEyeL3Reader extends GeoTiffBasedReader<RapidEyeMetadata> {
+    private static final String RAPID_EYE_L3_COLOR_PALETTE_FILE_NAME = "meris_rapid_eye_l3_cloud.cpd";
+
+    static {
+        ColorPaletteManager.getDefault().copyColorPaletteFileFromResources(RapidEyeL3Reader.class.getClassLoader(), "org/esa/s2tbx/dataio/rapideye/", RAPID_EYE_L3_COLOR_PALETTE_FILE_NAME);
+    }
 
     protected RapidEyeL3Reader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
+    }
+
+    @Override
+    protected Product readProductNodesImpl() throws IOException {
+        Product product = super.readProductNodesImpl();
+        setBandColorPalettes(product, RapidEyeL3Reader.RAPID_EYE_L3_COLOR_PALETTE_FILE_NAME);
+        return  product;
     }
 
     @Override

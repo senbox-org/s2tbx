@@ -29,6 +29,7 @@ import org.esa.s2tbx.dataio.jp2.metadata.ImageInfo;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParserFactory;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
+import org.esa.s2tbx.dataio.readers.GeoTiffBasedReader;
 import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.DecodeQualification;
@@ -36,6 +37,7 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.rcp.colormanip.ColorPaletteManager;
 import org.geotools.referencing.CRS;
 
 import javax.media.jai.JAI;
@@ -63,6 +65,11 @@ import static org.esa.s2tbx.dataio.Utils.getMD5sum;
  * @author Cosmin Cara
  */
 public class JP2ProductReader extends AbstractProductReader {
+    private static final String JP2_COLOR_PALETTE_FILE_NAME = "jp2_cc_general.cpd";
+
+    static {
+        ColorPaletteManager.getDefault().copyColorPaletteFileFromResources(JP2ProductReader.class.getClassLoader(), "org/esa/s2tbx/dataio/jp2/", JP2_COLOR_PALETTE_FILE_NAME);
+    }
 
     private static final BucketMap<Integer, Integer> precisionTypeMap = new BucketMap<Integer, Integer>() {{
         put(1, 8, ProductData.TYPE_UINT8);
@@ -237,6 +244,7 @@ public class JP2ProductReader extends AbstractProductReader {
         if (product != null) {
             product.setFileLocation(inputFile.toFile());
             product.setModified(false);
+            GeoTiffBasedReader.setBandColorPalettes(product, JP2ProductReader.JP2_COLOR_PALETTE_FILE_NAME);
         }
         return product;
     }

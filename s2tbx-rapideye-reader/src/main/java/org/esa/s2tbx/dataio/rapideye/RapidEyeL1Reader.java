@@ -24,6 +24,7 @@ import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
+import org.esa.s2tbx.dataio.readers.GeoTiffBasedReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -33,6 +34,7 @@ import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.util.TreeNode;
+import org.esa.snap.rcp.colormanip.ColorPaletteManager;
 
 import javax.imageio.IIOException;
 import java.io.File;
@@ -49,6 +51,11 @@ import java.util.logging.Level;
  * @author  Cosmin Cara
  */
 public class RapidEyeL1Reader extends RapidEyeReader {
+    private static final String RAPID_EYE_L1_COLOR_PALETTE_FILE_NAME = "gradient_rapid_eye_l1_red.cpd";
+
+    static {
+        ColorPaletteManager.getDefault().copyColorPaletteFileFromResources(RapidEyeL1Reader.class.getClassLoader(), "org/esa/s2tbx/dataio/rapideye/", RAPID_EYE_L1_COLOR_PALETTE_FILE_NAME);
+    }
 
     private final Map<Band, NITFReaderWrapper> readerMap;
 
@@ -116,6 +123,7 @@ public class RapidEyeL1Reader extends RapidEyeReader {
             logger.severe("Product is not a valid RapidEye L1 data product!");
         }
         product.setFileLocation(new File(productDirectory.getBasePath()));
+        GeoTiffBasedReader.setBandColorPalettes(product, RapidEyeL1Reader.RAPID_EYE_L1_COLOR_PALETTE_FILE_NAME);
         return product;
     }
 

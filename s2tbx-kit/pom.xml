@@ -173,6 +173,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>colour-manipulation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+		
+        <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-rcp</artifactId>
             <version>${project.version}</version>

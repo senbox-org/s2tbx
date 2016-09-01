@@ -92,6 +92,8 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
         }
         product.setModified(false);
 
+        setBandColorPalettes(product, SPOT_COLOR_PALETTE_FILE_NAME);
+
         return product;
     }
 
