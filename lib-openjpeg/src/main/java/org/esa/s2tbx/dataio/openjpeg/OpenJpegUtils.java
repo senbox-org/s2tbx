@@ -23,7 +23,9 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -166,8 +168,28 @@ public class OpenJpegUtils {
 
     }
 
-    public static boolean validateOpenJpegExecutables(String opjdumpPath, String opjdecompPath) {
+    public static boolean validateOpenJpegExecutables(String opjdumpPath, String opjdecompPath) throws IOException {
 
+        Path dumpPath = Paths.get(opjdumpPath);
+        Path decompPath = Paths.get(opjdecompPath);
+
+        //Check if executable files exists where they should be
+        if (!Files.exists(dumpPath)) {
+            throw new IOException(String.format("Unable to find opjdump executable in %s", opjdumpPath));
+        }
+        if (!Files.exists(decompPath)) {
+            throw new IOException(String.format("Unable to find opjdecompress executable in %s", opjdecompPath));
+        }
+
+        //Check if the files are executable
+        if (!Files.isExecutable(dumpPath)) {
+            throw new IOException(String.format("Unable to execute opjdump, check permissions in %s", opjdumpPath));
+        }
+        if (!Files.isExecutable(decompPath)) {
+            throw new IOException(String.format("Unable to execute opjdecompress, check permissions in %s", opjdecompPath));
+        }
+
+        //Execute opj_dump
         ProcessBuilder builder = new ProcessBuilder(opjdumpPath, "-h");
         builder.redirectErrorStream(true);
 
@@ -175,24 +197,25 @@ public class OpenJpegUtils {
         try {
             exit = OpenJpegUtils.runProcess(builder);
         } catch (Exception e) {
-            return false;
+            throw new IOException(String.format("Unexpected error found at runtime in %s", opjdumpPath));
         }
 
         if (exit.getErrorCode() != 1) {
-            return false;
+            throw new IOException(String.format("Unexpected error found at runtime in %s", opjdumpPath));
         }
 
+        //Execute opj_decompressor
         builder = new ProcessBuilder(opjdecompPath, "-h");
         builder.redirectErrorStream(true);
 
         try {
             exit = OpenJpegUtils.runProcess(builder);
         } catch (Exception e) {
-            return false;
+            throw new IOException(String.format("Unexpected error found at runtime in %s", opjdecompPath));
         }
 
         if (exit.getErrorCode() != 1) {
-            return false;
+            throw new IOException(String.format("Unexpected error found at runtime in %s", opjdecompPath));
         }
 
         return true;
