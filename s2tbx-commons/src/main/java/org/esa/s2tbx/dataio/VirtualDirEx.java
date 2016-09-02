@@ -24,28 +24,10 @@ import org.xeustechnologies.jtar.TarEntry;
 import org.xeustechnologies.jtar.TarHeader;
 import org.xeustechnologies.jtar.TarInputStream;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.*;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,7 +39,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static org.esa.snap.utils.CollectionHelper.*;
+import static org.esa.snap.utils.CollectionHelper.firstOrDefault;
 
 /**
  * This class extends or alters the features of com.bc.ceres.core.VirtualDir class with a Tar/Tgz implementation
@@ -94,7 +76,8 @@ public abstract class VirtualDirEx extends VirtualDir {
                 return null;
             }
         } else {
-            return new VirtualDirWrapper(VirtualDir.create(file));
+            VirtualDir virtualDir = VirtualDir.create(file);
+            return virtualDir == null ? null : new VirtualDirWrapper(virtualDir);
         }
     }
 
@@ -161,6 +144,11 @@ public abstract class VirtualDirEx extends VirtualDir {
             }*/
         }
         return found != null ? found.toArray(new String[found.size()]) : null;
+    }
+
+    @Override
+    public String[] listAllFiles() throws IOException {
+        return listAll();
     }
 
     /**
