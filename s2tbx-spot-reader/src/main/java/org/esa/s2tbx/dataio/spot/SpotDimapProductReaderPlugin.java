@@ -33,7 +33,7 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class SpotDimapProductReaderPlugin extends BaseProductReaderPlugIn {
-    public static final String SPOT_DIMAP_COLOR_PALETTE_FILE_NAME = "7_spot_colors.cpd";
+    public static final String SPOT_DIMAP_COLOR_PALETTE_FILE_NAME = "spot_color_palette.cpd";
 
     @Override
     public Class[] getInputTypes() {

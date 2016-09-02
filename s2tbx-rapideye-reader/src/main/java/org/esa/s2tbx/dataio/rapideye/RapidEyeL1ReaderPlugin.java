@@ -33,7 +33,7 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class RapidEyeL1ReaderPlugin extends BaseProductReaderPlugIn {
-    public static final String RAPID_EYE_L1_COLOR_PALETTE_FILE_NAME = "gradient_rapid_eye_l1_red.cpd";
+    public static final String RAPID_EYE_L1_COLOR_PALETTE_FILE_NAME = "rapid_eye_l1_color_palette.cpd";
 
     @Override
     public Class[] getInputTypes() {

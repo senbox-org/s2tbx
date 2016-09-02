@@ -35,7 +35,7 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class JP2ProductReaderPlugin implements ProductReaderPlugIn {
-    public static final String JP2_COLOR_PALETTE_FILE_NAME = "jp2_cc_general.cpd";
+    public static final String JP2_COLOR_PALETTE_FILE_NAME = "jp2_color_palette.cpd";
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {

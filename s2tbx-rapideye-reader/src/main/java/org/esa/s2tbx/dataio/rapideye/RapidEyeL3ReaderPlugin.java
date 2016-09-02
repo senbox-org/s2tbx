@@ -31,7 +31,7 @@ import java.util.Locale;
  * RE L3 products have a GeoTIFF raster.
  */
 public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
-    public static final String RAPID_EYE_L3_COLOR_PALETTE_FILE_NAME = "meris_rapid_eye_l3_cloud.cpd";
+    public static final String RAPID_EYE_L3_COLOR_PALETTE_FILE_NAME = "rapid_eye_l3_color_palette.cpd";
 
     @Override
     public Class[] getInputTypes() {

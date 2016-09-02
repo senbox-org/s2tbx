@@ -32,7 +32,7 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class Spot6ProductReaderPlugin extends BaseProductReaderPlugIn {
-    public static final String SPOT6_COLOR_PALETTE_FILE_NAME = "gradient_spot6_blue.cpd";
+    public static final String SPOT6_COLOR_PALETTE_FILE_NAME = "spot6_color_palette.cpd";
 
     public Spot6ProductReaderPlugin() {
         super();

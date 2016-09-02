@@ -33,7 +33,7 @@ import java.util.Locale;
  * @author  Cosmin Cara
  */
 public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
-    public static final String DEIMOS_COLOR_PALETTE_FILE_NAME = "deimos_gradient_red.cpd";
+    public static final String DEIMOS_COLOR_PALETTE_FILE_NAME = "deimos_color_palette.cpd";
 
     @Override
     public Class[] getInputTypes() {

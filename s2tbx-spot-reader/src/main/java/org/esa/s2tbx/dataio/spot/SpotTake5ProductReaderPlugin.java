@@ -33,7 +33,7 @@ import java.util.Locale;
  * @author Ramona Manda
  */
 public class SpotTake5ProductReaderPlugin extends BaseProductReaderPlugIn {
-    public static final String SPOT_TAKE5_COLOR_PALETTE_FILE_NAME = "7_spot_colors.cpd";
+    public static final String SPOT_TAKE5_COLOR_PALETTE_FILE_NAME = "spot_color_palette.cpd";
 
     @Override
     public ProductReader createReaderInstance() {
