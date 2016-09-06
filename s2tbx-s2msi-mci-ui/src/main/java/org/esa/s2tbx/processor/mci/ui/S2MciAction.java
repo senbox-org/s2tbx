@@ -65,7 +65,7 @@ public class S2MciAction extends AbstractSnapAction {
             }
         });
 
-        dialog.setTargetProductNameSuffix("_flhmci");
+        dialog.setTargetProductNameSuffix("_s2mci");
         dialog.getJDialog().pack();
         dialog.show();
     }
