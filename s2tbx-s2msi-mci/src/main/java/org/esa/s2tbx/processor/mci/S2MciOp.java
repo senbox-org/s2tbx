@@ -149,6 +149,7 @@ public class S2MciOp extends PixelOperator {
     @Override
     protected void prepareInputs() throws OperatorException {
         super.prepareInputs();
+        ensureSingleRasterSize(sourceProduct);
         validateParameters();
 
         float lowerLambda = getWavelength(lowerBaselineBandName);
