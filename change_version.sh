@@ -20,7 +20,7 @@ find . -name "pom.xml" | xargs sed -i "s@<version>$OLD_VERSION</version>@<versio
 if echo $NEW_VERSION | grep SNAPSHOT ; then
   ADAPTER_VERSION=$(echo $NEW_VERSION | cut -d "-" -f 1).0
 else
-  ADAPTER_VERSION=$NEW_VERSION
+  ADAPTER_VERSION=${NEW_VERSION}.0
 fi
 
 for manifest_filename in manifest.mf MANIFEST.MF ; do 
