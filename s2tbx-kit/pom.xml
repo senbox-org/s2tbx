@@ -120,13 +120,13 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-s2msi-flhmci</artifactId>
+            <artifactId>s2tbx-s2msi-mci</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-s2msi-flhmci-ui</artifactId>
+            <artifactId>s2tbx-s2msi-mci-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
 
