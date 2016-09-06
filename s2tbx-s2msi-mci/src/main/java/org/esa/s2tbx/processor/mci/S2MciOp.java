@@ -38,15 +38,12 @@ import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.converters.BooleanExpressionConverter;
 
 /**
- * An operator for computing fluorescence line height (FLH) or maximum chlorophyll index (MCI).
- *
- * @author Tom Block
- * @author Ralf Quast
+ * An operator for computing maximum chlorophyll index (MCI) for Sentinel-2 MSI data.
  */
-@OperatorMetadata(alias = "FlhMci.s2", authors = "Marco Peters", copyright = "Brockmann Consult GmbH",
+@OperatorMetadata(alias = "Mci.s2", authors = "Marco Peters", copyright = "Brockmann Consult GmbH",
                   category = "Optical/Thematic Water Processing",
                   version = "1.0",
-                  description = "Computes fluorescence line height (FLH) or maximum chlorophyll index (MCI) for Sentinel-2.")
+                  description = "Computes maximum chlorophyll index (MCI) for Sentinel-2.")
 public class S2MciOp extends PixelOperator {
 
     @SourceProduct(alias = "source", label = "Source product", description="The source product.")
@@ -61,7 +58,7 @@ public class S2MciOp extends PixelOperator {
     @Parameter(description = " The name of the signal band, i.e. the band for which the baseline height is calculated",
                rasterDataNodeType = Band.class)
     private String signalBandName;
-    @Parameter(description = "The name of the line height band in the target product",
+    @Parameter(description = "The name of the MCI band in the target product",
                validator = NodeNameValidator.class)
     private String lineHeightBandName;
     @Parameter(description = "Activates or deactivates calculating the slope parameter",
@@ -78,9 +75,9 @@ public class S2MciOp extends PixelOperator {
                defaultValue = "1.005")
     private float cloudCorrectionFactor;
     @Parameter(defaultValue = "NaN",
-               label = "Invalid FLH/MCI value",
-               description = "Value used to fill invalid FLH/MCI pixels")
-    private float invalidFlhMciValue;
+               label = "Invalid MCI value",
+               description = "Value used to fill invalid MCI pixels")
+    private float invalidMciValue;
 
     private transient BaselineAlgorithm algorithm;
 
@@ -128,16 +125,13 @@ public class S2MciOp extends PixelOperator {
     protected void configureTargetProduct(ProductConfigurer productConfigurer) {
         super.configureTargetProduct(productConfigurer);
 
-        final String validPixelExpression = createValidMaskExpression();
-
         final Band lineHeightBand = productConfigurer.addBand(lineHeightBandName, ProductData.TYPE_FLOAT32);
 
         final Band signalBand = sourceProduct.getBand(signalBandName);
         lineHeightBand.setUnit(signalBand.getUnit());
         lineHeightBand.setDescription("Line height band");
-        lineHeightBand.setValidPixelExpression(validPixelExpression);
         lineHeightBand.setNoDataValueUsed(true);
-        lineHeightBand.setNoDataValue(invalidFlhMciValue);
+        lineHeightBand.setNoDataValue(invalidMciValue);
 
         ProductUtils.copySpectralBandProperties(signalBand, lineHeightBand);
 
@@ -146,23 +140,10 @@ public class S2MciOp extends PixelOperator {
             slopeBand.setUnit(signalBand.getUnit() + " nm-1");
             slopeBand.setDescription("Baseline slope band");
             slopeBand.setNoDataValueUsed(true);
-            slopeBand.setNoDataValue(invalidFlhMciValue);
-            slopeBand.setValidPixelExpression(validPixelExpression);
+            slopeBand.setNoDataValue(invalidMciValue);
         }
 
         ProductUtils.copyFlagBands(sourceProduct, productConfigurer.getTargetProduct(), true);
-    }
-
-    private String createValidMaskExpression() {
-        String expression;
-        if (sourceProduct.getBand("l1_flags") != null && sourceProduct.getFlagCodingGroup().get("l1_flags") != null) {
-            expression = "!l1_flags.INVALID && !l1_flags.LAND_OCEAN";
-        } else if (sourceProduct.getBand("l2_flags") != null && sourceProduct.getFlagCodingGroup().get("l2_flags") != null) {
-            expression = "l2_flags.WATER && !l2_flags.CLOUD";
-        } else {
-            expression = null;
-        }
-        return expression;
     }
 
     @Override
