@@ -268,7 +268,7 @@ public class L1bMetadataProc extends S2MetadataProc {
             }
             index++;
         }
-        return new S2IndexBandInformation(detector + "_" + resolution.name(), resolution, "", "Tile Index", "", indexList, "tile_" + resolution.name() + "_");
+        return new S2IndexBandInformation(detector + "_tile_id_" + resolution.resolution + "m", resolution, "", "Tile ID", "", indexList, "tile_" + resolution.resolution + "m_");
     }
 
     /*

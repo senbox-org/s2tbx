@@ -138,7 +138,7 @@
                 ]
             },
             {
-                "name": "Tile_Index_R10M",
+                "name": "tile_id_10m",
                 "samples": [
                     {
                         "name": "T31SBD",
@@ -153,7 +153,7 @@
                 ]
             },
             {
-                "name": "Tile_Index_R20M",
+                "name": "tile_id_20m",
                 "samples": [
                     {
                         "name": "T31SBD",
@@ -1115,8 +1115,8 @@
                 ]
             },
             {
-                "name": "Tile_Index_R10M",
-                "description": "Tile Index",
+                "name": "tile_id_10m",
+                "description": "Tile ID",
                 "bandWidth": 10980,
                 "bandHeight": 20976,
                 "geophysicalUnit": "",
@@ -1178,8 +1178,8 @@
                 ]
             },
             {
-                "name": "Tile_Index_R20M",
-                "description": "Tile Index",
+                "name": "tile_id_20m",
+                "description": "Tile ID",
                 "bandWidth": 5490,
                 "bandHeight": 10488,
                 "geophysicalUnit": "",
@@ -3829,25 +3829,25 @@
                 "description": "Snow or Ice"
             },
             {
-                "name": "tile_R10M_t31sbd",
+                "name": "tile_10m_t31sbd",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "128,0,255",
                 "description": "S2A_USER_MSI_L2A_TL_SGS__20160511T162431_A004624_T31SBD_N02.02"
             },
             {
-                "name": "tile_R10M_t31tbe",
+                "name": "tile_10m_t31tbe",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "0,255,128",
                 "description": "S2A_USER_MSI_L2A_TL_SGS__20160511T162431_A004624_T31TBE_N02.02"
             },
             {
-                "name": "tile_R20M_t31sbd",
+                "name": "tile_20m_t31sbd",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "128,0,255",
                 "description": "S2A_USER_MSI_L2A_TL_SGS__20160511T162431_A004624_T31SBD_N02.02"
             },
             {
-                "name": "tile_R20M_t31tbe",
+                "name": "tile_20m_t31tbe",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "0,255,128",
                 "description": "S2A_USER_MSI_L2A_TL_SGS__20160511T162431_A004624_T31TBE_N02.02"

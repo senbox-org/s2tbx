@@ -138,7 +138,7 @@
                 ]
             },
             {
-                "name": "Tile_Index_R60M",
+                "name": "tile_id_60m",
                 "samples": [
                     {
                         "name": "T30SYJ",
@@ -1163,8 +1163,8 @@
                 ]
             },
             {
-                "name": "Tile_Index_R60M",
-                "description": "Tile Index",
+                "name": "tile_id_60m",
+                "description": "Tile ID",
                 "bandWidth": 1830,
                 "bandHeight": 3496,
                 "geophysicalUnit": "",
@@ -3862,13 +3862,13 @@
                 "description": "Snow or Ice"
             },
             {
-                "name": "tile_R60M_t30syj",
+                "name": "tile_60m_t30syj",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "128,0,255",
                 "description": "S2A_USER_MSI_L2A_TL_SGS__20160511T162431_A004624_T30SYJ_N02.02"
             },
             {
-                "name": "tile_R60M_t30tyk",
+                "name": "tile_60m_t30tyk",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "0,255,128",
                 "description": "S2A_USER_MSI_L2A_TL_SGS__20160511T162431_A004624_T30TYK_N02.02"
