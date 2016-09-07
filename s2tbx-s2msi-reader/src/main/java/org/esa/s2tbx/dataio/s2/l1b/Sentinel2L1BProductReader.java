@@ -39,6 +39,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -466,11 +467,16 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 detectors.add(detectorId);
             }
         }
+
+
         for (String detector : detectors) {
-            for (S2SpatialResolution res : resolutions) {
-                listTileIndexBandInformation.add(makeTileInformation(detector, res, sceneDescription));
+            for (S2SpatialResolution res : S2SpatialResolution.values()) {
+                if(resolutions.contains(res)) {
+                    listTileIndexBandInformation.add(makeTileInformation(detector, res, sceneDescription));
+                }
             }
         }
+
 
         // Create BandInfo and add to tileInfoList
         for (S2BandInformation bandInformation : listTileIndexBandInformation) {
@@ -501,7 +507,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 addTileIndex(product,
                              bandInfo, sceneDescription);
             } catch (Exception e) {
-                logger.warning(String.format("It has not been possible to add tile index for resolution %s\n", bandInfo.getBandInformation().getResolution().toString()));
+                logger.warning(String.format("It has not been possible to add tile id for resolution %s\n", bandInfo.getBandInformation().getResolution().toString()));
             }
         }
 

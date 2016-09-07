@@ -31,6 +31,6 @@ public class S2OrthoMetadataProc extends S2MetadataProc {
             }
             index++;
         }
-        return new S2IndexBandInformation("Tile_Index_" + resolution.name(), resolution, "", "Tile Index", "", indexList, "tile_" + resolution.name() + "_");
+        return new S2IndexBandInformation("tile_id_" + resolution.resolution + "m", resolution, "", "Tile ID", "", indexList, "tile_" + resolution.resolution + "m_");
     }
 }

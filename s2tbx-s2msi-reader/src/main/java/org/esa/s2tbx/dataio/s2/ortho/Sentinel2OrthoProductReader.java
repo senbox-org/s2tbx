@@ -281,7 +281,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
-        product.setAutoGrouping("sun:view:quality:detector_footprint:nodata:partially_corrected_crosstalk:saturated_l1a:saturated_l1b:defective:ancillary_lost:ancillary_degraded:msi_lost:msi_degraded:opaque_clouds:cirrus_clouds:scl:msc:ddv:tile");
+        product.setAutoGrouping("sun:view:quality:tile:detector_footprint:nodata:partially_corrected_crosstalk:saturated_l1a:saturated_l1b:defective:ancillary_lost:ancillary_degraded:msi_lost:msi_degraded:opaque_clouds:cirrus_clouds:scl:msc:ddv:tile");
 
         product.setStartTime(parseDate(productCharacteristics.getProductStartTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         product.setEndTime(parseDate(productCharacteristics.getProductStopTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
@@ -807,9 +807,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         ArrayList<S2IndexBandInformation> listTileIndexBandInformation = new ArrayList<>();
 
         //for each resolution, add the tile information
-        for(S2SpatialResolution res: resolutions) {
-            listTileIndexBandInformation.add(makeTileInformation(res, sceneDescription));
+        for(S2SpatialResolution res: S2SpatialResolution.values()) {
+            if(resolutions.contains(res)) {
+                listTileIndexBandInformation.add(makeTileInformation(res, sceneDescription));
+            }
         }
+
 
         // Create BandInfo and add to tileInfoList
         for (S2BandInformation bandInformation : listTileIndexBandInformation) {
@@ -835,7 +838,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 addTileIndex(product,
                              bandInfo, sceneDescription);
             } catch (Exception e) {
-                logger.warning(String.format("It has not been possible to add tile index for resolution %s\n", bandInfo.getBandInformation().getResolution().toString()));
+                logger.warning(String.format("It has not been possible to add tile id for resolution %s\n", bandInfo.getBandInformation().getResolution().toString()));
             }
         }
 
