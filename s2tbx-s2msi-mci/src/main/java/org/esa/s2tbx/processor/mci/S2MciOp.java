@@ -43,7 +43,7 @@ import org.esa.snap.core.util.converters.BooleanExpressionConverter;
 @OperatorMetadata(alias = "Mci.s2", authors = "Marco Peters", copyright = "Brockmann Consult GmbH",
                   category = "Optical/Thematic Water Processing",
                   version = "1.0",
-                  description = "Computes maximum chlorophyll index (MCI) for Sentinel-2.")
+                  description = "Computes maximum chlorophyll index (MCI) for Sentinel-2 MSI.")
 public class S2MciOp extends PixelOperator {
 
     @SourceProduct(alias = "source", label = "Source product", description="The source product.")
