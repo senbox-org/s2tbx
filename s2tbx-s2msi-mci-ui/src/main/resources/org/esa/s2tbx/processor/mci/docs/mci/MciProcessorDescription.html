@@ -16,7 +16,7 @@
 
 <html>
 <head>
-    <title>SNAP Data Processors - S2 FLH/MCI</title>
+    <title>SNAP Data Processors - S2 MCI</title>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
     <link rel="stylesheet" href="../style.css">
 </head>
@@ -25,7 +25,7 @@
 <table class="header">
     <tr class="header">
         <td class="header">&nbsp;
-            Processor Description - S2 FLH/MCI
+            Processor Description - S2 MCI
         </td>
         <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg"
                                                                                      border=0></a>
@@ -36,18 +36,18 @@
 <h3>User Interface</h3>
 
 <p>
-    The S2 FLH/MCI processor can be invoked in the Sentinel Toolbox from tool menu by selecting
-    <b>Processing->Thematic Water Processing->S2 FLH/MCI Processor...</b>.
-    On the command line the FLH/MCI processor is available by means of the Graph Processing Tool <code>gpt</code>
+    The S2 MCI processor can be invoked in the Sentinel Toolbox from tool menu by selecting
+    <b>Processing->Thematic Water Processing->S2 MCI Processor...</b>.
+    On the command line the MCI processor is available by means of the Graph Processing Tool <code>gpt</code>
     which is located in the Sentinel Toolbox <code>bin</code> directory.
-    Typing <code>gpt FlhMci.s2 -h</code> displays further information.
+    Typing <code>gpt Mci.s2 -h</code> displays further information.
 </p>
 
 <p>
-    Selecting the <b>S2 FLH/MCI Processor</b> command from the Sentinel Toolbox tool menu pops up the following dialog:
+    Selecting the <b>S2 MCI Processor</b> command from the Sentinel Toolbox tool menu pops up the following dialog:
 </p>
 
-<p align="center"><img src="images/FlhPaths.png"></p>
+<p align="center"><img src="../images/IOParameters.png"></p>
 
 <h5>Source Product Group</h5>
 
@@ -79,7 +79,7 @@
     When the target product is not saved, it is opened in the Sentinel Toolbox automatically.
 </p>
 
-<p align="center"><img src="images/FlhParameter.png"></p>
+<p align="center"><img src="../images/ProcessingParameters.png"></p>
 
 <h5>Processing Parameters Panel</h5>
 
@@ -88,10 +88,10 @@
     Available presets are:
 </p>
 <dl class="i1">
-    <dt>S2 MSI</dt>
-    <dd>S2 MSI maximum chlorophyll index (lower=radiance_8, upper=radiance_10, signla=radiance_9)</dd>
-    <dt>S2 FLH</dt>
-    <dd>S2 MSI product fluorescence line height(lower=reflec_7, upper=reflec_9, signla=reflec_8)</dd>
+    <dt><b>S2MSI L1B MCI</b></dt>
+    <dd>S2 MSI maximum chlorophyll index (lower=B4, upper=B6, signla=B5)</dd>
+    <dt><b>S2MSI L2 MCI</b></dt>
+    <dd>S2 MSI L2 (sen2cor) maximum chlorophyll index (lower=B4, upper=B6, signla=B5)</dd>
 </dl>
 <p class="i1">
     A preset selects the bands used to calculate the baseline, the signal band,
@@ -145,8 +145,8 @@
 </p>
 
 <p class="i1">
-    <b>Invalid FLH/MCI value:</b>
-    The value written to a target pixel when it is excluded from the ROI or the FLH/MCI calculation yields an invalid
+    <b>Invalid MCI value:</b>
+    The value written to a target pixel when it is excluded from the ROI or the MCI calculation yields an invalid
     result.
 </p>
 
@@ -154,8 +154,8 @@
 
 <p class="i1">
     <b>Run</b>
-    Creates the target product. The FLH/MCI processing is actually deferred until its band data are accessed, either by
-    writing the product to a file or by viewing its band data. When the <b>Save as</b> option is checked, the FLH/MCI
+    Creates the target product. The MCI processing is actually deferred until its band data are accessed, either by
+    writing the product to a file or by viewing its band data. When the <b>Save as</b> option is checked, the MCI
     processing is triggered automatically.
 </p>
 
@@ -174,7 +174,7 @@
 
 <p class="i1">
     <b>Help</b>
-    Displays this help page.
+    Contains entries for accessing the help pages and information about this processor.
 </p>
 
 <br>
