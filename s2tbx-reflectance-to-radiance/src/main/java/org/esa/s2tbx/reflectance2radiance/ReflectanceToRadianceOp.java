@@ -26,7 +26,7 @@ import java.util.*;
         description = "The 'Reflectance To Radiance Processor' operator retrieves the radiance from reflectance using Sentinel-2 products",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
-public class ReflectanceToRadianceOp  extends Operator {
+public class ReflectanceToRadianceOp extends Operator {
     @Parameter(label = "Solar irradiance", defaultValue = "", description = "The solar irradiance.")
     private float solarIrradiance;
 
