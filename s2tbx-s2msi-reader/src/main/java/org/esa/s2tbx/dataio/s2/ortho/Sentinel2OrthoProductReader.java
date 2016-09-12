@@ -26,11 +26,9 @@ import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
 import com.vividsolutions.jts.geom.Polygon;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.math3.util.Precision;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
-import org.esa.s2tbx.dataio.s2.ColorIterator;
 import org.esa.s2tbx.dataio.s2.S2BandAnglesGrid;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -50,22 +48,17 @@ import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.Placemark;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VectorDataNode;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.SourceImageScaler;
-import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.FileUtils;
-import org.esa.snap.core.util.jai.JAIDebug;
-import org.esa.snap.core.util.jai.JAIUtils;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
@@ -86,7 +79,6 @@ import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
@@ -103,19 +95,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import static java.awt.image.DataBuffer.*;
-import static java.lang.Math.ceil;
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.snap.utils.DateHelper.parseDate;
 
@@ -358,7 +349,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 }
             }
 
-            addAnglesBands(product, metadataHeader, sceneDescription, anglesGridsMap);
+            addAnglesBands(product, sceneDescription, anglesGridsMap);
 
             SystemUtils.LOG.fine(String.format("[timeprobe] addTiePointGridBand : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
             timeProbe.reset();
@@ -369,26 +360,98 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     abstract protected int getMaskLevel();
 
-    private void addAnglesBands(Product product, S2Metadata metadataHeader, S2OrthoSceneLayout sceneDescription, HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap ) {
+    private void addAnglesBands(Product product, S2OrthoSceneLayout sceneDescription, HashMap<String, S2BandAnglesGrid[]> bandAnglesGridsMap ) {
 
+        //class representing each angle band
+        class AngleID implements Comparable<AngleID>{
+            String prefix;
+            S2BandConstants band;
+
+            AngleID (String prefix, S2BandConstants band) {
+                this.prefix = prefix;
+                this.band = band;
+            }
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+
+                AngleID angleID = (AngleID) o;
+
+                if (!prefix.equals(angleID.prefix)) return false;
+                return band == angleID.band;
+
+            }
+
+            @Override
+            public int hashCode() {
+                int result = prefix.hashCode();
+                result = 31 * result + (band != null ? band.hashCode() : 0);
+                return result;
+            }
+
+
+            @Override
+            public int compareTo(AngleID compareAngleID) {
+                int order;
+                String comparePrefix = compareAngleID.prefix;
+                S2BandConstants compareBand = compareAngleID.band;
+
+                if(compareBand == null && this.band == null) {
+                    if(comparePrefix.equals(this.prefix)) {
+                        order = 0;
+                    } else if (comparePrefix.contains("sun") && !this.prefix.contains("sun")) {
+                        order = -1;
+                    } else if (!comparePrefix.contains("sun") && this.prefix.contains("sun")) {
+                        order = 1;
+                    } else if (this.prefix.contains("zenith")) {
+                        order = -1;
+                    } else {
+                        order = 1;
+                    }
+                } else if(compareBand == null) {
+                    order = 1;
+                } else if(this.band == null) {
+                    order = -1;
+                } else if(compareBand.getBandIndex() < this.band.getBandIndex()) {
+                    order = 1;
+                } else if(compareBand.getBandIndex() > this.band.getBandIndex()) {
+                    order = -1;
+                } else if (this.prefix.contains("zenith")) {
+                    order = -1;
+                } else {
+                    order = 1;
+                }
+                return order;
+            }
+        }
+
+        //the upper-left corner
         float masterOriginX = Float.MAX_VALUE, masterOriginY = -Float.MAX_VALUE;
+
         int widthAnglesTile = 0;
         int heightAnglesTile = 0;
+
+        //angle band resolution
         float resX = 0;
         float resY = 0;
 
-        S2BandAnglesGrid[] bandAnglesGrid = null;
-        //Search upper-left
+        //array of all angles in a tile
+        S2BandAnglesGrid[] bandAnglesGrid;
+        HashSet<AngleID> anglesIDs = new HashSet<AngleID>();
+
+        //Search upper-left coordinates
         for (String tileId : asSortedList(sceneDescription.getTileIds())) {
-            //test all S2SpatialResolutions because sometimes not all are available
-            for (S2SpatialResolution s2res : S2SpatialResolution.values()) {
-                bandAnglesGrid = bandAnglesGridsMap.get(tileId);
-                widthAnglesTile = bandAnglesGrid[0].getWidth();
-                heightAnglesTile = bandAnglesGrid[0].getHeight();
-                resX = bandAnglesGrid[0].getResX();
-                resY = bandAnglesGrid[0].getResY();
-                if (masterOriginX > bandAnglesGrid[0].originX) masterOriginX = bandAnglesGrid[0].originX;
-                if (masterOriginY < bandAnglesGrid[0].originY) masterOriginY = bandAnglesGrid[0].originY;
+            bandAnglesGrid = bandAnglesGridsMap.get(tileId);
+            widthAnglesTile = bandAnglesGrid[0].getWidth();
+            heightAnglesTile = bandAnglesGrid[0].getHeight();
+            resX = bandAnglesGrid[0].getResX();
+            resY = bandAnglesGrid[0].getResY();
+            if (masterOriginX > bandAnglesGrid[0].originX) masterOriginX = bandAnglesGrid[0].originX;
+            if (masterOriginY < bandAnglesGrid[0].originY) masterOriginY = bandAnglesGrid[0].originY;
+
+            for(S2BandAnglesGrid grid : bandAnglesGrid) {
+                anglesIDs.add(new AngleID(grid.getPrefix(),grid.getBand())); //if it is repeated, the angleID is not added because it is a HashSet
             }
         }
 
@@ -397,7 +460,10 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             return;
         }
 
-        for (int i = 0; i<bandAnglesGrid.length; i++) {
+        //sort the angles
+        List<AngleID> sortedList = new ArrayList(anglesIDs);
+        Collections.sort(sortedList);
+        for (AngleID angleID : sortedList) {
 
             int[] bandOffsets = {0};
             SampleModel sampleModel = new PixelInterleavedSampleModel(TYPE_FLOAT, widthAnglesTile, heightAnglesTile, 1, widthAnglesTile, bandOffsets);
@@ -414,15 +480,29 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 // Wrap it in a writable raster
                 WritableRaster raster = Raster.createWritableRaster(sampleModel, buffer, null);
                 S2BandAnglesGrid[] bandAnglesGrids = bandAnglesGridsMap.get(tileId);
-                raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrids[i].getData());
+                //Search index of angleID
+                int i = -1;
+                for(int j = 0; j < bandAnglesGrids.length ; j++) {
+                    AngleID angleIDAux = new AngleID(bandAnglesGrids[j].getPrefix(), bandAnglesGrids[j].getBand());
+                    if(angleID.equals(angleIDAux)) {
+                        i = j;
+                    }
+                }
+                if(i == -1) {
+                    float naNdata[] = new float[widthAnglesTile*heightAnglesTile];
+                    Arrays.fill(naNdata,Float.NaN);
+                    raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, naNdata);
+                } else {
+                    raster.setPixels(0, 0, widthAnglesTile, heightAnglesTile, bandAnglesGrids[i].getData());
+                }
 
                 // And finally create an image with this raster
                 BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
                 opImage = PlanarImage.wrapRenderedImage(image);
-
                 // Translate tile
                 float transX=(bandAnglesGrids[0].originX-masterOriginX)/bandAnglesGrids[0].getResX();
                 float transY=(bandAnglesGrids[0].originY-masterOriginY)/bandAnglesGrids[0].getResY();
+
                 opImage = TranslateDescriptor.create(opImage,
                                                      transX,
                                                      -transY,
@@ -430,7 +510,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                 //Crop output image because with bilinear interpolation some pixels are 0.0
                 opImage = cropBordersIfAreZero(opImage);
-
                 // Feed the image list for mosaic
                 tileImages.add(opImage);
             }
@@ -456,26 +535,25 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             //Crop Mosaic if there are lines outside the scene
             mosaicOp = (RenderedOp) cropBordersOutsideScene(mosaicOp, resX, resY, sceneDescription);
 
-
             Band band;
-            if(bandAnglesGrid[i].getBand() != null) {
-                band = new Band(bandAnglesGrid[i].getPrefix() + "_" + bandAnglesGrid[i].getBand().getPhysicalName(), ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
-            } else if (bandAnglesGrid[i].getPrefix().equals(VIEW_AZIMUTH_PREFIX) || bandAnglesGrid[i].getPrefix().equals(VIEW_ZENITH_PREFIX)){
-                band = new Band(bandAnglesGrid[i].getPrefix()+ "_mean", ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
+            if(angleID.band != null) {
+                band = new Band(angleID.prefix + "_" + angleID.band.getPhysicalName(), ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
+            } else if (angleID.prefix.equals(VIEW_AZIMUTH_PREFIX) || angleID.prefix.equals(VIEW_ZENITH_PREFIX)){
+                band = new Band(angleID.prefix+ "_mean", ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
             } else {
-                band = new Band(bandAnglesGrid[i].getPrefix(), ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
+                band = new Band(angleID.prefix, ProductData.TYPE_FLOAT32, mosaicOp.getWidth(), mosaicOp.getHeight());
             }
             String description = "";
-            if(bandAnglesGrid[i].getPrefix().startsWith(VIEW_ZENITH_PREFIX)) {
+            if(angleID.prefix.startsWith(VIEW_ZENITH_PREFIX)) {
                 description = "Viewing incidence zenith angle";
             }
-            if(bandAnglesGrid[i].getPrefix().startsWith(VIEW_AZIMUTH_PREFIX)) {
+            if(angleID.prefix.startsWith(VIEW_AZIMUTH_PREFIX)) {
                 description = "Viewing incidence azimuth angle";
             }
-            if(bandAnglesGrid[i].getPrefix().startsWith(SUN_ZENITH_PREFIX)) {
+            if(angleID.prefix.startsWith(SUN_ZENITH_PREFIX)) {
                 description = "Solar zenith angle";
             }
-            if(bandAnglesGrid[i].getPrefix().startsWith(SUN_AZIMUTH_PREFIX)) {
+            if(angleID.prefix.startsWith(SUN_AZIMUTH_PREFIX)) {
                 description = "Solar azimuth angle";
             }
 
@@ -505,7 +583,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
 
     }
-
 
 
     private void addBands(Product product, List<BandInfo> bandInfoList, S2OrthoSceneLayout sceneDescription) throws IOException {
@@ -1213,8 +1290,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             }
         }
 
-        int rowNumber = (int) ceil(sceneHeight/resY);
-        int colNumber = (int) ceil(sceneWidth/resX);
+        int rowNumber = (int) Math.ceil(sceneHeight/resY);
+        int colNumber = (int) Math.ceil(sceneWidth/resX);
         planarImage = CropDescriptor.create(planarImage,
                                             planarImage.getMinX() + 0.0f, planarImage.getMinY() + 0.0f, (float) colNumber, (float) rowNumber,
                                                 null);
