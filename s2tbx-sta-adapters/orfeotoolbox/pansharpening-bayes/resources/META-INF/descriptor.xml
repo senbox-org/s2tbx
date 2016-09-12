@@ -3,7 +3,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Pansharpening-bayes</alias>
   <label>Pansharpening-bayes</label>
-  <version>4.0.2.0</version>
+  <version>4.0.3.0</version>
   <description>Perform P+XS pansharpening</description>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>

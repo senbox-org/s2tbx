@@ -3,7 +3,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Segmentation-meanshift</alias>
   <label>Segmentation-meanshift</label>
-  <version>4.0.2.0</version>
+  <version>4.0.3.0</version>
   <description>Performs segmentation of an image, and output either a raster or a vector file. In vector mode, large input datasets are supported.</description>
   <internal>false</internal>
   <autoWriteSuppressed>false</autoWriteSuppressed>

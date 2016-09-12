@@ -3,7 +3,7 @@
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Sen2Three</alias>
   <label>SEN2THREE</label>
-  <version>4.0.2.0</version>
+  <version>4.0.3.0</version>
   <description>Sen2Three Processor</description>
   <authors></authors>
   <copyright></copyright>
