@@ -3642,10 +3642,6 @@
                 "value": "true"
             },
             {
-                "path": "Granules/Level-1C_Tile_31TBE/General_Info/DATASTRIP_ID",
-                "value": "S2A_OPER_MSI_L1C_DS_SGS__20160511T162431_S20160511T105343_N02.02"
-            },
-            {
                 "path": "Level-1C_DataStrip_ID/Image_Data_Info/Radiometric_Info/Reflectance_Conversion/Solar_Irradiance_List/SOLAR_IRRADIANCE[13]",
                 "value": "85.25"
             },

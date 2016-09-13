@@ -6,14 +6,13 @@ import https.psd_13_sentinel2_eo_esa_int.dico._13.pdgs.dimap.A_L3_Product_Info;
 import https.psd_13_sentinel2_eo_esa_int.dico._13.pdgs.dimap.A_PRODUCT_ORGANIZATION_3;
 import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
 import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_TILE_DESCRIPTION;
-import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_3.Level3_User_Product;
 import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_3_tile_metadata.Level3_Tile;
+import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_3.Level3_User_Product;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
-import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
@@ -23,7 +22,6 @@ import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.core.util.io.FileUtils;
 import org.w3c.dom.Element;
 
 import javax.xml.bind.JAXBContext;
@@ -32,8 +30,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -73,6 +69,23 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
                 bandConstant.getWavelengthCentral());
     }
 
+    public static L3Metadata.ProductCharacteristics getTileProductOrganization(Level3_Tile aTile, S2SpatialResolution resolution) {
+        L3Metadata.ProductCharacteristics characteristics = new L3Metadata.ProductCharacteristics();
+        characteristics.setSpacecraft("Sentinel-2");
+        characteristics.setProcessingLevel("Level-3");
+
+        //TODO anything from filename?
+        //characteristics.setDatasetProductionDate("Unknown");
+        //characteristics.setProductStartTime("Unknown");
+        //characteristics.setProductStopTime("Unknown");
+
+        double boaQuantification = 1000; //Default value
+        characteristics.setQuantificationValue(boaQuantification);
+
+        return characteristics;
+    }
+
+
     public static L3Metadata.ProductCharacteristics getProductOrganization(Level3_User_Product product, S2SpatialResolution resolution) {
         L3Metadata.ProductCharacteristics characteristics = new L3Metadata.ProductCharacteristics();
         characteristics.setSpacecraft(product.getGeneral_Info().getL3_Product_Info().getDatatake().getSPACECRAFT_NAME());
@@ -84,6 +97,10 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
         double boaQuantification = product.getGeneral_Info().getL3_Product_Image_Characteristics().getL1C_L2A_Quantification_Values_List().getL2A_BOA_QUANTIFICATION_VALUE().getValue();
         characteristics.setQuantificationValue(boaQuantification);
 
+        return characteristics;
+    }
+
+    public static List<S2BandInformation> getBandInformationList (S2SpatialResolution resolution, double boaQuantification, int indexMax) {
         List<S2BandInformation> aInfo = new ArrayList<>();
         switch (resolution) {
             case R10M:
@@ -101,7 +118,7 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, boaQuantification));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification));
 
-                aInfo.add(makeMSCInformation(S2SpatialResolution.R20M, 0));
+                aInfo.add(makeMSCInformation(resolution, indexMax));
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
                 break;
             case R20M:
@@ -119,7 +136,7 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, boaQuantification));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification));
 
-                aInfo.add(makeMSCInformation(S2SpatialResolution.R20M, 0));
+                aInfo.add(makeMSCInformation(S2SpatialResolution.R20M, indexMax));
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
                 break;
             case R60M:
@@ -137,14 +154,11 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R60M, boaQuantification));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R60M, boaQuantification));
 
-                aInfo.add(makeMSCInformation(S2SpatialResolution.R60M, 0));
+                aInfo.add(makeMSCInformation(S2SpatialResolution.R60M, indexMax));
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R60M));
                 break;
         }
-        int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
-
-        return characteristics;
+        return aInfo;
     }
 
 

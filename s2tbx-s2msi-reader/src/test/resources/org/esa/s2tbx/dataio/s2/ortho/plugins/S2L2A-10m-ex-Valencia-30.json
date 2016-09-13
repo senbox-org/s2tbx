@@ -4100,10 +4100,6 @@
                 "value": "7715"
             },
             {
-                "path": "Granules/Level-1C_Tile_31TBE/General_Info/Archiving_Info/ARCHIVING_CENTRE",
-                "value": "SGS_"
-            },
-            {
                 "path": "Level-2A_DataStrip_ID/Satellite_Ancillary_Data_Info/Thermal_Data/IMU_Sensorplate_List/IMU_Sensorplate[78]/T",
                 "value": "7694"
             },
@@ -4112,7 +4108,7 @@
                 "value": "105"
             },
             {
-                "path": "Granules/Level-1C_Tile_30TYK/Geometric_Info/Tile_Angles/Mean_Sun_Angle/ZENITH_ANGLE",
+                "path": "Granules/Level-2A_Tile_30TYK/Geometric_Info/Tile_Angles/Mean_Sun_Angle/ZENITH_ANGLE",
                 "value": "25.1871867129812"
             },
             {
@@ -4128,7 +4124,7 @@
                 "value": "0.874475711595092 0.149617207290805 -0.423688386262911 0.182743187174483"
             },
             {
-                "path": "Granules/Level-1C_Tile_30TYK/Quality_Indicators_Info/L2A_Pixel_Level_QI/CLOUD_CONFIDENCE_MASK",
+                "path": "Granules/Level-2A_Tile_30TYK/Quality_Indicators_Info/L2A_Pixel_Level_QI/CLOUD_CONFIDENCE_MASK",
                 "value": "S2A_USER_CLD_L2A_TL_SGS__20160511T162431_A004624_T30TYK"
             },
             {

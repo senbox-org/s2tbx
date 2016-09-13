@@ -72,11 +72,12 @@ public class L2aMetadata extends S2Metadata {
 
         try {
             Object userProductOrTile = updateAndUnmarshal(stream);
+            resetTileList();
 
             if (userProductOrTile instanceof Level2A_User_Product) {
                 initProduct(file, parent, granuleName, userProductOrTile, epsg, productResolution);
             } else {
-                initTile(file, userProductOrTile);
+                initTile(file, userProductOrTile, epsg, productResolution);
             }
         } catch (JAXBException | JDOMException | IOException e) {
             logger.severe(Utils.getStackTrace(e));
@@ -95,10 +96,20 @@ public class L2aMetadata extends S2Metadata {
             tileNames = Collections.singletonList(granuleName);
         }
 
+
+        S2DatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
+        S2DatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
+
+        File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
+
+        MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
+        MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
+        getMetadataElements().add(userProduct);
+        getMetadataElements().add(dataStrip);
+
+
+        //Check if the tiles found in metadata exist and add them to fullTileNamesList
         List<File> fullTileNamesList = new ArrayList<>();
-
-        resetTileList();
-
         for (String tileName : tileNames) {
             S2GranuleDirFilename aGranuleDir = S2OrthoGranuleDirFilename.create(tileName);
             if (aGranuleDir != null) {
@@ -114,78 +125,46 @@ public class L2aMetadata extends S2Metadata {
             }
         }
 
+        //Init Tiles
         for (File aGranuleMetadataFile : fullTileNamesList) {
-            try (FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile)) {
-                Level2A_Tile aTile = (Level2A_Tile) updateAndUnmarshal(granuleStream);
-
-                Map<S2SpatialResolution, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
-
-                Tile tile = new Tile(aGranuleMetadataFile.getParentFile().getName());
-                tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
-                tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
-
-                if (!tile.getHorizontalCsCode().equals(epsg)) {
-                    // skip tiles that are not in the desired UTM zone
-                    logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", aGranuleMetadataFile.getName(), tile.getHorizontalCsCode(), epsg));
-                    continue;
-                }
-
-                tile.setTileGeometries(geoms);
-                try {
-                    tile.setAnglesResolution((int) aTile.getGeometric_Info().getTile_Angles().getSun_Angles_Grid().getAzimuth().getCOL_STEP().getValue());
-                } catch (Exception e) {
-                    logger.warning("Angles resolution cannot be obtained");
-                    tile.setAnglesResolution(DEFAULT_ANGLES_RESOLUTION);
-                }
-
-                tile.setSunAnglesGrid(L2aMetadataProc.getSunGrid(aTile));
-                tile.setViewingIncidenceAnglesGrids(L2aMetadataProc.getAnglesGrid(aTile));
-                tile.setMaskFilenames(L2aMetadataProc.getMasks(aTile, aGranuleMetadataFile));
-                addTileToList(tile);
-            }
+            FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
+            Object granule = updateAndUnmarshal(granuleStream);
+            granuleStream.close();
+            initTile(aGranuleMetadataFile, granule, epsg, productResolution);
         }
-
-        S2DatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
-        S2DatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
-
-        File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
-
-        MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
-        MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
-        getMetadataElements().add(userProduct);
-        getMetadataElements().add(dataStrip);
-        MetadataElement granulesMetaData = new MetadataElement("Granules");
-
-        for (File aGranuleMetadataFile : fullTileNamesList) {
-            MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
-
-            MetadataElement generalInfo = aGranule.getElement("General_Info");
-            if (generalInfo != null) {
-                MetadataAttribute tileIdAttr = generalInfo.getAttribute("TILE_ID_2A");
-                if (tileIdAttr != null) {
-                    String newName = tileIdAttr.getData().toString();
-                    if (newName.length() > 56)
-                        aGranule.setName("Level-1C_Tile_" + newName.substring(50, 55));
-                }
-            }
-
-            granulesMetaData.addElement(aGranule);
-        }
-
-        getMetadataElements().add(granulesMetaData);
     }
 
-    private void initTile(File file, Object casted) throws IOException, JAXBException, JDOMException {
+
+    private void initTile(File file, Object casted, String epsg, S2SpatialResolution resolution) throws IOException, JAXBException, JDOMException {
+
         Level2A_Tile aTile = (Level2A_Tile) casted;
-        resetTileList();
+        if(getProductCharacteristics() == null) {
+            logger.warning("Warning: the default quantification values will be used because they cannot be found in metadata\n");
+            setProductCharacteristics(L2aMetadataProc.getTileProductOrganization(aTile, resolution));
+        }
 
         Map<S2SpatialResolution, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
 
+        //Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
         Tile tile = new Tile(file.getParentFile().getName());
         tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
         tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
+        if (epsg != null && !tile.getHorizontalCsCode().equals(epsg)) {
+            // skip tiles that are not in the desired UTM zone
+            logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", file.getName(), tile.getHorizontalCsCode(), epsg));
+            return;
+        }
+
         tile.setTileGeometries(geoms);
+
+        try {
+            tile.setAnglesResolution((int) aTile.getGeometric_Info().getTile_Angles().getSun_Angles_Grid().getAzimuth().getCOL_STEP().getValue());
+        } catch (Exception e) {
+            logger.warning("Angles resolution cannot be obtained");
+            tile.setAnglesResolution(DEFAULT_ANGLES_RESOLUTION);
+        }
+
         tile.setSunAnglesGrid(L2aMetadataProc.getSunGrid(aTile));
         tile.setViewingIncidenceAnglesGrids(L2aMetadataProc.getAnglesGrid(aTile));
 
@@ -193,5 +172,31 @@ public class L2aMetadata extends S2Metadata {
         tile.setMaskFilenames(L2aMetadataProc.getMasks(aTile, file));
 
         addTileToList(tile);
+
+        //Search "Granules" metadata element. If it does not exist, it is created
+        MetadataElement granulesMetaData = null;
+        for(MetadataElement metadataElement : getMetadataElements()) {
+            if(metadataElement.getName().equals("Granules")) {
+                granulesMetaData = metadataElement;
+            }
+        }
+        if (granulesMetaData == null) {
+            granulesMetaData = new MetadataElement("Granules");
+            getMetadataElements().add(granulesMetaData);
+        }
+
+        MetadataElement aGranule = parseAll(new SAXBuilder().build(file).getRootElement());
+
+        //write the ID to improve UI
+        MetadataElement generalInfo = aGranule.getElement("General_Info");
+        if (generalInfo != null) {
+            MetadataAttribute tileIdAttr = generalInfo.getAttribute("TILE_ID_2A");
+            if (tileIdAttr != null) {
+                String newName = tileIdAttr.getData().toString();
+                if (newName.length() > 56)
+                    aGranule.setName("Level-2A_Tile_" + newName.substring(50, 55));
+            }
+        }
+        granulesMetaData.addElement(aGranule);
     }
 }

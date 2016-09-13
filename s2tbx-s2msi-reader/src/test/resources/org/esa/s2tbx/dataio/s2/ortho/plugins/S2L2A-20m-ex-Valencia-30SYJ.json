@@ -4900,7 +4900,7 @@
                 "value": "7715"
             },
             {
-                "path": "Granules/Level-1C_Tile_30SYJ/General_Info/Archiving_Info/ARCHIVING_CENTRE",
+                "path": "Granules/Level-2A_Tile_30SYJ/General_Info/Archiving_Info/ARCHIVING_CENTRE",
                 "value": "SGS_"
             },
             {
@@ -4912,7 +4912,7 @@
                 "value": "105"
             },
             {
-                "path": "Granules/Level-1C_Tile_30SYJ/Geometric_Info/Tile_Angles/Mean_Sun_Angle/ZENITH_ANGLE",
+                "path": "Granules/Level-2A_Tile_30SYJ/Geometric_Info/Tile_Angles/Mean_Sun_Angle/ZENITH_ANGLE",
                 "value": "24.4268278329672"
             },
             {
@@ -4928,7 +4928,7 @@
                 "value": "0.874475711595092 0.149617207290805 -0.423688386262911 0.182743187174483"
             },
             {
-                "path": "Granules/Level-1C_Tile_30SYJ/Quality_Indicators_Info/L2A_Pixel_Level_QI/CLOUD_CONFIDENCE_MASK",
+                "path": "Granules/Level-2A_Tile_30SYJ/Quality_Indicators_Info/L2A_Pixel_Level_QI/CLOUD_CONFIDENCE_MASK",
                 "value": "S2A_USER_CLD_L2A_TL_SGS__20160511T162431_A004624_T30SYJ"
             },
             {

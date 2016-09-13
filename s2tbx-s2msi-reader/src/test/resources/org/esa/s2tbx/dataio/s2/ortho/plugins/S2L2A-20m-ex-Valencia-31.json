@@ -3634,7 +3634,7 @@
                 "value": "7715"
             },
             {
-                "path": "Granules/Level-1C_Tile_31TBE/General_Info/Archiving_Info/ARCHIVING_CENTRE",
+                "path": "Granules/Level-2A_Tile_31TBE/General_Info/Archiving_Info/ARCHIVING_CENTRE",
                 "value": "SGS_"
             },
             {
@@ -3644,10 +3644,6 @@
             {
                 "path": "Level-2A_DataStrip_ID/Satellite_Ancillary_Data_Info/Lost_Source_Packet_List/Lost_Source_Packet[25]/STRUCTURIDENTIFIER",
                 "value": "105"
-            },
-            {
-                "path": "Granules/Level-1C_Tile_30TYK/Geometric_Info/Tile_Angles/Mean_Sun_Angle/ZENITH_ANGLE",
-                "value": "25.1871867129812"
             },
             {
                 "path": "Level-2A_User_Product/Geometric_Info/Product_Footprint/Product_Footprint/Global_Footprint/EXT_POS_LIST",
@@ -3660,10 +3656,6 @@
             {
                 "path": "Level-2A_DataStrip_ID/Satellite_Ancillary_Data_Info/Attitudes/Corrected_Attitudes/Values[5440]/QUATERNION_VALUES",
                 "value": "0.874475711595092 0.149617207290805 -0.423688386262911 0.182743187174483"
-            },
-            {
-                "path": "Granules/Level-1C_Tile_30TYK/Quality_Indicators_Info/L2A_Pixel_Level_QI/CLOUD_CONFIDENCE_MASK",
-                "value": "S2A_USER_CLD_L2A_TL_SGS__20160511T162431_A004624_T30TYK"
             },
             {
                 "path": "Level-2A_DataStrip_ID/Satellite_Ancillary_Data_Info/Attitudes/Raw_Attitudes/IMU_List/IMU[2]",

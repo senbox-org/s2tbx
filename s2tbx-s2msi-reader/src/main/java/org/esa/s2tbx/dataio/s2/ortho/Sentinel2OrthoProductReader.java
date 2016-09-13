@@ -166,6 +166,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         Objects.requireNonNull(metadataFile);
 
         boolean isAGranule = S2OrthoGranuleMetadataFilename.isGranuleFilename(metadataFile.getName());
+        boolean foundProductMetadata = true;
 
         if (isAGranule) {
             logger.fine("Reading a granule");
@@ -210,7 +211,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 }
             }
             if (rootMetaDataFile == null) {
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
+                foundProductMetadata = false;
+                rootMetaDataFile = metadataFile;
             }
         } else {
             rootMetaDataFile = metadataFile;
@@ -289,16 +291,28 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
                 if (gf != null) {
 
-                    String imgFilename = String.format("GRANULE%s%s%s%s", File.separator, tile.getId(),
-                                                       File.separator,
-                                                       bandInformation.getImageFileTemplate()
-                                                               .replace("{{MISSION_ID}}", gf.missionID)
-                                                               .replace("{{SITECENTRE}}", gf.siteCentre)
-                                                               .replace("{{CREATIONDATE}}", gf.creationDate)
-                                                               .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
-                                                               .replace("{{TILENUMBER}}", gf.tileNumber)
-                                                               .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
+                    String imgFilename;
+                    if(foundProductMetadata) {
+                        imgFilename = String.format("GRANULE%s%s%s%s", File.separator, tile.getId(),
+                                                           File.separator,
+                                                           bandInformation.getImageFileTemplate()
+                                                                   .replace("{{MISSION_ID}}", gf.missionID)
+                                                                   .replace("{{SITECENTRE}}", gf.siteCentre)
+                                                                   .replace("{{CREATIONDATE}}", gf.creationDate)
+                                                                   .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
+                                                                   .replace("{{TILENUMBER}}", gf.tileNumber)
+                                                                   .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));
 
+                    } else {
+                        imgFilename = bandInformation.getImageFileTemplate()
+                                                            .replace("{{MISSION_ID}}", gf.missionID)
+                                                            .replace("{{SITECENTRE}}", gf.siteCentre)
+                                                            .replace("{{CREATIONDATE}}", gf.creationDate)
+                                                            .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
+                                                            .replace("{{TILENUMBER}}", gf.tileNumber)
+                                                            .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));
+
+                    }
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
                     File file = new File(productDir, imgFilename);

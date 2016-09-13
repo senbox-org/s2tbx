@@ -73,6 +73,7 @@ public class L1cMetadata extends S2Metadata {
 
         try {
             Object userProduct = updateAndUnmarshal(stream);
+            resetTileList();
 
             if (userProduct instanceof Level1C_User_Product) {
                 initProduct(file, parent, granuleName, userProduct, epsg);
@@ -99,12 +100,21 @@ public class L1cMetadata extends S2Metadata {
             tileNames = Collections.singletonList(granuleName);
         }
 
+
+        S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
+        S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);
+
+        File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
+
+        MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
+        MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
+        getMetadataElements().add(userProduct);
+        getMetadataElements().add(dataStrip);
+
         List<File> fullTileNamesList = new ArrayList<>();
 
-        resetTileList();
-
+        //Check if the tiles found in metadata exist and add them to fullTileNamesList
         for (String tileName : tileNames) {
-
             S2OrthoGranuleDirFilename aGranuleDir = S2OrthoGranuleDirFilename.create(tileName);
 
             if (aGranuleDir != null) {
@@ -120,70 +130,24 @@ public class L1cMetadata extends S2Metadata {
             }
         }
 
+        //Init Tiles
         for (File aGranuleMetadataFile : fullTileNamesList) {
-            try (FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile)) {
-                Level1C_Tile aTile = (Level1C_Tile) updateAndUnmarshal(granuleStream);
-                Map<S2SpatialResolution, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
-
-                Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
-                tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
-                tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
-
-                if (!tile.getHorizontalCsCode().equals(epsg)) {
-                    // skip tiles that are not in the desired UTM zone
-                    logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", aGranuleMetadataFile.getName(), tile.getHorizontalCsCode(), epsg));
-                    continue;
-                }
-
-                tile.setTileGeometries(geoms);
-                try {
-                    tile.setAnglesResolution((int) aTile.getGeometric_Info().getTile_Angles().getSun_Angles_Grid().getAzimuth().getCOL_STEP().getValue());
-                } catch (Exception e) {
-                    logger.warning("Angles resolution cannot be obtained");
-                    tile.setAnglesResolution(DEFAULT_ANGLES_RESOLUTION);
-                }
-
-                tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(aTile));
-                tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(aTile));
-
-                tile.setMaskFilenames(L1cMetadataProc.getMasks(aTile, aGranuleMetadataFile));
-
-                addTileToList(tile);
-            }
+            FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
+            Object granule = updateAndUnmarshal(granuleStream);
+            granuleStream.close();
+            initTile(aGranuleMetadataFile, granule, epsg);
         }
-
-        S2DatastripFilename stripName = L1cMetadataProc.getDatastrip(product);
-        S2DatastripDirFilename dirStripName = L1cMetadataProc.getDatastripDir(product);
-
-        File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
-
-        MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
-        MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
-        getMetadataElements().add(userProduct);
-        getMetadataElements().add(dataStrip);
-        MetadataElement granulesMetaData = new MetadataElement("Granules");
-
-        for (File aGranuleMetadataFile : fullTileNamesList) {
-            MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
-
-            MetadataElement generalInfo = aGranule.getElement("General_Info");
-            if (generalInfo != null) {
-                MetadataAttribute tileIdAttr = generalInfo.getAttribute("TILE_ID");
-                if (tileIdAttr != null) {
-                    String newName = tileIdAttr.getData().toString();
-                    if (newName.length() > 56)
-                        aGranule.setName("Level-1C_Tile_" + newName.substring(50, 55));
-                }
-            }
-            granulesMetaData.addElement(aGranule);
-        }
-
-        getMetadataElements().add(granulesMetaData);
     }
 
     private void initTile(File file, Object casted) throws IOException, JAXBException, JDOMException {
+        initTile(file, casted, null);
+    }
+
+    private void initTile(File file, Object casted, String epsg) throws IOException, JAXBException, JDOMException {
         Level1C_Tile aTile = (Level1C_Tile) casted;
-        resetTileList();
+        if(getProductCharacteristics() == null) {
+            setProductCharacteristics(L1cMetadataProc.getTileProductOrganization(aTile));
+        }
 
         Map<S2SpatialResolution, TileGeometry> geoms = L1cMetadataProc.getTileGeometries(aTile);
 
@@ -191,7 +155,21 @@ public class L1cMetadata extends S2Metadata {
         tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
         tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
 
+        if (epsg != null && !tile.getHorizontalCsCode().equals(epsg)) {
+            // skip tiles that are not in the desired UTM zone
+            logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", file.getName(), tile.getHorizontalCsCode(), epsg));
+            return;
+        }
+
         tile.setTileGeometries(geoms);
+
+        try {
+            tile.setAnglesResolution((int) aTile.getGeometric_Info().getTile_Angles().getSun_Angles_Grid().getAzimuth().getCOL_STEP().getValue());
+        } catch (Exception e) {
+            logger.warning("Angles resolution cannot be obtained");
+            tile.setAnglesResolution(DEFAULT_ANGLES_RESOLUTION);
+        }
+
         tile.setSunAnglesGrid(L1cMetadataProc.getSunGrid(aTile));
         tile.setViewingIncidenceAnglesGrids(L1cMetadataProc.getAnglesGrid(aTile));
 
@@ -199,5 +177,31 @@ public class L1cMetadata extends S2Metadata {
         tile.setMaskFilenames(L1cMetadataProc.getMasks(aTile, file));
 
         addTileToList(tile);
+
+        //Search "Granules" metadata element. If it does not exist, it is created
+        MetadataElement granulesMetaData = null;
+        for(MetadataElement metadataElement : getMetadataElements()) {
+            if(metadataElement.getName().equals("Granules")) {
+                granulesMetaData = metadataElement;
+            }
+        }
+        if (granulesMetaData == null) {
+            granulesMetaData = new MetadataElement("Granules");
+            getMetadataElements().add(granulesMetaData);
+        }
+
+        MetadataElement aGranule = parseAll(new SAXBuilder().build(file).getRootElement());
+
+        //write the ID to improve UI
+        MetadataElement generalInfo = aGranule.getElement("General_Info");
+        if (generalInfo != null) {
+            MetadataAttribute tileIdAttr = generalInfo.getAttribute("TILE_ID");
+            if (tileIdAttr != null) {
+                String newName = tileIdAttr.getData().toString();
+                if (newName.length() > 56)
+                    aGranule.setName("Level-1C_Tile_" + newName.substring(50, 55));
+            }
+        }
+        granulesMetaData.addElement(aGranule);
     }
 }

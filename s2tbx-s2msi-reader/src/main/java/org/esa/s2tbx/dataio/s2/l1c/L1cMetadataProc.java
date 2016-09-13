@@ -106,31 +106,36 @@ public class L1cMetadataProc extends S2OrthoMetadataProc {
         double toaQuantification = product.getGeneral_Info().getProduct_Image_Characteristics().getQUANTIFICATION_VALUE().getValue();
         characteristics.setQuantificationValue(toaQuantification);
 
+        List<S2BandInformation> aInfo = getBandInformationList (toaQuantification);
+        int size = aInfo.size();
+        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
+
+        return characteristics;
+    }
+
+    public static S2Metadata.ProductCharacteristics getTileProductOrganization(Level1C_Tile aTile) {
+        S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
+        characteristics.setSpacecraft("Sentinel-2");
+
+        //TODO anything from filename?
+        //characteristics.setDatasetProductionDate("Unknown");
+        //characteristics.setProductStartTime("Unknown");
+        //characteristics.setProductStopTime("Unknown");
+
+        characteristics.setProcessingLevel("Level-1C");
+
+        double toaQuantification = 10000; //Default value
+        characteristics.setQuantificationValue(toaQuantification);
+
+        List<S2BandInformation> aInfo = getBandInformationList (toaQuantification);
+        int size = aInfo.size();
+        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
+
+        return characteristics;
+    }
+
+    private static List<S2BandInformation> getBandInformationList (double toaQuantification) {
         List<S2BandInformation> aInfo = new ArrayList<>();
-        /*
-         * User products do not provide these information
-         * so we hardcode them
-         *
-
-        if (product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List() != null) {
-            List<A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
-
-            for (A_PRODUCT_INFO_USERL1C.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
-                S2SpectralInformation data = new S2SpectralInformation();
-                data.setBandId(Integer.parseInt(sin.getBandId()));
-                data.setPhysicalBand(sin.getPhysicalBand().value());
-                data.setResolution(S2SpatialResolution.valueOfResolution(sin.getRESOLUTION()));
-
-                int size = sin.getSpectral_Response().getVALUES().size();
-                data.setSpectralResponseValues(ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size])));
-                data.setWavelengthCentral(sin.getWavelength().getCENTRAL().getValue());
-                data.setWavelengthMax(sin.getWavelength().getMAX().getValue());
-                data.setWavelengthMin(sin.getWavelength().getMIN().getValue());
-
-                aInfo.add(data);
-            }
-        }
-        */
         aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, toaQuantification));
         aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M, toaQuantification));
         aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M, toaQuantification));
@@ -144,11 +149,7 @@ public class L1cMetadataProc extends S2OrthoMetadataProc {
         aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, toaQuantification));
         aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, toaQuantification));
         aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, toaQuantification));
-
-        int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
-
-        return characteristics;
+        return aInfo;
     }
 
     public static Collection<String> getTiles(Level1C_User_Product product) {

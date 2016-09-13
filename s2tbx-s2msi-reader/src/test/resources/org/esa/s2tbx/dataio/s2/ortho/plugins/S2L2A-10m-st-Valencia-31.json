@@ -3859,7 +3859,7 @@
                 "value": "true"
             },
             {
-                "path": "Granules/Level-1C_Tile_31TBE/General_Info/DATASTRIP_ID_2A",
+                "path": "Granules/Level-2A_Tile_31TBE/General_Info/DATASTRIP_ID_2A",
                 "value": "S2A_USER_MSI_L2A_DS_SGS__20160511T162431_S20160511T105343_N02.02"
             },
             {
@@ -3867,20 +3867,8 @@
                 "value": "85.25"
             },
             {
-                "path": "Granules/Level-1C_Tile_30TYK/Quality_Indicators_Info/L2A_Image_Content_QI/BARE_SOILS_PERCENTAGE",
-                "value": "15.636036"
-            },
-            {
-                "path": "Granules/Level-1C_Tile_30SYJ/Geometric_Info/Tile_Geocoding/Size[2]/RESOLUTION",
-                "value": "20"
-            },
-            {
                 "path": "Level-2A_DataStrip_ID/Satellite_Ancillary_Data_Info/Attitudes/Corrected_Attitudes/Values[4195]/GPS_TIME",
                 "value": "2016-05-11T10:59:41.3"
-            },
-            {
-                "path": "Granules/Level-1C_Tile_30TYK/Geometric_Info/Tile_Geocoding/Size[3]/NROWS",
-                "value": "1830"
             },
             {
                 "path": "Level-2A_DataStrip_ID/Auxiliary_Data_Info/GIPP_List/GIPP_FILENAME[15]",
