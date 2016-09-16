@@ -104,6 +104,18 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-s2msi-mci</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-s2msi-mci-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-rapideye-reader</artifactId>
             <version>${project.version}</version>
         </dependency>

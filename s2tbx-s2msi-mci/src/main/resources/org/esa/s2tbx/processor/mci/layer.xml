@@ -1,0 +1,10 @@
+<filesystem>
+
+    <folder name="OperatorUIs">
+        <file name="org.esa.s2tbx.processor.mci">
+            <attr name="operatorName" stringvalue="Mci.s2"/>
+            <attr name="disableFromGraphBuilder" stringvalue="true"/>
+        </file>
+    </folder>
+
+</filesystem>

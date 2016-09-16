@@ -1,0 +1,89 @@
+<!--
+  ~ Copyright (C) 2010 Brockmann Consult GmbH (info@brockmann-consult.de)
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>SNAP Data Processors - Algorithm Specification S2 MCI</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            S2 MCI Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a>
+        </td>
+    </tr>
+</table>
+
+<h3>S2 MCI</h3>
+
+<p>
+    The maximum chlorophyll index (<b>MCI</b>) algorithms exploits the height of the measurement in a certain spectral band above a baseline,
+    which passes through two other spectral bands. <br>
+    The band combination, provided as preset, <b>B4</b> (665 nm), <b>B5</b> (705 nm), <b>B6</b> (740 nm) (see figure 2) is best suited to compute the
+    MCI on Sentinel-2 MSI data. The MCI can indicate red tides or other aquatic vegetation for example.
+</p>
+
+<p align="center">
+    <img src="../images/MciSpectra.jpg"><br>
+    Figure 1
+</p>
+
+<p>&nbsp;</p>
+
+<p>The general form of a baseline algorithm is:</p>
+
+<p><img src="../images/LineHeightAlgorithm.png"></p>
+
+<p>
+    where the indices 1 and 3 indicate the baseline bands (B4 and B6) and index 2 the peak wavelength (B5).
+
+    This algorithm is taken from the following publication:
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://www.tandfonline.com/doi/abs/10.1080/014311699212470">
+        <param name="text" value="Interpretation of the 685 nm peak in water-leaving radiance spectra in
+        terms of fluorescence, absorption and scattering, and its observation
+        by MERIS&quot; J. F. R. Gower, R. Doerffer, G. A. Borstad,
+        Int. J. Remote Sensing, 1999, vol. 20, no. 9, 1771-1786">
+    </object>
+
+<p>
+    The algorithm implemented in this S2 MCI processor contains an additional factor to
+    correct the influence of thin clouds. This factor was introduced according to personal
+    communications with J.F.R. Gower in February 2003.
+
+<p align="center">
+    <img src="../images/MciAlgorithm.png"><br>
+    Figure 2
+</p>
+
+<i>'If we use k=1, then MCI increases as radiance rises in thin cloud.
+    We correct this using k=1.005. This is what I mean by "reducing the effect
+    of thin cloud." We then find a mask at band 7 level 1 at about 50 radiance
+    units gives a good picture. Using the same formula on level 2 reflectance
+    data requires a mask at about .017 reflectance in band 7.'</i> , J.F.R. Gower.
+<p>
+
+<p align="center">
+    <img src="../images/MciSpectra2.jpg"><br>
+    Figure 3
+</p>
+<hr>
+</body>
+</html>
