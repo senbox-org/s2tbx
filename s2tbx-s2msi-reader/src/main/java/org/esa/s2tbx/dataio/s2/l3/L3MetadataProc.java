@@ -56,7 +56,7 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
     }
 
     private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution, double quantification) {
-       return new S2SpectralInformation(
+        return new S2SpectralInformation(
                 bandConstant.getPhysicalName(),
                 resolution,
                 makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),
@@ -118,8 +118,12 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, boaQuantification));
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification));
 
-                aInfo.add(makeMSCInformation(resolution, indexMax));
+                aInfo.add(makeMSCInformation(S2SpatialResolution.R10M, indexMax));
+                aInfo.add(makeMSCInformation(S2SpatialResolution.R20M, indexMax));
+                aInfo.add(makeMSCInformation(S2SpatialResolution.R60M, indexMax));
+                aInfo.add(makeSCLInformation(S2SpatialResolution.R10M));
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeSCLInformation(S2SpatialResolution.R60M));
                 break;
             case R20M:
                 aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
@@ -137,7 +141,9 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, boaQuantification));
 
                 aInfo.add(makeMSCInformation(S2SpatialResolution.R20M, indexMax));
+                aInfo.add(makeMSCInformation(S2SpatialResolution.R60M, indexMax));
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R20M));
+                aInfo.add(makeSCLInformation(S2SpatialResolution.R60M));
                 break;
             case R60M:
                 aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
@@ -178,7 +184,7 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
         indexList.add(S2IndexBandInformation.makeIndex(10, new Color(100, 200, 255), "THIN_CIRRUS", "Thin cirrus"));
         indexList.add(S2IndexBandInformation.makeIndex(11, new Color(255, 150, 255), "SNOW_ICE", "Snow or Ice"));
         indexList.add(S2IndexBandInformation.makeIndex(12, new Color(255, 127, 39), "URBAN_AREAS", "Urban areas"));
-        return new S2IndexBandInformation("quality_scene_classification", resolution, makeSCLFileTemplate(), "Scene classification", "", indexList, "scl_");
+        return new S2IndexBandInformation("quality_scene_classification_" + resolution.resolution + "m", resolution, makeSCLFileTemplate(), "Scene classification", "", indexList, "scl_" + resolution.resolution + "m_");
     }
 
     public static S2BandInformation makeMSCInformation(S2SpatialResolution resolution, int indexMax) {
@@ -210,7 +216,7 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
 
                     indexList.add(S2IndexBandInformation.makeIndex(i, new Color(red, green, blue), String.valueOf(i), String.valueOf(i)));
                 }
-                return new S2IndexBandInformation(MOSAIC_BAND_NAME, resolution, makeMSCFileTemplate(), "Pixel count", "", indexList, "msc_");
+                return new S2IndexBandInformation(MOSAIC_BAND_NAME + "_" + resolution.resolution + "m", resolution, makeMSCFileTemplate(), "Pixel count", "", indexList, "msc_" + resolution.resolution + "m_");
 
             } catch (IOException e) {
 
@@ -225,7 +231,7 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
             if (f < 0) f++;
             indexList.add(S2IndexBandInformation.makeIndex(i, getHSBColor(f, (float)1.0, (float)1.0),  String.valueOf(i), String.valueOf(i)));
         }
-        return new S2IndexBandInformation(MOSAIC_BAND_NAME, resolution, makeMSCFileTemplate(), "Pixel count", "", indexList, "msc_");
+        return new S2IndexBandInformation(MOSAIC_BAND_NAME + "_" + resolution.resolution + "m", resolution, makeMSCFileTemplate(), "Pixel count", "", indexList, "msc_" + resolution.resolution + "m_");
 
     }
 
