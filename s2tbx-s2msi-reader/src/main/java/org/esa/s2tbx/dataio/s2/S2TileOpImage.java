@@ -101,8 +101,10 @@ public class S2TileOpImage extends SingleBandedOpImage {
 
         if (imageFile != null) {
             SystemUtils.LOG.fine("Image layout: " + tileLayout);
+            S2TileOpImage s2TileOpImage = new S2TileOpImage(imageFile, cacheDir, imagePos, tileLayout, imageModel, level);
+            s2TileOpImage.setTileCache(null); // the MosaicOpImage will be in the cache
+            return s2TileOpImage;
 
-            return new S2TileOpImage(imageFile, cacheDir, imagePos, tileLayout, imageModel, level);
         } else {
             SystemUtils.LOG.fine("Using empty image !");
 

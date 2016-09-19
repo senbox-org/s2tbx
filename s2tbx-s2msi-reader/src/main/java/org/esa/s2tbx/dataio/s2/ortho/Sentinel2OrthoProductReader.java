@@ -72,6 +72,7 @@ import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
+import javax.media.jai.TileCache;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
@@ -531,14 +532,16 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 // And finally create an image with this raster
                 BufferedImage image = new BufferedImage(colorModel, raster, colorModel.isAlphaPremultiplied(), null);
                 opImage = PlanarImage.wrapRenderedImage(image);
+
                 // Translate tile
                 float transX=(bandAnglesGrids[0].originX-masterOriginX)/bandAnglesGrids[0].getResX();
                 float transY=(bandAnglesGrids[0].originY-masterOriginY)/bandAnglesGrids[0].getResY();
 
+                RenderingHints hints=new RenderingHints(JAI.KEY_TILE_CACHE,null);
                 opImage = TranslateDescriptor.create(opImage,
                                                      transX,
                                                      -transY,
-                                                     Interpolation.getInstance(Interpolation.INTERP_BILINEAR), null);
+                                                     Interpolation.getInstance(Interpolation.INTERP_BILINEAR), hints);
 
                 //Crop output image because with bilinear interpolation some pixels are 0.0
                 opImage = cropBordersIfAreZero(opImage);
@@ -559,10 +562,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
 
+            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,null);
+            hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                           null, null,new double[][] {{-1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_ANGLES},
-                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                                          hints);
 
             //Crop Mosaic if there are lines outside the scene
             mosaicOp = (RenderedOp) cropBordersOutsideScene(mosaicOp, resX, resY, sceneDescription);
@@ -1306,11 +1312,14 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
+            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,null);
+            hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                           null, null, new double[][]{{1.0}}, new double[]{S2Config.FILL_CODE_MOSAIC_BG},
-                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                                          hints);
+
 
             /*
              * Adjust size of output image
@@ -1390,11 +1399,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             imageLayout.setTileHeight(S2Config.DEFAULT_JAI_TILE_SIZE);
             imageLayout.setTileGridXOffset(0);
             imageLayout.setTileGridYOffset(0);
+            RenderingHints hints = new RenderingHints(JAI.KEY_TILE_CACHE,null);
+            hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
 
             RenderedOp mosaicOp = MosaicDescriptor.create(tileImages.toArray(new RenderedImage[tileImages.size()]),
                                                           MosaicDescriptor.MOSAIC_TYPE_OVERLAY,
                                                           null, null, null, new double[]{Float.NaN},
-                                                          new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
+                                                          hints);
 
             /*
              * Adjust size of output image
