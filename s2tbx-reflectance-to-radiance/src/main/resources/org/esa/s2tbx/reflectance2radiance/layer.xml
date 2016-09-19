@@ -6,7 +6,7 @@
                 <attr name="instanceCreate"
                       methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate"
-                      methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                      methodvalue="org.esa.s2tbx.reflectance2radiance.ReflectanceOperatorAction.create"/>
                 <attr name="displayName"
                       stringvalue="Reflectance to Radiance"/>
                 <attr name="dialogTitle"

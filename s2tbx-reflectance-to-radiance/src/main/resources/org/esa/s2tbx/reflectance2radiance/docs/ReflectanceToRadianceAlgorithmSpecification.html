@@ -1,0 +1,65 @@
+<!--
+  ~ Copyright (C) 2016 by CS ROMANIA
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>SNAP Reflectance to Radiance - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            Reflectance to Radiance Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>Reflectance to Radiance</h3>
+
+<p>
+    Reflectance is the proportion of the radiation striking a surface to the radiation reflected off of it. <br>
+    Radiance is the amount of radiation coming from an area. <br>
+    Top-of-atmosphere reflectance (or TOA reflectance) is the reflectance measured by a space-based sensor flying higher than the earth's atmosphere. <br>
+    These reflectance values will include contributions from clouds and atmospheric aerosols and gases.
+</p>
+
+<p>
+    The Reflectance to Radiance results from the following formula:
+</p>
+
+<p>
+    <b>radiance = pixelValue * cosinus(radians(incidenceAngle)) * solarIrradiance * scale / (pi * d2)</b>
+</p>
+
+<p>
+    , where:<br>
+             <b>d2</b> = 1.0 / U (the sun-earth distance)<br>
+             <b>solarIrradiance</b> = the mean solar exoatmospheric irradiances for each band<br>
+             <b>scale</b> = 1 / (0.001 * 1000) = 1 (default)<br>
+</p>
+
+<p>
+    For <b>Sentinel-2</b> the incidence angle is replaced with the values from the <b>sun_zenith</b> band.
+</p>
+
+<p>
+</p>
+<hr>
+</body>
+</html>

@@ -78,35 +78,19 @@ public class ReflectanceToRadianceOp extends Operator {
         int sourceBandWidth = this.sourceBand.getRasterWidth();
         int sourceBandHeight = this.sourceBand.getRasterHeight();
         Band sunZenithBand = this.sourceProduct.getBand("sun_zenith");
+        if (this.solarIrradiance == 0.0f) {
+            throw new OperatorException("Please specify the solar irradiance.");
+        }
+        if (this.u == 0.0f) {
+            throw new OperatorException("Please specify the U.");
+        }
         if (sunZenithBand == null) {
-            if (this.solarIrradiance == 0.0f) {
-                throw new OperatorException("Please specify the solar irradiance.");
-            }
-            if (this.u == 0.0f) {
-                throw new OperatorException("Please specify the U.");
-            }
             if (this.incidenceAngle == 0.0f) {
                 throw new OperatorException("Please specify the incidence angle.");
             }
             float[] tiePoints = new float[] {this.incidenceAngle, this.incidenceAngle, this.incidenceAngle, this.incidenceAngle};
             this.tiePointGrid = new TiePointGrid(name, 2, 2, 0, 0, sourceBandWidth, sourceBandHeight, tiePoints);
         } else {
-            MetadataElement metadataRoot = this.sourceBand.getProduct().getMetadataRoot();
-
-            int bandIndex = extractSourceBandIndex(metadataRoot, this.sourceBandName);
-
-            String[] reflectanceConversionPath = {"Level-1C_User_Product", "General_Info", "Product_Image_Characteristics", "Reflectance_Conversion"};
-            MetadataElement reflectanceConversionElement = findTreeElement(metadataRoot, reflectanceConversionPath);
-
-            MetadataAttribute metadataAttribute = reflectanceConversionElement.getAttribute("U");
-            ProductData data = metadataAttribute.getData();
-            this.u = Float.parseFloat(data.getElemString());
-
-            MetadataElement solarIrradianceElement = reflectanceConversionElement.getElement("Solar_Irradiance_List");
-            metadataAttribute = solarIrradianceElement.getAttributeAt(bandIndex);
-            data = metadataAttribute.getData();
-            this.solarIrradiance = Float.parseFloat(data.getElemString());
-
             int sunZenithBandWidth = sunZenithBand.getRasterWidth();
             int sunZenithBandHeight = sunZenithBand.getRasterHeight();
             float[] tiePoints = new float[sunZenithBandWidth * sunZenithBandHeight];
@@ -159,9 +143,10 @@ public class ReflectanceToRadianceOp extends Operator {
 
     /**
      * Find an element in the tree according to its path and the tree root element.
-     * @param rootElement the first element used to apply the path in order to the a certain element
+     *
+     * @param rootElement the first element used to apply the path
      * @param pathElement the path of the element to find
-     * @return the element to find
+     * @return element in the tree according to its path and the tree root element
      */
     private static MetadataElement findTreeElement(MetadataElement rootElement, String[] pathElement) {
         MetadataElement currentElement = rootElement;
@@ -174,6 +159,7 @@ public class ReflectanceToRadianceOp extends Operator {
 
     /**
      * Extract the source band index from the xml file.
+     *
      * @param metadataRoot the tree root element of the xml file
      * @param sourceBandName the band name
      * @return the band index
@@ -181,17 +167,158 @@ public class ReflectanceToRadianceOp extends Operator {
     private static int extractSourceBandIndex(MetadataElement metadataRoot, String sourceBandName) {
         String[] bandListPath = {"Level-1C_User_Product", "General_Info", "Product_Info", "Query_Options", "Band_List"};
         MetadataElement bandListElement = findTreeElement(metadataRoot, bandListPath);
-        int bandIndex = -1;
         for (int i=0; i<bandListElement.getNumAttributes(); i++) {
             MetadataAttribute metadataAttribute = bandListElement.getAttributeAt(i);
             ProductData data = metadataAttribute.getData();
             String bandName = data.getElemString();
             if (sourceBandName.equals(bandName)) {
-                bandIndex = i;
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Find the solar irradiance for a certain band name of the Spot product.
+     *
+     * @param product the Spot product
+     * @param sourceBandName the band name to find its solar irradiance
+     * @return the solar irradiance for a certain band name of the Spot product
+     */
+    public static float extractSolarIrradianceFromSpotProduct(Product product, String sourceBandName) {
+        MetadataElement metadataRoot = product.getMetadataRoot();
+        MetadataElement[] elements = metadataRoot.getElements();
+        MetadataElement currentElement = null;
+        for (int i=0; i<elements.length; i++) {
+            String name = elements[i].getName();
+            if (StringHelper.startsWithIgnoreCase(name, "SPOTSCENE")) {
+                currentElement = elements[i];
                 break;
             }
         }
-        return bandIndex;
+
+        String[] pathElement = {"Image_Interpretation"};
+        MetadataElement imageInterpretationElement = findTreeElementByNameAttribute(currentElement, pathElement);
+        elements = imageInterpretationElement.getElements();
+        int bandIndex = -1;
+        for (int i=0; i<elements.length; i++) {
+            String name = elements[i].getName();
+            if (name.equals("Spectral_Band_Info")) {
+                MetadataAttribute metadataAttribute = elements[i].getAttribute("BAND_DESCRIPTION");
+                if (sourceBandName.equals(metadataAttribute.getData().getElemString())) {
+                    bandIndex = i;
+                    break;
+                }
+            }
+        }
+
+        String[] irrandiacenPathElement = {"Data_Strip", "Sensor_Calibration", "Solar_Irradiance"};
+        MetadataElement solarIrradianceElement = findTreeElementByNameAttribute(currentElement, irrandiacenPathElement);
+        elements = solarIrradianceElement.getElements();
+        Float solarIrradiance = null;
+        for (int i=0; i<elements.length; i++) {
+            String name = elements[i].getName();
+            if (name.equals("Band_Solar_Irradiance") && bandIndex == i) {
+                MetadataAttribute metadataAttribute = elements[i].getAttribute("SOLAR_IRRADIANCE_VALUE");
+                ProductData data = metadataAttribute.getData();
+                solarIrradiance = Float.parseFloat(data.getElemString());
+                break;
+            }
+        }
+
+        return solarIrradiance.floatValue();
+    }
+
+    /**
+     * Find the incidence angle of a Spot product.
+     * @param product the Spot product
+     * @return the incidence angle of a Spot product
+     */
+    public static float extractIncidenceAngleFromSpotProduct(Product product) {
+        MetadataElement metadataRoot = product.getMetadataRoot();
+        MetadataElement[] elements = metadataRoot.getElements();
+        MetadataElement currentElement = null;
+        for (int i=0; i<elements.length; i++) {
+            String name = elements[i].getName();
+            if (StringHelper.startsWithIgnoreCase(name, "SPOTSCENE")) {
+                currentElement = elements[i];
+                break;
+            }
+        }
+
+        String[] pathElement = {"Dataset_Sources", "Source_Information", "Scene_Source"};
+        currentElement = findTreeElementByNameAttribute(currentElement, pathElement);
+        MetadataAttribute incidenceAngleAttribute = currentElement.getAttribute("INCIDENCE_ANGLE");
+        ProductData data = incidenceAngleAttribute.getData();
+        return Float.parseFloat(data.getElemString());
+    }
+
+    /**
+     * Find an element in the tree according to its path and the tree root element.
+     *
+     * @param rootElement the first element used to apply the path
+     * @param pathElement the path of the element to find
+     * @return element in the tree according to its path and the tree root element
+     */
+    private static MetadataElement findTreeElementByNameAttribute(MetadataElement rootElement, String[] pathElement) {
+        MetadataElement currentElement = rootElement;
+        for (int i=0; i<pathElement.length; i++) {
+            String tagName = pathElement[i];
+            MetadataElement[] elements = currentElement.getElements();
+            for (int j=0; j<elements.length; j++) {
+                String name = elements[j].getName();
+                if (name.equals(tagName)) {
+                    currentElement = elements[j];
+                    break;
+                }
+            }
+        }
+
+        return currentElement;
+    }
+
+    /**
+     * Find the solar irradiance for a certain band name of the Sentinel product.
+     *
+     * @param product the Sentinel product
+     * @param sourceBandName the band name to find its solar irradiance
+     * @return the solar irradiance for a certain band name of the Sentinel product
+     */
+    public static float extractSolarIrradianceFromSentinelProduct(Product product, String sourceBandName) {
+        MetadataElement metadataRoot = product.getMetadataRoot();
+        String[] reflectanceConversionPath = {"Level-1C_User_Product", "General_Info", "Product_Image_Characteristics", "Reflectance_Conversion"};
+        MetadataElement reflectanceConversionElement = findTreeElement(metadataRoot, reflectanceConversionPath);
+        MetadataElement solarIrradianceElement = reflectanceConversionElement.getElement("Solar_Irradiance_List");
+        int bandIndex = extractSourceBandIndex(metadataRoot, sourceBandName);
+        if (bandIndex >= 0) {
+            MetadataAttribute metadataAttribute = solarIrradianceElement.getAttributeAt(bandIndex);
+            ProductData data = metadataAttribute.getData();
+            return Float.parseFloat(data.getElemString());
+        }
+        return 0.0f;
+    }
+
+    /**
+     * Find the quantification value (U) stored in the Sentinel product metadata.
+     *
+     * @param product the input product
+     * @return the quantification value (U) stored in the Sentinel product metadata
+     */
+    public static float extractUFromSentinelProduct(Product product) {
+        MetadataElement metadataRoot = product.getMetadataRoot();
+        String[] reflectanceConversionPath = {"Level-1C_User_Product", "General_Info", "Product_Image_Characteristics", "Reflectance_Conversion"};
+        MetadataElement reflectanceConversionElement = findTreeElement(metadataRoot, reflectanceConversionPath);
+        MetadataAttribute metadataAttribute = reflectanceConversionElement.getAttribute("U");
+        ProductData data = metadataAttribute.getData();
+        return Float.parseFloat(data.getElemString());
+    }
+
+    public static boolean isSentinelProduct(Product product) {
+        return StringHelper.startsWithIgnoreCase(product.getProductType(), "S2_MSI_Level");
+    }
+
+    public static boolean isSpotProduct(Product product) {
+        return StringHelper.startsWithIgnoreCase(product.getProductType(), "SPOTSCENE");
     }
 
     public static class Spi extends OperatorSpi {
@@ -199,6 +326,5 @@ public class ReflectanceToRadianceOp extends Operator {
         public Spi() {
             super(ReflectanceToRadianceOp.class);
         }
-
     }
 }
