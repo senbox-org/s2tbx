@@ -965,6 +965,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         band.setDescription(bandInfo.getBandInformation().getDescription());
         band.setUnit(bandInfo.getBandInformation().getUnit());
 
+        band.setValidPixelExpression(String.format("%s.raw > 0",bandInfo.getBandInformation().getPhysicalBand()));
+
         double pixelSize;
         if (isMultiResolution()) {
             pixelSize = (double) bandInfo.getBandInformation().getResolution().resolution;

@@ -578,6 +578,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             band.setSampleCoding(indexBandInfo.getIndexCoding());
             band.setImageInfo(indexBandInfo.getImageInfo());
             band.setDescription(bandInfo.getBandInformation().getDescription());
+            band.setValidPixelExpression(String.format("%s.raw > 0",bandInfo.getBandInformation().getPhysicalBand()));
 
             MultiLevelImageFactory mlif = new L1bTileIndexMultiLevelImageFactory(
                     sceneDescription,
