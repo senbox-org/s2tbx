@@ -11,16 +11,13 @@ import org.esa.snap.core.gpf.ui.DefaultSingleTargetProductDialog;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
 import org.esa.snap.ui.AppContext;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Jean Coravu.
  */
 public class ReflectanceTargetProductDialog extends DefaultSingleTargetProductDialog {
-    private final PropertyChangeListener sourceBandChangeListener;
+    //private final PropertyChangeListener sourceBandChangeListener;
 
     public ReflectanceTargetProductDialog(String operatorName, AppContext appContext, String title, String helpID) {
         this(operatorName, appContext, title, helpID, true);
@@ -43,31 +40,31 @@ public class ReflectanceTargetProductDialog extends DefaultSingleTargetProductDi
             sourceProductSelectorList.get(0).addSelectionChangeListener(listener);
         }
 
-        this.sourceBandChangeListener = new PropertyChangeListener() {
+        /*this.sourceBandChangeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
-                String selectedSourceBandName = (String)event.getNewValue();
+                String[] selectedSourceBandNames = (String[])event.getNewValue();
                 float solarIrradiance = 0.0f;
-                if (!StringHelper.isNullOrEmpty(selectedSourceBandName)) {
-                    Product selectedProduct = getSelectedProduct();
-                    if (ReflectanceToRadianceOp.isSentinelProduct(selectedProduct)) {
+                //if (!StringHelper.isNullOrEmpty(selectedSourceBandName)) {
+                    //Product selectedProduct = getSelectedProduct();
+                    *//*if (ReflectanceToRadianceOp.isSentinelProduct(selectedProduct)) {
                         solarIrradiance = ReflectanceToRadianceOp.extractSolarIrradianceFromSentinelProduct(selectedProduct, selectedSourceBandName);
                     } else if (ReflectanceToRadianceOp.isSpotProduct(selectedProduct)) {
                         solarIrradiance = ReflectanceToRadianceOp.extractSolarIrradianceFromSpotProduct(selectedProduct, selectedSourceBandName);
-                    }
-                }
+                    }*//*
+                //}
                 BindingContext bindingContext = getBindingContext();
                 PropertySet propertySet = bindingContext.getPropertySet();
                 propertySet.setValue("solarIrradiance", solarIrradiance);
             }
-        };
+        };*/
     }
 
     @Override
     public int show() {
         int result = super.show();
 
-        getSourceBandNameProperty().addPropertyChangeListener(this.sourceBandChangeListener);
+        //getSourceBandNameProperty().addPropertyChangeListener(this.sourceBandChangeListener);
         processSelectedProduct();
 
         return result;
@@ -77,7 +74,7 @@ public class ReflectanceTargetProductDialog extends DefaultSingleTargetProductDi
     public void hide() {
         super.hide();
 
-        getSourceBandNameProperty().removePropertyChangeListener(this.sourceBandChangeListener);
+        //getSourceBandNameProperty().removePropertyChangeListener(this.sourceBandChangeListener);
     }
 
     /**
@@ -87,7 +84,7 @@ public class ReflectanceTargetProductDialog extends DefaultSingleTargetProductDi
      */
     private Property getSourceBandNameProperty() {
         BindingContext bindingContext = getBindingContext();
-        return bindingContext.getPropertySet().getProperty("sourceBandName");
+        return bindingContext.getPropertySet().getProperty("sourceBandNames");
     }
 
     /**
@@ -113,14 +110,14 @@ public class ReflectanceTargetProductDialog extends DefaultSingleTargetProductDi
                 boolean enabled = true;
                 PropertySet propertySet = bindingContext.getPropertySet();
                 propertySet.setDefaultValues();
-                if (ReflectanceToRadianceOp.isSentinelProduct(selectedProduct)) {
+                /*if (ReflectanceToRadianceOp.isSentinelProduct(selectedProduct)) {
                     enabled = false;
                     float u = ReflectanceToRadianceOp.extractUFromSentinelProduct(selectedProduct);
                     propertySet.setValue("u", u);
                 } else if (ReflectanceToRadianceOp.isSpotProduct(selectedProduct)) {
                     float incidenceAngle = ReflectanceToRadianceOp.extractIncidenceAngleFromSpotProduct(selectedProduct);
                     propertySet.setValue(propertyName, incidenceAngle);
-                }
+                }*/
                 bindingContext.setComponentsEnabled(propertyName, enabled);
             }
         }

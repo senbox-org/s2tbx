@@ -1,8 +1,6 @@
 package org.esa.s2tbx.reflectance2radiance;
 
 import org.esa.snap.core.gpf.ui.DefaultOperatorAction;
-import org.esa.snap.core.gpf.ui.DefaultSingleTargetProductDialog;
-import org.esa.snap.rcp.actions.AbstractSnapAction;
 import org.esa.snap.ui.ModelessDialog;
 
 import java.awt.event.ActionEvent;

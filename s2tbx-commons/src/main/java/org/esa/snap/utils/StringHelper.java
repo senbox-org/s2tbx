@@ -1,4 +1,4 @@
-package org.esa.s2tbx.reflectance2radiance;
+package org.esa.snap.utils;
 
 /**
  * @author Jean Coravu.

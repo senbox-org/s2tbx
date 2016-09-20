@@ -28,7 +28,7 @@
                     <attr name="originalFile"
                           stringvalue="Actions/Operators/org-esa-s2tbx-reflectance2radiance-Action.instance"/>
                     <attr name="position"
-                          intvalue="10000"/>
+                          intvalue="10001"/>
                 </file>
             </folder>
         </folder>
