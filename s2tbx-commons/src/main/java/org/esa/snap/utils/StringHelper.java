@@ -25,4 +25,24 @@ public class StringHelper {
     public static boolean startsWithIgnoreCase(String inputValue, String prefix) {
         return inputValue.regionMatches(true, 0, prefix, 0, prefix.length());
     }
+
+    /**
+     * Tests if this string ends with any of the given suffixes, ignoring the case sensitive.
+     *
+     * @param input the input string to test
+     * @param suffixes the list of suffixes
+     * @return {@code true} if the input string is a prefix; {@code false} otherwise.
+     */
+    public static boolean endsWithIgnoreCase(String input, String...suffixes) {
+        boolean found = true;
+        String lowerInput = input.toLowerCase();
+        if (suffixes != null && suffixes.length > 0) {
+            for (String suffix : suffixes) {
+                found = lowerInput.endsWith(suffix.toLowerCase());
+                if (found)
+                    break;
+            }
+        }
+        return found;
+    }
 }
