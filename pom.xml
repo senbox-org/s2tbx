@@ -38,6 +38,8 @@
         <module>s2tbx-spot6-reader</module>
         <module>s2tbx-s2msi-idepix</module>
         <module>s2tbx-s2msi-idepix-ui</module>
+        <module>s2tbx-s2msi-mci</module>
+        <module>s2tbx-s2msi-mci-ui</module>
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-sta-adapters-help</module>
@@ -419,6 +421,26 @@
                         <!-- to have the jar plugin pickup the nbm generated manifest -->
                         <useDefaultManifestFile>true</useDefaultManifestFile>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.10</version>
+                    <executions>
+                        <execution>
+                            <id>regex-property</id>
+                            <goals>
+                                <goal>regex-property</goal>
+                            </goals>
+                            <configuration>
+                                <name>project.nbmSpecVersion</name>
+                                <value>${project.version}</value>
+                                <regex>-SNAPSHOT</regex>
+                                <replacement>.0</replacement>
+                                <failIfNoMatch>false</failIfNoMatch>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>

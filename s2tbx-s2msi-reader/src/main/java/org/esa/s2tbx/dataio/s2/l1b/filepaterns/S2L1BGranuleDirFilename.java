@@ -102,4 +102,8 @@ public class S2L1BGranuleDirFilename extends S2GranuleDirFilename {
             return null;
         }
     }
+
+    public String getTileID () {
+        return (detectorId + "_" + startDate);
+    }
 }

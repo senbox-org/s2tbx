@@ -479,8 +479,9 @@ public class Sentinel2ClassificationOp extends Operator {
 //    }
 
     private double calcRhoToa442ThresholdTerm(double sza, double vza, double saa, double vaa) {
-        final double thetaScatt = IdepixUtils.calcScatteringAngle(sza, vza, saa, vaa) * MathUtils.DTOR;
-        double cosThetaScatt = Math.cos(thetaScatt);
+        //final double thetaScatt = IdepixUtils.calcScatteringAngle(sza, vza, saa, vaa) * MathUtils.DTOR;
+        //double cosThetaScatt = Math.cos(thetaScatt);
+        final double cosThetaScatt = IdepixUtils.calcScatteringCos(sza, vza, saa, vaa);
         return RHO_TOA_442_THRESHOLD + DELTA_RHO_TOA_442_THRESHOLD * cosThetaScatt * cosThetaScatt;
     }
 

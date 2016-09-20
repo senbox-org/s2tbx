@@ -300,6 +300,19 @@ public class IdepixUtils {
         return MathUtils.RTOD * Math.acos(-coss * cosv - sins * sinv * cosphi);
     }
 
+    public static double calcScatteringCos(double sza, double vza, double saa, double vaa) {
+        final double sins = (float) Math.sin(sza * MathUtils.DTOR);
+        final double sinv = (float) Math.sin(vza * MathUtils.DTOR);
+        final double coss = (float) Math.cos(sza * MathUtils.DTOR);
+        final double cosv = (float) Math.cos(vza * MathUtils.DTOR);
+
+        // Compute the geometric conditions
+        final double cosphi = Math.cos((vaa - saa) * MathUtils.DTOR);
+
+        // cos of scattering angle
+        return -coss * cosv - sins * sinv * cosphi;
+    }
+
 
     private static Color getRandomColour(Random random) {
         int rColor = random.nextInt(256);

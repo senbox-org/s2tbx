@@ -90,7 +90,7 @@ public class JP2ProductReader extends AbstractProductReader {
 
     @Override
     public void close() throws IOException {
-        JAI.getDefaultInstance().getTileCache().flush();
+        //JAI.getDefaultInstance().getTileCache().flush();
         if (product != null) {
             for (Band band : product.getBands()) {
                 MultiLevelImage sourceImage = band.getSourceImage();

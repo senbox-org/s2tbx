@@ -17,10 +17,12 @@
 
 package org.esa.s2tbx.dataio.s2;
 
+import com.bc.ceres.glevel.MultiLevelImage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
+import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -39,9 +41,7 @@ import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static org.esa.s2tbx.dataio.Utils.GetLongPathNameW;
 import static org.esa.s2tbx.dataio.Utils.getMD5sum;
@@ -57,6 +57,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
     private S2Config config;
     private File cacheDir;
+    private Product product;
 
 
 
@@ -123,14 +124,12 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         SystemUtils.LOG.fine("Successfully set up cache dir for product " + productDir.getName() + " to " + cacheDir.toString());
     }
 
+
     @Override
     protected Product readProductNodesImpl() throws IOException {
         SystemUtils.LOG.fine("readProductNodeImpl, " + getInput().toString());
 
-        Product p;
-
         final File inputFile;
-
         File file;
 
         String longInput = GetLongPathNameW(getInput().toString());
@@ -152,18 +151,18 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
 
         if (S2ProductFilename.isMetadataFilename(inputFile.getName())) {
-            p = getMosaicProduct(inputFile);
+            product = getMosaicProduct(inputFile);
 
-            addQuicklook(p, getQuicklookFile(inputFile));
+            addQuicklook(product, getQuicklookFile(inputFile));
 
-            if (p != null) {
-                p.setModified(false);
+            if (product != null) {
+                product.setModified(false);
             }
         } else {
             throw new IOException("Unhandled file type.");
         }
 
-        return p;
+        return product;
     }
 
     private void addQuicklook(final Product product, final File qlFile) {
@@ -260,7 +259,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                                                 e.getMessage());
             }
         }
-
 
         return tileLayoutForResolution;
     }
@@ -389,6 +387,21 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
 
         product.addBand(band);
         return band;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (product != null) {
+            for (Band band : product.getBands()) {
+                MultiLevelImage sourceImage = band.getSourceImage();
+                if (sourceImage != null) {
+                    sourceImage.reset();
+                    sourceImage.dispose();
+                    sourceImage = null;
+                }
+            }
+        }
+        super.close();
     }
 
     public static class BandInfo {

@@ -39,6 +39,7 @@ import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.w3c.dom.Element;
 
@@ -57,7 +58,7 @@ import java.util.Map;
 /**
  * @author opicas-p
  */
-public class L2aMetadataProc extends S2MetadataProc {
+public class L2aMetadataProc extends S2OrthoMetadataProc {
 
     public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level2A_User_Product.class.getClassLoader();
@@ -180,6 +181,45 @@ public class L2aMetadataProc extends S2MetadataProc {
         double wvpQuantification = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getL1C_L2A_Quantification_Values_List().getL2A_WVP_QUANTIFICATION_VALUE().getValue();
 
 
+        List<S2BandInformation> aInfo = getBandInformationList(resolution,boaQuantification,aotQuantification,wvpQuantification);
+        int size = aInfo.size();
+        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
+
+        return characteristics;
+    }
+
+
+    public static L2aMetadata.ProductCharacteristics getTileProductOrganization(Level2A_Tile aTile, S2SpatialResolution resolution) {
+        L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
+
+
+        double boaQuantification = 10000; //Default value
+        characteristics.setQuantificationValue(boaQuantification);
+
+        double aotQuantification = 1000; //Default value
+
+        double wvpQuantification = 1000; //Default value
+
+        characteristics.setSpacecraft("Sentinel-2");
+
+        //TODO anything from filename?
+        //characteristics.setDatasetProductionDate("Unknown");
+        //characteristics.setProductStartTime("Unknown");
+        //characteristics.setProductStopTime("Unknown");
+
+        characteristics.setProcessingLevel("Level-2A");
+
+        List<S2BandInformation> aInfo = getBandInformationList(resolution,boaQuantification,aotQuantification,wvpQuantification);
+        int size = aInfo.size();
+        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
+
+        return characteristics;
+    }
+
+    private static List<S2BandInformation> getBandInformationList (S2SpatialResolution resolution,
+                                                                   double boaQuantification,
+                                                                   double aotQuantification,
+                                                                   double wvpQuantification) {
         List<S2BandInformation> aInfo = new ArrayList<>();
         switch (resolution) {
             case R10M:
@@ -253,10 +293,7 @@ public class L2aMetadataProc extends S2MetadataProc {
                 aInfo.add(makeSCLInformation(S2SpatialResolution.R60M));
                 break;
         }
-        int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
-
-        return characteristics;
+        return aInfo;
     }
 
     public static Collection<String> getTiles(Level2A_User_Product product) {

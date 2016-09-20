@@ -22,7 +22,7 @@ import java.awt.*;
  *
  * @author olafd
  */
-@OperatorMetadata(alias = "Idepix.Cloudbuffer",
+@OperatorMetadata(alias = "Idepix.S2Cloudbuffer",
         version = "2.2",
         internal = true,
         authors = "Olaf Danne",

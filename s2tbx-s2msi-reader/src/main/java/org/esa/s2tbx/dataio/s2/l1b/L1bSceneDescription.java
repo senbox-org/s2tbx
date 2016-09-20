@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Norman Fomferra
@@ -45,7 +46,6 @@ public class L1bSceneDescription extends S2SceneDescription {
     private final Envelope2D sceneEnvelope;
     private final Rectangle sceneRectangle;
     private final Map<String, TileInfo> tileInfoMap;
-
 
     private static class TileInfo {
         private final int index;
@@ -256,5 +256,25 @@ public class L1bSceneDescription extends S2SceneDescription {
 
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
+
+    public java.util.List<String> getOrderedTileIds() {
+        List<String> tileIds = this.getTileIds();
+        java.util.List<String> tileIdsOrder = asSortedList(tileIds);
+        return tileIdsOrder;
+    }
+
+    public static Map<S2SpatialResolution, Dimension> computeSceneDimensions(L1bMetadata header) {
+
+        Map<S2SpatialResolution, Dimension> sceneDimensions = new HashMap<>();
+        for(S2SpatialResolution resolution : S2SpatialResolution.values()) {
+
+            L1bSceneDescription l1bSceneDescription = L1bSceneDescription.create(header, resolution);
+            if(l1bSceneDescription == null) {
+                continue;
+            }
+            sceneDimensions.put(resolution,l1bSceneDescription.getSceneRectangle().getSize()) ;
+        }
+        return sceneDimensions;
     }
 }

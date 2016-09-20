@@ -72,14 +72,15 @@ public class TsaviOp extends BaseIndexOp {
             float tsaviValue;
             int tsaviFlagValue;
 
-            float constant = slope * intercept + adjustment * (1 + slope * slope);
+            float constant1 = slope * intercept;
+            float constant2 =  adjustment * (1 + slope * slope);
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
                     final float nir = nirFactor * nirTile.getSampleFloat(x, y);
                     final float red = redFactor * redTile.getSampleFloat(x, y);
 
-                    tsaviValue = slope * (nir - slope * red - intercept) / (intercept * nir + red - constant);
+                    tsaviValue = slope * (nir - slope * red - intercept) / (intercept * nir + red - constant1 + constant2);
 
                     tsaviFlagValue = 0;
                     if (Float.isNaN(tsaviValue) || Float.isInfinite(tsaviValue)) {

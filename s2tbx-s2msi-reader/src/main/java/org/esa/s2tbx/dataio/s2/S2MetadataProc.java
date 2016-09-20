@@ -18,9 +18,19 @@
 package org.esa.s2tbx.dataio.s2;
 
 
+import org.esa.s2tbx.dataio.s2.ortho.S2OrthoSceneLayout;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.awt.Color.getHSBColor;
+
+
 /**
  * @author Nicolas Ducoin
  */
 public class S2MetadataProc {
+
 
 }

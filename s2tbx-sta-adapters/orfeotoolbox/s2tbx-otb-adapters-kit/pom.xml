@@ -44,16 +44,6 @@
     <dependencies>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>haralick-texture-extraction</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>mean-shift-smoothing</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
             <artifactId>multivariate-alteration-detector</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -70,16 +60,6 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>pansharpening-rcs</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>rasterization-image</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
-            <artifactId>rasterization-manual</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

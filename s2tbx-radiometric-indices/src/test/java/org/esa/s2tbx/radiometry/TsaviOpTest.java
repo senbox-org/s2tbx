@@ -19,9 +19,9 @@ public class TsaviOpTest extends BaseIndexOpTest<TsaviOp> {
             put("adjustment", 0.08f);
         }});
         setTargetValues(new float[] {
-                0.303030f, 0.238095f, 0.215053f,
-                0.203252f, 0.196078f, 0.191256f,
-                0.187793f, 0.185185f, 0.183150f } );
+                0.270270f, 0.223880f, 0.206185f,
+                0.196850f, 0.191082f, 0.187165f,
+                0.184331f, 0.182186f, 0.180505f } );
         super.setUp();
     }
 }
