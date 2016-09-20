@@ -44,6 +44,7 @@
         <module>s2tbx-radiometric-indices</module>
         <module>s2tbx-biophysical</module>
         <module>s2tbx-kit</module>
+        <module>colour-manipulation</module>
     </modules>
 
     <packaging>pom</packaging>

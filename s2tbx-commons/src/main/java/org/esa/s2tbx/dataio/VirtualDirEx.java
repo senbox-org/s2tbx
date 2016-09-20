@@ -94,7 +94,8 @@ public abstract class VirtualDirEx extends VirtualDir {
                 return null;
             }
         } else {
-            return new VirtualDirWrapper(VirtualDir.create(file));
+            VirtualDir virtualDir = VirtualDir.create(file);
+            return virtualDir == null ? null : new VirtualDirWrapper(virtualDir);
         }
     }
 
@@ -161,6 +162,11 @@ public abstract class VirtualDirEx extends VirtualDir {
             }*/
         }
         return found != null ? found.toArray(new String[found.size()]) : null;
+    }
+
+    @Override
+    public String[] listAllFiles() throws IOException {
+        return listAll();
     }
 
     /**
