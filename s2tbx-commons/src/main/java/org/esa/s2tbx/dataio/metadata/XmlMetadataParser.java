@@ -34,7 +34,10 @@ import javax.xml.validation.SchemaFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -103,6 +106,30 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
         return handler.getResult();
     }
 
+    public MetadataElement parse(Path file, Set<String> excludes) throws ParserConfigurationException, SAXException, IOException {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        if (schemaLocations != null && shouldValidateSchema()) {
+            SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+            ClassLoader classLoader = this.getClass().getClassLoader();
+            List<StreamSource> streamSourceList = new Vector<>();
+            for (String schemaLocation : schemaLocations) {
+                InputStream is = classLoader.getResourceAsStream(schemaLocation);
+                StreamSource streamSource = new StreamSource(is);
+                streamSourceList.add(streamSource);
+            }
+            StreamSource sources[] = new StreamSource[streamSourceList.size()];
+            Schema schema = schemaFactory.newSchema(streamSourceList.toArray(sources));
+            factory.setSchema(schema);
+            factory.setValidating(true);
+        }
+        SAXParser parser = factory.newSAXParser();
+        SimpleMetadataHandler handler = new SimpleMetadataHandler(excludes);
+        try (InputStream inputStream = Files.newInputStream(file)) {
+            parser.parse(inputStream, handler);
+        }
+        return handler.getResult();
+    }
+
     /**
      * Indicates if the XSD validation should be performed.
      * Override this in derived classes to enable schema validation.
@@ -127,8 +154,7 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
     /**
      * Actual document handler implementation
      */
-    protected class MetadataHandler extends DefaultHandler
-    {
+    protected class MetadataHandler extends DefaultHandler {
         private T result;
         private String buffer;
         private String currentPath;
@@ -216,4 +242,89 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
         }
     }
 
+    protected class SimpleMetadataHandler extends DefaultHandler {
+        private MetadataElement rootElement;
+        private Set<String> excludedElements;
+        private String buffer;
+        private Stack<MetadataElement> elementStack;
+        private Logger systemLogger;
+        private String unit;
+
+        public SimpleMetadataHandler(Set<String> excludes) {
+            super();
+            this.excludedElements = excludes;
+        }
+
+        public MetadataElement getResult() {
+            return rootElement;
+        }
+
+        @Override
+        public void startDocument() throws SAXException {
+            systemLogger = Logger.getLogger(XmlMetadataParser.class.getName());
+            elementStack = new Stack<>();
+            rootElement = new MetadataElement("Metadata");
+        }
+
+        @Override
+        public void endDocument() throws SAXException {
+            super.endDocument();
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            buffer = new String(ch, start, length);
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            // strip any namespace prefix
+            if (qName.indexOf(":") > 0) {
+                qName = qName.substring(qName.indexOf(":") + 1);
+            }
+            if (this.excludedElements == null || !this.excludedElements.contains(qName)) {
+                MetadataElement currentElement = new MetadataElement(qName);
+                buffer = "";
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    MetadataAttribute attribute = new MetadataAttribute(attributes.getQName(i).toUpperCase(), ProductData.ASCII.createInstance(attributes.getValue(i)), false);
+                    currentElement.addAttribute(attribute);
+                    if ("unit".equals(attributes.getQName(i))) {
+                        unit = attributes.getValue(i);
+                    }
+                }
+                elementStack.push(currentElement);
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if (this.excludedElements == null || !this.excludedElements.contains(qName)) {
+                MetadataElement closingElement = elementStack.pop();
+                if (!elementStack.empty()) {
+                    if (buffer != null && !buffer.isEmpty() && !buffer.startsWith("\n")) {
+                        MetadataAttribute attribute = new MetadataAttribute(closingElement.getName().toUpperCase(), inferType(qName, buffer), false);
+                        if (unit != null) {
+                            attribute.setUnit(unit);
+                        }
+                        elementStack.peek().addAttribute(attribute);
+                        buffer = "";
+                    } else {
+                        elementStack.peek().addElement(closingElement);
+                    }
+                } else {
+                    XmlMetadata.CopyChildElements(closingElement, rootElement);
+                //result.getRootElement().setName("Metadata");
+                //currentPath = currentPath.replace(closingElement.getName() + "/", "");
+                }
+            }
+            unit = null;
+        }
+
+        @Override
+        public void error(SAXParseException e) throws SAXException {
+            String error = e.getMessage();
+            if (!error.contains("no grammar found"))
+                systemLogger.warning(e.getMessage());
+        }
+    }
 }
