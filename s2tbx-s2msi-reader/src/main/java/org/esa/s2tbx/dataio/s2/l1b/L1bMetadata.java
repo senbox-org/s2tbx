@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.s2.l1b;
 import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
 import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.metadata.PlainXmlMetadata;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -33,19 +34,10 @@ import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.SystemUtils;
 import org.jdom.DataConversionException;
 import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
 
 import javax.xml.bind.JAXBException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -147,15 +139,22 @@ public class L1bMetadata extends S2Metadata {
 
         File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
 
-        MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
-        MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
+        //MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
+        Set<String> exclusions = new HashSet<String>() {{
+                add("Viewing_Incidence_Angles_Grids");
+                add("Sun_Angles_Grid");
+            }};
+        MetadataElement userProduct = PlainXmlMetadata.parse(file.toPath(), exclusions);
+        //MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
+        MetadataElement dataStrip = PlainXmlMetadata.parse(dataStripMetadata.toPath(), null);
         getMetadataElements().add(userProduct);
         getMetadataElements().add(dataStrip);
         MetadataElement granulesMetaData = new MetadataElement("Granules");
 
 
         for (File aGranuleMetadataFile : fullTileNamesList) {
-            MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
+            //MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
+            MetadataElement aGranule = PlainXmlMetadata.parse(aGranuleMetadataFile.toPath(), exclusions);
 
             MetadataElement generalInfo = aGranule.getElement("General_Info");
             if (generalInfo != null) {

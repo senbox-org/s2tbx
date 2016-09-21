@@ -30,31 +30,14 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
-import org.esa.s2tbx.dataio.s2.S2BandAnglesGrid;
-import org.esa.s2tbx.dataio.s2.S2BandConstants;
-import org.esa.s2tbx.dataio.s2.S2BandInformation;
-import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
-import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
-import org.esa.s2tbx.dataio.s2.TimeProbe;
+import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.CrsGeoCoding;
-import org.esa.snap.core.datamodel.IndexCoding;
-import org.esa.snap.core.datamodel.Mask;
-import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.Placemark;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.VectorDataNode;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.SourceImageScaler;
 import org.esa.snap.core.util.SystemUtils;
@@ -67,12 +50,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import javax.media.jai.ImageLayout;
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.TileCache;
+import javax.media.jai.*;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.CropDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
@@ -80,35 +58,17 @@ import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
+import java.awt.image.*;
 import java.awt.image.DataBufferFloat;
-import java.awt.image.PixelInterleavedSampleModel;
-import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.io.*;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static java.awt.image.DataBuffer.*;
+import static java.awt.image.DataBuffer.TYPE_FLOAT;
+import static java.awt.image.DataBuffer.TYPE_USHORT;
 import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc.makeTileInformation;
 import static org.esa.snap.utils.DateHelper.parseDate;
@@ -1281,9 +1241,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                                l1cTileLayout.width - x * l1cTileLayout.tileWidth, l1cTileLayout.height - y * l1cTileLayout.tileHeight,
                                                                l1cTileLayout.numXTiles, l1cTileLayout.numYTiles, l1cTileLayout.numResolutions);
                             }
-                            opImage = JP2TileOpImage.create(imageFile.toPath(), getCacheDir().toPath(),
-                                                            0, y, x, currentLayout, getModel(), TYPE_USHORT, level);
-
+                            opImage = JP2TileOpImage.create(imageFile != null ? imageFile.toPath() : null, getCacheDir().toPath(),
+                                    0, y, x, currentLayout, getModel(), TYPE_USHORT, level);
                             if (opImage != null) {
                                 opImage = TranslateDescriptor.create(opImage,
                                                                      (float) (internalJp2TileRectangle.x),
@@ -1562,26 +1521,27 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        BufferedReader b = new BufferedReader(f);
-        try {
-            while((line = b.readLine())!=null) {
-                if(line.contains("<gml:posList srsDimension")) {
-                    String polygon = line.substring(line.indexOf(">")+1, line.indexOf("</gml:posList>"));
-                    polygonWKT = convertToWKTPolygon (polygon, readPolygonDimension (line));
-                    EopPolygon polyg = new EopPolygon("id", type, (Polygon) wkt.read(polygonWKT));
-                    polygonsForTile.add(polyg);
+        if (f != null) {
+            BufferedReader b = new BufferedReader(f);
+            try {
+                while ((line = b.readLine()) != null) {
+                    if (line.contains("<gml:posList srsDimension")) {
+                        String polygon = line.substring(line.indexOf(">") + 1, line.indexOf("</gml:posList>"));
+                        polygonWKT = convertToWKTPolygon(polygon, readPolygonDimension(line));
+                        EopPolygon polyg = new EopPolygon("id", type, (Polygon) wkt.read(polygonWKT));
+                        polygonsForTile.add(polyg);
+                    } else if (line.contains("</eop:maskType>")) {
+                        type = line.substring(line.indexOf(">") + 1, line.indexOf("</eop:maskType>"));
+                    }
                 }
-                else if(line.contains("</eop:maskType>")) {
-                    type = line.substring(line.indexOf(">")+1, line.indexOf("</eop:maskType>"));
-                }
+            } catch (Exception e) {
+                logger.warning(String.format("Warning: missing polygon in mask %s\n", maskFilename));
             }
-        } catch (Exception e) {
-            logger.warning(String.format("Warning: missing polygon in mask %s\n", maskFilename));
-        }
-        try {
-            b.close();
-        } catch (IOException e) {
-            logger.warning(String.format("Warning: impossible to close BufferedReader\n"));
+            try {
+                b.close();
+            } catch (IOException e) {
+                logger.warning(String.format("Warning: impossible to close BufferedReader\n"));
+            }
         }
         return polygonsForTile;
     }

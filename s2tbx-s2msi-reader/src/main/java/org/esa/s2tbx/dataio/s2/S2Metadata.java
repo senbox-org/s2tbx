@@ -36,8 +36,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -140,9 +138,9 @@ public abstract class S2Metadata {
         return updatedXmlStream;
     }
 
-    protected MetadataElement parseAll(Element parent) {
+    /*protected MetadataElement parseAll(Element parent) {
         return parseTree(parent, null, new HashSet<>(Arrays.asList("Viewing_Incidence_Angles_Grids", "Sun_Angles_Grid")));
-    }
+    }*/
 
     protected MetadataElement parseTree(Element element, MetadataElement mdParent, Set<String> excludes) {
 
