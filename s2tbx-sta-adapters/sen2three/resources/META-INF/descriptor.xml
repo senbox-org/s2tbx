@@ -30,7 +30,7 @@
     </variable>
     <osvariable>
       <key>PYTHON_BIN</key>
-      <value></value>
+      <value>python</value>
       <isShared>false</isShared>
       <windows>python.exe</windows>
       <linux>python</linux>

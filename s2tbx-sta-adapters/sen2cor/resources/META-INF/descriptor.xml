@@ -1,5 +1,5 @@
 <operator>
-  <name>org.esa.s2tbx.sen2cor</name>
+  <name>Sen2Cor</name>
   <operatorClass>org.esa.snap.core.gpf.operators.tooladapter.ToolAdapterOp</operatorClass>
   <alias>Sen2Cor</alias>
   <label>SEN2COR</label>
@@ -22,7 +22,7 @@
   <variables>
     <variable>
       <key>SEN2COR_HOME</key>
-      <value>C:\Users\kraftek.C-S\documents\sen2cor</value>
+      <value></value>
       <isShared>false</isShared>
     </variable>
     <variable>
@@ -32,7 +32,7 @@
     </variable>
     <osvariable>
       <key>PYTHON_BIN</key>
-      <value>python.exe</value>
+      <value>python</value>
       <isShared>false</isShared>
       <windows>python.exe</windows>
       <linux>python</linux>
