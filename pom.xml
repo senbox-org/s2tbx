@@ -26,6 +26,10 @@
     <url>https://github.com/senbox-org/s2tbx</url>
 
     <modules>
+        <!--
+        First s2tbx-kit to be able to detect missing dependencies
+        -->
+        <module>s2tbx-kit</module>
         <module>s2tbx-preferences-ui</module>
         <module>s2tbx-cache</module>
         <module>s2tbx-cache-ui</module>
@@ -45,7 +49,6 @@
         <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-radiometric-indices</module>
         <module>s2tbx-biophysical</module>
-        <module>s2tbx-kit</module>
         <module>colour-manipulation</module>
         <module>s2tbx-reflectance-to-radiance</module>
         <module>s2tbx-reflectance-to-radiance-ui</module>
