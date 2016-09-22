@@ -34,7 +34,7 @@
     <properties>
         <snap.version>5.0.0-SNAPSHOT</snap.version>
         <s2tbx.version>5.0.0-SNAPSHOT</s2tbx.version>
-        <netbeans.version>RELEASE802</netbeans.version>
+        <netbeans.version>RELEASE81</netbeans.version>
     </properties>
 	
     <build>

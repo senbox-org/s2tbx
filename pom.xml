@@ -61,7 +61,7 @@
         <s2tbx.version>5.0.0-SNAPSHOT</s2tbx.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
-        <netbeans.version>RELEASE802</netbeans.version>
+        <netbeans.version>RELEASE81</netbeans.version>
         <javahelp.version>2.0.05</javahelp.version>
         <brandingToken>s2tbx</brandingToken>
     </properties>
