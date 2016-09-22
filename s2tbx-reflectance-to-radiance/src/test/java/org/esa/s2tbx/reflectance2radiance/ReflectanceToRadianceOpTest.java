@@ -19,7 +19,7 @@ public class ReflectanceToRadianceOpTest extends TestCase {
     private static final String SOLLAR_IRRADIANCE_ATTRIBUTE_NAME = "solarIrradiance";
     private static final String U_ATTRIBUTE_NAME = "u";
     private static final String INCIDENCE_ANGLE_ATTRIBUTE_NAME = "incidenceAngle";
-    private static final String SOURCE_BAND_NAME_ATTRIBUTE_NAME = "sourceBandName";
+    private static final String SOURCE_BAND_NAMES_ATTRIBUTE_NAME = "sourceBandNames";
 
     public ReflectanceToRadianceOpTest() {
     }
@@ -43,7 +43,7 @@ public class ReflectanceToRadianceOpTest extends TestCase {
         annotatedFields.put(SOLLAR_IRRADIANCE_ATTRIBUTE_NAME, 1.0f);
         annotatedFields.put(U_ATTRIBUTE_NAME, 1.0f);
         annotatedFields.put(INCIDENCE_ANGLE_ATTRIBUTE_NAME, 1.0f);
-        annotatedFields.put(SOURCE_BAND_NAME_ATTRIBUTE_NAME, sourceBandName);
+        annotatedFields.put(SOURCE_BAND_NAMES_ATTRIBUTE_NAME, new String[]{sourceBandName});
 
         float[] expectedValues = new float[] {
                 1.2727431f, 1.6117876f, 1.9505881f, 2.2890952f,
@@ -75,7 +75,7 @@ public class ReflectanceToRadianceOpTest extends TestCase {
         annotatedFields.put(SOLLAR_IRRADIANCE_ATTRIBUTE_NAME, 1.2f);
         annotatedFields.put(U_ATTRIBUTE_NAME, 1.45f);
         annotatedFields.put(INCIDENCE_ANGLE_ATTRIBUTE_NAME, 3.21f);
-        annotatedFields.put(SOURCE_BAND_NAME_ATTRIBUTE_NAME, sourceBandName);
+        annotatedFields.put(SOURCE_BAND_NAMES_ATTRIBUTE_NAME, new String[]{sourceBandName});
 
         float[] expectedValues = new float[] {
                 2.7649512f, 3.5022717f, 4.239592f, 4.976912f,
@@ -107,7 +107,7 @@ public class ReflectanceToRadianceOpTest extends TestCase {
         annotatedFields.put(SOLLAR_IRRADIANCE_ATTRIBUTE_NAME, 1.2f);
         annotatedFields.put(U_ATTRIBUTE_NAME, 1.45f);
         annotatedFields.put(INCIDENCE_ANGLE_ATTRIBUTE_NAME, 0.0f);
-        annotatedFields.put(SOURCE_BAND_NAME_ATTRIBUTE_NAME, sourceBandName);
+        annotatedFields.put(SOURCE_BAND_NAMES_ATTRIBUTE_NAME, new String[]{sourceBandName});
 
         float[] expectedValues = new float[] {
                 2.7649512f, 3.5022717f, 4.239592f, 4.976912f,
@@ -118,10 +118,14 @@ public class ReflectanceToRadianceOpTest extends TestCase {
 
         ReflectanceToRadianceOp operator = buildOperator(sourceProduct, annotatedFields);
 
-        Product targetProduct = operator.getTargetProduct();
-        Band targetBand = targetProduct.getBandAt(0);
+        try {
+            Product targetProduct = operator.getTargetProduct();
+            Band targetBand = targetProduct.getBandAt(0);
 
-        checkExpectedValues(expectedValues, targetBand);
+            checkExpectedValues(expectedValues, targetBand);
+        } catch (OperatorException exception) {
+            assertEquals("Please specify the incidence angle.", exception.getMessage());
+        }
     }
 
     private static ReflectanceToRadianceOp buildOperator(Product sourceProduct, Map<String, Object> annotatedFields) {
@@ -136,7 +140,7 @@ public class ReflectanceToRadianceOpTest extends TestCase {
                 }
             }
         } catch (Exception e) {
-            throw new OperatorException(e.getMessage());
+            throw new OperatorException("Failed to set the operator parameter values.", e);
         }
         return operator;
     }
