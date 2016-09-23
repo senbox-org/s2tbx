@@ -170,7 +170,7 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>colour-manipulation</artifactId>
+            <artifactId>s2tbx-brightness-contrast</artifactId>
             <version>${project.version}</version>
         </dependency>
 

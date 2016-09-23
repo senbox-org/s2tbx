@@ -22,25 +22,26 @@ public class SliderPanel extends JPanel {
     private JTextField input;
     private ChangeListener sliderChangeListener;
     private int previousValue;
+    private JLabel titleLabel;
 
     /**
      * Constructs a new item.
      *
      * @param title the panel title
      * @param sliderChangeListener the slider listener
-     * @param minimumNumber the minimum number
-     * @param maximumNumber the maximum number
      */
-    public SliderPanel(String title, ChangeListener sliderChangeListener, int minimumNumber, int maximumNumber) {
+    public SliderPanel(String title, ChangeListener sliderChangeListener) {
         super(new BorderLayout());
+
+        int maximumNumber = 100;
 
         this.sliderChangeListener = sliderChangeListener;
 
         this.previousValue = 0;
 
-        JLabel titleLabel = new JLabel(title, JLabel.LEFT);
-        titleLabel.setBorder(new EmptyBorder(0, 10, 0, 0));
-        this.slider = new JSlider(JSlider.HORIZONTAL, minimumNumber, maximumNumber, this.previousValue);
+        this.titleLabel = new JLabel(title, JLabel.LEFT);
+        this.titleLabel.setBorder(new EmptyBorder(0, 10, 0, 0));
+        this.slider = new JSlider(JSlider.HORIZONTAL, -maximumNumber, maximumNumber, this.previousValue);
         this.slider.setFocusable(false);
         this.slider.setMajorTickSpacing(maximumNumber);
         this.slider.setMinorTickSpacing(0);
@@ -76,7 +77,7 @@ public class SliderPanel extends JPanel {
         this.slider.addChangeListener(this.localChangeListener);
 
         this.input = new JTextField(5);
-        this.input.setDocument(new NumberPlainDocument(minimumNumber, maximumNumber));
+        this.input.setDocument(new NumberPlainDocument(this.slider.getMinimum(), this.slider.getMaximum()));
         this.input.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent event) {
@@ -91,9 +92,38 @@ public class SliderPanel extends JPanel {
         JPanel panelInput = new JPanel(new FlowLayout());
         panelInput.add(this.input);
 
-        add(titleLabel, BorderLayout.WEST);
+        add(this.titleLabel, BorderLayout.WEST);
         add(this.slider, BorderLayout.CENTER);
         add(panelInput, BorderLayout.EAST);
+    }
+
+    /**
+     * Returns the preferred width of the title label.
+     *
+     * @return the preferred width of the title label
+     */
+    public int getTitlePreferredWidth() {
+        return this.titleLabel.getPreferredSize().width;
+    }
+
+    /**
+     * Sets the preferred width of the title label.
+     *
+     * @param preferredWidth the width to set
+     */
+    public void setTitlePreferredWidth(int preferredWidth) {
+        Dimension size = this.titleLabel.getPreferredSize();
+        size.width = preferredWidth;
+        this.titleLabel.setPreferredSize(size);
+    }
+
+    /**
+     * Returns the slider maximum value.
+     *
+     * @return the slider maximum value
+     */
+    public int getSliderMaximumValue() {
+        return this.slider.getMaximum();
     }
 
     /**

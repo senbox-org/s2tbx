@@ -75,9 +75,16 @@ public class BrightnessContrastToolTopComponent extends ToolTopComponent {
 
         ChangeListener sliderChangeListener = event -> applySliderValues();
 
-        this.brightnessPanel = new SliderPanel("Brightness", sliderChangeListener, -255, 255);
-        this.contrastPanel = new SliderPanel("Contrast", sliderChangeListener, -255, 255);
-        this.saturationPanel = new SliderPanel("Saturation", sliderChangeListener, -100, 100);
+        this.brightnessPanel = new SliderPanel("Brightness", sliderChangeListener);
+        this.contrastPanel = new SliderPanel("Contrast", sliderChangeListener);
+        this.saturationPanel = new SliderPanel("Saturation", sliderChangeListener);
+
+        int maximumPreferredWidth = Math.max(this.brightnessPanel.getTitlePreferredWidth(), this.contrastPanel.getTitlePreferredWidth());
+        maximumPreferredWidth = Math.max(maximumPreferredWidth, this.saturationPanel.getTitlePreferredWidth());
+
+        this.saturationPanel.setTitlePreferredWidth(maximumPreferredWidth);
+        this.contrastPanel.setTitlePreferredWidth(maximumPreferredWidth);
+        this.saturationPanel.setTitlePreferredWidth(maximumPreferredWidth);
 
         this.visibleProductScenes = new HashMap<>();
 
@@ -164,6 +171,7 @@ public class BrightnessContrastToolTopComponent extends ToolTopComponent {
 
     private void applySliderValues() {
         ProductSceneView selectedSceneView = getSelectedProductSceneView();
+
         int brightnessValue = this.brightnessPanel.getSliderValue();
         int contrastValue = this.contrastPanel.getSliderValue();
         int saturationValue = this.saturationPanel.getSliderValue();
@@ -171,11 +179,16 @@ public class BrightnessContrastToolTopComponent extends ToolTopComponent {
         BrightnessContrastData brightnessContrastData = this.visibleProductScenes.get(selectedSceneView);
         brightnessContrastData.setSliderValues(brightnessValue, contrastValue, saturationValue);
 
+        // recompute the slider values before applying them to the colors
+        brightnessValue = computeSliderValueToApply(brightnessValue, this.brightnessPanel.getSliderMaximumValue(), 255);
+        contrastValue = computeSliderValueToApply(contrastValue, this.contrastPanel.getSliderMaximumValue(), 255);
+        saturationValue = computeSliderValueToApply(saturationValue, this.saturationPanel.getSliderMaximumValue(), 100);
+
         RasterDataNode[] rasterDataNodes = selectedSceneView.getSceneImage().getRasters();
         for (int k=0; k<rasterDataNodes.length; k++) {
             RasterDataNode currentDataNode = rasterDataNodes[k];
 
-            ImageInfo currentNodeImageInfo = currentDataNode.getImageInfo();//.clone();
+            ImageInfo currentNodeImageInfo = currentDataNode.getImageInfo();
             ColorPaletteDef currentColorPaletteDef = currentNodeImageInfo.getColorPaletteDef();
 
             ColorPaletteDef initialColorPaletteDef = brightnessContrastData.getInitialImageInfo(currentDataNode).getColorPaletteDef();
@@ -225,6 +238,12 @@ public class BrightnessContrastToolTopComponent extends ToolTopComponent {
         } finally {
             selectedSceneView.addPropertyChangeListener(ProductSceneView.PROPERTY_NAME_IMAGE_INFO, this.imageInfoChangeListener);
         }
+    }
+
+    private static int computeSliderValueToApply(int visibleSliderValue, int maximumVisibleSliderValue, int maximumAllowedValue) {
+        float visiblePercent = (float)visibleSliderValue / (float) maximumVisibleSliderValue;
+        float percent = Math.round(visiblePercent * maximumAllowedValue);
+        return (int)percent;
     }
 
     private static float computePercent(ColorPaletteDef.Point initialPoint, ColorPaletteDef.Point currentPoint) {
