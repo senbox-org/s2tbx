@@ -1,4 +1,4 @@
-package org.esa.s2tbx.colourmanipulation;
+package org.esa.s2tbx.brightness;
 
 import org.esa.snap.core.datamodel.ImageInfo;
 import org.esa.snap.core.datamodel.RasterDataNode;

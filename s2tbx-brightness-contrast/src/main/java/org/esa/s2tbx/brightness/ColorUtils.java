@@ -1,4 +1,4 @@
-package org.esa.s2tbx.colourmanipulation;
+package org.esa.s2tbx.brightness;
 
 /**
  * Utility class containing methods to process the colors.

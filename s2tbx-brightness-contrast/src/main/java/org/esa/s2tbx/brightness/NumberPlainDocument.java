@@ -1,4 +1,4 @@
-package org.esa.s2tbx.colourmanipulation;
+package org.esa.s2tbx.brightness;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;

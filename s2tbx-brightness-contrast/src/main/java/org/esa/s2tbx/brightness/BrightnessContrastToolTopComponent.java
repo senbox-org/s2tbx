@@ -1,13 +1,15 @@
-package org.esa.s2tbx.colourmanipulation;
+package org.esa.s2tbx.brightness;
 
 /**
  * This component shows the panel containing the three sliders: brightness, contrast, saturation.
  *
  * @author Jean Coravu
  */
+import org.esa.s2tbx.brightness.BrightnessContrastData;
+import org.esa.s2tbx.brightness.ColorUtils;
+import org.esa.s2tbx.brightness.SliderPanel;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
-import org.esa.snap.rcp.util.SelectionSupport;
 import org.esa.snap.rcp.windows.ToolTopComponent;
 import org.esa.snap.ui.product.ProductSceneView;
 import org.netbeans.api.annotations.common.NonNull;
@@ -23,7 +25,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @TopComponent.Description(

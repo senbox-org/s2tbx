@@ -25,11 +25,11 @@
     </parent>
 
     <groupId>org.esa.s2tbx</groupId>
-    <artifactId>colour-manipulation</artifactId>
+    <artifactId>s2tbx-brightness-contrast</artifactId>
     <packaging>nbm</packaging>
 
-    <name>SNAP Colour manipulation form</name>
-    <description>SNAP Colour manipulation form(TBD)</description>
+    <name>SNAP Brightness contrast</name>
+    <description>SNAP Brightness contrast</description>
 
     <properties>
         <snap.version>5.0.0-SNAPSHOT</snap.version>
