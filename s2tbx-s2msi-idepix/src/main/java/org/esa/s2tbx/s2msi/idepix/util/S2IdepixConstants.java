@@ -5,7 +5,7 @@ package org.esa.s2tbx.s2msi.idepix.util;
  *
  * @author Olaf Danne
  */
-public class IdepixConstants {
+public class S2IdepixConstants {
 
     public static final int F_INVALID = 0;
     public static final int F_CLOUD = 1;

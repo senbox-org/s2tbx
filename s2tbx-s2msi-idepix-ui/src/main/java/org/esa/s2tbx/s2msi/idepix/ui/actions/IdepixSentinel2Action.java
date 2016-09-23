@@ -14,7 +14,7 @@
  */
 package org.esa.s2tbx.s2msi.idepix.ui.actions;
 
-import org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.Sentinel2Op;
+import org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixOp;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.ui.DefaultSingleTargetProductDialog;
 import org.esa.snap.rcp.actions.AbstractSnapAction;
@@ -45,7 +45,7 @@ public class IdepixSentinel2Action extends AbstractSnapAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final OperatorMetadata opMetadata = Sentinel2Op.class.getAnnotation(OperatorMetadata.class);
+        final OperatorMetadata opMetadata = S2IdepixOp.class.getAnnotation(OperatorMetadata.class);
 //        final IdepixDefaultDialog dialog = new IdepixDefaultDialog(opMetadata.alias(),
 //                                                                   getAppContext(),
 //                                                                   "Idepix - Pixel Identification and Classification (MSI mode)",

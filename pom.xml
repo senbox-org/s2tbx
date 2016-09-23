@@ -40,6 +40,7 @@
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-spot6-reader</module>
+        <module>s2tbx-s2msi-aerosol-retrieval</module>
         <module>s2tbx-s2msi-idepix</module>
         <module>s2tbx-s2msi-idepix-ui</module>
         <module>s2tbx-s2msi-mci</module>

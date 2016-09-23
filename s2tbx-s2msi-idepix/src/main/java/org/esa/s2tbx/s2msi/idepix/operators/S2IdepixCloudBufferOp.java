@@ -1,8 +1,8 @@
 package org.esa.s2tbx.s2msi.idepix.operators;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.s2msi.idepix.util.IdepixConstants;
-import org.esa.s2tbx.s2msi.idepix.util.IdepixUtils;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Operator;
@@ -28,7 +28,7 @@ import java.awt.*;
         authors = "Olaf Danne",
         copyright = "(c) 2016 by Brockmann Consult",
         description = "Adds a cloud buffer to cloudy pixels.")
-public class Sentinel2CloudBufferOp extends Operator {
+public class S2IdepixCloudBufferOp extends Operator {
 
     @Parameter(defaultValue = "2", label = "Width of cloud buffer (# of pixels)")
     private int cloudBufferWidth;
@@ -55,8 +55,8 @@ public class Sentinel2CloudBufferOp extends Operator {
                                                              classifiedProduct.getSceneRasterHeight()),
                                                cloudBufferWidth, cloudBufferWidth);
 
-        origClassifFlagBand = classifiedProduct.getBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS);
-        ProductUtils.copyBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS, classifiedProduct, cloudBufferProduct, false);
+        origClassifFlagBand = classifiedProduct.getBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS);
+        ProductUtils.copyBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS, classifiedProduct, cloudBufferProduct, false);
         setTargetProduct(cloudBufferProduct);
     }
 
@@ -85,15 +85,15 @@ public class Sentinel2CloudBufferOp extends Operator {
             for (int x = srcRectangle.x; x < srcRectangle.x + srcRectangle.width; x++) {
 
                 if (targetRectangle.contains(x, y)) {
-                    IdepixUtils.combineFlags(x, y, sourceFlagTile, targetTile);
+                    S2IdepixUtils.combineFlags(x, y, sourceFlagTile, targetTile);
                 }
-                boolean isCloud = sourceFlagTile.getSampleBit(x, y, IdepixConstants.F_CLOUD);
+                boolean isCloud = sourceFlagTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD);
                 if (isCloud) {
-                    Sentinel2CloudBuffer.computeSimpleCloudBuffer(x, y,
-                                                                  targetTile,
-                                                                  srcRectangle,
-                                                                  cloudBufferWidth,
-                                                                  IdepixConstants.F_CLOUD_BUFFER);
+                    S2IdepixCloudBuffer.computeSimpleCloudBuffer(x, y,
+                                                                 targetTile,
+                                                                 srcRectangle,
+                                                                 cloudBufferWidth,
+                                                                 S2IdepixConstants.F_CLOUD_BUFFER);
                 }
             }
         }
@@ -101,7 +101,7 @@ public class Sentinel2CloudBufferOp extends Operator {
         for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
             checkForCancellation();
             for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
-                IdepixUtils.consolidateCloudAndBuffer(targetTile, x, y);
+                S2IdepixUtils.consolidateCloudAndBuffer(targetTile, x, y);
             }
         }
     }
@@ -109,7 +109,7 @@ public class Sentinel2CloudBufferOp extends Operator {
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(Sentinel2CloudBufferOp.class);
+            super(S2IdepixCloudBufferOp.class);
         }
     }
 }

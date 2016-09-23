@@ -1,4 +1,4 @@
-org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.Sentinel2Op$Spi
-org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.Sentinel2PostProcessOp$Spi
-org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.Sentinel2ClassificationOp$Spi
-org.esa.s2tbx.s2msi.idepix.operators.Sentinel2CloudBufferOp$Spi
+org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixOp$Spi
+org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixPostProcessOp$Spi
+org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixClassificationOp$Spi
+org.esa.s2tbx.s2msi.idepix.operators.S2IdepixCloudBufferOp$Spi

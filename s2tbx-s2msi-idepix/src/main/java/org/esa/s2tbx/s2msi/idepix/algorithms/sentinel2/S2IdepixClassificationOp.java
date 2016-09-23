@@ -1,8 +1,8 @@
 package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.s2msi.idepix.util.IdepixConstants;
-import org.esa.s2tbx.s2msi.idepix.util.IdepixUtils;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.FlagCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -20,7 +20,6 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
-import org.esa.snap.core.util.math.MathUtils;
 import org.esa.snap.dem.gpf.AddElevationOp;
 
 import java.awt.*;
@@ -37,7 +36,7 @@ import java.util.Map;
         authors = "Olaf Danne",
         copyright = "(c) 2008, 2012 by Brockmann Consult",
         description = "Operator for pixel classification from Sentinel-2 MSI data.")
-public class Sentinel2ClassificationOp extends Operator {
+public class S2IdepixClassificationOp extends Operator {
 
     public static final double DELTA_RHO_TOA_442_THRESHOLD = 0.03;
     public static final double RHO_TOA_442_THRESHOLD = 0.03;
@@ -208,9 +207,9 @@ public class Sentinel2ClassificationOp extends Operator {
     @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle rectangle, ProgressMonitor pm) throws OperatorException {
 
-        Tile[] s2ReflectanceTiles = new Tile[IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length];
-        float[] s2MsiReflectance = new float[IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length];
-        for (int i = 0; i < IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
+        Tile[] s2ReflectanceTiles = new Tile[S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length];
+        float[] s2MsiReflectance = new float[S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length];
+        for (int i = 0; i < S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
             s2ReflectanceTiles[i] = getSourceTile(s2MsiReflBands[i], rectangle);
         }
 
@@ -220,7 +219,7 @@ public class Sentinel2ClassificationOp extends Operator {
         }
 
         GeoPos geoPos = null;
-        final Band cloudFlagTargetBand = targetProduct.getBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS);
+        final Band cloudFlagTargetBand = targetProduct.getBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS);
         final Tile cloudFlagTargetTile = targetTiles.get(cloudFlagTargetBand);
 
         final Tile szaTile = getSourceTile(szaBand, rectangle);
@@ -254,14 +253,14 @@ public class Sentinel2ClassificationOp extends Operator {
 //                    }
 
                     // set up pixel properties for given instruments...
-                    Sentinel2Algorithm s2MsiAlgorithm = createS2MsiAlgorithm(s2ReflectanceTiles,
-                                                                             szaTile, vzaTile, saaTile, vaaTile,
-                                                                             waterFractionTile,
-                                                                             elevationTile,
-                                                                             validPixelTile,
-                                                                             s2MsiReflectance,
-                                                                             y,
-                                                                             x);
+                    S2IdepixAlgorithm s2MsiAlgorithm = createS2MsiAlgorithm(s2ReflectanceTiles,
+                                                                            szaTile, vzaTile, saaTile, vaaTile,
+                                                                            waterFractionTile,
+                                                                            elevationTile,
+                                                                            validPixelTile,
+                                                                            s2MsiReflectance,
+                                                                            y,
+                                                                            x);
 
                     setCloudFlag(cloudFlagTargetTile, y, x, s2MsiAlgorithm);
 
@@ -271,44 +270,44 @@ public class Sentinel2ClassificationOp extends Operator {
                     if (!ignoreNN) {
                         if (applyNNPure) {
                             // 'pure Schiller'
-                            if (!cloudFlagTargetTile.getSampleBit(x, y, IdepixConstants.F_INVALID)) {
-                                cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD_AMBIGUOUS, false);
-                                cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD_SURE, false);
-                                cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD, false);
-                                cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLEAR_SNOW, false);
+                            if (!cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.F_INVALID)) {
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, false);
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SURE, false);
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, false);
+                                cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_SNOW, false);
                                 if (nnOutput[0] > nnCloudAmbiguousLowerBoundaryValue &&
                                         nnOutput[0] <= nnCloudAmbiguousSureSeparationValue) {
                                     // this would be as 'CLOUD_AMBIGUOUS'...
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD_AMBIGUOUS, true);
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, true);
                                 }
                                 if (nnOutput[0] > nnCloudAmbiguousSureSeparationValue &&
                                         nnOutput[0] <= nnCloudSureSnowSeparationValue) {
                                     // this would be as 'CLOUD_SURE'...
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD_SURE, true);
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SURE, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, true);
                                 }
                                 if (nnOutput[0] > nnCloudSureSnowSeparationValue) {
                                     // this would be as 'SNOW/ICE'...
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLEAR_SNOW, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_SNOW, true);
                                 }
                             }
                         } else {
                             // just 'refinement with Schiller', as with old net. // todo: what do we want??
-                            if (!cloudFlagTargetTile.getSampleBit(x, y, IdepixConstants.F_CLOUD) &&
-                                    !cloudFlagTargetTile.getSampleBit(x, y, IdepixConstants.F_CLOUD_SURE)) {
+                            if (!cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD) &&
+                                    !cloudFlagTargetTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_SURE)) {
                                 if (nnOutput[0] > nnCloudAmbiguousLowerBoundaryValue &&
                                         nnOutput[0] <= nnCloudAmbiguousSureSeparationValue) {
                                     // this would be as 'CLOUD_AMBIGUOUS' in CC and makes many coastlines as cloud...
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD_AMBIGUOUS, true);
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, true);
                                 }
                                 if (nnOutput[0] > nnCloudAmbiguousSureSeparationValue &&
                                         nnOutput[0] <= nnCloudSureSnowSeparationValue) {
                                     //   'CLOUD_SURE' as in CC (20140424, OD)
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD_SURE, true);
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD_AMBIGUOUS, false);
-                                    cloudFlagTargetTile.setSample(x, y, IdepixConstants.F_CLOUD, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SURE, true);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, false);
+                                    cloudFlagTargetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, true);
                                 }
                             }
                         }
@@ -332,15 +331,15 @@ public class Sentinel2ClassificationOp extends Operator {
     }
 
     public void setBands() {
-        s2MsiReflBands = new Band[IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length];
-        for (int i = 0; i < IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
-            s2MsiReflBands[i] = sourceProduct.getBand(IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[i]);
+        s2MsiReflBands = new Band[S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length];
+        for (int i = 0; i < S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
+            s2MsiReflBands[i] = sourceProduct.getBand(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[i]);
         }
 
-        szaBand = sourceProduct.getBand(IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[0]);
-        vzaBand = sourceProduct.getBand(IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[1]);
-        saaBand = sourceProduct.getBand(IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[2]);
-        vaaBand = sourceProduct.getBand(IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[3]);
+        szaBand = sourceProduct.getBand(S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[0]);
+        vzaBand = sourceProduct.getBand(S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[1]);
+        saaBand = sourceProduct.getBand(S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[2]);
+        vaaBand = sourceProduct.getBand(S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[3]);
     }
 
     public void extendTargetProduct() throws OperatorException {
@@ -348,7 +347,7 @@ public class Sentinel2ClassificationOp extends Operator {
             copyReflectances();
         }
 
-        for (String s2MsiAnnotationBandName : IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES) {
+        for (String s2MsiAnnotationBandName : S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES) {
             Band b = ProductUtils.copyBand(s2MsiAnnotationBandName, sourceProduct, targetProduct, true);
             b.setUnit("dl");
         }
@@ -362,24 +361,24 @@ public class Sentinel2ClassificationOp extends Operator {
     }
 
     private void copyReflectances() {
-        for (int i = 0; i < IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
-            final Band b = ProductUtils.copyBand(IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[i], sourceProduct,
+        for (int i = 0; i < S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
+            final Band b = ProductUtils.copyBand(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[i], sourceProduct,
                                                  targetProduct, true);
             b.setUnit("dl");
         }
     }
 
-    private Sentinel2Algorithm createS2MsiAlgorithm(Tile[] s2MsiReflectanceTiles,
-                                                    Tile szaTile, Tile vzaTile, Tile saaTile, Tile vaaTile,
-                                                    Tile waterFractionTile,
-                                                    Tile elevationTile,
-                                                    Tile validPixelTile,
-                                                    float[] s2MsiReflectances,
-                                                    int y,
-                                                    int x) {
-        Sentinel2Algorithm s2MsiAlgorithm = new Sentinel2Algorithm();
+    private S2IdepixAlgorithm createS2MsiAlgorithm(Tile[] s2MsiReflectanceTiles,
+                                                   Tile szaTile, Tile vzaTile, Tile saaTile, Tile vaaTile,
+                                                   Tile waterFractionTile,
+                                                   Tile elevationTile,
+                                                   Tile validPixelTile,
+                                                   float[] s2MsiReflectances,
+                                                   int y,
+                                                   int x) {
+        S2IdepixAlgorithm s2MsiAlgorithm = new S2IdepixAlgorithm();
 
-        for (int i = 0; i < IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
+        for (int i = 0; i < S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES.length; i++) {
             s2MsiReflectances[i] = s2MsiReflectanceTiles[i].getSampleFloat(x, y);
         }
         s2MsiAlgorithm.setRefl(s2MsiReflectances);
@@ -422,7 +421,7 @@ public class Sentinel2ClassificationOp extends Operator {
         return s2MsiAlgorithm;
     }
 
-    private boolean isLandPixel(int x, int y, int waterFraction, Sentinel2Algorithm s2MsiAlgorithm) {
+    private boolean isLandPixel(int x, int y, int waterFraction, S2IdepixAlgorithm s2MsiAlgorithm) {
         if (getGeoPos(x, y).lat > WATER_MASK_SOUTH_BOUND) {
             // values bigger than 100 indicate no data
             if (waterFraction <= 100) {
@@ -430,10 +429,10 @@ public class Sentinel2ClassificationOp extends Operator {
                 // is always 0 or 100!! (TS, OD, 20140502)
                 return waterFraction == 0;
             } else {
-                return s2MsiAlgorithm.aPrioriLandValue() > Sentinel2Algorithm.LAND_THRESH;
+                return s2MsiAlgorithm.aPrioriLandValue() > S2IdepixAlgorithm.LAND_THRESH;
             }
         } else {
-            return s2MsiAlgorithm.aPrioriLandValue() > Sentinel2Algorithm.LAND_THRESH;
+            return s2MsiAlgorithm.aPrioriLandValue() > S2IdepixAlgorithm.LAND_THRESH;
         }
     }
 
@@ -481,7 +480,7 @@ public class Sentinel2ClassificationOp extends Operator {
     private double calcRhoToa442ThresholdTerm(double sza, double vza, double saa, double vaa) {
         //final double thetaScatt = IdepixUtils.calcScatteringAngle(sza, vza, saa, vaa) * MathUtils.DTOR;
         //double cosThetaScatt = Math.cos(thetaScatt);
-        final double cosThetaScatt = IdepixUtils.calcScatteringCos(sza, vza, saa, vaa);
+        final double cosThetaScatt = S2IdepixUtils.calcScatteringCos(sza, vza, saa, vaa);
         return RHO_TOA_442_THRESHOLD + DELTA_RHO_TOA_442_THRESHOLD * cosThetaScatt * cosThetaScatt;
     }
 
@@ -500,8 +499,8 @@ public class Sentinel2ClassificationOp extends Operator {
 
         targetProduct = new Product(sourceProduct.getName(), sourceProduct.getProductType(), sceneWidth, sceneHeight);
 
-        classifFlagBand = targetProduct.addBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS, ProductData.TYPE_INT32);
-        FlagCoding flagCoding = IdepixUtils.createIdepixFlagCoding(IdepixUtils.IDEPIX_CLASSIF_FLAGS);
+        classifFlagBand = targetProduct.addBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS, ProductData.TYPE_INT32);
+        FlagCoding flagCoding = S2IdepixUtils.createIdepixFlagCoding(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS);
         classifFlagBand.setSampleCoding(flagCoding);
         targetProduct.getFlagCodingGroup().add(flagCoding);
 
@@ -514,55 +513,55 @@ public class Sentinel2ClassificationOp extends Operator {
 
         if (copyFeatureValues) {
             brightBand = targetProduct.addBand("bright_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(brightBand, "Brightness", "dl", IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(brightBand, "Brightness", "dl", S2IdepixConstants.NO_DATA_VALUE, true);
             whiteBand = targetProduct.addBand("white_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(whiteBand, "Whiteness", "dl", IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(whiteBand, "Whiteness", "dl", S2IdepixConstants.NO_DATA_VALUE, true);
             brightWhiteBand = targetProduct.addBand("bright_white_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(brightWhiteBand, "Brightwhiteness", "dl", IdepixConstants.NO_DATA_VALUE,
-                                             true);
+            S2IdepixUtils.setNewBandProperties(brightWhiteBand, "Brightwhiteness", "dl", S2IdepixConstants.NO_DATA_VALUE,
+                                               true);
 //            temperatureBand = targetProduct.addBand("temperature_value", ProductData.TYPE_FLOAT32);
 //            IdepixUtils.setNewBandProperties(temperatureBand, "Temperature", "K", IdepixConstants.NO_DATA_VALUE, true);
             spectralFlatnessBand = targetProduct.addBand("spectral_flatness_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(spectralFlatnessBand, "Spectral Flatness", "dl",
-                                             IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(spectralFlatnessBand, "Spectral Flatness", "dl",
+                                               S2IdepixConstants.NO_DATA_VALUE, true);
             ndviBand = targetProduct.addBand("ndvi_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(ndviBand, "NDVI", "dl", IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(ndviBand, "NDVI", "dl", S2IdepixConstants.NO_DATA_VALUE, true);
             ndsiBand = targetProduct.addBand("ndsi_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(ndsiBand, "NDSI", "dl", IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(ndsiBand, "NDSI", "dl", S2IdepixConstants.NO_DATA_VALUE, true);
 //            glintRiskBand = targetProduct.addBand("glint_risk_value", ProductData.TYPE_FLOAT32);
 //            IdepixUtils.setNewBandProperties(glintRiskBand, "GLINT_RISK", "dl", IdepixConstants.NO_DATA_VALUE, true);
             radioLandBand = targetProduct.addBand("radiometric_land_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(radioLandBand, "Radiometric Land Value", "", IdepixConstants.NO_DATA_VALUE,
-                                             true);
+            S2IdepixUtils.setNewBandProperties(radioLandBand, "Radiometric Land Value", "", S2IdepixConstants.NO_DATA_VALUE,
+                                               true);
             radioWaterBand = targetProduct.addBand("radiometric_water_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(radioWaterBand, "Radiometric Water Value", "",
-                                             IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(radioWaterBand, "Radiometric Water Value", "",
+                                               S2IdepixConstants.NO_DATA_VALUE, true);
 
             b3b11Band = targetProduct.addBand("b3b11_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(b3b11Band, "B3 B11 Value", "",
-                                             IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(b3b11Band, "B3 B11 Value", "",
+                                               S2IdepixConstants.NO_DATA_VALUE, true);
 
             tc1Band = targetProduct.addBand("tc1_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(tc1Band, "TC1 Value", "",
-                                             IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(tc1Band, "TC1 Value", "",
+                                               S2IdepixConstants.NO_DATA_VALUE, true);
 
             tc4Band = targetProduct.addBand("tc4_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(tc4Band, "TC4 Value", "",
-                                             IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(tc4Band, "TC4 Value", "",
+                                               S2IdepixConstants.NO_DATA_VALUE, true);
 
             tc4CirrusBand = targetProduct.addBand("tc4cirrus_water_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(tc4CirrusBand, "TC4 Cirrus Value", "",
-                                             IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(tc4CirrusBand, "TC4 Cirrus Value", "",
+                                               S2IdepixConstants.NO_DATA_VALUE, true);
 
             ndwiBand = targetProduct.addBand("ndwi_value", ProductData.TYPE_FLOAT32);
-            IdepixUtils.setNewBandProperties(ndwiBand, "NDWI Value", "",
-                                             IdepixConstants.NO_DATA_VALUE, true);
+            S2IdepixUtils.setNewBandProperties(ndwiBand, "NDWI Value", "",
+                                               S2IdepixConstants.NO_DATA_VALUE, true);
 
         }
 
     }
 
-    void setPixelSamples(Band band, Tile targetTile, int y, int x, Sentinel2Algorithm s2Algorithm) {
+    void setPixelSamples(Band band, Tile targetTile, int y, int x, S2IdepixAlgorithm s2Algorithm) {
         // for given instrument, compute more pixel properties and write to distinct band
         if (band == brightBand) {
             targetTile.setSample(x, y, s2Algorithm.brightValue());
@@ -597,26 +596,26 @@ public class Sentinel2ClassificationOp extends Operator {
         }
     }
 
-    void setCloudFlag(Tile targetTile, int y, int x, Sentinel2Algorithm s2Algorithm) {
+    void setCloudFlag(Tile targetTile, int y, int x, S2IdepixAlgorithm s2Algorithm) {
         // for given instrument, compute boolean pixel properties and write to cloud flag band
-        targetTile.setSample(x, y, IdepixConstants.F_INVALID, s2Algorithm.isInvalid());
-        targetTile.setSample(x, y, IdepixConstants.F_CLOUD, s2Algorithm.isCloud());
-        targetTile.setSample(x, y, IdepixConstants.F_CLOUD_SURE, s2Algorithm.isCloud());
-        targetTile.setSample(x, y, IdepixConstants.F_CLOUD_AMBIGUOUS, s2Algorithm.isCloudAmbiguous());
-        targetTile.setSample(x, y, IdepixConstants.F_CIRRUS_SURE, s2Algorithm.isCirrus());
-        targetTile.setSample(x, y, IdepixConstants.F_CIRRUS_AMBIGUOUS, s2Algorithm.isCirrusAmbiguous());
-        targetTile.setSample(x, y, IdepixConstants.F_CLOUD_SHADOW, false); // not computed here
-        targetTile.setSample(x, y, IdepixConstants.F_CLEAR_LAND, s2Algorithm.isClearLand());
-        targetTile.setSample(x, y, IdepixConstants.F_CLEAR_WATER, s2Algorithm.isClearWater());
-        targetTile.setSample(x, y, IdepixConstants.F_CLEAR_SNOW, s2Algorithm.isClearSnow());
-        targetTile.setSample(x, y, IdepixConstants.F_LAND, s2Algorithm.isLand());
-        targetTile.setSample(x, y, IdepixConstants.F_WATER, s2Algorithm.isWater());
-        targetTile.setSample(x, y, IdepixConstants.F_BRIGHT, s2Algorithm.isBright());
-        targetTile.setSample(x, y, IdepixConstants.F_WHITE, s2Algorithm.isWhite());
-        targetTile.setSample(x, y, IdepixConstants.F_BRIGHTWHITE, s2Algorithm.isBrightWhite());
-        targetTile.setSample(x, y, IdepixConstants.F_HIGH, s2Algorithm.isHigh());
-        targetTile.setSample(x, y, IdepixConstants.F_VEG_RISK, s2Algorithm.isVegRisk());
-        targetTile.setSample(x, y, IdepixConstants.F_SEAICE, s2Algorithm.isSeaIce());
+        targetTile.setSample(x, y, S2IdepixConstants.F_INVALID, s2Algorithm.isInvalid());
+        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD, s2Algorithm.isCloud());
+        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SURE, s2Algorithm.isCloud());
+        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS, s2Algorithm.isCloudAmbiguous());
+        targetTile.setSample(x, y, S2IdepixConstants.F_CIRRUS_SURE, s2Algorithm.isCirrus());
+        targetTile.setSample(x, y, S2IdepixConstants.F_CIRRUS_AMBIGUOUS, s2Algorithm.isCirrusAmbiguous());
+        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SHADOW, false); // not computed here
+        targetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_LAND, s2Algorithm.isClearLand());
+        targetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_WATER, s2Algorithm.isClearWater());
+        targetTile.setSample(x, y, S2IdepixConstants.F_CLEAR_SNOW, s2Algorithm.isClearSnow());
+        targetTile.setSample(x, y, S2IdepixConstants.F_LAND, s2Algorithm.isLand());
+        targetTile.setSample(x, y, S2IdepixConstants.F_WATER, s2Algorithm.isWater());
+        targetTile.setSample(x, y, S2IdepixConstants.F_BRIGHT, s2Algorithm.isBright());
+        targetTile.setSample(x, y, S2IdepixConstants.F_WHITE, s2Algorithm.isWhite());
+        targetTile.setSample(x, y, S2IdepixConstants.F_BRIGHTWHITE, s2Algorithm.isBrightWhite());
+        targetTile.setSample(x, y, S2IdepixConstants.F_HIGH, s2Algorithm.isHigh());
+        targetTile.setSample(x, y, S2IdepixConstants.F_VEG_RISK, s2Algorithm.isVegRisk());
+        targetTile.setSample(x, y, S2IdepixConstants.F_SEAICE, s2Algorithm.isSeaIce());
     }
 
     /**
@@ -626,7 +625,7 @@ public class Sentinel2ClassificationOp extends Operator {
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(Sentinel2ClassificationOp.class);
+            super(S2IdepixClassificationOp.class);
         }
     }
 }

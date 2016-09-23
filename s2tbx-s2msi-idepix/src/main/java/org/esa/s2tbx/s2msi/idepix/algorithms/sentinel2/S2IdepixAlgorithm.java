@@ -1,7 +1,7 @@
 package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
-import org.esa.s2tbx.s2msi.idepix.util.IdepixConstants;
-import org.esa.s2tbx.s2msi.idepix.util.IdepixUtils;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.util.math.MathUtils;
 
 /**
@@ -9,7 +9,7 @@ import org.esa.snap.core.util.math.MathUtils;
  *
  * @author olafd
  */
-public class Sentinel2Algorithm {
+public class S2IdepixAlgorithm {
 
     static final float UNCERTAINTY_VALUE = 0.5f;
     static final float LAND_THRESH = 0.9f;
@@ -218,15 +218,15 @@ public class Sentinel2Algorithm {
     }
 
     public float spectralFlatnessValue() {
-        final double slope0 = IdepixUtils.spectralSlope(refl[1], refl[0],
-                                                        IdepixConstants.S2_MSI_WAVELENGTHS[1],
-                                                        IdepixConstants.S2_MSI_WAVELENGTHS[0]);
-        final double slope1 = IdepixUtils.spectralSlope(refl[2], refl[3],
-                                                        IdepixConstants.S2_MSI_WAVELENGTHS[2],
-                                                        IdepixConstants.S2_MSI_WAVELENGTHS[3]);
-        final double slope2 = IdepixUtils.spectralSlope(refl[4], refl[6],
-                                                        IdepixConstants.S2_MSI_WAVELENGTHS[4],
-                                                        IdepixConstants.S2_MSI_WAVELENGTHS[6]);
+        final double slope0 = S2IdepixUtils.spectralSlope(refl[1], refl[0],
+                                                          S2IdepixConstants.S2_MSI_WAVELENGTHS[1],
+                                                          S2IdepixConstants.S2_MSI_WAVELENGTHS[0]);
+        final double slope1 = S2IdepixUtils.spectralSlope(refl[2], refl[3],
+                                                          S2IdepixConstants.S2_MSI_WAVELENGTHS[2],
+                                                          S2IdepixConstants.S2_MSI_WAVELENGTHS[3]);
+        final double slope2 = S2IdepixUtils.spectralSlope(refl[4], refl[6],
+                                                          S2IdepixConstants.S2_MSI_WAVELENGTHS[4],
+                                                          S2IdepixConstants.S2_MSI_WAVELENGTHS[6]);
 
         final double flatness = 1.0f - Math.abs(1000.0 * (slope0 + slope1 + slope2) / 3.0);
         // todo: check if it should be like this:
@@ -244,7 +244,7 @@ public class Sentinel2Algorithm {
 
     public float brightValue() {
         if (refl[0] <= 0.0 || brr442Thresh <= 0.0) {
-            return IdepixConstants.NO_DATA_VALUE;
+            return S2IdepixConstants.NO_DATA_VALUE;
         } else {
             return (float) (refl[0] / (6.0 * brr442Thresh));
         }

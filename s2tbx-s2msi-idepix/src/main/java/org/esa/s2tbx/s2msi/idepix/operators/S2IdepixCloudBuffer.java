@@ -24,7 +24,7 @@ import java.awt.*;
 /**
  * cloud buffer algorithms
  */
-public class Sentinel2CloudBuffer {
+public class S2IdepixCloudBuffer {
 
     public static void computeSimpleCloudBuffer(int x, int y,
                                                 Tile targetTile,

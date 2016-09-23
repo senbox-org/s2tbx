@@ -1,9 +1,9 @@
 package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.s2msi.idepix.operators.Sentinel2CloudBuffer;
-import org.esa.s2tbx.s2msi.idepix.util.IdepixConstants;
-import org.esa.s2tbx.s2msi.idepix.util.IdepixUtils;
+import org.esa.s2tbx.s2msi.idepix.operators.S2IdepixCloudBuffer;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Operator;
@@ -31,7 +31,7 @@ import java.awt.*;
         authors = "Olaf Danne",
         copyright = "(c) 2016 by Brockmann Consult",
         description = "Refines the Sentinel-2 MSI pixel classification.")
-public class Sentinel2PostProcessOp extends Operator {
+public class S2IdepixPostProcessOp extends Operator {
 
     //    @Parameter(defaultValue = "true",
 //            label = " Compute cloud shadow",
@@ -67,7 +67,7 @@ public class Sentinel2PostProcessOp extends Operator {
 
         Product postProcessedCloudProduct = createTargetProduct("postProcessedCloud", "postProcessedCloud");
 
-        origClassifFlagBand = s2CloudProduct.getBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS);
+        origClassifFlagBand = s2CloudProduct.getBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS);
 
         int extendedWidth = computeCloudBuffer ? Math.max(3, cloudBufferWidth) : 3;
         int extendedHeight = extendedWidth;
@@ -77,7 +77,7 @@ public class Sentinel2PostProcessOp extends Operator {
                                                extendedWidth, extendedHeight
         );
 
-        ProductUtils.copyBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS, s2CloudProduct, postProcessedCloudProduct, false);
+        ProductUtils.copyBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS, s2CloudProduct, postProcessedCloudProduct, false);
         setTargetProduct(postProcessedCloudProduct);
     }
 
@@ -105,7 +105,7 @@ public class Sentinel2PostProcessOp extends Operator {
             for (int x = srcRectangle.x; x < srcRectangle.x + srcRectangle.width; x++) {
 
                 if (targetRectangle.contains(x, y)) {
-                    boolean isInvalid = targetTile.getSampleBit(x, y, IdepixConstants.F_INVALID);
+                    boolean isInvalid = targetTile.getSampleBit(x, y, S2IdepixConstants.F_INVALID);
                     if (!isInvalid) {
                         combineFlags(x, y, classifFlagTile, targetTile);
                         setCloudShadow(x, y, classifFlagTile, targetTile);
@@ -120,25 +120,25 @@ public class Sentinel2PostProcessOp extends Operator {
                 for (int x = srcRectangle.x; x < srcRectangle.x + srcRectangle.width; x++) {
 
                     if (targetRectangle.contains(x, y)) {
-                        IdepixUtils.combineFlags(x, y, classifFlagTile, targetTile);
+                        S2IdepixUtils.combineFlags(x, y, classifFlagTile, targetTile);
                     }
-                    final boolean isCloudSure = classifFlagTile.getSampleBit(x, y, IdepixConstants.F_CLOUD_SURE);
-                    final boolean isCloudAmbiguous = classifFlagTile.getSampleBit(x, y, IdepixConstants.F_CLOUD_AMBIGUOUS);
+                    final boolean isCloudSure = classifFlagTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_SURE);
+                    final boolean isCloudAmbiguous = classifFlagTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS);
                     final boolean doSimpleCloudBuffer =
                             computeCloudBufferForCloudAmbiguous ? isCloudSure || isCloudAmbiguous : isCloudSure;
                     if (doSimpleCloudBuffer) {
-                        Sentinel2CloudBuffer.computeSimpleCloudBuffer(x, y,
-                                                                      targetTile,
-                                                                      srcRectangle,
-                                                                      cloudBufferWidth,
-                                                                      IdepixConstants.F_CLOUD_BUFFER);
+                        S2IdepixCloudBuffer.computeSimpleCloudBuffer(x, y,
+                                                                     targetTile,
+                                                                     srcRectangle,
+                                                                     cloudBufferWidth,
+                                                                     S2IdepixConstants.F_CLOUD_BUFFER);
                     }
                 }
             }
             for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
                 checkForCancellation();
                 for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
-                    IdepixUtils.consolidateCloudAndBuffer(targetTile, x, y);
+                    S2IdepixUtils.consolidateCloudAndBuffer(targetTile, x, y);
                 }
             }
         }
@@ -162,7 +162,7 @@ public class Sentinel2PostProcessOp extends Operator {
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(Sentinel2PostProcessOp.class);
+            super(S2IdepixPostProcessOp.class);
         }
     }
 }

@@ -1,9 +1,8 @@
 package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
-import org.esa.s2tbx.s2msi.idepix.operators.Sentinel2CloudBufferOp;
 import org.esa.s2tbx.s2msi.idepix.util.AlgorithmSelector;
-import org.esa.s2tbx.s2msi.idepix.util.IdepixConstants;
-import org.esa.s2tbx.s2msi.idepix.util.IdepixUtils;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.GPF;
@@ -29,7 +28,7 @@ import java.util.Map;
         authors = "Olaf Danne",
         copyright = "(c) 2016 by Brockmann Consult",
         description = "Pixel identification and classification for Sentinel-2.")
-public class Sentinel2Op extends Operator {
+public class S2IdepixOp extends Operator {
 
     private static final int LAND_WATER_MASK_RESOLUTION = 50;
     private static final int OVERSAMPLING_FACTOR_X = 3;
@@ -133,12 +132,12 @@ public class Sentinel2Op extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
-        final boolean inputProductIsValid = IdepixUtils.validateInputProduct(sourceProduct, AlgorithmSelector.MSI);
+        final boolean inputProductIsValid = S2IdepixUtils.validateInputProduct(sourceProduct, AlgorithmSelector.MSI);
         if (!inputProductIsValid) {
-            throw new OperatorException(IdepixConstants.INPUT_INCONSISTENCY_ERROR_MESSAGE);
+            throw new OperatorException(S2IdepixConstants.INPUT_INCONSISTENCY_ERROR_MESSAGE);
         }
 
-        if (IdepixUtils.isValidSentinel2(sourceProduct)) {
+        if (S2IdepixUtils.isValidSentinel2(sourceProduct)) {
             processSentinel2();
         }
     }
@@ -152,7 +151,7 @@ public class Sentinel2Op extends Operator {
 
         final Map<String, Object> pixelClassificationParameters = createPixelClassificationParameters();
 
-        s2ClassifProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2ClassificationOp.class),
+        s2ClassifProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixClassificationOp.class),
                                              pixelClassificationParameters, inputProducts);
 
 //        AddElevationOp elevationOp = new AddElevationOp();
@@ -164,16 +163,16 @@ public class Sentinel2Op extends Operator {
             // Post Cloud Classification: coastline refinement, cloud shadow, cloud buffer
             computePostProcessProduct();
 
-            targetProduct = IdepixUtils.cloneProduct(s2ClassifProduct, true);
+            targetProduct = S2IdepixUtils.cloneProduct(s2ClassifProduct, true);
 
-            Band cloudFlagBand = targetProduct.getBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS);
-            cloudFlagBand.setSourceImage(postProcessingProduct.getBand(IdepixUtils.IDEPIX_CLASSIF_FLAGS).getSourceImage());
+            Band cloudFlagBand = targetProduct.getBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS);
+            cloudFlagBand.setSourceImage(postProcessingProduct.getBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS).getSourceImage());
         } else {
             targetProduct = s2ClassifProduct;
         }
 
         // new bit masks:
-        IdepixUtils.setupIdepixCloudscreeningBitmasks(targetProduct);
+        S2IdepixUtils.setupIdepixCloudscreeningBitmasks(targetProduct);
 
         setTargetProduct(targetProduct);
     }
@@ -206,7 +205,7 @@ public class Sentinel2Op extends Operator {
         params.put("computeCloudBufferForCloudAmbiguous", computeCloudBufferForCloudAmbiguous);
         params.put("gaComputeCloudShadow", computeCloudShadow);
         params.put("gaRefineClassificationNearCoastlines", refineClassificationNearCoastlines);
-        final Product classifiedProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2PostProcessOp.class),
+        final Product classifiedProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixPostProcessOp.class),
                                                             params, input);
 
 //        if (computeCloudBuffer) {
@@ -247,7 +246,7 @@ public class Sentinel2Op extends Operator {
     public static class Spi extends OperatorSpi {
 
         public Spi() {
-            super(Sentinel2Op.class);
+            super(S2IdepixOp.class);
         }
     }
 }

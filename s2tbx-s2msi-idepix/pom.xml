@@ -71,6 +71,7 @@
                         <publicPackage>org.esa.s2tbx.s2msi.idepix.algorithms.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.s2msi.idepix.core.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.s2msi.idepix.operators.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.s2msi.idepix.util.*</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
