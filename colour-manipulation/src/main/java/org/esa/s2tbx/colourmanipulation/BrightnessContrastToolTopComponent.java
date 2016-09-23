@@ -50,7 +50,7 @@ import java.util.Map;
         "CTL_BrightnessContrastTopComponent_HelpId=showBrightnessContrastWnd"
 })
 
-public class BrightnessContrastToolTopComponent extends ToolTopComponent implements SelectionSupport.Handler<ProductSceneView> {
+public class BrightnessContrastToolTopComponent extends ToolTopComponent {
     private SliderPanel brightnessPanel;
     private SliderPanel contrastPanel;
     private SliderPanel saturationPanel;
@@ -94,10 +94,6 @@ public class BrightnessContrastToolTopComponent extends ToolTopComponent impleme
     }
 
     @Override
-    public void selectionChange(ProductSceneView oldValue, ProductSceneView newValue) {
-    }
-
-    @Override
     protected void productSceneViewSelected(@NonNull ProductSceneView selectedSceneView) {
         selectedSceneView.addPropertyChangeListener(ProductSceneView.PROPERTY_NAME_IMAGE_INFO, this.imageInfoChangeListener);
 
@@ -110,6 +106,11 @@ public class BrightnessContrastToolTopComponent extends ToolTopComponent impleme
             ImageInfo imageInfo = ImageManager.getInstance().getImageInfo(rasterDataNodes);
             ImageInfo initialImageInfo = imageInfo.clone();
             brightnessContrastData = new BrightnessContrastData(initialImageInfo);
+            for (int i=0; i<rasterDataNodes.length; i++) {
+                ImageInfo nodeImageInfo = rasterDataNodes[i].getImageInfo().clone();
+                brightnessContrastData.putImageInfo(rasterDataNodes[i], nodeImageInfo);
+            }
+
             this.visibleProductScenes.put(selectedSceneView, brightnessContrastData);
         }
         refreshSliderValues(brightnessContrastData);
@@ -162,37 +163,86 @@ public class BrightnessContrastToolTopComponent extends ToolTopComponent impleme
 
     private void applySliderValues() {
         ProductSceneView selectedSceneView = getSelectedProductSceneView();
+        int brightnessValue = this.brightnessPanel.getSliderValue();
+        int contrastValue = this.contrastPanel.getSliderValue();
+        int saturationValue = this.saturationPanel.getSliderValue();
 
         BrightnessContrastData brightnessContrastData = this.visibleProductScenes.get(selectedSceneView);
-        brightnessContrastData.setSliderValues(this.brightnessPanel.getSliderValue(), this.contrastPanel.getSliderValue(), this.saturationPanel.getSliderValue());
+        brightnessContrastData.setSliderValues(brightnessValue, contrastValue, saturationValue);
 
         RasterDataNode[] rasterDataNodes = selectedSceneView.getSceneImage().getRasters();
-        RasterDataNode firstDataNode = rasterDataNodes[0];
+        for (int k=0; k<rasterDataNodes.length; k++) {
+            RasterDataNode currentDataNode = rasterDataNodes[k];
 
-        ImageInfo imageInfo = firstDataNode.getImageInfo().clone();
-        ColorPaletteDef colorPaletteDef = imageInfo.getColorPaletteDef();
+            ImageInfo currentNodeImageInfo = currentDataNode.getImageInfo();//.clone();
+            ColorPaletteDef currentColorPaletteDef = currentNodeImageInfo.getColorPaletteDef();
 
-        ColorPaletteDef initialColorPaletteDef = brightnessContrastData.getInitialImageInfo().getColorPaletteDef();
-        int pointCount = initialColorPaletteDef.getNumPoints();
-        for (int i=0; i<pointCount; i++) {
-            ColorPaletteDef.Point initialPoint = initialColorPaletteDef.getPointAt(i);
-            int rgb = initialPoint.getColor().getRGB();
+            ColorPaletteDef initialColorPaletteDef = brightnessContrastData.getInitialImageInfo(currentDataNode).getColorPaletteDef();
+            int pointCount = initialColorPaletteDef.getNumPoints();
+            for (int i=0; i<pointCount; i++) {
+                ColorPaletteDef.Point initialPoint = initialColorPaletteDef.getPointAt(i);
+                int rgb = initialPoint.getColor().getRGB();
 
-            int newRgb = computePixelBrightness(rgb, this.brightnessPanel.getSliderValue());
-            newRgb = computePixelContrast(newRgb, this.contrastPanel.getSliderValue());
-            newRgb = computePixelSaturation(newRgb, this.saturationPanel.getSliderValue());
+                int newRgb = computePixelBrightness(rgb, brightnessValue);
+                newRgb = computePixelContrast(newRgb, contrastValue);
+                newRgb = computePixelSaturation(newRgb, saturationValue);
 
-            ColorPaletteDef.Point point = colorPaletteDef.getPointAt(i);
-            point.setColor(new Color(newRgb));
+                ColorPaletteDef.Point currentPoint = currentColorPaletteDef.getPointAt(i);
+                currentPoint.setColor(new Color(newRgb));
+            }
+
+            currentDataNode.setImageInfo(currentNodeImageInfo);
+        }
+
+        ImageInfo sceneImageInfo = ImageManager.getInstance().getImageInfo(rasterDataNodes);
+
+        RGBChannelDef initialRGBChannelDef = brightnessContrastData.getInitialImageInfo().getRgbChannelDef();
+        if (initialRGBChannelDef != null) {
+            RGBChannelDef rgbChannelDef = sceneImageInfo.getRgbChannelDef();
+            for (int i=0; i<rasterDataNodes.length; i++) {
+                RasterDataNode currentDataNode = rasterDataNodes[i];
+                if (currentDataNode instanceof Band) {
+                    ColorPaletteDef initialColorPaletteDef = brightnessContrastData.getInitialImageInfo(currentDataNode).getColorPaletteDef();
+                    ColorPaletteDef currentColorPaletteDef = currentDataNode.getImageInfo().getColorPaletteDef();
+
+                    float firstPercent = computePercent(initialColorPaletteDef.getFirstPoint(), currentColorPaletteDef.getFirstPoint());
+                    double min = initialRGBChannelDef.getMinDisplaySample(i);
+                    min = min + (min * firstPercent);
+                    rgbChannelDef.setMinDisplaySample(i, min);
+
+                    float lastPercent = computePercent(initialColorPaletteDef.getLastPoint(), currentColorPaletteDef.getLastPoint());
+                    double max = initialRGBChannelDef.getMaxDisplaySample(i);
+                    max = max + (max * lastPercent);
+                    rgbChannelDef.setMaxDisplaySample(i, max);
+                }
+            }
         }
 
         selectedSceneView.removePropertyChangeListener(ProductSceneView.PROPERTY_NAME_IMAGE_INFO, this.imageInfoChangeListener);
         try {
-            selectedSceneView.setImageInfo(imageInfo);
-            firstDataNode.setImageInfo(imageInfo);
+            selectedSceneView.setImageInfo(sceneImageInfo);
         } finally {
             selectedSceneView.addPropertyChangeListener(ProductSceneView.PROPERTY_NAME_IMAGE_INFO, this.imageInfoChangeListener);
         }
+    }
+
+    private static float computePercent(ColorPaletteDef.Point initialPoint, ColorPaletteDef.Point currentPoint) {
+        Color initialColor = initialPoint.getColor();
+        Color currentColor = currentPoint.getColor();
+
+        float initialRedPercent = (float)initialColor.getRed() / 255.0f;
+        float initialGreenPercent = (float)initialColor.getGreen() / 255.0f;
+        float initialBluePercent = (float)initialColor.getBlue() / 255.0f;
+
+        float currentRedPercent = (float)currentColor.getRed() / 255.0f;
+        float currentGreenPercent = (float)currentColor.getGreen() / 255.0f;
+        float currentBluePercent = (float)currentColor.getBlue() / 255.0f;
+
+        float redPercent = initialRedPercent - currentRedPercent;
+        float greenPercent = initialGreenPercent - currentGreenPercent;
+        float bluePercent = initialBluePercent - currentBluePercent;
+
+        return (redPercent + greenPercent + bluePercent) / 3.0f;
     }
 
     private static int checkRGBValue(int v) {

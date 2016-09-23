@@ -1,6 +1,10 @@
 package org.esa.s2tbx.colourmanipulation;
 
 import org.esa.snap.core.datamodel.ImageInfo;
+import org.esa.snap.core.datamodel.RasterDataNode;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The <code>BrightnessContrastData</code> class is used to store the initial image info of the band and slider values.
@@ -8,6 +12,7 @@ import org.esa.snap.core.datamodel.ImageInfo;
  * @author Jean Coravu
  */
 public class BrightnessContrastData {
+    private final Map<RasterDataNode, ImageInfo> initialImageInfoMap;
     private ImageInfo initialImageInfo;
     private int brightnessSliderValue;
     private int contrastSliderValue;
@@ -19,11 +24,20 @@ public class BrightnessContrastData {
      * @param initialImageInfo the initial image info of the displayed band
      */
     public BrightnessContrastData(ImageInfo initialImageInfo) {
+        this.initialImageInfoMap = new HashMap<>();
         this.initialImageInfo = initialImageInfo;
 
         this.brightnessSliderValue = 0;
         this.contrastSliderValue = 0;
         this.saturationSliderValue = 0;
+    }
+
+    public void putImageInfo(RasterDataNode rasterDataNode, ImageInfo imageInfo) {
+        this.initialImageInfoMap.put(rasterDataNode, imageInfo);
+    }
+
+    public ImageInfo getInitialImageInfo(RasterDataNode rasterDataNode) {
+        return this.initialImageInfoMap.get(rasterDataNode);
     }
 
     /**
