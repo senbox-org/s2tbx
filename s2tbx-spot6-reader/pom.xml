@@ -103,7 +103,7 @@
             <artifactId>s2tbx-commons</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
-            <version>${snap.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
