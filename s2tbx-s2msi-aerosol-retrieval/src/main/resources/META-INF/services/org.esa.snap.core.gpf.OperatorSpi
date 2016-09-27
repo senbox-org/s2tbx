@@ -1,4 +1,6 @@
-org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixOp$Spi
-org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixPostProcessOp$Spi
-org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2.S2IdepixClassificationOp$Spi
-org.esa.s2tbx.s2msi.idepix.operators.S2IdepixCloudBufferOp$Spi
+org.esa.s2tbx.s2msi.aerosol.CreateElevationBandOp$Spi
+org.esa.s2tbx.s2msi.aerosol.S2AerosolGapFillingOp$Spi
+org.esa.s2tbx.s2msi.aerosol.S2AerosolMsiPreparationOp$Spi
+org.esa.s2tbx.s2msi.aerosol.S2AerosolOp$Spi
+org.esa.s2tbx.s2msi.aerosol.S2AerosolRetrievalMasterOp$Spi
+org.esa.s2tbx.s2msi.aerosol.S2AerosolUpscaleOp$Spi
