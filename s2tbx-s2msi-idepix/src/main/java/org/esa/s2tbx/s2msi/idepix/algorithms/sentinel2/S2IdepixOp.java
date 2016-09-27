@@ -117,6 +117,9 @@ public class S2IdepixOp extends Operator {
             description = " Threshold CL_THRESH")
     private double clThresh;
 
+    @Parameter(description = "The digital elevation model.", defaultValue = "SRTM 3Sec", label = "Digital Elevation Model")
+    private String demName = "SRTM 3Sec";
+
 
     @SourceProduct(alias = "l1cProduct",
             label = "Sentinel-2 MSI L1C product",
@@ -234,6 +237,7 @@ public class S2IdepixOp extends Operator {
         gaCloudClassificationParameters.put("cwThresh", cwThresh);
         gaCloudClassificationParameters.put("gclThresh", gclThresh);
         gaCloudClassificationParameters.put("clThresh", clThresh);
+        gaCloudClassificationParameters.put("demName", demName);
 
         return gaCloudClassificationParameters;
     }
