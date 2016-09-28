@@ -50,7 +50,6 @@
         <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-radiometric-indices</module>
         <module>s2tbx-biophysical</module>
-        <module>s2tbx-brightness-contrast</module>
         <module>s2tbx-reflectance-to-radiance</module>
         <module>s2tbx-reflectance-to-radiance-ui</module>
     </modules>
