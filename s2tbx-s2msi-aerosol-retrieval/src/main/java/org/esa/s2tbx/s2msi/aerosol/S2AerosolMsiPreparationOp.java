@@ -31,10 +31,11 @@ public class S2AerosolMsiPreparationOp extends Operator {
     public void initialize() throws OperatorException {
 
         final boolean needPixelClassif = (!sourceProduct.containsBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS));
-        final boolean needElevation = (!sourceProduct.containsBand("elevation"));
-        final boolean needSurfacePres = (!sourceProduct.containsBand("surfPressEstimate"));  // todo: needed?
 
-        // subset might have set ptype to null, thus:
+        final boolean needElevation = (!sourceProduct.containsBand("elevation"));
+        final boolean needSurfacePres = (!sourceProduct.containsBand("surfPressEstimate"));
+
+        // subset might have set product type to null, thus:
         if (sourceProduct.getDescription() == null) sourceProduct.setDescription("Sentinel S2A product");
 
         // setup target product primarily as copy of sourceProduct
@@ -56,7 +57,7 @@ public class S2AerosolMsiPreparationOp extends Operator {
         if (needPixelClassif) {
             S2IdepixOp s2IdepixOp = new S2IdepixOp();
             s2IdepixOp.setParameterDefaultValues();
-            s2IdepixOp.setParameter("copyToaReflectances", true); // todo: check if needed
+            s2IdepixOp.setParameter("copyToaReflectances", false);
             s2IdepixOp.setParameter("cloudBufferWidth", 3);
             s2IdepixOp.setSourceProduct(sourceProduct);
             final Product idepixProduct = s2IdepixOp.getTargetProduct();
@@ -74,7 +75,6 @@ public class S2AerosolMsiPreparationOp extends Operator {
         }
 
         // create surface pressure estimate product if band is missing in sourceProduct
-        // todo: do we need this?
         if (needSurfacePres) {
             String presExpr = "(1013.25 * exp(-elevation/8400))";
             final VirtualBand surfPresBand = new VirtualBand("surfPressEstimate",
@@ -94,6 +94,13 @@ public class S2AerosolMsiPreparationOp extends Operator {
                 ProductUtils.copyBand(srcName, sourceProduct, targetProduct, true);
             }
         }
+
+        // in the end we have in the target product:
+        // - B1,...,B12
+        // - sun_zenith, sun_azimuth, view_zenith_mean, view_azimuth_mean
+        // - pixel_classif_flag
+        // - elevation
+        // - surfPressEstimate
 
         setTargetProduct(targetProduct);
     }
