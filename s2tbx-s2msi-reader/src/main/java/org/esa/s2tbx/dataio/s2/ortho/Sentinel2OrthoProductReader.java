@@ -1238,7 +1238,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             // because the size of the image is not necessarily a multiple of the tile size
                             if (y == l1cTileLayout.numYTiles - 1 || x == l1cTileLayout.numXTiles - 1) {
                                 currentLayout = new TileLayout(l1cTileLayout.width, l1cTileLayout.height,
-                                                               l1cTileLayout.width - x * l1cTileLayout.tileWidth, l1cTileLayout.height - y * l1cTileLayout.tileHeight,
+                                                               Math.min(l1cTileLayout.width - x * l1cTileLayout.tileWidth, l1cTileLayout.tileWidth),
+                                                               Math.min(l1cTileLayout.height - y * l1cTileLayout.tileHeight, l1cTileLayout.tileHeight),
                                                                l1cTileLayout.numXTiles, l1cTileLayout.numYTiles, l1cTileLayout.numResolutions);
                             }
                             opImage = JP2TileOpImage.create(imageFile != null ? imageFile.toPath() : null, getCacheDir().toPath(),

@@ -20,7 +20,6 @@ package org.esa.s2tbx.dataio.openjpeg;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -28,9 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-import static org.apache.commons.lang.SystemUtils.IS_OS_LINUX;
-import static org.apache.commons.lang.SystemUtils.IS_OS_MAC_OSX;
-import static org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS;
+import static org.apache.commons.lang.SystemUtils.*;
 
 /**
  * Utility class to get executables from OpenJpeg module
@@ -64,6 +61,10 @@ public class OpenJpegExecRetriever {
      */
     public static String getOpjDump() {
         return findOpenJpegExecPath(OSCategory.getOSCategory().getDump());
+    }
+
+    public static String getOpenJp2() {
+        return findOpenJpegExecPath(OSCategory.getOSCategory().getCodec());
     }
 
     public static Path getOpenJPEGAuxDataPath() {
@@ -102,23 +103,25 @@ public class OpenJpegExecRetriever {
 
     /* The different OS for which OpenJPEG executables are released */
     private enum OSCategory {
-        WIN_32("openjpeg-2.1.0-win32", Paths.get("bin","opj_compress.exe").toString(), Paths.get("bin","opj_decompress.exe").toString(), Paths.get("bin","opj_dump.exe").toString()),
-        WIN_64("openjpeg-2.1.0-win64", Paths.get("bin","opj_compress.exe").toString(), Paths.get("bin","opj_decompress.exe").toString(), Paths.get("bin","opj_dump.exe").toString()),
-        LINUX_64("openjpeg-2.1.0-linux64", Paths.get("bin","opj_compress").toString(), Paths.get("bin","opj_decompress").toString(), Paths.get("bin","opj_dump").toString()),
-        MAC_OS_X("openjpeg-2.1.0-macosx", Paths.get("bin","opj_compress").toString(), Paths.get("bin","opj_decompress").toString(), Paths.get("bin","opj_dump").toString()),
-        UNSUPPORTED(null, null, null, null);
+        WIN_32("openjpeg-2.1.0-win32", Paths.get("bin","opj_compress.exe").toString(), Paths.get("bin","opj_decompress.exe").toString(), Paths.get("bin","opj_dump.exe").toString(), Paths.get("bin","openjp2.dll").toString()),
+        WIN_64("openjpeg-2.1.0-win64", Paths.get("bin","opj_compress.exe").toString(), Paths.get("bin","opj_decompress.exe").toString(), Paths.get("bin","opj_dump.exe").toString(), Paths.get("bin","openjp2.dll").toString()),
+        LINUX_64("openjpeg-2.1.0-linux64", Paths.get("bin","opj_compress").toString(), Paths.get("bin","opj_decompress").toString(), Paths.get("bin","opj_dump").toString(), Paths.get("bin","openjp2").toString()),
+        MAC_OS_X("openjpeg-2.1.0-macosx", Paths.get("bin","opj_compress").toString(), Paths.get("bin","opj_decompress").toString(), Paths.get("bin","opj_dump").toString(), Paths.get("bin","openjp2").toString()),
+        UNSUPPORTED(null, null, null, null, null);
 
 
         String directory;
         String compressor;
         String decompressor;
         String dump;
+        String codec;
 
-        OSCategory(String directory, String compressor, String decompressor, String dump) {
+        OSCategory(String directory, String compressor, String decompressor, String dump, String codec) {
             this.directory = directory;
             this.compressor = compressor;
             this.decompressor = decompressor;
             this.dump = dump;
+            this.codec = codec;
         }
 
         String getCompressor() {
@@ -132,6 +135,8 @@ public class OpenJpegExecRetriever {
         String getDump() {
             return Paths.get(directory,dump).toString();
         }
+
+        String getCodec() { return Paths.get(directory,codec).toString(); }
 
         static OSCategory getOSCategory() {
             OSCategory category;

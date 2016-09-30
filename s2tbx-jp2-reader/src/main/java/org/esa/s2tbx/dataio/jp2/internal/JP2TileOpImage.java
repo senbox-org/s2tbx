@@ -22,6 +22,7 @@ import com.bc.ceres.glevel.MultiLevelModel;
 import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.openjp2.OpenJP2Decoder;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegExecRetriever;
 import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.image.ResolutionLevel;
@@ -37,11 +38,7 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
 import java.awt.*;
-import java.awt.image.DataBuffer;
-import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
+import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,22 +57,21 @@ import static org.esa.s2tbx.dataio.Utils.diffLastModifiedTimes;
  * @author Cosmin Cara
  */
 public class JP2TileOpImage extends SingleBandedOpImage {
-
     // We need this sort of cache to hold the tile rectangles because
     // it seems that the TIFFImageReader.getImageWidth() goes into the stream
     // each time and, therefore, takes unnecessary time
     private static final Map<Path, Rectangle> tileDims = new HashMap<>();
 
     private final TileLayout tileLayout;
+
     private final Path imageFile;
     private final Path cacheDir;
-    private final ImageReader imageReader;
     private final int tileIndex;
     private final int bandIndex;
     private final Logger logger;
 
-    public JP2TileOpImage(Path imageFile, int bandIdx, Path cacheDir, int row, int col,
-                          TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level) throws IOException {
+    private JP2TileOpImage(Path imageFile, int bandIdx, Path cacheDir, int row, int col,
+                           TileLayout tileLayout, MultiLevelModel imageModel, int dataType, int level) throws IOException {
         super(dataType, null, tileLayout.tileWidth, tileLayout.tileHeight,
                 getTileDimAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
                 null, ResolutionLevel.create(imageModel, level));
@@ -91,7 +87,6 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         this.tileLayout = tileLayout;
         this.tileIndex = col + row * tileLayout.numXTiles;
         this.bandIndex = bandIdx;
-        imageReader = new ImageReader();
     }
 
     /**
@@ -133,37 +128,82 @@ public class JP2TileOpImage extends SingleBandedOpImage {
 
     @Override
     protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
+        /*if (this.bandIndex == -1) {
+            computeRectDirect(dest, destRect);
+        } else {*/
+            computeRectIndirect(dest, destRect);
+        /*}*/
+    }
+
+    private void computeRectIndirect(WritableRaster dest, Rectangle destRect) {
         try {
             Path tile = decompressTile(tileIndex, getLevel());
             RenderedImage readTileImage = null;
             if (tile != null) {
-                final DataBuffer dataBuffer = dest.getDataBuffer();
-                int tileWidth = this.getTileWidth();
-                int tileHeight = this.getTileHeight();
-                final int fileTileX = destRect.x / tileLayout.tileWidth;
-                final int fileTileY = destRect.y / tileLayout.tileHeight;
-                int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth;
-                int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight;
-                imageReader.setInput(tile);
-                Rectangle fileTileRect = tileDims.get(tile);
-                if (fileTileRect == null) {
-                    fileTileRect = new Rectangle(0, 0, imageReader.getImageWidth(), imageReader.getImageHeight());
-                    tileDims.put(tile, fileTileRect);
-                }
-                if (fileTileOriginX == 0 && tileLayout.tileWidth == tileWidth
-                        && fileTileOriginY == 0 && tileLayout.tileHeight == tileHeight
-                        && tileWidth * tileHeight == dataBuffer.getSize()) {
-                    readTileImage = imageReader.read();
-                } else {
-                    final Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
-                    final Rectangle intersection = fileTileRect.intersection(tileRect);
-                    if (!intersection.isEmpty()) {
-                        readTileImage = imageReader.read(intersection);
+                try (ImageReader imageReader = new ImageReader(tile)) {
+                    final DataBuffer dataBuffer = dest.getDataBuffer();
+                    int tileWidth = this.getTileWidth();
+                    int tileHeight = this.getTileHeight();
+                    final int fileTileX = destRect.x / tileLayout.tileWidth;
+                    final int fileTileY = destRect.y / tileLayout.tileHeight;
+                    int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth;
+                    int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight;
+                    Rectangle fileTileRect = tileDims.get(tile);
+                    if (fileTileRect == null) {
+                        fileTileRect = new Rectangle(0, 0, imageReader.getImageWidth(), imageReader.getImageHeight());
+                        tileDims.put(tile, fileTileRect);
                     }
+                    if (fileTileOriginX == 0 && tileLayout.tileWidth == tileWidth
+                            && fileTileOriginY == 0 && tileLayout.tileHeight == tileHeight
+                            && tileWidth * tileHeight == dataBuffer.getSize()) {
+                        readTileImage = imageReader.read();
+                    } else {
+                        final Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
+                        final Rectangle intersection = fileTileRect.intersection(tileRect);
+                        if (!intersection.isEmpty()) {
+                            readTileImage = imageReader.read(intersection);
+                        }
+                    }
+                } catch (IOException e) {
+                    logger.severe(e.getMessage());
                 }
             }
             if (readTileImage != null) {
                 Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, new int[] { bandIndex });
+                dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
+            }
+
+        } catch (IOException e) {
+            logger.severe(e.getMessage());
+        }
+    }
+
+    private void computeRectDirect(WritableRaster dest, Rectangle destRect) {
+        try (OpenJP2Decoder decoder = new OpenJP2Decoder(this.cacheDir, this.imageFile, this.bandIndex, getSampleModel().getDataType(), getLevel(), 20, tileIndex)) {
+            Raster readTileImage = null;
+            final DataBuffer dataBuffer = dest.getDataBuffer();
+            int tileWidth = this.getTileWidth();
+            int tileHeight = this.getTileHeight();
+            final int fileTileX = destRect.x / tileLayout.tileWidth;
+            final int fileTileY = destRect.y / tileLayout.tileHeight;
+            int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth;
+            int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight;
+            int[] dimensions = decoder.getImageDimensions();
+            Rectangle fileTileRect = new Rectangle(0, 0, dimensions[0], dimensions[1]);
+
+            if (fileTileOriginX == 0 && tileLayout.tileWidth == tileWidth
+                    && fileTileOriginY == 0 && tileLayout.tileHeight == tileHeight
+                    && tileWidth * tileHeight == dataBuffer.getSize()) {
+                readTileImage = decoder.read(null);
+            } else {
+                final Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
+                final Rectangle intersection = fileTileRect.intersection(tileRect);
+                if (!intersection.isEmpty()) {
+                    readTileImage = decoder.read(intersection);
+                }
+            }
+            if (readTileImage != null) {
+                Raster readBandRaster = readTileImage.createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, new int[] { 0 });
                 dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
             }
 
@@ -181,18 +221,18 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         return size;
     }
 
-    protected static Dimension getTileDimAtResolutionLevel(int fullTileWidth, int fullTileHeight, int level) {
+    private static Dimension getTileDimAtResolutionLevel(int fullTileWidth, int fullTileHeight, int level) {
         int width = scaleValue(fullTileWidth, level);
         int height = scaleValue(fullTileHeight, level);
         return getTileDim(width, height);
     }
 
-    static Dimension getTileDim(int width, int height) {
+    private static Dimension getTileDim(int width, int height) {
         return new Dimension(width < JAI.getDefaultTileSize().width ? width : JAI.getDefaultTileSize().width,
                 height < JAI.getDefaultTileSize().height ? height : JAI.getDefaultTileSize().height);
     }
 
-    protected Path decompressTile(int tileIndex, int level) throws IOException {
+    private Path decompressTile(int tileIndex, int level) throws IOException {
         Path tileFile = PathUtils.get(cacheDir, PathUtils.getFileNameWithoutExtension(imageFile).toLowerCase() + "_tile_" + String.valueOf(tileIndex) + "_" + String.valueOf(level) + ".tif");
         if ((!Files.exists(tileFile)) || (diffLastModifiedTimes(tileFile.toFile(), imageFile.toFile()) < 0L)) {
             final OpjExecutor decompress = new OpjExecutor(OpenJpegExecRetriever.getOpjDecompress());
@@ -225,22 +265,16 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     }
 
     @Override
-    public synchronized void dispose() {
-        imageReader.close();
-    }
-
-    @Override
     protected void finalize() throws Throwable {
         super.finalize();
         dispose();
     }
 
-    private class ImageReader {
-        TIFFImageReader imageReader;
+    private static class ImageReader implements AutoCloseable {
+        private TIFFImageReader imageReader;
         ImageInputStream inputStream;
-        Path currentPath;
 
-        public ImageReader() throws IOException {
+        ImageReader(Path input) throws IOException {
             Iterator<javax.imageio.ImageReader> imageReaders = ImageIO.getImageReadersByFormatName("tiff");
             while (imageReaders.hasNext()) {
                 final javax.imageio.ImageReader reader = imageReaders.next();
@@ -252,25 +286,16 @@ public class JP2TileOpImage extends SingleBandedOpImage {
             if (imageReader == null) {
                 throw new IOException("Tiff imageReader not found");
             }
+            inputStream = ImageIO.createImageInputStream(input.toFile());
+            imageReader.setInput(inputStream);
         }
 
-        public void setInput(Path input) throws IOException {
-            // Try to avoid closing and reopening the same input stream.
-            if (currentPath == null || !Files.isSameFile(currentPath, input)) {
-                if (inputStream != null) {
-                    close();
-                }
-                inputStream = ImageIO.createImageInputStream(input.toFile());
-                imageReader.setInput(inputStream);
-            }
-        }
-
-        public int getImageWidth() throws IOException {
+        int getImageWidth() throws IOException {
             return inputStream != null ? imageReader.getWidth(0) : 0;
         }
 
-        public int getImageHeight() throws IOException {
-            return inputStream != null ? imageReader.getHeight(0) : 9;
+        int getImageHeight() throws IOException {
+            return inputStream != null ? imageReader.getHeight(0) : 0;
         }
 
         public RenderedImage read() throws IOException {
@@ -293,7 +318,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
             try {
                 if (inputStream != null)
                     inputStream.close();
-                imageReader.dispose();
+                //imageReader.dispose();
             } catch (IOException ignored) {
             }
         }

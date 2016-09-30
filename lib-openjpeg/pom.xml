@@ -29,6 +29,10 @@
             <artifactId>jna</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna-platform</artifactId>
+        </dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>
@@ -79,6 +83,7 @@
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.dataio.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.jp2.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.openjp2.*</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.openjpeg.*</publicPackage>
                     </publicPackages>
                 </configuration>

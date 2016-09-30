@@ -96,7 +96,10 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         // the edge tiles dimensions may be less than the dimensions from JP2 header
         if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
             currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
-                                           tileLayout.width - col * tileLayout.tileWidth, tileLayout.height - row * tileLayout.tileHeight,
+                                           bandIndex == -1 ? Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth) :
+                                                   tileLayout.width - col * tileLayout.tileWidth,
+                                           bandIndex == -1 ? Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight) :
+                                                   tileLayout.height - row * tileLayout.tileHeight,
                                            tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
         }
         return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
@@ -159,7 +162,6 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
 
             mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
         }
-
         return mosaicOp;
     }
 
@@ -167,6 +169,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
     public synchronized void reset() {
         super.reset();
         tileManager.disposeAll();
+        System.gc();
     }
 
     private int scaleValue(int source, int level) {

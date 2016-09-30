@@ -54,8 +54,8 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import static org.esa.s2tbx.dataio.Utils.GetIterativeShortPathNameW;
-import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 import static org.esa.s2tbx.dataio.Utils.getMD5sum;
+import static org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils.validateOpenJpegExecutables;
 
 /**
  * Generic reader for JP2 files.
@@ -217,7 +217,7 @@ public class JP2ProductReader extends AbstractProductReader {
                     JP2MultiLevelSource source = new JP2MultiLevelSource(
                             getFileInput(getInput()),
                             tmpFolder,
-                            bandIdx,
+                            bandIdx/*numBands > 1 ? bandIdx : -1*/,
                             imageWidth, imageHeight,
                             csInfo.getTileWidth(), csInfo.getTileHeight(),
                             csInfo.getNumTilesX(), csInfo.getNumTilesY(),
