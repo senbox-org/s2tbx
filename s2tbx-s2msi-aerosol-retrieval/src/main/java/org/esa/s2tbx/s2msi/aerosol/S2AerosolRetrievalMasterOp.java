@@ -91,11 +91,6 @@ public class S2AerosolRetrievalMasterOp extends Operator {
         s2msiPrepOp.setSourceProduct(sourceProduct);
         final Product extendedSourceProduct = s2msiPrepOp.getTargetProduct();
 
-        if (extendedSourceProduct == EMPTY_PRODUCT) {
-            setTargetProduct(EMPTY_PRODUCT);
-            return;
-        }
-
         Map<String, Object> aotParams = new HashMap<>(4);
         aotParams.put("soilSpecId", soilSpecId);
         aotParams.put("vegSpecId", vegSpecId);

@@ -177,12 +177,6 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-brightness-contrast</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-reflectance-to-radiance</artifactId>
             <version>${project.version}</version>
         </dependency>

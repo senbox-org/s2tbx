@@ -45,7 +45,7 @@ public class S2AerosolOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    // todo: define what we need
+    // todo: define what we need from this
     private String surfaceSpecName = "surface_reflectance_spec.asc";
     @Parameter(defaultValue = "2")
     private int vegSpecId;
@@ -114,9 +114,13 @@ public class S2AerosolOp extends Operator {
         nSpecWvl = specWvl[0].length;
         readSurfaceSpectra(surfaceSpecName);
 
-        if (!sourceProduct.containsRasterDataNode(InstrumentConsts.OZONE_NAME)) {
-            createConstOzoneBand(0.35f);
-        }
+        // in the source product we have:
+        // - B1,...,B12
+        // - sun_zenith, sun_azimuth, view_zenith_mean, view_azimuth_mean
+        // - pixel_classif_flag
+        // - elevation
+        // - surfPressEstimate
+
         if (!sourceProduct.containsBand(InstrumentConsts.NDVI_NAME)) {
             createNdviBand();
         }
@@ -126,7 +130,7 @@ public class S2AerosolOp extends Operator {
         sourceNoDataValues.putAll(getSourceNoDataValues(auxBandNames));
 
         try {
-            readLookupTable();
+            createMomoLookupTable();
         } catch (IOException e) {
             throw new OperatorException("Failed to read LUTs. " + e.getMessage(), e);
         }
@@ -465,7 +469,7 @@ public class S2AerosolOp extends Operator {
         }
     }
 
-    private void readLookupTable() throws IOException {
+    private void createMomoLookupTable() throws IOException {
         // todo: Scientists to provide LUTs for S2 MSI !!!
         final String lutInstrument = InstrumentConsts.MSI_INSTRUMENT_NAME;
         ImageInputStream aotIis = Luts.getAotLutData(lutInstrument);
