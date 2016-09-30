@@ -35,6 +35,8 @@ import org.jdom.JDOMException;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.UnmarshalException;
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,9 +57,33 @@ public class L1cMetadata extends S2Metadata {
     protected Logger logger = SystemUtils.LOG;
 
     public static L1cMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws JDOMException, IOException, JAXBException {
-        try (FileInputStream stream = new FileInputStream(file)) {
-            return new L1cMetadata(stream, file, file.getParent(), granuleName, config, epsg);
+        //try (FileInputStream stream = new FileInputStream(file)) {
+        //    return new L1cMetadata(stream, file, file.getParent(), granuleName, config, epsg);
+        //}
+
+        return new L1cMetadata(file.toPath(), granuleName, config, epsg, L1cMetadataProc.getPSD(file.toPath()));
+    }
+
+
+    private L1cMetadata(Path path, String granuleName, S2Config s2config, String epsg, String psdString) throws IOException{
+        super(s2config, psdString);
+
+        IL1cProductMetadata metadataProduct = L1cMetadataFactory.createL1cProductMetadata(path, psdString);
+        setProductCharacteristics(metadataProduct.getProductOrganization());
+
+
+        ArrayList<IL1cGranuleMetadata> granuleMetadataList = new ArrayList<>();
+        for(String tile : metadataProduct.getTiles()) {
+            granuleMetadataList.add(L1cMetadataFactory.createL1cGranuleMetadata(Paths.get(tile), psdString));
         }
+
+
+        S2DatastripFilename stripName = metadataProduct.getDatastrip();
+        S2DatastripDirFilename dirStripName = metadataProduct.getDatastripDir();
+        Path datastripPath = Paths.get(dirStripName.name,stripName.name);
+        //File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
+        IL1cDatastripMetadata metadataDatastrip = L1cMetadataFactory.createL1cDatastripMetadata(datastripPath, psdString);
+        //TODO
     }
 
     private L1cMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg) throws JDOMException, JAXBException, FileNotFoundException {

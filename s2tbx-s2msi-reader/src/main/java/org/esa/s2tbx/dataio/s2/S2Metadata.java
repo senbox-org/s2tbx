@@ -69,6 +69,12 @@ public abstract class S2Metadata {
         this.metadataElements = new ArrayList<>();
     }
 
+    public S2Metadata(S2Config config, String psdString) {
+        this.config = config;
+        this.psdString = psdString;
+        this.metadataElements = new ArrayList<>();
+    }
+
     public S2Config getConfig() {
         return config;
     }

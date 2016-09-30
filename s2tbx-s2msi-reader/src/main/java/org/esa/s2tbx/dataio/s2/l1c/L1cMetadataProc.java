@@ -49,6 +49,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -335,5 +336,10 @@ public class L1cMetadataProc extends S2OrthoMetadataProc {
             maskFileNamesArray = aMaskList.toArray(new L1cMetadata.MaskFilename[aMaskList.size()]);
         }
         return maskFileNamesArray;
+    }
+
+    public static String getPSD(Path path){
+        //TODO
+        return "PSD13";
     }
 }
