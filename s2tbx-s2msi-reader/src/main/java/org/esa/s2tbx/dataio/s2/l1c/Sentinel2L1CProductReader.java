@@ -27,9 +27,9 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.SystemUtils;
-import org.jdom.JDOMException;
+import org.xml.sax.SAXException;
 
-import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -55,6 +55,7 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
 
     protected final Logger logger;
 
+
     public Sentinel2L1CProductReader(ProductReaderPlugIn readerPlugIn, String epsgCode) {
         super(readerPlugIn,epsgCode);
         logger = SystemUtils.LOG;
@@ -75,7 +76,7 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
 
         try {
             return L1cMetadata.parseHeader(file, granuleName, config, epsg);
-        } catch (JDOMException | JAXBException e) {
+        } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse metadata in " + file.getName());
         }
     }

@@ -25,9 +25,9 @@ import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.ortho.S2ProductCRSCache;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.jdom.JDOMException;
+import org.xml.sax.SAXException;
 
-import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -74,8 +74,8 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
 
         try {
             return L2aMetadata.parseHeader(file, granuleName, config, epsg, getProductResolution());
-        } catch (JDOMException | JAXBException e) {
-            throw new IOException("Failed to parse metadata in " + file.getName());
+        } catch (ParserConfigurationException | SAXException e) {
+           throw new IOException("Failed to parse metadata in " + file.getName());
         }
     }
 

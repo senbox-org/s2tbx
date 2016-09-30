@@ -18,25 +18,27 @@
 package org.esa.s2tbx.dataio.s2;
 
 
-import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_INFO;
-import https.psd_13_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION;
-import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
-import junit.framework.Assert;
-import org.esa.s2tbx.dataio.s2.l1c.L1cMetadataProc;
+
+import org.esa.s2tbx.dataio.s2.l1c.IL1cGranuleMetadata;
+import org.esa.s2tbx.dataio.s2.l1c.L1cMetadataFactory;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.junit.Test;
 
-import javax.xml.bind.*;
+
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import org.esa.s2tbx.dataio.s2.l1c.IL1cProductMetadata;
+import org.xml.sax.SAXException;
 
 /**
  * Created by opicas-p on 24/06/2014.
@@ -45,98 +47,99 @@ public class MetadataTest {
 
 
     /**
-     * Test that if we have the (old) psd 12 root xml file, we can still unmarshall it after update
+     * Test that if we have the (old) psd 12 root xml file, we can still parse it after update
      */
     @Test
     public void testUpdatePSD12RootXML() {
-        String psd12RootXmlFileName =
-                "l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml";
-        try (
-            InputStream inputStream = getClass().getResourceAsStream(psd12RootXmlFileName);
-            InputStream updatedInputStream = S2Metadata.changePSDIfRequired(inputStream, "13");
-        ){
-            JAXBContext jaxbContext = L1cMetadataProc.getJaxbContext();
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-            Object unmarshalled =  unmarshaller.unmarshal(updatedInputStream);
-            Object castedUnmarshalled = ((JAXBElement) unmarshalled).getValue();
-            assertTrue(Level1C_User_Product.class.isInstance(castedUnmarshalled));
-        } catch (FileNotFoundException e) {
-            org.junit.Assert.fail("The file was not found: " + psd12RootXmlFileName);
-            e.printStackTrace();
+        URL url = getClass().getResource("l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
+        Path psd12RootXmlFileName = null;
+        try {
+            File file = new File(url.toURI());
+            psd12RootXmlFileName = file.toPath();
+            IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(psd12RootXmlFileName);
+            assertNotNull(productMetadata.getMetadataElement());
         } catch (IOException e) {
             org.junit.Assert.fail(e.getMessage());
             e.printStackTrace();
-        } catch (JAXBException e) {
-            org.junit.Assert.fail("Could not unmarshall PSD12 Root XML: " + e.getMessage());
+        } catch (ParserConfigurationException e) {
+            org.junit.Assert.fail("Parser Configuration Exception in XML: " + psd12RootXmlFileName.getFileName().toString());
+            e.printStackTrace();
+        } catch (SAXException e) {
+            org.junit.Assert.fail("SAX Exception in XML: " + psd12RootXmlFileName.getFileName().toString());
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            org.junit.Assert.fail(e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    public Level1C_User_Product getUserProduct() throws Exception
+    public IL1cProductMetadata getUserProduct() throws Exception
     {
-        Level1C_User_Product o = null;
+        URL url = getClass().getResource("l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
+        Path psd12RootXmlFileName = null;
 
-        JAXBContext jaxbContext = JAXBContext
-                .newInstance(S2MetadataType.L1C);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        Marshaller marshaller = jaxbContext.createMarshaller();
+        File file = new File(url.toURI());
+        psd12RootXmlFileName = file.toPath();
+        IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(psd12RootXmlFileName);
 
-
-        InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
-
-        Object ob =  unmarshaller.unmarshal(stream);
-
-        o = (Level1C_User_Product) ((JAXBElement)ob).getValue();
-
-        return o;
+        return productMetadata;
     }
 
-    public Level1C_Tile getTileProduct() throws Exception
+    public IL1cGranuleMetadata getTileProduct() throws Exception
     {
-        Level1C_Tile o = null;
+        URL url = getClass().getResource("l1c/metadata/S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLF.xml");
+        Path tilePath = null;
 
-        JAXBContext jaxbContext = JAXBContext
-                .newInstance(S2MetadataType.L1C);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        Marshaller marshaller = jaxbContext.createMarshaller();
+        File file = new File(url.toURI());
+        tilePath = file.toPath();
+        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(tilePath);
 
-
-        InputStream stream = getClass().getResourceAsStream("l1c/metadata/S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLF.xml");
-
-        Object ob =  unmarshaller.unmarshal(stream);
-
-        o = (Level1C_Tile) ((JAXBElement)ob).getValue();
-
-        return o;
+        return granuleMetadata;
     }
 
     @Test
     public void test2() throws Exception
     {
-        Level1C_User_Product product = getUserProduct();
+        URL url = getClass().getResource("l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
+        Path psd12RootXmlFileName = null;
+        try {
+            File file = new File(url.toURI());
+            psd12RootXmlFileName = file.toPath();
+            IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(psd12RootXmlFileName);
+            assertNotNull(productMetadata.getMetadataElement());
+            String[] tiles = productMetadata.getTiles().toArray(new String[productMetadata.getTiles().size()]);
+            assertEquals("S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_N01.01", tiles[0]);
+            S2OrthoGranuleDirFilename gdir = S2OrthoGranuleDirFilename.create(tiles[0]);
+            assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", gdir.getMetadataFilename().name);
+        } catch (IOException e) {
+            org.junit.Assert.fail(e.getMessage());
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            org.junit.Assert.fail("Parser Configuration Exception in XML: " + psd12RootXmlFileName.getFileName().toString());
+            e.printStackTrace();
+        } catch (SAXException e) {
+            org.junit.Assert.fail("SAX Exception in XML: " + psd12RootXmlFileName.getFileName().toString());
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            org.junit.Assert.fail(e.getMessage());
+            e.printStackTrace();
+        }
 
-        Assert.assertNotNull(product);
-
-        A_PRODUCT_INFO.Product_Organisation info = product.getGeneral_Info().getProduct_Info().getProduct_Organisation();
-
-        A_PRODUCT_ORGANIZATION.Granules granulesList = info.getGranule_List().get(0).getGranules();
-        String granuleId = granulesList.getGranuleIdentifier();
-
-        assertEquals("S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_N01.01", granuleId);
-
-        S2OrthoGranuleDirFilename gdir = S2OrthoGranuleDirFilename.create(granuleId);
-
-        Assert.assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", gdir.getMetadataFilename().name);
     }
 
     @Test
     public void test3() throws Exception
     {
-        Level1C_User_Product product = getUserProduct();
+        URL url = getClass().getResource("l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml");
+        Path psd12RootXmlFileName = null;
 
-        Assert.assertNotNull(product);
+        File file = new File(url.toURI());
+        psd12RootXmlFileName = file.toPath();
+        IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(psd12RootXmlFileName);
 
-        Collection<String> tiles = L1cMetadataProc.getTiles(product);
+        assertNotNull(productMetadata);
+
+        Collection<String> tiles = productMetadata.getTiles();
 
         for (String granuleName: tiles)
         {
@@ -149,11 +152,9 @@ public class MetadataTest {
     @Test
     public void testTileProductsMetadataExistence() throws Exception
     {
-        Level1C_User_Product product = getUserProduct();
+        IL1cProductMetadata productMetadata = getUserProduct();
 
-        Assert.assertNotNull(product);
-
-        Collection<String> tiles = L1cMetadataProc.getTiles(product);
+        Collection<String> tiles = productMetadata.getTiles();
 
         URL aUrl = getClass().getResource(
                 "l1c/data/S2A_OPER_PRD_MSIL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.SAFE");
@@ -188,23 +189,23 @@ public class MetadataTest {
     @Test
     public void testPopulateTileInfo() throws Exception
     {
-        Level1C_Tile product = getTileProduct();
+        IL1cGranuleMetadata granuleMetadata = getTileProduct();
 
-        Assert.assertNotNull(product);
+        assertNotNull(granuleMetadata);
 
-        L1cMetadataProc.getTileGeometries(product);
+        granuleMetadata.getTileGeometries();
     }
 
 
     @Test
     public void testPopulateOtherTileInfo() throws Exception
     {
-        Level1C_Tile product = getTileProduct();
+        IL1cGranuleMetadata granule = getTileProduct();
 
-        Assert.assertNotNull(product);
+        assertNotNull(granule);
 
-        L1cMetadataProc.getSunGrid(product);
-        L1cMetadataProc.getAnglesGrid(product);
+        granule.getSunGrid();
+        granule.getViewingAnglesGrid();
     }
 
 }

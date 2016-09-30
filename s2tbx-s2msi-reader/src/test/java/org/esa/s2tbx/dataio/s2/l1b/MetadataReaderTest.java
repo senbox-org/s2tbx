@@ -17,90 +17,60 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-
-import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_datastrip_metadata.Level1B_DataStrip;
-import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
-import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
-import junit.framework.Assert;
-import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.junit.Test;
 
-import javax.xml.bind.*;
-import java.io.InputStream;
+import java.io.File;
+import java.net.URL;
+import java.nio.file.Path;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author  opicas-p
  */
 public class MetadataReaderTest {
 
-    public Level1B_User_Product getUserProduct() throws Exception
+    public IL1bProductMetadata getUserProduct() throws Exception
     {
-        Level1B_User_Product o = (Level1B_User_Product) readJaxbFromStreamResource("S2A_OPER_MTD_SAFL1B_PDMC_20140926T120000_R069_V20130707T171925_20130707T172037.xml");
-        return o;
+        IL1bProductMetadata productMetadata = L1bMetadataFactory.createL1bProductMetadata(buildPathResource("S2A_OPER_MTD_SAFL1B_PDMC_20140926T120000_R069_V20130707T171925_20130707T172037.xml"));
+
+        return productMetadata;
     }
 
-    public Object readJaxbFromStreamResource(String streamResource) throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext
-                .newInstance(S2MetadataType.L1B);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+    public Path buildPathResource(String resource) throws Exception {
+        URL url = getClass().getResource(resource);
+        Path xmlPath = null;
 
-        InputStream stream = getClass().getResourceAsStream(streamResource);
+        File file = new File(url.toURI());
+        xmlPath = file.toPath();
 
-        Object ob =  unmarshaller.unmarshal(stream);
-        Object casted = ((JAXBElement)ob).getValue();
-
-        return casted;
+        return xmlPath;
     }
+
 
     @Test
     public void test1() throws Exception
     {
-        Level1B_User_Product o = getUserProduct();
+        IL1bProductMetadata product = getUserProduct();
 
-        Assert.assertNotNull(o);
+        assertNotNull(product);
     }
 
     @Test
     public void test2() throws Exception
     {
-        Level1B_Granule o = null;
+        IL1bGranuleMetadata granuleMetadata = null;
 
-        try {
-            JAXBContext jaxbContext = JAXBContext
-                    .newInstance(S2MetadataType.L1B);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            Marshaller marshaller = jaxbContext.createMarshaller();
-
-            InputStream stream = getClass().getResourceAsStream("S2A_OPER_MTD_L1B_GR_MPS__20140926T120000_S20130707T171927_D06.xml");
-
-            Object ob =  unmarshaller.unmarshal(stream);
-
-            o = (Level1B_Granule) ((JAXBElement)ob).getValue();
-
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
+        granuleMetadata = L1bMetadataFactory.createL1bGranuleMetadata(buildPathResource("S2A_OPER_MTD_L1B_GR_MPS__20140926T120000_S20130707T171927_D06.xml"));
+        assertNotNull(granuleMetadata);
     }
 
     @Test
     public void test3() throws Exception
     {
-        Level1B_DataStrip o = null;
+        IL1bDatastripMetadata datastripMetadata = null;
 
-        try {
-            JAXBContext jaxbContext = JAXBContext
-                    .newInstance(S2MetadataType.L1B);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            Marshaller marshaller = jaxbContext.createMarshaller();
-
-            InputStream stream = getClass().getResourceAsStream("S2A_OPER_MTD_L1B_DS_MPS__20140926T120000_S20130707T171925.xml");
-
-            Object ob =  unmarshaller.unmarshal(stream);
-
-            o = (Level1B_DataStrip) ((JAXBElement)ob).getValue();
-
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
+        datastripMetadata = L1bMetadataFactory.createL1bDatastripMetadata(buildPathResource("S2A_OPER_MTD_L1B_DS_MPS__20140926T120000_S20130707T171925.xml"));
+        assertNotNull(datastripMetadata);
     }
 }
