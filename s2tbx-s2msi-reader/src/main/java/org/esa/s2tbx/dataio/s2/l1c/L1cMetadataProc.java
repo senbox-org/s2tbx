@@ -135,7 +135,7 @@ public class L1cMetadataProc extends S2OrthoMetadataProc {
         return characteristics;
     }
 
-    private static List<S2BandInformation> getBandInformationList (double toaQuantification) {
+    public static List<S2BandInformation> getBandInformationList (double toaQuantification) {
         List<S2BandInformation> aInfo = new ArrayList<>();
         aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, toaQuantification));
         aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M, toaQuantification));

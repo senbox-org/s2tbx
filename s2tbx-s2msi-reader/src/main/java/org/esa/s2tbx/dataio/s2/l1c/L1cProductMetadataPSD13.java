@@ -7,15 +7,18 @@ import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
-import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -25,7 +28,6 @@ import java.util.List;
 
 public class L1cProductMetadataPSD13 extends XmlMetadata implements IL1cProductMetadata {
 
-    MetadataElement metadataElement;
 
     private static class L1cProductMetadataPSD13Parser extends XmlMetadataParser<L1cProductMetadataPSD13> {
 
@@ -34,6 +36,7 @@ public class L1cProductMetadataPSD13 extends XmlMetadata implements IL1cProductM
             setSchemaLocations(L1cMetadataPSD13Helper.getSchemaLocations());
         }
 
+        //TODO validate schema
         /*@Override
         protected ProductData inferType(String elementName, String value) {
             return L1cMetadataPSD13Helper.createProductData(elementName, value);
@@ -49,7 +52,7 @@ public class L1cProductMetadataPSD13 extends XmlMetadata implements IL1cProductM
 
     public static L1cProductMetadataPSD13 create(Path path) throws IOException {
         Assert.notNull(path);
-        L1cProductMetadataPSD13 result = /*new L1cProductMetadataPSD13("Level-1C_User_Product")*/null;
+        L1cProductMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (Files.exists(path)) {
@@ -57,7 +60,7 @@ public class L1cProductMetadataPSD13 extends XmlMetadata implements IL1cProductM
                 //noinspection unchecked
                 L1cProductMetadataPSD13Parser parser = new L1cProductMetadataPSD13Parser(L1cProductMetadataPSD13.class);
                 result = parser.parse(stream);
-                result.setName("Level-1C_User_Product"); //TODO probar
+                result.setName("Level-1C_User_Product");
                 String metadataProfile = result.getMetadataProfile();
                 if (metadataProfile != null)
                     result.setName(metadataProfile);
@@ -81,7 +84,11 @@ public class L1cProductMetadataPSD13 extends XmlMetadata implements IL1cProductM
 
     @Override
     public int getNumBands() {
-        return 0;
+        String bandList[] = getBandList();
+        if (bandList == null) {
+            return 0;
+        }
+        return bandList.length;
     }
 
     @Override
@@ -91,7 +98,7 @@ public class L1cProductMetadataPSD13 extends XmlMetadata implements IL1cProductM
 
     @Override
     public String getFormatName() {
-        return null;
+        return getAttributeValue(PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT,null);
     }
 
     @Override
@@ -106,7 +113,7 @@ public class L1cProductMetadataPSD13 extends XmlMetadata implements IL1cProductM
 
     @Override
     public String[] getRasterFileNames() {
-        return new String[0];
+        return getAttributeValues(PSD13Constants.PATH_PRODUCT_METADATA_IMAGE_ID);
     }
 
     @Override
@@ -144,42 +151,80 @@ public class L1cProductMetadataPSD13 extends XmlMetadata implements IL1cProductM
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
 
-        characteristics.setSpacecraft(getAttributeValue("/General_Info/Product_Info/PROCESSING_LEVEL","gggg"));
-        /*characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString());
+        characteristics.setSpacecraft(getAttributeValue(PSD13Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Unknown"));
+        characteristics.setDatasetProductionDate(getAttributeValue(PSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, "Unknown"));
 
-        characteristics.setProductStartTime(((Element) product.getGeneral_Info().getProduct_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
-        characteristics.setProductStopTime(((Element) product.getGeneral_Info().getProduct_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
+        characteristics.setProductStartTime(getAttributeValue(PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_START_TIME, "Unknown"));
+        characteristics.setProductStopTime(getAttributeValue(PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, "Unknown"));
 
-        characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value());
-        characteristics.setMetaDataLevel(product.getGeneral_Info().getProduct_Info().getQuery_Options().getMETADATA_LEVEL());
+        characteristics.setProcessingLevel(getAttributeValue(PSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, "Unknown"));
+        characteristics.setMetaDataLevel(getAttributeValue(PSD13Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL,"Unknown"));
 
-        double toaQuantification = product.getGeneral_Info().getProduct_Image_Characteristics().getQUANTIFICATION_VALUE().getValue();
+        double toaQuantification = Double.valueOf(getAttributeValue(PSD13Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL,"10000"));
         characteristics.setQuantificationValue(toaQuantification);
 
-        List<S2BandInformation> aInfo = getBandInformationList (toaQuantification);
+        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (toaQuantification);
         int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));*/
+        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
         return characteristics;
     }
 
     @Override
     public Collection<String> getTiles() {
-        return null;
+        String[] granuleList = getAttributeValues(PSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
+        if(granuleList == null) {
+            return null;
+        }
+        return new ArrayList<>(Arrays.asList(granuleList));
     }
 
     @Override
     public S2DatastripFilename getDatastrip() {
-        return null;
+        String[] datastripList = getAttributeValues(PSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
+        if(datastripList == null) {
+            return null;
+        }
+
+        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(datastripList[0], null);
+
+        S2DatastripFilename datastripFilename = null;
+        if (dirDatastrip != null) {
+            String fileName = dirDatastrip.getFileName(null);
+
+            if (fileName != null) {
+                datastripFilename = S2OrthoDatastripFilename.create(fileName);
+            }
+        }
+
+        return datastripFilename;
     }
 
     @Override
     public S2DatastripDirFilename getDatastripDir() {
-        return null;
+        String[] granuleList = getAttributeValues(PSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
+        String[] datastripList = getAttributeValues(PSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
+        if(granuleList == null || datastripList == null) {
+            return null;
+        }
+        S2OrthoGranuleDirFilename grafile = S2OrthoGranuleDirFilename.create(granuleList[0]);
+
+        S2DatastripDirFilename datastripDirFilename = null;
+        if (grafile != null) {
+            String fileCategory = grafile.fileCategory;
+            String dataStripMetadataFilenameCandidate = datastripList[0];
+            datastripDirFilename = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, fileCategory);
+
+        }
+        return datastripDirFilename;
     }
 
     @Override
     public MetadataElement getMetadataElement() {
-        return null;
+        return rootElement;
+    }
+
+    private String[] getBandList() {
+        return getAttributeValues(PSD13Constants.PATH_PRODUCT_METADATA_BAND_LIST);
     }
 }
