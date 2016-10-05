@@ -47,7 +47,7 @@ public class MetadataTest {
     /**
      * Test that if we have the (old) psd 12 root xml file, we can still unmarshall it after update
      */
-    @Test
+ /*   @Test
     public void testUpdatePSD12RootXML() {
         String psd12RootXmlFileName =
                 "l1c/metadata/S2A_OPER_MTD_SAFL1C_PDMC_20130621T120000_R065_V20091211T165928_20091211T170025.xml";
@@ -70,9 +70,9 @@ public class MetadataTest {
         } catch (JAXBException e) {
             org.junit.Assert.fail("Could not unmarshall PSD12 Root XML: " + e.getMessage());
         }
-    }
+    }*/
 
-    public Level1C_User_Product getUserProduct() throws Exception
+  /*  public Level1C_User_Product getUserProduct() throws Exception
     {
         Level1C_User_Product o = null;
 
@@ -89,9 +89,9 @@ public class MetadataTest {
         o = (Level1C_User_Product) ((JAXBElement)ob).getValue();
 
         return o;
-    }
+    }*/
 
-    public Level1C_Tile getTileProduct() throws Exception
+  /*  public Level1C_Tile getTileProduct() throws Exception
     {
         Level1C_Tile o = null;
 
@@ -108,9 +108,9 @@ public class MetadataTest {
         o = (Level1C_Tile) ((JAXBElement)ob).getValue();
 
         return o;
-    }
+    }*/
 
-    @Test
+ /*   @Test
     public void test2() throws Exception
     {
         Level1C_User_Product product = getUserProduct();
@@ -127,9 +127,9 @@ public class MetadataTest {
         S2OrthoGranuleDirFilename gdir = S2OrthoGranuleDirFilename.create(granuleId);
 
         Assert.assertEquals("S2A_OPER_MTD_L1C_TL_CGS1_20130621T120000_A000065_T14SLD.xml", gdir.getMetadataFilename().name);
-    }
+    }*/
 
-    @Test
+ /*   @Test
     public void test3() throws Exception
     {
         Level1C_User_Product product = getUserProduct();
@@ -143,10 +143,10 @@ public class MetadataTest {
             System.err.println(granuleName);
         }
 
-    }
+    }*/
 
 
-    @Test
+  /*  @Test
     public void testTileProductsMetadataExistence() throws Exception
     {
         Level1C_User_Product product = getUserProduct();
@@ -182,10 +182,10 @@ public class MetadataTest {
                 }
             }
         }
-    }
+    }*/
 
 
-    @Test
+   /* @Test
     public void testPopulateTileInfo() throws Exception
     {
         Level1C_Tile product = getTileProduct();
@@ -193,10 +193,10 @@ public class MetadataTest {
         Assert.assertNotNull(product);
 
         L1cMetadataProc.getTileGeometries(product);
-    }
+    }*/
 
 
-    @Test
+  /*  @Test
     public void testPopulateOtherTileInfo() throws Exception
     {
         Level1C_Tile product = getTileProduct();
@@ -205,6 +205,6 @@ public class MetadataTest {
 
         L1cMetadataProc.getSunGrid(product);
         L1cMetadataProc.getAnglesGrid(product);
-    }
+    }*/
 
 }

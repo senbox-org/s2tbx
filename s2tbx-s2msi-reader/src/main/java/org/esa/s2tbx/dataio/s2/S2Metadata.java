@@ -552,4 +552,68 @@ public abstract class S2Metadata {
             this.quantificationValue = quantificationValue;
         }
     }
+
+    /**
+     * Used for wrapping the angles read from the metadata
+     * @param valuesZenith each string contains the zenith angles of a full row separated by commas
+     * @param valuesAzimuth each string contains the azimuth angles of a full row separated by commas
+     * @return
+     */
+    public static AnglesGrid wrapAngles (String[] valuesZenith, String[] valuesAzimuth) {
+        S2Metadata.AnglesGrid anglesGrid = null;
+
+        if(valuesAzimuth == null || valuesZenith == null) {
+            return null;
+        }
+        int nRows = valuesZenith.length;
+        int nCols = valuesZenith[0].split(" ").length;
+
+        if(nRows != valuesAzimuth.length || nCols != valuesAzimuth[0].split(" ").length) {
+            return null;
+        }
+
+        anglesGrid = new S2Metadata.AnglesGrid();
+        anglesGrid.setAzimuth(new float[nRows][nCols]);
+        anglesGrid.setZenith(new float[nRows][nCols]);
+
+        for (int rowindex = 0; rowindex < nRows; rowindex++) {
+            String[] zenithSplit = valuesZenith[rowindex].split(" ");
+            String[] azimuthSplit = valuesAzimuth[rowindex].split(" ");
+            if(zenithSplit == null || azimuthSplit == null || zenithSplit.length != nCols ||azimuthSplit.length != nCols) {
+                return null;
+            }
+            for (int colindex = 0; colindex < nCols; colindex++) {
+                anglesGrid.getZenith()[rowindex][colindex] = Float.parseFloat(zenithSplit[colindex]);
+                anglesGrid.getAzimuth()[rowindex][colindex] = Float.parseFloat(azimuthSplit[colindex]);
+            }
+        }
+        return anglesGrid;
+    }
+
+    public static AnglesGrid[] wrapStandardViewingAngles(MetadataElement rootGranuleMetadataElement) {
+        ArrayList<AnglesGrid> anglesGrids = new ArrayList<>();
+        MetadataElement viewingAnglesElements = rootGranuleMetadataElement.getElement("Geometric_Info").getElement("Tile_Angles");
+        for(MetadataElement viewingAnglesElement : viewingAnglesElements.getElements()) {
+            if (!viewingAnglesElement.getName().equals("Viewing_Incidence_Angles_Grids")) {
+                continue;
+            }
+            MetadataAttribute[] azAnglesAttributes = viewingAnglesElement.getElement("Azimuth").getElement("Values_List").getAttributes();
+            MetadataAttribute[] zenAnglesAttributes = viewingAnglesElement.getElement("Zenith").getElement("Values_List").getAttributes();
+            int nRows = azAnglesAttributes.length;
+            if(nRows != zenAnglesAttributes.length) {
+                continue;
+            }
+            String[] azAnglesString = new String[nRows];
+            String[] zenAnglesString = new String[nRows];
+            for(int i = 0 ; i < nRows ; i++) {
+                azAnglesString[i] = azAnglesAttributes[i].getData().toString();
+                zenAnglesString[i] = zenAnglesAttributes[i].getData().toString();
+            }
+            AnglesGrid anglesGrid= S2Metadata.wrapAngles(zenAnglesString, azAnglesString);
+            anglesGrid.setBandId(Integer.parseInt(viewingAnglesElement.getAttributeString("bandId")));
+            anglesGrid.setDetectorId(Integer.parseInt(viewingAnglesElement.getAttributeString("detectorId")));
+            anglesGrids.add(anglesGrid);
+        }
+        return anglesGrids.toArray(new AnglesGrid[anglesGrids.size()]);
+    }
 }

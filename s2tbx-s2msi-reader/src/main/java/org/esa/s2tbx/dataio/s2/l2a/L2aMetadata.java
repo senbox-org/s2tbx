@@ -28,6 +28,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
+import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
@@ -35,6 +36,8 @@ import org.jdom.JDOMException;
 
 import javax.xml.bind.JAXBException;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,18 +51,34 @@ import java.util.logging.Logger;
  */
 public class L2aMetadata extends S2Metadata {
 
-    private static final String PSD_STRING = "12";
+    //private static final String PSD_STRING = "12";
     private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
 
     protected Logger logger = SystemUtils.LOG;
 
-    public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException, JAXBException {
+    /*public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException, JAXBException {
         try (FileInputStream stream = new FileInputStream(file)) {
             return new L2aMetadata(stream, file, file.getParent(), granuleName, config, epsg, productResolution);
         }
+    }*/
+    public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException{
+        return new L2aMetadata(file.toPath(), granuleName, config, epsg, L2aMetadataProc.getPSD(file.toPath()),productResolution);
     }
 
-    private L2aMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, JAXBException, FileNotFoundException {
+
+    private L2aMetadata(Path path, String granuleName, S2Config s2config, String epsg, String psdString, S2SpatialResolution productResolution) throws IOException{
+        super(s2config, psdString);
+        resetTileList();
+        boolean isGranuleMetadata = S2OrthoGranuleMetadataFilename.isGranuleFilename(path.getFileName().toString());
+
+        if(!isGranuleMetadata) {
+            initProduct(path, granuleName, epsg, psdString, productResolution);
+        } else {
+            initTile(path, epsg, psdString, productResolution);
+        }
+        //TODO
+    }
+   /* private L2aMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, JAXBException, FileNotFoundException {
         super(config, L2aMetadataProc.getJaxbContext(), PSD_STRING);
 
         try {
@@ -74,9 +93,54 @@ public class L2aMetadata extends S2Metadata {
         } catch (JAXBException | JDOMException | IOException e) {
             logger.severe(Utils.getStackTrace(e));
         }
+    }*/
+
+    private void initProduct(Path path, String granuleName, String epsg, String psdString, S2SpatialResolution productResolution) throws IOException {
+        IL2aProductMetadata metadataProduct = L2aMetadataFactory.createL2aProductMetadata(path, psdString);
+        setProductCharacteristics(metadataProduct.getProductOrganization(productResolution));
+
+        Collection<String> tileNames;
+
+        if (granuleName == null) {
+            tileNames = metadataProduct.getTiles();
+        } else {
+            tileNames = Collections.singletonList(granuleName);
+        }
+
+        S2DatastripFilename stripName = metadataProduct.getDatastrip();
+        S2DatastripDirFilename dirStripName = metadataProduct.getDatastripDir();
+        Path datastripPath = path.resolveSibling("DATASTRIP").resolve(dirStripName.name).resolve(stripName.name);
+        IL2aDatastripMetadata metadataDatastrip = L2aMetadataFactory.createL2aDatastripMetadata(datastripPath, psdString);
+
+        getMetadataElements().add(metadataProduct.getMetadataElement());
+        getMetadataElements().add(metadataDatastrip.getMetadataElement());
+
+        //Check if the tiles found in metadata exist and add them to fullTileNamesList
+        ArrayList<Path> granuleMetadataPathList = new ArrayList<>();
+        for (String tileName : tileNames) {
+            S2OrthoGranuleDirFilename aGranuleDir = S2OrthoGranuleDirFilename.create(tileName);
+
+            if (aGranuleDir != null) {
+                String theName = aGranuleDir.getMetadataFilename().name;
+
+                Path nestedGranuleMetadata = path.resolveSibling("GRANULE").resolve(tileName).resolve(theName);
+                if (Files.exists(nestedGranuleMetadata)) {
+                    granuleMetadataPathList.add(nestedGranuleMetadata);
+                } else {
+                    String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
+                    logger.log(Level.WARNING, errorMessage);
+                }
+            }
+        }
+
+        //Init Tiles
+        for (Path granuleMetadataPath : granuleMetadataPathList) {
+            initTile(granuleMetadataPath, epsg, psdString, productResolution);
+        }
     }
 
-    private void initProduct(File file, String parent, String granuleName, Object casted, String epsg, S2SpatialResolution productResolution) throws IOException, JAXBException, JDOMException {
+
+    /*private void initProduct(File file, String parent, String granuleName, Object casted, String epsg, S2SpatialResolution productResolution) throws IOException, JAXBException, JDOMException {
         Level2A_User_Product product = (Level2A_User_Product) casted;
         setProductCharacteristics(L2aMetadataProc.getProductOrganization(product, productResolution));
 
@@ -130,10 +194,67 @@ public class L2aMetadata extends S2Metadata {
             granuleStream.close();
             initTile(aGranuleMetadataFile, granule, epsg, productResolution);
         }
+    }*/
+
+
+    private void initTile(Path path, String epsg, String psdString, S2SpatialResolution resolution) throws IOException {
+
+        IL2aGranuleMetadata granuleMetadata = L2aMetadataFactory.createL2aGranuleMetadata(path,psdString);
+
+        if(getProductCharacteristics() == null) {
+            setProductCharacteristics(granuleMetadata.getTileProductOrganization(resolution));
+        }
+
+        Map<S2SpatialResolution, TileGeometry> geoms = granuleMetadata.getTileGeometries();
+
+        Tile tile = new Tile(granuleMetadata.getTileID());
+        tile.setHorizontalCsCode(granuleMetadata.getHORIZONTAL_CS_CODE());
+        tile.setHorizontalCsName(granuleMetadata.getHORIZONTAL_CS_NAME());
+
+        if (epsg != null && !tile.getHorizontalCsCode().equals(epsg)) {
+            // skip tiles that are not in the desired UTM zone
+            logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", path.getFileName().toString(), tile.getHorizontalCsCode(), epsg));
+            return;
+        }
+
+        tile.setTileGeometries(geoms);
+
+        try {
+            tile.setAnglesResolution(granuleMetadata.getAnglesResolution());
+        } catch (Exception e) {
+            logger.warning("Angles resolution cannot be obtained");
+            tile.setAnglesResolution(DEFAULT_ANGLES_RESOLUTION);
+        }
+
+        tile.setSunAnglesGrid(granuleMetadata.getSunGrid());
+        if(!getProductCharacteristics().getMetaDataLevel().equals("Brief")) {
+            tile.setViewingIncidenceAnglesGrids(granuleMetadata.getViewingAnglesGrid());
+        }
+
+        //granuleMetadata.getMasks(path);
+        tile.setMaskFilenames(granuleMetadata.getMasks(path));
+
+        addTileToList(tile);
+
+        //Search "Granules" metadata element. If it does not exist, it is created
+        MetadataElement granulesMetaData = null;
+        for(MetadataElement metadataElement : getMetadataElements()) {
+            if(metadataElement.getName().equals("Granules")) {
+                granulesMetaData = metadataElement;
+                break;
+            }
+        }
+        if (granulesMetaData == null) {
+            granulesMetaData = new MetadataElement("Granules");
+            getMetadataElements().add(granulesMetaData);
+        }
+
+        granuleMetadata.updateName(); //for including the tile id
+        granulesMetaData.addElement(granuleMetadata.getSimplifiedMetadataElement());
     }
 
 
-    private void initTile(File file, Object casted, String epsg, S2SpatialResolution resolution) throws IOException, JAXBException, JDOMException {
+    /*private void initTile(File file, Object casted, String epsg, S2SpatialResolution resolution) throws IOException, JAXBException, JDOMException {
 
         Level2A_Tile aTile = (Level2A_Tile) casted;
         if(getProductCharacteristics() == null) {
@@ -201,5 +322,5 @@ public class L2aMetadata extends S2Metadata {
             }
         }
         granulesMetaData.addElement(aGranule);
-    }
+    }*/
 }

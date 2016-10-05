@@ -74,8 +74,8 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
 
         try {
             return L2aMetadata.parseHeader(file, granuleName, config, epsg, getProductResolution());
-        } catch (JDOMException | JAXBException e) {
-            throw new IOException("Failed to parse metadata in " + file.getName());
+        } catch (/*JDOMException | JAXBException */ Exception e) {
+           throw new IOException("Failed to parse metadata in " + file.getName());
         }
     }
 

@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.s2.l1c;
 /**
  * Created by obarrile on 03/10/2016.
  */
-public class PSD13Constants {
+public class L1cPSD13Constants {
 
     /*
      * Product metadata element paths
@@ -25,14 +25,14 @@ public class PSD13Constants {
     public static final String PATH_PRODUCT_METADATA_PREVIEW_IMAGE_URL = "/Level-1C_User_Product/General_Info/Product_Info/PREVIEW_IMAGE_URL";
     public static final String PATH_PRODUCT_METADATA_PREVIEW_GEO_INFO = "/Level-1C_User_Product/General_Info/Product_Info/PREVIEW_GEO_INFO";
 
-    public static final String PATH_PRODUCT_METADATA_METADATA_LEVEL = "/Level-1C_User_Product/General_Info/Product_Info/METADATA_LEVEL";
+    public static final String PATH_PRODUCT_METADATA_METADATA_LEVEL = "/Level-1C_User_Product/General_Info/Product_Info/Query_Options/METADATA_LEVEL";
     public static final String PATH_PRODUCT_METADATA_GRANULE_LIST = "/Level-1C_User_Product/General_Info/Product_Info/Product_Organisation/Granule_List/Granules/granuleIdentifier";
     public static final String PATH_PRODUCT_METADATA_DATASTRIP_LIST = "/Level-1C_User_Product/General_Info/Product_Info/Product_Organisation/Granule_List/Granules/datastripIdentifier";
     public static final String PATH_PRODUCT_METADATA_IMAGE_ID = "/Level-1C_User_Product/General_Info/Product_Info/Product_Organisation/Granule_List/Granules/IMAGE_ID";
     public static final String PATH_PRODUCT_METADATA_QUANTIFICATION_VALUE = "/Level-1C_User_Product/General_Info/Product_Image_Characteristics/QUANTIFICATION_VALUE";
 
-    public static final String PATH_PRODUCT_METADATA_BAND_LIST = "/Level-1C_User_Product/General_Info/Product_Info/Band_List";
-    public static final String PATH_PRODUCT_METADATA_PRODUCT_FORMAT = "/Level-1C_User_Product/General_Info/Product_Info/PRODUCT_FORMAT";
+    public static final String PATH_PRODUCT_METADATA_BAND_LIST = "/Level-1C_User_Product/General_Info/Product_Info/Query_Options/Band_List";
+    public static final String PATH_PRODUCT_METADATA_PRODUCT_FORMAT = "/Level-1C_User_Product/General_Info/Product_Info/Query_Options/PRODUCT_FORMAT";
 
     /*
      * Granule metadata element path
