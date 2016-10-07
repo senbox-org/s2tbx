@@ -1,14 +1,12 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
 import com.bc.ceres.core.Assert;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
+import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.ProductData;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +22,7 @@ import java.util.Map;
 /**
  * Created by obarrile on 30/09/2016.
  */
-public class L1cGranuleMetadataPSD13 extends XmlMetadata implements IL1cGranuleMetadata {
+public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cGranuleMetadata {
 
 
     MetadataElement simplifiedMetadataElement;
@@ -33,10 +31,10 @@ public class L1cGranuleMetadataPSD13 extends XmlMetadata implements IL1cGranuleM
 
         public L1cGranuleMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            setSchemaLocations(L1cMetadataPSD13Helper.getSchemaLocations());
+            setSchemaLocations(L1cMetadataPSD13Helper.getGranuleSchemaLocations());
+            setSchemaBasePath(L1cMetadataPSD13Helper.getSchemaBasePath(""));
         }
 
-        //TODO validate schema
         @Override
         protected boolean shouldValidateSchema() {
             return false;
@@ -77,56 +75,6 @@ public class L1cGranuleMetadataPSD13 extends XmlMetadata implements IL1cGranuleM
     }
 
     @Override
-    public int getNumBands() {
-        return 0;
-    }
-
-    @Override
-    public String getProductName() {
-        return null;
-    }
-
-    @Override
-    public String getFormatName() {
-        return null;
-    }
-
-    @Override
-    public int getRasterWidth() {
-        return 0;
-    }
-
-    @Override
-    public int getRasterHeight() {
-        return 0;
-    }
-
-    @Override
-    public String[] getRasterFileNames() {
-        return new String[0];
-    }
-
-    @Override
-    public ProductData.UTC getProductStartTime() {
-        return null;
-    }
-
-    @Override
-    public ProductData.UTC getProductEndTime() {
-        return null;
-    }
-
-    @Override
-    public ProductData.UTC getCenterTime() {
-        return null;
-    }
-
-    @Override
-    public String getProductDescription() {
-        return null;
-    }
-
-    @Override
     public String getFileName() {
         return null;
     }
@@ -155,12 +103,12 @@ public class L1cGranuleMetadataPSD13 extends XmlMetadata implements IL1cGranuleM
     }
 
     @Override
-    public Map<S2SpatialResolution, L1cMetadata.TileGeometry> getTileGeometries() {
+    public Map<S2SpatialResolution, S2Metadata.TileGeometry> getTileGeometries() {
 
-        Map<S2SpatialResolution, L1cMetadata.TileGeometry> resolutions = new HashMap<>();
+        Map<S2SpatialResolution, S2Metadata.TileGeometry> resolutions = new HashMap<>();
         for (String res : getAttributeValues(L1cPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION)) {
             S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(Integer.parseInt(res));
-            L1cMetadata.TileGeometry tgeox = new L1cMetadata.TileGeometry();
+            S2Metadata.TileGeometry tgeox = new S2Metadata.TileGeometry();
 
             tgeox.setUpperLeftX(Double.parseDouble(getAttributeSiblingValue(L1cPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION, res,
                                                                             L1cPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_ULX, "0")));

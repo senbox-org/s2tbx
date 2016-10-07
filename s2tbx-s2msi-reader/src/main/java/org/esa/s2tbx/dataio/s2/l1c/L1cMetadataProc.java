@@ -106,8 +106,4 @@ public class L1cMetadataProc extends S2OrthoMetadataProc {
         return aInfo;
     }
 
-    public static String getPSD(Path path){
-        //TODO
-        return "PSD13";
-    }
 }

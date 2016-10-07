@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
+import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -29,7 +30,7 @@ import java.util.Map;
  * Created by obarrile on 04/10/2016.
  */
 
-public class L2aProductMetadataPSD13 extends XmlMetadata implements IL2aProductMetadata {
+public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aProductMetadata {
 
     private static class L2aProductMetadataPSD13Parser extends XmlMetadataParser<L2aProductMetadataPSD13> {
 
@@ -38,11 +39,6 @@ public class L2aProductMetadataPSD13 extends XmlMetadata implements IL2aProductM
             setSchemaLocations(L2aMetadataPSD13Helper.getSchemaLocations());
         }
 
-        //TODO validate schema
-        /*@Override
-        protected ProductData inferType(String elementName, String value) {
-            return L1cMetadataPSD13Helper.createProductData(elementName, value);
-        }*/
 
         @Override
         protected boolean shouldValidateSchema() {
@@ -84,61 +80,6 @@ public class L2aProductMetadataPSD13 extends XmlMetadata implements IL2aProductM
         super(name);
     }
 
-
-    @Override
-    public int getNumBands() {
-        String bandList[] = getBandList();
-        if (bandList == null) {
-            return 0;
-        }
-        return bandList.length;
-    }
-
-    @Override
-    public String getProductName() {
-        return null;
-    }
-
-    @Override
-    public String getFormatName() {
-        return getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
-    }
-
-    @Override
-    public int getRasterWidth() {
-        return 0;
-    }
-
-    @Override
-    public int getRasterHeight() {
-        return 0;
-    }
-
-    @Override
-    public String[] getRasterFileNames() {
-        return getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_IMAGE_ID);
-    }
-
-    @Override
-    public ProductData.UTC getProductStartTime() {
-        return null;
-    }
-
-    @Override
-    public ProductData.UTC getProductEndTime() {
-        return null;
-    }
-
-    @Override
-    public ProductData.UTC getCenterTime() {
-        return null;
-    }
-
-    @Override
-    public String getProductDescription() {
-        return null;
-    }
-
     @Override
     public String getFileName() {
         return null;
@@ -150,7 +91,7 @@ public class L2aProductMetadataPSD13 extends XmlMetadata implements IL2aProductM
     }
 
     @Override
-    public L2aMetadata.ProductCharacteristics getProductOrganization(S2SpatialResolution resolution) {
+    public S2Metadata.ProductCharacteristics getProductOrganization(S2SpatialResolution resolution) {
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setSpacecraft(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Unknown"));
         characteristics.setDatasetProductionDate(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, "Unknown"));
@@ -240,7 +181,4 @@ public class L2aProductMetadataPSD13 extends XmlMetadata implements IL2aProductM
         return rootElement;
     }
 
-    private String[] getBandList() {
-        return getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_BAND_LIST);
-    }
 }

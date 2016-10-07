@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
+import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -16,7 +17,7 @@ import java.nio.file.StandardOpenOption;
  * Created by obarrile on 04/10/2016.
  */
 
-public class L2aDatastripMetadataPSD13 extends XmlMetadata implements IL2aDatastripMetadata  {
+public class L2aDatastripMetadataPSD13 extends GenericXmlMetadata implements IL2aDatastripMetadata  {
 
     private static class L2aDatastripMetadataPSD13Parser extends XmlMetadataParser<L2aDatastripMetadataPSD13> {
 
@@ -25,7 +26,6 @@ public class L2aDatastripMetadataPSD13 extends XmlMetadata implements IL2aDatast
             setSchemaLocations(L2aMetadataPSD13Helper.getSchemaLocations());
         }
 
-        //TODO validateSchema
         @Override
         protected boolean shouldValidateSchema() {
             return false;
@@ -60,56 +60,6 @@ public class L2aDatastripMetadataPSD13 extends XmlMetadata implements IL2aDatast
 
     public L2aDatastripMetadataPSD13(String name) {
         super(name);
-    }
-
-    @Override
-    public int getNumBands() {
-        return 0;
-    }
-
-    @Override
-    public String getProductName() {
-        return null;
-    }
-
-    @Override
-    public String getFormatName() {
-        return null;
-    }
-
-    @Override
-    public int getRasterWidth() {
-        return 0;
-    }
-
-    @Override
-    public int getRasterHeight() {
-        return 0;
-    }
-
-    @Override
-    public String[] getRasterFileNames() {
-        return new String[0];
-    }
-
-    @Override
-    public ProductData.UTC getProductStartTime() {
-        return null;
-    }
-
-    @Override
-    public ProductData.UTC getProductEndTime() {
-        return null;
-    }
-
-    @Override
-    public ProductData.UTC getCenterTime() {
-        return null;
-    }
-
-    @Override
-    public String getProductDescription() {
-        return null;
     }
 
     @Override

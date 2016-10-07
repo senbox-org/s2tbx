@@ -8,22 +8,22 @@ public class L2aPSD13Constants {
     /*
     * Product metadata element paths
    */
-    public static final String PATH_PRODUCT_METADATA_DATATAKE = "/Level-2A_User_Product/General_Info/Product_Info/Datatake/datatakeIdentifier";
-    public static final String PATH_PRODUCT_METADATA_SPACECRAFT = "/Level-2A_User_Product/General_Info/Product_Info/Datatake/SPACECRAFT_NAME";
-    public static final String PATH_PRODUCT_METADATA_DATATAKE_TYPE = "/Level-2A_User_Product/General_Info/Product_Info/Datatake/DATATAKE_TYPE";
-    public static final String PATH_PRODUCT_METADATA_SENSING_START = "/Level-2A_User_Product/General_Info/Product_Info/Datatake/DATATAKE_SENSING_START";
-    public static final String PATH_PRODUCT_METADATA_SENSING_ORBIT_NUMBER = "/Level-2A_User_Product/General_Info/Product_Info/Datatake/SENSING_ORBIT_NUMBER";
-    public static final String PATH_PRODUCT_METADATA_ORBIT_DIRECTION = "/Level-2A_User_Product/General_Info/Product_Info/Datatake/SENSING_ORBIT_DIRECTION";
+    public static final String PATH_PRODUCT_METADATA_DATATAKE = "/Level-2A_User_Product/General_Info/L2A_Product_Info/Datatake/datatakeIdentifier";
+    public static final String PATH_PRODUCT_METADATA_SPACECRAFT = "/Level-2A_User_Product/General_Info/L2A_Product_Info/Datatake/SPACECRAFT_NAME";
+    public static final String PATH_PRODUCT_METADATA_DATATAKE_TYPE = "/Level-2A_User_Product/General_Info/L2A_Product_Info/Datatake/DATATAKE_TYPE";
+    public static final String PATH_PRODUCT_METADATA_SENSING_START = "/Level-2A_User_Product/General_Info/L2A_Product_Info/Datatake/DATATAKE_SENSING_START";
+    public static final String PATH_PRODUCT_METADATA_SENSING_ORBIT_NUMBER = "/Level-2A_User_Product/General_Info/L2A_Product_Info/Datatake/SENSING_ORBIT_NUMBER";
+    public static final String PATH_PRODUCT_METADATA_ORBIT_DIRECTION = "/Level-2A_User_Product/General_Info/L2A_Product_Info/Datatake/SENSING_ORBIT_DIRECTION";
 
-    public static final String PATH_PRODUCT_METADATA_PRODUCT_START_TIME = "/Level-2A_User_Product/General_Info/Product_Info/PRODUCT_START_TIME";
-    public static final String PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME = "/Level-2A_User_Product/General_Info/Product_Info/PRODUCT_STOP_TIME";
-    public static final String PATH_PRODUCT_METADATA_PRODUCT_URI = "/Level-2A_User_Product/General_Info/Product_Info/PRODUCT_URI";
-    public static final String PATH_PRODUCT_METADATA_PROCESSING_LEVEL = "/Level-2A_User_Product/General_Info/Product_Info/PROCESSING_LEVEL";
-    public static final String PATH_PRODUCT_METADATA_PRODUCT_TYPE = "/Level-2A_User_Product/General_Info/Product_Info/PRODUCT_TYPE";
-    public static final String PATH_PRODUCT_METADATA_PROCESSING_BASELINE = "/Level-2A_User_Product/General_Info/Product_Info/PROCESSING_BASELINE";
-    public static final String PATH_PRODUCT_METADATA_GENERATION_TIME = "/Level-2A_User_Product/General_Info/Product_Info/GENERATION_TIME";
-    public static final String PATH_PRODUCT_METADATA_PREVIEW_IMAGE_URL = "/Level-2A_User_Product/General_Info/Product_Info/PREVIEW_IMAGE_URL";
-    public static final String PATH_PRODUCT_METADATA_PREVIEW_GEO_INFO = "/Level-2A_User_Product/General_Info/Product_Info/PREVIEW_GEO_INFO";
+    public static final String PATH_PRODUCT_METADATA_PRODUCT_START_TIME = "/Level-2A_User_Product/General_Info/L2A_Product_Info/PRODUCT_START_TIME";
+    public static final String PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME = "/Level-2A_User_Product/General_Info/L2A_Product_Info/PRODUCT_STOP_TIME";
+    public static final String PATH_PRODUCT_METADATA_PRODUCT_URI = "/Level-2A_User_Product/General_Info/L2A_Product_Info/PRODUCT_URI";
+    public static final String PATH_PRODUCT_METADATA_PROCESSING_LEVEL = "/Level-2A_User_Product/General_Info/L2A_Product_Info/PROCESSING_LEVEL";
+    public static final String PATH_PRODUCT_METADATA_PRODUCT_TYPE = "/Level-2A_User_Product/General_Info/L2A_Product_Info/PRODUCT_TYPE";
+    public static final String PATH_PRODUCT_METADATA_PROCESSING_BASELINE = "/Level-2A_User_Product/General_Info/L2A_Product_Info/PROCESSING_BASELINE";
+    public static final String PATH_PRODUCT_METADATA_GENERATION_TIME = "/Level-2A_User_Product/General_Info/L2A_Product_Info/GENERATION_TIME";
+    public static final String PATH_PRODUCT_METADATA_PREVIEW_IMAGE_URL = "/Level-2A_User_Product/General_Info/L2A_Product_Info/PREVIEW_IMAGE_URL";
+    public static final String PATH_PRODUCT_METADATA_PREVIEW_GEO_INFO = "/Level-2A_User_Product/General_Info/L2A_Product_Info/PREVIEW_GEO_INFO";
 
     public static final String PATH_PRODUCT_METADATA_METADATA_LEVEL = "/Level-2A_User_Product/General_Info/L2A_Product_Info/Query_Options/METADATA_LEVEL";
     public static final String PATH_PRODUCT_METADATA_GRANULE_LIST = "/Level-2A_User_Product/General_Info/L2A_Product_Info/L2A_Product_Organisation/Granule_List/Granules/granuleIdentifier";

@@ -1,10 +1,11 @@
-package org.esa.s2tbx.dataio.s2.l1c;
+package org.esa.s2tbx.dataio.s2.l3;
 
 import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.S2MetadataType;
+import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
@@ -17,24 +18,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Created by obarrile on 29/09/2016.
+ * Created by obarrile on 07/10/2016.
  */
+public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3ProductMetadata {
 
-public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cProductMetadata {
+    private static class L3ProductMetadataPSD13Parser extends XmlMetadataParser<L3ProductMetadataPSD13> {
 
-
-    private static class L1cProductMetadataPSD13Parser extends XmlMetadataParser<L1cProductMetadataPSD13> {
-
-        public L1cProductMetadataPSD13Parser(Class metadataFileClass) {
+        public L3ProductMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            setSchemaLocations(L1cMetadataPSD13Helper.getProductSchemaLocations());
-            setSchemaBasePath(L1cMetadataPSD13Helper.getSchemaBasePath("PSD13"));
-
+            String[] locations = {S2MetadataType.L3_PRODUCT_SCHEMA_FILE_PATH};
+            setSchemaLocations(locations);
         }
 
         @Override
@@ -45,20 +44,19 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
 
 
 
-    public static L1cProductMetadataPSD13 create(Path path) throws IOException {
+    public static L3ProductMetadataPSD13 create(Path path) throws IOException {
         Assert.notNull(path);
-        L1cProductMetadataPSD13 result = null;
+        L3ProductMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (Files.exists(path)) {
                 stream = Files.newInputStream(path, StandardOpenOption.READ);
                 //noinspection unchecked
-                L1cProductMetadataPSD13Parser parser = new L1cProductMetadataPSD13Parser(L1cProductMetadataPSD13.class);
+                L3ProductMetadataPSD13Parser parser = new L3ProductMetadataPSD13Parser(L3ProductMetadataPSD13.class);
                 result = parser.parse(stream);
-                result.setName("Level-1C_User_Product");
+                result.setName("Level-3_User_Product");
                 String metadataProfile = result.getMetadataProfile();
-                //if (metadataProfile != null)
-                //    result.setName(metadataProfile);
+
             }
         } catch (Exception e) {
             //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
@@ -71,9 +69,7 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
         }
         return result;
     }
-
-
-    public L1cProductMetadataPSD13(String name) {
+    public L3ProductMetadataPSD13(String name) {
         super(name);
     }
 
@@ -88,41 +84,44 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getProductOrganization() {
+    public S2Metadata.ProductCharacteristics getProductOrganization(S2SpatialResolution resolution) {
+        L3Metadata.ProductCharacteristics characteristics = new L3Metadata.ProductCharacteristics();
+        characteristics.setSpacecraft(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Unknown"));
+        characteristics.setDatasetProductionDate(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, "Unknown"));
+        characteristics.setProcessingLevel(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, "Unknown"));
 
-        S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
-
-        characteristics.setSpacecraft(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Unknown"));
-        characteristics.setDatasetProductionDate(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, "Unknown"));
-
-        characteristics.setProductStartTime(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_START_TIME, "Unknown"));
-        characteristics.setProductStopTime(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, "Unknown"));
-
-        characteristics.setProcessingLevel(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, "Unknown"));
-        characteristics.setMetaDataLevel(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL, "Unknown"));
-
-        double toaQuantification = Double.valueOf(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_QUANTIFICATION_VALUE, "10000"));
-        characteristics.setQuantificationValue(toaQuantification);
-
-        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (toaQuantification);
-        int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
+        characteristics.setProductStartTime(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_START_TIME, "Unknown"));
+        characteristics.setProductStopTime(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, "Unknown"));
+        double boaQuantification = Double.valueOf(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_L2A_BOA_QUANTIFICATION_VALUE, "10000"));
+        characteristics.setQuantificationValue(boaQuantification);
 
         return characteristics;
     }
 
     @Override
     public Collection<String> getTiles() {
-        String[] granuleList = getAttributeValues(L1cPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
+
+        String[] granuleList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
         if(granuleList == null) {
             return null;
         }
-        return new ArrayList<>(Arrays.asList(granuleList));
+
+        //New list with only granules with different granuleIdentifier
+        List<String> granuleListReduced = new ArrayList<>();
+        Map<String, String> mapGranules = new LinkedHashMap<>(granuleList.length);
+        for (String granule : granuleList) {
+            mapGranules.put(granule, granule);
+        }
+        for (Map.Entry<String, String> granule : mapGranules.entrySet()) {
+            granuleListReduced.add(granule.getValue());
+        }
+
+        return granuleListReduced;
     }
 
     @Override
     public S2DatastripFilename getDatastrip() {
-        String[] datastripList = getAttributeValues(L1cPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
+        String[] datastripList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
         if(datastripList == null) {
             return null;
         }
@@ -143,8 +142,8 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
 
     @Override
     public S2DatastripDirFilename getDatastripDir() {
-        String[] granuleList = getAttributeValues(L1cPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
-        String[] datastripList = getAttributeValues(L1cPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
+        String[] granuleList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
+        String[] datastripList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
         if(granuleList == null || datastripList == null) {
             return null;
         }
@@ -163,9 +162,5 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
     @Override
     public MetadataElement getMetadataElement() {
         return rootElement;
-    }
-
-    private String[] getBandList() {
-        return getAttributeValues(L1cPSD13Constants.PATH_PRODUCT_METADATA_BAND_LIST);
     }
 }

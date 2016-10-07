@@ -46,11 +46,11 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
     protected S2Metadata parseHeader(
             File file, String granuleName, S2Config config, String epsg) throws IOException {
 
-        try {
+       // try {
             return L3Metadata.parseHeader(file, granuleName, config, epsg, getProductResolution());
-        } catch (JDOMException | JAXBException e) {
-            throw new IOException("Failed to parse metadata in " + file.getName());
-        }
+       // } catch (JDOMException | JAXBException e) {
+       //     throw new IOException("Failed to parse metadata in " + file.getName());
+       // }
     }
 
     @Override

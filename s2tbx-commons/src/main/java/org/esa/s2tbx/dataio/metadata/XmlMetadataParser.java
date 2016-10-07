@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.metadata;
 
+import org.apache.commons.io.FileUtils;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
@@ -31,6 +32,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -52,6 +54,7 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
 
     protected Class fileClass;
     protected String[] schemaLocations;
+    protected String schemaBasePath = null;
 
     /**
      * Tries to infer the type of the element, based on the available XSD schema definition.
@@ -88,6 +91,9 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
         if (schemaLocations != null && shouldValidateSchema()) {
             SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             ClassLoader classLoader = this.getClass().getClassLoader();
+            if(schemaBasePath != null) {
+                schemaFactory.setResourceResolver(new ResourceResolver(schemaBasePath, classLoader));
+            }
             List<StreamSource> streamSourceList = new Vector<>();
             for (String schemaLocation : schemaLocations) {
                 InputStream is = classLoader.getResourceAsStream(schemaLocation);
@@ -97,7 +103,10 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
             StreamSource sources[] = new StreamSource[streamSourceList.size()];
             Schema schema = schemaFactory.newSchema(streamSourceList.toArray(sources));
             factory.setSchema(schema);
+
+            factory.setNamespaceAware(true);
             factory.setValidating(true);
+
         }
         SAXParser parser = factory.newSAXParser();
         MetadataHandler handler = new MetadataHandler();
@@ -111,6 +120,9 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
         if (schemaLocations != null && shouldValidateSchema()) {
             SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             ClassLoader classLoader = this.getClass().getClassLoader();
+            if(schemaBasePath != null) {
+                schemaFactory.setResourceResolver(new ResourceResolver(schemaBasePath, classLoader));
+            }
             List<StreamSource> streamSourceList = new Vector<>();
             for (String schemaLocation : schemaLocations) {
                 InputStream is = classLoader.getResourceAsStream(schemaLocation);
@@ -151,6 +163,10 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
         this.schemaLocations = schemaLocations;
     }
 
+
+    protected void setSchemaBasePath(String schemaBasePath) {
+        this.schemaBasePath = schemaBasePath;
+    }
     /**
      * Actual document handler implementation
      */

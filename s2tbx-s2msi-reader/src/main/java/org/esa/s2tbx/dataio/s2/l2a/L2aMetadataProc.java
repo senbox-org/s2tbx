@@ -464,8 +464,4 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
         return maskFileNamesArray;
     }*/
 
-    public static String getPSD(Path path){
-        //TODO
-        return "PSD13";
-    }
 }

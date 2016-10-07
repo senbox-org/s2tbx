@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
+import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -25,7 +26,7 @@ import java.util.Map;
  * Created by obarrile on 04/10/2016.
  */
 
-public class L2aGranuleMetadataPSD13 extends XmlMetadata implements IL2aGranuleMetadata {
+public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aGranuleMetadata {
 
     private static class L2aGranuleMetadataPSD13Parser extends XmlMetadataParser<L2aGranuleMetadataPSD13> {
 
@@ -34,7 +35,6 @@ public class L2aGranuleMetadataPSD13 extends XmlMetadata implements IL2aGranuleM
             setSchemaLocations(L2aMetadataPSD13Helper.getSchemaLocations());
         }
 
-        //TODO validate schema
         @Override
         protected boolean shouldValidateSchema() {
             return false;
@@ -70,56 +70,6 @@ public class L2aGranuleMetadataPSD13 extends XmlMetadata implements IL2aGranuleM
 
     public L2aGranuleMetadataPSD13(String name) {
         super(name);
-    }
-
-    @Override
-    public int getNumBands() {
-        return 0;
-    }
-
-    @Override
-    public String getProductName() {
-        return null;
-    }
-
-    @Override
-    public String getFormatName() {
-        return null;
-    }
-
-    @Override
-    public int getRasterWidth() {
-        return 0;
-    }
-
-    @Override
-    public int getRasterHeight() {
-        return 0;
-    }
-
-    @Override
-    public String[] getRasterFileNames() {
-        return new String[0];
-    }
-
-    @Override
-    public ProductData.UTC getProductStartTime() {
-        return null;
-    }
-
-    @Override
-    public ProductData.UTC getProductEndTime() {
-        return null;
-    }
-
-    @Override
-    public ProductData.UTC getCenterTime() {
-        return null;
-    }
-
-    @Override
-    public String getProductDescription() {
-        return null;
     }
 
     @Override
@@ -225,7 +175,7 @@ public class L2aGranuleMetadataPSD13 extends XmlMetadata implements IL2aGranuleM
                                                                                 L2aPSD13Constants.PATH_GRANULE_METADATA_MASK_TYPE, null),
                                                        GmlData));
         }
-        maskFileNamesArray = aMaskList.toArray(new L2aMetadata.MaskFilename[aMaskList.size()]);
+        maskFileNamesArray = aMaskList.toArray(new S2Metadata.MaskFilename[aMaskList.size()]);
         return maskFileNamesArray;
     }
 

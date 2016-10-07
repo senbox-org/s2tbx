@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.s2;
 
 
+import com.sun.media.jfxmedia.logging.Logger;
 import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -33,12 +34,17 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents the Sentinel-2 MSI XML metadata header file.
@@ -69,9 +75,8 @@ public abstract class S2Metadata {
         this.metadataElements = new ArrayList<>();
     }
 
-    public S2Metadata(S2Config config, String psdString) {
+    public S2Metadata(S2Config config) {
         this.config = config;
-        this.psdString = psdString;
         this.metadataElements = new ArrayList<>();
     }
 
@@ -615,5 +620,28 @@ public abstract class S2Metadata {
             anglesGrids.add(anglesGrid);
         }
         return anglesGrids.toArray(new AnglesGrid[anglesGrids.size()]);
+    }
+
+    public static String getPSD(Path path){
+        try {
+            FileInputStream fileStream = new FileInputStream(path.toString());
+            String xmlStreamAsString = IOUtils.toString(fileStream);
+            String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
+
+            Pattern p = Pattern.compile(regex);  // insert your pattern here
+            Matcher m = p.matcher(xmlStreamAsString);
+            if (m.find()) {
+                int position = m.start();
+                String psdNumber = xmlStreamAsString.substring(position+4,position+6);
+                return "PSD" + psdNumber;
+            }
+            else {
+                return "DEFAULT";
+            }
+
+        } catch (Exception e) {
+            return "DEFAULT";
+        }
+
     }
 }

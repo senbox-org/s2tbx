@@ -1,8 +1,9 @@
-package org.esa.s2tbx.dataio.s2.l1c;
+package org.esa.s2tbx.dataio.s2.l3;
 
 import com.bc.ceres.core.Assert;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.snap.core.datamodel.MetadataElement;
 
 import java.io.IOException;
@@ -12,17 +13,16 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
- * Created by obarrile on 30/09/2016.
+ * Created by obarrile on 07/10/2016.
  */
+public class L3DatastripMetadataPSD13 extends GenericXmlMetadata implements IL3DatastripMetadata  {
 
-public class L1cDatastripMetadataPSD13 extends GenericXmlMetadata implements IL1cDatastripMetadata {
+    private static class L3DatastripMetadataPSD13Parser extends XmlMetadataParser<L3DatastripMetadataPSD13> {
 
-    private static class L1cDatastripMetadataPSD13Parser extends XmlMetadataParser<L1cDatastripMetadataPSD13> {
-
-        public L1cDatastripMetadataPSD13Parser(Class metadataFileClass) {
+        public L3DatastripMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            setSchemaLocations(L1cMetadataPSD13Helper.getDatastripSchemaLocations());
-            setSchemaBasePath(L1cMetadataPSD13Helper.getSchemaBasePath(""));
+            String[] locations = {S2MetadataType.L3_DATASTRIP_SCHEMA_FILE_PATH};
+            setSchemaLocations(locations);
         }
 
         @Override
@@ -31,19 +31,19 @@ public class L1cDatastripMetadataPSD13 extends GenericXmlMetadata implements IL1
         }
     }
 
-    public static L1cDatastripMetadataPSD13 create(Path path) throws IOException {
+    public static L3DatastripMetadataPSD13 create(Path path) throws IOException {
 
 
         Assert.notNull(path);
-        L1cDatastripMetadataPSD13 result = null;
+        L3DatastripMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (Files.exists(path)) {
                 stream = Files.newInputStream(path, StandardOpenOption.READ);
                 //noinspection unchecked
-                L1cDatastripMetadataPSD13Parser parser = new L1cDatastripMetadataPSD13Parser(L1cDatastripMetadataPSD13.class);
+                L3DatastripMetadataPSD13Parser parser = new L3DatastripMetadataPSD13Parser(L3DatastripMetadataPSD13.class);
                 result = parser.parse(stream);
-                result.setName("Level-1C_DataStrip_ID");
+                result.setName("Level-3_DataStrip_ID");
             }
         } catch (Exception e) {
             //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
@@ -56,8 +56,7 @@ public class L1cDatastripMetadataPSD13 extends GenericXmlMetadata implements IL1
         }
         return result;
     }
-
-    public L1cDatastripMetadataPSD13(String name) {
+    public L3DatastripMetadataPSD13(String name) {
         super(name);
     }
 

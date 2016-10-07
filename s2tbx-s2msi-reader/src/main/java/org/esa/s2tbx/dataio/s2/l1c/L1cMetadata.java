@@ -60,19 +60,19 @@ public class L1cMetadata extends S2Metadata {
     protected Logger logger = SystemUtils.LOG;
 
     public static L1cMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws JDOMException, IOException, JAXBException {
-        return new L1cMetadata(file.toPath(), granuleName, config, epsg, L1cMetadataProc.getPSD(file.toPath()));
+        return new L1cMetadata(file.toPath(), granuleName, config, epsg);
     }
 
 
-    private L1cMetadata(Path path, String granuleName, S2Config s2config, String epsg, String psdString) throws IOException{
-        super(s2config, psdString);
+    private L1cMetadata(Path path, String granuleName, S2Config s2config, String epsg) throws IOException{
+        super(s2config);
         resetTileList();
         boolean isGranuleMetadata = S2OrthoGranuleMetadataFilename.isGranuleFilename(path.getFileName().toString());
 
         if(!isGranuleMetadata) {
-            initProduct(path, granuleName, epsg, psdString);
+            initProduct(path, granuleName, epsg);
         } else {
-            initTile(path, epsg, psdString);
+            initTile(path, epsg);
         }
         //TODO
     }
@@ -97,8 +97,8 @@ public class L1cMetadata extends S2Metadata {
         }
     }*/
 
-    private void initProduct(Path path, String granuleName, String epsg, String psdString) throws IOException {
-        IL1cProductMetadata metadataProduct = L1cMetadataFactory.createL1cProductMetadata(path, psdString);
+    private void initProduct(Path path, String granuleName, String epsg) throws IOException {
+        IL1cProductMetadata metadataProduct = L1cMetadataFactory.createL1cProductMetadata(path);
         setProductCharacteristics(metadataProduct.getProductOrganization());
 
         Collection<String> tileNames;
@@ -112,7 +112,7 @@ public class L1cMetadata extends S2Metadata {
         S2DatastripFilename stripName = metadataProduct.getDatastrip();
         S2DatastripDirFilename dirStripName = metadataProduct.getDatastripDir();
         Path datastripPath = path.resolveSibling("DATASTRIP").resolve(dirStripName.name).resolve(stripName.name);
-        IL1cDatastripMetadata metadataDatastrip = L1cMetadataFactory.createL1cDatastripMetadata(datastripPath, psdString);
+        IL1cDatastripMetadata metadataDatastrip = L1cMetadataFactory.createL1cDatastripMetadata(datastripPath);
 
         getMetadataElements().add(metadataProduct.getMetadataElement());
         getMetadataElements().add(metadataDatastrip.getMetadataElement());
@@ -136,14 +136,14 @@ public class L1cMetadata extends S2Metadata {
 
         //Init Tiles
         for (Path granuleMetadataPath : granuleMetadataPathList) {
-            initTile(granuleMetadataPath, epsg, psdString);
+            initTile(granuleMetadataPath, epsg);
         }
     }
 
 
-    private void initTile(Path path, String epsg, String psdString) throws IOException {
+    private void initTile(Path path, String epsg) throws IOException {
 
-        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(path,psdString);
+        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(path);
 
         if(getProductCharacteristics() == null) {
             setProductCharacteristics(granuleMetadata.getTileProductOrganization());

@@ -50,10 +50,10 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
     private static String paletteRelativePath = "color_palettes";
     private static String paletteSpectrum = "spectrum.cpd";
 
-    public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
+   /* public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
         ClassLoader s2c = Level3_User_Product.class.getClassLoader();
         return JAXBContext.newInstance(S2MetadataType.L3, s2c);
-    }
+    }*/
 
     private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution, double quantification) {
         return new S2SpectralInformation(
@@ -69,7 +69,7 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
                 bandConstant.getWavelengthCentral());
     }
 
-    public static L3Metadata.ProductCharacteristics getTileProductOrganization(Level3_Tile aTile, S2SpatialResolution resolution) {
+   /* public static L3Metadata.ProductCharacteristics getTileProductOrganization(Level3_Tile aTile, S2SpatialResolution resolution) {
         L3Metadata.ProductCharacteristics characteristics = new L3Metadata.ProductCharacteristics();
         characteristics.setSpacecraft("Sentinel-2");
         characteristics.setProcessingLevel("Level-3");
@@ -83,10 +83,10 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
         characteristics.setQuantificationValue(boaQuantification);
 
         return characteristics;
-    }
+    }*/
 
 
-    public static L3Metadata.ProductCharacteristics getProductOrganization(Level3_User_Product product, S2SpatialResolution resolution) {
+   /* public static L3Metadata.ProductCharacteristics getProductOrganization(Level3_User_Product product, S2SpatialResolution resolution) {
         L3Metadata.ProductCharacteristics characteristics = new L3Metadata.ProductCharacteristics();
         characteristics.setSpacecraft(product.getGeneral_Info().getL3_Product_Info().getDatatake().getSPACECRAFT_NAME());
         characteristics.setDatasetProductionDate(product.getGeneral_Info().getL3_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString());
@@ -98,7 +98,7 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
         characteristics.setQuantificationValue(boaQuantification);
 
         return characteristics;
-    }
+    }*/
 
     public static List<S2BandInformation> getBandInformationList (S2SpatialResolution resolution, double boaQuantification, int indexMax) {
         List<S2BandInformation> aInfo = new ArrayList<>();
@@ -256,7 +256,7 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
                              File.separator, File.separator, bandFileId);
     }
 
-    public static Collection<String> getTiles(Level3_User_Product product) {
+    /*public static Collection<String> getTiles(Level3_User_Product product) {
         A_L3_Product_Info.L3_Product_Organisation info = product.getGeneral_Info().getL3_Product_Info().getL3_Product_Organisation();
 
         List<A_L3_Product_Info.L3_Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
@@ -278,9 +278,9 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
         };
 
         return CollectionUtils.collect(aGranuleListReduced, tileSelector);
-    }
+    }*/
 
-    public static S2DatastripFilename getDatastrip(Level3_User_Product product) {
+   /* public static S2DatastripFilename getDatastrip(Level3_User_Product product) {
         A_L3_Product_Info.L3_Product_Organisation info = product.getGeneral_Info().getL3_Product_Info().getL3_Product_Organisation();
 
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
@@ -292,16 +292,16 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
         } else {
             return null;
         }
-    }
+    }*/
 
-    public static S2DatastripDirFilename getDatastripDir(Level3_User_Product product) {
+    /*public static S2DatastripDirFilename getDatastripDir(Level3_User_Product product) {
         A_L3_Product_Info.L3_Product_Organisation info = product.getGeneral_Info().getL3_Product_Info().getL3_Product_Organisation();
         String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
 
         return S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-    }
+    }*/
 
-    public static Map<S2SpatialResolution, L3Metadata.TileGeometry> getTileGeometries(Level3_Tile product) {
+   /* public static Map<S2SpatialResolution, L3Metadata.TileGeometry> getTileGeometries(Level3_Tile product) {
 
         A_GEOMETRIC_INFO_TILE info = product.getGeometric_Info();
         A_GEOMETRIC_INFO_TILE.Tile_Geocoding tgeo = info.getTile_Geocoding();
@@ -329,9 +329,9 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
             tgeox.setNumRows(asize.getNROWS());
         }
         return resolutions;
-    }
+    }*/
 
-    public static L3Metadata.AnglesGrid getSunGrid(Level3_Tile product) {
+   /* public static L3Metadata.AnglesGrid getSunGrid(Level3_Tile product) {
 
         A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
         A_SUN_INCIDENCE_ANGLE_GRID sun = ang.getSun_Angles_Grid();
@@ -361,9 +361,9 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
         }
 
         return ag;
-    }
+    }*/
 
-    public static L3Metadata.AnglesGrid[] getAnglesGrid(Level3_Tile product) {
+   /* public static L3Metadata.AnglesGrid[] getAnglesGrid(Level3_Tile product) {
         A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
         List<AN_INCIDENCE_ANGLE_GRID> incilist = ang.getViewing_Incidence_Angles_Grids();
 
@@ -401,5 +401,5 @@ public class L3MetadataProc extends S2OrthoMetadataProc {
             darr[index] = ag2;
         }
         return darr;
-    }
+    }*/
 }

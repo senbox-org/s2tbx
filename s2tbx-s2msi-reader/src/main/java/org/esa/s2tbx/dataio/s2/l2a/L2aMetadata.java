@@ -62,19 +62,19 @@ public class L2aMetadata extends S2Metadata {
         }
     }*/
     public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException{
-        return new L2aMetadata(file.toPath(), granuleName, config, epsg, L2aMetadataProc.getPSD(file.toPath()),productResolution);
+        return new L2aMetadata(file.toPath(), granuleName, config, epsg, productResolution);
     }
 
 
-    private L2aMetadata(Path path, String granuleName, S2Config s2config, String epsg, String psdString, S2SpatialResolution productResolution) throws IOException{
-        super(s2config, psdString);
+    private L2aMetadata(Path path, String granuleName, S2Config s2config, String epsg, S2SpatialResolution productResolution) throws IOException{
+        super(s2config);
         resetTileList();
         boolean isGranuleMetadata = S2OrthoGranuleMetadataFilename.isGranuleFilename(path.getFileName().toString());
 
         if(!isGranuleMetadata) {
-            initProduct(path, granuleName, epsg, psdString, productResolution);
+            initProduct(path, granuleName, epsg, productResolution);
         } else {
-            initTile(path, epsg, psdString, productResolution);
+            initTile(path, epsg, productResolution);
         }
         //TODO
     }
@@ -95,8 +95,8 @@ public class L2aMetadata extends S2Metadata {
         }
     }*/
 
-    private void initProduct(Path path, String granuleName, String epsg, String psdString, S2SpatialResolution productResolution) throws IOException {
-        IL2aProductMetadata metadataProduct = L2aMetadataFactory.createL2aProductMetadata(path, psdString);
+    private void initProduct(Path path, String granuleName, String epsg, S2SpatialResolution productResolution) throws IOException {
+        IL2aProductMetadata metadataProduct = L2aMetadataFactory.createL2aProductMetadata(path);
         setProductCharacteristics(metadataProduct.getProductOrganization(productResolution));
 
         Collection<String> tileNames;
@@ -110,7 +110,7 @@ public class L2aMetadata extends S2Metadata {
         S2DatastripFilename stripName = metadataProduct.getDatastrip();
         S2DatastripDirFilename dirStripName = metadataProduct.getDatastripDir();
         Path datastripPath = path.resolveSibling("DATASTRIP").resolve(dirStripName.name).resolve(stripName.name);
-        IL2aDatastripMetadata metadataDatastrip = L2aMetadataFactory.createL2aDatastripMetadata(datastripPath, psdString);
+        IL2aDatastripMetadata metadataDatastrip = L2aMetadataFactory.createL2aDatastripMetadata(datastripPath);
 
         getMetadataElements().add(metadataProduct.getMetadataElement());
         getMetadataElements().add(metadataDatastrip.getMetadataElement());
@@ -135,7 +135,7 @@ public class L2aMetadata extends S2Metadata {
 
         //Init Tiles
         for (Path granuleMetadataPath : granuleMetadataPathList) {
-            initTile(granuleMetadataPath, epsg, psdString, productResolution);
+            initTile(granuleMetadataPath, epsg, productResolution);
         }
     }
 
@@ -197,9 +197,9 @@ public class L2aMetadata extends S2Metadata {
     }*/
 
 
-    private void initTile(Path path, String epsg, String psdString, S2SpatialResolution resolution) throws IOException {
+    private void initTile(Path path, String epsg, S2SpatialResolution resolution) throws IOException {
 
-        IL2aGranuleMetadata granuleMetadata = L2aMetadataFactory.createL2aGranuleMetadata(path,psdString);
+        IL2aGranuleMetadata granuleMetadata = L2aMetadataFactory.createL2aGranuleMetadata(path);
 
         if(getProductCharacteristics() == null) {
             setProductCharacteristics(granuleMetadata.getTileProductOrganization(resolution));

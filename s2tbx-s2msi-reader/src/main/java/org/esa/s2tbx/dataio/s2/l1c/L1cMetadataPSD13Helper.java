@@ -5,16 +5,27 @@ import com.sun.xml.xsom.XSSchema;
 import com.sun.xml.xsom.XSSchemaSet;
 import com.sun.xml.xsom.XSType;
 import com.sun.xml.xsom.parser.XSOMParser;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.esa.snap.core.datamodel.ProductData;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -23,7 +34,11 @@ import java.util.logging.Logger;
  */
 public class L1cMetadataPSD13Helper {
 
-    private final static String SCHEMA_FILE_PATH = "org/esa/s2tbx/dataio/spot/";
+    private final static String PRODUCT_SCHEMA_FILE_PATH = "schemas/PSD13/S2_User_Product_Level-1C_Metadata.xsd";
+    private final static String GRANULE_SCHEMA_FILE_PATH = "schemas/L2A_PSD12/S2_PDI_Level-1C_Tile_Metadata.xsd";
+    private final static String DATASTRIP_SCHEMA_FILE_PATH = "schemas/L2A_PSD12/S2_PDI_Level-1C_Datastrip_Metadata.xsd";
+    private final static String SCHEMA13_BASE_PATH = "schemas/PSD13/";
+    private final static String SCHEMA12_BASE_PATH = "schemas/L2A_PSD12/";
 
     private static Map<String, XSType> elementTypes;
 
@@ -67,15 +82,67 @@ public class L1cMetadataPSD13Helper {
         }
     }*/
 
-    public static String[] getSchemaLocations() {
-        //TODO
-        String[] locations = new String[0];
-        File location = new File(SCHEMA_FILE_PATH);
-        if (location.exists()) {
-            locations = location.list();
-        }
+    public static String[] getProductSchemaLocations() {
+
+        String[] locations = new String[1];
+        locations[0] = PRODUCT_SCHEMA_FILE_PATH;
+
         return locations;
     }
+
+    public static String[] getGranuleSchemaLocations() {
+
+        String[] locations = new String[1];
+        locations[0] = GRANULE_SCHEMA_FILE_PATH;
+
+        return locations;
+    }
+
+    public static String[] getDatastripSchemaLocations() {
+
+        String[] locations = new String[1];
+        locations[0] = DATASTRIP_SCHEMA_FILE_PATH;
+
+        return locations;
+    }
+
+    public static String getSchemaBasePath(String psd) {
+
+       if(psd.equals("PSD13")) {
+           return SCHEMA13_BASE_PATH;
+       }
+        return SCHEMA12_BASE_PATH;
+    }
+
+
+    private List<String> getResourceFiles(String path ) throws IOException {
+        List<String> filenames = new ArrayList<>();
+
+        try(
+                InputStream in = getResourceAsStream(path );
+                BufferedReader br = new BufferedReader(new InputStreamReader(in ) ) ) {
+            String resource;
+
+            while( (resource = br.readLine()) != null ) {
+                filenames.add( resource );
+            }
+        }
+
+        return filenames;
+    }
+
+    private InputStream getResourceAsStream( String resource ) {
+        final InputStream in
+                = getContextClassLoader().getResourceAsStream( resource );
+
+        return in == null ? getClass().getResourceAsStream( resource ) : in;
+    }
+
+    private ClassLoader getContextClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
+
+
 
     public static ProductData createProductData(String elementName, String elementValue) {
         int beamType = XsTypeToMetadataType(elementTypes.get(elementName));
