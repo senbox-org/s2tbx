@@ -217,7 +217,7 @@ public class JP2ProductReader extends AbstractProductReader {
                     JP2MultiLevelSource source = new JP2MultiLevelSource(
                             getFileInput(getInput()),
                             tmpFolder,
-                            bandIdx/*numBands > 1 ? bandIdx : -1*/,
+                            bandIdx,
                             imageWidth, imageHeight,
                             csInfo.getTileWidth(), csInfo.getTileHeight(),
                             csInfo.getNumTilesX(), csInfo.getNumTilesY(),

@@ -29,6 +29,7 @@ import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.runtime.Config;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -61,6 +62,8 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     // it seems that the TIFFImageReader.getImageWidth() goes into the stream
     // each time and, therefore, takes unnecessary time
     private static final Map<Path, Rectangle> tileDims = new HashMap<>();
+
+    private static Boolean useOpenJp2Jna;
 
     private final TileLayout tileLayout;
 
@@ -109,10 +112,12 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
+        if (useOpenJp2Jna == null) {
+            useOpenJp2Jna = Boolean.parseBoolean(Config.instance().preferences().get("use.openjp2.jna", "false"));
+        }
         if (imageFile != null) {
-            JP2TileOpImage jp2TileOpImage = new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
-            jp2TileOpImage.setTileCache(null); // the MosaicOpImage will be in the cache
-            return jp2TileOpImage;
+            //jp2TileOpImage.setTileCache(null); // the MosaicOpImage will be in the cache
+            return new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
         } else {
             int targetWidth = tileLayout.tileWidth;
             int targetHeight = tileLayout.tileHeight;
@@ -127,12 +132,12 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     }
 
     @Override
-    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
-        /*if (this.bandIndex == -1) {
+    protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
+        if (useOpenJp2Jna) {
             computeRectDirect(dest, destRect);
-        } else {*/
+        } else {
             computeRectIndirect(dest, destRect);
-        /*}*/
+        }
     }
 
     private void computeRectIndirect(WritableRaster dest, Rectangle destRect) {
@@ -164,15 +169,14 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                             readTileImage = imageReader.read(intersection);
                         }
                     }
+                    if (readTileImage != null) {
+                        Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, new int[] { bandIndex });
+                        dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
+                    }
                 } catch (IOException e) {
                     logger.severe(e.getMessage());
                 }
             }
-            if (readTileImage != null) {
-                Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, new int[] { bandIndex });
-                dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
-            }
-
         } catch (IOException e) {
             logger.severe(e.getMessage());
         }
