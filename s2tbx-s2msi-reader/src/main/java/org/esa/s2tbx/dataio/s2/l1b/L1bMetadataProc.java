@@ -71,7 +71,7 @@ public class L1bMetadataProc extends S2MetadataProc {
         return JAXBContext.newInstance(S2MetadataType.L1B, s2c);
     }
 
-    private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution) {
+    public static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution) {
         // TODO we should implement scaling factor here, using PHYSICAL_GAINS metadata per band, to provide physical radiance.
         final double quantification = 1.0;
         final String unit = "";

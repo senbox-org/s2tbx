@@ -13,7 +13,9 @@ import java.util.Map;
  */
 public interface IL1cGranuleMetadata {
 
+    //To use only if the associated user product metadata is not available
     S2Metadata.ProductCharacteristics getTileProductOrganization();
+
     Map<S2SpatialResolution, S2Metadata.TileGeometry> getTileGeometries();
     String getTileID();
     String getHORIZONTAL_CS_CODE();
@@ -26,6 +28,4 @@ public interface IL1cGranuleMetadata {
     S2Metadata.MaskFilename[] getMasks(Path path);
     MetadataElement getMetadataElement();
     MetadataElement getSimplifiedMetadataElement();
-
-    void updateName();
 }

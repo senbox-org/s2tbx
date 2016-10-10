@@ -11,7 +11,9 @@ import java.util.Map;
  * Created by obarrile on 04/10/2016.
  */
 public interface IL2aGranuleMetadata {
+    //To use only if the associated user product metadata is not available
     S2Metadata.ProductCharacteristics getTileProductOrganization(S2SpatialResolution resolution);
+
     Map<S2SpatialResolution, S2Metadata.TileGeometry> getTileGeometries();
     String getTileID();
     String getHORIZONTAL_CS_CODE();
@@ -24,6 +26,4 @@ public interface IL2aGranuleMetadata {
 
     MetadataElement getMetadataElement();
     MetadataElement getSimplifiedMetadataElement();
-
-    void updateName();
 }

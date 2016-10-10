@@ -11,8 +11,8 @@ import java.nio.file.Path;
 public class L1cMetadataFactory {
 
     public static IL1cProductMetadata createL1cProductMetadata(Path metadataPath) throws IOException {
-        String psd = S2Metadata.getPSD(metadataPath);
-        if(psd.equals("PSD13") || psd.equals("PSD12") || psd.equals("DEFAULT") ) {
+        int psd = S2Metadata.getPSD(metadataPath);
+        if(psd == 13 || psd == 12 || psd == 0 ) {
             return L1cProductMetadataPSD13.create(metadataPath);
         } else {
             //TODO
@@ -21,8 +21,8 @@ public class L1cMetadataFactory {
     }
 
     public static IL1cGranuleMetadata createL1cGranuleMetadata(Path metadataPath) throws IOException {
-        String psd = S2Metadata.getPSD(metadataPath);
-        if(psd.equals("PSD13") || psd.equals("PSD12") || psd.equals("DEFAULT") ) {
+        int psd = S2Metadata.getPSD(metadataPath);
+        if(psd == 13 || psd == 12 || psd == 0 )  {
             return L1cGranuleMetadataPSD13.create(metadataPath);
         } else {
             //TODO
@@ -31,8 +31,8 @@ public class L1cMetadataFactory {
     }
 
     public static IL1cDatastripMetadata createL1cDatastripMetadata(Path metadataPath) throws IOException {
-        String psd = S2Metadata.getPSD(metadataPath);
-        if(psd.equals("PSD13") || psd.equals("PSD12") || psd.equals("DEFAULT") ) {
+        int psd = S2Metadata.getPSD(metadataPath);
+        if(psd == 13 || psd == 12 || psd == 0 ) {
             return L1cDatastripMetadataPSD13.create(metadataPath);
         } else {
             //TODO

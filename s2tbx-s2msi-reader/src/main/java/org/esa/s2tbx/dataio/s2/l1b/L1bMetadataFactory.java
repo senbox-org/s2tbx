@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.s2.l3;
+package org.esa.s2tbx.dataio.s2.l1b;
 
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 
@@ -6,33 +6,34 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * Created by obarrile on 07/10/2016.
+ * Created by obarrile on 10/10/2016.
  */
-public class L3MetadataFactory {
-    public static IL3ProductMetadata createL3ProductMetadata(Path metadataPath) throws IOException {
+public class L1bMetadataFactory {
+
+    public static IL1bProductMetadata createL1bProductMetadata(Path metadataPath) throws IOException {
         int psd = S2Metadata.getPSD(metadataPath);
         if(psd == 13 || psd == 12 || psd == 0 )  {
-            return L3ProductMetadataPSD13.create(metadataPath);
+            return L1bProductMetadataPSD13.create(metadataPath);
         } else {
             //TODO
             return null;
         }
     }
 
-    public static IL3GranuleMetadata createL3GranuleMetadata(Path metadataPath) throws IOException {
+    public static IL1bGranuleMetadata createL1bGranuleMetadata(Path metadataPath) throws IOException {
         int psd = S2Metadata.getPSD(metadataPath);
         if(psd == 13 || psd == 12 || psd == 0 )  {
-            return L3GranuleMetadataPSD13.create(metadataPath);
+            return L1bGranuleMetadataPSD13.create(metadataPath);
         } else {
             //TODO
             return null;
         }
     }
 
-    public static IL3DatastripMetadata createL3DatastripMetadata(Path metadataPath) throws IOException {
+    public static IL1bDatastripMetadata createL1bDatastripMetadata(Path metadataPath) throws IOException {
         int psd = S2Metadata.getPSD(metadataPath);
         if(psd == 13 || psd == 12 || psd == 0 )  {
-            return L3DatastripMetadataPSD13.create(metadataPath);
+            return L1bDatastripMetadataPSD13.create(metadataPath);
         } else {
             //TODO
             return null;

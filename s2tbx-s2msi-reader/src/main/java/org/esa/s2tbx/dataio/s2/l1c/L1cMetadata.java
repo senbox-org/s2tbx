@@ -17,10 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1c;
 
-import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1c_tile_metadata.Level1C_Tile;
-import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1c.Level1C_User_Product;
-import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.metadata.PlainXmlMetadata;
+
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -28,17 +25,14 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
-import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.jdom.JDOMException;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,8 +48,6 @@ import java.util.logging.Logger;
 public class L1cMetadata extends S2Metadata {
 
     private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
-
-   // private IL1cProductMetadata metadataProduct = null;
 
     protected Logger logger = SystemUtils.LOG;
 
@@ -76,26 +68,6 @@ public class L1cMetadata extends S2Metadata {
         }
         //TODO
     }
-
-    /*private L1cMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg) throws JDOMException, JAXBException, FileNotFoundException {
-        super(config, L1cMetadataProc.getJaxbContext(), PSD_STRING);
-
-        try {
-            Object userProduct = updateAndUnmarshal(stream);
-            resetTileList();
-
-            if (userProduct instanceof Level1C_User_Product) {
-                initProduct(file, parent, granuleName, userProduct, epsg);
-            } else {
-                initTile(file, userProduct);
-            }
-        } catch (UnmarshalException | JDOMException e) {
-            logger.severe(String.format("Product is not conform to PSD: %s", e.getMessage()));
-            throw e;
-        } catch (JAXBException | IOException e) {
-            logger.severe(Utils.getStackTrace(e));
-        }
-    }*/
 
     private void initProduct(Path path, String granuleName, String epsg) throws IOException {
         IL1cProductMetadata metadataProduct = L1cMetadataFactory.createL1cProductMetadata(path);
@@ -193,7 +165,7 @@ public class L1cMetadata extends S2Metadata {
             getMetadataElements().add(granulesMetaData);
         }
 
-        granuleMetadata.updateName(); //for including the tile id
+        //granuleMetadata.updateName(); //for including the tile id
         granulesMetaData.addElement(granuleMetadata.getSimplifiedMetadataElement());
     }
 

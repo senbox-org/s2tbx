@@ -52,7 +52,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
                 L1cGranuleMetadataPSD13Parser parser = new L1cGranuleMetadataPSD13Parser(L1cGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.setName("Level-1C_Tile_ID");
-                String metadataProfile = result.getMetadataProfile();
+                result.updateName();
 
             }
         } catch (Exception e) {
@@ -154,82 +154,20 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         return S2Metadata.wrapAngles(getAttributeValues(L1cPSD13Constants.PATH_GRANULE_METADATA_SUN_ZENITH_ANGLES),
                                      getAttributeValues(L1cPSD13Constants.PATH_GRANULE_METADATA_SUN_AZIMUTH_ANGLES));
 
-
-        /*L1cMetadata.AnglesGrid ag = null;
-
-        String[] sunZenith = getAttributeValues(L1cPSD13Constants.PATH_GRANULE_METADATA_SUN_ZENITH_ANGLES);
-        String[] sunAzimuth = getAttributeValues(L1cPSD13Constants.PATH_GRANULE_METADATA_SUN_AZIMUTH_ANGLES);
-
-        if(sunAzimuth == null || sunZenith == null) {
-            return ag;
-        }
-        int nRows = sunZenith.length;
-        int nCols = sunZenith[0].split(" ").length;
-
-        ag = new L1cMetadata.AnglesGrid();
-        ag.setAzimuth(new float[nRows][nCols]);
-        ag.setZenith(new float[nRows][nCols]);
-
-        for (int rowindex = 0; rowindex < nRows; rowindex++) {
-            String[] zenithSplit = sunZenith[rowindex].split(" ");
-            String[] azimuthSplit = sunAzimuth[rowindex].split(" ");
-            if(zenithSplit == null || azimuthSplit == null || zenithSplit.length != nCols ||azimuthSplit.length != nCols) {
-                return null;
-            }
-            for (int colindex = 0; colindex < nCols; colindex++) {
-                ag.getZenith()[rowindex][colindex] = Float.parseFloat(zenithSplit[colindex]);
-                ag.getAzimuth()[rowindex][colindex] = Float.parseFloat(azimuthSplit[colindex]);
-            }
-        }
-
-        return ag;*/
     }
 
     @Override
     public S2Metadata.AnglesGrid[] getViewingAnglesGrid() {
-        return S2Metadata.wrapStandardViewingAngles(rootElement);
-
-        /*ArrayList<L1cMetadata.AnglesGrid> darr = new ArrayList<>();
-        MetadataElement viewingAnglesElements = getMetadataElement().getElement("Geometric_Info").getElement("Tile_Angles");
-        for(MetadataElement viewingAnglesElement : viewingAnglesElements.getElements()) {
-            if(!viewingAnglesElement.getName().equals("Viewing_Incidence_Angles_Grids")) {
-                continue;
-            }
-
-            MetadataAttribute[] azAngles = viewingAnglesElement.getElement("Azimuth").getElement("Values_List").getAttributes();
-            MetadataAttribute[] zenAngles = viewingAnglesElement.getElement("Zenith").getElement("Values_List").getAttributes();
-            int azrows = azAngles.length;
-            String[] split = azAngles[0].getData().toString().split(" ");
-            int azcolumns = split.length;
-
-            int zenrows = zenAngles.length;
-            split = zenAngles[0].getData().toString().split(" ");
-            int zencolumns = split.length;
-
-            L1cMetadata.AnglesGrid ag2 = new L1cMetadata.AnglesGrid();
-            ag2.setAzimuth(new float[azrows][azcolumns]);
-            ag2.setZenith(new float[zenrows][zencolumns]);
-
-            for (int rowindex = 0; rowindex < azrows; rowindex++) {
-                split = azAngles[rowindex].getData().toString().split(" ");
-                for (int colindex = 0; colindex < azcolumns; colindex++) {
-                    ag2.getAzimuth()[rowindex][colindex] = Float.parseFloat(split[colindex]);
-                }
-            }
-
-            for (int rowindex = 0; rowindex < zenrows; rowindex++) {
-                split = zenAngles[rowindex].getData().toString().split(" ");
-                for (int colindex = 0; colindex < zencolumns; colindex++) {
-                    ag2.getZenith()[rowindex][colindex] = Float.parseFloat(split[colindex]);
-                }
-            }
-
-            ag2.setBandId(Integer.parseInt(viewingAnglesElement.getAttributeString("bandId")));
-            ag2.setDetectorId(Integer.parseInt(viewingAnglesElement.getAttributeString("detectorId")));
-            darr.add(ag2);
-
+        MetadataElement geometricElement = rootElement.getElement("Geometric_Info");
+        if(geometricElement == null) {
+            return null;
         }
-        return darr.toArray(new L1cMetadata.AnglesGrid[darr.size()]);*/
+        MetadataElement tileAnglesElement = geometricElement.getElement("Tile_Angles");
+        if(tileAnglesElement == null) {
+            return null;
+        }
+
+        return S2Metadata.wrapStandardViewingAngles(tileAnglesElement);
     }
 
     @Override
@@ -267,8 +205,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         return rootElement;
     }
 
-    @Override
-    public void updateName() {
+    private void updateName() {
         String tileId = getAttributeValue(L1cPSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
         setName("Level-1C_Tile_" + tileId.substring(50, 55));
     }

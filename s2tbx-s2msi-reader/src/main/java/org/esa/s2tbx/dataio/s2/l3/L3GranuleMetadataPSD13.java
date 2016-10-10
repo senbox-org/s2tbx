@@ -46,9 +46,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
                 //noinspection unchecked
                 L3GranuleMetadataPSD13Parser parser = new L3GranuleMetadataPSD13Parser(L3GranuleMetadataPSD13.class);
                 result = parser.parse(stream);
-                result.setName("Level-3_Tile_ID");
-                String metadataProfile = result.getMetadataProfile();
-
+                result.updateName();
             }
         } catch (Exception e) {
             //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
@@ -142,7 +140,15 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
 
     @Override
     public S2Metadata.AnglesGrid[] getViewingAnglesGrid() {
-        return S2Metadata.wrapStandardViewingAngles(rootElement);
+        MetadataElement geometricElement = rootElement.getElement("Geometric_Info");
+        if(geometricElement == null) {
+            return null;
+        }
+        MetadataElement tileAnglesElement = geometricElement.getElement("Tile_Angles");
+        if(tileAnglesElement == null) {
+            return null;
+        }
+        return S2Metadata.wrapStandardViewingAngles(tileAnglesElement);
     }
 
     @Override
@@ -166,8 +172,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         return maxIndex;
     }
 
-    @Override
-    public void updateName() {
+    private void updateName() {
         String tileId = getAttributeValue(L3PSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
         setName("Level-03_Tile_" + tileId.substring(50, 55));
     }

@@ -51,9 +51,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
                 //noinspection unchecked
                 L2aGranuleMetadataPSD13Parser parser = new L2aGranuleMetadataPSD13Parser(L2aGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
-                result.setName("Level-2A_Tile_ID");
-                String metadataProfile = result.getMetadataProfile();
-
+                result.updateName();
             }
         } catch (Exception e) {
             //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
@@ -154,7 +152,15 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
 
     @Override
     public S2Metadata.AnglesGrid[] getViewingAnglesGrid() {
-        return S2Metadata.wrapStandardViewingAngles(rootElement);
+        MetadataElement geometricElement = rootElement.getElement("Geometric_Info");
+        if(geometricElement == null) {
+            return null;
+        }
+        MetadataElement tileAnglesElement = geometricElement.getElement("Tile_Angles");
+        if(tileAnglesElement == null) {
+            return null;
+        }
+        return S2Metadata.wrapStandardViewingAngles(tileAnglesElement);
     }
 
     @Override
@@ -190,8 +196,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
         return rootElement;
     }
 
-    @Override
-    public void updateName() {
+    private void updateName() {
         String tileId = getAttributeValue(L2aPSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
         setName("Level-2A_Tile_" + tileId.substring(50, 55));
     }

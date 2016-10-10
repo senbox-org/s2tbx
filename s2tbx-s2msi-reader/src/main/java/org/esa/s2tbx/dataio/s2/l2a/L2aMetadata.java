@@ -51,16 +51,10 @@ import java.util.logging.Logger;
  */
 public class L2aMetadata extends S2Metadata {
 
-    //private static final String PSD_STRING = "12";
     private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
 
     protected Logger logger = SystemUtils.LOG;
 
-    /*public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException, JAXBException {
-        try (FileInputStream stream = new FileInputStream(file)) {
-            return new L2aMetadata(stream, file, file.getParent(), granuleName, config, epsg, productResolution);
-        }
-    }*/
     public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException{
         return new L2aMetadata(file.toPath(), granuleName, config, epsg, productResolution);
     }
@@ -78,22 +72,7 @@ public class L2aMetadata extends S2Metadata {
         }
         //TODO
     }
-   /* private L2aMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, JAXBException, FileNotFoundException {
-        super(config, L2aMetadataProc.getJaxbContext(), PSD_STRING);
 
-        try {
-            Object userProductOrTile = updateAndUnmarshal(stream);
-            resetTileList();
-
-            if (userProductOrTile instanceof Level2A_User_Product) {
-                initProduct(file, parent, granuleName, userProductOrTile, epsg, productResolution);
-            } else {
-                initTile(file, userProductOrTile, epsg, productResolution);
-            }
-        } catch (JAXBException | JDOMException | IOException e) {
-            logger.severe(Utils.getStackTrace(e));
-        }
-    }*/
 
     private void initProduct(Path path, String granuleName, String epsg, S2SpatialResolution productResolution) throws IOException {
         IL2aProductMetadata metadataProduct = L2aMetadataFactory.createL2aProductMetadata(path);
@@ -138,64 +117,6 @@ public class L2aMetadata extends S2Metadata {
             initTile(granuleMetadataPath, epsg, productResolution);
         }
     }
-
-
-    /*private void initProduct(File file, String parent, String granuleName, Object casted, String epsg, S2SpatialResolution productResolution) throws IOException, JAXBException, JDOMException {
-        Level2A_User_Product product = (Level2A_User_Product) casted;
-        setProductCharacteristics(L2aMetadataProc.getProductOrganization(product, productResolution));
-
-        Collection<String> tileNames;
-
-        if (granuleName == null) {
-            tileNames = L2aMetadataProc.getTiles(product);
-        } else {
-            tileNames = Collections.singletonList(granuleName);
-        }
-
-
-        S2DatastripFilename stripName = L2aMetadataProc.getDatastrip(product);
-        S2DatastripDirFilename dirStripName = L2aMetadataProc.getDatastripDir(product);
-
-        File dataStripMetadata = new File(parent, "DATASTRIP" + File.separator + dirStripName.name + File.separator + stripName.name);
-
-        Set<String> exclusions = new HashSet<String>() {{
-            add("Viewing_Incidence_Angles_Grids");
-            add("Sun_Angles_Grid");
-        }};
-        MetadataElement userProduct = PlainXmlMetadata.parse(file.toPath(), exclusions);
-        //MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
-        //MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
-        MetadataElement dataStrip = PlainXmlMetadata.parse(dataStripMetadata.toPath(), null);
-        getMetadataElements().add(userProduct);
-        getMetadataElements().add(dataStrip);
-
-
-        //Check if the tiles found in metadata exist and add them to fullTileNamesList
-        List<File> fullTileNamesList = new ArrayList<>();
-        for (String tileName : tileNames) {
-            S2GranuleDirFilename aGranuleDir = S2OrthoGranuleDirFilename.create(tileName);
-            if (aGranuleDir != null) {
-                String theName = aGranuleDir.getMetadataFilename().name;
-
-                File nestedGranuleMetadata = new File(parent, "GRANULE" + File.separator + tileName + File.separator + theName);
-                if (nestedGranuleMetadata.exists()) {
-                    fullTileNamesList.add(nestedGranuleMetadata);
-                } else {
-                    String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
-                    logger.log(Level.WARNING, errorMessage);
-                }
-            }
-        }
-
-        //Init Tiles
-        for (File aGranuleMetadataFile : fullTileNamesList) {
-            FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile);
-            Object granule = updateAndUnmarshal(granuleStream);
-            granuleStream.close();
-            initTile(aGranuleMetadataFile, granule, epsg, productResolution);
-        }
-    }*/
-
 
     private void initTile(Path path, String epsg, S2SpatialResolution resolution) throws IOException {
 
@@ -249,78 +170,6 @@ public class L2aMetadata extends S2Metadata {
             getMetadataElements().add(granulesMetaData);
         }
 
-        granuleMetadata.updateName(); //for including the tile id
         granulesMetaData.addElement(granuleMetadata.getSimplifiedMetadataElement());
     }
-
-
-    /*private void initTile(File file, Object casted, String epsg, S2SpatialResolution resolution) throws IOException, JAXBException, JDOMException {
-
-        Level2A_Tile aTile = (Level2A_Tile) casted;
-        if(getProductCharacteristics() == null) {
-            logger.warning("Warning: the default quantification values will be used because they cannot be found in metadata\n");
-            setProductCharacteristics(L2aMetadataProc.getTileProductOrganization(aTile, resolution));
-        }
-
-        Map<S2SpatialResolution, TileGeometry> geoms = L2aMetadataProc.getTileGeometries(aTile);
-
-        //Tile tile = new Tile(aTile.getGeneral_Info().getTILE_ID().getValue());
-        Tile tile = new Tile(file.getParentFile().getName());
-        tile.setHorizontalCsCode(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_CODE());
-        tile.setHorizontalCsName(aTile.getGeometric_Info().getTile_Geocoding().getHORIZONTAL_CS_NAME());
-
-        if (epsg != null && !tile.getHorizontalCsCode().equals(epsg)) {
-            // skip tiles that are not in the desired UTM zone
-            logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", file.getName(), tile.getHorizontalCsCode(), epsg));
-            return;
-        }
-
-        tile.setTileGeometries(geoms);
-
-        try {
-            tile.setAnglesResolution((int) aTile.getGeometric_Info().getTile_Angles().getSun_Angles_Grid().getAzimuth().getCOL_STEP().getValue());
-        } catch (Exception e) {
-            logger.warning("Angles resolution cannot be obtained");
-            tile.setAnglesResolution(DEFAULT_ANGLES_RESOLUTION);
-        }
-
-        tile.setSunAnglesGrid(L2aMetadataProc.getSunGrid(aTile));
-        tile.setViewingIncidenceAnglesGrids(L2aMetadataProc.getAnglesGrid(aTile));
-
-        L2aMetadataProc.getMasks(aTile, file);
-        tile.setMaskFilenames(L2aMetadataProc.getMasks(aTile, file));
-
-        addTileToList(tile);
-
-        //Search "Granules" metadata element. If it does not exist, it is created
-        MetadataElement granulesMetaData = null;
-        for(MetadataElement metadataElement : getMetadataElements()) {
-            if(metadataElement.getName().equals("Granules")) {
-                granulesMetaData = metadataElement;
-                break;
-            }
-        }
-        if (granulesMetaData == null) {
-            granulesMetaData = new MetadataElement("Granules");
-            getMetadataElements().add(granulesMetaData);
-        }
-
-        //MetadataElement aGranule = parseAll(new SAXBuilder().build(file).getRootElement());
-        MetadataElement aGranule = PlainXmlMetadata.parse(file.toPath(), new HashSet<String>() {{
-            add("Viewing_Incidence_Angles_Grids");
-            add("Sun_Angles_Grid");
-        }});
-
-        //write the ID to improve UI
-        MetadataElement generalInfo = aGranule.getElement("General_Info");
-        if (generalInfo != null) {
-            MetadataAttribute tileIdAttr = generalInfo.getAttribute("TILE_ID_2A");
-            if (tileIdAttr != null) {
-                String newName = tileIdAttr.getData().toString();
-                if (newName.length() > 56)
-                    aGranule.setName("Level-2A_Tile_" + newName.substring(50, 55));
-            }
-        }
-        granulesMetaData.addElement(aGranule);
-    }*/
 }

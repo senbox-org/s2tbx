@@ -17,10 +17,6 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import https.psd_13_sentinel2_eo_esa_int.psd.s2_pdi_level_1b_granule_metadata.Level1B_Granule;
-import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
-import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.metadata.PlainXmlMetadata;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -28,7 +24,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
-import org.esa.snap.core.datamodel.MetadataAttribute;
+import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.SystemUtils;
@@ -37,6 +33,8 @@ import org.jdom.JDOMException;
 
 import javax.xml.bind.JAXBException;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +48,7 @@ import java.util.logging.Logger;
  */
 public class L1bMetadata extends S2Metadata {
 
-    private static final String PSD_STRING = "13";
+    //private static final String PSD_STRING = "13";
 
     protected Logger logger = SystemUtils.LOG;
 
@@ -58,19 +56,25 @@ public class L1bMetadata extends S2Metadata {
 
 
     public static L1bMetadata parseHeader(File file, String granuleName, S2Config config) throws JDOMException, IOException, JAXBException {
-        try (FileInputStream stream = new FileInputStream(file)) {
-            return new L1bMetadata(stream, file, file.getParent(), granuleName, config);
-        }
+        return new L1bMetadata(file.toPath(), granuleName, config);
     }
 
     public ProductCharacteristics getProductCharacteristics() {
         return productCharacteristics;
     }
 
-    private L1bMetadata(InputStream stream, File file, String parent, String granuleName, S2Config config) throws DataConversionException, JAXBException, FileNotFoundException {
-        super(config, L1bMetadataProc.getJaxbContext(), PSD_STRING);
+    private L1bMetadata(Path path, String granuleName, S2Config config) throws DataConversionException, JAXBException, IOException {
+        super(config);
 
-        try {
+        resetTileList();
+        boolean isGranuleMetadata = S2L1BGranuleMetadataFilename.isGranuleFilename(path.getFileName().toString());
+
+        if(!isGranuleMetadata) {
+            initProduct(path, granuleName);
+        } else {
+            initTile(path);
+        }
+        /*try {
             Object userProductOrTile = updateAndUnmarshal(stream);
 
             if (userProductOrTile instanceof Level1B_User_Product) {
@@ -81,10 +85,110 @@ public class L1bMetadata extends S2Metadata {
 
         } catch (JAXBException | JDOMException | IOException e) {
             logger.severe(Utils.getStackTrace(e));
-        }
+        }*/
     }
 
-    private void initProduct(File file, String parent, String granuleName, Object casted
+
+    private void initProduct(Path path, String granuleName) throws IOException {
+
+        IL1bProductMetadata metadataProduct = L1bMetadataFactory.createL1bProductMetadata(path);
+
+        productCharacteristics = metadataProduct.getProductOrganization();
+
+        Collection<String> tileNames;
+        if (granuleName == null) {
+            tileNames = metadataProduct.getTiles();
+        } else {
+            tileNames = Collections.singletonList(granuleName);
+        }
+        List<Path> fullTileNamesList = new ArrayList<>();
+
+
+        for (String tileName : tileNames) {
+            Path nestedMetadata = path.resolveSibling("GRANULE").resolve(tileName);
+
+            if (Files.exists(nestedMetadata)) {
+                logger.log(Level.FINE, "File found: " + nestedMetadata);
+                S2GranuleDirFilename aGranuleDir = S2L1BGranuleDirFilename.create(tileName);
+                Guardian.assertNotNull("aGranuleDir", aGranuleDir);
+                String theName = aGranuleDir.getMetadataFilename().name;
+
+                Path nestedGranuleMetadata = path.resolveSibling("GRANULE").resolve(tileName).resolve(theName);
+                if (Files.exists(nestedGranuleMetadata)) {
+                    fullTileNamesList.add(nestedGranuleMetadata);
+                } else {
+                    String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
+                    logger.log(Level.WARNING, errorMessage);
+                }
+            } else {
+                logger.log(Level.SEVERE, "File not found: " + nestedMetadata);
+            }
+        }
+
+        /*for (Path aGranuleMetadataPath : fullTileNamesList) {
+            try (FileInputStream granuleStream = new FileInputStream(aGranuleMetadataFile)) {
+                Level1B_Granule aGranule = (Level1B_Granule) updateAndUnmarshal(granuleStream);
+
+                Map<S2SpatialResolution, TileGeometry> geoms = L1bMetadataProc.getGranuleGeometries(aGranule, getConfig());
+
+                Tile tile = new Tile(aGranule.getGeneral_Info().getGRANULE_ID().getValue(), aGranule.getGeneral_Info().getDETECTOR_ID().getValue());
+                tile.setTileGeometries(geoms);
+                tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
+                addTileToList(tile);
+            }
+        }*/
+
+        S2DatastripFilename stripName = metadataProduct.getDatastrip();
+        S2DatastripDirFilename dirStripName = metadataProduct.getDatastripDir();
+        Path datastripPath = path.resolveSibling("DATASTRIP").resolve(dirStripName.name).resolve(stripName.name);
+        IL1bDatastripMetadata metadataDatastrip = L1bMetadataFactory.createL1bDatastripMetadata(datastripPath);
+
+        getMetadataElements().add(metadataProduct.getMetadataElement());
+        getMetadataElements().add(metadataDatastrip.getMetadataElement());
+
+        //Init Tiles
+        for (Path granuleMetadataPath : fullTileNamesList) {
+            initTile(granuleMetadataPath);
+        }
+
+
+       /* //MetadataElement userProduct = parseAll(new SAXBuilder().build(file).getRootElement());
+        Set<String> exclusions = new HashSet<String>() {{
+            add("Viewing_Incidence_Angles_Grids");
+            add("Sun_Angles_Grid");
+        }};
+        MetadataElement userProduct = PlainXmlMetadata.parse(file.toPath(), exclusions);
+        //MetadataElement dataStrip = parseAll(new SAXBuilder().build(dataStripMetadata).getRootElement());
+        MetadataElement dataStrip = PlainXmlMetadata.parse(dataStripMetadata.toPath(), null);
+        getMetadataElements().add(userProduct);
+        getMetadataElements().add(dataStrip);
+        MetadataElement granulesMetaData = new MetadataElement("Granules");
+
+
+        for (File aGranuleMetadataFile : fullTileNamesList) {
+            //MetadataElement aGranule = parseAll(new SAXBuilder().build(aGranuleMetadataFile).getRootElement());
+            MetadataElement aGranule = PlainXmlMetadata.parse(aGranuleMetadataFile.toPath(), exclusions);
+
+            MetadataElement generalInfo = aGranule.getElement("General_Info");
+            if (generalInfo != null) {
+                MetadataAttribute tileIdAttr = generalInfo.getAttribute("GRANULE_ID");
+                if (tileIdAttr != null) {
+                    String newName = tileIdAttr.getData().toString();
+                    if (newName.length() > 62)
+                        aGranule.setName("Level-1B_Granule_" + newName.substring(51, 61));
+                }
+            }
+
+            granulesMetaData.addElement(aGranule);
+        }
+
+        getMetadataElements().add(granulesMetaData);*/
+    }
+
+
+
+
+    /*private void initProduct(File file, String parent, String granuleName, Object casted
     ) throws IOException, JAXBException, JDOMException {
         Level1B_User_Product product = (Level1B_User_Product) casted;
         productCharacteristics = L1bMetadataProc.getProductOrganization(product);
@@ -170,9 +274,37 @@ public class L1bMetadata extends S2Metadata {
         }
 
         getMetadataElements().add(granulesMetaData);
-    }
+    }*/
 
-    private void initTile(Object casted) throws IOException, JAXBException, JDOMException {
+    private void initTile(Path path) throws IOException{
+        IL1bGranuleMetadata granuleMetadata = L1bMetadataFactory.createL1bGranuleMetadata(path);
+
+        if(getProductCharacteristics() == null) {
+            setProductCharacteristics(granuleMetadata.getTileProductOrganization());
+        }
+        Map<S2SpatialResolution, TileGeometry> geoms = granuleMetadata.getGranuleGeometries(getConfig());
+        Tile tile = new Tile(granuleMetadata.getGranuleID(), granuleMetadata.getDetectorID());
+        tile.setTileGeometries(geoms);
+        tile.corners = granuleMetadata.getGranuleCorners(); // counterclockwise
+        addTileToList(tile);
+
+        //Search "Granules" metadata element. If it does not exist, it is created
+        MetadataElement granulesMetaData = null;
+        for(MetadataElement metadataElement : getMetadataElements()) {
+            if(metadataElement.getName().equals("Granules")) {
+                granulesMetaData = metadataElement;
+                break;
+            }
+        }
+        if (granulesMetaData == null) {
+            granulesMetaData = new MetadataElement("Granules");
+            getMetadataElements().add(granulesMetaData);
+        }
+
+        //granuleMetadata.updateName(); //for including the tile id
+        granulesMetaData.addElement(granuleMetadata.getSimplifiedMetadataElement());
+    }
+    /*private void initTile(Object casted) throws IOException, JAXBException, JDOMException {
         Level1B_Granule aGranule = (Level1B_Granule) casted;
         productCharacteristics = new L1bMetadata.ProductCharacteristics();
         resetTileList();
@@ -181,5 +313,5 @@ public class L1bMetadata extends S2Metadata {
         tile.setTileGeometries(geoms);
         tile.corners = L1bMetadataProc.getGranuleCorners(aGranule); // counterclockwise
         addTileToList(tile);
-    }
+    }*/
 }

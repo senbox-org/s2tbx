@@ -595,10 +595,9 @@ public abstract class S2Metadata {
         return anglesGrid;
     }
 
-    public static AnglesGrid[] wrapStandardViewingAngles(MetadataElement rootGranuleMetadataElement) {
+    public static AnglesGrid[] wrapStandardViewingAngles(MetadataElement tileAnglesMetadataElement) {
         ArrayList<AnglesGrid> anglesGrids = new ArrayList<>();
-        MetadataElement viewingAnglesElements = rootGranuleMetadataElement.getElement("Geometric_Info").getElement("Tile_Angles");
-        for(MetadataElement viewingAnglesElement : viewingAnglesElements.getElements()) {
+        for(MetadataElement viewingAnglesElement : tileAnglesMetadataElement.getElements()) {
             if (!viewingAnglesElement.getName().equals("Viewing_Incidence_Angles_Grids")) {
                 continue;
             }
@@ -622,26 +621,30 @@ public abstract class S2Metadata {
         return anglesGrids.toArray(new AnglesGrid[anglesGrids.size()]);
     }
 
-    public static String getPSD(Path path){
+    /**
+     * Read the content of 'path' searching the string "psd-XX.sentinel2.eo.esa.int" and return the XX parsed to an integer.
+     * @param path
+     * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
+     */
+    public static int getPSD(Path path){
         try {
             FileInputStream fileStream = new FileInputStream(path.toString());
             String xmlStreamAsString = IOUtils.toString(fileStream);
             String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
 
-            Pattern p = Pattern.compile(regex);  // insert your pattern here
+            Pattern p = Pattern.compile(regex);
             Matcher m = p.matcher(xmlStreamAsString);
             if (m.find()) {
                 int position = m.start();
                 String psdNumber = xmlStreamAsString.substring(position+4,position+6);
-                return "PSD" + psdNumber;
+                return Integer.parseInt(psdNumber);
             }
             else {
-                return "DEFAULT";
+                return 0;
             }
 
         } catch (Exception e) {
-            return "DEFAULT";
+            return 0;
         }
-
     }
 }

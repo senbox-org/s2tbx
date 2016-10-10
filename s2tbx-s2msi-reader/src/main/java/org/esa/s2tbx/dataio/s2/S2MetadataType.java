@@ -26,6 +26,13 @@ public interface S2MetadataType {
     String L2A = "https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata:https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a:https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a:https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap";
     String L3 = "https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_3_tile_metadata:https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_3:https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_3:https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap:https.psd_13_sentinel2_eo_esa_int.dico._13.pdgs.dimap";
 
+    //TODO test
+    String L1B_PRODUCT_SCHEMA_FILE_PATH = "schemas/PSD13/S2_User_Product_Level-1C_Metadata.xsd";
+    String L1B_GRANULE_SCHEMA_FILE_PATH = "schemas/L2A_PSD12/S2_PDI_Level-1C_Tile_Metadata.xsd";
+    String L1B_DATASTRIP_SCHEMA_FILE_PATH = "schemas/L2A_PSD12/S2_PDI_Level-1C_Datastrip_Metadata.xsd";
+
+
+
     String L1C_PRODUCT_SCHEMA_FILE_PATH = "schemas/PSD13/S2_User_Product_Level-1C_Metadata.xsd";
     String L1C_GRANULE_SCHEMA_FILE_PATH = "schemas/L2A_PSD12/S2_PDI_Level-1C_Tile_Metadata.xsd";
     String L1C_DATASTRIP_SCHEMA_FILE_PATH = "schemas/L2A_PSD12/S2_PDI_Level-1C_Datastrip_Metadata.xsd";
