@@ -39,7 +39,7 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
 
         @Override
         protected boolean shouldValidateSchema() {
-            return false;
+            return true;
         }
     }
 

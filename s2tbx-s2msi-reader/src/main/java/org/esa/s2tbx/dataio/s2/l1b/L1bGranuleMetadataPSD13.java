@@ -171,6 +171,9 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
 
     private void updateName() {
         String tileId = getAttributeValue(L1bPSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
+        if(tileId == null || tileId.length()<62) {
+            setName("Level-1B_Granule_ID");
+        }
         setName("Level-1B_Granule_" + tileId.substring(51, 61));
     }
 }

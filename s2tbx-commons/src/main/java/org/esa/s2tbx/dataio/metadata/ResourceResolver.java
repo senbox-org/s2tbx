@@ -8,16 +8,26 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
+import org.esa.snap.core.util.SystemUtils;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
+//TODO re-implement this class
 /**
  * The Class ResourceResolver.
+ * Implemented by Smyrnian in http://stackoverflow.com/questions/2342808/problem-validating-an-xml-file-using-java-with-an-xsd-having-an-include
+ * Modified by obarrilero
+ * "This LSResourceResolver implementation assumes that all XSD files have a unique name.
+ * If you have some XSD files with same name but different content (at different paths) in your schema structure,
+ * this resolver will fail to include the other XSD files except the first one found."
+ *
  */
 public class ResourceResolver implements LSResourceResolver {
 
-
+    /** The logger. */
+    private final Logger logger = SystemUtils.LOG;
 
     /** The schema base path. */
     private final String schemaBasePath;
@@ -27,19 +37,12 @@ public class ResourceResolver implements LSResourceResolver {
     /** The path map. */
     private Map<String, String> pathMap = new HashMap<String, String>();
 
-    /**
-     * Instantiates a new resource resolver.
-     *
-     * @param schemaBasePath the schema base path
-     */
+
     public ResourceResolver(String schemaBasePath, ClassLoader classLoader) {
         this.schemaBasePath = schemaBasePath;
         this.classLoader = classLoader;
     }
 
-    /* (non-Javadoc)
-     * @see org.w3c.dom.ls.LSResourceResolver#resolveResource(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-     */
     @Override
     public LSInput resolveResource(String type, String namespaceURI,
                                    String publicId, String systemId, String baseURI) {
@@ -94,9 +97,6 @@ public class ResourceResolver implements LSResourceResolver {
             return new Input(publicId, systemId, is);
         }
 
-        // If this resource has already been added, do not add the same resource again. It throws
-        // "org.xml.sax.SAXParseException: sch-props-correct.2: A schema cannot contain two global components with the same name; this schema contains two occurrences of ..."
-        // return null instead.
         return null;
     }
 
@@ -162,7 +162,7 @@ public class ResourceResolver implements LSResourceResolver {
                     return contents;
                 } catch (IOException e) {
                     e.printStackTrace();
-                    System.out.println("Exception " + e);
+                    logger.severe("Exception " + e);
                     return null;
                 }
             }

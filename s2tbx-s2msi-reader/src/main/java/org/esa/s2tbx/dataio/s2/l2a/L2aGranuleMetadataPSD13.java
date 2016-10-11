@@ -198,6 +198,9 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
 
     private void updateName() {
         String tileId = getAttributeValue(L2aPSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
+        if(tileId == null || tileId.length()<56) {
+            setName("Level-2A_Tile_ID");
+        }
         setName("Level-2A_Tile_" + tileId.substring(50, 55));
     }
 }

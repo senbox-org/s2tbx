@@ -174,6 +174,9 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
 
     private void updateName() {
         String tileId = getAttributeValue(L3PSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
+        if(tileId == null || tileId.length()<56) {
+            setName("Level-03_Tile_ID");
+        }
         setName("Level-03_Tile_" + tileId.substring(50, 55));
     }
 }

@@ -207,6 +207,9 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
 
     private void updateName() {
         String tileId = getAttributeValue(L1cPSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
+        if(tileId == null || tileId.length()<56) {
+            setName("Level-1C_Tile_ID");
+        }
         setName("Level-1C_Tile_" + tileId.substring(50, 55));
     }
 }
