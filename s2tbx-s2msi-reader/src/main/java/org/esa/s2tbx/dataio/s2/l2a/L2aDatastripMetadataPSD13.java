@@ -1,12 +1,13 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
+import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.ProductData;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -23,7 +24,8 @@ public class L2aDatastripMetadataPSD13 extends GenericXmlMetadata implements IL2
 
         public L2aDatastripMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            setSchemaLocations(L2aMetadataPSD13Helper.getSchemaLocations());
+            setSchemaLocations(L2aPSD13Constants.getDatastripSchemaLocations());
+            setSchemaBasePath(L2aPSD13Constants.getDatastripSchemaBasePath());
         }
 
         @Override
@@ -32,28 +34,19 @@ public class L2aDatastripMetadataPSD13 extends GenericXmlMetadata implements IL2
         }
     }
 
-    public static L2aDatastripMetadataPSD13 create(Path path) throws IOException {
-
-
+    public static L2aDatastripMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L2aDatastripMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (Files.exists(path)) {
                 stream = Files.newInputStream(path, StandardOpenOption.READ);
-                //noinspection unchecked
                 L2aDatastripMetadataPSD13Parser parser = new L2aDatastripMetadataPSD13Parser(L2aDatastripMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.setName("Level-2A_DataStrip_ID");
             }
-        } catch (Exception e) {
-            //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
         } finally {
-            if (stream != null) try {
-                stream.close();
-            } catch (IOException e) {
-                // swallowed exception
-            }
+            IOUtils.closeQuietly(stream);
         }
         return result;
     }

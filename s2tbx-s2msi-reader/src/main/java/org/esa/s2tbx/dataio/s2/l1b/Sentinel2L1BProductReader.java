@@ -39,8 +39,6 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleImageFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
-import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc;
-import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
@@ -54,7 +52,7 @@ import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.FileUtils;
-import org.jdom.JDOMException;
+import org.xml.sax.SAXException;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.ImageLayout;
@@ -66,7 +64,7 @@ import javax.media.jai.operator.BorderDescriptor;
 import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
-import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
@@ -233,7 +231,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         try {
             metadataHeader = parseHeader(productMetadataFile, granuleDirName, getConfig());
-        } catch (JDOMException | JAXBException e) {
+        } catch (ParserConfigurationException | SAXException e) {
             SystemUtils.LOG.severe(Utils.getStackTrace(e));
             throw new IOException("Failed to parse metadata in " + productMetadataFile.getName());
         }

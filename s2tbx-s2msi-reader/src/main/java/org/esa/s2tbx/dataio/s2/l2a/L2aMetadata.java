@@ -33,8 +33,10 @@ import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.jdom.JDOMException;
+import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,12 +57,12 @@ public class L2aMetadata extends S2Metadata {
 
     protected Logger logger = SystemUtils.LOG;
 
-    public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws JDOMException, IOException{
+    public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws IOException, ParserConfigurationException, SAXException {
         return new L2aMetadata(file.toPath(), granuleName, config, epsg, productResolution);
     }
 
 
-    private L2aMetadata(Path path, String granuleName, S2Config s2config, String epsg, S2SpatialResolution productResolution) throws IOException{
+    private L2aMetadata(Path path, String granuleName, S2Config s2config, String epsg, S2SpatialResolution productResolution) throws IOException, ParserConfigurationException, SAXException {
         super(s2config);
         resetTileList();
         boolean isGranuleMetadata = S2OrthoGranuleMetadataFilename.isGranuleFilename(path.getFileName().toString());
@@ -74,7 +76,7 @@ public class L2aMetadata extends S2Metadata {
     }
 
 
-    private void initProduct(Path path, String granuleName, String epsg, S2SpatialResolution productResolution) throws IOException {
+    private void initProduct(Path path, String granuleName, String epsg, S2SpatialResolution productResolution) throws IOException, ParserConfigurationException, SAXException {
         IL2aProductMetadata metadataProduct = L2aMetadataFactory.createL2aProductMetadata(path);
         setProductCharacteristics(metadataProduct.getProductOrganization(productResolution));
 
@@ -118,7 +120,7 @@ public class L2aMetadata extends S2Metadata {
         }
     }
 
-    private void initTile(Path path, String epsg, S2SpatialResolution resolution) throws IOException {
+    private void initTile(Path path, String epsg, S2SpatialResolution resolution) throws IOException, ParserConfigurationException, SAXException {
 
         IL2aGranuleMetadata granuleMetadata = L2aMetadataFactory.createL2aGranuleMetadata(path);
 

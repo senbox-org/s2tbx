@@ -5,6 +5,59 @@ package org.esa.s2tbx.dataio.s2.l2a;
  */
 public class L2aPSD13Constants {
 
+    //TODO
+    private final static String PRODUCT_SCHEMA_FILE_PATH = "schemas/L2A_PSD12/S2_User_Product_Level-2A_Metadata.xsd";
+    private final static String GRANULE_SCHEMA_FILE_PATH = "schemas/L2A_PSD12/S2_PDI_Level-2A_Tile_Metadata.xsd";
+    private final static String DATASTRIP_SCHEMA_FILE_PATH = "schemas/L2A_PSD12/S2_PDI_Level-2A_Datastrip_Metadata.xsd";
+    private final static String SCHEMA13_BASE_PATH = "schemas/PSD13/";
+    private final static String SCHEMA12_BASE_PATH = "schemas/L2A_PSD12/";
+
+    public static String[] getProductSchemaLocations() {
+
+        String[] locations = new String[1];
+        locations[0] = PRODUCT_SCHEMA_FILE_PATH;
+
+        return locations;
+    }
+
+    public static String[] getGranuleSchemaLocations() {
+
+        String[] locations = new String[1];
+        locations[0] = GRANULE_SCHEMA_FILE_PATH;
+
+        return locations;
+    }
+
+    public static String[] getDatastripSchemaLocations() {
+
+        String[] locations = new String[1];
+        locations[0] = DATASTRIP_SCHEMA_FILE_PATH;
+
+        return locations;
+    }
+
+    public static String getProductSchemaBasePath() {
+        return SCHEMA12_BASE_PATH;
+    }
+
+    public static String getDatastripSchemaBasePath() {
+        return SCHEMA12_BASE_PATH;
+    }
+
+    public static String getGranuleSchemaBasePath() {
+        return SCHEMA12_BASE_PATH;
+    }
+
+
+    /*
+    * Default values
+    */
+    public static double DEFAULT_BOA_QUANTIFICATION = 10000;
+    public static double DEFAULT_AOT_QUANTIFICATION = 1000;
+    public static double DEFAULT_WVP_QUANTIFICATION = 1000;
+    public static int DEFAULT_ANGLES_RESOLUTION = 5000;
+
+
     /*
     * Product metadata element paths
    */

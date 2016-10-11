@@ -28,8 +28,10 @@ import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.jdom.JDOMException;
+import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,12 +53,12 @@ public class L1cMetadata extends S2Metadata {
 
     protected Logger logger = SystemUtils.LOG;
 
-    public static L1cMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws JDOMException, IOException, JAXBException {
+    public static L1cMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException, ParserConfigurationException, SAXException {
         return new L1cMetadata(file.toPath(), granuleName, config, epsg);
     }
 
 
-    private L1cMetadata(Path path, String granuleName, S2Config s2config, String epsg) throws IOException{
+    private L1cMetadata(Path path, String granuleName, S2Config s2config, String epsg) throws IOException, ParserConfigurationException, SAXException {
         super(s2config);
         resetTileList();
         boolean isGranuleMetadata = S2OrthoGranuleMetadataFilename.isGranuleFilename(path.getFileName().toString());
@@ -69,7 +71,7 @@ public class L1cMetadata extends S2Metadata {
         //TODO
     }
 
-    private void initProduct(Path path, String granuleName, String epsg) throws IOException {
+    private void initProduct(Path path, String granuleName, String epsg) throws IOException, ParserConfigurationException, SAXException {
         IL1cProductMetadata metadataProduct = L1cMetadataFactory.createL1cProductMetadata(path);
         setProductCharacteristics(metadataProduct.getProductOrganization());
 
@@ -113,7 +115,7 @@ public class L1cMetadata extends S2Metadata {
     }
 
 
-    private void initTile(Path path, String epsg) throws IOException {
+    private void initTile(Path path, String epsg) throws IOException, ParserConfigurationException, SAXException {
 
         IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(path);
 
@@ -127,7 +129,7 @@ public class L1cMetadata extends S2Metadata {
         tile.setHorizontalCsCode(granuleMetadata.getHORIZONTAL_CS_CODE());
         tile.setHorizontalCsName(granuleMetadata.getHORIZONTAL_CS_NAME());
 
-        if (epsg != null && !tile.getHorizontalCsCode().equals(epsg)) {
+        if (epsg != null && tile.getHorizontalCsCode() != null && !tile.getHorizontalCsCode().equals(epsg)) {
             // skip tiles that are not in the desired UTM zone
             logger.info(String.format("Skipping tile %s because it has crs %s instead of requested %s", path.getFileName().toString(), tile.getHorizontalCsCode(), epsg));
             return;

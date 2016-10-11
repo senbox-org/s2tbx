@@ -4,6 +4,50 @@ package org.esa.s2tbx.dataio.s2.l1b;
  * Created by obarrile on 07/10/2016.
  */
 public class L1bPSD13Constants {
+
+    //TODO
+    private final static String PRODUCT_SCHEMA_FILE_PATH = "schemas/PSD13/S2_User_Product_Level-1B_Metadata.xsd";
+    private final static String GRANULE_SCHEMA_FILE_PATH = "schemas/PSD13/S2_PDI_Level-1B_Granule_Metadata.xsd";
+    private final static String DATASTRIP_SCHEMA_FILE_PATH = "schemas/PSD13/S2_PDI_Level-1B_Datastrip_Metadata.xsd";
+    private final static String SCHEMA13_BASE_PATH = "schemas/PSD13/";
+
+    public static String[] getProductSchemaLocations() {
+
+        String[] locations = new String[1];
+        locations[0] = PRODUCT_SCHEMA_FILE_PATH;
+
+        return locations;
+    }
+
+    public static String[] getGranuleSchemaLocations() {
+
+        String[] locations = new String[1];
+        locations[0] = GRANULE_SCHEMA_FILE_PATH;
+
+        return locations;
+    }
+
+    public static String[] getDatastripSchemaLocations() {
+
+        String[] locations = new String[1];
+        locations[0] = DATASTRIP_SCHEMA_FILE_PATH;
+
+        return locations;
+    }
+
+    public static String getProductSchemaBasePath() {
+        return SCHEMA13_BASE_PATH;
+    }
+
+    public static String getDatastripSchemaBasePath() {
+        return SCHEMA13_BASE_PATH;
+    }
+
+    public static String getGranuleSchemaBasePath() {
+        return SCHEMA13_BASE_PATH;
+    }
+
+
     /*
      * Product metadata element paths
     */

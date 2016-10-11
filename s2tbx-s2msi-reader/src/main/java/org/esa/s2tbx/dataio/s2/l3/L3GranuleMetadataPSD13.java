@@ -1,14 +1,15 @@
 package org.esa.s2tbx.dataio.s2.l3;
 
 import com.bc.ceres.core.Assert;
-import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_L3_PIXEL_LEVEL_QI;
+import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.core.datamodel.MetadataElement;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -26,8 +27,8 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
 
         public L3GranuleMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            String[] locations = {S2MetadataType.L3_GRANULE_SCHEMA_FILE_PATH};
-            setSchemaLocations(locations);
+            setSchemaLocations(L3PSD13Constants.getGranuleSchemaLocations());
+            setSchemaBasePath(L3PSD13Constants.getGranuleSchemaBasePath());
         }
 
         @Override
@@ -36,27 +37,19 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         }
     }
 
-    public static L3GranuleMetadataPSD13 create(Path path) throws IOException {
+    public static L3GranuleMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L3GranuleMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (Files.exists(path)) {
                 stream = Files.newInputStream(path, StandardOpenOption.READ);
-                //noinspection unchecked
                 L3GranuleMetadataPSD13Parser parser = new L3GranuleMetadataPSD13Parser(L3GranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.updateName();
             }
-        } catch (Exception e) {
-            //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
-            //TODO
         } finally {
-            if (stream != null) try {
-                stream.close();
-            } catch (IOException e) {
-                // swallowed exception
-            }
+            IOUtils.closeQuietly(stream);
         }
         return result;
     }
@@ -81,7 +74,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         characteristics.setSpacecraft("Sentinel-2");
         characteristics.setProcessingLevel("Level-3");
 
-        double boaQuantification = 1000; //Default value
+        double boaQuantification = L3PSD13Constants.DEFAULT_BOA_QUANTIFICATION;
         characteristics.setQuantificationValue(boaQuantification);
 
         return characteristics;
@@ -129,7 +122,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
 
     @Override
     public int getAnglesResolution() {
-        return Integer.parseInt(getAttributeValue(L3PSD13Constants.PATH_GRANULE_METADATA_ANGLE_RESOLUTION, "0"));
+        return Integer.parseInt(getAttributeValue(L3PSD13Constants.PATH_GRANULE_METADATA_ANGLE_RESOLUTION, String.valueOf(L3PSD13Constants.DEFAULT_ANGLES_RESOLUTION)));
     }
 
     @Override

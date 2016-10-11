@@ -1,16 +1,16 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
+import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
-import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.ProductData;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +32,8 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
 
         public L2aGranuleMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            setSchemaLocations(L2aMetadataPSD13Helper.getSchemaLocations());
+            setSchemaLocations(L2aPSD13Constants.getGranuleSchemaLocations());
+            setSchemaBasePath(L2aPSD13Constants.getGranuleSchemaBasePath());
         }
 
         @Override
@@ -41,27 +42,19 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
         }
     }
 
-    public static L2aGranuleMetadataPSD13 create(Path path) throws IOException {
+    public static L2aGranuleMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L2aGranuleMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (Files.exists(path)) {
                 stream = Files.newInputStream(path, StandardOpenOption.READ);
-                //noinspection unchecked
                 L2aGranuleMetadataPSD13Parser parser = new L2aGranuleMetadataPSD13Parser(L2aGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.updateName();
             }
-        } catch (Exception e) {
-            //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
-            //TODO
         } finally {
-            if (stream != null) try {
-                stream.close();
-            } catch (IOException e) {
-                // swallowed exception
-            }
+            IOUtils.closeQuietly(stream);
         }
         return result;
     }
@@ -87,10 +80,10 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
         characteristics.setSpacecraft("Sentinel-2");
         characteristics.setProcessingLevel("Level-2A");
 
-        double boaQuantification = 10000; //Default value
+        double boaQuantification = L2aPSD13Constants.DEFAULT_BOA_QUANTIFICATION;
         characteristics.setQuantificationValue(boaQuantification);
-        double aotQuantification = 1000; //Default value
-        double wvpQuantification = 1000; //Default value
+        double aotQuantification = L2aPSD13Constants.DEFAULT_AOT_QUANTIFICATION;
+        double wvpQuantification = L2aPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
 
         List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(resolution,boaQuantification,aotQuantification,wvpQuantification);
         int size = aInfo.size();
@@ -141,7 +134,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
 
     @Override
     public int getAnglesResolution() {
-        return Integer.parseInt(getAttributeValue(L2aPSD13Constants.PATH_GRANULE_METADATA_ANGLE_RESOLUTION, "0"));
+        return Integer.parseInt(getAttributeValue(L2aPSD13Constants.PATH_GRANULE_METADATA_ANGLE_RESOLUTION, String.valueOf(L2aPSD13Constants.DEFAULT_ANGLES_RESOLUTION)));
     }
 
     @Override

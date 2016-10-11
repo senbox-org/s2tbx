@@ -17,7 +17,6 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-// import com.jcabi.aspects.Loggable;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -35,7 +34,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Norman Fomferra

@@ -2,16 +2,18 @@ package org.esa.s2tbx.dataio.s2.l1b;
 
 import com.bc.ceres.core.Assert;
 import com.vividsolutions.jts.geom.Coordinate;
+import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -35,8 +37,8 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
 
         public L1bGranuleMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            String[] locations = {S2MetadataType.L1B_GRANULE_SCHEMA_FILE_PATH};
-            setSchemaLocations(locations);
+            setSchemaLocations(L1bPSD13Constants.getGranuleSchemaLocations());
+            setSchemaBasePath(L1bPSD13Constants.getGranuleSchemaBasePath());
         }
 
         @Override
@@ -45,33 +47,21 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
         }
     }
 
-    public static L1bGranuleMetadataPSD13 create(Path path) throws IOException {
+    public static L1bGranuleMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L1bGranuleMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (Files.exists(path)) {
                 stream = Files.newInputStream(path, StandardOpenOption.READ);
-                //noinspection unchecked
                 L1bGranuleMetadataPSD13Parser parser = new L1bGranuleMetadataPSD13Parser(L1bGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
-                //result.setName("Level-1B_Granule_ID");
                 result.updateName();
-                String metadataProfile = result.getMetadataProfile();
-
             }
-        } catch (Exception e) {
-            //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
-            //TODO
         } finally {
-            if (stream != null) try {
-                stream.close();
-            } catch (IOException e) {
-                // swallowed exception
-            }
+            IOUtils.closeQuietly(stream);
         }
         return result;
-
     }
 
     public L1bGranuleMetadataPSD13(String name) {
@@ -119,7 +109,6 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
         Map<S2SpatialResolution, S2Metadata.TileGeometry> resolutions = new HashMap<>();
         int pos = Integer.parseInt(getAttributeValue(L1bPSD13Constants.PATH_GRANULE_METADATA_GRANULE_POSITION,"0"));
         String detector = getAttributeValue(L1bPSD13Constants.PATH_GRANULE_METADATA_DETECTOR_ID,"-1");
-        String[] resolutionStrings = getAttributeValues(L1bPSD13Constants.PATH_GRANULE_METADATA_SIZE_RESOLUTION);
 
         for (String res : getAttributeValues(L1bPSD13Constants.PATH_GRANULE_METADATA_SIZE_RESOLUTION)) {
             S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(Integer.parseInt(res));

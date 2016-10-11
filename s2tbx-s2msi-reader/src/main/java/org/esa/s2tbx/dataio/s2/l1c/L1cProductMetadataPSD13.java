@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
 import com.bc.ceres.core.Assert;
+import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -10,7 +11,9 @@ import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -32,42 +35,29 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
 
         public L1cProductMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            setSchemaLocations(L1cMetadataPSD13Helper.getProductSchemaLocations());
-            setSchemaBasePath(L1cMetadataPSD13Helper.getSchemaBasePath("PSD13"));
-
+            setSchemaLocations(L1cPSD13Constants.getProductSchemaLocations());
+            setSchemaBasePath(L1cPSD13Constants.getProductSchemaBasePath());
         }
 
         @Override
         protected boolean shouldValidateSchema() {
-            return true;
+            return false;
         }
     }
 
-
-
-    public static L1cProductMetadataPSD13 create(Path path) throws IOException {
+    public static L1cProductMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L1cProductMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (Files.exists(path)) {
                 stream = Files.newInputStream(path, StandardOpenOption.READ);
-                //noinspection unchecked
                 L1cProductMetadataPSD13Parser parser = new L1cProductMetadataPSD13Parser(L1cProductMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.setName("Level-1C_User_Product");
-                String metadataProfile = result.getMetadataProfile();
-                //if (metadataProfile != null)
-                //    result.setName(metadataProfile);
             }
-        } catch (Exception e) {
-            //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
         } finally {
-            if (stream != null) try {
-                stream.close();
-            } catch (IOException e) {
-                // swallowed exception
-            }
+            IOUtils.closeQuietly(stream);
         }
         return result;
     }
@@ -92,16 +82,16 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
 
-        characteristics.setSpacecraft(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Unknown"));
+        characteristics.setSpacecraft(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Sentinel-2"));
         characteristics.setDatasetProductionDate(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, "Unknown"));
 
         characteristics.setProductStartTime(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_START_TIME, "Unknown"));
         characteristics.setProductStopTime(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, "Unknown"));
 
-        characteristics.setProcessingLevel(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, "Unknown"));
-        characteristics.setMetaDataLevel(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL, "Unknown"));
+        characteristics.setProcessingLevel(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, "Level-1C"));
+        characteristics.setMetaDataLevel(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_METADATA_LEVEL, "Standard"));
 
-        double toaQuantification = Double.valueOf(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_QUANTIFICATION_VALUE, "10000"));
+        double toaQuantification = Double.valueOf(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_QUANTIFICATION_VALUE, String.valueOf(L1cPSD13Constants.DEFAULT_TOA_QUANTIFICATION)));
         characteristics.setQuantificationValue(toaQuantification);
 
         List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (toaQuantification);

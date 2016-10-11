@@ -1,25 +1,18 @@
 package org.esa.s2tbx.dataio.s2.l3;
 
-import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_L3_PIXEL_LEVEL_QI;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_3_tile_metadata.Level3_Tile;
-import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_3.Level3_User_Product;
-import org.esa.s2tbx.dataio.Utils;
-import org.esa.s2tbx.dataio.metadata.PlainXmlMetadata;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2GranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
-import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
-import org.jdom.JDOMException;
+import org.xml.sax.SAXException;
 
-import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,19 +26,18 @@ import java.util.logging.Logger;
  */
 public class L3Metadata extends S2Metadata {
 
-    private static final String PSD_STRING = null;
     public static final String MOSAIC_BAND_NAME = "quality_mosaic_info";
     private static final int DEFAULT_ANGLES_RESOLUTION = 5000;
 
     protected Logger logger = SystemUtils.LOG;
 
-    public static L3Metadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws IOException {
+    public static L3Metadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws IOException, ParserConfigurationException, SAXException {
 
         return new L3Metadata(file.toPath(), granuleName, config, epsg, productResolution);
 
     }
 
-    private L3Metadata(Path path, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws  IOException {
+    private L3Metadata(Path path, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution) throws  IOException, ParserConfigurationException, SAXException {
         super(config);
 
         resetTileList();
@@ -65,7 +57,7 @@ public class L3Metadata extends S2Metadata {
 
     }
 
-    private int initProduct(Path path, String granuleName, String epsg, S2SpatialResolution productResolution) throws IOException {
+    private int initProduct(Path path, String granuleName, String epsg, S2SpatialResolution productResolution) throws IOException, ParserConfigurationException, SAXException {
         IL3ProductMetadata metadataProduct = L3MetadataFactory.createL3ProductMetadata(path);
         setProductCharacteristics(metadataProduct.getProductOrganization(productResolution));
 
@@ -114,7 +106,7 @@ public class L3Metadata extends S2Metadata {
         return maxIndex;
     }
 
-    private int initTile(Path path, String epsg, S2SpatialResolution resolution) throws IOException {
+    private int initTile(Path path, String epsg, S2SpatialResolution resolution) throws IOException, ParserConfigurationException, SAXException {
 
         IL3GranuleMetadata granuleMetadata = L3MetadataFactory.createL3GranuleMetadata(path);
 

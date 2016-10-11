@@ -1,13 +1,16 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
 import com.bc.ceres.core.Assert;
+import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.core.datamodel.MetadataElement;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,8 +34,8 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
 
         public L1cGranuleMetadataPSD13Parser(Class metadataFileClass) {
             super(metadataFileClass);
-            setSchemaLocations(L1cMetadataPSD13Helper.getGranuleSchemaLocations());
-            setSchemaBasePath(L1cMetadataPSD13Helper.getSchemaBasePath(""));
+            setSchemaLocations(L1cPSD13Constants.getGranuleSchemaLocations());
+            setSchemaBasePath(L1cPSD13Constants.getGranuleSchemaBasePath());
         }
 
         @Override
@@ -41,32 +44,21 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         }
     }
 
-    public static L1cGranuleMetadataPSD13 create(Path path) throws IOException {
+    public static L1cGranuleMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L1cGranuleMetadataPSD13 result = null;
         InputStream stream = null;
         try {
             if (Files.exists(path)) {
                 stream = Files.newInputStream(path, StandardOpenOption.READ);
-                //noinspection unchecked
                 L1cGranuleMetadataPSD13Parser parser = new L1cGranuleMetadataPSD13Parser(L1cGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
-                result.setName("Level-1C_Tile_ID");
                 result.updateName();
-
             }
-        } catch (Exception e) {
-            //Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
-            //TODO
         } finally {
-            if (stream != null) try {
-                stream.close();
-            } catch (IOException e) {
-                // swallowed exception
-            }
+            IOUtils.closeQuietly(stream);
         }
         return result;
-
     }
 
 
@@ -86,13 +78,11 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
 
     @Override
     public S2Metadata.ProductCharacteristics getTileProductOrganization() {
-
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setSpacecraft("Sentinel-2");
-
         characteristics.setProcessingLevel("Level-1C");
 
-        double toaQuantification = 10000; //Default value, the value is only in the metadata product
+        double toaQuantification = L1cPSD13Constants.DEFAULT_TOA_QUANTIFICATION;
         characteristics.setQuantificationValue(toaQuantification);
 
         List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (toaQuantification);
@@ -104,7 +94,6 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
 
     @Override
     public Map<S2SpatialResolution, S2Metadata.TileGeometry> getTileGeometries() {
-
         Map<S2SpatialResolution, S2Metadata.TileGeometry> resolutions = new HashMap<>();
         for (String res : getAttributeValues(L1cPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION)) {
             S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(Integer.parseInt(res));
@@ -124,7 +113,6 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
                                                                        L1cPSD13Constants.PATH_GRANULE_METADATA_SIZE_NROWS, "0")));
             resolutions.put(resolution, tgeox);
         }
-
         return resolutions;
     }
 
@@ -145,7 +133,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
 
     @Override
     public int getAnglesResolution() {
-        return Integer.parseInt(getAttributeValue(L1cPSD13Constants.PATH_GRANULE_METADATA_ANGLE_RESOLUTION, "0"));
+        return Integer.parseInt(getAttributeValue(L1cPSD13Constants.PATH_GRANULE_METADATA_ANGLE_RESOLUTION, String.valueOf(L1cPSD13Constants.DEFAULT_ANGLES_RESOLUTION)));
     }
 
     @Override

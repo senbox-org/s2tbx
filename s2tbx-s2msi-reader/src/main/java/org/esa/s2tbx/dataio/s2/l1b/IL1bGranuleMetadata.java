@@ -18,7 +18,6 @@ public interface IL1bGranuleMetadata {
     String getDetectorID();
     Map<S2SpatialResolution, S2Metadata.TileGeometry> getGranuleGeometries(S2Config config);
 
-
     //To use only if the associated user product metadata is not available
     S2Metadata.ProductCharacteristics getTileProductOrganization();
 
