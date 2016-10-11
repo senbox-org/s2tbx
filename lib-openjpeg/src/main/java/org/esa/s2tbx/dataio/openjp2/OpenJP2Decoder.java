@@ -16,12 +16,15 @@ import sun.awt.image.SunWritableRaster;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -44,6 +47,8 @@ public class OpenJP2Decoder implements AutoCloseable {
     private int tileIndex;
     private int bandIndex;
     private Logger logger;
+    private final Set<Path> pendingWrites;
+    private Function<Path, Void> writeCompletedCallback;
 
     static {
         executor = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, 4));
@@ -56,7 +61,10 @@ public class OpenJP2Decoder implements AutoCloseable {
         this.layer = layer;
         this.tileIndex = tileIndex;
         this.bandIndex = bandIndex == -1 ? 0 : bandIndex;
-        this.tileFile = cacheDir.resolve(file.getFileName().toString().replace(".", "_").toLowerCase() + "_" + String.valueOf(tileIndex) + "_" + String.valueOf(resolution) + ".raw");
+        this.tileFile = cacheDir.resolve(file.getFileName().toString().replace(".", "_").toLowerCase()
+                + "_" + String.valueOf(tileIndex)
+                + "_" + String.valueOf(resolution)
+                + "_" + String.valueOf(this.bandIndex) + ".raw");
         pStream = OpenJp2.opj_stream_create_default_file_stream(file.toAbsolutePath().toString(), Constants.OPJ_STREAM_READ);
         if (pStream == null || pStream.getValue() == null)
             throw new RuntimeException("Failed to create the stream from the file");
@@ -68,6 +76,15 @@ public class OpenJP2Decoder implements AutoCloseable {
         ImageComponent component = ((ImageComponent[]) jImage.comps.toArray(jImage.numcomps))[this.bandIndex];
         width = component.w;
         height = component.h;
+        this.pendingWrites = new HashSet<>();
+        this.writeCompletedCallback = value -> {
+            synchronized (pendingWrites) {
+                if (value != null) {
+                    pendingWrites.remove(value);
+                }
+            }
+            return null;
+        };
     }
 
     public int[] getImageDimensions() throws IOException {
@@ -98,7 +115,7 @@ public class OpenJP2Decoder implements AutoCloseable {
         }
     }
 
-    private ImageComponent decode() {
+    private ImageComponent[] decode() {
         Image jImage = Util.dereference(Image.class, pImage.getValue());
 
         if (parameters.nb_tile_to_decode == 0) {
@@ -132,7 +149,7 @@ public class OpenJP2Decoder implements AutoCloseable {
         } else if (jImage.color_space == Enums.ColorSpace.OPJ_CLRSPC_EYCC) {
             // color_esycc_to_rgb(image);
         }
-        return comps[this.bandIndex]; //toRaster(comps, roi);
+        return comps; //toRaster(comps, roi);
     }
 
     private DecompressParams initDecodeParams(Path inputFile) {
@@ -164,14 +181,16 @@ public class OpenJP2Decoder implements AutoCloseable {
             default:
                 throw new RuntimeException("File is not coded with JPEG-2000");
         }
-        Callbacks.MessageFunction callback = new Callbacks.MessageFunction() {
-            @Override
-            public void invoke(Pointer msg, Pointer client_data) {
-                System.out.println("[INFO]" + msg.getString(0));
-            }
+        if (SystemUtils.LOG.getLevel().intValue() <= Level.FINE.intValue()) {
+            Callbacks.MessageFunction callback = new Callbacks.MessageFunction() {
+                @Override
+                public void invoke(Pointer msg, Pointer client_data) {
+                    System.out.println("[INFO]" + msg.getString(0));
+                }
 
-        };
-        OpenJp2.opj_set_info_handler(codec, callback, null);
+            };
+            OpenJp2.opj_set_info_handler(codec, callback, null);
+        }
         //OpenJp2.opj_set_warning_handler(codec, warningCallback, null);
         //OpenJp2.opj_set_error_handler(codec, errorCallback, null);
 
@@ -186,27 +205,45 @@ public class OpenJP2Decoder implements AutoCloseable {
         int width;
         int height;
         int[] pixels;
+        if (this.pendingWrites.contains(this.tileFile)) {
+            Thread.yield();
+        }
         if (!Files.exists(this.tileFile)) {
-            ImageComponent component = decode();
+            ImageComponent[] components = decode();
+            ImageComponent component = components[this.bandIndex];
             width = component.w;
             height = component.h;
             pixels = component.data.getPointer().getIntArray(0, component.w * component.h);
-            if (this.resolution < 4) {
-                final ByteBuffer byteBuffer = ByteBuffer.allocate(pixels.length * 4 + 8);
-                IntBuffer intBuffer = byteBuffer.asIntBuffer();
-                intBuffer.put(width).put(height).put(pixels);
+            final int[][] additionals;
+            if (components.length > 1) {
+                additionals = new int[components.length - 1][];
+                for (int i = 1; i < components.length; i++) {
+                    additionals[i - 1] = components[i].data.getPointer().getIntArray(0, components[i].w * components[i].h);
+                }
+            } else {
+                additionals = null;
+            }
+            //if (this.resolution < 4) {
                 executor.submit(() -> {
                     try {
-                        Util.write(byteBuffer, this.tileFile);
+                        this.pendingWrites.add(this.tileFile);
+                        Util.write(width, height, pixels, this.dataType, this.tileFile, this.writeCompletedCallback);
+                        if (additionals != null) {
+                            for (int i = 0; i < additionals.length; i++) {
+                                String fName = this.tileFile.getFileName().toString();
+                                fName = fName.substring(0, fName.lastIndexOf("_")) + "_" + String.valueOf(i + 1) + ".raw";
+                                Path otherBandFile = Paths.get(fName);
+                                this.pendingWrites.add(otherBandFile);
+                                Util.write(width, height, additionals[i], this.dataType, otherBandFile, this.writeCompletedCallback);
+                            }
+                        }
                     } catch (IOException ex) {
                         ex.printStackTrace();
-                    } finally {
-                        byteBuffer.clear();
                     }
                 });
-            }
+            //}
         } else {
-            pixels = Util.read(this.tileFile);
+            pixels = Util.read(this.tileFile, this.dataType);
             width = pixels[0];
             height = pixels[1];
             System.arraycopy(pixels, 2, pixels, 0, pixels.length - 2);
@@ -222,10 +259,13 @@ public class OpenJP2Decoder implements AutoCloseable {
             values = new int[roi.width * roi.height];
             sampleModel = new PixelInterleavedSampleModel(this.dataType, roi.width, roi.height, bands, roi.width * bands, bandOffsets);
             int index = 0;
+            int dstPos;
             for (int col = roi.y; col < Math.min(roi.y + roi.height, height); col++) {
                 try {
                     index = roi.x + col * width;
-                    System.arraycopy(pixels, index, values, (col - roi.y) * roi.width, Math.min(roi.width, pixels.length - index));
+                    dstPos = (col - roi.y) * roi.width;
+                    if (index < pixels.length && (dstPos < values.length))
+                    System.arraycopy(pixels, index, values, dstPos, Math.min(roi.width, pixels.length - index));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     e.printStackTrace();
                 }

@@ -29,7 +29,6 @@ import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.runtime.Config;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -113,7 +112,11 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
         if (useOpenJp2Jna == null) {
-            useOpenJp2Jna = Boolean.parseBoolean(Config.instance().preferences().get("use.openjp2.jna", "false"));
+            /* Uncomment to use the direct openJp2 decompression
+            String openJp2 = OpenJpegExecRetriever.getOpenJp2();
+            useOpenJp2Jna = Boolean.parseBoolean(Config.instance().preferences().get("use.openjp2.jna", "false")) &&
+                            openJp2 != null;*/
+            useOpenJp2Jna = false;
         }
         if (imageFile != null) {
             //jp2TileOpImage.setTileCache(null); // the MosaicOpImage will be in the cache
@@ -132,7 +135,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     }
 
     @Override
-    protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
+    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
         if (useOpenJp2Jna) {
             computeRectDirect(dest, destRect);
         } else {

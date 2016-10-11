@@ -49,6 +49,7 @@ public class TileLayout {
      */
     public final int numYTiles;
     public final int numResolutions;
+    public int numBands;
 
     public TileLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions) {
         this.width = width;
@@ -58,6 +59,7 @@ public class TileLayout {
         this.numXTiles = numXTiles;
         this.numYTiles = numYTiles;
         this.numResolutions = numResolutions;
+        this.numBands = 1;
     }
 
     @Override

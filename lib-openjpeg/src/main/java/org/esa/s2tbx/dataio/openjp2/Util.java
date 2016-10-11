@@ -4,19 +4,20 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import org.esa.snap.core.util.SystemUtils;
 
-import java.awt.image.*;
+import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Utility class for various operations
@@ -45,7 +46,7 @@ public class Util {
         }};
     }
 
-    public static Raster read(Path path, int dataType) throws IOException {
+    /*public static Raster read(Path path, int dataType) throws IOException {
         int size = (int) Files.size(path);
         ByteBuffer buf = null;
         try (RandomAccessFile in = new RandomAccessFile(path.toFile(), "r")) {
@@ -99,32 +100,90 @@ public class Util {
             e.printStackTrace();
         }
         return raster;
-    }
+    }*/
 
-    public static int[] read(Path path) throws IOException {
+    public static int[] read(Path path, int dataType) throws IOException {
         int size = (int) Files.size(path);
+        int pixSize;
+        switch (dataType) {
+            case DataBuffer.TYPE_BYTE:
+                pixSize = 1;
+                break;
+            case DataBuffer.TYPE_USHORT:
+            case DataBuffer.TYPE_SHORT:
+                pixSize = 2;
+                break;
+            case DataBuffer.TYPE_INT:
+            default:
+                pixSize = 4;
+                break;
+        }
         ByteBuffer buf;
-        int[] out = new int[size];
+        int[] out = new int[2 + (size - 8) / pixSize];
         try (RandomAccessFile in = new RandomAccessFile(path.toFile(), "r")) {
             try (FileChannel file = in.getChannel()) {
-                buf = ByteBuffer.allocate(size * 4);
-                file.read(buf);
-                buf.position(0);
-                IntBuffer intBuffer = buf.asIntBuffer();
-                intBuffer.get(out);
+                buf = file.map(FileChannel.MapMode.READ_ONLY, 0, size);
+                out[0] = buf.getInt();
+                out[1] = buf.getInt();
+                if (pixSize == 4) {
+                    for (int i = 2; i < out.length; i++) {
+                        out[i] = buf.getInt();
+                    }
+                } else if (pixSize == 2) {
+                    for (int i = 2; i < out.length; i++) {
+                        out[i] = buf.getShort();
+                    }
+                } else {
+                    for (int i = 2; i < out.length; i++) {
+                        out[i] = buf.get();
+                    }
+                }
             }
         }
         return out;
     }
 
-    public static Path write(ByteBuffer buffer, Path toFile) throws IOException {
-        try (RandomAccessFile outFile = new RandomAccessFile(toFile.toFile(), "rw")) {
-            try (FileChannel file = outFile.getChannel()) {
-                buffer.position(0);
-                file.write(buffer);
+    public static Path write(int width, int height, int[] values, int dataType, Path toFile, Function<Path, Void> completionCallBack) throws IOException {
+        int pixSize;
+        switch (dataType) {
+            case DataBuffer.TYPE_BYTE:
+                pixSize = 1;
+                break;
+            case DataBuffer.TYPE_USHORT:
+            case DataBuffer.TYPE_SHORT:
+                pixSize = 2;
+                break;
+            case DataBuffer.TYPE_INT:
+            default:
+                pixSize = 4;
+                break;
+        }
+        try (RandomAccessFile raf = new RandomAccessFile(toFile.toFile(), "rw")) {
+            try (FileChannel file = raf.getChannel()) {
+                ByteBuffer buffer = file.map(FileChannel.MapMode.READ_WRITE, 0, pixSize * values.length + 8);
+                buffer.putInt(width);
+                buffer.putInt(height);
+                if (pixSize == 4) {
+                    for (int v : values) {
+                        buffer.putInt(v);
+                    }
+                } else if (pixSize == 2) {
+                    for (int v : values) {
+                        buffer.putShort((short) v);
+                    }
+                } else {
+                    for (int v : values) {
+                        buffer.put((byte) v);
+                    }
+                }
+                file.close();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (completionCallBack != null) {
+                completionCallBack.apply(toFile);
+            }
         }
         return toFile;
     }
