@@ -52,6 +52,7 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
 
     protected Class fileClass;
     protected String[] schemaLocations;
+    protected String schemaBasePath = null;
 
     /**
      * Tries to infer the type of the element, based on the available XSD schema definition.
@@ -88,6 +89,9 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
         if (schemaLocations != null && shouldValidateSchema()) {
             SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             ClassLoader classLoader = this.getClass().getClassLoader();
+            if(schemaBasePath != null) {
+                schemaFactory.setResourceResolver(new ResourceResolver(schemaBasePath, classLoader));
+            }
             List<StreamSource> streamSourceList = new Vector<>();
             for (String schemaLocation : schemaLocations) {
                 InputStream is = classLoader.getResourceAsStream(schemaLocation);
@@ -97,6 +101,7 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
             StreamSource sources[] = new StreamSource[streamSourceList.size()];
             Schema schema = schemaFactory.newSchema(streamSourceList.toArray(sources));
             factory.setSchema(schema);
+            factory.setNamespaceAware(true);
             factory.setValidating(true);
         }
         SAXParser parser = factory.newSAXParser();
@@ -111,6 +116,9 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
         if (schemaLocations != null && shouldValidateSchema()) {
             SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
             ClassLoader classLoader = this.getClass().getClassLoader();
+            if(schemaBasePath != null) {
+                schemaFactory.setResourceResolver(new ResourceResolver(schemaBasePath, classLoader));
+            }
             List<StreamSource> streamSourceList = new Vector<>();
             for (String schemaLocation : schemaLocations) {
                 InputStream is = classLoader.getResourceAsStream(schemaLocation);
@@ -120,6 +128,7 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
             StreamSource sources[] = new StreamSource[streamSourceList.size()];
             Schema schema = schemaFactory.newSchema(streamSourceList.toArray(sources));
             factory.setSchema(schema);
+            factory.setNamespaceAware(true);
             factory.setValidating(true);
         }
         SAXParser parser = factory.newSAXParser();
@@ -140,6 +149,17 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
     protected boolean shouldValidateSchema() {
         return false;
     }
+
+    /**
+     * Sets the location of the schema base path that should be used for XSD
+     * schema validation.
+     *
+     * @param schemaBasePath   The schema base path.
+     */
+    protected void setSchemaBasePath(String schemaBasePath) {
+        this.schemaBasePath = schemaBasePath;
+    }
+
 
     /**
      * Sets the location(s) of the XSD schema(s) that should be used for XSD
