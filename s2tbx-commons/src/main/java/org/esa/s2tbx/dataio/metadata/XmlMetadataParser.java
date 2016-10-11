@@ -220,17 +220,17 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
                 if (buffer != null && !buffer.isEmpty() && !buffer.startsWith("\n")) {
                     MetadataAttribute attribute = new MetadataAttribute(closingElement.getName(), inferType(qName, buffer), false);
                     elementStack.peek().addAttribute(attribute);
-                    currentPath = currentPath.replace(closingElement.getName() + "/", "");
+                    currentPath = removeClosingElement(currentPath,closingElement.getName());
                     result.indexAttribute(currentPath, attribute);
                     buffer = "";
                 } else {
                     elementStack.peek().addElement(closingElement);
-                    currentPath = currentPath.replace(closingElement.getName() + "/", "");
+                    currentPath = removeClosingElement(currentPath,closingElement.getName());
                 }
             } else {
                 XmlMetadata.CopyChildElements(closingElement, result.getRootElement());
                 result.getRootElement().setName("Metadata");
-                currentPath = currentPath.replace(closingElement.getName() + "/", "");
+                currentPath = removeClosingElement(currentPath,closingElement.getName());
             }
         }
 
@@ -239,6 +239,14 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
             String error = e.getMessage();
             if (!(error.contains("Dimap_Document") || error.contains("no grammar found")))
                 systemLogger.warning(e.getMessage());
+        }
+
+        private String removeClosingElement (String path, String closingElementName) {
+            int lastIndex = path.lastIndexOf(closingElementName +"/");
+            if(lastIndex == -1) {
+                return path;
+            }
+            return path.substring(0, lastIndex);
         }
     }
 
