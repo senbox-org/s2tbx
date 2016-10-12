@@ -1,41 +1,19 @@
 package org.esa.s2tbx.dataio.s2.l3;
 
-import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
-import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
-import https.psd_13_sentinel2_eo_esa_int.dico._13.pdgs.dimap.A_L3_Product_Info;
-import https.psd_13_sentinel2_eo_esa_int.dico._13.pdgs.dimap.A_PRODUCT_ORGANIZATION_3;
-import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
-import https.psd_12_sentinel2_eo_esa_int.dico._12.pdgs.dimap.A_TILE_DESCRIPTION;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_3_tile_metadata.Level3_Tile;
-import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_3.Level3_User_Product;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
-import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc;
-import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.snap.core.datamodel.ColorPaletteDef;
 import org.esa.snap.core.util.SystemUtils;
-import org.w3c.dom.Element;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.awt.Color.getHSBColor;
 import static java.lang.Math.floor;

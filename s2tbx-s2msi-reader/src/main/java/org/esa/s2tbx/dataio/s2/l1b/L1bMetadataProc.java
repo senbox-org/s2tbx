@@ -18,7 +18,6 @@
 package org.esa.s2tbx.dataio.s2.l1b;
 
 
-import https.psd_13_sentinel2_eo_esa_int.psd.user_product_level_1b.Level1B_User_Product;
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
@@ -69,64 +68,6 @@ public class L1bMetadataProc extends S2MetadataProc {
         return String.format("IMG_DATA%s{{MISSION_ID}}_OPER_MSI_L1B_GR_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{DETECTOR}}_%s.jp2", File.separator, bandFileId);
     }
 
-    public static L1bMetadata.ProductCharacteristics getProductOrganization(Level1B_User_Product product) {
-
-        L1bMetadata.ProductCharacteristics characteristics = new L1bMetadata.ProductCharacteristics();
-        characteristics.setSpacecraft(product.getGeneral_Info().getProduct_Info().getDatatake().getSPACECRAFT_NAME());
-        characteristics.setDatasetProductionDate(product.getGeneral_Info().getProduct_Info().getDatatake().getDATATAKE_SENSING_START().toString());
-        characteristics.setProcessingLevel(product.getGeneral_Info().getProduct_Info().getPROCESSING_LEVEL().getValue().value());
-
-        characteristics.setProductStartTime(((Element) product.getGeneral_Info().getProduct_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
-        characteristics.setProductStopTime(((Element) product.getGeneral_Info().getProduct_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
-
-        List<S2BandInformation> aInfo = new ArrayList<>();
-
-        /*
-         * User products do not provide spectral information
-         * so we hardcode them here
-         *
-        Object spectral_list = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List();
-
-        if (spectral_list != null) {
-
-            List<A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information> spectralInfoList = product.getGeneral_Info().getProduct_Image_Characteristics().getSpectral_Information_List().getSpectral_Information();
-
-
-            for (A_PRODUCT_INFO_USERL1B.Product_Image_Characteristics.Spectral_Information_List.Spectral_Information sin : spectralInfoList) {
-                S2SpectralInformation data = new S2SpectralInformation();
-                data.setBandId(Integer.parseInt(sin.getBandId()));
-                data.setPhysicalBand(sin.getPhysicalBand().value());
-                data.setResolution(S2SpatialResolution.valueOfResolution(sin.getRESOLUTION()));
-
-                int size = sin.getSpectral_Response().getVALUES().size();
-                data.setSpectralResponseValues(ArrayUtils.toPrimitive(sin.getSpectral_Response().getVALUES().toArray(new Double[size])));
-                data.setWavelengthCentral(sin.getWavelength().getCENTRAL().getValue());
-                data.setWavelengthMax(sin.getWavelength().getMAX().getValue());
-                data.setWavelengthMin(sin.getWavelength().getMIN().getValue());
-
-                aInfo.add(data);
-            }
-        }
-        */
-        aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R10M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M));
-
-        int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
-
-        return characteristics;
-    }
 
     public static S2IndexBandInformation makeTileInformation(String detector, S2SpatialResolution resolution, L1bSceneDescription sceneDescription) {
 
