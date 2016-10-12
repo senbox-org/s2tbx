@@ -48,14 +48,8 @@ import java.util.logging.Logger;
 public class L1bMetadata extends S2Metadata {
     protected Logger logger = SystemUtils.LOG;
 
-    private ProductCharacteristics productCharacteristics;
-
     public static L1bMetadata parseHeader(File file, String granuleName, S2Config config) throws IOException, ParserConfigurationException, SAXException {
         return new L1bMetadata(file.toPath(), granuleName, config);
-    }
-
-    public ProductCharacteristics getProductCharacteristics() {
-        return productCharacteristics;
     }
 
     private L1bMetadata(Path path, String granuleName, S2Config config) throws IOException, ParserConfigurationException, SAXException {
@@ -76,7 +70,7 @@ public class L1bMetadata extends S2Metadata {
 
         IL1bProductMetadata metadataProduct = L1bMetadataFactory.createL1bProductMetadata(path);
 
-        productCharacteristics = metadataProduct.getProductOrganization();
+        setProductCharacteristics(metadataProduct.getProductOrganization());
 
         Collection<String> tileNames;
         if (granuleName == null) {
@@ -128,6 +122,7 @@ public class L1bMetadata extends S2Metadata {
         if(getProductCharacteristics() == null) {
             setProductCharacteristics(granuleMetadata.getTileProductOrganization());
         }
+
         Map<S2SpatialResolution, TileGeometry> geoms = granuleMetadata.getGranuleGeometries(getConfig());
         Tile tile = new Tile(granuleMetadata.getGranuleID(), granuleMetadata.getDetectorID());
         tile.setTileGeometries(geoms);

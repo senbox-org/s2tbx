@@ -178,6 +178,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         boolean isAGranule = S2L1BGranuleMetadataFilename.isGranuleFilename(metadataFile.getName());
+        boolean foundProductMetadata = true;
 
         if (isAGranule) {
             logger.fine("Reading a granule");
@@ -219,7 +220,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                 }
             }
             if (productMetadataFile == null) {
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
+                foundProductMetadata = false;
+                productMetadataFile = metadataFile;
+                //throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
             }
         } else {
             productMetadataFile = metadataFile;
@@ -272,7 +275,12 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
                 for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
                     S2GranuleImageFilename granuleFileName = gf.getImageFilename(bandInformation.getPhysicalBand());
-                    String imgFilename = "GRANULE" + File.separator + tile.getId() + File.separator + "IMG_DATA" + File.separator + granuleFileName.name;
+                    String imgFilename = null;
+                    if(foundProductMetadata) {
+                        imgFilename = "GRANULE" + File.separator + tile.getId() + File.separator + "IMG_DATA" + File.separator + granuleFileName.name;
+                    } else {
+                        imgFilename = "IMG_DATA" + File.separator + granuleFileName.name;
+                    }
 
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand() + ", and detector: " + gf.getDetectorId());
 

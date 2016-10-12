@@ -73,6 +73,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setSpacecraft("Sentinel-2");
         characteristics.setProcessingLevel("Level-3");
+        characteristics.setMetaDataLevel("Standard");
 
         double boaQuantification = L3PSD13Constants.DEFAULT_BOA_QUANTIFICATION;
         characteristics.setQuantificationValue(boaQuantification);
