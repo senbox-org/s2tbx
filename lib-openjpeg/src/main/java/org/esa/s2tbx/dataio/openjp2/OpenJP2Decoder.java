@@ -214,39 +214,37 @@ public class OpenJP2Decoder implements AutoCloseable {
             width = component.w;
             height = component.h;
             pixels = component.data.getPointer().getIntArray(0, component.w * component.h);
-            final int[][] additionals;
-            if (components.length > 1) {
-                additionals = new int[components.length - 1][];
-                for (int i = 1; i < components.length; i++) {
-                    additionals[i - 1] = components[i].data.getPointer().getIntArray(0, components[i].w * components[i].h);
+            executor.submit(() -> {
+                try {
+                    this.pendingWrites.add(this.tileFile);
+                    Util.write(width, height, pixels, this.dataType, this.tileFile, this.writeCompletedCallback);
+                } catch (Exception ex) {
+                    logger.warning(ex.getMessage());
                 }
-            } else {
-                additionals = null;
-            }
-            //if (this.resolution < 4) {
-                executor.submit(() -> {
-                    try {
-                        this.pendingWrites.add(this.tileFile);
-                        Util.write(width, height, pixels, this.dataType, this.tileFile, this.writeCompletedCallback);
-                        if (additionals != null) {
-                            for (int i = 0; i < additionals.length; i++) {
-                                String fName = this.tileFile.getFileName().toString();
-                                fName = fName.substring(0, fName.lastIndexOf("_")) + "_" + String.valueOf(i + 1) + ".raw";
-                                Path otherBandFile = Paths.get(fName);
-                                this.pendingWrites.add(otherBandFile);
-                                Util.write(width, height, additionals[i], this.dataType, otherBandFile, this.writeCompletedCallback);
-                            }
+            });
+            if (components.length > 1) {
+                for (int i = 1; i < components.length; i++) {
+                    final int index = i;
+                    executor.submit(() -> {
+                        try {
+                            String fName = this.tileFile.getFileName().toString();
+                            fName = fName.substring(0, fName.lastIndexOf("_")) + "_" + String.valueOf(index + 1) + ".raw";
+                            Path otherBandFile = Paths.get(fName);
+                            this.pendingWrites.add(otherBandFile);
+                            Util.write(width, height,
+                                       components[index].data.getPointer().getIntArray(0, components[index].w * components[index].h),
+                                       this.dataType, otherBandFile, this.writeCompletedCallback);
+                        } catch (Exception ex) {
+                            logger.warning(ex.getMessage());
                         }
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                });
-            //}
+                    });
+                }
+            }
         } else {
-            pixels = Util.read(this.tileFile, this.dataType);
-            width = pixels[0];
-            height = pixels[1];
-            System.arraycopy(pixels, 2, pixels, 0, pixels.length - 2);
+            int[][] readBytes = Util.read(this.tileFile, this.dataType);
+            pixels = readBytes[1];
+            width = readBytes[0][0];
+            height = readBytes[0][1];
         }
         int bands = 1;
         int[] bandOffsets = new int[bands];
@@ -258,14 +256,15 @@ public class OpenJP2Decoder implements AutoCloseable {
         if (roi != null) {
             values = new int[roi.width * roi.height];
             sampleModel = new PixelInterleavedSampleModel(this.dataType, roi.width, roi.height, bands, roi.width * bands, bandOffsets);
-            int index = 0;
+            int srcPos;
             int dstPos;
-            for (int col = roi.y; col < Math.min(roi.y + roi.height, height); col++) {
+            int maxVal = Math.min(roi.y + roi.height, height);
+            for (int col = roi.y; col < maxVal; col++) {
                 try {
-                    index = roi.x + col * width;
+                    srcPos = roi.x + col * width;
                     dstPos = (col - roi.y) * roi.width;
-                    if (index < pixels.length && (dstPos < values.length))
-                    System.arraycopy(pixels, index, values, dstPos, Math.min(roi.width, pixels.length - index));
+                    if (srcPos < pixels.length && dstPos < values.length)
+                        System.arraycopy(pixels, srcPos, values, dstPos, Math.min(roi.width, pixels.length - srcPos));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     e.printStackTrace();
                 }

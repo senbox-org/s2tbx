@@ -5,8 +5,6 @@ import com.sun.jna.Structure;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.awt.image.DataBuffer;
-import java.awt.image.Raster;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
@@ -46,63 +44,7 @@ public class Util {
         }};
     }
 
-    /*public static Raster read(Path path, int dataType) throws IOException {
-        int size = (int) Files.size(path);
-        ByteBuffer buf = null;
-        try (RandomAccessFile in = new RandomAccessFile(path.toFile(), "r")) {
-            try (FileChannel file = in.getChannel()) {
-                buf = ByteBuffer.allocate(size);
-                file.read(buf);
-            }
-        }
-        Raster raster = null;
-
-        buf.position(0);
-        int width = buf.getInt();
-        int height = buf.getInt();
-        int numBands = buf.getInt();
-        int length = width * height * numBands;
-        DataBuffer buffer = null;
-        switch (dataType) {
-            case DataBuffer.TYPE_BYTE:
-                buffer = new DataBufferByte(buf.array(), width * height * numBands);
-                break;
-            case DataBuffer.TYPE_SHORT:
-                short[] shorts = new short[length];
-                buf.asShortBuffer().get(shorts, 0, shorts.length);
-                buffer = new DataBufferShort(shorts, width * height * numBands);
-                break;
-            case DataBuffer.TYPE_USHORT:
-                short[] ushorts = new short[length];
-                buf.asShortBuffer().get(ushorts, 0, ushorts.length);
-                buffer = new DataBufferUShort(ushorts, width * height * numBands);
-                break;
-            case DataBuffer.TYPE_INT:
-                int[] ints = new int[length];
-                buf.asIntBuffer().get(ints, 0, ints.length);
-                buffer = new DataBufferInt(ints, width * height * numBands);
-                break;
-            case DataBuffer.TYPE_FLOAT:
-                float[] floats = new float[length];
-                buf.asFloatBuffer().get(floats, 0, floats.length);
-                buffer = new DataBufferFloat(floats, width * height * numBands);
-                break;
-            case DataBuffer.TYPE_DOUBLE:
-                double[] doubles = new double[length];
-                buffer = new DataBufferDouble(doubles, width * height * numBands);
-                break;
-        }
-
-        try {
-            SampleModel sm = new PixelInterleavedSampleModel(dataType, width, height, numBands, width * numBands, new int[] { 0 });
-            raster = WritableRaster.createRaster(sm, buffer, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return raster;
-    }*/
-
-    public static int[] read(Path path, int dataType) throws IOException {
+    public static int[][] read(Path path, int dataType) throws IOException {
         int size = (int) Files.size(path);
         int pixSize;
         switch (dataType) {
@@ -119,23 +61,25 @@ public class Util {
                 break;
         }
         ByteBuffer buf;
-        int[] out = new int[2 + (size - 8) / pixSize];
+        int[][] out = new int[2][];
+        out[0] = new int[2];
+        out[1] = new int[(size - 8) / pixSize];
         try (RandomAccessFile in = new RandomAccessFile(path.toFile(), "r")) {
             try (FileChannel file = in.getChannel()) {
                 buf = file.map(FileChannel.MapMode.READ_ONLY, 0, size);
-                out[0] = buf.getInt();
-                out[1] = buf.getInt();
+                out[0][0] = buf.getInt();
+                out[0][1] = buf.getInt();
                 if (pixSize == 4) {
-                    for (int i = 2; i < out.length; i++) {
-                        out[i] = buf.getInt();
+                    for (int i = 0; i < out[1].length; i++) {
+                        out[1][i] = buf.getInt();
                     }
                 } else if (pixSize == 2) {
-                    for (int i = 2; i < out.length; i++) {
-                        out[i] = buf.getShort();
+                    for (int i = 0; i < out[1].length; i++) {
+                        out[1][i] = buf.getShort();
                     }
                 } else {
-                    for (int i = 2; i < out.length; i++) {
-                        out[i] = buf.get();
+                    for (int i = 0; i < out[1].length; i++) {
+                        out[1][i] = buf.get();
                     }
                 }
             }
@@ -143,7 +87,7 @@ public class Util {
         return out;
     }
 
-    public static Path write(int width, int height, int[] values, int dataType, Path toFile, Function<Path, Void> completionCallBack) throws IOException {
+    public static Path write(int width, int height, int[] values, int dataType, Path toFile, Function<Path, Void> completionCallBack) {
         int pixSize;
         switch (dataType) {
             case DataBuffer.TYPE_BYTE:
@@ -184,17 +128,6 @@ public class Util {
             if (completionCallBack != null) {
                 completionCallBack.apply(toFile);
             }
-        }
-        return toFile;
-    }
-
-    public static Path write(Raster raster, Path toFile) throws IOException {
-        try (FileOutputStream out = new FileOutputStream(toFile.toFile())) {
-            try (FileChannel file = out.getChannel()) {
-                System.out.println(file.write(extractBuffer(raster)));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
         return toFile;
     }
@@ -255,51 +188,4 @@ public class Util {
         return x < a ? a : (x > b ? b : x);
     }
 
-    private static ByteBuffer extractBuffer(Raster raster) {
-        ByteBuffer buffer = null;
-        int width = raster.getWidth();
-        int height = raster.getHeight();
-        int numBands = raster.getNumBands();
-        int pixels = width * height * numBands;
-        switch (raster.getTransferType()) {
-            case DataBuffer.TYPE_BYTE:
-                buffer = ByteBuffer.allocate(pixels + 12);
-                buffer.putInt(width);
-                buffer.putInt(height);
-                buffer.putInt(numBands);
-                buffer.put((byte[]) raster.getDataElements(0, 0, raster.getWidth(), raster.getHeight(), null));
-                break;
-            case DataBuffer.TYPE_USHORT:
-            case DataBuffer.TYPE_SHORT:
-                buffer = ByteBuffer.allocate(2 * pixels + 12);
-                buffer.putInt(width);
-                buffer.putInt(height);
-                buffer.putInt(numBands);
-                buffer.asShortBuffer().put((short[]) raster.getDataElements(0, 0, raster.getWidth(), raster.getHeight(), null));
-                break;
-            case DataBuffer.TYPE_INT:
-                buffer = ByteBuffer.allocate(4 * pixels + 12);
-                buffer.putInt(width);
-                buffer.putInt(height);
-                buffer.putInt(numBands);
-                buffer.asIntBuffer().put((int[]) raster.getDataElements(0, 0, raster.getWidth(), raster.getHeight(), null));
-                break;
-            case DataBuffer.TYPE_FLOAT:
-                buffer = ByteBuffer.allocate(4 * pixels + 12);
-                buffer.putInt(width);
-                buffer.putInt(height);
-                buffer.putInt(numBands);
-                buffer.asFloatBuffer().put((float[]) raster.getDataElements(0, 0, raster.getWidth(), raster.getHeight(), null));
-                break;
-            case DataBuffer.TYPE_DOUBLE:
-                buffer = ByteBuffer.allocate(8 * pixels + 12);
-                buffer.putInt(width);
-                buffer.putInt(height);
-                buffer.putInt(numBands);
-                buffer.asDoubleBuffer().put((double[]) raster.getDataElements(0, 0, raster.getWidth(), raster.getHeight(), null));
-                break;
-        }
-        buffer.position(0);
-        return buffer;
-    }
 }
