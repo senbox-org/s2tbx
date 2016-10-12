@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.s2;
 
 
+import com.sun.media.jfxmedia.logging.Logger;
 import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -33,12 +34,17 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents the Sentinel-2 MSI XML metadata header file.
@@ -66,6 +72,11 @@ public abstract class S2Metadata {
         this.config = config;
         this.unmarshaller = context.createUnmarshaller();
         this.psdString = psdString;
+        this.metadataElements = new ArrayList<>();
+    }
+
+    public S2Metadata(S2Config config) {
+        this.config = config;
         this.metadataElements = new ArrayList<>();
     }
 
@@ -544,6 +555,96 @@ public abstract class S2Metadata {
 
         public void setQuantificationValue(double quantificationValue) {
             this.quantificationValue = quantificationValue;
+        }
+    }
+
+    /**
+     * Used for wrapping the angles read from the metadata
+     * @param valuesZenith each string contains the zenith angles of a full row separated by commas
+     * @param valuesAzimuth each string contains the azimuth angles of a full row separated by commas
+     * @return
+     */
+    public static AnglesGrid wrapAngles (String[] valuesZenith, String[] valuesAzimuth) {
+        S2Metadata.AnglesGrid anglesGrid = null;
+
+        if(valuesAzimuth == null || valuesZenith == null) {
+            return null;
+        }
+        int nRows = valuesZenith.length;
+        int nCols = valuesZenith[0].split(" ").length;
+
+        if(nRows != valuesAzimuth.length || nCols != valuesAzimuth[0].split(" ").length) {
+            return null;
+        }
+
+        anglesGrid = new S2Metadata.AnglesGrid();
+        anglesGrid.setAzimuth(new float[nRows][nCols]);
+        anglesGrid.setZenith(new float[nRows][nCols]);
+
+        for (int rowindex = 0; rowindex < nRows; rowindex++) {
+            String[] zenithSplit = valuesZenith[rowindex].split(" ");
+            String[] azimuthSplit = valuesAzimuth[rowindex].split(" ");
+            if(zenithSplit == null || azimuthSplit == null || zenithSplit.length != nCols ||azimuthSplit.length != nCols) {
+                return null;
+            }
+            for (int colindex = 0; colindex < nCols; colindex++) {
+                anglesGrid.getZenith()[rowindex][colindex] = Float.parseFloat(zenithSplit[colindex]);
+                anglesGrid.getAzimuth()[rowindex][colindex] = Float.parseFloat(azimuthSplit[colindex]);
+            }
+        }
+        return anglesGrid;
+    }
+
+    public static AnglesGrid[] wrapStandardViewingAngles(MetadataElement tileAnglesMetadataElement) {
+        ArrayList<AnglesGrid> anglesGrids = new ArrayList<>();
+        for(MetadataElement viewingAnglesElement : tileAnglesMetadataElement.getElements()) {
+            if (!viewingAnglesElement.getName().equals("Viewing_Incidence_Angles_Grids")) {
+                continue;
+            }
+            MetadataAttribute[] azAnglesAttributes = viewingAnglesElement.getElement("Azimuth").getElement("Values_List").getAttributes();
+            MetadataAttribute[] zenAnglesAttributes = viewingAnglesElement.getElement("Zenith").getElement("Values_List").getAttributes();
+            int nRows = azAnglesAttributes.length;
+            if(nRows != zenAnglesAttributes.length) {
+                continue;
+            }
+            String[] azAnglesString = new String[nRows];
+            String[] zenAnglesString = new String[nRows];
+            for(int i = 0 ; i < nRows ; i++) {
+                azAnglesString[i] = azAnglesAttributes[i].getData().toString();
+                zenAnglesString[i] = zenAnglesAttributes[i].getData().toString();
+            }
+            AnglesGrid anglesGrid= S2Metadata.wrapAngles(zenAnglesString, azAnglesString);
+            anglesGrid.setBandId(Integer.parseInt(viewingAnglesElement.getAttributeString("bandId")));
+            anglesGrid.setDetectorId(Integer.parseInt(viewingAnglesElement.getAttributeString("detectorId")));
+            anglesGrids.add(anglesGrid);
+        }
+        return anglesGrids.toArray(new AnglesGrid[anglesGrids.size()]);
+    }
+
+    /**
+     * Read the content of 'path' searching the string "psd-XX.sentinel2.eo.esa.int" and return the XX parsed to an integer.
+     * @param path
+     * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
+     */
+    public static int getPSD(Path path){
+        try {
+            FileInputStream fileStream = new FileInputStream(path.toString());
+            String xmlStreamAsString = IOUtils.toString(fileStream);
+            String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
+
+            Pattern p = Pattern.compile(regex);
+            Matcher m = p.matcher(xmlStreamAsString);
+            if (m.find()) {
+                int position = m.start();
+                String psdNumber = xmlStreamAsString.substring(position+4,position+6);
+                return Integer.parseInt(psdNumber);
+            }
+            else {
+                return 0;
+            }
+
+        } catch (Exception e) {
+            return 0;
         }
     }
 }

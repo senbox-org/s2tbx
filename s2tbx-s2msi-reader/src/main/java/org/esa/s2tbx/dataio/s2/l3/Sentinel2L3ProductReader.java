@@ -1,6 +1,5 @@
 package org.esa.s2tbx.dataio.s2.l3;
 
-import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -10,11 +9,9 @@ import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.ortho.S2ProductCRSCache;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
-import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.core.datamodel.TiePointGrid;
-import org.jdom.JDOMException;
+import org.xml.sax.SAXException;
 
-import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -48,7 +45,7 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
 
         try {
             return L3Metadata.parseHeader(file, granuleName, config, epsg, getProductResolution());
-        } catch (JDOMException | JAXBException e) {
+        } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse metadata in " + file.getName());
         }
     }

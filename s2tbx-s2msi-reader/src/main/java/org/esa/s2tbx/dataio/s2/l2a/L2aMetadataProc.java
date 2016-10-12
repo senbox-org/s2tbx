@@ -17,53 +17,23 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.AN_INCIDENCE_ANGLE_GRID;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_GEOMETRIC_INFO_TILE;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_L2A_Product_Info;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_MASK_LIST;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_PRODUCT_ORGANIZATION_2A;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_QUALITY_INDICATORS_INFO_TILE_L2A;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_SUN_INCIDENCE_ANGLE_GRID;
-import https.psd_12_sentinel2_eo_esa_int.dico._1_0.pdgs.dimap.A_TILE_DESCRIPTION;
-import https.psd_12_sentinel2_eo_esa_int.psd.s2_pdi_level_2a_tile_metadata.Level2A_Tile;
-import https.psd_12_sentinel2_eo_esa_int.psd.user_product_level_2a.Level2A_User_Product;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
+
 import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
-import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2MetadataProc;
-import org.esa.s2tbx.dataio.s2.S2MetadataType;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc;
-import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
-import org.w3c.dom.Element;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import java.awt.Color;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author opicas-p
  */
 public class L2aMetadataProc extends S2OrthoMetadataProc {
-
-    public static JAXBContext getJaxbContext() throws JAXBException, FileNotFoundException {
-        ClassLoader s2c = Level2A_User_Product.class.getClassLoader();
-        return JAXBContext.newInstance(S2MetadataType.L2A, s2c);
-    }
 
     private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution, double quantification) {
         return new S2SpectralInformation(
@@ -165,61 +135,10 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
         return String.format("QI_DATA%s{{MISSION_ID}}_USER_DDV_L2A_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_{{RESOLUTION}}m.jp2", File.separator);
     }
 
-    public static L2aMetadata.ProductCharacteristics getProductOrganization(Level2A_User_Product product, S2SpatialResolution resolution) {
-        L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
-        characteristics.setSpacecraft(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getSPACECRAFT_NAME());
-        characteristics.setDatasetProductionDate(product.getGeneral_Info().getL2A_Product_Info().getDatatake().getDATATAKE_SENSING_START().toString());
-        characteristics.setProcessingLevel(product.getGeneral_Info().getL2A_Product_Info().getPROCESSING_LEVEL().getValue().value());
-        characteristics.setProductStartTime(((Element) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_START_TIME()).getFirstChild().getNodeValue());
-        characteristics.setProductStopTime(((Element) product.getGeneral_Info().getL2A_Product_Info().getPRODUCT_STOP_TIME()).getFirstChild().getNodeValue());
-
-        double boaQuantification = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getL1C_L2A_Quantification_Values_List().getL2A_BOA_QUANTIFICATION_VALUE().getValue();
-        characteristics.setQuantificationValue(boaQuantification);
-
-        double aotQuantification = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getL1C_L2A_Quantification_Values_List().getL2A_AOT_QUANTIFICATION_VALUE().getValue();
-
-        double wvpQuantification = product.getGeneral_Info().getL2A_Product_Image_Characteristics().getL1C_L2A_Quantification_Values_List().getL2A_WVP_QUANTIFICATION_VALUE().getValue();
-
-
-        List<S2BandInformation> aInfo = getBandInformationList(resolution,boaQuantification,aotQuantification,wvpQuantification);
-        int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
-
-        return characteristics;
-    }
-
-
-    public static L2aMetadata.ProductCharacteristics getTileProductOrganization(Level2A_Tile aTile, S2SpatialResolution resolution) {
-        L2aMetadata.ProductCharacteristics characteristics = new L2aMetadata.ProductCharacteristics();
-
-
-        double boaQuantification = 10000; //Default value
-        characteristics.setQuantificationValue(boaQuantification);
-
-        double aotQuantification = 1000; //Default value
-
-        double wvpQuantification = 1000; //Default value
-
-        characteristics.setSpacecraft("Sentinel-2");
-
-        //TODO anything from filename?
-        //characteristics.setDatasetProductionDate("Unknown");
-        //characteristics.setProductStartTime("Unknown");
-        //characteristics.setProductStopTime("Unknown");
-
-        characteristics.setProcessingLevel("Level-2A");
-
-        List<S2BandInformation> aInfo = getBandInformationList(resolution,boaQuantification,aotQuantification,wvpQuantification);
-        int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
-
-        return characteristics;
-    }
-
-    private static List<S2BandInformation> getBandInformationList (S2SpatialResolution resolution,
-                                                                   double boaQuantification,
-                                                                   double aotQuantification,
-                                                                   double wvpQuantification) {
+    public static List<S2BandInformation> getBandInformationList(S2SpatialResolution resolution,
+                                                                 double boaQuantification,
+                                                                 double aotQuantification,
+                                                                 double wvpQuantification) {
         List<S2BandInformation> aInfo = new ArrayList<>();
         switch (resolution) {
             case R10M:
@@ -294,172 +213,5 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
                 break;
         }
         return aInfo;
-    }
-
-    public static Collection<String> getTiles(Level2A_User_Product product) {
-        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
-
-        List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> aGranuleList = info.getGranule_List();
-
-        //New list with only granules with different granuleIdentifier
-        List<A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> aGranuleListReduced = new ArrayList<>();
-        Map<String, A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> mapGranules = new LinkedHashMap<>(aGranuleList.size());
-        for (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List granule : aGranuleList) {
-            mapGranules.put(granule.getGranules().getGranuleIdentifier(), granule);
-        }
-        for (Map.Entry<String, A_L2A_Product_Info.L2A_Product_Organisation.Granule_List> granule : mapGranules.entrySet()) {
-            aGranuleListReduced.add(granule.getValue());
-        }
-
-        Transformer tileSelector = o -> {
-            A_L2A_Product_Info.L2A_Product_Organisation.Granule_List ali = (A_L2A_Product_Info.L2A_Product_Organisation.Granule_List) o;
-            A_PRODUCT_ORGANIZATION_2A.Granules gr = ali.getGranules();
-            return gr.getGranuleIdentifier();
-        };
-
-        return CollectionUtils.collect(aGranuleListReduced, tileSelector);
-    }
-
-    public static S2DatastripFilename getDatastrip(Level2A_User_Product product) {
-        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
-
-        String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
-        S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-
-        if (dirDatastrip != null) {
-            String fileName = dirDatastrip.getFileName(null);
-            return S2OrthoDatastripFilename.create(fileName);
-        } else {
-            return null;
-        }
-    }
-
-    public static S2DatastripDirFilename getDatastripDir(Level2A_User_Product product) {
-        A_L2A_Product_Info.L2A_Product_Organisation info = product.getGeneral_Info().getL2A_Product_Info().getL2A_Product_Organisation();
-        String dataStripMetadataFilenameCandidate = info.getGranule_List().get(0).getGranules().getDatastripIdentifier();
-
-        return S2DatastripDirFilename.create(dataStripMetadataFilenameCandidate, null);
-    }
-
-    public static Map<S2SpatialResolution, L2aMetadata.TileGeometry> getTileGeometries(Level2A_Tile product) {
-
-        A_GEOMETRIC_INFO_TILE info = product.getGeometric_Info();
-        A_GEOMETRIC_INFO_TILE.Tile_Geocoding tgeo = info.getTile_Geocoding();
-
-
-        List<A_TILE_DESCRIPTION.Geoposition> poss = tgeo.getGeoposition();
-        List<A_TILE_DESCRIPTION.Size> sizz = tgeo.getSize();
-
-        Map<S2SpatialResolution, L2aMetadata.TileGeometry> resolutions = new HashMap<>();
-
-        for (A_TILE_DESCRIPTION.Geoposition gpos : poss) {
-            S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(gpos.getResolution());
-            L2aMetadata.TileGeometry tgeox = new L2aMetadata.TileGeometry();
-            tgeox.setUpperLeftX(gpos.getULX());
-            tgeox.setUpperLeftY(gpos.getULY());
-            tgeox.setxDim(gpos.getXDIM());
-            tgeox.setyDim(gpos.getYDIM());
-            resolutions.put(resolution, tgeox);
-        }
-
-        for (A_TILE_DESCRIPTION.Size asize : sizz) {
-            S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(asize.getResolution());
-            L2aMetadata.TileGeometry tgeox = resolutions.get(resolution);
-            tgeox.setNumCols(asize.getNCOLS());
-            tgeox.setNumRows(asize.getNROWS());
-        }
-
-        return resolutions;
-    }
-
-    public static L2aMetadata.AnglesGrid getSunGrid(Level2A_Tile product) {
-
-        A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
-        A_SUN_INCIDENCE_ANGLE_GRID sun = ang.getSun_Angles_Grid();
-
-        int azrows = sun.getAzimuth().getValues_List().getVALUES().size();
-        int azcolumns = sun.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
-
-        int zenrows = sun.getZenith().getValues_List().getVALUES().size();
-        int zencolumns = sun.getZenith().getValues_List().getVALUES().size();
-
-        L2aMetadata.AnglesGrid ag = new L2aMetadata.AnglesGrid();
-        ag.setAzimuth(new float[azrows][azcolumns]);
-        ag.setZenith(new float[zenrows][zencolumns]);
-
-        for (int rowindex = 0; rowindex < azrows; rowindex++) {
-            List<Float> azimuths = sun.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
-            for (int colindex = 0; colindex < azcolumns; colindex++) {
-                ag.getAzimuth()[rowindex][colindex] = azimuths.get(colindex);
-            }
-        }
-
-        for (int rowindex = 0; rowindex < zenrows; rowindex++) {
-            List<Float> zeniths = sun.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
-            for (int colindex = 0; colindex < zencolumns; colindex++) {
-                ag.getZenith()[rowindex][colindex] = zeniths.get(colindex);
-            }
-        }
-
-        return ag;
-    }
-
-    public static L2aMetadata.AnglesGrid[] getAnglesGrid(Level2A_Tile product) {
-        A_GEOMETRIC_INFO_TILE.Tile_Angles ang = product.getGeometric_Info().getTile_Angles();
-        List<AN_INCIDENCE_ANGLE_GRID> incilist = ang.getViewing_Incidence_Angles_Grids();
-
-        L2aMetadata.AnglesGrid[] darr = new L2aMetadata.AnglesGrid[incilist.size()];
-        for (int index = 0; index < incilist.size(); index++) {
-            AN_INCIDENCE_ANGLE_GRID angleGrid = incilist.get(index);
-
-            int azrows2 = angleGrid.getAzimuth().getValues_List().getVALUES().size();
-            int azcolumns2 = angleGrid.getAzimuth().getValues_List().getVALUES().get(0).getValue().size();
-
-            int zenrows2 = angleGrid.getZenith().getValues_List().getVALUES().size();
-            int zencolumns2 = angleGrid.getZenith().getValues_List().getVALUES().get(0).getValue().size();
-
-
-            L2aMetadata.AnglesGrid ag2 = new L2aMetadata.AnglesGrid();
-            ag2.setAzimuth(new float[azrows2][azcolumns2]);
-            ag2.setZenith(new float[zenrows2][zencolumns2]);
-
-            for (int rowindex = 0; rowindex < azrows2; rowindex++) {
-                List<Float> azimuths = angleGrid.getAzimuth().getValues_List().getVALUES().get(rowindex).getValue();
-                for (int colindex = 0; colindex < azcolumns2; colindex++) {
-                    ag2.getAzimuth()[rowindex][colindex] = azimuths.get(colindex);
-                }
-            }
-
-            for (int rowindex = 0; rowindex < zenrows2; rowindex++) {
-                List<Float> zeniths = angleGrid.getZenith().getValues_List().getVALUES().get(rowindex).getValue();
-                for (int colindex = 0; colindex < zencolumns2; colindex++) {
-                    ag2.getZenith()[rowindex][colindex] = zeniths.get(colindex);
-                }
-            }
-
-            ag2.setBandId(Integer.parseInt(angleGrid.getBandId()));
-            ag2.setDetectorId(Integer.parseInt(angleGrid.getDetectorId()));
-            darr[index] = ag2;
-        }
-
-        return darr;
-    }
-
-    public static S2Metadata.MaskFilename[] getMasks(Level2A_Tile aTile, File file) {
-        A_QUALITY_INDICATORS_INFO_TILE_L2A qualityInfo = aTile.getQuality_Indicators_Info();
-
-        S2Metadata.MaskFilename[] maskFileNamesArray = null;
-        if (qualityInfo != null) {
-            List<A_MASK_LIST.MASK_FILENAME> masks = aTile.getQuality_Indicators_Info().getL1C_Pixel_Level_QI().getMASK_FILENAME();
-            List<L2aMetadata.MaskFilename> aMaskList = new ArrayList<>();
-            for (A_MASK_LIST.MASK_FILENAME filename : masks) {
-                File QIData = new File(file.getParent(), "QI_DATA");
-                File GmlData = new File(QIData, filename.getValue());
-                aMaskList.add(new L2aMetadata.MaskFilename(filename.getBandId(), filename.getType(), GmlData));
-            }
-
-            maskFileNamesArray = aMaskList.toArray(new L2aMetadata.MaskFilename[aMaskList.size()]);
-        }
-        return maskFileNamesArray;
     }
 }

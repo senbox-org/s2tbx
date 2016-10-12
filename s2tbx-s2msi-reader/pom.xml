@@ -59,6 +59,10 @@
             <artifactId>sqlite-jdbc</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.sun.xsom</groupId>
+            <artifactId>xsom</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.xml.parsers</groupId>
             <artifactId>jaxp-api</artifactId>
         </dependency>
@@ -144,72 +148,6 @@
                         <publicPackage>org.apache.commons.*</publicPackage>
                     </publicPackages>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <version>0.10.0</version>
-                <configuration>
-                    <locale>en</locale>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>schema-generate-L3</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <strict>false</strict>
-                            <schemaDirectory>src/main/resources/schemas/L3_PSD131</schemaDirectory>
-                            <schemaIncludes>
-                                <include>*_Metadata.xsd</include>
-                            </schemaIncludes>
-                            <generateDirectory>target/generated-sources/xjc/L3_PSD131</generateDirectory>
-                            <forceRegenerate>true</forceRegenerate>
-                            <removeOldOutput>true</removeOldOutput>
-                            <specVersion>2.1</specVersion>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>schema-generate-L2A</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <strict>false</strict>
-                            <schemaDirectory>src/main/resources/schemas/L2A_PSD12</schemaDirectory>
-                            <schemaIncludes>
-                                <include>*_Metadata.xsd</include>
-                            </schemaIncludes>
-                            <generateDirectory>target/generated-sources/xjc/L2A_PSD12</generateDirectory>
-                            <forceRegenerate>true</forceRegenerate>
-                            <removeOldOutput>true</removeOldOutput>
-                            <specVersion>2.1</specVersion>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>schema-generate-PSD13</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <strict>false</strict>
-                            <schemaDirectory>src/main/resources/schemas/PSD13</schemaDirectory>
-                            <schemaIncludes>
-                                <include>*_Metadata.xsd</include>
-                            </schemaIncludes>
-                            <generateDirectory>target/generated-sources/xjc/PSD13</generateDirectory>
-                            <forceRegenerate>true</forceRegenerate>
-                            <removeOldOutput>true</removeOldOutput>
-                            <specVersion>2.1</specVersion>
-                        </configuration>
-                    </execution>
-
-
-
-
-                </executions>
             </plugin>
 
         </plugins>
