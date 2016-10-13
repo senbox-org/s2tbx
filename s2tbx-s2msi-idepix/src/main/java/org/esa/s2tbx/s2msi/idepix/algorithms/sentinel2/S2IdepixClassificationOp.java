@@ -199,11 +199,15 @@ public class S2IdepixClassificationOp extends Operator {
             landWaterBand = waterMaskProduct.getBand("land_water_fraction");
         }
 
-        AddElevationOp elevationOp = new AddElevationOp();
-        elevationOp.setParameterDefaultValues();
-        elevationOp.setParameter("demName", demName);
-        elevationOp.setSourceProduct(sourceProduct);
-        elevationProduct = elevationOp.getTargetProduct();
+        if (sourceProduct.containsBand("elevation")) {
+            elevationProduct = sourceProduct;
+        } else {
+            AddElevationOp elevationOp = new AddElevationOp();
+            elevationOp.setParameterDefaultValues();
+            elevationOp.setParameter("demName", demName);
+            elevationOp.setSourceProduct(sourceProduct);
+            elevationProduct = elevationOp.getTargetProduct();
+        }
 
         extendTargetProduct();
     }
