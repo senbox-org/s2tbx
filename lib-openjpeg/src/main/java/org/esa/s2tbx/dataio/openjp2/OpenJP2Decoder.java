@@ -28,8 +28,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Simple wrapper over OpenJP2 library that extracts a Raster
- * from a given .jp2 file
+ * Wrapper over OpenJP2 library for decompression from a given .jp2 file
+ *
+ * @author  Cosmin Cara
+ * @since   5.0.0
  */
 public class OpenJP2Decoder implements AutoCloseable {
     private static final ExecutorService executor;
@@ -54,6 +56,17 @@ public class OpenJP2Decoder implements AutoCloseable {
         executor = Executors.newFixedThreadPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, 4));
     }
 
+    /**
+     * The only constructor of this class.
+     *
+     * @param cacheDir      The cache directory (where extracted info will be saved)
+     * @param file          The source jp2 file
+     * @param bandIndex     The index of the raster band to be handled by this instance
+     * @param dataType      The data type (@see DataBuffer types) of the raster
+     * @param resolution    The resolution to be extracted
+     * @param layer         The quality layers to extract
+     * @param tileIndex     The index of the jp2 tile to be handled
+     */
     public OpenJP2Decoder(Path cacheDir, Path file, int bandIndex, int dataType, int resolution, int layer, int tileIndex) {
         this.logger = SystemUtils.LOG;
         this.dataType = dataType;
@@ -87,18 +100,32 @@ public class OpenJP2Decoder implements AutoCloseable {
         };
     }
 
-    public int[] getImageDimensions() throws IOException {
-        return new int[] { width, height };
+    /**
+     * Returns the extracted image dimensions
+     */
+    public Dimension getImageDimensions() throws IOException {
+        return new Dimension(width, height);
     }
 
+    /**
+     * Extracts the full image.
+     */
     public Raster read() throws IOException {
         return decompress(null);
     }
 
+    /**
+     * Extracts the given region of interest from the image.
+     * @param rectangle     The region of interest
+     */
     public Raster read(Rectangle rectangle) throws IOException {
         return decompress(rectangle);
     }
 
+    /**
+     * Cleans up the native memory resources if allocated.
+     */
+    @Override
     public void close() {
         try {
             if (pImage != null && pImage.getValue() != null) {
@@ -135,21 +162,20 @@ public class OpenJP2Decoder implements AutoCloseable {
         jImage = Util.dereference(Image.class, pImage.getValue());
         ImageComponent[] comps = (ImageComponent[]) jImage.comps.toArray(jImage.numcomps);
         if (jImage.color_space != Enums.ColorSpace.OPJ_CLRSPC_SYCC &&
-                jImage.numcomps == 3 && comps[0].dx == comps[0].dy &&
-                comps[1].dx != 1) {
+                jImage.numcomps == 3 && comps[0].dx == comps[0].dy && comps[1].dx != 1) {
             jImage.color_space = Enums.ColorSpace.OPJ_CLRSPC_SYCC;
         } else if (jImage.numcomps <= 2) {
             jImage.color_space = Enums.ColorSpace.OPJ_CLRSPC_GRAY;
         }
-        if (jImage.color_space == Enums.ColorSpace.OPJ_CLRSPC_SYCC) {
+        /*if (jImage.color_space == Enums.ColorSpace.OPJ_CLRSPC_SYCC) {
             // color_sycc_to_rgb(image);
         } else if (jImage.color_space == Enums.ColorSpace.OPJ_CLRSPC_CMYK
-                && parameters.cod_format != 14 /* TIF_DFMT */) {
+                && parameters.cod_format != 14 *//* TIF_DFMT *//*) {
             // color_cmyk_to_rgb(image);
         } else if (jImage.color_space == Enums.ColorSpace.OPJ_CLRSPC_EYCC) {
             // color_esycc_to_rgb(image);
-        }
-        return comps; //toRaster(comps, roi);
+        }*/
+        return comps;
     }
 
     private DecompressParams initDecodeParams(Path inputFile) {
@@ -185,7 +211,7 @@ public class OpenJP2Decoder implements AutoCloseable {
             Callbacks.MessageFunction callback = new Callbacks.MessageFunction() {
                 @Override
                 public void invoke(Pointer msg, Pointer client_data) {
-                    System.out.println("[INFO]" + msg.getString(0));
+                    logger.info(msg.getString(0));
                 }
 
             };
@@ -208,6 +234,12 @@ public class OpenJP2Decoder implements AutoCloseable {
         if (this.pendingWrites.contains(this.tileFile)) {
             Thread.yield();
         }
+        /*int bands = 1; // always the cached (uncompressed) info has 1 band
+        int[] bandOffsets = new int[bands];
+        for (int i = 0; i < bands; i++)
+            bandOffsets[i] = i;*/
+        int[] bandOffsets = new int[] { 0 };
+        DataBuffer buffer;
         if (!Files.exists(this.tileFile)) {
             ImageComponent[] components = decode();
             ImageComponent component = components[this.bandIndex];
@@ -217,90 +249,84 @@ public class OpenJP2Decoder implements AutoCloseable {
             executor.submit(() -> {
                 try {
                     this.pendingWrites.add(this.tileFile);
-                    Util.write(width, height, pixels, this.dataType, this.tileFile, this.writeCompletedCallback);
+                    Util.write(component.w, component.h, pixels, this.dataType, this.tileFile, this.writeCompletedCallback);
                 } catch (Exception ex) {
                     logger.warning(ex.getMessage());
                 }
             });
             if (components.length > 1) {
-                for (int i = 1; i < components.length; i++) {
+                for (int i = 0; i < components.length; i++) {
                     final int index = i;
-                    executor.submit(() -> {
-                        try {
-                            String fName = this.tileFile.getFileName().toString();
-                            fName = fName.substring(0, fName.lastIndexOf("_")) + "_" + String.valueOf(index + 1) + ".raw";
-                            Path otherBandFile = Paths.get(fName);
-                            this.pendingWrites.add(otherBandFile);
-                            Util.write(width, height,
-                                       components[index].data.getPointer().getIntArray(0, components[index].w * components[index].h),
-                                       this.dataType, otherBandFile, this.writeCompletedCallback);
-                        } catch (Exception ex) {
-                            logger.warning(ex.getMessage());
-                        }
-                    });
+                    if (index != this.bandIndex) {
+                        executor.submit(() -> {
+                            try {
+                                String fName = this.tileFile.getFileName().toString();
+                                fName = fName.substring(0, fName.lastIndexOf("_")) + "_" + String.valueOf(index) + ".raw";
+                                Path otherBandFile = Paths.get(fName);
+                                this.pendingWrites.add(otherBandFile);
+                                Util.write(components[index].w, components[index].h,
+                                        components[index].data.getPointer().getIntArray(0, components[index].w * components[index].h),
+                                        this.dataType, otherBandFile, this.writeCompletedCallback);
+                            } catch (Exception ex) {
+                                logger.warning(ex.getMessage());
+                            }
+                        });
+                    }
                 }
             }
-        } else {
-            int[][] readBytes = Util.read(this.tileFile, this.dataType);
-            pixels = readBytes[1];
-            width = readBytes[0][0];
-            height = readBytes[0][1];
-        }
-        int bands = 1;
-        int[] bandOffsets = new int[bands];
-        for (int i = 0; i < bands; i++)
-            bandOffsets[i] = i;
-        SampleModel sampleModel;
-        DataBuffer buffer;
-        int[] values;
-        if (roi != null) {
-            values = new int[roi.width * roi.height];
-            sampleModel = new PixelInterleavedSampleModel(this.dataType, roi.width, roi.height, bands, roi.width * bands, bandOffsets);
-            int srcPos;
-            int dstPos;
-            int maxVal = Math.min(roi.y + roi.height, height);
-            for (int col = roi.y; col < maxVal; col++) {
-                try {
-                    srcPos = roi.x + col * width;
-                    dstPos = (col - roi.y) * roi.width;
-                    if (srcPos < pixels.length && dstPos < values.length)
-                        System.arraycopy(pixels, srcPos, values, dstPos, Math.min(roi.width, pixels.length - srcPos));
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    e.printStackTrace();
-                }
+            switch (this.dataType) {
+                case DataBuffer.TYPE_BYTE:
+                    buffer = Util.extractROIAsByteBuffer(pixels, width, height, roi);
+                    break;
+                case DataBuffer.TYPE_USHORT:
+                    buffer = Util.extractROIAsUShortBuffer(pixels, width, height, roi);
+                    break;
+                case DataBuffer.TYPE_SHORT:
+                    buffer = Util.extractROIAsShortBuffer(pixels, width, height, roi);
+                    break;
+                case DataBuffer.TYPE_INT:
+                    buffer = Util.extractROI(pixels, width, height, roi);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Source buffer type not supported");
+            }
+            if (roi != null) {
+                width = roi.width;
+                height = roi.height;
             }
         } else {
-            sampleModel = new PixelInterleavedSampleModel(this.dataType, width, height, bands, width * bands, bandOffsets);
-            values = pixels;
+            TileImageDescriptor fileDescriptor;
+            switch (this.dataType) {
+                case DataBuffer.TYPE_BYTE:
+                    fileDescriptor = Util.readAsByteArray(this.tileFile, roi);
+                    width = fileDescriptor.getWidth();
+                    height = fileDescriptor.getHeight();
+                    buffer = new DataBufferByte((byte[]) fileDescriptor.getDataArray(), width * height);
+                    break;
+                case DataBuffer.TYPE_USHORT:
+                    fileDescriptor = Util.readAsShortArray(this.tileFile, roi);
+                    width = fileDescriptor.getWidth();
+                    height = fileDescriptor.getHeight();
+                    buffer = new DataBufferUShort((short[]) fileDescriptor.getDataArray(), width * height);
+                    break;
+                case DataBuffer.TYPE_SHORT:
+                    fileDescriptor = Util.readAsShortArray(this.tileFile, roi);
+                    width = fileDescriptor.getWidth();
+                    height = fileDescriptor.getHeight();
+                    buffer = new DataBufferShort((short[]) fileDescriptor.getDataArray(), width * height);
+                    break;
+                case DataBuffer.TYPE_INT:
+                    fileDescriptor = Util.readAsIntArray(this.tileFile, roi);
+                    width = fileDescriptor.getWidth();
+                    height = fileDescriptor.getHeight();
+                    buffer = new DataBufferInt((int[]) fileDescriptor.getDataArray(), width * height);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Source buffer type not supported");
+            }
         }
-        switch (this.dataType) {
-            case DataBuffer.TYPE_BYTE:
-                byte[] bytes = new byte[values.length];
-                for (int i = 0; i < values.length; i++) {
-                    bytes[i] = (byte) (values[i] >> 3);
-                }
-                buffer = new DataBufferByte(bytes, width * height * bands);
-                break;
-            case DataBuffer.TYPE_SHORT:
-                short[] shorts = new short[values.length];
-                for (int i = 0; i < values.length; i++) {
-                    shorts[i] = (short) values[i];
-                }
-                buffer = new DataBufferShort(shorts, width * height * bands);
-                break;
-            case DataBuffer.TYPE_USHORT:
-                short[] ushorts = new short[values.length];
-                for (int i = 0; i < values.length; i++) {
-                    ushorts[i] = (short) values[i];
-                }
-                buffer = new DataBufferUShort(ushorts, width * height * bands);
-                break;
-            case DataBuffer.TYPE_INT:
-                buffer = new DataBufferInt(values, width * height * bands);
-                break;
-            default:
-                throw new UnsupportedOperationException("Source buffer type not supported");
-        }
+
+        SampleModel sampleModel = new PixelInterleavedSampleModel(this.dataType, width, height, 1, width, bandOffsets);
         WritableRaster raster = null;
         try {
             raster = new SunWritableRaster(sampleModel, buffer, new Point(0, 0));

@@ -11,22 +11,39 @@ import org.esa.s2tbx.dataio.openjp2.struct.*;
 import java.awt.image.*;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
+/**
+ * Wrapper over OpenJP2 library for jp2 compression
+ *
+ * @author  Cosmin Cara
+ * @since   5.0.0
+ */
 public class OpenJP2Encoder implements AutoCloseable {
 
     private PointerByReference pStream;
     private CompressionCodec pCodec;
     private PointerByReference pImage;
     private RenderedImage theImage;
+    private Logger logger;
 
-    private Callbacks.MessageFunction infoCallback = (msg, client_data) -> System.out.println("[INFO]" + msg.getString(0));
-    private Callbacks.MessageFunction warningCallback = (msg, client_data) -> System.out.println("[WARN]" + msg.getString(0));
-    private Callbacks.MessageFunction errorCallback = (msg, client_data) -> System.err.println("[ERROR]" + msg.getString(0));
+    private Callbacks.MessageFunction infoCallback = (msg, client_data) -> logger.info(msg.getString(0));
+    private Callbacks.MessageFunction warningCallback = (msg, client_data) -> logger.warning(msg.getString(0));
+    private Callbacks.MessageFunction errorCallback = (msg, client_data) -> logger.severe(msg.getString(0));
 
+    /**
+     * Builds an encoder for the given image.
+     * @param image The image to be compressed
+     */
     public OpenJP2Encoder(RenderedImage image) {
         this.theImage = image;
     }
 
+    /**
+     * Compresses this instance's image to the target file, with the given number of resolutions.
+     * @param outFile       The target file
+     * @param resolutions   The number of resolutions to be written
+     */
     public void write(Path outFile, int resolutions) throws IOException {
 
         CompressionParams parameters = initEncodeParams(outFile, resolutions);
@@ -164,7 +181,9 @@ public class OpenJP2Encoder implements AutoCloseable {
         params.roi_compno = -1;
         return params;
     }
-
+    /**
+     * Cleans up the native memory resources if allocated.
+     */
     @Override
     public void close() throws Exception {
         if (pCodec != null) {

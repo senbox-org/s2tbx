@@ -4,7 +4,8 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import org.esa.snap.core.util.SystemUtils;
 
-import java.awt.image.DataBuffer;
+import java.awt.*;
+import java.awt.image.*;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
@@ -23,6 +24,9 @@ import java.util.function.Function;
 public class Util {
 
     private static final Map<String, Integer> extensions;
+
+    private static final int SIZE_OF_SHORT = 2;
+    private static final int SIZE_OF_INT = 4;
 
     static {
         extensions = new HashMap<String, Integer>() {{
@@ -44,50 +48,338 @@ public class Util {
         }};
     }
 
-    public static int[][] read(Path path, int dataType) throws IOException {
+    /**
+     * Reads a region of the given file as a byte array.
+     *
+     * @param path  The source file
+     * @param roi   The region of interest
+     * @return      A tile image descriptor holding read dimensions and buffer data.
+     *
+     */
+    static TileImageDescriptor<byte[]> readAsByteArray(Path path, Rectangle roi) throws IOException {
         int size = (int) Files.size(path);
-        int pixSize;
-        switch (dataType) {
-            case DataBuffer.TYPE_BYTE:
-                pixSize = 1;
-                break;
-            case DataBuffer.TYPE_USHORT:
-            case DataBuffer.TYPE_SHORT:
-                pixSize = 2;
-                break;
-            case DataBuffer.TYPE_INT:
-            default:
-                pixSize = 4;
-                break;
-        }
         ByteBuffer buf;
-        int[][] out = new int[2][];
-        out[0] = new int[2];
-        out[1] = new int[(size - 8) / pixSize];
+        int width, height;
+        byte[] values;
+        TileImageDescriptor<byte[]> descriptor;
         try (RandomAccessFile in = new RandomAccessFile(path.toFile(), "r")) {
             try (FileChannel file = in.getChannel()) {
                 buf = file.map(FileChannel.MapMode.READ_ONLY, 0, size);
-                out[0][0] = buf.getInt();
-                out[0][1] = buf.getInt();
-                if (pixSize == 4) {
-                    for (int i = 0; i < out[1].length; i++) {
-                        out[1][i] = buf.getInt();
-                    }
-                } else if (pixSize == 2) {
-                    for (int i = 0; i < out[1].length; i++) {
-                        out[1][i] = buf.getShort();
+                width = buf.getInt();
+                height = buf.getInt();
+                int offset = 8;
+                int byteLen = size - offset;
+                if (roi == null) {
+                    values = new byte[byteLen];
+                    for (int i = 0; i < values.length; i++) {
+                        values[i] = buf.get();
                     }
                 } else {
-                    for (int i = 0; i < out[1].length; i++) {
-                        out[1][i] = buf.get();
+                    values = new byte[roi.width * roi.height];
+                    int srcPos;
+                    int dstPos;
+                    int maxVal = Math.min(roi.y + roi.height, height);
+                    int fileOffset;
+                    for (int col = roi.y; col < maxVal; col++) {
+                        try {
+                            srcPos = roi.x + col * width;
+                            dstPos = (col - roi.y) * roi.width;
+                            if (srcPos < byteLen && dstPos < values.length) {
+                                fileOffset = offset + srcPos;
+                                /*buf.position(fileOffset);
+                                buf.get(values, dstPos, Math.min(roi.width, byteLen - srcPos));*/
+                                for (int i = 0; i < Math.min(roi.width, byteLen - srcPos); i++) {
+                                    values[dstPos + i] = buf.get(fileOffset + i);
+                                }
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
+                    width = roi.width;
+                    height = roi.height;
                 }
+                descriptor = new TileImageDescriptor<>(width, height, values);
             }
+            in.close();
         }
-        return out;
+        return descriptor;
+    }
+    /**
+     * Reads a region of the given file as a short array.
+     *
+     * @param path  The source file
+     * @param roi   The region of interest
+     * @return      A tile image descriptor holding read dimensions and buffer data.
+     *
+     */
+    static TileImageDescriptor<short[]> readAsShortArray(Path path, Rectangle roi) throws IOException {
+        int size = (int) Files.size(path);
+        ByteBuffer buf;
+        int width, height;
+        short[] values;
+        TileImageDescriptor<short[]> descriptor;
+        try (RandomAccessFile in = new RandomAccessFile(path.toFile(), "r")) {
+            try (FileChannel file = in.getChannel()) {
+                buf = file.map(FileChannel.MapMode.READ_ONLY, 0, size);
+                width = buf.getInt();
+                height = buf.getInt();
+                int offset = 2 * SIZE_OF_INT;
+                int shortLen = (size - offset) / SIZE_OF_SHORT;
+                if (roi == null) {
+                    values = new short[shortLen];
+                    for (int i = 0; i < values.length; i++) {
+                        values[i] = buf.getShort();
+                    }
+                } else {
+                    values = new short[roi.width * roi.height];
+                    int srcPos;
+                    int dstPos;
+                    int maxVal = Math.min(roi.y + roi.height, height);
+                    int fileOffset;
+                    for (int col = roi.y; col < maxVal; col++) {
+                        try {
+                            srcPos = roi.x + col * width;
+                            dstPos = (col - roi.y) * roi.width;
+                            if (srcPos < shortLen && dstPos < values.length) {
+                                fileOffset = offset + srcPos * SIZE_OF_SHORT;
+                                for (int i = 0; i < Math.min(roi.width, shortLen - srcPos); i++) {
+                                    values[dstPos + i] = buf.getShort(fileOffset + i * SIZE_OF_SHORT);
+                                }
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    width = roi.width;
+                    height = roi.height;
+                }
+                descriptor = new TileImageDescriptor<>(width, height, values);
+            }
+            in.close();
+        }
+        return descriptor;
+    }
+    /**
+     * Reads a region of the given file as an int array.
+     *
+     * @param path  The source file
+     * @param roi   The region of interest
+     * @return      A tile image descriptor holding read dimensions and buffer data.
+     *
+     */
+    static TileImageDescriptor<int[]> readAsIntArray(Path path, Rectangle roi) throws IOException {
+        int size = (int) Files.size(path);
+        ByteBuffer buf;
+        int width, height;
+        int[] values;
+        TileImageDescriptor<int[]> descriptor;
+        try (RandomAccessFile in = new RandomAccessFile(path.toFile(), "r")) {
+            try (FileChannel file = in.getChannel()) {
+                buf = file.map(FileChannel.MapMode.READ_ONLY, 0, size);
+                width = buf.getInt();
+                height = buf.getInt();
+                int offset = 2 * SIZE_OF_INT;
+                int intLen = (size - offset) / SIZE_OF_INT;
+                if (roi == null) {
+                    values = new int[intLen];
+                    for (int i = 0; i < values.length; i++) {
+                        values[i] = buf.getInt();
+                    }
+                } else {
+                    values = new int[roi.width * roi.height];
+                    int srcPos;
+                    int dstPos;
+                    int maxVal = Math.min(roi.y + roi.height, height);
+                    int fileOffset;
+                    for (int col = roi.y; col < maxVal; col++) {
+                        try {
+                            srcPos = roi.x + col * width;
+                            dstPos = (col - roi.y) * roi.width;
+                            if (srcPos < intLen && dstPos < values.length) {
+                                fileOffset = offset + srcPos * SIZE_OF_INT;
+                                for (int i = 0; i < Math.min(roi.width, intLen - srcPos); i++) {
+                                    values[dstPos + i] = buf.getShort(fileOffset + i * SIZE_OF_INT);
+                                }
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    width = roi.width;
+                    height = roi.height;
+                }
+                descriptor = new TileImageDescriptor<>(width, height, values);
+            }
+            in.close();
+        }
+        return descriptor;
     }
 
-    public static Path write(int width, int height, int[] values, int dataType, Path toFile, Function<Path, Void> completionCallBack) {
+    /**
+     * Extracts a range from the given int array and returns it as a byte array.
+     * @param values    The source values
+     * @param offset    The start position (offset) from which to extract values
+     * @param length    How many values to extract
+     */
+    private static byte[] extractRangeAsByteArray(int[] values, int offset, int length) {
+        if (values == null || values.length < offset + length || offset < 0 || length <= 0) {
+            return null;
+        }
+        byte[] result = new byte[length];
+        for (int i = 0; i < length; i++) {
+            result[i] = (byte) values[offset + i];
+        }
+        return result;
+    }
+    /**
+     * Extracts a range from the given int array and returns it as a short array.
+     * @param values    The source values
+     * @param offset    The start position (offset) from which to extract values
+     * @param length    How many values to extract
+     */
+    private static short[] extractRangeAsShortArray(int[] values, int offset, int length) {
+        if (values == null || values.length < offset + length || offset < 0 || length <= 0) {
+            return null;
+        }
+        short[] result = new short[length];
+        for (int i = 0; i < length; i++) {
+            result[i] = (short) values[offset + i];
+        }
+        return result;
+    }
+    /**
+     * Returns a DataBuffer of bytes from the intersection of the given int array and the region of interest.
+     * @param pixels        The source values (the length = imageWidth * imageHeight)
+     * @param imageWidth    The initial image width
+     * @param imageHeight   The initial image height
+     * @param roi           The region of interest
+     */
+    static DataBufferByte extractROIAsByteBuffer(int[] pixels, int imageWidth, int imageHeight, Rectangle roi) {
+        byte[] values;
+        if (roi != null) {
+            values = new byte[roi.width * roi.height];
+            int srcPos;
+            int dstPos;
+            int maxVal = Math.min(roi.y + roi.height, imageHeight);
+            for (int col = roi.y; col < maxVal; col++) {
+                try {
+                    srcPos = roi.x + col * imageWidth;
+                    dstPos = (col - roi.y) * roi.width;
+                    if (srcPos < pixels.length && dstPos < values.length) {
+                        for (int i = 0; i < Math.min(roi.width, pixels.length - srcPos) - dstPos; i++) {
+                            values[dstPos + i] = (byte) pixels[srcPos + i];
+                        }
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            values = extractRangeAsByteArray(pixels, 0, pixels.length);
+        }
+        return new DataBufferByte(values, values.length);
+    }
+    /**
+     * Returns a DataBuffer of unsigned shorts from the intersection of the given int array and the region of interest.
+     * @param pixels        The source values (the length = imageWidth * imageHeight)
+     * @param imageWidth    The initial image width
+     * @param imageHeight   The initial image height
+     * @param roi           The region of interest
+     */
+    static DataBufferUShort extractROIAsUShortBuffer(int[] pixels, int imageWidth, int imageHeight, Rectangle roi) {
+        short[] values;
+        if (roi != null) {
+            values = new short[roi.width * roi.height];
+            int srcPos;
+            int dstPos;
+            int maxVal = Math.min(roi.y + roi.height, imageHeight);
+            for (int col = roi.y; col < maxVal; col++) {
+                try {
+                    srcPos = roi.x + col * imageWidth;
+                    dstPos = (col - roi.y) * roi.width;
+                    if (srcPos < pixels.length && dstPos < values.length) {
+                        for (int i = 0; i < Math.min(roi.width, pixels.length - srcPos); i++) {
+                            values[dstPos + i] = (short) pixels[srcPos + i];
+                        }
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            values = extractRangeAsShortArray(pixels, 0, pixels.length);
+        }
+        return new DataBufferUShort(values, values.length);
+    }
+    /**
+     * Returns a DataBuffer of shorts from the intersection of the given int array and the region of interest.
+     * @param pixels        The source values (the length = imageWidth * imageHeight)
+     * @param imageWidth    The initial image width
+     * @param imageHeight   The initial image height
+     * @param roi           The region of interest
+     */
+    static DataBufferShort extractROIAsShortBuffer(int[] pixels, int imageWidth, int imageHeight, Rectangle roi) {
+        short[] values;
+        if (roi != null) {
+            values = new short[roi.width * roi.height];
+            int srcPos;
+            int dstPos;
+            int maxVal = Math.min(roi.y + roi.height, imageHeight);
+            for (int col = roi.y; col < maxVal; col++) {
+                try {
+                    srcPos = roi.x + col * imageWidth;
+                    dstPos = (col - roi.y) * roi.width;
+                    if (srcPos < pixels.length && dstPos < values.length) {
+                        for (int i = 0; i < Math.min(roi.width, pixels.length - srcPos) - dstPos; i++) {
+                            values[dstPos + i] = (short) pixels[srcPos + i];
+                        }
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            values = extractRangeAsShortArray(pixels, 0, pixels.length);
+        }
+        return new DataBufferShort(values, values.length);
+    }
+    /**
+     * Returns a DataBuffer of ints from the intersection of the given int array and the region of interest.
+     * @param pixels        The source values (the length = imageWidth * imageHeight)
+     * @param imageWidth    The initial image width
+     * @param imageHeight   The initial image height
+     * @param roi           The region of interest
+     */
+    static DataBufferInt extractROI(int[] pixels, int imageWidth, int imageHeight, Rectangle roi) {
+        int[] values = new int[roi.width * roi.height];
+        int srcPos;
+        int dstPos;
+        int maxVal = Math.min(roi.y + roi.height, imageHeight);
+        for (int col = roi.y; col < maxVal; col++) {
+            try {
+                srcPos = roi.x + col * imageWidth;
+                dstPos = (col - roi.y) * roi.width;
+                if (srcPos < pixels.length && dstPos < values.length) {
+                    System.arraycopy(pixels, srcPos, values, dstPos, Math.min(roi.width, pixels.length - srcPos));
+                }
+            } catch (ArrayIndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
+        }
+        return new DataBufferInt(values, values.length);
+    }
+
+    /**
+     * Writes the input values array to a file and calls back the given functor when completed.
+     * @param width                 The width of the image represented by the int[] values
+     * @param height                The height of the image represented by the int[] values
+     * @param values                The source values
+     * @param dataType              The target data type code (@see DataBuffer types)
+     * @param toFile                The target file
+     * @param completionCallBack    (optional) The function to be called back when the writing completes
+     */
+    static Path write(int width, int height, int[] values, int dataType, Path toFile, Function<Path, Void> completionCallBack) {
         int pixSize;
         switch (dataType) {
             case DataBuffer.TYPE_BYTE:
@@ -132,24 +424,12 @@ public class Util {
         return toFile;
     }
 
-    public static int clampInt(final int value, final int prec, final int sgnd) {
-        if (sgnd > 0) {
-            if (prec <= 8)
-                return clamp(value, Byte.MIN_VALUE, Byte.MAX_VALUE);
-            else if (prec <= 16)
-                return clamp(value, Short.MIN_VALUE, Short.MAX_VALUE);
-            else
-                return clamp(value, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        } else {
-            if (prec <= 8)
-                return clamp(value, 0, 255);
-            else if (prec <= 16)
-                return clamp(value, 0, 65535);
-            else
-                return value;
-        }
-    }
-
+    /**
+     * Reads the memory pointed to by the given pointer into the corresponding Java structure.
+     * @param tClass    The class of the Java structure
+     * @param pointer   The pointer to the native memory
+     * @param <T>       The generic type of the Java structure
+     */
     static <T extends Structure> T dereference(Class<T> tClass, Pointer pointer) {
         T ref = null;
         if (tClass != null && pointer != null) {
@@ -183,9 +463,4 @@ public class Util {
         Integer code = extensions.get(extension);
         return code != null ? code : -1;
     }
-
-    private static int clamp(final int x, final int a, final int b) {
-        return x < a ? a : (x > b ? b : x);
-    }
-
 }

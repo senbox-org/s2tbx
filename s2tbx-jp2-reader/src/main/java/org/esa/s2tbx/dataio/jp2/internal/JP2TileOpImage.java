@@ -29,6 +29,7 @@ import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.runtime.Config;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -62,7 +63,9 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     // each time and, therefore, takes unnecessary time
     private static final Map<Path, Rectangle> tileDims = new HashMap<>();
 
-    private static Boolean useOpenJp2Jna;
+    private static final int[] bands = new int[] { 0 };
+
+    private Boolean useOpenJp2Jna;
 
     private final TileLayout tileLayout;
 
@@ -70,6 +73,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     private final Path cacheDir;
     private final int tileIndex;
     private final int bandIndex;
+    private final int dataType;
     private final Logger logger;
 
     private JP2TileOpImage(Path imageFile, int bandIdx, Path cacheDir, int row, int col,
@@ -89,6 +93,15 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         this.tileLayout = tileLayout;
         this.tileIndex = col + row * tileLayout.numXTiles;
         this.bandIndex = bandIdx;
+        this.dataType = dataType;
+
+        //if (useOpenJp2Jna == null) {
+            /* Uncomment to use the direct openJp2 decompression */
+            String openJp2 = OpenJpegExecRetriever.getOpenJp2();
+            useOpenJp2Jna = Boolean.parseBoolean(Config.instance().preferences().get("use.openjp2.jna", "false")) &&
+                    openJp2 != null && tileLayout.numBands == 1;
+            /*useOpenJp2Jna = false;*/
+        //}
     }
 
     /**
@@ -103,7 +116,6 @@ public class JP2TileOpImage extends SingleBandedOpImage {
      * @param imageModel    The multi-level image model
      * @param dataType      The data type of the tile raster
      * @param level         The resolution at which the tile is created
-     * @throws IOException
      */
     public static PlanarImage create(Path imageFile, Path cacheDir, int bandIdx,
                                      int row, int col, TileLayout tileLayout,
@@ -111,13 +123,6 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         Assert.notNull(cacheDir, "cacheDir");
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
-        if (useOpenJp2Jna == null) {
-            /* Uncomment to use the direct openJp2 decompression
-            String openJp2 = OpenJpegExecRetriever.getOpenJp2();
-            useOpenJp2Jna = Boolean.parseBoolean(Config.instance().preferences().get("use.openjp2.jna", "false")) &&
-                            openJp2 != null;*/
-            useOpenJp2Jna = false;
-        }
         if (imageFile != null) {
             //jp2TileOpImage.setTileCache(null); // the MosaicOpImage will be in the cache
             return new JP2TileOpImage(imageFile, bandIdx, cacheDir, row, col, tileLayout, imageModel, dataType, level);
@@ -186,7 +191,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     }
 
     private void computeRectDirect(WritableRaster dest, Rectangle destRect) {
-        try (OpenJP2Decoder decoder = new OpenJP2Decoder(this.cacheDir, this.imageFile, this.bandIndex, getSampleModel().getDataType(), getLevel(), 20, tileIndex)) {
+        try (OpenJP2Decoder decoder = new OpenJP2Decoder(this.cacheDir, this.imageFile, this.bandIndex, this.dataType, getLevel(), 20, tileIndex)) {
             Raster readTileImage = null;
             final DataBuffer dataBuffer = dest.getDataBuffer();
             int tileWidth = this.getTileWidth();
@@ -195,8 +200,8 @@ public class JP2TileOpImage extends SingleBandedOpImage {
             final int fileTileY = destRect.y / tileLayout.tileHeight;
             int fileTileOriginX = destRect.x - fileTileX * tileLayout.tileWidth;
             int fileTileOriginY = destRect.y - fileTileY * tileLayout.tileHeight;
-            int[] dimensions = decoder.getImageDimensions();
-            Rectangle fileTileRect = new Rectangle(0, 0, dimensions[0], dimensions[1]);
+            Dimension dimensions = decoder.getImageDimensions();
+            Rectangle fileTileRect = new Rectangle(0, 0, dimensions.width, dimensions.height);
 
             if (fileTileOriginX == 0 && tileLayout.tileWidth == tileWidth
                     && fileTileOriginY == 0 && tileLayout.tileHeight == tileHeight
@@ -210,7 +215,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
                 }
             }
             if (readTileImage != null) {
-                Raster readBandRaster = readTileImage.createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, new int[] { 0 });
+                Raster readBandRaster = readTileImage.createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bands);
                 dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
             }
 

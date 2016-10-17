@@ -218,6 +218,7 @@ public class JP2ProductReader extends AbstractProductReader {
                             getFileInput(getInput()),
                             tmpFolder,
                             bandIdx,
+                            numBands,
                             imageWidth, imageHeight,
                             csInfo.getTileWidth(), csInfo.getTileHeight(),
                             csInfo.getNumTilesX(), csInfo.getNumTilesY(),

@@ -69,7 +69,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
      * @param dataType    The pixel data type
      * @param geoCoding   (optional) The geocoding found (if any) in the JP2 header
      */
-    public JP2MultiLevelSource(Path jp2File, Path cacheFolder, int bandIndex, int imageWidth, int imageHeight,
+    public JP2MultiLevelSource(Path jp2File, Path cacheFolder, int bandIndex, int numBands, int imageWidth, int imageHeight,
                                int tileWidth, int tileHeight, int numTilesX, int numTilesY, int levels, int dataType,
                                GeoCoding geoCoding) {
         super(new DefaultMultiLevelModel(levels,
@@ -80,6 +80,7 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         this.dataType = dataType;
         logger = Logger.getLogger(JP2MultiLevelSource.class.getName());
         tileLayout = new TileLayout(imageWidth, imageHeight, tileWidth, tileHeight, numTilesX, numTilesY, levels);
+        tileLayout.numBands = numBands;
         this.bandIndex = bandIndex;
         this.tileManager = new TileImageDisposer();
     }
@@ -96,11 +97,10 @@ public class JP2MultiLevelSource extends AbstractMultiLevelSource {
         // the edge tiles dimensions may be less than the dimensions from JP2 header
         if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
             currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
-                                           bandIndex == -1 ? Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth) :
-                                                   tileLayout.width - col * tileLayout.tileWidth,
-                                           bandIndex == -1 ? Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight) :
-                                                   tileLayout.height - row * tileLayout.tileHeight,
-                                           tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+                                            Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
+                                            Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
+                                            tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+            currentLayout.numBands = tileLayout.numBands;
         }
         return JP2TileOpImage.create(sourceFile, cacheFolder, bandIndex, row, col, currentLayout, getModel(), dataType, level);
     }

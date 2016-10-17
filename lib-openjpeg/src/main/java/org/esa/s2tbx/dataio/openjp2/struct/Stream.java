@@ -83,10 +83,10 @@ public class Stream extends Structure {
     
     public Stream() {
         super();
-    };
+    }
     public Stream(Pointer peer) {
         super(peer);
-    };
+    }
 
     protected List<? > getFieldOrder() {
         return Arrays.asList("m_user_data", "m_free_user_data_fn", "m_user_data_length", "m_read_fn", "m_write_fn", "m_skip_fn", "m_seek_fn", "m_stored_data", "m_current_data", "m_bytes_in_buffer", "m_byte_offset", "m_buffer_size", "m_status");
