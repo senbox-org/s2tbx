@@ -98,7 +98,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
         //if (useOpenJp2Jna == null) {
             /* Uncomment to use the direct openJp2 decompression */
             String openJp2 = OpenJpegExecRetriever.getOpenJp2();
-            useOpenJp2Jna = Boolean.parseBoolean(Config.instance().preferences().get("use.openjp2.jna", "false")) &&
+            useOpenJp2Jna = Boolean.parseBoolean(Config.instance("s2tbx").preferences().get("use.openjp2.jna", "false")) &&
                     openJp2 != null && tileLayout.numBands == 1;
             /*useOpenJp2Jna = false;*/
         //}
@@ -140,7 +140,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     }
 
     @Override
-    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
+    protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
         if (useOpenJp2Jna) {
             computeRectDirect(dest, destRect);
         } else {
