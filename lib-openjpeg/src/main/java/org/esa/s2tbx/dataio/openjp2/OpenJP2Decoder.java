@@ -85,7 +85,7 @@ public class OpenJP2Decoder implements AutoCloseable {
         pCodec = setupDecoder(parameters);
         pImage = new PointerByReference();
         OpenJp2.opj_read_header(pStream, pCodec, pImage);
-        Image jImage = Util.dereference(Image.class, pImage.getValue());
+        Image jImage = RasterUtils.dereference(Image.class, pImage.getValue());
         ImageComponent component = ((ImageComponent[]) jImage.comps.toArray(jImage.numcomps))[this.bandIndex];
         width = component.w;
         height = component.h;
@@ -143,7 +143,7 @@ public class OpenJP2Decoder implements AutoCloseable {
     }
 
     private ImageComponent[] decode() {
-        Image jImage = Util.dereference(Image.class, pImage.getValue());
+        Image jImage = RasterUtils.dereference(Image.class, pImage.getValue());
 
         if (parameters.nb_tile_to_decode == 0) {
             if (OpenJp2.opj_set_decode_area(pCodec, jImage, parameters.DA_x0, parameters.DA_y0, parameters.DA_x1, parameters.DA_y1) == 0) {
@@ -159,7 +159,7 @@ public class OpenJP2Decoder implements AutoCloseable {
             }
         }
 
-        jImage = Util.dereference(Image.class, pImage.getValue());
+        jImage = RasterUtils.dereference(Image.class, pImage.getValue());
         ImageComponent[] comps = (ImageComponent[]) jImage.comps.toArray(jImage.numcomps);
         if (jImage.color_space != Enums.ColorSpace.OPJ_CLRSPC_SYCC &&
                 jImage.numcomps == 3 && comps[0].dx == comps[0].dy && comps[1].dx != 1) {
@@ -183,8 +183,8 @@ public class OpenJP2Decoder implements AutoCloseable {
         params.decod_format = -1;
         params.cod_format = -1;
         OpenJp2.opj_set_default_decoder_parameters(params.core);
-        params.decod_format = Util.getFileFormat(inputFile);
-        params.cod_format = Util.getFormat("jp2");
+        params.decod_format = RasterUtils.getFileFormat(inputFile);
+        params.cod_format = RasterUtils.getFormat("jp2");
         params.core.cp_reduce = this.resolution;
         params.core.cp_layer = this.layer;
         params.tile_index = this.tileIndex;
@@ -249,7 +249,7 @@ public class OpenJP2Decoder implements AutoCloseable {
             executor.submit(() -> {
                 try {
                     this.pendingWrites.add(this.tileFile);
-                    Util.write(component.w, component.h, pixels, this.dataType, this.tileFile, this.writeCompletedCallback);
+                    RasterUtils.write(component.w, component.h, pixels, this.dataType, this.tileFile, this.writeCompletedCallback);
                 } catch (Exception ex) {
                     logger.warning(ex.getMessage());
                 }
@@ -264,7 +264,7 @@ public class OpenJP2Decoder implements AutoCloseable {
                                 fName = fName.substring(0, fName.lastIndexOf("_")) + "_" + String.valueOf(index) + ".raw";
                                 Path otherBandFile = Paths.get(fName);
                                 this.pendingWrites.add(otherBandFile);
-                                Util.write(components[index].w, components[index].h,
+                                RasterUtils.write(components[index].w, components[index].h,
                                         components[index].data.getPointer().getIntArray(0, components[index].w * components[index].h),
                                         this.dataType, otherBandFile, this.writeCompletedCallback);
                             } catch (Exception ex) {
@@ -276,16 +276,16 @@ public class OpenJP2Decoder implements AutoCloseable {
             }
             switch (this.dataType) {
                 case DataBuffer.TYPE_BYTE:
-                    buffer = Util.extractROIAsByteBuffer(pixels, width, height, roi);
+                    buffer = RasterUtils.extractROIAsByteBuffer(pixels, width, height, roi);
                     break;
                 case DataBuffer.TYPE_USHORT:
-                    buffer = Util.extractROIAsUShortBuffer(pixels, width, height, roi);
+                    buffer = RasterUtils.extractROIAsUShortBuffer(pixels, width, height, roi);
                     break;
                 case DataBuffer.TYPE_SHORT:
-                    buffer = Util.extractROIAsShortBuffer(pixels, width, height, roi);
+                    buffer = RasterUtils.extractROIAsShortBuffer(pixels, width, height, roi);
                     break;
                 case DataBuffer.TYPE_INT:
-                    buffer = Util.extractROI(pixels, width, height, roi);
+                    buffer = RasterUtils.extractROI(pixels, width, height, roi);
                     break;
                 default:
                     throw new UnsupportedOperationException("Source buffer type not supported");
@@ -298,25 +298,25 @@ public class OpenJP2Decoder implements AutoCloseable {
             TileImageDescriptor fileDescriptor;
             switch (this.dataType) {
                 case DataBuffer.TYPE_BYTE:
-                    fileDescriptor = Util.readAsByteArray(this.tileFile, roi);
+                    fileDescriptor = RasterUtils.readAsByteArray(this.tileFile, roi);
                     width = fileDescriptor.getWidth();
                     height = fileDescriptor.getHeight();
                     buffer = new DataBufferByte((byte[]) fileDescriptor.getDataArray(), width * height);
                     break;
                 case DataBuffer.TYPE_USHORT:
-                    fileDescriptor = Util.readAsShortArray(this.tileFile, roi);
+                    fileDescriptor = RasterUtils.readAsShortArray(this.tileFile, roi);
                     width = fileDescriptor.getWidth();
                     height = fileDescriptor.getHeight();
                     buffer = new DataBufferUShort((short[]) fileDescriptor.getDataArray(), width * height);
                     break;
                 case DataBuffer.TYPE_SHORT:
-                    fileDescriptor = Util.readAsShortArray(this.tileFile, roi);
+                    fileDescriptor = RasterUtils.readAsShortArray(this.tileFile, roi);
                     width = fileDescriptor.getWidth();
                     height = fileDescriptor.getHeight();
                     buffer = new DataBufferShort((short[]) fileDescriptor.getDataArray(), width * height);
                     break;
                 case DataBuffer.TYPE_INT:
-                    fileDescriptor = Util.readAsIntArray(this.tileFile, roi);
+                    fileDescriptor = RasterUtils.readAsIntArray(this.tileFile, roi);
                     width = fileDescriptor.getWidth();
                     height = fileDescriptor.getHeight();
                     buffer = new DataBufferInt((int[]) fileDescriptor.getDataArray(), width * height);

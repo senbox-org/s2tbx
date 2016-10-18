@@ -12,6 +12,10 @@ import java.util.List;
  * C structure:     opj_image_comp_t
  */
 public class ImageComponent extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("dx", "dy", "w", "h", "x0", "y0", "prec", "bpp", "sgnd", "resno_decoded", "factor", "data", "alpha");
+
     /**
      * XRsiz: horizontal separation of a sample of ith component with respect to the reference grid
      */
@@ -74,7 +78,7 @@ public class ImageComponent extends Structure {
     }
 
     protected List<?> getFieldOrder() {
-        return Arrays.asList("dx", "dy", "w", "h", "x0", "y0", "prec", "bpp", "sgnd", "resno_decoded", "factor", "data", "alpha");
+        return fieldNames;
     }
 
     public static class ByReference extends ImageComponent implements Structure.ByReference { }

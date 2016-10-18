@@ -20,8 +20,11 @@ import java.util.function.Function;
 
 /**
  * Utility class for various operations
+ *
+ * @author  Cosmin Cara
+ * @since   5.0.0
  */
-public class Util {
+public class RasterUtils {
 
     private static final Map<String, Integer> extensions;
 
@@ -54,7 +57,6 @@ public class Util {
      * @param path  The source file
      * @param roi   The region of interest
      * @return      A tile image descriptor holding read dimensions and buffer data.
-     *
      */
     static TileImageDescriptor<byte[]> readAsByteArray(Path path, Rectangle roi) throws IOException {
         int size = (int) Files.size(path);
@@ -86,8 +88,6 @@ public class Util {
                             dstPos = (col - roi.y) * roi.width;
                             if (srcPos < byteLen && dstPos < values.length) {
                                 fileOffset = offset + srcPos;
-                                /*buf.position(fileOffset);
-                                buf.get(values, dstPos, Math.min(roi.width, byteLen - srcPos));*/
                                 for (int i = 0; i < Math.min(roi.width, byteLen - srcPos); i++) {
                                     values[dstPos + i] = buf.get(fileOffset + i);
                                 }
@@ -111,7 +111,6 @@ public class Util {
      * @param path  The source file
      * @param roi   The region of interest
      * @return      A tile image descriptor holding read dimensions and buffer data.
-     *
      */
     static TileImageDescriptor<short[]> readAsShortArray(Path path, Rectangle roi) throws IOException {
         int size = (int) Files.size(path);
@@ -166,7 +165,6 @@ public class Util {
      * @param path  The source file
      * @param roi   The region of interest
      * @return      A tile image descriptor holding read dimensions and buffer data.
-     *
      */
     static TileImageDescriptor<int[]> readAsIntArray(Path path, Rectangle roi) throws IOException {
         int size = (int) Files.size(path);

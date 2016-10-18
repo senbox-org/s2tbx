@@ -103,10 +103,10 @@ public class OpenJpegExecRetriever {
 
     /* The different OS for which OpenJPEG executables are released */
     private enum OSCategory {
-        WIN_32("openjpeg-2.1.0-win32", Paths.get("bin","opj_compress.exe").toString(), Paths.get("bin","opj_decompress.exe").toString(), Paths.get("bin","opj_dump.exe").toString(), Paths.get("bin","openjp2.dll").toString()),
-        WIN_64("openjpeg-2.1.0-win64", Paths.get("bin","opj_compress.exe").toString(), Paths.get("bin","opj_decompress.exe").toString(), Paths.get("bin","opj_dump.exe").toString(), Paths.get("bin","openjp2.dll").toString()),
-        LINUX_64("openjpeg-2.1.0-linux64", Paths.get("bin","opj_compress").toString(), Paths.get("bin","opj_decompress").toString(), Paths.get("bin","opj_dump").toString(), Paths.get("bin","openjp2").toString()),
-        MAC_OS_X("openjpeg-2.1.0-macosx", Paths.get("bin","opj_compress").toString(), Paths.get("bin","opj_decompress").toString(), Paths.get("bin","opj_dump").toString(), Paths.get("bin","openjp2").toString()),
+        WIN_32("openjpeg-2.1.0-win32", Paths.get("bin","opj_compress.exe").toString(), Paths.get("bin","opj_decompress.exe").toString(), Paths.get("bin","opj_dump.exe").toString(), Paths.get("bin","libopenjp2.dll").toString()),
+        WIN_64("openjpeg-2.1.0-win64", Paths.get("bin","opj_compress.exe").toString(), Paths.get("bin","opj_decompress.exe").toString(), Paths.get("bin","opj_dump.exe").toString(), Paths.get("bin","libopenjp2.dll").toString()),
+        LINUX_64("openjpeg-2.1.0-linux64", Paths.get("bin","opj_compress").toString(), Paths.get("bin","opj_decompress").toString(), Paths.get("bin","opj_dump").toString(), Paths.get("bin","libopenjp2.so").toString()),
+        MAC_OS_X("openjpeg-2.1.0-macosx", Paths.get("bin","opj_compress").toString(), Paths.get("bin","opj_decompress").toString(), Paths.get("bin","opj_dump").toString(), Paths.get("bin","libopenjp2.dylib").toString()),
         UNSUPPORTED(null, null, null, null, null);
 
 

@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Precision extends Structure {
+
+    private static final List<String> fieldNames = Arrays.asList("prec", "mode");
+
     /** C type : OPJ_UINT32 */
     public int prec;
     /** C type : opj_precision_mode */
@@ -28,8 +31,8 @@ public class Precision extends Structure {
         super(peer);
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("prec", "mode");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends Precision implements Structure.ByReference { }

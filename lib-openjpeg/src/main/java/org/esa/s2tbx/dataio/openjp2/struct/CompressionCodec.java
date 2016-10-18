@@ -15,6 +15,9 @@ import java.util.List;
  * C structure:     opj_codec_private_t
  */
 public class CompressionCodec extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("m_codec_data", "m_codec", "m_event_mgr", "is_decompressor", "opj_dump_codec", "opj_get_codec_info", "opj_get_codec_index");
     /**
      * Union for decompression/compression handlers
      */
@@ -67,7 +70,7 @@ public class CompressionCodec extends Structure {
 
     @Override
     protected List<?> getFieldOrder() {
-        return Arrays.asList("m_codec_data", "m_codec", "m_event_mgr", "is_decompressor", "opj_dump_codec", "opj_get_codec_info", "opj_get_codec_index");
+        return fieldNames;
     }
 
     public static class ByReference extends CompressionCodec implements Structure.ByReference { }

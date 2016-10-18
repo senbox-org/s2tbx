@@ -4,7 +4,8 @@ package org.esa.s2tbx.dataio.openjp2;
  * Wrapper class for raw tile image data and image dimensions, using the image data type.
  * <code>T</code> is the type of image data buffer and it can be one of: byte[], short[], int[].
  *
- * @author Cosmin Cara
+ * @author  Cosmin Cara
+ * @since   5.0.0
  */
 public class TileImageDescriptor<T> {
     private final int width;

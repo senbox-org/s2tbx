@@ -89,7 +89,7 @@ public class OpenJP2Encoder implements AutoCloseable {
         }
 
         pImage = OpenJp2.opj_image_create(numBands, imageCompParams[0], colorSpace);
-        Image opjImage = Util.dereference(Image.class, pImage.getPointer());
+        Image opjImage = RasterUtils.dereference(Image.class, pImage.getPointer());
         opjImage.x0 = 0;
         opjImage.y0 = 0;
         opjImage.x1 = rasterData.getWidth();
@@ -142,7 +142,7 @@ public class OpenJP2Encoder implements AutoCloseable {
             throw new RuntimeException("Failed to setup encoder");
         }
 
-        opjImage = Util.dereference(Image.class, pImage.getPointer());
+        opjImage = RasterUtils.dereference(Image.class, pImage.getPointer());
         pStream = OpenJp2.opj_stream_create_default_file_stream(outFile.toString(), Constants.OPJ_STREAM_WRITE);
         if (pStream == null || pStream.getValue() == null) {
             throw new RuntimeException("Failed to create the stream to the file");
@@ -165,8 +165,8 @@ public class OpenJP2Encoder implements AutoCloseable {
         CompressionParams params = new CompressionParams();
         OpenJp2.opj_set_default_encoder_parameters(params);
         params.tcp_mct = (char)255;
-        params.decod_format = Util.getFormat("raw");
-        params.cod_format = Util.getFileFormat(file);
+        params.decod_format = RasterUtils.getFormat("raw");
+        params.cod_format = RasterUtils.getFileFormat(file);
         params.cp_tx0 = 0;
         params.cp_ty0 = 0;
         params.cp_tdx = 1024;

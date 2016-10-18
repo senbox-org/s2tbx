@@ -14,6 +14,10 @@ import java.util.List;
  * Structure for holding compression-related function pointers
  */
 public class CompressionHandler extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("opj_start_compress", "opj_encode", "opj_write_tile", "opj_end_compress", "opj_destroy", "opj_setup_encoder");
+
     /**
      * OPJ_BOOL (* opj_start_compress) (void *p_codec, struct opj_stream_private *cio, struct opj_image *p_image, struct opj_event_mgr *p_manager)
      */
@@ -57,8 +61,8 @@ public class CompressionHandler extends Structure {
         this.opj_setup_encoder = opj_setup_encoder;
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("opj_start_compress", "opj_encode", "opj_write_tile", "opj_end_compress", "opj_destroy", "opj_setup_encoder");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends CompressionHandler implements Structure.ByReference { }

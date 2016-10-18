@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MarkerInfo extends Structure {
+
+    private final List<String> fieldNames = Arrays.asList("type", "pos", "len");
+
     /** marker type */
     public short type;
     /**
@@ -36,8 +39,8 @@ public class MarkerInfo extends Structure {
         super(peer);
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("type", "pos", "len");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends MarkerInfo implements Structure.ByReference { }

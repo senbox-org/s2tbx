@@ -7,6 +7,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TCCPInfo extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("compno", "csty", "numresolutions", "cblkw", "cblkh", "cblksty", "qmfbid", "qntsty",
+                    "stepsizes_mant", "stepsizes_expn", "numgbits", "roishift", "prcw", "prch");
+
     /**
      * component index
      * C type : OPJ_UINT32
@@ -85,8 +90,8 @@ public class TCCPInfo extends Structure {
         super(peer);
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("compno", "csty", "numresolutions", "cblkw", "cblkh", "cblksty", "qmfbid", "qntsty", "stepsizes_mant", "stepsizes_expn", "numgbits", "roishift", "prcw", "prch");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends TCCPInfo implements Structure.ByReference { }

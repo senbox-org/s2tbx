@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TPIndex extends Structure {
+
+    private static final List<String> fieldNames = Arrays.asList("start_pos", "end_header", "end_pos");
+
     /**
      * start position<br>
      * C type : OPJ_OFF_T
@@ -43,8 +46,8 @@ public class TPIndex extends Structure {
         super(peer);
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("start_pos", "end_header", "end_pos");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends TPIndex implements Structure.ByReference { }

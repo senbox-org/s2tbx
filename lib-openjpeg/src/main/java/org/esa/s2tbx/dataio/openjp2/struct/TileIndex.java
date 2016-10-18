@@ -7,6 +7,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TileIndex extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("tileno", "nb_tps", "current_nb_tps", "current_tpsno", "tp_index", "marknum", "marker",
+                    "maxmarknum", "nb_packet", "packet_index");
+
     /**
      * tile index<br>
      * C type : OPJ_UINT32
@@ -65,8 +70,8 @@ public class TileIndex extends Structure {
         super(peer);
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("tileno", "nb_tps", "current_nb_tps", "current_tpsno", "tp_index", "marknum", "marker", "maxmarknum", "nb_packet", "packet_index");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends TileIndex implements Structure.ByReference { }

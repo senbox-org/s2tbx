@@ -11,6 +11,9 @@ import java.util.List;
  * C structure:     opj_codestream_info_v2
  */
 public class CodestreamInfo2 extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("tx0", "ty0", "tdx", "tdy", "tw", "th", "nbcomps", "m_default_tile_info", "tile_info");
     /**
      * tile origin in x = XTOsiz
      */
@@ -70,7 +73,7 @@ public class CodestreamInfo2 extends Structure {
     }
 
     protected List<?> getFieldOrder() {
-        return Arrays.asList("tx0", "ty0", "tdx", "tdy", "tw", "th", "nbcomps", "m_default_tile_info", "tile_info");
+        return fieldNames;
     }
     
     public static class ByReference extends CodestreamInfo2 implements Structure.ByReference { }

@@ -8,6 +8,11 @@ import java.util.List;
 
 public class DecompressParams extends Structure {
 
+    private static final List<String> fieldNames =
+            Arrays.asList("core", "infile", "outfile", "decod_format", "cod_format", "indexfilename", "DA_x0", "DA_x1",
+                    "DA_y0", "DA_y1", "m_verbose", "tile_index", "nb_tile_to_decode", "precision", "nb_precision",
+                    "force_rgb", "upsample", "split_pnm");
+
     public static int OPJ_PATH_LEN = 4096;
 
     /**
@@ -89,8 +94,8 @@ public class DecompressParams extends Structure {
         super(peer);
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("core", "infile", "outfile", "decod_format", "cod_format", "indexfilename", "DA_x0", "DA_x1", "DA_y0", "DA_y1", "m_verbose", "tile_index", "nb_tile_to_decode", "precision", "nb_precision", "force_rgb", "upsample", "split_pnm");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends DecompressParams implements Structure.ByReference { }

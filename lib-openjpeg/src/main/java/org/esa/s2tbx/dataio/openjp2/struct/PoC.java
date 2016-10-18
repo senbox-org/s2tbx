@@ -7,6 +7,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PoC extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("resno0", "compno0", "layno1", "resno1", "compno1", "layno0", "precno0", "precno1", "prg1",
+                    "prg", "progorder", "tile", "tx0", "tx1", "ty0", "ty1", "layS", "resS", "compS", "prcS", "layE",
+                    "resE", "compE", "prcE", "txS", "txE", "tyS", "tyE", "dx", "dy", "lay_t", "res_t", "comp_t",
+                    "prc_t", "tx0_t", "ty0_t");
+
     /**
      * Resolution num start, Component num start, given by POC
      * C type : OPJ_UINT32
@@ -195,8 +202,8 @@ public class PoC extends Structure {
         super(peer);
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("resno0", "compno0", "layno1", "resno1", "compno1", "layno0", "precno0", "precno1", "prg1", "prg", "progorder", "tile", "tx0", "tx1", "ty0", "ty1", "layS", "resS", "compS", "prcS", "layE", "resE", "compE", "prcE", "txS", "txE", "tyS", "tyE", "dx", "dy", "lay_t", "res_t", "comp_t", "prc_t", "tx0_t", "ty0_t");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends PoC implements Structure.ByReference { }

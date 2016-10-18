@@ -12,6 +12,10 @@ import java.util.List;
  * C structure:     opj_image_t
  */
 public class Image extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("x0", "y0", "x1", "y1", "numcomps", "color_space", "comps", "icc_profile_buf", "icc_profile_len");
+
     /**
      * XOsiz: horizontal offset from the origin of the reference grid to the left side of the image area
      */
@@ -72,7 +76,7 @@ public class Image extends Structure {
     }
 
     protected List<?> getFieldOrder() {
-        return Arrays.asList("x0", "y0", "x1", "y1", "numcomps", "color_space", "comps", "icc_profile_buf", "icc_profile_len");
+        return fieldNames;
     }
     
     public static class ByReference extends Image implements Structure.ByReference { }

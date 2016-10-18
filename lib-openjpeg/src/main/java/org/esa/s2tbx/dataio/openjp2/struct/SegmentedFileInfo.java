@@ -11,6 +11,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SegmentedFileInfo extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("infile", "p_file", "dataLength", "dataRead", "numSegmentsMinusOne", "p_segmentPositionsList",
+                    "p_segmentLengths", "curPos", "curSegment");
+
     /** C type : char[4096] */
     public byte[] infile = new byte[4096];
     /** C type : FilePointer* */
@@ -58,8 +63,8 @@ public class SegmentedFileInfo extends Structure {
         super(peer);
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("infile", "p_file", "dataLength", "dataRead", "numSegmentsMinusOne", "p_segmentPositionsList", "p_segmentLengths", "curPos", "curSegment");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends SegmentedFileInfo implements Structure.ByReference { }

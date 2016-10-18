@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CodestreamIndex extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("main_head_start", "main_head_end", "codestream_size", "marknum", "marker", "maxmarknum", "nb_of_tiles", "tile_index");
     /**
      * main header start position (SOC position)
      */
@@ -57,7 +60,7 @@ public class CodestreamIndex extends Structure {
     }
 
     protected List<?> getFieldOrder() {
-        return Arrays.asList("main_head_start", "main_head_end", "codestream_size", "marknum", "marker", "maxmarknum", "nb_of_tiles", "tile_index");
+        return fieldNames;
     }
 
     public static class ByReference extends CodestreamIndex implements Structure.ByReference { }

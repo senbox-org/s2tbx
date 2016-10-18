@@ -13,6 +13,12 @@ import java.util.List;
  * Decompression parameters
  */
 public class DecompressCoreParams extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("cp_reduce", "cp_layer", "infile", "outfile", "decod_format", "cod_format", "DA_x0", "DA_x1",
+                    "DA_y0", "DA_y1", "m_verbose", "tile_index", "nb_tile_to_decode", "jpwl_correct", "jpwl_exp_comps",
+                    "jpwl_max_tiles", "flags");
+
     /**
      * Set the number of highest resolution levels to be discarded. 
      * The image resolution is effectively divided by 2 to the power of the number of discarded levels. 
@@ -96,7 +102,7 @@ public class DecompressCoreParams extends Structure {
     }
 
     protected List<?> getFieldOrder() {
-        return Arrays.asList("cp_reduce", "cp_layer", "infile", "outfile", "decod_format", "cod_format", "DA_x0", "DA_x1", "DA_y0", "DA_y1", "m_verbose", "tile_index", "nb_tile_to_decode", "jpwl_correct", "jpwl_exp_comps", "jpwl_max_tiles", "flags");
+        return fieldNames;
     }
 
     public static class ByReference extends DecompressCoreParams implements Structure.ByReference { }

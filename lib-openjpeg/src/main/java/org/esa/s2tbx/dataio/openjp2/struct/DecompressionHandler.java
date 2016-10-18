@@ -14,6 +14,12 @@ import java.util.List;
  * Structure for holding decompression-related function pointers
  */
 public class DecompressionHandler extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("opj_read_header", "opj_decode", "opj_read_tile_header", "opj_decode_tile_data",
+                    "opj_end_decompress", "opj_destroy", "opj_setup_decoder", "opj_set_decode_area",
+                    "opj_get_decoded_tile", "opj_set_decoded_resolution_factor");
+
     /**
      * Main header reading function handler
      * OPJ_BOOL (*opj_read_header) ( struct opj_stream_private * cio, void * p_codec, opj_image_t **p_image, struct opj_event_mgr * p_manager)
@@ -87,7 +93,7 @@ public class DecompressionHandler extends Structure {
 
     @Override
     protected List<?> getFieldOrder() {
-        return Arrays.asList("opj_read_header", "opj_decode", "opj_read_tile_header", "opj_decode_tile_data", "opj_end_decompress", "opj_destroy", "opj_setup_decoder", "opj_set_decode_area", "opj_get_decoded_tile", "opj_set_decoded_resolution_factor");
+        return fieldNames;
     }
 
     public static class ByReference extends DecompressionHandler implements Structure.ByReference { }

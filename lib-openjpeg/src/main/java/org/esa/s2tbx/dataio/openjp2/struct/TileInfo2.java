@@ -7,6 +7,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TileInfo2 extends Structure {
+
+    private static final List<String> fieldNames =
+            Arrays.asList("tileno", "csty", "prg", "numlayers", "mct", "tccp_info");
+
     /** number (index) of tile */
     public int tileno;
     /**
@@ -64,8 +68,8 @@ public class TileInfo2 extends Structure {
         super(peer);
     }
 
-    protected List<? > getFieldOrder() {
-        return Arrays.asList("tileno", "csty", "prg", "numlayers", "mct", "tccp_info");
+    protected List<?> getFieldOrder() {
+        return fieldNames;
     }
 
     public static class ByReference extends TileInfo2 implements Structure.ByReference { }
