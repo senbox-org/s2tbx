@@ -23,7 +23,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingItems;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,7 +69,7 @@ public abstract class S2Metadata {
 
     private ProductCharacteristics productCharacteristics;
 
-    private S2FileNamingItems namingItems;
+    private HashMap<S2NamingItems, String> namingItems;
 
 
     /*public S2Metadata(S2Config config, JAXBContext context, String psdString) throws JAXBException {
@@ -81,6 +82,7 @@ public abstract class S2Metadata {
     public S2Metadata(S2Config config) {
         this.config = config;
         this.metadataElements = new ArrayList<>();
+        namingItems = new HashMap<>();
     }
 
     public S2Config getConfig() {
@@ -120,12 +122,18 @@ public abstract class S2Metadata {
         this.productCharacteristics = productCharacteristics;
     }
 
-    public S2FileNamingItems getNamingItems() {
+    public HashMap<S2NamingItems, String> getNamingItems() {
         return namingItems;
     }
 
-    public void setNamingItems(S2FileNamingItems namingItems) {
-        this.namingItems = namingItems;
+    public boolean putNamingItem(S2NamingItems item, String value) {
+        Pattern pattern = Pattern.compile(item.REGEX);
+        Matcher matcher = pattern.matcher(value);
+        if(!matcher.matches()) {
+            return false;
+        }
+        namingItems.put(item,value);
+        return true;
     }
 
     protected Object updateAndUnmarshal(InputStream xmlStream) throws IOException, JAXBException {

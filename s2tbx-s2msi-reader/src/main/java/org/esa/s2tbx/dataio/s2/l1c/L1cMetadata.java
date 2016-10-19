@@ -23,7 +23,6 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingItems;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -63,7 +62,6 @@ public class L1cMetadata extends S2Metadata {
         super(s2config);
         resetTileList();
         boolean isGranuleMetadata = S2OrthoGranuleMetadataFilename.isGranuleFilename(path.getFileName().toString());
-        setNamingItems(new S2FileNamingItems());
 
         if(!isGranuleMetadata) {
             initProduct(path, granuleName, epsg);
@@ -76,7 +74,7 @@ public class L1cMetadata extends S2Metadata {
     private void initProduct(Path path, String granuleName, String epsg) throws IOException, ParserConfigurationException, SAXException {
         IL1cProductMetadata metadataProduct = L1cMetadataFactory.createL1cProductMetadata(path);
         setProductCharacteristics(metadataProduct.getProductOrganization());
-        metadataProduct.updateNamingItems(getNamingItems());
+        //TODO metadataProduct.updateNamingItems(getNamingItems());
 
         Collection<String> tileNames;
 
@@ -90,7 +88,7 @@ public class L1cMetadata extends S2Metadata {
         S2DatastripDirFilename dirStripName = metadataProduct.getDatastripDir();
         Path datastripPath = path.resolveSibling("DATASTRIP").resolve(dirStripName.name).resolve(stripName.name);
         IL1cDatastripMetadata metadataDatastrip = L1cMetadataFactory.createL1cDatastripMetadata(datastripPath);
-        metadataDatastrip.updateNamingItems(getNamingItems());
+        //TODO metadataDatastrip.updateNamingItems(getNamingItems());
 
         getMetadataElements().add(metadataProduct.getMetadataElement());
         getMetadataElements().add(metadataDatastrip.getMetadataElement());
@@ -122,7 +120,7 @@ public class L1cMetadata extends S2Metadata {
     private void initTile(Path path, String epsg) throws IOException, ParserConfigurationException, SAXException {
 
         IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(path);
-        granuleMetadata.updateNamingItems(getNamingItems());
+        //TODO granuleMetadata.updateNamingItems(getNamingItems());
 
         if(getProductCharacteristics() == null) {
             setProductCharacteristics(granuleMetadata.getTileProductOrganization());

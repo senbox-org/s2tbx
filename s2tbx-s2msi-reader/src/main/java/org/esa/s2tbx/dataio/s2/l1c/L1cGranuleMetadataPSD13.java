@@ -7,7 +7,7 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingItems;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
 
@@ -203,7 +203,9 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         setName("Level-1C_Tile_" + tileId.substring(50, 55));
     }
 
-    public void updateNamingItems(S2FileNamingItems namingItems) {
+    public HashMap<S2NamingItems,String> getNamingItems() {
         //TODO
+        HashMap<S2NamingItems,String> namingItems = new HashMap<>();
+        return  namingItems;
     }
 }

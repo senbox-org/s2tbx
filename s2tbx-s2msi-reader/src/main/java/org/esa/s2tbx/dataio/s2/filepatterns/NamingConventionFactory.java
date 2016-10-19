@@ -13,7 +13,7 @@ public class NamingConventionFactory {
         INamingConvention namingConvention = null;
         String filename = path.getFileName().toString();
         if(level.equals("L1C")) {
-            if(L1cNamingConventionSAFE.productMatches(filename) || L1cNamingConventionSAFE.productMatches(filename)) {
+            if(L1cNamingConventionSAFE.productMatches(filename) || L1cNamingConventionSAFE.granuleMatches(filename)) {
                 namingConvention = new L1cNamingConventionSAFE();
             }
             //TODO

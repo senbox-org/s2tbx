@@ -33,8 +33,8 @@ import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
 import org.esa.s2tbx.dataio.s2.*;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingItems;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingTemplate;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.gml.EopPolygon;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
@@ -193,7 +193,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         timeProbe.reset();
 
         //TODO, adaptar metadata (productCharacteristics por ejemplo) y rellenar esto aqui
-        S2FileNamingItems namingItems = null;
+        HashMap<S2NamingItems,String> namingItems = metadataHeader.getNamingItems();
 
         S2OrthoSceneLayout sceneDescription = S2OrthoSceneLayout.create(metadataHeader);
         logger.fine("Scene Description: " + sceneDescription);
@@ -260,7 +260,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             HashMap<String, File> tileFileMap = new HashMap<>();
             for (S2Metadata.Tile tile : tileList) {
                 //S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
-                namingItems.setTileNumber(tile.getId()); //TODO ver si esta bien o hay q transformar algo
+                namingItems.put(S2NamingItems.TILE_NUMBER,tile.getId()); //TODO ver si esta bien o hay q transformar algo
                 namingConvention.getGranuleDirTemplate().getFileName(namingItems);
                 //if (gf != null) {
 

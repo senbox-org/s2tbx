@@ -1,51 +1,104 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingConstants;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingTemplate;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
 
-
-import java.nio.file.Path;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by obarrile on 19/10/2016.
  */
 public class L1cNamingConventionSAFE implements INamingConvention {
-    public static final String productDirNameConvention = S2FileNamingConstants.MISSION_ID + "_" +
-                                                          S2FileNamingConstants.FILE_CLASS + "_" +
-                                                          "PRD_MSIL1C_" +
-                                                          /*S2FileNamingConstants.SITE_CENTRE*/"PDMC" + "_" +
-                                                          S2FileNamingConstants.CREATION_DATE + "_" +
-                                                          S2FileNamingConstants.RELATIVE_ORBIT + "_V" +
-                                                          S2FileNamingConstants.START_TIME + "_" +
-                                                          S2FileNamingConstants.STOP_TIME + ".SAFE";
-    //TODO
-    public static final String productDirREGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})([A-Z|0-9|_]+)(\\.[A-Z|a-z|0-9]{3,4})?";
-    public static final String productXmlNameConvention = S2FileNamingConstants.MISSION_ID + "_" +
-            S2FileNamingConstants.FILE_CLASS + "_" +
-            "MSI_L1C_DS_EPA__" +
-            S2FileNamingConstants.SITE_CENTRE + "_" +
-            S2FileNamingConstants.CREATION_DATE + "_" +
-            S2FileNamingConstants.RELATIVE_ORBIT + "_V" +
-            S2FileNamingConstants.START_TIME + "_" +
-            S2FileNamingConstants.STOP_TIME + ".xml";
-    public static final String productXmlREGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})([A-Z|0-9|_]+)(\\.[A-Z|a-z|0-9]{3,4})?";
-
-    public static final String datastripDirNameConvention = S2FileNamingConstants.MISSION_ID + "_" +
-            S2FileNamingConstants.FILE_CLASS + "_" +
-            "PRD_MSI_L1C_" +
-            S2FileNamingConstants.SITE_CENTRE + "_" +
-            S2FileNamingConstants.CREATION_DATE + "_" +
-            S2FileNamingConstants.RELATIVE_ORBIT + "_V" +
-            S2FileNamingConstants.START_TIME + "_" +
-            S2FileNamingConstants.STOP_TIME + ".SAFE";
-    public static final String datastripDirREGEX ="";
-    public static final String datastripXmlNameConvention ="";
-    public static final String datastripXmlREGEX ="";
-    public static final String granuleDirNameConvention ="";
-    public static final String granuleDirREGEX ="";
-    public static final String granuleXmlNameConvention ="";
-    public static final String granuleXmlREGEX ="";
+    public static final String productDirNameConvention = S2NamingItems.MISSION_ID.template + "_" +
+            S2NamingItems.FILE_CLASS.template + "_" +
+            S2NamingItems.FILE_TYPE_PRODUCT.template + "_" +
+            S2NamingItems.SITE_CENTRE_PRODUCT.template + "_" +
+            S2NamingItems.PRODUCT_DISCRIMINATOR.template + "_R" +
+            S2NamingItems.RELATIVE_ORBIT.template + "_V" +
+            S2NamingItems.START_TIME.template + "_" +
+            S2NamingItems.STOP_TIME.template + "." + S2NamingItems.FORMAT.template;
+    public static final String productDirREGEX = S2NamingItems.MISSION_ID.REGEX + "_" +
+            S2NamingItems.FILE_CLASS.REGEX + "_" +
+            S2NamingItems.FILE_TYPE_PRODUCT.REGEX + "_" +
+            S2NamingItems.SITE_CENTRE_PRODUCT.REGEX + "_" +
+            S2NamingItems.PRODUCT_DISCRIMINATOR.REGEX + "_R" +
+            S2NamingItems.RELATIVE_ORBIT.REGEX + "_V" +
+            S2NamingItems.START_TIME.REGEX + "_" +
+            S2NamingItems.STOP_TIME.REGEX + "." + S2NamingItems.FORMAT.REGEX;
+    public static final String productXmlNameConvention = S2NamingItems.MISSION_ID.template + "_" +
+            S2NamingItems.FILE_CLASS.template + "_" +
+            S2NamingItems.FILE_TYPE_PRODUCT_XML.template + "_" +
+            S2NamingItems.SITE_CENTRE_PRODUCT.template + "_" +
+            S2NamingItems.PRODUCT_DISCRIMINATOR.template + "_R" +
+            S2NamingItems.RELATIVE_ORBIT.template + "_V" +
+            S2NamingItems.START_TIME.template + "_" +
+            S2NamingItems.STOP_TIME.template + ".xml";
+    public static final String productXmlREGEX = S2NamingItems.MISSION_ID.REGEX + "_" +
+            S2NamingItems.FILE_CLASS.REGEX + "_" +
+            S2NamingItems.FILE_TYPE_PRODUCT_XML.REGEX + "_" +
+            S2NamingItems.SITE_CENTRE_PRODUCT.REGEX + "_" +
+            S2NamingItems.PRODUCT_DISCRIMINATOR.REGEX + "_R" +
+            S2NamingItems.RELATIVE_ORBIT.REGEX + "_V" +
+            S2NamingItems.START_TIME.REGEX + "_" +
+            S2NamingItems.STOP_TIME.REGEX + ".xml";
+    public static final String datastripDirNameConvention = S2NamingItems.MISSION_ID.template + "_" +
+            S2NamingItems.FILE_CLASS.template + "_" +
+            S2NamingItems.FILE_TYPE_DATASTRIP.template + "_" +
+            S2NamingItems.SITE_CENTRE.template + "_" +
+            S2NamingItems.CREATION_DATE.template +
+            "_S" + S2NamingItems.CREATION_DATE.template +
+            "_N" + S2NamingItems.PRODUCTION_BASELINE.template;
+    public static final String datastripDirREGEX = S2NamingItems.MISSION_ID.REGEX + "_" +
+            S2NamingItems.FILE_CLASS.REGEX + "_" +
+            S2NamingItems.FILE_TYPE_DATASTRIP.REGEX + "_" +
+            S2NamingItems.SITE_CENTRE.REGEX + "_" +
+            S2NamingItems.CREATION_DATE.REGEX +
+            "_S" + S2NamingItems.CREATION_DATE.REGEX +
+            "_N" + S2NamingItems.PRODUCTION_BASELINE.REGEX;
+    public static final String datastripXmlNameConvention = S2NamingItems.MISSION_ID.template + "_" +
+            S2NamingItems.FILE_CLASS.template + "_" +
+            S2NamingItems.FILE_TYPE_DATASTRIP_XML.template + "_" +
+            S2NamingItems.SITE_CENTRE.template + "_" +
+            S2NamingItems.CREATION_DATE.template +
+            "_S" + S2NamingItems.CREATION_DATE.template + ".xml";
+    public static final String datastripXmlREGEX = S2NamingItems.MISSION_ID.REGEX + "_" +
+            S2NamingItems.FILE_CLASS.REGEX + "_" +
+            S2NamingItems.FILE_TYPE_DATASTRIP_XML.REGEX + "_" +
+            S2NamingItems.SITE_CENTRE.REGEX + "_" +
+            S2NamingItems.CREATION_DATE.REGEX +
+            "_S" + S2NamingItems.CREATION_DATE.REGEX + ".xml";
+    public static final String granuleDirNameConvention = S2NamingItems.MISSION_ID.template + "_" +
+            S2NamingItems.FILE_CLASS.template + "_" +
+            S2NamingItems.FILE_TYPE_GRANULE.template + "_" +
+            S2NamingItems.SITE_CENTRE.template + "_" +
+            S2NamingItems.CREATION_DATE.template + "_A" +
+            S2NamingItems.ABSOLUTE_ORBIT.template + "_T" +
+            S2NamingItems.TILE_NUMBER.template +
+            "_N" + S2NamingItems.PRODUCTION_BASELINE.template;
+    public static final String granuleDirREGEX = S2NamingItems.MISSION_ID.REGEX + "_" +
+            S2NamingItems.FILE_CLASS.REGEX + "_" +
+            S2NamingItems.FILE_TYPE_GRANULE.REGEX + "_" +
+            S2NamingItems.SITE_CENTRE.REGEX + "_" +
+            S2NamingItems.CREATION_DATE.REGEX + "_A" +
+            S2NamingItems.ABSOLUTE_ORBIT.REGEX + "_T" +
+            S2NamingItems.TILE_NUMBER.REGEX +
+            "_N" + S2NamingItems.PRODUCTION_BASELINE.REGEX;
+    public static final String granuleXmlNameConvention = S2NamingItems.MISSION_ID.template + "_" +
+            S2NamingItems.FILE_CLASS.template + "_" +
+            S2NamingItems.FILE_TYPE_GRANULE_XML.template + "_" +
+            S2NamingItems.SITE_CENTRE.template + "_" +
+            S2NamingItems.CREATION_DATE.template + "_A" +
+            S2NamingItems.ABSOLUTE_ORBIT.template + "_T" +
+            S2NamingItems.TILE_NUMBER.template + ".xml";
+    public static final String granuleXmlREGEX = S2NamingItems.MISSION_ID.REGEX + "_" +
+            S2NamingItems.FILE_CLASS.REGEX + "_" +
+            S2NamingItems.FILE_TYPE_GRANULE_XML.REGEX + "_" +
+            S2NamingItems.SITE_CENTRE.REGEX + "_" +
+            S2NamingItems.CREATION_DATE.REGEX + "_A" +
+            S2NamingItems.ABSOLUTE_ORBIT.REGEX + "_T" +
+            S2NamingItems.TILE_NUMBER.REGEX + ".xml";
 
 
 
@@ -101,13 +154,21 @@ public class L1cNamingConventionSAFE implements INamingConvention {
     }
 
     public static boolean productMatches(String filename) {
-        //TODO pattern match con granule xml and dir xml
-        return true;
+        Pattern PATTERN = Pattern.compile(productXmlREGEX);
+        final Matcher matcher = PATTERN.matcher(filename);
+        if (matcher.matches()) {
+            return true;
+        }
+        return false;
     }
 
     public static boolean granuleMatches(String filename) {
-        //TODO pattern match con granule xml and dir xml
-        return true;
+        Pattern PATTERN = Pattern.compile(granuleXmlREGEX);
+        final Matcher matcher = PATTERN.matcher(filename);
+        if (matcher.matches()) {
+            return true;
+        }
+        return false;
     }
 
 }

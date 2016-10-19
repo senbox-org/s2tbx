@@ -4,7 +4,7 @@ import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingItems;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
 
@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
 
 /**
  * Created by obarrile on 30/09/2016.
@@ -73,7 +74,9 @@ public class L1cDatastripMetadataPSD13 extends GenericXmlMetadata implements IL1
         return rootElement;
     }
 
-    public void updateNamingItems(S2FileNamingItems namingItems) {
+    public HashMap<S2NamingItems,String> getNamingItems() {
         //TODO
+        HashMap<S2NamingItems,String> namingItems = new HashMap<>();
+        return  namingItems;
     }
 }
