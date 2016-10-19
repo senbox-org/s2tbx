@@ -23,6 +23,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingItems;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
@@ -67,13 +68,15 @@ public abstract class S2Metadata {
 
     private ProductCharacteristics productCharacteristics;
 
+    private S2FileNamingItems namingItems;
 
-    public S2Metadata(S2Config config, JAXBContext context, String psdString) throws JAXBException {
+
+    /*public S2Metadata(S2Config config, JAXBContext context, String psdString) throws JAXBException {
         this.config = config;
         this.unmarshaller = context.createUnmarshaller();
         this.psdString = psdString;
         this.metadataElements = new ArrayList<>();
-    }
+    }*/
 
     public S2Metadata(S2Config config) {
         this.config = config;
@@ -115,6 +118,14 @@ public abstract class S2Metadata {
 
     public void setProductCharacteristics(ProductCharacteristics productCharacteristics) {
         this.productCharacteristics = productCharacteristics;
+    }
+
+    public S2FileNamingItems getNamingItems() {
+        return namingItems;
+    }
+
+    public void setNamingItems(S2FileNamingItems namingItems) {
+        this.namingItems = namingItems;
     }
 
     protected Object updateAndUnmarshal(InputStream xmlStream) throws IOException, JAXBException {

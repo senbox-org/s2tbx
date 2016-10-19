@@ -8,6 +8,7 @@ import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingItems;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -157,5 +158,9 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
 
     private String[] getBandList() {
         return getAttributeValues(L1cPSD13Constants.PATH_PRODUCT_METADATA_BAND_LIST);
+    }
+
+    public void updateNamingItems(S2FileNamingItems namingItems) {
+        //TODO
     }
 }

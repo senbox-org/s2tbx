@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.s2.l1c;
 
+import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingItems;
 import org.esa.snap.core.datamodel.MetadataElement;
 
 /**
@@ -7,4 +8,5 @@ import org.esa.snap.core.datamodel.MetadataElement;
  */
 public interface IL1cDatastripMetadata {
     MetadataElement getMetadataElement();
+    void updateNamingItems(S2FileNamingItems namingItems);
 }

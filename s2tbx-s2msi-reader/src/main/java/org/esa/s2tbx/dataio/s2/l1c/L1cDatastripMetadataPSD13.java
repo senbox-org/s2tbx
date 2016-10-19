@@ -4,6 +4,7 @@ import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingItems;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
 
@@ -33,6 +34,8 @@ public class L1cDatastripMetadataPSD13 extends GenericXmlMetadata implements IL1
             return false;
         }
     }
+
+
 
     public static L1cDatastripMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
@@ -68,5 +71,9 @@ public class L1cDatastripMetadataPSD13 extends GenericXmlMetadata implements IL1
     @Override
     public MetadataElement getMetadataElement() {
         return rootElement;
+    }
+
+    public void updateNamingItems(S2FileNamingItems namingItems) {
+        //TODO
     }
 }
