@@ -1,5 +1,8 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Created by obarrile on 19/10/2016.
  */
@@ -28,11 +31,30 @@ public enum S2NamingItems {
     public final int id;
     public final String template;
     public final String REGEX;
+    public static final String TIME_REGEX = "([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2}).([0-9]*)Z";
 
     S2NamingItems(int id, String template, String REGEX) {
         this.id = id;
         this.template = template;
         this.REGEX = REGEX;
+    }
+
+    public static String formatS2Time (String time) {
+        if(time == null) {
+            return null;
+        }
+        Pattern timePattern = Pattern.compile(TIME_REGEX);
+        Matcher timeMatcher = timePattern.matcher(time);
+        if(!timeMatcher.matches()) {
+            return null;
+        }
+        String formattedTime = time.substring(0,4) +
+                               time.substring(5,7) +
+                               time.substring(8,10) + "T" +
+                               time.substring(11,13) +
+                               time.substring(14,16) +
+                               time.substring(17,19);
+        return formattedTime;
     }
 
 }

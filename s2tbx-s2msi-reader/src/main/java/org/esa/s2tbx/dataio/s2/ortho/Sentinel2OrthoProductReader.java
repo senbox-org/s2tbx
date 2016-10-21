@@ -259,10 +259,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
             HashMap<String, File> tileFileMap = new HashMap<>();
             for (S2Metadata.Tile tile : tileList) {
-                //S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
-                namingItems.put(S2NamingItems.TILE_NUMBER,tile.getId()); //TODO ver si esta bien o hay q transformar algo
-                namingConvention.getGranuleDirTemplate().getFileName(namingItems);
-                //if (gf != null) {
+                S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
+
+                if (gf != null) {
+                    namingItems.put(S2NamingItems.TILE_NUMBER,gf.tileNumber.substring(1)); //TODO ver si esta bien o hay q transformar algo
+                    namingConvention.getGranuleDirTemplate().getFileName(namingItems);
 
                     String imgFilename;
                     if(foundProductMetadata) {
@@ -295,7 +296,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     } else {
                         logger.warning(String.format("Warning: missing file %s\n", file));
                     }
-                //}
+                }
             }
 
             if (!tileFileMap.isEmpty()) {

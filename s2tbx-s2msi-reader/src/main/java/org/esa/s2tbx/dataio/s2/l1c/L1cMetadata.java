@@ -23,6 +23,7 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
 import org.esa.snap.core.datamodel.MetadataElement;
@@ -74,7 +75,15 @@ public class L1cMetadata extends S2Metadata {
     private void initProduct(Path path, String granuleName, String epsg) throws IOException, ParserConfigurationException, SAXException {
         IL1cProductMetadata metadataProduct = L1cMetadataFactory.createL1cProductMetadata(path);
         setProductCharacteristics(metadataProduct.getProductOrganization());
-        //TODO metadataProduct.updateNamingItems(getNamingItems());
+        HashMap<S2NamingItems,String> namingItems = metadataProduct.getNamingItems();
+
+        //TODO review
+        for(Map.Entry<S2NamingItems,String> entry : namingItems.entrySet()) {
+            S2NamingItems key = entry.getKey();
+            String value = entry.getValue();
+            putNamingItem(key,value);
+        }
+
 
         Collection<String> tileNames;
 
