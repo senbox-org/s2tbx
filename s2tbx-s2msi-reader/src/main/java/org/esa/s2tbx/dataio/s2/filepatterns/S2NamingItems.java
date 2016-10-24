@@ -26,7 +26,9 @@ public enum S2NamingItems {
     FILE_TYPE_GRANULE(2,"{{FILE_TYPE_GRANULE}}","(MSI_L1B_GR|MSI_L1C_TL|MSI_L2A_TL)"),
     ABSOLUTE_ORBIT(2,"{{ABSOLUTE_ORBIT}}","([0-9]{6})"),
     TILE_NUMBER(2,"{{TILE_NUMBER}}","([A-Z|0-9]{5})"),
-    FILE_TYPE_GRANULE_XML(2,"{{FILE_TYPE_GRANULE_XML}}","(MTD_L1B_GR|MTD_L1C_TL|MTD_L2A_TL)");
+    FILE_TYPE_GRANULE_XML(2,"{{FILE_TYPE_GRANULE_XML}}","(MTD_L1B_GR|MTD_L1C_TL|MTD_L2A_TL)"),
+    BAND_FILE_ID(2,"{{BAND_FILE_ID}}","([A-Z|0-9]{3})"),
+    DATATAKE_SENSING_START(2,"{{DATATAKE_SENSING_START}}","([0-9]{8}T[0-9]{6})");
 
     public final int id;
     public final String template;

@@ -87,9 +87,10 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         double toaQuantification = L1cPSD13Constants.DEFAULT_TOA_QUANTIFICATION;
         characteristics.setQuantificationValue(toaQuantification);
 
-        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (toaQuantification);
-        int size = aInfo.size();
-        characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
+        //TODO
+      //  List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (toaQuantification);
+      //  int size = aInfo.size();
+     //   characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
         return characteristics;
     }

@@ -4,6 +4,7 @@ import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingTemplate;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
 
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,6 +101,23 @@ public class L1cNamingConventionSAFE implements INamingConvention {
             S2NamingItems.ABSOLUTE_ORBIT.REGEX + "_T" +
             S2NamingItems.TILE_NUMBER.REGEX + ".xml";
 
+    public static final String spectralBandImageNameConvention = S2NamingItems.MISSION_ID.template + "_" +
+            S2NamingItems.FILE_CLASS.template + "_" +
+            S2NamingItems.FILE_TYPE_GRANULE.template + "_" +
+            S2NamingItems.SITE_CENTRE.template + "_" +
+            S2NamingItems.CREATION_DATE.template + "_A" +
+            S2NamingItems.ABSOLUTE_ORBIT.template + "_T" +
+            S2NamingItems.TILE_NUMBER.template +
+            "_" + S2NamingItems.BAND_FILE_ID.template + ".jp2";
+    public static final String spectralBandImageREGEX = S2NamingItems.MISSION_ID.REGEX + "_" +
+            S2NamingItems.FILE_CLASS.REGEX + "_" +
+            S2NamingItems.FILE_TYPE_GRANULE.REGEX + "_" +
+            S2NamingItems.SITE_CENTRE.REGEX + "_" +
+            S2NamingItems.CREATION_DATE.REGEX + "_A" +
+            S2NamingItems.ABSOLUTE_ORBIT.REGEX + "_T" +
+            S2NamingItems.TILE_NUMBER.REGEX +
+            "_" + S2NamingItems.BAND_FILE_ID.REGEX + ".jp2";
+
 
 
     final S2FileNamingTemplate productDirTemplate;
@@ -116,6 +134,10 @@ public class L1cNamingConventionSAFE implements INamingConvention {
         datastripXmlTemplate = new S2FileNamingTemplate(datastripXmlNameConvention,datastripXmlREGEX);
         granuleDirTemplate = new S2FileNamingTemplate(granuleDirNameConvention,granuleDirREGEX);
         granuleXmlTemplate = new S2FileNamingTemplate(granuleXmlNameConvention,granuleXmlREGEX);
+    }
+
+    public static S2FileNamingTemplate getStaticProductXmlTemplate() {
+        return new S2FileNamingTemplate(productXmlNameConvention,productXmlREGEX);
     }
 
     @Override
@@ -153,6 +175,20 @@ public class L1cNamingConventionSAFE implements INamingConvention {
         return granuleXmlTemplate;
     }
 
+    @Override
+    public S2FileNamingTemplate getSpectralBandImageFileTemplate(String bandId) {
+        S2FileNamingTemplate spectralBandImage;
+        //replace the band id
+        HashMap<S2NamingItems,String> values = new HashMap<>();
+        values.put(S2NamingItems.BAND_FILE_ID,bandId);
+        String templateString = S2FileNamingTemplate.replaceTemplate(spectralBandImageNameConvention,values);
+
+        //create the S2FileNamingTemplate
+        spectralBandImage= new S2FileNamingTemplate(templateString,spectralBandImageREGEX);
+
+        return spectralBandImage;
+    }
+
     public static boolean productMatches(String filename) {
         Pattern PATTERN = Pattern.compile(productXmlREGEX);
         final Matcher matcher = PATTERN.matcher(filename);
@@ -170,5 +206,6 @@ public class L1cNamingConventionSAFE implements INamingConvention {
         }
         return false;
     }
+
 
 }

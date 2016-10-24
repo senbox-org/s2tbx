@@ -21,6 +21,7 @@ package org.esa.s2tbx.dataio.s2.l1c;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
@@ -54,27 +55,27 @@ public class L1cMetadata extends S2Metadata {
 
     protected Logger logger = SystemUtils.LOG;
 
-    public static L1cMetadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException, ParserConfigurationException, SAXException {
-        return new L1cMetadata(file.toPath(), granuleName, config, epsg);
+    public static L1cMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, INamingConvention l1cNamingConvention) throws IOException, ParserConfigurationException, SAXException {
+        return new L1cMetadata(file.toPath(), granuleName, config, epsg, l1cNamingConvention);
     }
 
 
-    private L1cMetadata(Path path, String granuleName, S2Config s2config, String epsg) throws IOException, ParserConfigurationException, SAXException {
+    private L1cMetadata(Path path, String granuleName, S2Config s2config, String epsg, INamingConvention l1cNamingConvention) throws IOException, ParserConfigurationException, SAXException {
         super(s2config);
         resetTileList();
         boolean isGranuleMetadata = S2OrthoGranuleMetadataFilename.isGranuleFilename(path.getFileName().toString());
 
         if(!isGranuleMetadata) {
-            initProduct(path, granuleName, epsg);
+            initProduct(path, granuleName, epsg, l1cNamingConvention);
         } else {
             initTile(path, epsg);
         }
         //TODO
     }
 
-    private void initProduct(Path path, String granuleName, String epsg) throws IOException, ParserConfigurationException, SAXException {
+    private void initProduct(Path path, String granuleName, String epsg, INamingConvention l1cNamingConvention) throws IOException, ParserConfigurationException, SAXException {
         IL1cProductMetadata metadataProduct = L1cMetadataFactory.createL1cProductMetadata(path);
-        setProductCharacteristics(metadataProduct.getProductOrganization());
+        setProductCharacteristics(metadataProduct.getProductOrganization(l1cNamingConvention));
         HashMap<S2NamingItems,String> namingItems = metadataProduct.getNamingItems();
 
         //TODO review

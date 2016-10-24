@@ -21,6 +21,7 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.Sentinel2OrthoProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -72,10 +73,10 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
     }
 
     protected S2Metadata parseHeader(
-            File file, String granuleName, S2Config config, String epsg) throws IOException {
+            File file, String granuleName, S2Config config, String epsg, INamingConvention namingConvention) throws IOException {
 
         try {
-            return L1cMetadata.parseHeader(file, granuleName, config, epsg);
+            return L1cMetadata.parseHeader(file, granuleName, config, epsg, namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse metadata in " + file.getName());
         }

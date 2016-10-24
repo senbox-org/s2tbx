@@ -28,6 +28,9 @@ public class S2FileNamingTemplate {
 
     public static String replaceTemplate(String template, HashMap<S2NamingItems, String> namingItems) {
         String filename = template;
+        if(namingItems == null) {
+            return filename;
+        }
         for(Map.Entry<S2NamingItems, String> entry : namingItems.entrySet()) {
             S2NamingItems key = entry.getKey();
             String value = entry.getValue();

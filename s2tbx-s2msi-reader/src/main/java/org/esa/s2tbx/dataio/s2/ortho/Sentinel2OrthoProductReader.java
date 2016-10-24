@@ -65,6 +65,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.*;
 import java.awt.image.DataBufferFloat;
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -117,7 +118,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     protected abstract String getReaderCacheDir();
 
-    protected abstract S2Metadata parseHeader(File file, String granuleName, S2Config config, String epsg) throws IOException;
+    protected abstract S2Metadata parseHeader(File file, String granuleName, S2Config config, String epsg, INamingConvention namingConvention) throws IOException;
 
     protected abstract String getImagePathString(String imageFileName, S2SpatialResolution resolution);
 
@@ -188,7 +189,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         final String aFilter = filterTileId;
 
-        S2Metadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode);
+        S2Metadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode, namingConvention);
         SystemUtils.LOG.fine(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
         timeProbe.reset();
 
@@ -267,9 +268,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                     String imgFilename;
                     if(foundProductMetadata) {
-                        imgFilename = String.format("GRANULE%s%s%s%s", File.separator, tile.getId(),
+                        imgFilename = Paths.get("GRANULE", tile.getId(),"IMG_DATA",
+                                                S2FileNamingTemplate.replaceTemplate(bandInformation.getImageFileTemplate(),namingItems)).toString();
+                                /*String.format("GRANULE%s%s%s%s", File.separator, tile.getId(),
                                                     File.separator, S2FileNamingTemplate.replaceTemplate(bandInformation.getImageFileTemplate(),namingItems));
-                                                    /*bandInformation.getImageFileTemplate()
+                                                    bandInformation.getImageFileTemplate()
                                                                    .replace("{{MISSION_ID}}", gf.missionID)
                                                                    .replace("{{SITECENTRE}}", gf.siteCentre)
                                                                    .replace("{{CREATIONDATE}}", gf.creationDate)
@@ -278,7 +281,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                                    .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));*/
 
                     } else {
-                        imgFilename = S2FileNamingTemplate.replaceTemplate(bandInformation.getImageFileTemplate(),namingItems);
+                        imgFilename = Paths.get("IMG_DATA",
+                                                S2FileNamingTemplate.replaceTemplate(bandInformation.getImageFileTemplate(),namingItems)).toString();
                         /*bandInformation.getImageFileTemplate()
                                                             .replace("{{MISSION_ID}}", gf.missionID)
                                                             .replace("{{SITECENTRE}}", gf.siteCentre)

@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
@@ -80,7 +81,7 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getProductOrganization() {
+    public S2Metadata.ProductCharacteristics getProductOrganization(INamingConvention namingConvention) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
 
@@ -96,7 +97,7 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
         double toaQuantification = Double.valueOf(getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_QUANTIFICATION_VALUE, String.valueOf(L1cPSD13Constants.DEFAULT_TOA_QUANTIFICATION)));
         characteristics.setQuantificationValue(toaQuantification);
 
-        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (toaQuantification);
+        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (toaQuantification, namingConvention);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 

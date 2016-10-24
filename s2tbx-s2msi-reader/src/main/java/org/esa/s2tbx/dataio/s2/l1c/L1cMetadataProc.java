@@ -21,6 +21,7 @@ import org.esa.s2tbx.dataio.s2.S2BandConstants;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoMetadataProc;
 
 import java.io.File;
@@ -32,11 +33,12 @@ import java.util.List;
  */
 public class L1cMetadataProc extends S2OrthoMetadataProc {
 
-    private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution, double quantification) {
+    private static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution, double quantification, INamingConvention namingConvention) {
         return new S2SpectralInformation(
                 bandConstant.getPhysicalName(),
                 resolution,
-                makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),
+                /*makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),*/
+                namingConvention.getSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()).getFileName(null),
                 "Reflectance in band " + bandConstant.getPhysicalName(),
                 "dl",
                 quantification,
@@ -58,21 +60,21 @@ public class L1cMetadataProc extends S2OrthoMetadataProc {
         return String.format("IMG_DATA%s{{MISSION_ID}}_OPER_MSI_L1C_TL_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{TILENUMBER}}_%s.jp2", File.separator, bandFileId);
     }
 
-    public static List<S2BandInformation> getBandInformationList (double toaQuantification) {
+    public static List<S2BandInformation> getBandInformationList (double toaQuantification, INamingConvention namingConvention) {
         List<S2BandInformation> aInfo = new ArrayList<>();
-        aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R10M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, toaQuantification));
-        aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, toaQuantification));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R10M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, toaQuantification, namingConvention));
+        aInfo.add(makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, toaQuantification, namingConvention));
         return aInfo;
     }
 

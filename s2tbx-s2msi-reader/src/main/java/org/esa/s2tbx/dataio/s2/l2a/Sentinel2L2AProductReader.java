@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.s2.l2a;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.ortho.S2ProductCRSCache;
@@ -70,7 +71,7 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
 
     @Override
     protected S2Metadata parseHeader(
-            File file, String granuleName, S2Config config, String epsg) throws IOException {
+            File file, String granuleName, S2Config config, String epsg, INamingConvention namingConvention) throws IOException {
 
         try {
             return L2aMetadata.parseHeader(file, granuleName, config, epsg, getProductResolution());
