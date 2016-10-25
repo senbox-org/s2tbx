@@ -1,5 +1,7 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import com.sun.org.apache.regexp.internal.RE;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -10,11 +12,21 @@ import java.util.regex.Pattern;
  */
 public class S2FileNamingTemplate {
     private final String template;
+    private final String REGEX;
     private final Pattern PATTERN;
 
     public S2FileNamingTemplate(String template, String REGEX) {
         this.template = template;
+        this.REGEX = REGEX;
         PATTERN = Pattern.compile(REGEX);
+    }
+
+    public S2FileNamingTemplate (S2NamingItems[] items, String separator) {
+        //Compute template
+        this.template = S2NamingUtils.buildTemplate(items, separator);
+        //Compute regex and PATTERN
+        this.REGEX = S2NamingUtils.buildREGEX(items, separator);
+        PATTERN = Pattern.compile(this.REGEX);
     }
 
     public boolean matches(String fileName) {
@@ -24,6 +36,10 @@ public class S2FileNamingTemplate {
 
     public String getFileName(HashMap<S2NamingItems, String> namingItems) {
         return replaceTemplate(template, namingItems);
+    }
+
+    public String getRegex() {
+        return REGEX;
     }
 
     public static String replaceTemplate(String template, HashMap<S2NamingItems, String> namingItems) {

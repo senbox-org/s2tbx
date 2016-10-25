@@ -11,5 +11,6 @@ public interface INamingConvention {
     S2FileNamingTemplate getDatastripXmlTemplate();
     S2FileNamingTemplate getGranuleDirTemplate();
     S2FileNamingTemplate getGranuleXmlTemplate();
-    S2FileNamingTemplate getSpectralBandImageFileTemplate(String bandFileId);
+    S2FileNamingTemplate getSpectralBandImageFileTemplate(String bandId);
+
 }

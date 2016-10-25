@@ -263,34 +263,16 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
 
                 if (gf != null) {
-                    namingItems.put(S2NamingItems.TILE_NUMBER,gf.tileNumber.substring(1)); //TODO ver si esta bien o hay q transformar algo
+                    namingItems.put(S2NamingItems.TILE_NUMBER,gf.tileNumber.substring(1));
                     namingConvention.getGranuleDirTemplate().getFileName(namingItems);
 
                     String imgFilename;
                     if(foundProductMetadata) {
                         imgFilename = Paths.get("GRANULE", tile.getId(),"IMG_DATA",
                                                 S2FileNamingTemplate.replaceTemplate(bandInformation.getImageFileTemplate(),namingItems)).toString();
-                                /*String.format("GRANULE%s%s%s%s", File.separator, tile.getId(),
-                                                    File.separator, S2FileNamingTemplate.replaceTemplate(bandInformation.getImageFileTemplate(),namingItems));
-                                                    bandInformation.getImageFileTemplate()
-                                                                   .replace("{{MISSION_ID}}", gf.missionID)
-                                                                   .replace("{{SITECENTRE}}", gf.siteCentre)
-                                                                   .replace("{{CREATIONDATE}}", gf.creationDate)
-                                                                   .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
-                                                                   .replace("{{TILENUMBER}}", gf.tileNumber)
-                                                                   .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution)));*/
-
                     } else {
                         imgFilename = Paths.get("IMG_DATA",
                                                 S2FileNamingTemplate.replaceTemplate(bandInformation.getImageFileTemplate(),namingItems)).toString();
-                        /*bandInformation.getImageFileTemplate()
-                                                            .replace("{{MISSION_ID}}", gf.missionID)
-                                                            .replace("{{SITECENTRE}}", gf.siteCentre)
-                                                            .replace("{{CREATIONDATE}}", gf.creationDate)
-                                                            .replace("{{ABSOLUTEORBIT}}", gf.absoluteOrbit)
-                                                            .replace("{{TILENUMBER}}", gf.tileNumber)
-                                                            .replace("{{RESOLUTION}}", String.format("%d", bandInformation.getResolution().resolution));*/
-
                     }
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 

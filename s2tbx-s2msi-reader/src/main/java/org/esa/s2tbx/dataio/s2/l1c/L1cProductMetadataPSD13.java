@@ -183,8 +183,19 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
             namingItems.put(S2NamingItems.CREATION_DATE,datastripId.substring(25,40));
         }
 
-        namingItems.put(S2NamingItems.FILE_TYPE_PRODUCT,"PRD_MSIL1C");
+        namingItems.put(S2NamingItems.FILE_TYPE_PRODUCT_DIR,"PRD_MSIL1C");
+        namingItems.put(S2NamingItems.FILE_TYPE_PRODUCT_DIR,"MSIL1C");
         namingItems.put(S2NamingItems.SITE_CENTRE_PRODUCT,"PDMC");
+        namingItems.put(S2NamingItems.LEVEL,"L1C");
+        namingItems.put(S2NamingItems.DATASTRIP_FLAG,"DS");
+
+
+        String granuleDiscriminator = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_GENERATION_TIME, null);
+        granuleDiscriminator = S2NamingItems.formatS2Time(granuleDiscriminator);
+        if(granuleDiscriminator != null);
+        {
+            namingItems.put(S2NamingItems.GRANULE_DISCRIMINATOR,granuleDiscriminator);
+        }
 
         String productDiscriminator = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_GENERATION_TIME, null);
         productDiscriminator = S2NamingItems.formatS2Time(productDiscriminator);
@@ -193,6 +204,12 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
             namingItems.put(S2NamingItems.PRODUCT_DISCRIMINATOR,productDiscriminator);
         }
 
+        String datatakeSensingStart = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
+        datatakeSensingStart = S2NamingItems.formatS2Time(datatakeSensingStart);
+        if(datatakeSensingStart != null);
+        {
+            namingItems.put(S2NamingItems.DATATAKE_SENSING_START_TIME,datatakeSensingStart);
+        }
 
         String relativeOrbit = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SENSING_ORBIT_NUMBER, null);
         if(relativeOrbit != null) {
@@ -206,37 +223,37 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
         startTime = S2NamingItems.formatS2Time(startTime);
         if(startTime != null);
         {
-            namingItems.put(S2NamingItems.START_TIME,startTime);
+            namingItems.put(S2NamingItems.APPLICABILITY_START,startTime);
         }
 
-        String stopTime = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, null);
+        /*String stopTime = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, null);
         stopTime = S2NamingItems.formatS2Time(stopTime);
         if(stopTime != null);
         {
             namingItems.put(S2NamingItems.STOP_TIME,stopTime);
-        }
+        }*/
 
         namingItems.put(S2NamingItems.FILE_TYPE_PRODUCT_XML,"MTD_SAFL1C"); //By default always SAFE
 
-        String format = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
+       /* String format = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
         if(format != null);
         {
             namingItems.put(S2NamingItems.FORMAT,format);
             if(format.equals("DIMAP")) {
                 namingItems.put(S2NamingItems.FILE_TYPE_PRODUCT_XML,"MTD_DMPL1C");
             }
-        }
+        }*/
 
-        namingItems.put(S2NamingItems.FILE_TYPE_DATASTRIP,"MSI_L1C_DS");
+        namingItems.put(S2NamingItems.FILE_TYPE_DATASTRIP_DIR,"MSI_L1C_DS");
 
         namingItems.put(S2NamingItems.FILE_TYPE_DATASTRIP_XML,"MTD_L1C_DS");
-        namingItems.put(S2NamingItems.FILE_TYPE_GRANULE,"MSI_L1C_TL");
+        namingItems.put(S2NamingItems.FILE_TYPE_GRANULE_DIR,"MSI_L1C_TL");
         namingItems.put(S2NamingItems.FILE_TYPE_GRANULE_XML,"MTD_L1C_TL");
 
         String baseline = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_BASELINE, null);
         if(baseline != null);
         {
-            namingItems.put(S2NamingItems.PRODUCTION_BASELINE,baseline);
+            namingItems.put(S2NamingItems.PROCESSING_BASELINE,baseline);
         }
 
 

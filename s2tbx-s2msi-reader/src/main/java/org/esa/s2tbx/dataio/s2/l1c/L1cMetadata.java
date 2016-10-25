@@ -94,9 +94,12 @@ public class L1cMetadata extends S2Metadata {
             tileNames = Collections.singletonList(granuleName);
         }
 
-        S2DatastripFilename stripName = metadataProduct.getDatastrip();
-        S2DatastripDirFilename dirStripName = metadataProduct.getDatastripDir();
-        Path datastripPath = path.resolveSibling("DATASTRIP").resolve(dirStripName.name).resolve(stripName.name);
+       // S2DatastripFilename stripName = metadataProduct.getDatastrip();
+       // S2DatastripDirFilename dirStripName = metadataProduct.getDatastripDir();
+        String datastripDir = l1cNamingConvention.getDatastripDirTemplate().getFileName(namingItems);
+        String datastripXml = l1cNamingConvention.getDatastripXmlTemplate().getFileName(namingItems);
+
+        Path datastripPath = path.resolveSibling("DATASTRIP").resolve(datastripDir).resolve(datastripXml);
         IL1cDatastripMetadata metadataDatastrip = L1cMetadataFactory.createL1cDatastripMetadata(datastripPath);
         //TODO metadataDatastrip.updateNamingItems(getNamingItems());
 
@@ -106,18 +109,18 @@ public class L1cMetadata extends S2Metadata {
         ArrayList<Path> granuleMetadataPathList = new ArrayList<>();
         for (String tileName : tileNames) {
             S2OrthoGranuleDirFilename aGranuleDir = S2OrthoGranuleDirFilename.create(tileName);
+            namingItems.put(S2NamingItems.TILE_NUMBER,aGranuleDir.getTileID().substring(1));
+            String granuleDir = l1cNamingConvention.getGranuleDirTemplate().getFileName(namingItems);
+            String granuleXml = l1cNamingConvention.getGranuleXmlTemplate().getFileName(namingItems);
 
-            if (aGranuleDir != null) {
-                String theName = aGranuleDir.getMetadataFilename().name;
-
-                Path nestedGranuleMetadata = path.resolveSibling("GRANULE").resolve(tileName).resolve(theName);
-                if (Files.exists(nestedGranuleMetadata)) {
-                    granuleMetadataPathList.add(nestedGranuleMetadata);
-                } else {
-                    String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
-                    logger.log(Level.WARNING, errorMessage);
-                }
+            Path nestedGranuleMetadata = path.resolveSibling("GRANULE").resolve(granuleDir).resolve(granuleXml);
+            if (Files.exists(nestedGranuleMetadata)) {
+                granuleMetadataPathList.add(nestedGranuleMetadata);
+            } else {
+                String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
+                logger.log(Level.WARNING, errorMessage);
             }
+
         }
 
         //Init Tiles
@@ -180,7 +183,6 @@ public class L1cMetadata extends S2Metadata {
             getMetadataElements().add(granulesMetaData);
         }
 
-        //granuleMetadata.updateName(); //for including the tile id
         granulesMetaData.addElement(granuleMetadata.getSimplifiedMetadataElement());
     }
 

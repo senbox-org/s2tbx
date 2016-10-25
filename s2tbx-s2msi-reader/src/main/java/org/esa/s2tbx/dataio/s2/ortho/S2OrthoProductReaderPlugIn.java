@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.s2.ortho;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
@@ -29,8 +30,10 @@ import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToDisplayName;
 import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
@@ -125,15 +128,26 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
         File file = (File) input;
         String fileName = file.getName();
-        Matcher matcher = PATTERN.matcher(fileName);
+
+        boolean foundPattern = false;
+
+        ArrayList<Pattern> patterns = NamingConventionFactory.getPatterns(S2Config.Sentinel2ProductLevel.L1C);
+        for(Pattern pattern : patterns)
+        {
+            Matcher matcher = pattern.matcher(fileName);
+            if (matcher.matches()) {
+                foundPattern = true;
+                break;
+            }
+        }
 
         // Checking for file regex first, it is quicker than File.isFile()
-        if (!matcher.matches()) {
+        if (!foundPattern) {
             return null;
         }
 
         if (!file.isFile()) {
-            File xmlFile = getInputXmlFileFromDirectory(file);
+           /* File xmlFile = getInputXmlFileFromDirectory(file);
             if (xmlFile == null) {
                 return null;
             }
@@ -143,7 +157,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             matcher = PATTERN.matcher(fileName);
             if (!matcher.matches()) {
                 return null;
-            }
+            }*/ //TODO
         }
 
         return file;
