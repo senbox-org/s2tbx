@@ -222,7 +222,7 @@ public class RasterUtils {
      */
     private static byte[] extractRangeAsByteArray(int[] values, int offset, int length) {
         if (values == null || values.length < offset + length || offset < 0 || length <= 0) {
-            return null;
+            throw new RuntimeException("Invalid arguments");
         }
         byte[] result = new byte[length];
         for (int i = 0; i < length; i++) {
@@ -238,7 +238,7 @@ public class RasterUtils {
      */
     private static short[] extractRangeAsShortArray(int[] values, int offset, int length) {
         if (values == null || values.length < offset + length || offset < 0 || length <= 0) {
-            return null;
+            throw new RuntimeException("Invalid arguments");
         }
         short[] result = new short[length];
         for (int i = 0; i < length; i++) {
@@ -270,7 +270,7 @@ public class RasterUtils {
                         }
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    e.printStackTrace();
+                    SystemUtils.LOG.warning("ROI fell outside the extracted range [" + e.getMessage() + "]");
                 }
             }
         } else {
@@ -302,7 +302,7 @@ public class RasterUtils {
                         }
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    e.printStackTrace();
+                    SystemUtils.LOG.warning("ROI fell outside the extracted range [" + e.getMessage() + "]");
                 }
             }
         } else {
@@ -334,7 +334,7 @@ public class RasterUtils {
                         }
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    e.printStackTrace();
+                    SystemUtils.LOG.warning("ROI fell outside the extracted range [" + e.getMessage() + "]");
                 }
             }
         } else {
@@ -362,7 +362,7 @@ public class RasterUtils {
                     System.arraycopy(pixels, srcPos, values, dstPos, Math.min(roi.width, pixels.length - srcPos));
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
-                e.printStackTrace();
+                SystemUtils.LOG.warning("ROI fell outside the extracted range [" + e.getMessage() + "]");
             }
         }
         return new DataBufferInt(values, values.length);

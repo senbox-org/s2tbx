@@ -223,11 +223,12 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
             MetadataElement element = new MetadataElement(qName);
             buffer = "";
             currentPath += qName + "/";
-            for (int i = 0; i < attributes.getLength(); i++)
-            {
-                MetadataAttribute attribute = new MetadataAttribute(attributes.getQName(i), ProductData.ASCII.createInstance(attributes.getValue(i)), false);
-                element.addAttribute(attribute);
-                result.indexAttribute(currentPath, attribute);
+            if (attributes != null) {
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    MetadataAttribute attribute = new MetadataAttribute(attributes.getQName(i), ProductData.ASCII.createInstance(attributes.getValue(i)), false);
+                    element.addAttribute(attribute);
+                    result.indexAttribute(currentPath, attribute);
+                }
             }
             elementStack.push(element);
         }
