@@ -56,7 +56,7 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
                              ProductSubsetDef subsetDef) throws IOException, IllegalFileFormatException {
         File file = null;
         if (reader == null) {
-            file = S2OrthoProductReaderPlugIn.preprocessInput(input);
+            file = S2OrthoProductReaderPlugIn.preprocessInput(input).toFile();
             if(file == null) {
                 throw new IOException("Invalid input");
             }

@@ -356,8 +356,26 @@ public class L1cNamingConventionSAFE implements INamingConvention {
         return false;
     }
 
+    public static boolean productDirMatches(String filename) {
+        Pattern PATTERN = Pattern.compile(S2NamingUtils.buildREGEX(productDirNameConvention,"_"));
+        final Matcher matcher = PATTERN.matcher(filename);
+        if (matcher.matches()) {
+            return true;
+        }
+        return false;
+    }
+
     public static boolean granuleMatches(String filename) {
         Pattern PATTERN = Pattern.compile(S2NamingUtils.buildREGEX(granuleXmlNameConvention,"_"));
+        final Matcher matcher = PATTERN.matcher(filename);
+        if (matcher.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean granuleDirMatches(String filename) {
+        Pattern PATTERN = Pattern.compile(S2NamingUtils.buildREGEX(granuleDirNameConvention,"_"));
         final Matcher matcher = PATTERN.matcher(filename);
         if (matcher.matches()) {
             return true;
@@ -389,7 +407,8 @@ public class L1cNamingConventionSAFE implements INamingConvention {
     }
 
     //TODO
-    public static S2ProductCRSCacheEntry getCacheEntry(Path path) {
+    @Override
+    public S2ProductCRSCacheEntry createCacheEntry(Path path) {
         Set<String> epsgCodeList = new HashSet<>();
         S2Config.Sentinel2ProductLevel level;
         S2Config.Sentinel2InputType inputType;
@@ -402,7 +421,7 @@ public class L1cNamingConventionSAFE implements INamingConvention {
             if (productFilename != null) {
                 if (level == S2Config.Sentinel2ProductLevel.L1C || level == S2Config.Sentinel2ProductLevel.L2A
                         || level == S2Config.Sentinel2ProductLevel.L3) {
-                    File granuleFolder = path.resolve("GRANULE").toFile();
+                    File granuleFolder = path.resolveSibling("GRANULE").toFile();
                     if(!granuleFolder.exists() || !granuleFolder.isDirectory()) {
                         SystemUtils.LOG.warning("Invalid Sentinel-2 product: 'GRANULE' folder containing at least one granule is required");
                         return null;
@@ -413,6 +432,7 @@ public class L1cNamingConventionSAFE implements INamingConvention {
                     }
                     for (File granule : granuleFolder.listFiles()) {
                         if (granule.isDirectory()) {
+                            //TODO bien
                             S2OrthoGranuleDirFilename granuleDirFilename = S2OrthoGranuleDirFilename.create(granule.getName());
                             String epsgCode = S2CRSHelper.tileIdentifierToEPSG(granuleDirFilename.tileNumber);
                             epsgCodeList.add(epsgCode);
@@ -436,6 +456,6 @@ public class L1cNamingConventionSAFE implements INamingConvention {
             return null;
         }
 
-        return new S2ProductCRSCacheEntry(epsgCodeList,level,inputType);
+        return new S2ProductCRSCacheEntry(epsgCodeList,level,inputType,this);
     }
 }

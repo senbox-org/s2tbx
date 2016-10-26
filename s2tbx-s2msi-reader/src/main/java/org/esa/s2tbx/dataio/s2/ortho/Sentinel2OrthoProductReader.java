@@ -125,8 +125,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
     @Override
     protected Product getMosaicProduct(File metadataFile) throws IOException {
 
-        INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(metadataFile.toPath(),
-                                                                                            ((S2OrthoProductReaderPlugIn) getReaderPlugIn()).getLevel().toString());
+        INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(metadataFile.toPath());
 
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
             throw new IOException("Invalid OpenJpeg executables");

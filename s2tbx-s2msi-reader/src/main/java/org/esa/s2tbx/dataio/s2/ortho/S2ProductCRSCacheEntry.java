@@ -1,6 +1,8 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
@@ -8,6 +10,7 @@ import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -23,11 +26,13 @@ public class S2ProductCRSCacheEntry {
     Set<String> epsgCodeList = new HashSet<>();
     private S2Config.Sentinel2ProductLevel level = S2Config.Sentinel2ProductLevel.UNKNOWN;
     private S2Config.Sentinel2InputType inputType;
+    private INamingConvention namingConvention;
 
-    public S2ProductCRSCacheEntry (Set<String> epsgCodeList, S2Config.Sentinel2ProductLevel level, S2Config.Sentinel2InputType inputType) {
+    public S2ProductCRSCacheEntry (Set<String> epsgCodeList, S2Config.Sentinel2ProductLevel level, S2Config.Sentinel2InputType inputType, INamingConvention namingConvention) {
         this.epsgCodeList.addAll(epsgCodeList);
         this.level = level;
         this.inputType = inputType;
+        this.namingConvention = namingConvention;
     }
 
     public S2ProductCRSCacheEntry (String productFileName) {
@@ -86,6 +91,9 @@ public class S2ProductCRSCacheEntry {
     }
     S2Config.Sentinel2InputType getInputType() {
         return inputType;
+    }
+    INamingConvention getNamingConvention() {
+        return namingConvention;
     }
     boolean hasEPSG(String epsg) {
         return epsgCodeList.contains(epsg);

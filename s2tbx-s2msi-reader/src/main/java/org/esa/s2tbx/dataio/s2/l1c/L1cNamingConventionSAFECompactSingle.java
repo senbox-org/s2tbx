@@ -4,7 +4,9 @@ import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2FileNamingTemplate;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingUtils;
+import org.esa.s2tbx.dataio.s2.ortho.S2ProductCRSCacheEntry;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -142,6 +144,24 @@ public class L1cNamingConventionSAFECompactSingle implements INamingConvention {
         return false;
     }
 
+    public static boolean productDirMatches(String filename) {
+        Pattern PATTERN = Pattern.compile(S2NamingUtils.buildREGEX(productDirNameConvention,"_"));
+        final Matcher matcher = PATTERN.matcher(filename);
+        if (matcher.matches()) {
+            return true;
+        }
+        return false;
+    }
+
+
+    public static boolean granuleDirMatches(String filename) {
+        Pattern PATTERN = Pattern.compile(S2NamingUtils.buildREGEX(granuleDirNameConvention,"_"));
+        final Matcher matcher = PATTERN.matcher(filename);
+        if (matcher.matches()) {
+            return true;
+        }
+        return false;
+    }
 
     public static ArrayList<Pattern> getXmlInputPatterns() {
         ArrayList<Pattern> patterns = new ArrayList<>();
@@ -164,6 +184,11 @@ public class L1cNamingConventionSAFECompactSingle implements INamingConvention {
             patterns.add(pattern);
         }
         return patterns;
+    }
+
+    public S2ProductCRSCacheEntry createCacheEntry(Path path) {
+        //TODO
+        return null;
     }
 
 }

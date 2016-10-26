@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingItems;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
@@ -29,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -127,8 +129,17 @@ public class S2ProductCRSCache {
     /* Ensure the given product is in cache */
     public synchronized void ensureIsCached(String productFileName) {
         if (!cache.containsKey(productFileName)) {
-            //S2ProductCRSCacheEntry s2ProductCRSCacheEntry = new S2ProductCRSCacheEntry(productFileName);
-            cache.put(productFileName, /*s2ProductCRSCacheEntry*/NamingConventionFactory.getCacheEntry(Paths.get(productFileName)));
+            S2ProductCRSCacheEntry s2ProductCRSCacheEntry = new S2ProductCRSCacheEntry(productFileName);
+            cache.put(productFileName, s2ProductCRSCacheEntry);
+        }
+    }
+
+    public synchronized void ensureIsCached(Path xmlPath) {
+        if (!cache.containsKey(xmlPath.toString())) {
+            S2ProductCRSCacheEntry s2ProductCRSCacheEntry = NamingConventionFactory.createCacheEntry(xmlPath);
+            if(s2ProductCRSCacheEntry != null) {
+                cache.put(xmlPath.toString(), s2ProductCRSCacheEntry);
+            }
         }
     }
 
@@ -161,4 +172,11 @@ public class S2ProductCRSCache {
         return cache.get(productFileName).getInputType();
     }
 
+    private synchronized void removeNullEntries() {
+        for(Map.Entry<String, S2ProductCRSCacheEntry> entry : cache.entrySet()) {
+            if(entry != null && entry.getValue() != null && entry.getValue().getNamingConvention() == null) {
+                cache.remove(entry.getKey());
+            }
+        }
+    }
 }

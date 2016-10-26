@@ -88,6 +88,8 @@ public class L1cPSD13Constants {
      * Granule metadata element path
      */
     public static final String PATH_GRANULE_METADATA_TILE_ID = "/Level-1C_Tile_ID/General_Info/TILE_ID";
+    public static final String PATH_GRANULE_METADATA_DATASTRIP_ID = "/Level-1C_Tile_ID/General_Info/DATASTRIP_ID";
+    public static final String PATH_GRANULE_METADATA_SENSING_TIME = "/Level-1C_Tile_ID/General_Info/SENSING_TIME";
     public static final String PATH_GRANULE_METADATA_HORIZONTAL_CS_NAME = "/Level-1C_Tile_ID/Geometric_Info/Tile_Geocoding/HORIZONTAL_CS_NAME";
     public static final String PATH_GRANULE_METADATA_HORIZONTAL_CS_CODE = "/Level-1C_Tile_ID/Geometric_Info/Tile_Geocoding/HORIZONTAL_CS_CODE";
     public static final String PATH_GRANULE_METADATA_SIZE_RESOLUTION = "/Level-1C_Tile_ID/Geometric_Info/Tile_Geocoding/Size/resolution";

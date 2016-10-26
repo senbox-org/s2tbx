@@ -7,32 +7,32 @@ import org.esa.s2tbx.dataio.s2.l1c.L1cNamingConventionSAFECompactSingle;
 import org.esa.s2tbx.dataio.s2.ortho.S2ProductCRSCacheEntry;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Created by obarrile on 19/10/2016.
  */
 public class NamingConventionFactory {
-    public static INamingConvention createNamingConvention(Path path, String level) {
+
+    private HashMap<Path, Path> cacheXML = new HashMap<>();
+    public static INamingConvention createNamingConvention(Path path) {
 
         INamingConvention namingConvention = null;
         String filename = path.getFileName().toString();
-        if(level.equals("L1C")) {
+
             if(L1cNamingConventionSAFE.productMatches(filename) || L1cNamingConventionSAFE.granuleMatches(filename)) {
                 namingConvention = new L1cNamingConventionSAFE();
             } else if (L1cNamingConventionSAFECompactSingle.productMatches(filename) || L1cNamingConventionSAFECompactSingle.granuleMatches(filename)) {
                 namingConvention = new L1cNamingConventionSAFECompactSingle();
             }
             //TODO
-        } else if(level.equals("L2A")) {
-            //TODO
-        }else if (level.equals("L3")) {
-            //TODO
-        } else {
-            //TODO
-        }
+
         return namingConvention;
     }
 
@@ -69,12 +69,130 @@ public class NamingConventionFactory {
 
     }
 
-    public static S2ProductCRSCacheEntry getCacheEntry(Path path) {
-        //TODO
-        return L1cNamingConventionSAFE.getCacheEntry(path);
+
+
+
+    public static boolean isValidXmlProduct(Path path) {
+        if (L1cNamingConventionSAFE.productMatches(path.getFileName().toString())) {
+            return true;
+        }
+        if (L1cNamingConventionSAFECompactSingle.productMatches(path.getFileName().toString())) {
+            return true;
+        }
+        return false;
     }
 
-    public static File preprocessInput (File file) {
-        //TODO
+    public static boolean isValidXmlGranule(Path path) {
+        if (L1cNamingConventionSAFE.granuleMatches(path.getFileName().toString())) {
+            return true;
+        }
+        if (L1cNamingConventionSAFECompactSingle.granuleMatches(path.getFileName().toString())) {
+            return true;
+        }
+        return false;
+    }
+
+
+    public static Path getXmlFromProductDir(Path productDir) {
+        if (!Files.isDirectory(productDir)) {
+            return null;
+        }
+        String fileName = "";
+
+        if (L1cNamingConventionSAFE.productDirMatches(productDir.getFileName().toString())) {
+            String[] listXmlFiles = productDir.toFile().list((f, s) -> s.endsWith(".xml"));
+            int countValidXml = 0;
+            for (int i = 0; i < listXmlFiles.length; i++) {
+                if (L1cNamingConventionSAFE.productMatches(listXmlFiles[i])) {
+                    countValidXml++;
+                    fileName = listXmlFiles[i];
+                }
+            }
+            // If there are more than one valid file, it is considered an invalid input
+            if (countValidXml != 1) {
+                return null;
+            }
+            return productDir.resolve(fileName);
+        }
+
+        if (L1cNamingConventionSAFECompactSingle.productDirMatches(productDir.getFileName().toString())) {
+            String[] listXmlFiles = productDir.toFile().list((f, s) -> s.endsWith(".xml"));
+            int countValidXml = 0;
+            for (int i = 0; i < listXmlFiles.length; i++) {
+                if (L1cNamingConventionSAFECompactSingle.productMatches(listXmlFiles[i])) {
+                    countValidXml++;
+                    fileName = listXmlFiles[i];
+                }
+            }
+            // If there are more than one valid file, it is considered an invalid input
+            if (countValidXml != 1) {
+                return null;
+            }
+            return productDir.resolve(fileName);
+        }
+
+        return null;
+    }
+
+    public static Path getXmlFromGranuleDir(Path granuleDir) {
+        if (!Files.isDirectory(granuleDir)) {
+            return null;
+        }
+        String fileName = "";
+
+        if (L1cNamingConventionSAFE.granuleDirMatches(granuleDir.getFileName().toString())) {
+            String[] listXmlFiles = granuleDir.toFile().list((f, s) -> s.endsWith(".xml"));
+            int countValidXml = 0;
+            for (int i = 0; i < listXmlFiles.length; i++) {
+                if (L1cNamingConventionSAFE.granuleMatches(listXmlFiles[i])) {
+                    countValidXml++;
+                    fileName = listXmlFiles[i];
+                }
+            }
+            // If there are more than one valid file, it is considered an invalid input
+            if (countValidXml != 1) {
+                return null;
+            }
+            return granuleDir.resolve(fileName);
+        }
+
+        if (L1cNamingConventionSAFECompactSingle.granuleDirMatches(granuleDir.getFileName().toString())) {
+            String[] listXmlFiles = granuleDir.toFile().list((f, s) -> s.endsWith(".xml"));
+            int countValidXml = 0;
+            for (int i = 0; i < listXmlFiles.length; i++) {
+                if (L1cNamingConventionSAFECompactSingle.granuleMatches(listXmlFiles[i])) {
+                    countValidXml++;
+                    fileName = listXmlFiles[i];
+                }
+            }
+            // If there are more than one valid file, it is considered an invalid input
+            if (countValidXml != 1) {
+                return null;
+            }
+            return granuleDir.resolve(fileName);
+        }
+
+        return null;
+    }
+
+
+    //TODO posibles NamingConventions en una lista e ir recorriendola?
+    public static S2ProductCRSCacheEntry createCacheEntry(Path xmlPath) {
+        INamingConvention namingConvention;
+        S2ProductCRSCacheEntry cacheEntry = null;
+
+        namingConvention = new L1cNamingConventionSAFE();
+        cacheEntry = namingConvention.createCacheEntry(xmlPath);
+        if(cacheEntry != null) {
+            return cacheEntry;
+        }
+
+        namingConvention = new L1cNamingConventionSAFECompactSingle();
+        cacheEntry = namingConvention.createCacheEntry(xmlPath);
+        if(cacheEntry != null) {
+            return cacheEntry;
+        }
+
+        return cacheEntry;
     }
 }

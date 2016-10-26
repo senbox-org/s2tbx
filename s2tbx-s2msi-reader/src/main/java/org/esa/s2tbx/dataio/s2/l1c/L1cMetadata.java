@@ -78,13 +78,11 @@ public class L1cMetadata extends S2Metadata {
         setProductCharacteristics(metadataProduct.getProductOrganization(l1cNamingConvention));
         HashMap<S2NamingItems,String> namingItems = metadataProduct.getNamingItems();
 
-        //TODO review
         for(Map.Entry<S2NamingItems,String> entry : namingItems.entrySet()) {
             S2NamingItems key = entry.getKey();
             String value = entry.getValue();
             putNamingItem(key,value);
         }
-
 
         Collection<String> tileNames;
 
@@ -94,8 +92,6 @@ public class L1cMetadata extends S2Metadata {
             tileNames = Collections.singletonList(granuleName);
         }
 
-       // S2DatastripFilename stripName = metadataProduct.getDatastrip();
-       // S2DatastripDirFilename dirStripName = metadataProduct.getDatastripDir();
         String datastripDir = l1cNamingConvention.getDatastripDirTemplate().getFileName(namingItems);
         String datastripXml = l1cNamingConvention.getDatastripXmlTemplate().getFileName(namingItems);
 
@@ -134,6 +130,13 @@ public class L1cMetadata extends S2Metadata {
 
         IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(path);
         //TODO granuleMetadata.updateNamingItems(getNamingItems());
+        HashMap<S2NamingItems,String> namingItems = granuleMetadata.getNamingItems();
+
+        for(Map.Entry<S2NamingItems,String> entry : namingItems.entrySet()) {
+            S2NamingItems key = entry.getKey();
+            String value = entry.getValue();
+            putNamingItem(key,value);
+        }
 
         if(getProductCharacteristics() == null) {
             setProductCharacteristics(granuleMetadata.getTileProductOrganization());

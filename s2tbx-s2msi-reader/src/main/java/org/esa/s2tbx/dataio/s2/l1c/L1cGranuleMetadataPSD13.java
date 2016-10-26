@@ -205,8 +205,100 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
     }
 
     public HashMap<S2NamingItems,String> getNamingItems() {
-        //TODO
-        HashMap<S2NamingItems,String> namingItems = new HashMap<>();
-        return  namingItems;
+        HashMap<S2NamingItems, String> namingItems = new HashMap<>();
+        String missionID = getAttributeValue(L1cPSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
+        if (missionID != null) {
+            if (missionID.startsWith("S2A")) {
+                namingItems.put(S2NamingItems.MISSION_ID, "S2A");
+            } else if (missionID.startsWith("S2B")) {
+                namingItems.put(S2NamingItems.MISSION_ID, "S2B");
+            }
+        }
+
+        String datastripId = getAttributeValue(L1cPSD13Constants.PATH_GRANULE_METADATA_DATASTRIP_ID, null);
+        if (datastripId != null && datastripId.length() > 24) ;
+        {
+            namingItems.put(S2NamingItems.FILE_CLASS, datastripId.substring(4, 8));
+            namingItems.put(S2NamingItems.SITE_CENTRE, datastripId.substring(20, 24));
+            namingItems.put(S2NamingItems.CREATION_DATE, datastripId.substring(25, 40));
+        }
+
+        namingItems.put(S2NamingItems.FILE_TYPE_PRODUCT_DIR, "PRD_MSIL1C");
+        namingItems.put(S2NamingItems.FILE_TYPE_PRODUCT_DIR, "MSIL1C");
+        namingItems.put(S2NamingItems.SITE_CENTRE_PRODUCT, "PDMC");
+        namingItems.put(S2NamingItems.LEVEL, "L1C");
+        namingItems.put(S2NamingItems.DATASTRIP_FLAG, "DS");
+
+
+        String granuleDiscriminator = getAttributeValue(L1cPSD13Constants.PATH_GRANULE_METADATA_SENSING_TIME, null);
+        granuleDiscriminator = S2NamingItems.formatS2Time(granuleDiscriminator);
+        if (granuleDiscriminator != null) ;
+        {
+            namingItems.put(S2NamingItems.GRANULE_DISCRIMINATOR, granuleDiscriminator);
+        }
+
+
+        //TODO with name of images...
+        /*String datatakeSensingStart = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
+        datatakeSensingStart = S2NamingItems.formatS2Time(datatakeSensingStart);
+        if (datatakeSensingStart != null) ;
+        {
+            namingItems.put(S2NamingItems.DATATAKE_SENSING_START_TIME, datatakeSensingStart);
+        }*/
+
+        String relativeOrbit = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SENSING_ORBIT_NUMBER, null);
+        if (relativeOrbit != null) {
+            while (relativeOrbit.length() < 3) {
+                relativeOrbit = "0" + relativeOrbit;
+            }
+            namingItems.put(S2NamingItems.RELATIVE_ORBIT, relativeOrbit);
+        }
+
+        String startTime = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_START_TIME, null);
+        startTime = S2NamingItems.formatS2Time(startTime);
+        if (startTime != null) ;
+        {
+            namingItems.put(S2NamingItems.APPLICABILITY_START, startTime);
+        }
+
+        /*String stopTime = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_STOP_TIME, null);
+        stopTime = S2NamingItems.formatS2Time(stopTime);
+        if(stopTime != null);
+        {
+            namingItems.put(S2NamingItems.STOP_TIME,stopTime);
+        }*/
+
+        namingItems.put(S2NamingItems.FILE_TYPE_PRODUCT_XML, "MTD_SAFL1C"); //By default always SAFE
+
+       /* String format = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
+        if(format != null);
+        {
+            namingItems.put(S2NamingItems.FORMAT,format);
+            if(format.equals("DIMAP")) {
+                namingItems.put(S2NamingItems.FILE_TYPE_PRODUCT_XML,"MTD_DMPL1C");
+            }
+        }*/
+
+        namingItems.put(S2NamingItems.FILE_TYPE_DATASTRIP_DIR, "MSI_L1C_DS");
+
+        namingItems.put(S2NamingItems.FILE_TYPE_DATASTRIP_XML, "MTD_L1C_DS");
+        namingItems.put(S2NamingItems.FILE_TYPE_GRANULE_DIR, "MSI_L1C_TL");
+        namingItems.put(S2NamingItems.FILE_TYPE_GRANULE_XML, "MTD_L1C_TL");
+
+        String baseline = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_BASELINE, null);
+        if (baseline != null) ;
+        {
+            namingItems.put(S2NamingItems.PROCESSING_BASELINE, baseline);
+        }
+
+
+        String absoluteOrbit = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST, null);
+        if (absoluteOrbit != null && absoluteOrbit.length() > 48) ;
+        {
+            namingItems.put(S2NamingItems.ABSOLUTE_ORBIT, absoluteOrbit.substring(42, 48));
+        }
+
+        return namingItems;
+
     }
 }

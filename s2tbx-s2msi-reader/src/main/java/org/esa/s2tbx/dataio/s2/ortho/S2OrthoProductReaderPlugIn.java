@@ -72,21 +72,21 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         SystemUtils.LOG.fine("Getting decoders...");
-        File file = preprocessInput(input);
-        if(file == null) {
+        Path path = preprocessInput(input);
+        if(path == null) {
             return DecodeQualification.UNABLE;
         }
 
-        crsCache.ensureIsCached(file.getAbsolutePath());
+        crsCache.ensureIsCached(path);
 
-        level = crsCache.getProductLevel(file.getAbsolutePath());
-        S2Config.Sentinel2InputType  inputType = crsCache.getInputType(file.getAbsolutePath());
+        level = crsCache.getProductLevel(path.toAbsolutePath().toString());
+        S2Config.Sentinel2InputType  inputType = crsCache.getInputType(path.toAbsolutePath().toString());
 
         if((level != S2Config.Sentinel2ProductLevel.L1C)  && (level != S2Config.Sentinel2ProductLevel.L2A) && (level != S2Config.Sentinel2ProductLevel.L3)) {
             return DecodeQualification.UNABLE;
         }
 
-        if(!crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
+        if(!crsCache.hasEPSG(path.toAbsolutePath().toString(), getEPSG())) {
             return DecodeQualification.UNABLE;
         }
 
@@ -95,9 +95,9 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
         //if product is level2 or level3, check the specific folder
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(file, getResolution()))
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(path.toFile(), getResolution()))
             return DecodeQualification.UNABLE;
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(file, getResolution()))
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(path.toFile(), getResolution()))
             return DecodeQualification.UNABLE;
 
         //level=S2Config.Sentinel2ProductLevel.L2A;
@@ -122,45 +122,28 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
         return String.format("Sentinel-2 MSI %s - Native resolutions - %s", getLevel(), epsgToDisplayName(getEPSG()));
     }
 
-    public static File preprocessInput(Object input){
+    public static Path preprocessInput(Object input){
+
         if (!(input instanceof File)) {
             return null;
         }
-        File file = (File) input;
-        String fileName = file.getName();
+        Path inputPath = ((File) input).toPath();
 
-        boolean foundPattern = false;
-
-        ArrayList<Pattern> patterns = NamingConventionFactory.getPatterns(S2Config.Sentinel2ProductLevel.L1C);
-        for(Pattern pattern : patterns)
-        {
-            Matcher matcher = pattern.matcher(fileName);
-            if (matcher.matches()) {
-                foundPattern = true;
-                break;
-            }
+        if(NamingConventionFactory.isValidXmlGranule(inputPath) || NamingConventionFactory.isValidXmlProduct(inputPath)) {
+            return inputPath;
         }
 
-        // Checking for file regex first, it is quicker than File.isFile()
-        if (!foundPattern) {
-            return null;
+        Path xmlPath = NamingConventionFactory.getXmlFromProductDir(inputPath);
+        if(xmlPath != null) {
+            return xmlPath;
         }
 
-        if (!file.isFile()) {
-           /* File xmlFile = getInputXmlFileFromDirectory(file);
-            if (xmlFile == null) {
-                return null;
-            }
-            fileName = xmlFile.getName();
-            file = xmlFile;
-            matcher.reset();
-            matcher = PATTERN.matcher(fileName);
-            if (!matcher.matches()) {
-                return null;
-            }*/ //TODO
+        xmlPath = NamingConventionFactory.getXmlFromGranuleDir(inputPath);
+        if(xmlPath != null) {
+            return xmlPath;
         }
 
-        return file;
+        return null;
     }
 
 

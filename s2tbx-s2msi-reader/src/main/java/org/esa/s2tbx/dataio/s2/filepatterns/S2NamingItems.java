@@ -48,7 +48,7 @@ public enum S2NamingItems {
     ABSOLUTE_ORBIT(5,"{{ABSOLUTE_ORBIT}}","([0-9]{6})","A"),
     ORBIT_PERIOD(5,"{{ORBIT_PERIOD}}","([0-9]{6})_([0-9]{6})","O"),
     DETECTOR_ID(5,"{{DETECTOR_ID}}","([0-9]{2})","D"),
-    TILE_NUMBER(5,"{{TILE_NUMBER}}","([0-9]{2})","T"),
+    TILE_NUMBER(5,"{{TILE_NUMBER}}","([A-Z|0-9]{5})","T"),
     PROCESSING_BASELINE(5,"{{PROCESSING_BASELINE}}","([0-9]{2}\\.[0-9]{2})","N"),
     PROCESSING_BASELINE_WITHOUT_POINT(5,"{{PROCESSING_BASELINE_WITHOUT_POINT}}","([0-9]{4})","N"),
     COMPLETENESS(2,"{{COMPLETENESS}}","([F|P])","W"),
