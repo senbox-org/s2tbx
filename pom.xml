@@ -47,6 +47,7 @@
         <module>s2tbx-s2msi-mci-ui</module>
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-deimos-reader</module>
+        <module>s2tbx-gdal-reader</module>
         <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-radiometric-indices</module>
         <module>s2tbx-biophysical</module>
@@ -327,6 +328,30 @@
 
     <build>
         <plugins>
+            <!--
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <groupId>org.gdal</groupId>
+                    <artifactId>gdal</artifactId>
+                    <version>1.0</version>
+                    <packaging>jar</packaging>
+                    <file>D:Sources/s2tbx/s2tbx-gdal-reader/src/lib/gdal.jar</file>
+                    <generatePom>true</generatePom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <id>install-jar-lib</id>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+-->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
