@@ -17,7 +17,10 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
+import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
 import org.esa.snap.core.dataio.DecodeQualification;
@@ -53,7 +56,14 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
         File file = (File) input;
-        String fileName = file.getName();
+        INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(file.toPath());
+        if(namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
+            return DecodeQualification.INTENDED;
+        }
+        return DecodeQualification.UNABLE;
+
+
+        /*String fileName = file.getName();
         Matcher matcher = PATTERN.matcher(fileName);
 
         // Checking for file regex first, it is quicker than File.isFile()
@@ -87,7 +97,7 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
             }
         }
 
-        return decodeQualification;
+        return decodeQualification;*/
     }
 
     @Override

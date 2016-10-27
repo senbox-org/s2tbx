@@ -4,6 +4,7 @@ import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.snap.core.datamodel.MetadataElement;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Map;
  */
 public interface IL3GranuleMetadata {
     //To use only if the associated user product metadata is not available
-    S2Metadata.ProductCharacteristics getTileProductOrganization(S2SpatialResolution resolution);
+    S2Metadata.ProductCharacteristics getTileProductOrganization(Path path, S2SpatialResolution resolution);
 
     Map<S2SpatialResolution, S2Metadata.TileGeometry> getTileGeometries();
     String getTileID();
@@ -27,4 +28,6 @@ public interface IL3GranuleMetadata {
     MetadataElement getSimplifiedMetadataElement();
 
     int getMaximumMosaicIndex();
+
+    String getFormat();
 }

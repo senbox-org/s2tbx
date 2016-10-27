@@ -24,6 +24,8 @@ import org.esa.s2tbx.dataio.s2.S2IndexBandInformation;
 import org.esa.s2tbx.dataio.s2.S2MetadataProc;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.S2SpectralInformation;
+import org.esa.s2tbx.dataio.s2.filepatterns.L1BNamingConvention;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleDirFilename;
 import org.w3c.dom.Element;
 
@@ -38,7 +40,7 @@ import static java.awt.Color.getHSBColor;
  */
 public class L1bMetadataProc extends S2MetadataProc {
 
-    public static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution) {
+    public static S2SpectralInformation makeSpectralInformation(S2BandConstants bandConstant, S2SpatialResolution resolution, String format) {
         // TODO we should implement scaling factor here, using PHYSICAL_GAINS metadata per band, to provide physical radiance.
         final double quantification = 1.0;
         final String unit = "";
@@ -46,7 +48,8 @@ public class L1bMetadataProc extends S2MetadataProc {
         return new S2SpectralInformation(
                 bandConstant.getPhysicalName(),
                 resolution,
-                makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),
+                //makeSpectralBandImageFileTemplate(bandConstant.getFilenameBandId()),
+                NamingConventionFactory.getSpectralBandImageTemplate_L1b(format,bandConstant.getFilenameBandId()),
                 "Radiance in band " + bandConstant.getPhysicalName(),
                 unit,
                 quantification,
@@ -56,17 +59,17 @@ public class L1bMetadataProc extends S2MetadataProc {
                 bandConstant.getWavelengthCentral());
     }
 
-    private static String makeSpectralBandImageFileTemplate(String bandFileId) {
-        /* Sample :
-        MISSION_ID : S2A
-        SITECENTRE : MTI_
-        CREATIONDATE : 20150813T201603
-        ABSOLUTEORBIT : A000734
-        TILENUMBER : T32TQR
-        RESOLUTION : 10 | 20 | 60
-         */
+   /* private static String makeSpectralBandImageFileTemplate(String bandFileId) {
+        //Sample :
+        //MISSION_ID : S2A
+        //SITECENTRE : MTI_
+        //CREATIONDATE : 20150813T201603
+        //ABSOLUTEORBIT : A000734
+        //TILENUMBER : T32TQR
+        //RESOLUTION : 10 | 20 | 60
+
         return String.format("IMG_DATA%s{{MISSION_ID}}_OPER_MSI_L1B_GR_{{SITECENTRE}}_{{CREATIONDATE}}_{{ABSOLUTEORBIT}}_{{DETECTOR}}_%s.jp2", File.separator, bandFileId);
-    }
+    }*/
 
 
     public static S2IndexBandInformation makeTileInformation(String detector, S2SpatialResolution resolution, L1bSceneDescription sceneDescription) {

@@ -14,7 +14,7 @@ public class L1bMetadataFactory {
 
     public static IL1bProductMetadata createL1bProductMetadata(Path metadataPath) throws IOException, ParserConfigurationException, SAXException {
         int psd = S2Metadata.getPSD(metadataPath);
-        if(psd == 13 || psd == 12 || psd == 0 )  {
+        if(psd == 14 || psd == 13 || psd == 12 || psd == 0 )  {
             return L1bProductMetadataPSD13.create(metadataPath);
         } else {
             //TODO
@@ -24,7 +24,7 @@ public class L1bMetadataFactory {
 
     public static IL1bGranuleMetadata createL1bGranuleMetadata(Path metadataPath) throws IOException, ParserConfigurationException, SAXException {
         int psd = S2Metadata.getPSD(metadataPath);
-        if(psd == 13 || psd == 12 || psd == 0 )  {
+        if(psd == 14 || psd == 13 || psd == 12 || psd == 0 )  {
             return L1bGranuleMetadataPSD13.create(metadataPath);
         } else {
             //TODO
@@ -34,7 +34,7 @@ public class L1bMetadataFactory {
 
     public static IL1bDatastripMetadata createL1bDatastripMetadata(Path metadataPath) throws IOException, ParserConfigurationException, SAXException {
         int psd = S2Metadata.getPSD(metadataPath);
-        if(psd == 13 || psd == 12 || psd == 0 )  {
+        if(psd == 14 || psd == 13 || psd == 12 || psd == 0 )  {
             return L1bDatastripMetadataPSD13.create(metadataPath);
         } else {
             //TODO

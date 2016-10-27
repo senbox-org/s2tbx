@@ -81,8 +81,21 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getProductOrganization(S2SpatialResolution resolution) {
+    public S2Metadata.ProductCharacteristics getProductOrganization(Path path, S2SpatialResolution resolution) {
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
+
+        String datatakeSensingStart = getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
+        if(datatakeSensingStart!=null && datatakeSensingStart.length()>19) {
+            String formattedDatatakeSensingStart = datatakeSensingStart.substring(0,4) +
+                    datatakeSensingStart.substring(5,7) +
+                    datatakeSensingStart.substring(8,13) +
+                    datatakeSensingStart.substring(14,16)+
+                    datatakeSensingStart.substring(17,19);
+            characteristics.setDatatakeSensingStartTime(formattedDatatakeSensingStart);
+        } else {
+            characteristics.setDatatakeSensingStartTime("Unknown");
+        }
+
         characteristics.setSpacecraft(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Sentinel-2"));
         characteristics.setDatasetProductionDate(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, "Unknown"));
 
@@ -98,7 +111,7 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
         double aotQuantification = Double.valueOf(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_L2A_AOT_QUANTIFICATION_VALUE, String.valueOf(L2aPSD13Constants.DEFAULT_AOT_QUANTIFICATION)));
         double wvpQuantification = Double.valueOf(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_L2A_WVP_QUANTIFICATION_VALUE, String.valueOf(L2aPSD13Constants.DEFAULT_WVP_QUANTIFICATION)));
 
-        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(resolution,boaQuantification,aotQuantification,wvpQuantification);
+        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution,boaQuantification,aotQuantification,wvpQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
@@ -168,5 +181,10 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
     @Override
     public MetadataElement getMetadataElement() {
         return rootElement;
+    }
+
+    @Override
+    public String getFormat() {
+        return getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
     }
 }

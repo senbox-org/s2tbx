@@ -36,6 +36,7 @@ import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.as3DCoordinates;
 public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bGranuleMetadata {
 
     MetadataElement simplifiedMetadataElement;
+    String format = null;
 
     private static class L1bGranuleMetadataPSD13Parser extends XmlMetadataParser<L1bGranuleMetadataPSD13> {
 
@@ -61,6 +62,7 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
                 L1bGranuleMetadataPSD13Parser parser = new L1bGranuleMetadataPSD13Parser(L1bGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.updateName();
+                result.format = "SAFE"; //at granule level SAFE and SAFE_COMPACT are equal
             }
         } finally {
             IOUtils.closeQuietly(stream);
@@ -155,19 +157,19 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
 
         List<S2BandInformation> aInfo = new ArrayList<>();
 
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R10M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M));
-        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B1, S2SpatialResolution.R60M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B2, S2SpatialResolution.R10M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B3, S2SpatialResolution.R10M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B4, S2SpatialResolution.R10M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B5, S2SpatialResolution.R20M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B6, S2SpatialResolution.R20M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B7, S2SpatialResolution.R20M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B8, S2SpatialResolution.R10M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B8A, S2SpatialResolution.R20M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B9, S2SpatialResolution.R60M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B10, S2SpatialResolution.R60M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B11, S2SpatialResolution.R20M, getFormat()));
+        aInfo.add(L1bMetadataProc.makeSpectralInformation(S2BandConstants.B12, S2SpatialResolution.R20M, getFormat()));
 
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
@@ -184,6 +186,11 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
     public MetadataElement getSimplifiedMetadataElement() {
         //TODO
         return rootElement;
+    }
+
+    @Override
+    public String getFormat() {
+        return format;
     }
 
     private void updateName() {

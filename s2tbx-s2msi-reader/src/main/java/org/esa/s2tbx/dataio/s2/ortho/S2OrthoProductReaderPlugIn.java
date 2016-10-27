@@ -19,7 +19,6 @@ package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
@@ -28,9 +27,7 @@ import org.esa.snap.core.datamodel.RGBImageProfileManager;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.Locale;
-import java.util.regex.Matcher;
 
 import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToDisplayName;
 import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToShortDisplayName;
@@ -69,15 +66,20 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         SystemUtils.LOG.fine("Getting decoders...");
-        File file = preprocessInput(input);
-        if(file == null) {
+        //File file = preprocessInput(input);
+        if(!(input instanceof File)) {
             return DecodeQualification.UNABLE;
         }
+        File file = (File) input;
 
-        crsCache.ensureIsCached(file.getAbsolutePath());
+        crsCache.ensureIsCached(file.toPath());
 
         level = crsCache.getProductLevel(file.getAbsolutePath());
         S2Config.Sentinel2InputType  inputType = crsCache.getInputType(file.getAbsolutePath());
+
+        if(inputType == null) {
+            return DecodeQualification.UNABLE;
+        }
 
         if((level != S2Config.Sentinel2ProductLevel.L1C)  && (level != S2Config.Sentinel2ProductLevel.L2A) && (level != S2Config.Sentinel2ProductLevel.L3)) {
             return DecodeQualification.UNABLE;
@@ -118,36 +120,5 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     public String getDescription(Locale locale) {
         return String.format("Sentinel-2 MSI %s - Native resolutions - %s", getLevel(), epsgToDisplayName(getEPSG()));
     }
-
-    public static File preprocessInput(Object input){
-        if (!(input instanceof File)) {
-            return null;
-        }
-        File file = (File) input;
-        String fileName = file.getName();
-        Matcher matcher = PATTERN.matcher(fileName);
-
-        // Checking for file regex first, it is quicker than File.isFile()
-        if (!matcher.matches()) {
-            return null;
-        }
-
-        if (!file.isFile()) {
-            File xmlFile = getInputXmlFileFromDirectory(file);
-            if (xmlFile == null) {
-                return null;
-            }
-            fileName = xmlFile.getName();
-            file = xmlFile;
-            matcher.reset();
-            matcher = PATTERN.matcher(fileName);
-            if (!matcher.matches()) {
-                return null;
-            }
-        }
-
-        return file;
-    }
-
 
 }

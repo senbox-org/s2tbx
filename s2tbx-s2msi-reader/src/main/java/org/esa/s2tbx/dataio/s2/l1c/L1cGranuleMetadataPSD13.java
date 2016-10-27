@@ -7,6 +7,8 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.SAFECOMPACTNamingConvention;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
 
@@ -16,11 +18,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by obarrile on 30/09/2016.
@@ -29,6 +34,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
 
 
     MetadataElement simplifiedMetadataElement;
+    String format = null;
 
     private static class L1cGranuleMetadataPSD13Parser extends XmlMetadataParser<L1cGranuleMetadataPSD13> {
 
@@ -54,6 +60,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
                 L1cGranuleMetadataPSD13Parser parser = new L1cGranuleMetadataPSD13Parser(L1cGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.updateName();
+                result.format = NamingConventionFactory.getGranuleFormat(path);
             }
         } finally {
             IOUtils.closeQuietly(stream);
@@ -77,8 +84,27 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getTileProductOrganization() {
+    public S2Metadata.ProductCharacteristics getTileProductOrganization(Path xmlPath) {
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
+
+        //DatatakeSensingStart is not in the metadata, but it is needed for the image templates. We read it from the file system
+        Path folder = xmlPath.resolveSibling("IMG_DATA");
+        Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
+        characteristics.setDatatakeSensingStartTime("Unknown");
+        if(Files.exists(folder) && Files.isDirectory(folder)) {
+            File[] images = folder.toFile().listFiles();
+            if(images!=null && images.length>0) {
+                for(File image : images) {
+                    String imageName = image.getName();
+                    Matcher matcher = pattern.matcher(imageName);
+                    if(matcher.matches()) {
+                        characteristics.setDatatakeSensingStartTime(matcher.group(2));
+                        break;
+                    }
+                }
+            }
+        }
+
         characteristics.setSpacecraft("Sentinel-2");
         characteristics.setProcessingLevel("Level-1C");
         characteristics.setMetaDataLevel("Standard");
@@ -86,7 +112,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         double toaQuantification = L1cPSD13Constants.DEFAULT_TOA_QUANTIFICATION;
         characteristics.setQuantificationValue(toaQuantification);
 
-        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (toaQuantification);
+        List<S2BandInformation> aInfo = L1cMetadataProc.getBandInformationList (getFormat(),toaQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
@@ -168,8 +194,15 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
             return null;
         }
         for (String maskFilename : maskFilenames) {
+            //To be sure that it is not a relative path and finish with .gml
+            String filenameProcessed = Paths.get(maskFilename).getFileName().toString();
+            if(!filenameProcessed.endsWith(".gml")) {
+                filenameProcessed = filenameProcessed + ".gml";
+            }
+
+
             Path QIData = path.resolveSibling("QI_DATA");
-            File GmlData = new File(QIData.toFile(), maskFilename);
+            File GmlData = new File(QIData.toFile(), filenameProcessed);
 
             aMaskList.add(new S2Metadata.MaskFilename(getAttributeSiblingValue(L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
                                                                                 L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_BAND, null),
@@ -198,7 +231,13 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         String tileId = getAttributeValue(L1cPSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
         if(tileId == null || tileId.length()<56) {
             setName("Level-1C_Tile_ID");
+            return;
         }
         setName("Level-1C_Tile_" + tileId.substring(50, 55));
+    }
+
+    @Override
+    public String getFormat() {
+        return format;
     }
 }

@@ -18,6 +18,8 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
@@ -44,6 +46,27 @@ public class S2ProductCRSCache {
         Set<String> epsgCodeList = new HashSet<>();
         private S2Config.Sentinel2ProductLevel level = S2Config.Sentinel2ProductLevel.UNKNOWN;
         private S2Config.Sentinel2InputType inputType;
+        private INamingConvention namingConvention;
+
+
+        public S2ProductCRSCacheEntry (Path path) {
+            namingConvention = NamingConventionFactory.createNamingConvention(path);
+            if(namingConvention != null) {
+                inputType = namingConvention.getInputType();
+                level = namingConvention.getProductLevel();
+                if (namingConvention.getEPSGList() != null) {
+                    epsgCodeList.addAll(namingConvention.getEPSGList());
+                }
+            }
+
+            /*inputType = S2ProductNamingManager.getInputType(path);
+            if(inputType == null) return;
+            level = S2ProductNamingManager.getLevel(path,inputType);
+            if(level == S2Config.Sentinel2ProductLevel.UNKNOWN) return;
+            epsgCodeList.addAll(S2ProductNamingManager.getEpsgCodeList(path,inputType));*/
+        }
+
+
 
         public S2ProductCRSCacheEntry (String productFileName) {
 
@@ -121,6 +144,14 @@ public class S2ProductCRSCache {
         if (!cache.containsKey(productFileName)) {
             S2ProductCRSCacheEntry s2ProductCRSCacheEntry = new S2ProductCRSCacheEntry(productFileName);
             cache.put(productFileName, s2ProductCRSCacheEntry);
+        }
+    }
+
+    /* Ensure the given product is in cache */
+    public synchronized void ensureIsCached(Path productPath) {
+        if (!cache.containsKey(productPath.toString())) {
+            S2ProductCRSCacheEntry s2ProductCRSCacheEntry = new S2ProductCRSCacheEntry(productPath);
+            cache.put(productPath.toString(), s2ProductCRSCacheEntry);
         }
     }
 

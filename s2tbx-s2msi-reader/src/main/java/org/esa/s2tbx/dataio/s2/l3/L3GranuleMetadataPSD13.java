@@ -6,10 +6,13 @@ import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.SAFECOMPACTNamingConvention;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -17,11 +20,15 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by obarrile on 07/10/2016.
  */
 public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3GranuleMetadata  {
+
+   String format = null;
 
     private static class L3GranuleMetadataPSD13Parser extends XmlMetadataParser<L3GranuleMetadataPSD13> {
 
@@ -47,6 +54,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
                 L3GranuleMetadataPSD13Parser parser = new L3GranuleMetadataPSD13Parser(L3GranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.updateName();
+                result.format = NamingConventionFactory.getGranuleFormat(path);
             }
         } finally {
             IOUtils.closeQuietly(stream);
@@ -68,9 +76,37 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getTileProductOrganization(S2SpatialResolution resolution) {
+    public S2Metadata.ProductCharacteristics getTileProductOrganization(Path path, S2SpatialResolution resolution) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
+        //DatatakeSensingStart is not in the metadata, but is it needed for the image templates in level3??. We read it from the file system
+        //TODO review
+        Path folder = path.resolveSibling("IMG_DATA");
+        Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
+        characteristics.setDatatakeSensingStartTime("Unknown");
+        boolean bFound = false;
+        if(Files.exists(folder) && Files.isDirectory(folder)) {
+            File[] resolutions = folder.toFile().listFiles();
+            for (File resolutionFolder :resolutions){
+                if(resolutionFolder.isDirectory()) {
+                    File[] images = resolutionFolder.listFiles();
+                    if (images != null && images.length > 0) {
+                        for (File image : images) {
+                            String imageName = image.getName();
+                            Matcher matcher = pattern.matcher(imageName);
+                            if (matcher.matches()) {
+                                characteristics.setDatatakeSensingStartTime(matcher.group(2));
+                                bFound = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(bFound) {
+                    break;
+                }
+            }
+        }
         characteristics.setSpacecraft("Sentinel-2");
         characteristics.setProcessingLevel("Level-3");
         characteristics.setMetaDataLevel("Standard");
@@ -166,10 +202,16 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         return maxIndex;
     }
 
+    @Override
+    public String getFormat() {
+        return format;
+    }
+
     private void updateName() {
         String tileId = getAttributeValue(L3PSD13Constants.PATH_GRANULE_METADATA_TILE_ID, null);
         if(tileId == null || tileId.length()<56) {
             setName("Level-03_Tile_ID");
+            return;
         }
         setName("Level-03_Tile_" + tileId.substring(50, 55));
     }

@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,28 +58,31 @@ import java.util.regex.Pattern;
 public abstract class S2Metadata {
 
     private List<MetadataElement> metadataElements;
+    String format = null;
 
     private List<Tile> tileList;
 
     private S2Config config;
 
-    private Unmarshaller unmarshaller;
-
     private String psdString;
 
     private ProductCharacteristics productCharacteristics;
 
+    protected HashMap<String, Path> resourceResolver;
 
-    public S2Metadata(S2Config config, JAXBContext context, String psdString) throws JAXBException {
-        this.config = config;
-        this.unmarshaller = context.createUnmarshaller();
-        this.psdString = psdString;
-        this.metadataElements = new ArrayList<>();
-    }
 
     public S2Metadata(S2Config config) {
         this.config = config;
         this.metadataElements = new ArrayList<>();
+        this.resourceResolver = new HashMap<>();
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
     }
 
     public S2Config getConfig() {
@@ -117,10 +122,8 @@ public abstract class S2Metadata {
         this.productCharacteristics = productCharacteristics;
     }
 
-    protected Object updateAndUnmarshal(InputStream xmlStream) throws IOException, JAXBException {
-        InputStream updatedStream = changePSDIfRequired(xmlStream, psdString);
-        Object ob = unmarshaller.unmarshal(updatedStream);
-        return ((JAXBElement) ob).getValue();
+    public Path resolveResource(String identifier) {
+        return resourceResolver.get(identifier);
     }
 
     /**
@@ -149,11 +152,7 @@ public abstract class S2Metadata {
         return updatedXmlStream;
     }
 
-    /*protected MetadataElement parseAll(Element parent) {
-        return parseTree(parent, null, new HashSet<>(Arrays.asList("Viewing_Incidence_Angles_Grids", "Sun_Angles_Grid")));
-    }*/
-
-    protected MetadataElement parseTree(Element element, MetadataElement mdParent, Set<String> excludes) {
+   /* protected MetadataElement parseTree(Element element, MetadataElement mdParent, Set<String> excludes) {
 
         MetadataElement mdElement = new MetadataElement(element.getName());
 
@@ -187,7 +186,7 @@ public abstract class S2Metadata {
         }
 
         return mdElement;
-    }
+    }*/
 
 
     public static class Tile {
@@ -474,10 +473,19 @@ public abstract class S2Metadata {
         private String datasetProductionDate;
         private String productStartTime;
         private String productStopTime;
+        private String datatakeSensingStartTime;
         private String processingLevel;
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
         private double quantificationValue;
+
+        public String getDatatakeSensingStartTime () {
+            return datatakeSensingStartTime;
+        }
+
+        public void setDatatakeSensingStartTime (String datatakeSensingStartTime) {
+            this.datatakeSensingStartTime = datatakeSensingStartTime;
+        }
 
         public String getSpacecraft() {
             return spacecraft;

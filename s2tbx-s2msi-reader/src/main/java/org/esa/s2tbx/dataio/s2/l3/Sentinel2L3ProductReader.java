@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.s2.l3;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
@@ -31,7 +32,15 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
 
     @Override
     public S2SpatialResolution getProductResolution() {
-        return getSpatialResolutionL3();
+        if(namingConvention == null && (getInput() instanceof File)) {
+            namingConvention = NamingConventionFactory.createNamingConvention(((File) getInput()).toPath());
+        }
+
+        if(namingConvention == null) {
+            return S2SpatialResolution.R10M;
+        }
+
+        return namingConvention.getResolution();
     }
 
     @Override
@@ -41,10 +50,10 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
 
     @Override
     protected S2Metadata parseHeader(
-            File file, String granuleName, S2Config config, String epsg) throws IOException {
+            File file, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
 
         try {
-            return L3Metadata.parseHeader(file, granuleName, config, epsg, getProductResolution());
+            return L3Metadata.parseHeader(file, granuleName, config, epsg, getProductResolution(), isAGranule, namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse metadata in " + file.getName());
         }
@@ -79,26 +88,5 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
     @Override
     protected int getMaskLevel() {
         return MaskInfo.L3;
-    }
-
-
-    private S2SpatialResolution getSpatialResolutionL3() {
-        S2ProductCRSCache crsCache = new S2ProductCRSCache();
-        File file = S2OrthoProductReaderPlugIn.preprocessInput(getInput());
-        if(file == null) {
-            return S2SpatialResolution.R10M;
-        }
-        crsCache.ensureIsCached(file.getAbsolutePath());
-
-        S2Config.Sentinel2InputType type = crsCache.getInputType(file.getAbsolutePath());
-        if(type.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)) {
-            if (L2aUtils.checkGranuleSpecificFolder(file, "10m")) return S2SpatialResolution.R10M;
-            if (L2aUtils.checkGranuleSpecificFolder(file, "20m")) return S2SpatialResolution.R20M;
-            return S2SpatialResolution.R60M;
-        }
-
-        if (L2aUtils.checkMetadataSpecificFolder(file, "10m")) return S2SpatialResolution.R10M;
-        if (L2aUtils.checkMetadataSpecificFolder(file, "20m")) return S2SpatialResolution.R20M;
-        return S2SpatialResolution.R60M;
     }
 }

@@ -77,8 +77,22 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getProductOrganization(S2SpatialResolution resolution) {
+    public S2Metadata.ProductCharacteristics getProductOrganization(Path path, S2SpatialResolution resolution) {
         L3Metadata.ProductCharacteristics characteristics = new L3Metadata.ProductCharacteristics();
+
+        //is this right for level 3? Is datatake start time used?
+        String datatakeSensingStart = getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
+        if(datatakeSensingStart!=null && datatakeSensingStart.length()>19) {
+            String formattedDatatakeSensingStart = datatakeSensingStart.substring(0,4) +
+                    datatakeSensingStart.substring(5,7) +
+                    datatakeSensingStart.substring(8,13) +
+                    datatakeSensingStart.substring(14,16)+
+                    datatakeSensingStart.substring(17,19);
+            characteristics.setDatatakeSensingStartTime(formattedDatatakeSensingStart);
+        } else {
+            characteristics.setDatatakeSensingStartTime("Unknown");
+        }
+
         characteristics.setSpacecraft(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_SPACECRAFT, "Sentinel-2"));
         characteristics.setDatasetProductionDate(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, "Unknown"));
         characteristics.setProcessingLevel(getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PROCESSING_LEVEL, "Level-3"));
@@ -155,5 +169,10 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
     @Override
     public MetadataElement getMetadataElement() {
         return rootElement;
+    }
+
+    @Override
+    public String getFormat() {
+        return getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
     }
 }

@@ -23,4 +23,6 @@ public interface IL1bGranuleMetadata {
 
     MetadataElement getMetadataElement();
     MetadataElement getSimplifiedMetadataElement();
+
+    String getFormat();
 }

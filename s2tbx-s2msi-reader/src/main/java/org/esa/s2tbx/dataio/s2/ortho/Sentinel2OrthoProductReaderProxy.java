@@ -3,6 +3,8 @@ package org.esa.s2tbx.dataio.s2.ortho;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
+import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
+import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
 import org.esa.s2tbx.dataio.s2.l3.Sentinel2L3ProductReader;
@@ -54,14 +56,14 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
 
     public Product readProductNodes(Object input,
                              ProductSubsetDef subsetDef) throws IOException, IllegalFileFormatException {
-        File file = null;
+        /*File file = null;
         if (reader == null) {
             file = S2OrthoProductReaderPlugIn.preprocessInput(input);
             if(file == null) {
                 throw new IOException("Invalid input");
             }
 
-            crsCache.ensureIsCached(file.getAbsolutePath());
+            crsCache.ensureIsCached(file.toPath());
             S2Config.Sentinel2ProductLevel level = crsCache.getProductLevel(file.getAbsolutePath());
 
             if (level == S2Config.Sentinel2ProductLevel.L2A) {
@@ -74,7 +76,33 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
                 throw new IOException("Invalid input");
             }
         }
+        return reader.readProductNodes(file, subsetDef);*/
+
+
+        File file = null;
+        if(!(input instanceof File)){
+            throw new IOException("Invalid input");
+        }
+        if(reader == null) {
+            file = (File) input;
+            INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(file.toPath());
+            if (namingConvention == null) {
+                throw new IOException("Invalid input");
+            }
+            S2Config.Sentinel2ProductLevel level = namingConvention.getProductLevel();
+            file = namingConvention.getInputXml().toFile();
+            if (level == S2Config.Sentinel2ProductLevel.L2A) {
+                reader = new Sentinel2L2AProductReader(readerPlugIn, epsgCode);
+            } else if (level == S2Config.Sentinel2ProductLevel.L1C) {
+                reader = new Sentinel2L1CProductReader(readerPlugIn, epsgCode);
+            } else if (level == S2Config.Sentinel2ProductLevel.L3) {
+                reader = new Sentinel2L3ProductReader(readerPlugIn, epsgCode);
+            } else {
+                throw new IOException("Invalid input");
+            }
+        }
         return reader.readProductNodes(file, subsetDef);
+
     }
 
 

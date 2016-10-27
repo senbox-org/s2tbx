@@ -72,10 +72,10 @@ public class Sentinel2L1CProductReader extends Sentinel2OrthoProductReader {
     }
 
     protected S2Metadata parseHeader(
-            File file, String granuleName, S2Config config, String epsg) throws IOException {
+            File file, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException {
 
         try {
-            return L1cMetadata.parseHeader(file, granuleName, config, epsg);
+            return L1cMetadata.parseHeader(file, granuleName, config, epsg, isAGranule, namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse metadata in " + file.getName());
         }
