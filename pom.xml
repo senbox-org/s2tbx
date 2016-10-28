@@ -65,6 +65,7 @@
         <netbeans.version>RELEASE82</netbeans.version>
         <javahelp.version>2.0.05</javahelp.version>
         <brandingToken>s2tbx</brandingToken>
+        <gdal.jar.archive.path>${snap.src.path}/s2tbx/s2tbx-gdal-reader/src/lib/gdal.jar</gdal.jar.archive.path>		
     </properties>
 
     <repositories>
@@ -328,7 +329,7 @@
 
     <build>
         <plugins>
-            <!--
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
@@ -338,7 +339,7 @@
                     <artifactId>gdal</artifactId>
                     <version>1.0</version>
                     <packaging>jar</packaging>
-                    <file>D:Sources/s2tbx/s2tbx-gdal-reader/src/lib/gdal.jar</file>
+                    <file>${gdal.jar.archive.path}</file>
                     <generatePom>true</generatePom>
                 </configuration>
                 <executions>
@@ -351,7 +352,7 @@
                     </execution>
                 </executions>
             </plugin>
--->
+
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>

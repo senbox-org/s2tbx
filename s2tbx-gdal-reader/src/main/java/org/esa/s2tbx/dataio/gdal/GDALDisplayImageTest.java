@@ -37,6 +37,9 @@ import org.gdal.gdal.GCP;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class GDALDisplayImageTest extends JFrame implements ActionListener {
 
@@ -109,7 +112,16 @@ public class GDALDisplayImageTest extends JFrame implements ActionListener {
                 + poDataset.getRasterCount());
 
         if (poDataset.GetProjectionRef() != null) {
-            System.out.println("Projection is `" + poDataset.GetProjectionRef() + "'");
+            String wellKnownText = poDataset.GetProjectionRef();
+            System.out.println("Projection is '" + wellKnownText + "'");
+
+//            try {
+//                CoordinateReferenceSystem crs = CRS.parseWKT(wellKnownText);
+//                System.out.println("crs is '" + crs + "'");
+//
+//            } catch (FactoryException e) {
+//                e.printStackTrace();
+//            }
         }
 
         Hashtable dict = poDataset.GetMetadata_Dict("");
@@ -125,7 +137,7 @@ public class GDALDisplayImageTest extends JFrame implements ActionListener {
         System.out.println(list.size() + " items of metadata found (via Vector list):");
         while (enumerate.hasMoreElements()) {
             String s = (String) enumerate.nextElement();
-            System.out.println(" " + s);
+            System.out.println(" :" + s + ":");
         }
 
         Vector GCPs = new Vector();
