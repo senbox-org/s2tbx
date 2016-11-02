@@ -1,10 +1,13 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import com.bc.ceres.core.ProgressMonitor;
+import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.core.util.io.FileUtils;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
@@ -64,7 +67,11 @@ public class GDALProductReader extends AbstractProductReader {
             int imageHeight = poDataset.getRasterYSize();
             String productName = inputFile.getFileName().toString();
             String productType = "GDAL";
+            Dimension preferredTileSize = JAI.getDefaultTileSize();
+
             this.product = new Product(productName, productType, imageWidth, imageHeight);
+            this.product.setPreferredTileSize(preferredTileSize);
+            this.product.setFileLocation(inputFile.toFile());
 
             int bandCount = poDataset.getRasterCount();
 
@@ -91,17 +98,17 @@ public class GDALProductReader extends AbstractProductReader {
                 }
             }
 
-            int pixels = imageWidth * imageHeight;
             Double[] max = new Double[1];
             Double[] min = new Double[1];
 
-            for (int band = 0; band < bandCount; band++) {
+            for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
                 // Bands are not 0-base indexed, so we must add 1
-                org.gdal.gdal.Band poBand = poDataset.GetRasterBand(band + 1);
-                int bufferType = poBand.getDataType();
-                int bufferSize = pixels * gdal.GetDataTypeSize(bufferType) / 8;
-                ByteBuffer data = ByteBuffer.allocateDirect(bufferSize);
-                data.order(ByteOrder.nativeOrder());
+                org.gdal.gdal.Band poBand = poDataset.GetRasterBand(bandIndex + 1);
+                int gdalDataType = poBand.getDataType();
+                int bandDataType = 0;
+                int dataBufferType = 0;
+                int precision = 0;
+                boolean signed = false;
 
                 MetadataElement componentElement = new MetadataElement("Component");
                 metadataElement.addElement(componentElement);
@@ -118,97 +125,66 @@ public class GDALProductReader extends AbstractProductReader {
                     componentElement.setAttributeDouble("maximum", max[0].doubleValue());
                 }
 
-                int returnVal = poBand.ReadRaster_Direct(0, 0, poBand.getXSize(), poBand.getYSize(), imageWidth, imageHeight, bufferType, data);
-                if (returnVal == gdalconstConstants.CE_None) {
-                    int[] bankIndices = new int[] {0};
-                    int[] bandOffsets = new int[] {0};
-
-                    DataBuffer imgBuffer = null;
-                    SampleModel sampleModel = null;
-                    int data_type = 0;
-                    int bandDataType = 0;
-                    int precision = 0;
-                    boolean signed = false;
-                    if (bufferType == gdalconstConstants.GDT_Byte) {
-                        precision = 8;
-                        signed = true;
-                        byte[] bytes = new byte[pixels];
-                        data.get(bytes);
-                        bandDataType = ProductData.TYPE_UINT8;
-                        imgBuffer = new DataBufferByte(bytes, pixels);
-                        sampleModel = new BandedSampleModel(DataBuffer.TYPE_BYTE, imageWidth, imageHeight, imageWidth, bankIndices, bandOffsets);
-                        data_type = (poBand.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED : BufferedImage.TYPE_BYTE_GRAY;
-                    } else if (bufferType == gdalconstConstants.GDT_Int16 || bufferType == gdalconstConstants.GDT_UInt16) {
-                        precision = 16;
-                        signed = (bufferType == gdalconstConstants.GDT_Int16) ? true : false;
-                        short[] shorts = new short[pixels];
-                        data.asShortBuffer().get(shorts);
-                        bandDataType = ProductData.TYPE_UINT16;
-                        imgBuffer = new DataBufferShort(shorts, pixels);
-                        sampleModel = new BandedSampleModel(DataBuffer.TYPE_USHORT, imageWidth, imageHeight, imageWidth, bankIndices, bandOffsets);
-                        data_type = BufferedImage.TYPE_USHORT_GRAY;
-                    } else if (bufferType == gdalconstConstants.GDT_Int32) {
-                        precision = 32;
-                        signed = true;
-                        int[] ints = new int[pixels];
-                        data.asIntBuffer().get(ints);
-                        bandDataType = ProductData.TYPE_INT32;
-                        imgBuffer = new DataBufferInt(ints, pixels);
-                        sampleModel = new BandedSampleModel(DataBuffer.TYPE_INT, imageWidth, imageHeight, imageWidth, bankIndices, bandOffsets);
-                        data_type = BufferedImage.TYPE_BYTE_INDEXED;
-                    } else if (bufferType == gdalconstConstants.GDT_Float32) {
-                        precision = 32;
-                        signed = true;
-                        float[] floats = new float[pixels];
-                        data.asFloatBuffer().get(floats);
-                        bandDataType = ProductData.TYPE_FLOAT32;
-                        imgBuffer = new DataBufferFloat(floats, pixels);
-                        sampleModel = new BandedSampleModel(DataBuffer.TYPE_FLOAT, imageWidth, imageHeight, imageWidth, bankIndices, bandOffsets);
-                        data_type = BufferedImage.TYPE_BYTE_INDEXED;
-                    } else {
-                        throw new IOException("Unknown GDAL data type " + bufferType + ".");
-                    }
-                    componentElement.setAttributeInt("precision", precision);
-                    componentElement.setAttributeString("signed", Boolean.toString(signed));
-
-                    WritableRaster raster = Raster.createWritableRaster(sampleModel, imgBuffer, null);
-                    BufferedImage img = null;
-                    if (poBand.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) {
-                        ColorModel cm = poBand.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(bufferType));
-                        img = new BufferedImage(cm, raster, false, null);
-                    } else {
-                        img = new BufferedImage(imageWidth, imageHeight, data_type);
-                        img.setData(raster);
-                    }
-
-                    String bandName = "GDALband_" + String.valueOf(band + 1);
-                    Band virtualBand = new Band(bandName, bandDataType, imageWidth, imageHeight);
-                    virtualBand.setSourceImage(img);
-                    this.product.addBand(virtualBand);
-
-                    // add the mask
-                    org.gdal.gdal.Band maskBand = poBand.GetMaskBand();
-                    if (maskBand != null) {
-                        String maskName = "mask_" + String.valueOf(band + 1);
-                        Mask mask = Mask.BandMathsType.create(maskName,
-                                null,
-                                imageWidth, imageHeight,
-                                bandName,
-                                Color.white,
-                                0.5);
-                        this.product.addMask(mask);
-                    }
+                if (gdalDataType == gdalconstConstants.GDT_Byte) {
+                    precision = 8;
+                    signed = true;
+                    bandDataType = ProductData.TYPE_UINT8;
+                    dataBufferType = DataBuffer.TYPE_BYTE;
+                } else if (gdalDataType == gdalconstConstants.GDT_Int16) {
+                    precision = 16;
+                    signed = true;
+                    bandDataType = ProductData.TYPE_INT16;
+                    dataBufferType = DataBuffer.TYPE_SHORT;
+                } else if (gdalDataType == gdalconstConstants.GDT_UInt16) {
+                    precision = 16;
+                    signed = false;
+                    bandDataType = ProductData.TYPE_UINT16;
+                    dataBufferType = DataBuffer.TYPE_USHORT;
+                } else if (gdalDataType == gdalconstConstants.GDT_Int32) {
+                    precision = 32;
+                    signed = true;
+                    bandDataType = ProductData.TYPE_INT32;
+                    dataBufferType = DataBuffer.TYPE_INT;
+                } else if (gdalDataType == gdalconstConstants.GDT_Float32) {
+                    precision = 32;
+                    signed = true;
+                    bandDataType = ProductData.TYPE_FLOAT32;
+                    dataBufferType = DataBuffer.TYPE_FLOAT;
                 } else {
-                    throw new IOException("Failed to read the product data.");
+                    throw new IllegalArgumentException("Unknown GDAL data type " + gdalDataType + ".");
+                }
+                componentElement.setAttributeInt("precision", precision);
+                componentElement.setAttributeString("signed", Boolean.toString(signed));
+
+                String bandName = "band_" + String.valueOf(bandIndex + 1);
+                Band virtualBand = new Band(bandName, bandDataType, imageWidth, imageHeight);
+
+                int tileWidth = preferredTileSize.width;
+                int tileHeight = preferredTileSize.height;
+                int levels = 1;//DefaultMultiLevelModel.getLevelCount(imageWidth, imageHeight);
+
+                GDALMultiLevelSource source = new GDALMultiLevelSource(inputFile, bandIndex, bandCount, imageWidth, imageHeight, tileWidth,
+                                                                       tileHeight, levels, dataBufferType, geoCoding);
+
+                virtualBand.setSourceImage(new DefaultMultiLevelImage(source));
+
+                this.product.addBand(virtualBand);
+
+                // add the mask
+                org.gdal.gdal.Band maskBand = poBand.GetMaskBand();
+                if (maskBand != null) {
+                    String maskName = "mask_" + String.valueOf(bandIndex + 1);
+                    Mask mask = Mask.BandMathsType.create(maskName,
+                            null,
+                            imageWidth, imageHeight,
+                            bandName,
+                            Color.white,
+                            0.5);
+                    this.product.addMask(mask);
                 }
             }
-            this.product.setPreferredTileSize(JAI.getDefaultTileSize());
-            this.product.setFileLocation(inputFile.toFile());
             this.product.setModified(false);
             return this.product;
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, ex.getMessage(), ex);
-            throw ex;
         } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
             String msg = "Error while reading file '" + inputFile.toString() + "'.";
