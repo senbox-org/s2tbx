@@ -100,6 +100,7 @@ public class GDALProductReader extends AbstractProductReader {
 
             Double[] max = new Double[1];
             Double[] min = new Double[1];
+            Double[] scale = new Double[1];
 
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
                 // Bands are not 0-base indexed, so we must add 1
@@ -156,12 +157,15 @@ public class GDALProductReader extends AbstractProductReader {
                 componentElement.setAttributeInt("precision", precision);
                 componentElement.setAttributeString("signed", Boolean.toString(signed));
 
-                String bandName = "band_" + String.valueOf(bandIndex + 1);
+                String bandName = "GDALband_" + String.valueOf(bandIndex + 1);
                 Band virtualBand = new Band(bandName, bandDataType, imageWidth, imageHeight);
 
                 int tileWidth = preferredTileSize.width;
                 int tileHeight = preferredTileSize.height;
                 int levels = 1;//DefaultMultiLevelModel.getLevelCount(imageWidth, imageHeight);
+
+//                poBand.GetScale(scale);
+//                levels = scale[0].intValue();
 
                 GDALMultiLevelSource source = new GDALMultiLevelSource(inputFile, bandIndex, bandCount, imageWidth, imageHeight, tileWidth,
                                                                        tileHeight, levels, dataBufferType, geoCoding);
