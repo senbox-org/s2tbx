@@ -9,6 +9,7 @@ import org.esa.snap.core.datamodel.Product;
 
 import javax.media.jai.*;
 import javax.media.jai.operator.BorderDescriptor;
+import javax.media.jai.operator.ConstantDescriptor;
 import javax.media.jai.operator.MosaicDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import java.awt.*;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 /**
  * @author Jean Coravu
  */
-public class GDALMultiLevelSource extends AbstractMultiLevelSource {
+class GDALMultiLevelSource extends AbstractMultiLevelSource {
     private static final Logger logger = Logger.getLogger(GDALMultiLevelSource.class.getName());
 
     private final TileLayout tileLayout;
@@ -30,7 +31,7 @@ public class GDALMultiLevelSource extends AbstractMultiLevelSource {
     private final int dataBufferType;
     private final int bandIndex;
 
-    public GDALMultiLevelSource(Path sourceFile, int bandIndex, int numBands, int imageWidth, int imageHeight,
+    GDALMultiLevelSource(Path sourceFile, int bandIndex, int numBands, int imageWidth, int imageHeight,
                                 int tileWidth, int tileHeight, int levels, int dataBufferType, GeoCoding geoCoding) {
 
         super(new DefaultMultiLevelModel(levels, Product.findImageToModelTransform(geoCoding), imageWidth, imageHeight));
@@ -59,11 +60,14 @@ public class GDALMultiLevelSource extends AbstractMultiLevelSource {
         double factorY = 1.0 / Math.pow(2, level);
         for (int x = 0; x < tileLayout.numYTiles; x++) {
             for (int y = 0; y < tileLayout.numXTiles; y++) {
-                PlanarImage opImage = createTileImage(x, y, level);
+                PlanarImage opImage;
+                opImage = createTileImage(x, y, level);
                 if (opImage != null) {
                     float xTrans = (float) (y * this.tileLayout.tileWidth * factorX);
                     float yTrans = (float) (x * this.tileLayout.tileHeight * factorY);
                     opImage = TranslateDescriptor.create(opImage, xTrans, yTrans, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
+                } else {
+                    opImage = ConstantDescriptor.create((float) tileLayout.tileWidth, (float) tileLayout.tileHeight, new Number[]{0}, null);
                 }
                 tileImages.add(opImage);
             }
@@ -104,6 +108,14 @@ public class GDALMultiLevelSource extends AbstractMultiLevelSource {
     }
 
     private PlanarImage createTileImage(int row, int col, int level) {
-        return GDALTileOpImage.create(this.sourceFile, this.bandIndex, row, col, this.tileLayout, getModel(), this.dataBufferType, level);
+        /*TileLayout currentLayout = tileLayout;
+        if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
+            currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
+                    Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
+                    Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
+                    tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
+            currentLayout.numBands = tileLayout.numBands;
+        }*/
+        return GDALTileOpImage.create(this.sourceFile, this.bandIndex, row, col, tileLayout, getModel(), this.dataBufferType, level);
     }
 }

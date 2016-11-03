@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;
+import org.gdal.gdal.Band;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
@@ -21,24 +22,22 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author Jean Coravu
  */
-public class GDALTileOpImage extends SingleBandedOpImage {
-    private static final Logger logger = Logger.getLogger(GDALTileOpImage.class.getName());;
+class GDALTileOpImage extends SingleBandedOpImage {
+    private static final Logger logger = Logger.getLogger(GDALTileOpImage.class.getName());
 
-    private final Map<Path, Rectangle> tileDimensions;
     private final TileLayout tileLayout;
     private final Path imageFile;
     private final int bandIndex;
     private final int dataBufferType;
     private final int sourceX;
     private final int sourceY;
+
 
     private GDALTileOpImage(Path imageFile, int bandIndex, int sourceX, int sourceY, TileLayout tileLayout, MultiLevelModel imageModel, int dataBufferType, int level) {
         super(dataBufferType, null, tileLayout.tileWidth, tileLayout.tileHeight,
@@ -55,22 +54,20 @@ public class GDALTileOpImage extends SingleBandedOpImage {
         this.tileLayout = tileLayout;
         this.bandIndex = bandIndex;
         this.dataBufferType = dataBufferType;
-        this.tileDimensions = new HashMap<Path, Rectangle>();
     }
 
     @Override
     protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
         int fileTileX = destRect.x / this.tileLayout.tileWidth;
         int fileTileY = destRect.y / this.tileLayout.tileHeight;
-        int fileTileOriginX = this.sourceX + destRect.x - (fileTileX * this.tileLayout.tileWidth);
-        int fileTileOriginY = this.sourceY + destRect.y - (fileTileY * this.tileLayout.tileHeight);
+        int fileTileOriginX = destRect.x - (fileTileX * this.tileLayout.tileWidth);
+        int fileTileOriginY = destRect.y - (fileTileY * this.tileLayout.tileHeight);
 
-        ImageReader imageReader = new ImageReader(this.imageFile, this.bandIndex, this.dataBufferType, getLevel());
-        Rectangle fileTileRect = this.tileDimensions.get(this.imageFile);
-        if (fileTileRect == null) {
-            fileTileRect = new Rectangle(0, 0, imageReader.getImageWidth(), imageReader.getImageHeight());
-            this.tileDimensions.put(this.imageFile, fileTileRect);
-        }
+        ImageReader imageReader = new ImageReader(this.imageFile, this.bandIndex, this.sourceX, this.sourceY, this.dataBufferType, getLevel());
+        int fileTileWidth = imageReader.getImageWidth();
+        int fileTileHeight = imageReader.getImageHeight();
+        Rectangle fileTileRect = new Rectangle(0, 0, fileTileWidth, fileTileHeight);
+
         int tileWidth = getTileWidth();
         int tileHeight = getTileHeight();
         Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
@@ -90,7 +87,7 @@ public class GDALTileOpImage extends SingleBandedOpImage {
         }
     }
 
-    public static PlanarImage create(Path imageFile, int bandIndex, int row, int col, TileLayout tileLayout, MultiLevelModel imageModel, int dataBufferType, int level) {
+    static PlanarImage create(Path imageFile, int bandIndex, int row, int col, TileLayout tileLayout, MultiLevelModel imageModel, int dataBufferType, int level) {
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");
 
@@ -104,8 +101,8 @@ public class GDALTileOpImage extends SingleBandedOpImage {
         }
 
         if (imageFile != null) {
-            int sourceX = col * tileLayout.tileWidth;
-            int sourceY = row * tileLayout.tileWidth;
+            int sourceX = col * scaleValue(tileLayout.tileWidth, level);
+            int sourceY = row * scaleValue(tileLayout.tileHeight, level);
             return new GDALTileOpImage(imageFile, bandIndex, sourceX, sourceY, currentLayout, imageModel, dataBufferType, level);
         }
 
@@ -121,7 +118,7 @@ public class GDALTileOpImage extends SingleBandedOpImage {
         return ConstantDescriptor.create(width, height, bandValues, new RenderingHints(JAI.KEY_IMAGE_LAYOUT, imageLayout));
     }
 
-    public static int scaleValue(int source, int level) {
+    static int scaleValue(int source, int level) {
         int size = source >> level;
         int sizeTest = size << level;
         if (sizeTest < source) {
@@ -145,13 +142,22 @@ public class GDALTileOpImage extends SingleBandedOpImage {
         private final org.gdal.gdal.Band band;
         private final int dataBufferType;
         private final int level;
+        private final int offsetX;
+        private final int offsetY;
 
-        private ImageReader(Path inputFile, int bandIndex, int dataBufferType, int level) {
+        private ImageReader(Path inputFile, int bandIndex, int offsetX, int offsetY, int dataBufferType, int level) {
             this.dataBufferType = dataBufferType;
             this.level = level;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
             Dataset poDataset = gdal.Open(inputFile.toString(), gdalconst.GA_ReadOnly);
             // bands are not 0-base indexed, so we must add 1
-            this.band = poDataset.GetRasterBand(bandIndex + 1);
+            Band rasterBand = poDataset.GetRasterBand(bandIndex + 1);
+            if (level > 0 && rasterBand.GetOverviewCount() > 0) {
+                this.band = rasterBand.GetOverview(this.level - 1);
+            } else {
+                this.band = rasterBand;
+            }
         }
 
         int getImageWidth() {
@@ -171,46 +177,42 @@ public class GDALTileOpImage extends SingleBandedOpImage {
             ByteBuffer data = ByteBuffer.allocateDirect(bufferSize);
             data.order(ByteOrder.nativeOrder());
 
-//            this.band.SetScale(this.level);
-
-            int returnVal = this.band.ReadRaster_Direct(rectangle.x, rectangle.y, rectangle.width, rectangle.height, imageWidth, imageHeight, gdalBufferDataType, data, this.level);
+            int returnVal = this.band.ReadRaster_Direct(offsetX + rectangle.x, offsetY + rectangle.y,
+                                                        Math.min(rectangle.width, getImageWidth() - offsetX - rectangle.x),
+                                                        Math.min(rectangle.height, getImageHeight() - offsetY - rectangle.y),
+                                                        rectangle.width, rectangle.height,
+                                                        gdalBufferDataType, data);
+            int[] index = new int[] { 0 };
             if (returnVal == gdalconstConstants.CE_None) {
-                // the band index is zero
-                int[] bankIndices = new int[] { 0 };
-                int[] bandOffsets = new int[] { 0 };
 
-                DataBuffer imgBuffer = null;
-                SampleModel sampleModel = null;
-                int imageType = 0;
+                DataBuffer imgBuffer;
+                SampleModel sampleModel = new BandedSampleModel(this.dataBufferType, imageWidth, imageHeight, imageWidth, index, index);
+                int imageType;
                 if (this.dataBufferType == DataBuffer.TYPE_BYTE) {
                     byte[] bytes = new byte[pixels];
                     data.get(bytes);
                     imgBuffer = new DataBufferByte(bytes, pixels);
-                    sampleModel = new BandedSampleModel(this.dataBufferType, imageWidth, imageHeight, imageWidth, bankIndices, bandOffsets);
                     imageType = (this.band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED : BufferedImage.TYPE_BYTE_GRAY;
                 } else if (this.dataBufferType == DataBuffer.TYPE_SHORT || this.dataBufferType == DataBuffer.TYPE_USHORT) {
                     short[] shorts = new short[pixels];
                     data.asShortBuffer().get(shorts);
                     imgBuffer = new DataBufferShort(shorts, pixels);
-                    sampleModel = new BandedSampleModel(this.dataBufferType, imageWidth, imageHeight, imageWidth, bankIndices, bandOffsets);
                     imageType = BufferedImage.TYPE_USHORT_GRAY;
                 } else if (this.dataBufferType == DataBuffer.TYPE_INT) {
                     int[] ints = new int[pixels];
                     data.asIntBuffer().get(ints);
                     imgBuffer = new DataBufferInt(ints, pixels);
-                    sampleModel = new BandedSampleModel(this.dataBufferType, imageWidth, imageHeight, imageWidth, bankIndices, bandOffsets);
                     imageType = BufferedImage.TYPE_BYTE_INDEXED;
                 } else if (this.dataBufferType == DataBuffer.TYPE_FLOAT) {
                     float[] floats = new float[pixels];
                     data.asFloatBuffer().get(floats);
                     imgBuffer = new DataBufferFloat(floats, pixels);
-                    sampleModel = new BandedSampleModel(this.dataBufferType, imageWidth, imageHeight, imageWidth, bankIndices, bandOffsets);
                     imageType = BufferedImage.TYPE_BYTE_INDEXED;
                 } else {
                     throw new IllegalArgumentException("Unknown data buffer type " + this.dataBufferType + ".");
                 }
                 WritableRaster raster = Raster.createWritableRaster(sampleModel, imgBuffer, null);
-                BufferedImage image = null;
+                BufferedImage image;
                 if (this.band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) {
                     ColorModel cm = this.band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(gdalBufferDataType));
                     image = new BufferedImage(cm, raster, false, null);

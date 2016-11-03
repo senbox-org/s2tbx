@@ -16,12 +16,10 @@
         This module enables the Sentinel Toolbox to read data products
     </description>
 
-
     <dependencies>
         <dependency>
             <groupId>org.gdal</groupId>
             <artifactId>gdal</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
