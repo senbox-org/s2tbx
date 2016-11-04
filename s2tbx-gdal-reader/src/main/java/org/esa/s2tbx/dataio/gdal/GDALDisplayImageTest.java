@@ -51,16 +51,16 @@ public class GDALDisplayImageTest extends JFrame implements ActionListener {
 
         gdal.AllRegister();
 
-//        int count = gdal.GetDriverCount();
-//        System.out.println(count + " available Drivers");
-//        for (int i = 0; i < count; i++) {
-//            try {
-//                Driver driver = gdal.GetDriver(i);
-//                System.out.println((i+1)+". driver name=" + driver.getShortName() + " : " + driver.getLongName());
-//            } catch (Exception e) {
-//                System.err.println("Error loading driver " + i);
-//            }
-//        }
+        int count = gdal.GetDriverCount();
+        System.out.println(count + " available Drivers");
+        for (int i = 0; i < count; i++) {
+            try {
+                Driver driver = gdal.GetDriver(i);
+                System.out.println((i+1)+". driver name=" + driver.getShortName() + " : " + driver.getLongName());
+            } catch (Exception e) {
+                System.err.println("Error loading driver " + i);
+            }
+        }
     }
 
     public GDALDisplayImageTest() {

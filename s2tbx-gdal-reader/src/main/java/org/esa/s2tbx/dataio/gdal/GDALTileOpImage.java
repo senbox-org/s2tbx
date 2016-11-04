@@ -38,7 +38,6 @@ class GDALTileOpImage extends SingleBandedOpImage {
     private final int sourceX;
     private final int sourceY;
 
-
     private GDALTileOpImage(Path imageFile, int bandIndex, int sourceX, int sourceY, TileLayout tileLayout, MultiLevelModel imageModel, int dataBufferType, int level) {
         super(dataBufferType, null, tileLayout.tileWidth, tileLayout.tileHeight,
                 getTileDimensionAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
@@ -62,27 +61,33 @@ class GDALTileOpImage extends SingleBandedOpImage {
         int fileTileY = destRect.y / this.tileLayout.tileHeight;
         int fileTileOriginX = destRect.x - (fileTileX * this.tileLayout.tileWidth);
         int fileTileOriginY = destRect.y - (fileTileY * this.tileLayout.tileHeight);
+        ImageReader imageReader = null;
+        try {
+            imageReader = new ImageReader(this.imageFile, this.bandIndex, this.sourceX, this.sourceY, this.dataBufferType, getLevel());
+            int fileTileWidth = imageReader.getBandWidth();
+            int fileTileHeight = imageReader.getBandHeight();
+            Rectangle fileTileRect = new Rectangle(0, 0, fileTileWidth, fileTileHeight);
 
-        ImageReader imageReader = new ImageReader(this.imageFile, this.bandIndex, this.sourceX, this.sourceY, this.dataBufferType, getLevel());
-        int fileTileWidth = imageReader.getImageWidth();
-        int fileTileHeight = imageReader.getImageHeight();
-        Rectangle fileTileRect = new Rectangle(0, 0, fileTileWidth, fileTileHeight);
+            int tileWidth = getTileWidth();
+            int tileHeight = getTileHeight();
+            Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
 
-        int tileWidth = getTileWidth();
-        int tileHeight = getTileHeight();
-        Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
-
-        Rectangle intersection = fileTileRect.intersection(tileRect);
-        if (!intersection.isEmpty()) {
-            try {
-                RenderedImage readTileImage = imageReader.read(intersection);
-                if (readTileImage != null) {
-                    int bandList[] = new int[] { 0 }; // the band index is zero
-                    Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bandList);
-                    dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
+            Rectangle intersection = fileTileRect.intersection(tileRect);
+            if (!intersection.isEmpty()) {
+                try {
+                    RenderedImage readTileImage = imageReader.read(intersection);
+                    if (readTileImage != null) {
+                        int bandList[] = new int[] { 0 }; // the band index is zero
+                        Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bandList);
+                        dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
+                    }
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, ex.getMessage(), ex);
                 }
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        } finally {
+            if (imageReader != null) {
+                imageReader.close();
             }
         }
     }
@@ -139,6 +144,7 @@ class GDALTileOpImage extends SingleBandedOpImage {
     }
 
     private static class ImageReader {
+        private Dataset gdalDataset;
         private final org.gdal.gdal.Band band;
         private final int dataBufferType;
         private final int level;
@@ -150,9 +156,10 @@ class GDALTileOpImage extends SingleBandedOpImage {
             this.level = level;
             this.offsetX = offsetX;
             this.offsetY = offsetY;
-            Dataset poDataset = gdal.Open(inputFile.toString(), gdalconst.GA_ReadOnly);
+
+            this.gdalDataset = gdal.Open(inputFile.toString(), gdalconst.GA_ReadOnly);
             // bands are not 0-base indexed, so we must add 1
-            Band rasterBand = poDataset.GetRasterBand(bandIndex + 1);
+            Band rasterBand = gdalDataset.GetRasterBand(bandIndex + 1);
             if (level > 0 && rasterBand.GetOverviewCount() > 0) {
                 this.band = rasterBand.GetOverview(this.level - 1);
             } else {
@@ -160,12 +167,16 @@ class GDALTileOpImage extends SingleBandedOpImage {
             }
         }
 
-        int getImageWidth() {
+        int getBandWidth() {
             return this.band.getXSize();
         }
 
-        int getImageHeight() {
+        int getBandHeight() {
             return this.band.getYSize();
+        }
+
+        void close() {
+            this.gdalDataset.delete();
         }
 
         RenderedImage read(Rectangle rectangle) throws IOException {
@@ -178,8 +189,8 @@ class GDALTileOpImage extends SingleBandedOpImage {
             data.order(ByteOrder.nativeOrder());
 
             int returnVal = this.band.ReadRaster_Direct(offsetX + rectangle.x, offsetY + rectangle.y,
-                                                        Math.min(rectangle.width, getImageWidth() - offsetX - rectangle.x),
-                                                        Math.min(rectangle.height, getImageHeight() - offsetY - rectangle.y),
+                                                        Math.min(rectangle.width, getBandWidth() - offsetX - rectangle.x),
+                                                        Math.min(rectangle.height, getBandHeight() - offsetY - rectangle.y),
                                                         rectangle.width, rectangle.height,
                                                         gdalBufferDataType, data);
             int[] index = new int[] { 0 };

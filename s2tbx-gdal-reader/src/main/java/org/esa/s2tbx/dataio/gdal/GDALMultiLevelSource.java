@@ -108,14 +108,6 @@ class GDALMultiLevelSource extends AbstractMultiLevelSource {
     }
 
     private PlanarImage createTileImage(int row, int col, int level) {
-        /*TileLayout currentLayout = tileLayout;
-        if (row == tileLayout.numYTiles - 1 || col == tileLayout.numXTiles - 1) {
-            currentLayout = new TileLayout(tileLayout.width, tileLayout.height,
-                    Math.min(tileLayout.width - col * tileLayout.tileWidth, tileLayout.tileWidth),
-                    Math.min(tileLayout.height - row * tileLayout.tileHeight, tileLayout.tileHeight),
-                    tileLayout.numXTiles, tileLayout.numYTiles, tileLayout.numResolutions);
-            currentLayout.numBands = tileLayout.numBands;
-        }*/
         return GDALTileOpImage.create(this.sourceFile, this.bandIndex, row, col, tileLayout, getModel(), this.dataBufferType, level);
     }
 }
