@@ -1,16 +1,18 @@
 package org.esa.s2tbx.dataio.openjp2;
 
-import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.Pointer;
 import com.sun.jna.ptr.PointerByReference;
 import org.esa.s2tbx.dataio.openjp2.library.Callbacks;
 import org.esa.s2tbx.dataio.openjp2.library.Constants;
 import org.esa.s2tbx.dataio.openjp2.library.Enums;
 import org.esa.s2tbx.dataio.openjp2.library.OpenJp2;
 import org.esa.s2tbx.dataio.openjp2.struct.*;
+import org.esa.snap.core.util.SystemUtils;
 
 import java.awt.image.*;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -24,19 +26,29 @@ public class OpenJP2Encoder implements AutoCloseable {
     private PointerByReference pStream;
     private CompressionCodec pCodec;
     private PointerByReference pImage;
-    private RenderedImage theImage;
+    private Raster rasterData;
     private Logger logger;
-
-    private Callbacks.MessageFunction infoCallback = (msg, client_data) -> logger.info(msg.getString(0));
-    private Callbacks.MessageFunction warningCallback = (msg, client_data) -> logger.warning(msg.getString(0));
-    private Callbacks.MessageFunction errorCallback = (msg, client_data) -> logger.severe(msg.getString(0));
 
     /**
      * Builds an encoder for the given image.
      * @param image The image to be compressed
      */
     public OpenJP2Encoder(RenderedImage image) {
-        this.theImage = image;
+        if (image == null)
+            throw new IllegalArgumentException("Image cannot be null");
+        this.logger = SystemUtils.LOG;
+        this.rasterData = image.getData();
+    }
+
+    /**
+     * Builds an encoder for the given raster.
+     * @param raster The raster to be compressed
+     */
+    public OpenJP2Encoder(Raster raster) {
+        if (raster == null)
+            throw new IllegalArgumentException("Image cannot be null");
+        this.logger = SystemUtils.LOG;
+        this.rasterData = raster;
     }
 
     /**
@@ -47,7 +59,6 @@ public class OpenJP2Encoder implements AutoCloseable {
     public void write(Path outFile, int resolutions) throws IOException {
 
         CompressionParams parameters = initEncodeParams(outFile, resolutions);
-        Raster rasterData = theImage.getData();
         int numBands = rasterData.getNumBands();
         int bitDepth;
         int signed = 0;
@@ -100,7 +111,6 @@ public class OpenJP2Encoder implements AutoCloseable {
         switch (bitDepth) {
             case 8:
                 for (int i = 0; i < numBanks; i++) {
-                    components[i].data = new IntByReference();
                     byte[] data = ((DataBufferByte) dataBuffer).getData(i);
                     components[i].data.getPointer().write(0, data, 0, data.length);
                 }
@@ -130,8 +140,46 @@ public class OpenJP2Encoder implements AutoCloseable {
                 throw new RuntimeException("Unsupported codec");
         }
 
-        OpenJp2.opj_set_info_handler(pCodec, infoCallback, null);
-        OpenJp2.opj_set_warning_handler(pCodec, warningCallback, null);
+        if (SystemUtils.LOG.getLevel().intValue() <= Level.FINE.intValue()) {
+            Callbacks.MessageFunction infoCallback = new Callbacks.MessageFunction() {
+                @Override
+                public void invoke(Pointer msg, Pointer client_data) {
+                    logger.info(msg.getString(0));
+                }
+
+                @Override
+                public Pointer invoke(Pointer p_codec) {
+                    logger.info("Callback on codec");
+                    return p_codec;
+                }
+            };
+            OpenJp2.opj_set_info_handler(pCodec, infoCallback, null);
+            Callbacks.MessageFunction warningCallback = new Callbacks.MessageFunction() {
+                @Override
+                public void invoke(Pointer msg, Pointer client_data) {
+                    logger.warning(msg.getString(0));
+                }
+
+                @Override
+                public Pointer invoke(Pointer p_codec) {
+                    logger.warning("Warning callback on codec");
+                    return p_codec;
+                }
+            };
+            OpenJp2.opj_set_warning_handler(pCodec, warningCallback, null);
+        }
+        Callbacks.MessageFunction errorCallback = new Callbacks.MessageFunction() {
+            @Override
+            public void invoke(Pointer msg, Pointer client_data) {
+                logger.severe(msg.getString(0));
+            }
+
+            @Override
+            public Pointer invoke(Pointer p_codec) {
+                logger.severe("Error callback on codec");
+                return p_codec;
+            }
+        };
         OpenJp2.opj_set_error_handler(pCodec, errorCallback, null);
 
         // Synchronize memory structure with values set in Java code

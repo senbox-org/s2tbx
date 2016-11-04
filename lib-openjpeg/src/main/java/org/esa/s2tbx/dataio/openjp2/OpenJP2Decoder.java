@@ -214,11 +214,40 @@ public class OpenJP2Decoder implements AutoCloseable {
                     logger.info(msg.getString(0));
                 }
 
+                @Override
+                public Pointer invoke(Pointer p_codec) {
+                    logger.info("Unhandled callback from codec");
+                    return p_codec;
+                }
             };
             OpenJp2.opj_set_info_handler(codec, callback, null);
+            Callbacks.MessageFunction warningCallback = new Callbacks.MessageFunction() {
+                @Override
+                public void invoke(Pointer msg, Pointer client_data) {
+                    logger.warning(msg.getString(0));
+                }
+
+                @Override
+                public Pointer invoke(Pointer p_codec) {
+                    logger.warning("Warning callback on codec");
+                    return p_codec;
+                }
+            };
+            OpenJp2.opj_set_warning_handler(codec, warningCallback, null);
         }
-        //OpenJp2.opj_set_warning_handler(codec, warningCallback, null);
-        //OpenJp2.opj_set_error_handler(codec, errorCallback, null);
+        Callbacks.MessageFunction errorCallback = new Callbacks.MessageFunction() {
+            @Override
+            public void invoke(Pointer msg, Pointer client_data) {
+                logger.severe(msg.getString(0));
+            }
+
+            @Override
+            public Pointer invoke(Pointer p_codec) {
+                logger.severe("Error callback on codec");
+                return p_codec;
+            }
+        };
+        OpenJp2.opj_set_error_handler(codec, errorCallback, null);
 
         int setupDecoder = OpenJp2.opj_setup_decoder(codec, params.core);
         if (setupDecoder == 0) {
@@ -330,6 +359,14 @@ public class OpenJP2Decoder implements AutoCloseable {
         WritableRaster raster = null;
         try {
             raster = new SunWritableRaster(sampleModel, buffer, new Point(0, 0));
+            final WritableRaster refRaster = raster;
+            executor.submit(() -> {
+                try (OpenJP2Encoder encoder = new OpenJP2Encoder(refRaster)) {
+                    encoder.write(tileFile.resolveSibling(tileFile.getFileName().toString() + ".jp2"), 1);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
         } catch (Exception e) {
             logger.severe(e.getMessage());
         }
