@@ -359,14 +359,6 @@ public class OpenJP2Decoder implements AutoCloseable {
         WritableRaster raster = null;
         try {
             raster = new SunWritableRaster(sampleModel, buffer, new Point(0, 0));
-            final WritableRaster refRaster = raster;
-            executor.submit(() -> {
-                try (OpenJP2Encoder encoder = new OpenJP2Encoder(refRaster)) {
-                    encoder.write(tileFile.resolveSibling(tileFile.getFileName().toString() + ".jp2"), 1);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
         } catch (Exception e) {
             logger.severe(e.getMessage());
         }
