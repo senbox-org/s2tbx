@@ -204,7 +204,7 @@ public class GDALProductReader extends AbstractProductReader {
                 double originX = adfGeoTransform[0];
                 double originY = adfGeoTransform[3];
                 double pixelSizeX = adfGeoTransform[1];
-                double pixelSizeY = -adfGeoTransform[5];
+                double pixelSizeY = adfGeoTransform[5] > 0 ? adfGeoTransform[5] : -adfGeoTransform[5];
                 return new CrsGeoCoding(crs, imageWidth, imageHeight, originX, originY, pixelSizeX, pixelSizeY);
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
