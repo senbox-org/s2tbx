@@ -1,1 +1,3 @@
-org.esa.s2tbx.dataio.gdal.GDALProductWriterPlugIn
+org.esa.s2tbx.dataio.gdal.NITFDriverProductWriterPlugIn
+org.esa.s2tbx.dataio.gdal.PNMDriverProductWriterPlugIn
+org.esa.s2tbx.dataio.gdal.RMFDriverProductWriterPlugIn

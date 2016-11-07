@@ -114,49 +114,47 @@ public class GDALProductReader extends AbstractProductReader {
                 int levels = gdalBand.GetOverviewCount() + 1;
                 String colorInterpretationName = gdal.GetColorInterpretationName(gdalBand.GetRasterColorInterpretation());
 
-                MetadataElement componentElement = new MetadataElement("Component");
-                metadataElement.addElement(componentElement);
-                componentElement.setAttributeString("data type", gdal.GetDataTypeName(gdalDataType));
-                componentElement.setAttributeString("color interpretation", colorInterpretationName);
-                componentElement.setAttributeString("block size", tileWidth + "x" + tileHeight);
-                componentElement.setAttributeInt("precision", dataBufferType.precision);
-                componentElement.setAttributeString("signed", Boolean.toString(dataBufferType.signed));
+                MetadataElement bandComponentElement = new MetadataElement("Component");
+                metadataElement.addElement(bandComponentElement);
+                bandComponentElement.setAttributeString("data type", gdal.GetDataTypeName(gdalDataType));
+                bandComponentElement.setAttributeString("color interpretation", colorInterpretationName);
+                bandComponentElement.setAttributeString("block size", tileWidth + "x" + tileHeight);
+                bandComponentElement.setAttributeInt("precision", dataBufferType.precision);
+                bandComponentElement.setAttributeString("signed", Boolean.toString(dataBufferType.signed));
 
-                StringBuilder str = new StringBuilder();
-                for (int iOverview = 0; iOverview < gdalBand.GetOverviewCount(); iOverview++) {
-                    if (iOverview != 0) {
-                        str.append(", ");
+                int overviewCount = gdalBand.GetOverviewCount();
+                if (overviewCount > 0) {
+                    StringBuilder str = new StringBuilder();
+                    for (int iOverview = 0; iOverview < overviewCount; iOverview++) {
+                        if (iOverview != 0) {
+                            str.append(", ");
+                        }
+                        org.gdal.gdal.Band hOverview = gdalBand.GetOverview(iOverview);
+                        str.append(hOverview.getXSize())
+                                .append("x")
+                                .append(hOverview.getYSize());
                     }
-                    org.gdal.gdal.Band hOverview = gdalBand.GetOverview(iOverview);
-                    str.append(hOverview.getXSize())
-                       .append("x")
-                       .append(hOverview.getYSize());
-                }
-                componentElement.setAttributeInt("overview count", gdalBand.GetOverviewCount());
-                if (str.length() > 0) {
-                    componentElement.setAttributeString("overviews", str.toString());
+                    bandComponentElement.setAttributeInt("overview count", overviewCount);
+                    if (str.length() > 0) {
+                        bandComponentElement.setAttributeString("overviews", str.toString());
+                    }
                 }
 
                 gdalBand.GetOffset(pass1);
                 if (pass1[0] != null && pass1[0].doubleValue() != 0) {
-                    componentElement.setAttributeDouble("offset", pass1[0].doubleValue());
+                    bandComponentElement.setAttributeDouble("offset", pass1[0].doubleValue());
                 }
 
                 gdalBand.GetScale(pass1);
                 if (pass1[0] != null && pass1[0].doubleValue() != 1) {
-                    componentElement.setAttributeDouble("scale", pass1[0].doubleValue());
+                    bandComponentElement.setAttributeDouble("scale", pass1[0].doubleValue());
                 }
 
                 if (gdalBand.GetUnitType() != null && gdalBand.GetUnitType().length() > 0) {
-                    componentElement.setAttributeString("unit type", gdalBand.GetUnitType());
+                    bandComponentElement.setAttributeString("unit type", gdalBand.GetUnitType());
                 }
 
-                String bandName = colorInterpretationName;
-                if (StringUtils.isNullOrEmpty(bandName)) {
-                    bandName = String.format("band_%s", bandIndex + 1);
-                } else if ("Undefined".equalsIgnoreCase(bandName)) {
-                    bandName = bandName + "_" +Integer.toString(bandIndex + 1);
-                }
+                String bandName = String.format("band_%s", bandIndex + 1);
                 Band productBand = new Band(bandName, dataBufferType.bandDataType, imageWidth, imageHeight);
 
                 GDALMultiLevelSource source = new GDALMultiLevelSource(inputFile, bandIndex, bandCount, imageWidth, imageHeight, tileWidth,
@@ -196,7 +194,7 @@ public class GDALProductReader extends AbstractProductReader {
         // do nothing
     }
 
-    private static Path getFileInput(Object input) {
+    public static Path getFileInput(Object input) {
         if (input instanceof String) {
             return Paths.get((String) input);
         } else if (input instanceof File) {
