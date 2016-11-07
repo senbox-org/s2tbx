@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.dataio.gdal.internal.BufferTypeDescriptor;
 import org.esa.snap.core.dataio.AbstractProductWriter;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -11,10 +10,8 @@ import org.esa.snap.core.util.Guardian;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
 import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
 
-import java.awt.image.DataBuffer;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;

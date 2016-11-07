@@ -7,27 +7,27 @@
             <file name="org-esa-s2tbx-dataio-gdal-ExportNITFProduct.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="type" stringvalue="org.esa.snap.core.datamodel.ProductNode"/>
-                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ExportProductAction.create"/>
-                <attr name="displayName" stringvalue="National Imagery Transmission Format"/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="displayName" stringvalue="NITF"/>
                 <attr name="formatName" stringvalue="GDAL-NITF-DRIVER"/>
                 <attr name="useAllFileFilter" boolvalue="true"/>
             </file>
             <file name="org-esa-s2tbx-dataio-gdal-ExportPNMProduct.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="type" stringvalue="org.esa.snap.core.datamodel.ProductNode"/>
-                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ExportProductAction.create"/>
-                <attr name="displayName" stringvalue="Portable Pixmap Format (netpbm)"/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="displayName" stringvalue="NetPBM"/>
                 <attr name="formatName" stringvalue="GDAL-NITF-PNM"/>
                 <attr name="useAllFileFilter" boolvalue="true"/>
             </file>
             <file name="org-esa-s2tbx-dataio-gdal-ExportRMFProduct.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
                 <attr name="type" stringvalue="org.esa.snap.core.datamodel.ProductNode"/>
-                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
                 <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ExportProductAction.create"/>
-                <attr name="displayName" stringvalue="Raster Matrix Format"/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="displayName" stringvalue="RMF"/>
                 <attr name="formatName" stringvalue="GDAL-NITF-RMF"/>
                 <attr name="useAllFileFilter" boolvalue="true"/>
             </file>
@@ -37,7 +37,7 @@
     <folder name="Menu">
         <folder name="File">
             <folder name="Export">
-                <folder name="GDAL">
+                <!--<folder name="GDAL">-->
                     <file name="org-esa-s2tbx-dataio-gdal-ExportNITFProduct.shadow">
                         <attr name="originalFile" stringvalue="Actions/Writers/org-esa-s2tbx-dataio-gdal-ExportNITFProduct.instance"/>
                     </file>
@@ -47,7 +47,7 @@
                     <file name="org-esa-s2tbx-dataio-gdal-ExportRMFProduct.shadow">
                         <attr name="originalFile" stringvalue="Actions/Writers/org-esa-s2tbx-dataio-gdal-ExportRMFProduct.instance"/>
                     </file>
-                </folder>
+                <!--</folder>-->
             </folder>
         </folder>
     </folder>

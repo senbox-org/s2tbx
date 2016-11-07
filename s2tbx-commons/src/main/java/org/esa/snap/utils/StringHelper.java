@@ -6,16 +6,6 @@ package org.esa.snap.utils;
 public class StringHelper {
 
     /**
-     * Tests if the input string is null or empty.
-     *
-     * @param value the input string to check
-     * @return {@code true}  if the input string is null or empty; {@code false} otherwise.
-     */
-    public static boolean isNullOrEmpty(String value) {
-        return (value == null || value.trim().length() == 0);
-    }
-
-    /**
      * Tests if this string starts with the specified prefix, ignoring the case sensitive.
      *
      * @param inputValue the input string to test
@@ -44,5 +34,25 @@ public class StringHelper {
             }
         }
         return found;
+    }
+
+    /**
+     * Returns true if and only if the first string contains the second string, ignoring the case.
+     *
+     * @param input the input string to be inspected
+     * @param value the string to search for
+     */
+    public static boolean containsIgnoreCase(String input, String value) {
+        return (input != null && value != null && input.toLowerCase().contains(value.toLowerCase()));
+    }
+
+    public static int indexOfIgnoreCase(String input, String value) {
+        return indexOfIgnoreCase(input, value, 0);
+    }
+
+    public static int indexOfIgnoreCase(String input, String value, int fromIndex) {
+        if (input == null || value == null || fromIndex < 0 || fromIndex >= input.length())
+            return -1;
+        return input.toLowerCase().indexOf(value.toLowerCase(), fromIndex);
     }
 }

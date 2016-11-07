@@ -4,6 +4,7 @@ import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
+import org.esa.snap.utils.NativeLibraryUtils;
 import org.gdal.gdal.gdal;
 
 import java.io.File;
@@ -19,6 +20,7 @@ public class GDALProductReaderPlugin implements ProductReaderPlugIn {
     private static final String DESCRIPTION = "Raster Files";
 
     static {
+        NativeLibraryUtils.registerNativePath("C:\\ThirdParty\\GDAL");
         gdal.AllRegister(); // GDAL init drivers
     }
 

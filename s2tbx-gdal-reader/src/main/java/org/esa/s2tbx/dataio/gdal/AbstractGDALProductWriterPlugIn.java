@@ -5,9 +5,10 @@ import org.esa.snap.core.dataio.ProductWriter;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
+import org.esa.snap.utils.NativeLibraryUtils;
+import org.gdal.gdal.gdal;
 
 import java.io.File;
-import java.util.Locale;
 
 /**
  * @author Jean Coravu
@@ -15,6 +16,11 @@ import java.util.Locale;
 public abstract class AbstractGDALProductWriterPlugIn implements ProductWriterPlugIn {
     private final SnapFileFilter fileFilter;
     private final String driverName;
+
+    static {
+        NativeLibraryUtils.registerNativePath("C:\\ThirdParty\\GDAL");
+        gdal.AllRegister(); // GDAL init drivers
+    }
 
     protected AbstractGDALProductWriterPlugIn(String driverName) {
         this.driverName = driverName;
