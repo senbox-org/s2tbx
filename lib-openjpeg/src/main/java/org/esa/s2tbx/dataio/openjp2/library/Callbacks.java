@@ -13,7 +13,7 @@ import org.esa.s2tbx.dataio.openjp2.types.NativeSize;
  */
 public class Callbacks {
 
-    public interface MessageFunction extends Callback {
+    public interface MessageFunction extends GenericCallback {
         void invoke(Pointer msg, Pointer client_data);
     }
 

@@ -167,14 +167,6 @@ public class OpenJP2Decoder implements AutoCloseable {
         } else if (jImage.numcomps <= 2) {
             jImage.color_space = Enums.ColorSpace.OPJ_CLRSPC_GRAY;
         }
-        /*if (jImage.color_space == Enums.ColorSpace.OPJ_CLRSPC_SYCC) {
-            // color_sycc_to_rgb(image);
-        } else if (jImage.color_space == Enums.ColorSpace.OPJ_CLRSPC_CMYK
-                && parameters.cod_format != 14 *//* TIF_DFMT *//*) {
-            // color_cmyk_to_rgb(image);
-        } else if (jImage.color_space == Enums.ColorSpace.OPJ_CLRSPC_EYCC) {
-            // color_esycc_to_rgb(image);
-        }*/
         return comps;
     }
 
@@ -208,17 +200,40 @@ public class OpenJP2Decoder implements AutoCloseable {
                 throw new RuntimeException("File is not coded with JPEG-2000");
         }
         if (SystemUtils.LOG.getLevel().intValue() <= Level.FINE.intValue()) {
-            Callbacks.MessageFunction callback = new Callbacks.MessageFunction() {
+            OpenJp2.opj_set_info_handler(codec, new Callbacks.MessageFunction() {
                 @Override
                 public void invoke(Pointer msg, Pointer client_data) {
                     logger.info(msg.getString(0));
                 }
 
-            };
-            OpenJp2.opj_set_info_handler(codec, callback, null);
+                @Override
+                public Pointer invoke(Pointer p_codec) {
+                    return p_codec;
+                }
+            }, null);
+            OpenJp2.opj_set_warning_handler(codec, new Callbacks.MessageFunction() {
+                @Override
+                public void invoke(Pointer msg, Pointer client_data) {
+                    logger.warning(msg.getString(0));
+                }
+
+                @Override
+                public Pointer invoke(Pointer p_codec) {
+                    return p_codec;
+                }
+            }, null);
         }
-        //OpenJp2.opj_set_warning_handler(codec, warningCallback, null);
-        //OpenJp2.opj_set_error_handler(codec, errorCallback, null);
+        OpenJp2.opj_set_error_handler(codec, new Callbacks.MessageFunction() {
+            @Override
+            public void invoke(Pointer msg, Pointer client_data) {
+                logger.severe(msg.getString(0));
+            }
+
+            @Override
+            public Pointer invoke(Pointer p_codec) {
+                return p_codec;
+            }
+        }, null);
 
         int setupDecoder = OpenJp2.opj_setup_decoder(codec, params.core);
         if (setupDecoder == 0) {

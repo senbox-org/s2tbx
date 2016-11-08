@@ -11,6 +11,7 @@ import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -440,6 +441,22 @@ public class RasterUtils {
             }
         }
         return ref;
+    }
+
+    static int[] readRasterBandasIntArray(Raster raster, int bandIndex) {
+        if (raster == null ||
+                bandIndex < 0 || bandIndex >= raster.getNumBands()) {
+            throw new IllegalArgumentException("Raster not of int type or invalid band index");
+        }
+        int width = raster.getWidth();
+        int height = raster.getHeight();
+        IntBuffer buffer = IntBuffer.allocate(width * height);
+        SampleModel sampleModel = raster.getSampleModel();
+        DataBuffer dataBuffer = raster.getDataBuffer();
+        for (int y = 0; y < height; y++) {
+            buffer.put(sampleModel.getSamples(0, y, width, 1, bandIndex, (int[])null, dataBuffer));
+        }
+        return buffer.array();
     }
 
     static int getFileFormat(Path file) {
