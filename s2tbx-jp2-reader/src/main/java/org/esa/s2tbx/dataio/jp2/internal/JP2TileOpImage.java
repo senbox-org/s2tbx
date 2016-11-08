@@ -140,7 +140,7 @@ public class JP2TileOpImage extends SingleBandedOpImage {
     }
 
     @Override
-    protected void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
+    protected synchronized void computeRect(PlanarImage[] sources, WritableRaster dest, Rectangle destRect) {
         if (useOpenJp2Jna) {
             computeRectDirect(dest, destRect);
         } else {
