@@ -1,0 +1,52 @@
+{
+  "id": "GDAL-product",
+  "decodeQualification": "SUITABLE",
+  "expectedContent": {
+    "sceneWidth": 343,
+    "sceneHeight": 343,
+    "geoCoding": {
+      "coordinates": [
+      ]
+    },
+
+    "bands": [
+      {
+        "name": "band_1",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+        ]
+      },
+      {
+        "name": "band_2",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+        ]
+      },
+      {
+        "name": "band_3",
+        "noDataValue": "0.0",
+        "noDataValueUsed": "false",
+        "spectralWavelength": "0.0",
+        "spectralBandwidth": "0.0",
+        "expectedPixels": [
+        ]
+      }
+    ],
+    "metadata": [
+      {
+        "path": "Image info/origin",
+        "value": "699960.0x4900020.0"
+      },
+      {
+        "path": "Image info/pixel size",
+        "value": "320.0x320.0"
+      }
+    ]
+  }
+}
