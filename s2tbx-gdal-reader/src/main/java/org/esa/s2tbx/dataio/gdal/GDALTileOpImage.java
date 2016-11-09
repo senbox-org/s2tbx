@@ -17,6 +17,7 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.operator.ConstantDescriptor;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.image.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -78,7 +79,8 @@ class GDALTileOpImage extends SingleBandedOpImage {
                     RenderedImage readTileImage = imageReader.read(intersection);
                     if (readTileImage != null) {
                         int bandList[] = new int[] { 0 }; // the band index is zero
-                        Raster readBandRaster = readTileImage.getData().createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bandList);
+                        Raster imageRaster = readTileImage.getData();
+                        Raster readBandRaster = imageRaster.createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bandList);
                         dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
                     }
                 } catch (IOException ex) {
@@ -189,47 +191,54 @@ class GDALTileOpImage extends SingleBandedOpImage {
             data.order(ByteOrder.nativeOrder());
 
             int returnVal = this.band.ReadRaster_Direct(offsetX + rectangle.x, offsetY + rectangle.y,
-                                                        Math.min(rectangle.width, getBandWidth() - offsetX - rectangle.x),
-                                                        Math.min(rectangle.height, getBandHeight() - offsetY - rectangle.y),
-                                                        rectangle.width, rectangle.height,
-                                                        gdalBufferDataType, data);
+                    Math.min(rectangle.width, getBandWidth() - offsetX - rectangle.x),
+                    Math.min(rectangle.height, getBandHeight() - offsetY - rectangle.y),
+                    rectangle.width, rectangle.height,
+                    gdalBufferDataType, data);
             int[] index = new int[] { 0 };
             if (returnVal == gdalconstConstants.CE_None) {
-
-                DataBuffer imgBuffer;
-                SampleModel sampleModel = new BandedSampleModel(this.dataBufferType, imageWidth, imageHeight, imageWidth, index, index);
-                int imageType;
+                DataBuffer imageDataBuffer = null;
                 if (this.dataBufferType == DataBuffer.TYPE_BYTE) {
                     byte[] bytes = new byte[pixels];
                     data.get(bytes);
-                    imgBuffer = new DataBufferByte(bytes, pixels);
-                    imageType = (this.band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) ? BufferedImage.TYPE_BYTE_INDEXED : BufferedImage.TYPE_BYTE_GRAY;
-                } else if (this.dataBufferType == DataBuffer.TYPE_SHORT || this.dataBufferType == DataBuffer.TYPE_USHORT) {
+                    imageDataBuffer = new DataBufferByte(bytes, pixels);
+                } else if (this.dataBufferType == DataBuffer.TYPE_SHORT) {
                     short[] shorts = new short[pixels];
                     data.asShortBuffer().get(shorts);
-                    imgBuffer = new DataBufferShort(shorts, pixels);
-                    imageType = BufferedImage.TYPE_USHORT_GRAY;
+                    imageDataBuffer = new DataBufferShort(shorts, shorts.length);
+                } else if (this.dataBufferType == DataBuffer.TYPE_USHORT) {
+                    short[] shorts = new short[pixels];
+                    data.asShortBuffer().get(shorts);
+                    imageDataBuffer = new DataBufferUShort(shorts, shorts.length);
                 } else if (this.dataBufferType == DataBuffer.TYPE_INT) {
                     int[] ints = new int[pixels];
                     data.asIntBuffer().get(ints);
-                    imgBuffer = new DataBufferInt(ints, pixels);
-                    imageType = BufferedImage.TYPE_BYTE_INDEXED;
+                    imageDataBuffer = new DataBufferInt(ints, ints.length);
                 } else if (this.dataBufferType == DataBuffer.TYPE_FLOAT) {
                     float[] floats = new float[pixels];
                     data.asFloatBuffer().get(floats);
-                    imgBuffer = new DataBufferFloat(floats, pixels);
-                    imageType = BufferedImage.TYPE_BYTE_INDEXED;
+                    imageDataBuffer = new DataBufferFloat(floats, floats.length);
+                } else if (this.dataBufferType == DataBuffer.TYPE_DOUBLE) {
+                    double[] doubles = new double[pixels];
+                    data.asDoubleBuffer().get(doubles);
+                    imageDataBuffer = new DataBufferDouble(doubles, doubles.length);
                 } else {
                     throw new IllegalArgumentException("Unknown data buffer type " + this.dataBufferType + ".");
                 }
-                WritableRaster raster = Raster.createWritableRaster(sampleModel, imgBuffer, null);
-                BufferedImage image;
+                SampleModel sampleModel = new ComponentSampleModel(imageDataBuffer.getDataType(), imageWidth, imageHeight, 1, imageWidth, new int[] {0});
+                WritableRaster writableRaster = Raster.createWritableRaster(sampleModel, imageDataBuffer, null);
+                BufferedImage image = null;
                 if (this.band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) {
                     ColorModel cm = this.band.GetRasterColorTable().getIndexColorModel(gdal.GetDataTypeSize(gdalBufferDataType));
-                    image = new BufferedImage(cm, raster, false, null);
-                } else {
+                    image = new BufferedImage(cm, writableRaster, false, null);
+                } else if (imageDataBuffer instanceof DataBufferByte || imageDataBuffer instanceof DataBufferUShort) {
+                    int imageType = (imageDataBuffer instanceof DataBufferByte) ? BufferedImage.TYPE_BYTE_GRAY : BufferedImage.TYPE_USHORT_GRAY;
                     image = new BufferedImage(imageWidth, imageHeight, imageType);
-                    image.setData(raster);
+                    image.setData(writableRaster);
+                } else {
+                    ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+                    ColorModel cm = new ComponentColorModel(cs, false, true, Transparency.OPAQUE, imageDataBuffer.getDataType());
+                    image = new BufferedImage(cm, writableRaster, true, null);
                 }
                 return image;
             } else {

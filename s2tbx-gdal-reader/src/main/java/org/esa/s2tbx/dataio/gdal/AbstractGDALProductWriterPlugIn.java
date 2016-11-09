@@ -28,12 +28,12 @@ public abstract class AbstractGDALProductWriterPlugIn implements ProductWriterPl
     }
 
     @Override
-    public SnapFileFilter getProductFileFilter() {
+    public final SnapFileFilter getProductFileFilter() {
         return this.fileFilter;
     }
 
     @Override
-    public EncodeQualification getEncodeQualification(Product product) {
+    public final EncodeQualification getEncodeQualification(Product product) {
         return new EncodeQualification(EncodeQualification.Preservation.FULL);
     }
 

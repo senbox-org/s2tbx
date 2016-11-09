@@ -7,6 +7,7 @@ import java.util.Locale;
  * @author Jean Coravu
  */
 public class PNMDriverProductWriterPlugIn extends AbstractGDALProductWriterPlugIn {
+    public static final String[] FORMAT_NAMES = new String[] { "GDAL-PNM-DRIVER" };
 
     public PNMDriverProductWriterPlugIn() {
         super("PNM");
@@ -19,7 +20,7 @@ public class PNMDriverProductWriterPlugIn extends AbstractGDALProductWriterPlugI
 
     @Override
     public String[] getFormatNames() {
-        return new String[] {"GDAL-NITF-PNM"};
+        return FORMAT_NAMES;
     }
 
     @Override

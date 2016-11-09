@@ -14,6 +14,7 @@ import java.util.Locale;
  * @author Jean Coravu
  */
 public class NITFDriverProductWriterPlugIn extends AbstractGDALProductWriterPlugIn {
+    public static final String[] FORMAT_NAMES = new String[] { "GDAL-NITF-DRIVER" };
 
     public NITFDriverProductWriterPlugIn() {
         super("NITF");
@@ -26,7 +27,7 @@ public class NITFDriverProductWriterPlugIn extends AbstractGDALProductWriterPlug
 
     @Override
     public String[] getFormatNames() {
-        return new String[] {"GDAL-NITF-DRIVER"};
+        return FORMAT_NAMES;
     }
 
     @Override

@@ -22,14 +22,14 @@ public class GDALProductReaderPluginTest extends TestCase {
     }
 
     public void testPluginIsLoaded() {
-        Iterator iterator = ProductIOPlugInManager.getInstance().getReaderPlugIns(GDALProductReaderPlugin.FORMAT_NAMES[0]);
-        ProductReaderPlugIn plugIn = (ProductReaderPlugIn) iterator.next();
+        Iterator<ProductReaderPlugIn> iterator = ProductIOPlugInManager.getInstance().getReaderPlugIns(GDALProductReaderPlugin.FORMAT_NAMES[0]);
+        ProductReaderPlugIn plugIn = iterator.next();
         assertEquals(GDALProductReaderPlugin.class, plugIn.getClass());
     }
 
     public void testFormatNames() {
         GDALProductReaderPlugin plugIn = new GDALProductReaderPlugin();
-        final String[] formatNames = plugIn.getFormatNames();
+        String[] formatNames = plugIn.getFormatNames();
         assertNotNull(formatNames);
         assertEquals(1, formatNames.length);
         assertEquals(GDALProductReaderPlugin.FORMAT_NAMES[0], formatNames[0]);

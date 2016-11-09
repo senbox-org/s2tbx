@@ -7,6 +7,7 @@ import java.util.Locale;
  * @author Jean Coravu
  */
 public class RMFDriverProductWriterPlugIn extends AbstractGDALProductWriterPlugIn {
+    public static final String[] FORMAT_NAMES = new String[] { "GDAL-RMF-DRIVER" };
 
     public RMFDriverProductWriterPlugIn() {
         super("RMF");
@@ -19,7 +20,7 @@ public class RMFDriverProductWriterPlugIn extends AbstractGDALProductWriterPlugI
 
     @Override
     public String[] getFormatNames() {
-        return new String[] {"GDAL-NITF-RMF"};
+        return FORMAT_NAMES;
     }
 
     @Override
