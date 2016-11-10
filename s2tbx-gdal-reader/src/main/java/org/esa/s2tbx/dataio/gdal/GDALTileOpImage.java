@@ -195,7 +195,6 @@ class GDALTileOpImage extends SingleBandedOpImage {
                     Math.min(rectangle.height, getBandHeight() - offsetY - rectangle.y),
                     rectangle.width, rectangle.height,
                     gdalBufferDataType, data);
-            int[] index = new int[] { 0 };
             if (returnVal == gdalconstConstants.CE_None) {
                 DataBuffer imageDataBuffer = null;
                 if (this.dataBufferType == DataBuffer.TYPE_BYTE) {
@@ -225,7 +224,8 @@ class GDALTileOpImage extends SingleBandedOpImage {
                 } else {
                     throw new IllegalArgumentException("Unknown data buffer type " + this.dataBufferType + ".");
                 }
-                SampleModel sampleModel = new ComponentSampleModel(imageDataBuffer.getDataType(), imageWidth, imageHeight, 1, imageWidth, new int[] {0});
+                int[] index = new int[] { 0 };
+                SampleModel sampleModel = new ComponentSampleModel(imageDataBuffer.getDataType(), imageWidth, imageHeight, 1, imageWidth, index);
                 WritableRaster writableRaster = Raster.createWritableRaster(sampleModel, imageDataBuffer, null);
                 BufferedImage image = null;
                 if (this.band.GetRasterColorInterpretation() == gdalconstConstants.GCI_PaletteIndex) {

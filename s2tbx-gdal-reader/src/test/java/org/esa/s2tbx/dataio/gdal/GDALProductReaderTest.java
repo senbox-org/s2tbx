@@ -9,8 +9,9 @@ import org.esa.snap.utils.TestUtil;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -21,8 +22,6 @@ public class GDALProductReaderTest extends TestCase {
     private final String productsFolder;
 
     public GDALProductReaderTest() {
-        assumeTrue(TestUtil.testdataAvailable());
-
         GDALProductReaderPlugin plugIn = new GDALProductReaderPlugin();
         this.reader = (GDALProductReader)plugIn.createReaderInstance();
 
@@ -30,27 +29,47 @@ public class GDALProductReaderTest extends TestCase {
     }
 
     public void testReadProductNodes() {
-        File file = TestUtil.getTestFile(this.productsFolder + "3_8bit_components_srgb.jp2");
+        checkTestDirectoryExists();
+
+        File file = TestUtil.getTestFile(this.productsFolder + "S2A_4.jp2");
         try {
             Product finalProduct = reader.readProductNodes(file, null);
-            assertNull(finalProduct.getSceneGeoCoding());
+            assertNotNull(finalProduct.getSceneGeoCoding());
             assertEquals(3, finalProduct.getBands().length);
             assertEquals("GDAL", finalProduct.getProductType());
-            assertEquals(768, finalProduct.getSceneRasterWidth());
-            assertEquals(512, finalProduct.getSceneRasterHeight());
+            assertEquals(343, finalProduct.getSceneRasterWidth());
+            assertEquals(343, finalProduct.getSceneRasterHeight());
 
             Band band = finalProduct.getBandAt(0);
             assertEquals(20, band.getDataType());
-            assertEquals(393216, band.getNumDataElems());
+            assertEquals(117649, band.getNumDataElems());
 
-            MultiLevelImage multiLevelImage = band.getSourceImage();
-            RenderedImage image = multiLevelImage.getImage(0);
-            assertEquals(768, image.getWidth());
-            assertEquals(512, image.getHeight());
+            float bandValue = band.getSampleFloat(320, 110);
+            assertEquals(18.0f, bandValue);
+
+            bandValue = band.getSampleFloat(333, 320);
+            assertEquals(12.0f, bandValue);
+
+            bandValue = band.getSampleFloat(300, 300);
+            assertEquals(10.0f, bandValue);
+
+            bandValue = band.getSampleFloat(277, 298);
+            assertEquals(9.0f, bandValue);
+
+            bandValue = band.getSampleFloat(297, 338);
+            assertEquals(7.0f, bandValue);
         } catch (IOException e) {
             e.printStackTrace();
             assertTrue(e.getMessage(), false);
         }
+    }
 
+    private void checkTestDirectoryExists() {
+        String testDirectoryPathProperty = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
+        assertNotNull("The test directory path is not set as system property '" + TestUtil.PROPERTYNAME_DATA_DIR + "'.", testDirectoryPathProperty);
+        File testFolder = new File(testDirectoryPathProperty);
+        if (!testFolder.isDirectory()) {
+            fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
+        }
     }
 }

@@ -57,7 +57,7 @@ public abstract class AbstractGDALDriverProductWriterTest extends TestCase {
 
             assertTrue(file.length() > 0);
         } finally {
-            //file.delete();
+            file.delete();
         }
     }
 }
