@@ -5,7 +5,6 @@ import org.esa.snap.core.dataio.ProductWriter;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
-import org.esa.snap.utils.NativeLibraryUtils;
 import org.gdal.gdal.gdal;
 
 import java.io.File;
@@ -18,7 +17,6 @@ public abstract class AbstractGDALProductWriterPlugIn implements ProductWriterPl
     private final String driverName;
 
     static {
-        NativeLibraryUtils.registerNativePath("C:\\ThirdParty\\GDAL");
         gdal.AllRegister(); // GDAL init drivers
     }
 

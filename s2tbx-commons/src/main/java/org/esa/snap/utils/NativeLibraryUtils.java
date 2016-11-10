@@ -25,8 +25,24 @@ import java.util.jar.JarFile;
  */
 public class NativeLibraryUtils {
     private static final String ENV_LIB_PATH = "java.library.path";
+    private static final String SYS_PATH = "PATH";
 
     public static void registerNativePath(String path) {
+        String propertyValue = System.getProperty(ENV_LIB_PATH);
+        if (!StringUtils.isNullOrEmpty(propertyValue)) {
+            propertyValue += File.pathSeparator + path;
+        } else {
+            propertyValue = path;
+        }
+        System.setProperty(ENV_LIB_PATH, propertyValue);
+        try {
+            PrivilegedAccessor.setStaticValue(ClassLoader.class, "sys_paths", null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void registerPath(String path) {
         String propertyValue = System.getProperty(ENV_LIB_PATH);
         if (!StringUtils.isNullOrEmpty(propertyValue)) {
             propertyValue += File.pathSeparator + path;

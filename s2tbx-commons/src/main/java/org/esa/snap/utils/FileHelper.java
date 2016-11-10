@@ -17,8 +17,12 @@
 
 package org.esa.snap.utils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Created by kraftek on 2/20/2015.
@@ -29,12 +33,12 @@ public class FileHelper {
      * Gets a file (if it exists) or creates a new one.
      * If intermediate directories do not exist, they will be created.
      *
-     * @param basePath  The parent folder
+     * @param basePath      The parent folder
      * @param pathFragments Additional subfolders that should end with the file name
-     * @return  The File object
+     * @return The File object
      * @throws IOException
      */
-    public static File getFile(String basePath, String...pathFragments) throws IOException {
+    public static File getFile(String basePath, String... pathFragments) throws IOException {
         File file = new File(basePath);
         if (!file.exists()) {
             file.mkdirs();
@@ -52,5 +56,38 @@ public class FileHelper {
             }
         }
         return file;
+    }
+
+    public static void unzip(Path sourceFile, Path destination) throws IOException {
+        if (sourceFile == null || destination == null) {
+            throw new IllegalArgumentException("One of the arguments is null");
+        }
+        if (!Files.exists(destination)) {
+            Files.createDirectory(destination);
+        }
+        byte[] buffer;
+        try (ZipFile zipFile = new ZipFile(sourceFile.toFile())) {
+            ZipEntry entry = null;
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                entry = entries.nextElement();
+                Path filePath = destination.resolve(entry.getName());
+                if (!Files.exists(filePath)) {
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(filePath);
+                    } else {
+                        try (InputStream inputStream = zipFile.getInputStream(entry)) {
+                            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath.toFile()))) {
+                                buffer = new byte[4096];
+                                int read;
+                                while ((read = inputStream.read(buffer)) > 0) {
+                                    bos.write(buffer, 0, read);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

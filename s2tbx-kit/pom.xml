@@ -71,7 +71,6 @@
             <version>${project.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-s2msi-reader</artifactId>
@@ -92,13 +91,13 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>s2tbx-gdal-reader</artifactId>
+            <artifactId>lib-openjpeg</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-openjpeg</artifactId>
+            <artifactId>lib-gdal</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -125,7 +124,6 @@
             <artifactId>s2tbx-s2msi-aerosol-retrieval</artifactId>
             <version>${project.version}</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
@@ -160,6 +158,12 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-deimos-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-gdal-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
 
