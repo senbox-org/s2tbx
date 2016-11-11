@@ -58,7 +58,7 @@ public class FileHelper {
         return file;
     }
 
-    public static void unzip(Path sourceFile, Path destination) throws IOException {
+    public static void unzip(Path sourceFile, Path destination, boolean keepFolderStructure) throws IOException {
         if (sourceFile == null || destination == null) {
             throw new IllegalArgumentException("One of the arguments is null");
         }
@@ -67,17 +67,21 @@ public class FileHelper {
         }
         byte[] buffer;
         try (ZipFile zipFile = new ZipFile(sourceFile.toFile())) {
-            ZipEntry entry = null;
+            ZipEntry entry;
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 entry = entries.nextElement();
+                if (entry.isDirectory() && !keepFolderStructure)
+                    continue;
                 Path filePath = destination.resolve(entry.getName());
+                Path strippedFilePath = destination.resolve(filePath.getFileName());
                 if (!Files.exists(filePath)) {
                     if (entry.isDirectory()) {
                         Files.createDirectories(filePath);
                     } else {
                         try (InputStream inputStream = zipFile.getInputStream(entry)) {
-                            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath.toFile()))) {
+                            try (BufferedOutputStream bos = new BufferedOutputStream(
+                                    new FileOutputStream(keepFolderStructure ? filePath.toFile() : strippedFilePath.toFile()))) {
                                 buffer = new byte[4096];
                                 int read;
                                 while ((read = inputStream.read(buffer)) > 0) {

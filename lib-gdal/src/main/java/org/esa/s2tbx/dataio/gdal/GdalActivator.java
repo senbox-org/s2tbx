@@ -43,10 +43,10 @@ import static org.apache.commons.lang.SystemUtils.*;
 public class GdalActivator implements Activator {
     private static final String SRC_PATH = "auxdata/gdal";
     private static final String BIN_PATH = "bin";
-    private static final String JAR_PATH = "bin/gdal/java";
-    private static final String PLUGINS_PATH = "bin/gdal/plugins";
-    private static final String EXT_PATH = "bin/gdal/plugins-external";
-    private static final String OPT_PATH = "bin/gdal/plugins-optional";
+    private static final String JAR_PATH = BIN_PATH + "/gdal/java";
+    private static final String PLUGINS_PATH = BIN_PATH + "/gdal/plugins";
+    private static final String EXT_PATH = BIN_PATH + "/gdal/plugins-external";
+    private static final String OPT_PATH = BIN_PATH + "/gdal/plugins-optional";
 
     @Override
     public void start() {
@@ -69,20 +69,21 @@ public class GdalActivator implements Activator {
         Path zipPath = auxdataDirectory.resolve(OSCategory.getOSCategory().getArchivePath());
         Path destFolder = zipPath.getParent();
         try {
-            FileHelper.unzip(zipPath, destFolder);
+            FileHelper.unzip(zipPath, destFolder, true);
+            String[] jniFiles = OSCategory.getOSCategory().getJniFiles();
+            if (jniFiles == null || jniFiles.length == 0) {
+                throw new IOException("No JNI wrappers found");
+            }
+            for (String file : jniFiles) {
+                Files.move(destFolder.resolve(JAR_PATH).resolve(file), destFolder.resolve(BIN_PATH).resolve(file));
+            }
         } catch (IOException e) {
-            SystemUtils.LOG.severe("GDAL configuration error: failed to unzip to " + destFolder);
+            SystemUtils.LOG.severe(String.format("GDAL configuration error: failed to unzip to %s [Reason: %s]", destFolder, e.getMessage()));
             return;
         }
 
-        NativeLibraryUtils.registerNativePath(destFolder.resolve(BIN_PATH).toString());
-        NativeLibraryUtils.registerNativePath(destFolder.resolve(PLUGINS_PATH).toString());
-        NativeLibraryUtils.registerNativePath(destFolder.resolve(EXT_PATH).toString());
-        NativeLibraryUtils.registerNativePath(destFolder.resolve(OPT_PATH).toString());
-        NativeLibraryUtils.registerPath(destFolder.resolve(JAR_PATH).toString());
-        NativeLibraryUtils.registerPath(destFolder.resolve(PLUGINS_PATH).toString());
-        NativeLibraryUtils.registerPath(destFolder.resolve(EXT_PATH).toString());
-        NativeLibraryUtils.registerPath(destFolder.resolve(OPT_PATH).toString());
+        NativeLibraryUtils.registerNativePaths(destFolder.resolve(BIN_PATH));
+
         try {
             Files.deleteIfExists(zipPath);
         } catch (IOException e) {
@@ -137,24 +138,27 @@ public class GdalActivator implements Activator {
     }
 
     private enum OSCategory {
-        WIN_32("gdal-2.1.0-win32", "release-1800-gdal-2-1-0-mapserver-7-0-1.zip"),
-        WIN_64("gdal-2.1.0-win64", "release-1800-x64-gdal-2-1-0-mapserver-7-0-1.zip"),
+        WIN_32("gdal-2.1.0-win32", "release-1800-gdal-2-1-0-mapserver-7-0-1.zip","gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
+        WIN_64("gdal-2.1.0-win64", "release-1800-x64-gdal-2-1-0-mapserver-7-0-1.zip", "gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
         LINUX_64(null, null),
         MAC_OS_X(null, null),
         UNSUPPORTED(null, null);
 
-
         String directory;
         String zipFile;
+        String[] jniFiles;
 
-        OSCategory(String directory, String zipFile) {
+        OSCategory(String directory, String zipFile, String... jniFiles) {
             this.directory = directory;
             this.zipFile = zipFile;
+            this.jniFiles = jniFiles;
         }
 
         Path getArchivePath() {
-            return Paths.get(directory, zipFile);
+            return directory != null && zipFile != null ? Paths.get(directory, zipFile) : null;
         }
+
+        String[] getJniFiles() { return this.jniFiles; }
 
         static OSCategory getOSCategory() {
             OSCategory category;

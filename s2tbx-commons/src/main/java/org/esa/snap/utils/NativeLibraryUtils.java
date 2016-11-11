@@ -13,9 +13,11 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 
 /**
  * Helper methods for native libraries registration.
@@ -25,29 +27,27 @@ import java.util.jar.JarFile;
  */
 public class NativeLibraryUtils {
     private static final String ENV_LIB_PATH = "java.library.path";
-    private static final String SYS_PATH = "PATH";
 
-    public static void registerNativePath(String path) {
-        String propertyValue = System.getProperty(ENV_LIB_PATH);
-        if (!StringUtils.isNullOrEmpty(propertyValue)) {
-            propertyValue += File.pathSeparator + path;
-        } else {
-            propertyValue = path;
-        }
-        System.setProperty(ENV_LIB_PATH, propertyValue);
-        try {
-            PrivilegedAccessor.setStaticValue(ClassLoader.class, "sys_paths", null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static void registerNativePaths(Path... paths) {
+        if (paths == null || paths.length == 0)
+            return;
+        registerNativePaths(Arrays.stream(paths).map(Path::toString).collect(Collectors.toList()).toArray(new String[paths.length]));
     }
 
-    public static void registerPath(String path) {
+    public static void registerNativePaths(String... paths) {
+        if (paths == null || paths.length == 0)
+            return;
         String propertyValue = System.getProperty(ENV_LIB_PATH);
+        StringBuilder builder = new StringBuilder();
+        for (String path : paths) {
+            if (!StringUtils.isNullOrEmpty(propertyValue) && !propertyValue.contains(path)) {
+                builder.append(path).append(File.pathSeparator);
+            }
+        }
         if (!StringUtils.isNullOrEmpty(propertyValue)) {
-            propertyValue += File.pathSeparator + path;
+            propertyValue = builder.toString() + propertyValue;
         } else {
-            propertyValue = path;
+            propertyValue = builder.toString();
         }
         System.setProperty(ENV_LIB_PATH, propertyValue);
         try {
@@ -100,8 +100,7 @@ public class NativeLibraryUtils {
                 throw new IOException(String.format("Library %s could not be found in %s", mappedLibName, path));
             }
         }
-        registerNativePath(path);
-        //System.load(Paths.get(path, mappedLibName).toAbsolutePath().toString());
+        registerNativePaths(path);
         System.loadLibrary(libraryName);
     }
 
