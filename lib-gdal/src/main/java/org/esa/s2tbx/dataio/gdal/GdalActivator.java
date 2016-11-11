@@ -138,8 +138,8 @@ public class GdalActivator implements Activator {
     }
 
     private enum OSCategory {
-        WIN_32("gdal-2.1.0-win32", "release-1800-gdal-2-1-0-mapserver-7-0-1.zip","gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
-        WIN_64("gdal-2.1.0-win64", "release-1800-x64-gdal-2-1-0-mapserver-7-0-1.zip", "gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
+        WIN_32("gdal-2.1.0-win32", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip","gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
+        WIN_64("gdal-2.1.0-win64", "release-1500-x64-gdal-2-1-0-mapserver-7-0-1.zip", "gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
         LINUX_64(null, null),
         MAC_OS_X(null, null),
         UNSUPPORTED(null, null);
