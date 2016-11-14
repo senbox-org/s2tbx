@@ -22,6 +22,7 @@ import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.runtime.Activator;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
+import org.esa.snap.utils.PostExecAction;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -68,6 +69,7 @@ public class GdalActivator implements Activator {
 
         Path zipPath = auxdataDirectory.resolve(OSCategory.getOSCategory().getArchivePath());
         Path destFolder = zipPath.getParent();
+        final Path binPath = destFolder.resolve(BIN_PATH);
         try {
             FileHelper.unzip(zipPath, destFolder, true);
             String[] jniFiles = OSCategory.getOSCategory().getJniFiles();
@@ -75,14 +77,22 @@ public class GdalActivator implements Activator {
                 throw new IOException("No JNI wrappers found");
             }
             for (String file : jniFiles) {
-                Files.move(destFolder.resolve(JAR_PATH).resolve(file), destFolder.resolve(BIN_PATH).resolve(file));
+                if (!Files.exists(binPath.resolve(file))) {
+                    Files.move(destFolder.resolve(JAR_PATH).resolve(file), binPath.resolve(file));
+                }
             }
         } catch (IOException e) {
             SystemUtils.LOG.severe(String.format("GDAL configuration error: failed to unzip to %s [Reason: %s]", destFolder, e.getMessage()));
-            return;
         }
 
-        NativeLibraryUtils.registerNativePaths(destFolder.resolve(BIN_PATH));
+        NativeLibraryUtils.registerNativePaths(binPath);
+        if (!System.getenv().get("Path").contains(binPath.toString())) {
+            String[] args = OSCategory.getOSCategory().getPathCmd();
+            if (args != null && args.length > 2) {
+                args[2] = args[2].replace("$1", binPath.toString());
+                PostExecAction.register("lib-gdal", args);
+            }
+        }
 
         try {
             Files.deleteIfExists(zipPath);
@@ -138,25 +148,32 @@ public class GdalActivator implements Activator {
     }
 
     private enum OSCategory {
-        WIN_32("gdal-2.1.0-win32", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip","gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
-        WIN_64("gdal-2.1.0-win64", "release-1500-x64-gdal-2-1-0-mapserver-7-0-1.zip", "gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
-        LINUX_64(null, null),
-        MAC_OS_X(null, null),
-        UNSUPPORTED(null, null);
+        WIN_32("gdal-2.1.0-win32", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip", new String[] { "SETX", "PATH", "\"$1;%PATH%\"" },
+                "gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
+        WIN_64("gdal-2.1.0-win64", "release-1500-x64-gdal-2-1-0-mapserver-7-0-1.zip", new String[] { "SETX", "PATH", "\"$1;%PATH%\"" },
+                "gdaljni.dll", "gdalconstjni.dll", "ogrjni.dll", "osrjni.dll"),
+        LINUX_64("gdal-2.1.0-linux64", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip", new String[] { "SET", "LD_LIBRARY_PATH", "\"$1:%LD_LIBRARY_PATH%\"" },
+                "gdaljni.so", "gdalconstjni.so", "ogrjni.so", "osrjni.so"),
+        MAC_OS_X(null, null, null),
+        UNSUPPORTED(null, null, null);
 
         String directory;
         String zipFile;
         String[] jniFiles;
+        String[] cmdPath;
 
-        OSCategory(String directory, String zipFile, String... jniFiles) {
+        OSCategory(String directory, String zipFile, String[] cmdLine, String... jniFiles) {
             this.directory = directory;
             this.zipFile = zipFile;
+            this.cmdPath = cmdLine;
             this.jniFiles = jniFiles;
         }
 
         Path getArchivePath() {
             return directory != null && zipFile != null ? Paths.get(directory, zipFile) : null;
         }
+
+        String[] getPathCmd() { return this.cmdPath; }
 
         String[] getJniFiles() { return this.jniFiles; }
 
