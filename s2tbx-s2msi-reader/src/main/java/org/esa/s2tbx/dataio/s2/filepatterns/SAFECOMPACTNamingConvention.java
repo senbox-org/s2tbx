@@ -67,18 +67,19 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     public static String SPECTRAL_BAND_REGEX = "T([A-Z|0-9|_]{5})_([0-9]{8}T[0-9]{6})_B([A|0-9]{2})\\.jp2";
 
     //Templates L2a
-    public static String SPECTRAL_BAND_TEMPLATE_L2A = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m" + File.separator + "{{TILENUMBER}}_{{DATATAKE_START}}_{{BANDFILEID}}_{{RESOLUTION}}m.jp2";
-    public static String AOT_FILE_TEMPLATE_L2A = "IMG_DATA" + File.separator + "R{{RESOLUTION}}m" + File.separator +"{{TILENUMBER}}_{{DATATAKE_START}}_AOT_{{RESOLUTION}}m.jp2";
-    public static String WVP_FILE_TEMPLATE_L2A = "IMG_DATA" + File.separator + "R{{RESOLUTION}}m" + File.separator + "{{TILENUMBER}}_{{DATATAKE_START}}_WVP_{{RESOLUTION}}m.jp2";
-    public static String SCL_FILE_TEMPLATE_L2A = "IMG_DATA" + File.separator + "{{TILENUMBER}}_{{DATATAKE_START}}_SCL_{{RESOLUTION}}m.jp2";
-    public static String CLD_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "{{TILENUMBER}}_{{DATATAKE_START}}_CLD_{{RESOLUTION}}m.jp2";
-    public static String SNW_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "{{TILENUMBER}}_{{DATATAKE_START}}_SNW_{{RESOLUTION}}m.jp2";
-    public static String DDV_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "{{TILENUMBER}}_{{DATATAKE_START}}_DDV_{{RESOLUTION}}m.jp2";
+    public static String SPECTRAL_BAND_TEMPLATE_L2A = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_{{BANDFILEID}}_{{RESOLUTION}}m.jp2";
+    public static String AOT_FILE_TEMPLATE_L2A = "IMG_DATA" + File.separator + "R{{RESOLUTION}}m" + File.separator +"L2A_{{TILENUMBER}}_{{DATATAKE_START}}_AOT_{{RESOLUTION}}m.jp2";
+    public static String WVP_FILE_TEMPLATE_L2A = "IMG_DATA" + File.separator + "R{{RESOLUTION}}m" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_WVP_{{RESOLUTION}}m.jp2";
+    public static String SCL_FILE_TEMPLATE_L2A = "IMG_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_SCL_{{RESOLUTION}}m.jp2";
+    public static String SCL_FILE_TEMPLATE_L2A_PSD14 = "IMG_DATA" + File.separator + "R{{RESOLUTION}}m" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_SCL_{{RESOLUTION}}m.jp2";
+    public static String CLD_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_CLD_{{RESOLUTION}}m.jp2";
+    public static String SNW_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_SNW_{{RESOLUTION}}m.jp2";
+    public static String DDV_FILE_TEMPLATE_L2A = "QI_DATA" + File.separator + "L2A_{{TILENUMBER}}_{{DATATAKE_START}}_DDV_{{RESOLUTION}}m.jp2";
 
     //Templates L3
-    public static String SPECTRAL_BAND_TEMPLATE_L3 = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m" + File.separator +"{{TILENUMBER}}_{{DATATAKE_START}}_{{BANDFILEID}}_{{RESOLUTION}}m.jp2";
-    public static String SCL_FILE_TEMPLATE_L3 = "QI_DATA" + File.separator + "{{TILENUMBER}}_{{DATATAKE_START}}_SCL_{{RESOLUTION}}m.jp2";
-    public static String MSC_FILE_TEMPLATE_L3 = "QI_DATA" + File.separator + "{{TILENUMBER}}_{{DATATAKE_START}}_MSC_{{RESOLUTION}}m.jp2";
+    public static String SPECTRAL_BAND_TEMPLATE_L3 = "IMG_DATA"+ File.separator +"R{{RESOLUTION}}m" + File.separator +"L03_{{TILENUMBER}}_{{DATATAKE_START}}_{{BANDFILEID}}_{{RESOLUTION}}m.jp2";
+    public static String SCL_FILE_TEMPLATE_L3 = "QI_DATA" + File.separator + "L03_{{TILENUMBER}}_{{DATATAKE_START}}_SCL_{{RESOLUTION}}m.jp2";
+    public static String MSC_FILE_TEMPLATE_L3 = "QI_DATA" + File.separator + "L03_{{TILENUMBER}}_{{DATATAKE_START}}_MSC_{{RESOLUTION}}m.jp2";
 
     private S2Config.Sentinel2InputType inputType = null;
     private S2Config.Sentinel2ProductLevel level = S2Config.Sentinel2ProductLevel.UNKNOWN;
@@ -271,7 +272,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
                     resolution = S2SpatialResolution.R60M;
                 }
             }
-            if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)) {
+            if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA)) {
                 if (L2aUtils.checkMetadataSpecificFolder(getInputXml().toFile(), "10m")) {
                     resolution = S2SpatialResolution.R10M;
                 } else if (L2aUtils.checkMetadataSpecificFolder(getInputXml().toFile(), "20m")) {

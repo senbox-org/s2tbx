@@ -34,7 +34,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
 
 
     MetadataElement simplifiedMetadataElement;
-    String format = null;
+    String format = "";
 
     private static class L1cGranuleMetadataPSD13Parser extends XmlMetadataParser<L1cGranuleMetadataPSD13> {
 
@@ -86,6 +86,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
     @Override
     public S2Metadata.ProductCharacteristics getTileProductOrganization(Path xmlPath) {
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
+        characteristics.setPsd(S2Metadata.getPSD(xmlPath));
 
         //DatatakeSensingStart is not in the metadata, but it is needed for the image templates. We read it from the file system
         Path folder = xmlPath.resolveSibling("IMG_DATA");

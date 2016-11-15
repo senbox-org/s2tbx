@@ -6,7 +6,6 @@ import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripDirFilename;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2DatastripFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoDatastripFilename;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +83,7 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
     public S2Metadata.ProductCharacteristics getProductOrganization(Path xmlPath) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
+        characteristics.setPsd(S2Metadata.getPSD(xmlPath));
 
         String datatakeSensingStart = getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
         if(datatakeSensingStart!=null && datatakeSensingStart.length()>19) {
@@ -123,7 +122,9 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
         if(granuleList == null) {
             granuleList = getAttributeValues(L1cPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
             if(granuleList == null) {
-                return null;
+                //return an empty arraylist
+                ArrayList<String> tiles = new ArrayList<>();
+                return tiles;
             }
         }
         return new ArrayList<>(Arrays.asList(granuleList));
@@ -135,7 +136,9 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
         if (datastripList == null) {
             datastripList = getAttributeValues(L1cPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
             if (datastripList == null) {
-                return null;
+                //return an empty arraylist
+                ArrayList<String> datastrips = new ArrayList<>();
+                return datastrips;
             }
         }
         return new ArrayList<>(Arrays.asList(datastripList));
@@ -204,11 +207,4 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
     public String getFormat() {
         return getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
     }
-
-    private String[] getBandList() {
-        return getAttributeValues(L1cPSD13Constants.PATH_PRODUCT_METADATA_BAND_LIST);
-    }
-
-
-
 }

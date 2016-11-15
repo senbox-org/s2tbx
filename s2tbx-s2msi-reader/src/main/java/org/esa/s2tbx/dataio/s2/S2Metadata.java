@@ -64,8 +64,6 @@ public abstract class S2Metadata {
 
     private S2Config config;
 
-    private String psdString;
-
     private ProductCharacteristics productCharacteristics;
 
     protected HashMap<String, Path> resourceResolver;
@@ -478,6 +476,16 @@ public abstract class S2Metadata {
         private S2BandInformation[] bandInformations;
         private String metaDataLevel;
         private double quantificationValue;
+        private int psd;
+
+        public int getPsd() {
+            return psd;
+        }
+
+        public void setPsd(int psd) {
+            this.psd = psd;
+        }
+
 
         public String getDatatakeSensingStartTime () {
             return datatakeSensingStartTime;
@@ -609,8 +617,20 @@ public abstract class S2Metadata {
             if (!viewingAnglesElement.getName().equals("Viewing_Incidence_Angles_Grids")) {
                 continue;
             }
-            MetadataAttribute[] azAnglesAttributes = viewingAnglesElement.getElement("Azimuth").getElement("Values_List").getAttributes();
-            MetadataAttribute[] zenAnglesAttributes = viewingAnglesElement.getElement("Zenith").getElement("Values_List").getAttributes();
+            MetadataElement azimuthElement = viewingAnglesElement.getElement("Azimuth");
+            if(azimuthElement == null) continue;
+            MetadataElement valuesAzimuthElement = azimuthElement.getElement("Values_List");
+            if(valuesAzimuthElement == null) continue;
+            MetadataAttribute[] azAnglesAttributes = valuesAzimuthElement.getAttributes();
+            if(azAnglesAttributes == null) continue;
+
+            MetadataElement zenithElement = viewingAnglesElement.getElement("Zenith");
+            if(zenithElement == null) continue;
+            MetadataElement valuesZenithElement = zenithElement.getElement("Values_List");
+            if(valuesZenithElement == null) continue;
+            MetadataAttribute[] zenAnglesAttributes = valuesZenithElement.getAttributes();
+            if(zenAnglesAttributes == null) continue;
+
             int nRows = azAnglesAttributes.length;
             if(nRows != zenAnglesAttributes.length) {
                 continue;
@@ -629,14 +649,18 @@ public abstract class S2Metadata {
         return anglesGrids.toArray(new AnglesGrid[anglesGrids.size()]);
     }
 
+    public int getPsd() {
+        return productCharacteristics.getPsd();
+    }
+
     /**
      * Read the content of 'path' searching the string "psd-XX.sentinel2.eo.esa.int" and return the XX parsed to an integer.
      * @param path
      * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
      */
     public static int getPSD(Path path){
-        try {
-            FileInputStream fileStream = new FileInputStream(path.toString());
+        try (FileInputStream fileStream = new FileInputStream(path.toString())){
+            //FileInputStream fileStream = new FileInputStream(path.toString());
             String xmlStreamAsString = IOUtils.toString(fileStream);
             String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
 

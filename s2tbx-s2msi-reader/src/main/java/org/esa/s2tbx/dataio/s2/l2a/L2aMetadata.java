@@ -66,6 +66,9 @@ public class L2aMetadata extends S2Metadata {
 
     private void initProduct(Path path, String granuleName, String epsg, S2SpatialResolution productResolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
         IL2aProductMetadata metadataProduct = L2aMetadataFactory.createL2aProductMetadata(path);
+        if(metadataProduct == null) {
+            throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
+        }
 
         setFormat(metadataProduct.getFormat());
         setProductCharacteristics(metadataProduct.getProductOrganization(path, productResolution));
@@ -113,6 +116,9 @@ public class L2aMetadata extends S2Metadata {
     private void initTile(Path path, String epsg, S2SpatialResolution resolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
 
         IL2aGranuleMetadata granuleMetadata = L2aMetadataFactory.createL2aGranuleMetadata(path);
+        if(granuleMetadata == null) {
+            throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
+        }
 
         if(getFormat() == null) {
             setFormat(granuleMetadata.getFormat());

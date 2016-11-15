@@ -78,7 +78,7 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
         return new S2IndexBandInformation("quality_dense_dark_vegetation", resolution, NamingConventionFactory.getDDVTemplate_L2a(format), "Dense Dark Vegetation", "", indexList, "ddv_");
     }
 
-    private static S2BandInformation makeSCLInformation(String format,S2SpatialResolution resolution) {
+    private static S2BandInformation makeSCLInformation(String format,S2SpatialResolution resolution, int psd) {
         List<S2IndexBandInformation.S2IndexBandIndex> indexList = new ArrayList<>();
         /* Using the same colors as in the L2A-PDD */
         indexList.add(S2IndexBandInformation.makeIndex(0, new Color(0, 0, 0), "NODATA", "No data"));
@@ -93,10 +93,10 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
         indexList.add(S2IndexBandInformation.makeIndex(9, new Color(255, 255, 255), "CLOUD_HIGH_PROBA", "Cloud (high probability)"));
         indexList.add(S2IndexBandInformation.makeIndex(10, new Color(100, 200, 255), "THIN_CIRRUS", "Thin cirrus"));
         indexList.add(S2IndexBandInformation.makeIndex(11, new Color(255, 150, 255), "SNOW_ICE", "Snow or Ice"));
-        return new S2IndexBandInformation("quality_scene_classification", resolution, NamingConventionFactory.getSCLTemplate_L2a(format), "Scene classification", "", indexList, "scl_");
+        return new S2IndexBandInformation("quality_scene_classification", resolution, NamingConventionFactory.getSCLTemplate_L2a(format, psd), "Scene classification", "", indexList, "scl_");
     }
 
-    public static List<S2BandInformation> getBandInformationList(String format, S2SpatialResolution resolution,
+    public static List<S2BandInformation> getBandInformationList(String format, S2SpatialResolution resolution, int psd,
                                                                  double boaQuantification,
                                                                  double aotQuantification,
                                                                  double wvpQuantification) {
@@ -124,7 +124,7 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeDDVInformation(format, S2SpatialResolution.R20M));
 
                 // SCL only generated at 20m and 60m. upsample the 20m version
-                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M));
+                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M, psd));
                 break;
             case R20M:
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
@@ -147,7 +147,7 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSNWInformation(format, S2SpatialResolution.R20M));
                 aInfo.add(makeDDVInformation(format, S2SpatialResolution.R20M));
 
-                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M));
+                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R20M, psd));
                 break;
             case R60M:
                 aInfo.add(makeSpectralInformation(format, S2BandConstants.B1, S2SpatialResolution.R60M, boaQuantification));
@@ -170,7 +170,7 @@ public class L2aMetadataProc extends S2OrthoMetadataProc {
                 aInfo.add(makeSNWInformation(format, S2SpatialResolution.R60M));
                 aInfo.add(makeDDVInformation(format, S2SpatialResolution.R60M));
 
-                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R60M));
+                aInfo.add(makeSCLInformation(format, S2SpatialResolution.R60M, psd));
                 break;
         }
         return aInfo;

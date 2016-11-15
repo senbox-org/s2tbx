@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  */
 public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3GranuleMetadata  {
 
-   String format = null;
+   String format = "";
 
     private static class L3GranuleMetadataPSD13Parser extends XmlMetadataParser<L3GranuleMetadataPSD13> {
 
@@ -79,6 +79,7 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
     public S2Metadata.ProductCharacteristics getTileProductOrganization(Path path, S2SpatialResolution resolution) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
+        characteristics.setPsd(S2Metadata.getPSD(path));
         //DatatakeSensingStart is not in the metadata, but is it needed for the image templates in level3??. We read it from the file system
         //TODO review
         Path folder = path.resolveSibling("IMG_DATA");

@@ -78,10 +78,16 @@ public class NamingConventionFactory {
         }
         return null;
     }
-    public static String getSCLTemplate_L2a (String format) {
+    public static String getSCLTemplate_L2a (String format, int psd) {
         if(format.equals("SAFE")) {
+            if(psd >=14) {
+                return SAFENamingConvention.SCL_FILE_TEMPLATE_L2A_PSD14;
+            }
             return SAFENamingConvention.SCL_FILE_TEMPLATE_L2A;
         } else if (format.equals("SAFE_COMPACT")) {
+            if(psd >=14) {
+                return SAFECOMPACTNamingConvention.SCL_FILE_TEMPLATE_L2A_PSD14;
+            }
             return SAFECOMPACTNamingConvention.SCL_FILE_TEMPLATE_L2A;
         }
         return null;

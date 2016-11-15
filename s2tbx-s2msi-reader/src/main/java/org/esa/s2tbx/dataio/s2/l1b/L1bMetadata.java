@@ -69,7 +69,9 @@ public class L1bMetadata extends S2Metadata {
     private void initProduct(Path path, String granuleName, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
 
         IL1bProductMetadata metadataProduct = L1bMetadataFactory.createL1bProductMetadata(path);
-
+        if(metadataProduct == null) {
+            throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
+        }
         setProductCharacteristics(metadataProduct.getProductOrganization());
 
         Collection<String> tileNames;
@@ -111,7 +113,9 @@ public class L1bMetadata extends S2Metadata {
 
     private void initTile(Path path, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
         IL1bGranuleMetadata granuleMetadata = L1bMetadataFactory.createL1bGranuleMetadata(path);
-
+        if(granuleMetadata == null) {
+            throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
+        }
         if(getProductCharacteristics() == null) {
             setProductCharacteristics(granuleMetadata.getTileProductOrganization());
         }

@@ -83,7 +83,7 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
     @Override
     public S2Metadata.ProductCharacteristics getProductOrganization(Path path, S2SpatialResolution resolution) {
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
-
+        characteristics.setPsd(S2Metadata.getPSD(path));
         String datatakeSensingStart = getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
         if(datatakeSensingStart!=null && datatakeSensingStart.length()>19) {
             String formattedDatatakeSensingStart = datatakeSensingStart.substring(0,4) +
@@ -111,7 +111,7 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
         double aotQuantification = Double.valueOf(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_L2A_AOT_QUANTIFICATION_VALUE, String.valueOf(L2aPSD13Constants.DEFAULT_AOT_QUANTIFICATION)));
         double wvpQuantification = Double.valueOf(getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_L2A_WVP_QUANTIFICATION_VALUE, String.valueOf(L2aPSD13Constants.DEFAULT_WVP_QUANTIFICATION)));
 
-        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution,boaQuantification,aotQuantification,wvpQuantification);
+        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution, characteristics.getPsd(),boaQuantification,aotQuantification,wvpQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
@@ -120,12 +120,18 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
 
     @Override
     public Collection<String> getTiles() {
+
         String[] granuleList = getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
         if(granuleList == null) {
-            return null;
+            granuleList = getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
+            if(granuleList == null) {
+                //return an empty arraylist
+                ArrayList<String> tiles = new ArrayList<>();
+                return tiles;
+            }
         }
-
         //New list with only granules with different granuleIdentifier
+        //They are repeated when there are more than one resolution folder
         List<String> granuleListReduced = new ArrayList<>();
         Map<String, String> mapGranules = new LinkedHashMap<>(granuleList.length);
         for (String granule : granuleList) {
@@ -142,7 +148,10 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
     public S2DatastripFilename getDatastrip() {
         String[] datastripList = getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
         if(datastripList == null) {
-            return null;
+            datastripList = getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
+            if(datastripList == null) {
+                return null;
+            }
         }
 
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(datastripList[0], null);
@@ -163,9 +172,20 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
     public S2DatastripDirFilename getDatastripDir() {
         String[] granuleList = getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
         String[] datastripList = getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
-        if(granuleList == null || datastripList == null) {
-            return null;
+        if(datastripList == null) {
+            datastripList = getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
+            if(datastripList == null) {
+                return null;
+            }
         }
+        if(granuleList == null) {
+            granuleList = getAttributeValues(L2aPSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
+            if(granuleList == null) {
+                return null;
+            }
+        }
+
+
         S2OrthoGranuleDirFilename grafile = S2OrthoGranuleDirFilename.create(granuleList[0]);
 
         S2DatastripDirFilename datastripDirFilename = null;

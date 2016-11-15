@@ -982,103 +982,108 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         S2Metadata.AnglesGrid sunAnglesGrid = tile.getSunAnglesGrid();
         S2Metadata.AnglesGrid[] viewingIncidenceAnglesGrids = tile.getViewingIncidenceAnglesGrids();
 
-        int iLastBandId = -1;
-        int bandId;
-        for (S2Metadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
-            bandId = grid.getBandId();
+        if(viewingIncidenceAnglesGrids != null){
+            int iLastBandId = -1;
+            int bandId;
+            for (S2Metadata.AnglesGrid grid : viewingIncidenceAnglesGrids) {
+                bandId = grid.getBandId();
 
-            //if lastBand and the current band are different, the lecture of the last band has finished and we add it to listBandAnglesGrid
-            //after that, the arrays are filled again with NaN
-            if (iLastBandId != bandId) {
-                if (iLastBandId >= 0) {
-                    float[] zeniths = new float[gridWidth * gridHeight];
-                    float[] azimuths = new float[gridWidth * gridHeight];
-                    System.arraycopy(viewingZeniths, 0, zeniths, 0, gridWidth * gridHeight);
-                    System.arraycopy(viewingAzimuths, 0, azimuths, 0, gridWidth * gridHeight);
-                    listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, S2BandConstants.getBand(iLastBandId), gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, zeniths));
-                    listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(iLastBandId), gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, azimuths));
+                //if lastBand and the current band are different, the lecture of the last band has finished and we add it to listBandAnglesGrid
+                //after that, the arrays are filled again with NaN
+                if (iLastBandId != bandId) {
+                    if (iLastBandId >= 0) {
+                        float[] zeniths = new float[gridWidth * gridHeight];
+                        float[] azimuths = new float[gridWidth * gridHeight];
+                        System.arraycopy(viewingZeniths, 0, zeniths, 0, gridWidth * gridHeight);
+                        System.arraycopy(viewingAzimuths, 0, azimuths, 0, gridWidth * gridHeight);
+                        listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, S2BandConstants.getBand(iLastBandId), gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, zeniths));
+                        listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(iLastBandId), gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, azimuths));
+                    }
+                    Arrays.fill(viewingZeniths, Float.NaN);
+                    Arrays.fill(viewingAzimuths, Float.NaN);
+                    iLastBandId = bandId;
                 }
-                Arrays.fill(viewingZeniths, Float.NaN);
-                Arrays.fill(viewingAzimuths, Float.NaN);
-                iLastBandId = bandId;
-            }
 
-            for (int y = 0; y < gridHeight; y++) {
-                for (int x = 0; x < gridWidth; x++) {
-                    final int index = y * gridWidth + x;
-                    try {
-                        if (y < grid.getZenith().length) {
-                            if (x < grid.getZenith()[y].length) {
-                                if (isValidAngle(grid.getZenith()[y][x])) {
-                                    viewingZeniths[index] = grid.getZenith()[y][x];
+                for (int y = 0; y < gridHeight; y++) {
+                    for (int x = 0; x < gridWidth; x++) {
+                        final int index = y * gridWidth + x;
+                        try {
+                            if (y < grid.getZenith().length) {
+                                if (x < grid.getZenith()[y].length) {
+                                    if (isValidAngle(grid.getZenith()[y][x])) {
+                                        viewingZeniths[index] = grid.getZenith()[y][x];
+                                    }
                                 }
                             }
-                        }
 
-                        if (y < grid.getAzimuth().length) {
-                            if (x < grid.getAzimuth()[y].length) {
-                                if (isValidAngle(grid.getAzimuth()[y][x])) {
-                                    viewingAzimuths[index] = grid.getAzimuth()[y][x];
+                            if (y < grid.getAzimuth().length) {
+                                if (x < grid.getAzimuth()[y].length) {
+                                    if (isValidAngle(grid.getAzimuth()[y][x])) {
+                                        viewingAzimuths[index] = grid.getAzimuth()[y][x];
+                                    }
                                 }
                             }
-                        }
 
-                    } catch (Exception e) {
-                        logger.severe(StackTraceUtils.getStackTrace(e));
+                        } catch (Exception e) {
+                            logger.severe(StackTraceUtils.getStackTrace(e));
+                        }
                     }
                 }
             }
-        }
 
-        //add the last band which is in memory
-        if (iLastBandId > 0) {
-            float[] zeniths = new float[gridWidth * gridHeight];
-            float[] azimuths = new float[gridWidth * gridHeight];
-            System.arraycopy(viewingZeniths, 0, zeniths, 0, gridWidth * gridHeight);
-            System.arraycopy(viewingAzimuths, 0, azimuths, 0, gridWidth * gridHeight);
-            listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, S2BandConstants.getBand(iLastBandId), gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, zeniths));
-            listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(iLastBandId), gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, azimuths));
-        }
+            //add the last band which is in memory
+            if (iLastBandId > 0) {
+                float[] zeniths = new float[gridWidth * gridHeight];
+                float[] azimuths = new float[gridWidth * gridHeight];
+                System.arraycopy(viewingZeniths, 0, zeniths, 0, gridWidth * gridHeight);
+                System.arraycopy(viewingAzimuths, 0, azimuths, 0, gridWidth * gridHeight);
+                listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, S2BandConstants.getBand(iLastBandId), gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, zeniths));
+                listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, S2BandConstants.getBand(iLastBandId), gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, azimuths));
+            }
 
-        //Compute the mean viewing angles
-        Arrays.fill(viewingZeniths, 0.0f);
-        Arrays.fill(viewingAzimuths, 0.0f);
-        Arrays.fill(viewingZenithsCount, 0);
-        Arrays.fill(viewingAzimuthsCount, 0);
-        for (S2BandAnglesGrid grid : listBandAnglesGrid) {
-            for(int i = 0 ; i < grid.getData().length ; i++) {
-                float gridData = grid.getData()[i];
-                if(grid.getPrefix().equals(VIEW_ZENITH_PREFIX)) {
-                    viewingZeniths[i] = viewingZeniths[i] + gridData;
-                    viewingZenithsCount[i]++;
-                }
-                if(grid.getPrefix().equals(VIEW_AZIMUTH_PREFIX)) {
-                    viewingAzimuths[i] = viewingAzimuths[i] + gridData;
-                    viewingAzimuthsCount[i]++;
+            //Compute the mean viewing angles
+            Arrays.fill(viewingZeniths, 0.0f);
+            Arrays.fill(viewingAzimuths, 0.0f);
+            Arrays.fill(viewingZenithsCount, 0);
+            Arrays.fill(viewingAzimuthsCount, 0);
+            for (S2BandAnglesGrid grid : listBandAnglesGrid) {
+                for (int i = 0; i < grid.getData().length; i++) {
+                    float gridData = grid.getData()[i];
+                    if (grid.getPrefix().equals(VIEW_ZENITH_PREFIX)) {
+                        viewingZeniths[i] = viewingZeniths[i] + gridData;
+                        viewingZenithsCount[i]++;
+                    }
+                    if (grid.getPrefix().equals(VIEW_AZIMUTH_PREFIX)) {
+                        viewingAzimuths[i] = viewingAzimuths[i] + gridData;
+                        viewingAzimuthsCount[i]++;
+                    }
                 }
             }
-        }
-        for(int i = 0 ; i < viewingZeniths.length ; i++) {
-            if(viewingZenithsCount[i] !=0) viewingZeniths[i] = viewingZeniths[i] / viewingZenithsCount[i];
-            if(viewingAzimuthsCount[i] !=0)  viewingAzimuths[i] = viewingAzimuths[i] / viewingAzimuthsCount[i];
-        }
-
-        listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingZeniths));
-        listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingAzimuths));
-
-
-        for (int y = 0; y < gridHeight; y++) {
-            for (int x = 0; x < gridWidth; x++) {
-                final int index = y * gridWidth + x;
-                sunZeniths[index] = sunAnglesGrid.getZenith()[y][x];
-                sunAzimuths[index] = sunAnglesGrid.getAzimuth()[y][x];
+            for (int i = 0; i < viewingZeniths.length; i++) {
+                if (viewingZenithsCount[i] != 0) viewingZeniths[i] = viewingZeniths[i] / viewingZenithsCount[i];
+                if (viewingAzimuthsCount[i] != 0) viewingAzimuths[i] = viewingAzimuths[i] / viewingAzimuthsCount[i];
             }
+
+            listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingZeniths));
+            listBandAnglesGrid.add(new S2BandAnglesGrid(VIEW_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, viewingAzimuths));
         }
-        listBandAnglesGrid.add(new S2BandAnglesGrid(SUN_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, sunZeniths));
-        listBandAnglesGrid.add(new S2BandAnglesGrid(SUN_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, sunAzimuths));
 
-        bandAnglesGrid = listBandAnglesGrid.toArray(new S2BandAnglesGrid[listBandAnglesGrid.size()]);
 
+        if(sunAnglesGrid != null) {
+            for (int y = 0; y < gridHeight; y++) {
+                for (int x = 0; x < gridWidth; x++) {
+                    final int index = y * gridWidth + x;
+                    sunZeniths[index] = sunAnglesGrid.getZenith()[y][x];
+                    sunAzimuths[index] = sunAnglesGrid.getAzimuth()[y][x];
+                }
+            }
+            listBandAnglesGrid.add(new S2BandAnglesGrid(SUN_ZENITH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, sunZeniths));
+            listBandAnglesGrid.add(new S2BandAnglesGrid(SUN_AZIMUTH_PREFIX, null, gridWidth, gridHeight, (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftX(), (float) tile.getTileGeometry(S2SpatialResolution.R10M).getUpperLeftY(), resolution, resolution, sunAzimuths));
+        }
+
+        if(listBandAnglesGrid.size()>0) {
+            bandAnglesGrid = listBandAnglesGrid.toArray(new S2BandAnglesGrid[listBandAnglesGrid.size()]);
+        }
 
         return bandAnglesGrid;
     }

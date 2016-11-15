@@ -67,6 +67,9 @@ public class L1cMetadata extends S2Metadata {
 
     private void initProduct(Path path, String granuleName, String epsg, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
         IL1cProductMetadata metadataProduct = L1cMetadataFactory.createL1cProductMetadata(path);
+        if(metadataProduct == null) {
+            throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
+        }
         setFormat(metadataProduct.getFormat());
         setProductCharacteristics(metadataProduct.getProductOrganization(path));
 
@@ -116,7 +119,9 @@ public class L1cMetadata extends S2Metadata {
     private void initTile(Path path, String epsg, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
 
         IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(path);
-
+        if(granuleMetadata == null) {
+            throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
+        }
         if(getFormat() == null) {
             setFormat(granuleMetadata.getFormat());
         }

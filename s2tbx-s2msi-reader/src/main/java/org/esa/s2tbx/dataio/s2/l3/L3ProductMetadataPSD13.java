@@ -79,7 +79,7 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
     @Override
     public S2Metadata.ProductCharacteristics getProductOrganization(Path path, S2SpatialResolution resolution) {
         L3Metadata.ProductCharacteristics characteristics = new L3Metadata.ProductCharacteristics();
-
+        characteristics.setPsd(S2Metadata.getPSD(path));
         //is this right for level 3? Is datatake start time used?
         String datatakeSensingStart = getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);
         if(datatakeSensingStart!=null && datatakeSensingStart.length()>19) {
@@ -110,7 +110,12 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
 
         String[] granuleList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
         if(granuleList == null) {
-            return null;
+            granuleList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
+            if(granuleList == null) {
+                //return an empty arraylist
+                ArrayList<String> tiles = new ArrayList<>();
+                return tiles;
+            }
         }
 
         //New list with only granules with different granuleIdentifier
@@ -130,7 +135,10 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
     public S2DatastripFilename getDatastrip() {
         String[] datastripList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
         if(datastripList == null) {
-            return null;
+            datastripList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
+            if(datastripList == null) {
+                return null;
+            }
         }
 
         S2DatastripDirFilename dirDatastrip = S2DatastripDirFilename.create(datastripList[0], null);
@@ -151,8 +159,18 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
     public S2DatastripDirFilename getDatastripDir() {
         String[] granuleList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST);
         String[] datastripList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST);
-        if(granuleList == null || datastripList == null) {
-            return null;
+
+        if(datastripList == null) {
+            datastripList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_DATASTRIP_LIST_ALT);
+            if(datastripList == null) {
+                return null;
+            }
+        }
+        if(granuleList == null) {
+            granuleList = getAttributeValues(L3PSD13Constants.PATH_PRODUCT_METADATA_GRANULE_LIST_ALT);
+            if(granuleList == null) {
+                return null;
+            }
         }
         S2OrthoGranuleDirFilename grafile = S2OrthoGranuleDirFilename.create(granuleList[0]);
 

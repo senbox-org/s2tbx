@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 
 public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aGranuleMetadata {
 
-    String format = null;
+    String format = "";
 
     private static class L2aGranuleMetadataPSD13Parser extends XmlMetadataParser<L2aGranuleMetadataPSD13> {
 
@@ -85,9 +85,8 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
     public S2Metadata.ProductCharacteristics getTileProductOrganization(Path path,S2SpatialResolution resolution) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
-
+        characteristics.setPsd(S2Metadata.getPSD(path));
         //DatatakeSensingStart is not in the metadata, but it is needed for the image templates. We read it from the file system
-        //TODO review
         Path folder = path.resolveSibling("IMG_DATA");
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
@@ -123,7 +122,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
         double aotQuantification = L2aPSD13Constants.DEFAULT_AOT_QUANTIFICATION;
         double wvpQuantification = L2aPSD13Constants.DEFAULT_WVP_QUANTIFICATION;
 
-        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution,boaQuantification,aotQuantification,wvpQuantification);
+        List<S2BandInformation> aInfo = L2aMetadataProc.getBandInformationList(getFormat(), resolution,characteristics.getPsd(),boaQuantification,aotQuantification,wvpQuantification);
         int size = aInfo.size();
         characteristics.setBandInformations(aInfo.toArray(new S2BandInformation[size]));
 
