@@ -123,7 +123,11 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
     @Override
     public Map<S2SpatialResolution, S2Metadata.TileGeometry> getTileGeometries() {
         Map<S2SpatialResolution, S2Metadata.TileGeometry> resolutions = new HashMap<>();
-        for (String res : getAttributeValues(L1cPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION)) {
+        String[] resolutionsValues = getAttributeValues(L1cPSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION);
+        if(resolutionsValues == null) {
+            return resolutions;
+        }
+        for (String res : resolutionsValues) {
             S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(Integer.parseInt(res));
             S2Metadata.TileGeometry tgeox = new S2Metadata.TileGeometry();
 

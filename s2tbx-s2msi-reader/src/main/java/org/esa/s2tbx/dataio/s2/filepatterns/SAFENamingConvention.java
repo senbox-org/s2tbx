@@ -124,7 +124,11 @@ public class SAFENamingConvention implements INamingConvention{
 
     @Override
     public Path findXmlFromTileId(String tileID) {
-        Path path = S2NamingConventionUtils.getFileFromDir(findGranuleFolderFromTileId(tileID),getGranuleXmlREGEXs());
+        Path granuleFolderPath = findGranuleFolderFromTileId(tileID);
+        if(granuleFolderPath == null) {
+            return null;
+        }
+        Path path = S2NamingConventionUtils.getFileFromDir(granuleFolderPath,getGranuleXmlREGEXs());
         if(Files.exists(path)) {
             return path;
         }

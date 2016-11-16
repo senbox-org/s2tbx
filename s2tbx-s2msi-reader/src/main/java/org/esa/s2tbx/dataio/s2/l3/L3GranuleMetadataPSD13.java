@@ -88,23 +88,25 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         boolean bFound = false;
         if(Files.exists(folder) && Files.isDirectory(folder)) {
             File[] resolutions = folder.toFile().listFiles();
-            for (File resolutionFolder :resolutions){
-                if(resolutionFolder.isDirectory()) {
-                    File[] images = resolutionFolder.listFiles();
-                    if (images != null && images.length > 0) {
-                        for (File image : images) {
-                            String imageName = image.getName();
-                            Matcher matcher = pattern.matcher(imageName);
-                            if (matcher.matches()) {
-                                characteristics.setDatatakeSensingStartTime(matcher.group(2));
-                                bFound = true;
-                                break;
+            if(resolutions != null) {
+                for (File resolutionFolder : resolutions) {
+                    if (resolutionFolder.isDirectory()) {
+                        File[] images = resolutionFolder.listFiles();
+                        if (images != null && images.length > 0) {
+                            for (File image : images) {
+                                String imageName = image.getName();
+                                Matcher matcher = pattern.matcher(imageName);
+                                if (matcher.matches()) {
+                                    characteristics.setDatatakeSensingStartTime(matcher.group(2));
+                                    bFound = true;
+                                    break;
+                                }
                             }
                         }
                     }
-                }
-                if(bFound) {
-                    break;
+                    if (bFound) {
+                        break;
+                    }
                 }
             }
         }
@@ -121,7 +123,11 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
     @Override
     public Map<S2SpatialResolution, S2Metadata.TileGeometry> getTileGeometries() {
         Map<S2SpatialResolution, S2Metadata.TileGeometry> resolutions = new HashMap<>();
-        for (String res : getAttributeValues(L3PSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION)) {
+        String[] resolutionsValues = getAttributeValues(L3PSD13Constants.PATH_GRANULE_METADATA_GEOPOSITION_RESOLUTION);
+        if(resolutionsValues == null) {
+            return resolutions;
+        }
+        for (String res : resolutionsValues) {
             S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(Integer.parseInt(res));
             S2Metadata.TileGeometry tgeox = new S2Metadata.TileGeometry();
 

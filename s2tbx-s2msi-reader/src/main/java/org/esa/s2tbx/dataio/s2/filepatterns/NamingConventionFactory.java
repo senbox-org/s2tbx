@@ -165,7 +165,7 @@ public class NamingConventionFactory {
         if(matcher.matches()) {
             return "SAFE";
         }
-        return null;
+        return "SAFE"; //return SAFE by default
     }
     
 }

@@ -106,6 +106,9 @@ public class S2ProductNamingUtils {
         Path granuleFolder = xmlPath.resolveSibling("GRANULE");
         try {
             File[] granuleFiles = granuleFolder.toFile().listFiles();
+            if(granuleFiles == null) {
+                return tilePaths;
+            }
             for(File granule : granuleFiles) {
                 if (granule.isDirectory()){
                     tilePaths.add(granuleFolder.resolve(granule.getName()));
@@ -250,6 +253,9 @@ public class S2ProductNamingUtils {
 
         for(Path tile : getTilesFromProductXml(xmlPath)) {
             Path xmlGranule = getXmlFromDir(tile);
+            if(xmlGranule == null) {
+                return level;
+            }
             level = getLevelFromGranuleXml(xmlGranule);
             if(level != S2Config.Sentinel2ProductLevel.UNKNOWN) {
                 return level;
@@ -291,6 +297,9 @@ public class S2ProductNamingUtils {
         } else if(inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
             for(Path tile : getTilesFromProductXml(xmlPath)) {
                 Path xmlGranule = getXmlFromDir(tile);
+                if(xmlGranule == null) {
+                    continue;
+                }
                 String epsg = getEpsgCodeFromGranule(xmlGranule);
                 if(epsg != null) {
                     epsgCodeList.add(epsg);
@@ -323,9 +332,16 @@ public class S2ProductNamingUtils {
      * @return
      */
     public static String searchGranuleId(Collection<String> availableGranuleIds, String granuleFolder) {
+        String tileId = getTileIdFromString(granuleFolder);
+        if(tileId == null) {
+            return null;
+        }
         for(String tileName : availableGranuleIds) {
             String auxTileId = getTileIdFromString(tileName);
-            if(auxTileId.equals(getTileIdFromString(granuleFolder))) {
+            if(auxTileId == null) {
+                continue;
+            }
+            if(auxTileId.equals(tileId)) {
                 return tileName;
             }
         }

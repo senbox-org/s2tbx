@@ -79,6 +79,9 @@ public class S2NamingConventionUtils {
 
 
         String[] listXmlFiles = path.toFile().list((f, s) -> s.endsWith(".xml"));
+        if(listXmlFiles == null) {
+            return null;
+        }
         String xmlFile = "";
         int availableXmlCount = 0;
 
@@ -113,6 +116,10 @@ public class S2NamingConventionUtils {
         }
 
         String[] listXmlFiles = path.toFile().list((f, s) -> s.endsWith(".xml"));
+        if(listXmlFiles == null) {
+            return null;
+        }
+
         String xmlFile = "";
         int availableXmlCount = 0;
 
@@ -140,6 +147,9 @@ public class S2NamingConventionUtils {
         }
         if(REGEXs == null) {
             String[] listFiles = path.toFile().list();
+            if(listFiles == null) {
+                return paths;
+            }
             for(String file : listFiles) {
                 paths.add(path.resolve(file));
             }
@@ -152,6 +162,9 @@ public class S2NamingConventionUtils {
         }
 
         String[] listFiles = path.toFile().list();
+        if(listFiles == null) {
+            return paths;
+        }
         for(String file : listFiles) {
             for(Pattern pattern : patterns) {
                 if (pattern.matcher(file).matches() ) {
@@ -173,7 +186,11 @@ public class S2NamingConventionUtils {
             if(!Files.isDirectory(datastripPath)) {
                 return paths;
             }
-            for(File datastrip : datastripPath.toFile().listFiles()) {
+            File[] datastripFiles = datastripPath.toFile().listFiles();
+            if(datastripFiles == null) {
+                return paths;
+            }
+            for(File datastrip : datastripFiles) {
                 if(datastrip.isDirectory() && S2NamingConventionUtils.matches(datastrip.getName(),datastripREGEXs)){
                     Path xml = S2NamingConventionUtils.getFileFromDir(datastrip.toPath(), datastripXmlREGEXs);
                     if(xml != null) {
@@ -205,7 +222,11 @@ public class S2NamingConventionUtils {
             if(!Files.isDirectory(granulePath)) {
                 return paths;
             }
-            for(File granule : granulePath.toFile().listFiles()) {
+            File[] granules = granulePath.toFile().listFiles();
+            if(granules == null) {
+                return paths;
+            }
+            for(File granule : granules) {
                 if(granule.isDirectory() && S2NamingConventionUtils.matches(granule.getName(),granuleREGEXs)){
                     Path xml = S2NamingConventionUtils.getFileFromDir(granule.toPath(), granuleXmlREGEXs);
                     if(xml != null) {

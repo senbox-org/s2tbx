@@ -36,7 +36,7 @@ import static org.esa.s2tbx.dataio.s2.l1b.CoordinateUtils.as3DCoordinates;
 public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bGranuleMetadata {
 
     MetadataElement simplifiedMetadataElement;
-    String format = null;
+    String format = "";
 
     private static class L1bGranuleMetadataPSD13Parser extends XmlMetadataParser<L1bGranuleMetadataPSD13> {
 
@@ -116,7 +116,11 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
         int pos = Integer.parseInt(getAttributeValue(L1bPSD13Constants.PATH_GRANULE_METADATA_GRANULE_POSITION,"0"));
         String detector = getAttributeValue(L1bPSD13Constants.PATH_GRANULE_METADATA_DETECTOR_ID,"-1");
 
-        for (String res : getAttributeValues(L1bPSD13Constants.PATH_GRANULE_METADATA_SIZE_RESOLUTION)) {
+        String[] resolutionsValues = getAttributeValues(L1bPSD13Constants.PATH_GRANULE_METADATA_SIZE_RESOLUTION);
+        if(resolutionsValues == null) {
+            return resolutions;
+        }
+        for (String res : resolutionsValues) {
             S2SpatialResolution resolution = S2SpatialResolution.valueOfResolution(Integer.parseInt(res));
             S2Metadata.TileGeometry tgeox = new S2Metadata.TileGeometry();
 

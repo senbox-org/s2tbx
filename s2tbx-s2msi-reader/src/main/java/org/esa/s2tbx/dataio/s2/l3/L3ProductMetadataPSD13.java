@@ -191,6 +191,6 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
 
     @Override
     public String getFormat() {
-        return getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
+        return getAttributeValue(L3PSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE");
     }
 }
