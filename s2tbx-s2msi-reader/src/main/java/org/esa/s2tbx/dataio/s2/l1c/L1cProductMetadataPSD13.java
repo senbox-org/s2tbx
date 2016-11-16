@@ -205,6 +205,6 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
 
     @Override
     public String getFormat() {
-        return getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
+        return getAttributeValue(L1cPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE");
     }
 }

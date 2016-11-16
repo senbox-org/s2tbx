@@ -1,0 +1,19 @@
+{
+  "testProducts": [
+    {
+      "id": "S2L1C-Multi-PSD14-36",
+      "relativePath": "S2/PSD14/L1C/S2A_MSIL1C_20160914T074612_N0204_R135_T36JTT_20160914T081456.SAFE/MTD_MSIL1C.xml",
+      "description": "Sentinel2 L1C product in an archive"
+    },
+    {
+      "id": "S2L2A-60m-PSD14-36",
+      "relativePath": "S2/PSD14/L2A/60m/S2A_MSIL2A_20160914T074612_N0204_R135_T36JTT_20160914T081456.SAFE/MTD_MSIL2A.xml",
+      "description": "Sentinel2 L1C product in an archive"
+    },
+    {
+      "id": "S2L2A-10m-PSD14-36JTT",
+      "relativePath": "S2/PSD14/L2A/10m/S2A_MSIL2A_20160914T074612_N0204_R135_T36JTT_20160914T081456.SAFE/GRANULE/L2A_T36JTT_A006424_20160914T081456/MTD_TL.xml",
+      "description": "Sentinel2 L1C product in an archive"
+    }
+  ]
+}

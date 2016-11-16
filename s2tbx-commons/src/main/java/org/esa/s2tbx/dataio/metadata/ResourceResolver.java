@@ -76,25 +76,29 @@ public class ResourceResolver implements LSResourceResolver {
 
             // Read the resource as input stream
             String normalizedPath = getNormalizedPath(baseResourcePath, systemId);
-            InputStream resourceAsStream = classLoader
-                    .getResourceAsStream(normalizedPath);
 
-            // if the current resource is not in the same path with base
-            // resource, add current resource's path to pathMap
-            if (systemId.contains("/")) {
-                pathMap.put(currentResourceName, normalizedPath.substring(0,normalizedPath.lastIndexOf("/")+1));
-            } else {
-                // The current resource should be at the same path as the base
-                // resource
-                pathMap.put(systemId, baseResourcePath);
-            }
-            Scanner s = new Scanner(resourceAsStream).useDelimiter("\\A");
-            String s1 = s.next().replaceAll("\\n", " ") // the parser cannot understand elements broken down multiple lines e.g. (<xs:element \n name="buxing">)
-                    .replace("\\t", " ") // these two about whitespaces is only for decoration
-                    .replaceAll("\\s+", " ").replaceAll("[^\\x20-\\x7e]", ""); // some files has a special character as a first character indicating utf-8 file
-            InputStream is = new ByteArrayInputStream(s1.getBytes());
+           try (InputStream resourceAsStream = classLoader
+                    .getResourceAsStream(normalizedPath)) {
 
-            return new Input(publicId, systemId, is);
+               // if the current resource is not in the same path with base
+               // resource, add current resource's path to pathMap
+               if (systemId.contains("/")) {
+                   pathMap.put(currentResourceName, normalizedPath.substring(0, normalizedPath.lastIndexOf("/") + 1));
+               } else {
+                   // The current resource should be at the same path as the base
+                   // resource
+                   pathMap.put(systemId, baseResourcePath);
+               }
+               Scanner s = new Scanner(resourceAsStream).useDelimiter("\\A");
+               String s1 = s.next().replaceAll("\\n", " ") // the parser cannot understand elements broken down multiple lines e.g. (<xs:element \n name="buxing">)
+                       .replace("\\t", " ") // these two about whitespaces is only for decoration
+                       .replaceAll("\\s+", " ").replaceAll("[^\\x20-\\x7e]", ""); // some files has a special character as a first character indicating utf-8 file
+               InputStream is = new ByteArrayInputStream(s1.getBytes());
+
+               return new Input(publicId, systemId, is);
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
         }
 
         return null;

@@ -167,6 +167,6 @@ public class L1bProductMetadataPSD13 extends GenericXmlMetadata implements IL1bP
 
     @Override
     public String getFormat() {
-        return getAttributeValue(L1bPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, null);
+        return getAttributeValue(L1bPSD13Constants.PATH_PRODUCT_METADATA_PRODUCT_FORMAT, "SAFE");
     }
 }
