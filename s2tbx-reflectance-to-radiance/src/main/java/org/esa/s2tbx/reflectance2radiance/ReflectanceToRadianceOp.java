@@ -15,7 +15,9 @@ import org.esa.snap.utils.StringHelper;
 
 import java.awt.*;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Reflectance-to-radiance operator
@@ -170,13 +172,23 @@ public class ReflectanceToRadianceOp extends Operator {
         if (this.u == 0.0f) {
             throw new OperatorException("Please specify the U.");
         }
-
-        int sceneWidth = sourceProduct.getSceneRasterWidth();
-        int sceneHeight = sourceProduct.getSceneRasterHeight();
+        int sceneWidth = 0, sceneHeight = 0;
+        Set<Integer> distictWidths = new HashSet<>();
+        for (String bandName : this.sourceBandNames) {
+            Band band = this.sourceProduct.getBand(bandName);
+            if (sceneWidth < band.getRasterWidth()) {
+                sceneWidth = band.getRasterWidth();
+                sceneHeight = band.getRasterHeight();
+            }
+            distictWidths.add(band.getRasterHeight());
+        }
+        /*int sceneWidth = sourceProduct.getSceneRasterWidth();
+        int sceneHeight = sourceProduct.getSceneRasterHeight();*/
 
         targetProduct = new Product(sourceProduct.getName() + "_rad", sourceProduct.getProductType(), sceneWidth, sceneHeight);
 
-        targetProduct.setNumResolutionsMax(this.sourceProduct.getNumResolutionsMax());
+        /*targetProduct.setNumResolutionsMax(this.sourceProduct.getNumResolutionsMax());*/
+        targetProduct.setNumResolutionsMax(distictWidths.size());
 
         ProductUtils.copyTiePointGrids(sourceProduct, targetProduct);
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
@@ -224,7 +236,7 @@ public class ReflectanceToRadianceOp extends Operator {
     }
 
     @Override
-    public void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
+    public synchronized void computeTile(Band targetBand, Tile targetTile, ProgressMonitor pm) throws OperatorException {
         pm.beginTask("Computing Reflectance to Radiance", targetTile.getHeight());
         // https://github.com/umwilm/SEN2COR/blob/96a00464bef15404a224b2262accd0802a338ff9/sen2cor/L2A_Tables.py
         // The final formula is:
@@ -238,16 +250,13 @@ public class ReflectanceToRadianceOp extends Operator {
             float slrIrr = this.solarIrradiances != null ?
                     this.solarIrradiances.get(targetBand.getName()) :
                     this.solarIrradiance;
-
+            double factor = slrIrr * this.scale / (Math.PI * this.d2);
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
-                    float sunZenitAngle = tiePointGrid.getSampleFloat(x, y);
-
-                    double sunZenitRadians = Math.toRadians(sunZenitAngle);
-
-                    float pixelValue = sourceTile.getSampleFloat(x, y);
-
-                    float result = (float)((pixelValue * Math.cos(sunZenitRadians) * slrIrr * this.scale) / (Math.PI * this.d2));
+                    //float sunZenitAngle = tiePointGrid.getSampleFloat(x, y);
+                    double sunZenitRadians = Math.toRadians(tiePointGrid.getSampleFloat(x, y));
+                    //float pixelValue = sourceTile.getSampleFloat(x, y);
+                    float result = (float)(sourceTile.getSampleFloat(x, y) * Math.cos(sunZenitRadians) * factor);
                     targetTile.setSample(x, y, result);
                 }
                 checkForCancellation();
