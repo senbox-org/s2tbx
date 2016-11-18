@@ -4,7 +4,7 @@
         <folder name="Operators">
             <file name="org-esa-s2tbx-radiometry-SaviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="SAVI Processor"/>
                 <attr name="operatorName" stringvalue="SaviOp"/>
                 <attr name="dialogTitle" stringvalue="SAVI"/>
@@ -15,7 +15,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-TsaviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="TSAVI Processor"/>
                 <attr name="operatorName" stringvalue="TsaviOp"/>
                 <attr name="dialogTitle" stringvalue="TSAVI"/>
@@ -26,7 +26,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-IpviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="IPVI Processor"/>
                 <attr name="operatorName" stringvalue="IpviOp"/>
                 <attr name="dialogTitle" stringvalue="IPVI"/>
@@ -37,7 +37,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-RviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="RVI Processor"/>
                 <attr name="operatorName" stringvalue="RviOp"/>
                 <attr name="dialogTitle" stringvalue="RVI"/>
@@ -48,7 +48,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-DviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="DVI Processor"/>
                 <attr name="operatorName" stringvalue="DviOp"/>
                 <attr name="dialogTitle" stringvalue="DVI"/>
@@ -59,7 +59,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-WdviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="WDVI Processor"/>
                 <attr name="operatorName" stringvalue="WdviOp"/>
                 <attr name="dialogTitle" stringvalue="WDVI"/>
@@ -70,7 +70,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-PviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="PVI Processor"/>
                 <attr name="operatorName" stringvalue="PviOp"/>
                 <attr name="dialogTitle" stringvalue="PVI"/>
@@ -81,7 +81,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-MsaviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MSAVI Processor"/>
                 <attr name="operatorName" stringvalue="MsaviOp"/>
                 <attr name="dialogTitle" stringvalue="MSAVI"/>
@@ -92,7 +92,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-Msavi2OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MSAVI2 Processor"/>
                 <attr name="operatorName" stringvalue="Msavi2Op"/>
                 <attr name="dialogTitle" stringvalue="MSAVI2"/>
@@ -103,7 +103,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-GemiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="GEMI Processor"/>
                 <attr name="operatorName" stringvalue="GemiOp"/>
                 <attr name="dialogTitle" stringvalue="GEMI"/>
@@ -114,7 +114,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-TndviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="TNDVI Processor"/>
                 <attr name="operatorName" stringvalue="TndviOp"/>
                 <attr name="dialogTitle" stringvalue="TNDVI"/>
@@ -125,7 +125,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-NdwiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDWI Processor"/>
                 <attr name="operatorName" stringvalue="NdwiOp"/>
                 <attr name="dialogTitle" stringvalue="NDWI"/>
@@ -136,7 +136,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-Ndwi2OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDWI2 Processor"/>
                 <attr name="operatorName" stringvalue="Ndwi2Op"/>
                 <attr name="dialogTitle" stringvalue="NDWI2"/>
@@ -147,7 +147,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-MndwiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MNDWI Processor"/>
                 <attr name="operatorName" stringvalue="MndwiOp"/>
                 <attr name="dialogTitle" stringvalue="MNDWI"/>
@@ -158,7 +158,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-NdtiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDTI Processor"/>
                 <attr name="operatorName" stringvalue="NdtiOp"/>
                 <attr name="dialogTitle" stringvalue="NDTI"/>
@@ -169,7 +169,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-GndviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="GNDVI Processor"/>
                 <attr name="operatorName" stringvalue="GndviOp"/>
                 <attr name="dialogTitle" stringvalue="GNDVI"/>
@@ -180,7 +180,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-PssraOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="PSSRa Processor"/>
                 <attr name="operatorName" stringvalue="PssraOp"/>
                 <attr name="dialogTitle" stringvalue="PSSRa"/>
@@ -191,7 +191,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-Ndi45OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDI45 Processor"/>
                 <attr name="operatorName" stringvalue="Ndi45Op"/>
                 <attr name="dialogTitle" stringvalue="NDI45"/>
@@ -202,7 +202,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-MtciOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MTCI Processor"/>
                 <attr name="operatorName" stringvalue="MtciOp"/>
                 <attr name="dialogTitle" stringvalue="MTCI"/>
@@ -213,7 +213,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-McariOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="MCARI Processor"/>
                 <attr name="operatorName" stringvalue="McariOp"/>
                 <attr name="dialogTitle" stringvalue="MCARI"/>
@@ -224,7 +224,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-IreciOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="IRECI Processor"/>
                 <attr name="operatorName" stringvalue="IreciOp"/>
                 <attr name="dialogTitle" stringvalue="IRECI"/>
@@ -235,7 +235,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-S2repOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="S2REP Processor"/>
                 <attr name="operatorName" stringvalue="S2repOp"/>
                 <attr name="dialogTitle" stringvalue="S2REP"/>
@@ -246,7 +246,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-NdpiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="NDPI Processor"/>
                 <attr name="operatorName" stringvalue="NdpiOp"/>
                 <attr name="dialogTitle" stringvalue="NDPI"/>
@@ -257,7 +257,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-CiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="CI Processor"/>
                 <attr name="operatorName" stringvalue="CiOp"/>
                 <attr name="dialogTitle" stringvalue="CI"/>
@@ -268,7 +268,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-BiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="BI Processor"/>
                 <attr name="operatorName" stringvalue="BiOp"/>
                 <attr name="dialogTitle" stringvalue="BI"/>
@@ -279,7 +279,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-Bi2OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="BI2 Processor"/>
                 <attr name="operatorName" stringvalue="Bi2Op"/>
                 <attr name="dialogTitle" stringvalue="BI2"/>
@@ -290,7 +290,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-RiOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="RI Processor"/>
                 <attr name="operatorName" stringvalue="RiOp"/>
                 <attr name="dialogTitle" stringvalue="RI"/>
@@ -301,7 +301,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-ReipOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="REIP Processor"/>
                 <attr name="operatorName" stringvalue="ReipOp"/>
                 <attr name="dialogTitle" stringvalue="REIP"/>
@@ -312,7 +312,7 @@
             </file>
             <file name="org-esa-s2tbx-radiometry-ArviOpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
+                <attr name="delegate" methodvalue="org.esa.s2tbx.radiometry.RadiometricOperatorAction.create"/>
                 <attr name="displayName" stringvalue="ARVI Processor"/>
                 <attr name="operatorName" stringvalue="ArviOp"/>
                 <attr name="dialogTitle" stringvalue="ARVI"/>

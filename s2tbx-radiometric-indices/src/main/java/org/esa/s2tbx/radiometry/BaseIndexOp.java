@@ -1,15 +1,19 @@
 package org.esa.s2tbx.radiometry;
 
 import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
+import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Dragos Mihailescu
@@ -26,10 +30,21 @@ public abstract class BaseIndexOp extends Operator {
     protected static final int LOW_FLAG_VALUE = 1 << 1;
     protected static final int HIGH_FLAG_VALUE = 1 << 2;
 
+    public static final String RESAMPLE_NONE = "None";
+    public static final String RESAMPLE_LOWEST = "Lowest resolution";
+    public static final String RESAMPLE_HIGHEST = "Hightest resolution";
+
     @SourceProduct(alias = "source", description = "The source product.")
     protected Product sourceProduct;
     @TargetProduct
     protected Product targetProduct;
+
+    @Parameter(label = "Resample Method",
+            description = "If selected bands differ in size, the resample method used before computing the index",
+            defaultValue = RESAMPLE_NONE, valueSet = { RESAMPLE_NONE, RESAMPLE_LOWEST, RESAMPLE_HIGHEST })
+    protected String resampleMethod;
+
+    protected String[] sourceBandNames;
 
     private FlagCoding flagCoding;
     private List<MaskDescriptor> maskDescriptors;
@@ -72,8 +87,43 @@ public abstract class BaseIndexOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
 
-        int sceneWidth = sourceProduct.getSceneRasterWidth();
-        int sceneHeight = sourceProduct.getSceneRasterHeight();
+        loadSourceBands(sourceProduct);
+        int sceneWidth = 0, sceneHeight = 0;
+        int resampleStrategy;
+        switch (this.resampleMethod) {
+            case RESAMPLE_LOWEST:
+                resampleStrategy = 1;
+                break;
+            case RESAMPLE_HIGHEST:
+                resampleStrategy = 2;
+                break;
+            default:
+                resampleStrategy = 0;
+                break;
+        }
+        if (resampleStrategy != 0 && this.sourceBandNames != null && this.sourceBandNames.length > 0) {
+            for (String bandName : this.sourceBandNames) {
+                Band band = this.sourceProduct.getBand(bandName);
+                int bandRasterWidth = band.getRasterWidth();
+                if (resampleStrategy == 2) {
+                    if (sceneWidth < bandRasterWidth) {
+                        sceneWidth = bandRasterWidth;
+                        sceneHeight = band.getRasterHeight();
+                    }
+                } else {
+                    if (sceneWidth == 0 || sceneWidth >= bandRasterWidth) {
+                        sceneWidth = bandRasterWidth;
+                        sceneHeight = band.getRasterHeight();
+                    }
+                }
+            }
+        } else {
+            sceneWidth = sourceProduct.getSceneRasterWidth();
+            sceneHeight = sourceProduct.getSceneRasterHeight();
+        }
+        if (resampleStrategy != 0) {
+            this.sourceProduct = resample(this.sourceProduct, sceneWidth, sceneHeight);
+        }
 
         initDefaultMasks();
 
@@ -86,12 +136,12 @@ public abstract class BaseIndexOp extends Operator {
         ProductUtils.copyMasks(sourceProduct, targetProduct);
         ProductUtils.copyOverlayMasks(sourceProduct, targetProduct);
 
-        loadSourceBands(sourceProduct);
-
-        Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        //Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sceneWidth, sceneHeight);
         targetProduct.addBand(outputBand);
 
-        Band flagsOutputBand = new Band(FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        //Band flagsOutputBand = new Band(FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        Band flagsOutputBand = new Band(FLAGS_BAND_NAME, ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         flagsOutputBand.setDescription(name + " specific flags");
 
         FlagCoding flagCoding = initFlagCoding();
@@ -101,9 +151,14 @@ public abstract class BaseIndexOp extends Operator {
         targetProduct.addBand(flagsOutputBand);
 
         for (MaskDescriptor maskDescriptor : getMaskDescriptors()) {
-                targetProduct.addMask(maskDescriptor.name, maskDescriptor.expression, maskDescriptor.description, maskDescriptor.color, maskDescriptor.transparency);
+            targetProduct.addMask(maskDescriptor.name, maskDescriptor.expression, maskDescriptor.description, maskDescriptor.color, maskDescriptor.transparency);
         }
 
+    }
+
+    @Override
+    public Product getSourceProduct() {
+        return this.sourceProduct;
     }
 
     protected void addMaskDescriptor(String name, String expression, String description, Color color, double transparency) {
@@ -120,6 +175,15 @@ public abstract class BaseIndexOp extends Operator {
     }
 
     protected abstract void loadSourceBands(Product product);
+
+    private Product resample(Product source, int targetWidth, int targetHeight) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("referenceBandName", null);
+        parameters.put("targetWidth", targetWidth);
+        parameters.put("targetHeight", targetHeight);
+        parameters.put("targetResolution", null);
+        return GPF.createProduct("Resample", parameters, source);
+    }
 
     private void initDefaultMasks() {
         addMaskDescriptor(ARITHMETIC_FLAG_NAME, FLAGS_BAND_NAME + "." + ARITHMETIC_FLAG_NAME,
@@ -139,16 +203,17 @@ public abstract class BaseIndexOp extends Operator {
         return flagCoding;
     }
 
-    protected String findBand(float minWavelength, float maxWavelength, Product product) {
+    public static String findBand(float minWavelength, float maxWavelength, Product product) {
         String bestBand = null;
-        float bestBandLowerDelta = Float.MAX_VALUE;
+        float minDelta = Float.MAX_VALUE;
+        float mean = (minWavelength + maxWavelength) / 2;
         for (Band band : product.getBands()) {
             float bandWavelength = band.getSpectralWavelength();
             if (bandWavelength != 0.0F) {
-                float lowerDelta = bandWavelength - minWavelength;
-                if (lowerDelta < bestBandLowerDelta && bandWavelength <= maxWavelength && bandWavelength >= minWavelength) {
+                float delta = Math.abs(bandWavelength - mean);
+                if (delta < minDelta) {
                     bestBand = band.getName();
-                    bestBandLowerDelta = lowerDelta;
+                    minDelta = delta;
                 }
             }
         }

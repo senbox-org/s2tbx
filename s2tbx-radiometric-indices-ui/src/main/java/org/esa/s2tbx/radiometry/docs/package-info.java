@@ -15,7 +15,7 @@
  */
 
 /**
- * Created by dmihailescu on 2/22/2016.
+ * Created by dmihailescu on 08/11/2016.
  */
 @HelpSetRegistration(helpSet = "help.hs", position = 2330)
 package org.esa.s2tbx.radiometry.docs;

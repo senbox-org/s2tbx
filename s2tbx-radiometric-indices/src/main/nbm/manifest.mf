@@ -4,7 +4,6 @@ AutoUpdate-Show-In-Client: true
 AutoUpdate-Essential-Module: true
 OpenIDE-Module-Java-Dependencies: Java > 1.8
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
-OpenIDE-Module-Layer: org/esa/s2tbx/radiometry/layer.xml
 OpenIDE-Module-Long-Description: <p>Sentinel-2 Toolbox Radiometric Indices calculus.</p>
  <p><b>Vendor:</b> CS ROMANIA</p>
  <p><b>Copyright:</b> (C) 2016 by CS ROMANIA</p>
