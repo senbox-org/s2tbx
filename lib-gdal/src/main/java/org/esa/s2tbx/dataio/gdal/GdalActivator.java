@@ -17,12 +17,16 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.dataio.gdal.preferences.GdalOptionsController;
 import org.esa.snap.core.util.ResourceInstaller;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.rcp.util.Dialogs;
 import org.esa.snap.runtime.Activator;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
 import org.esa.snap.utils.PostExecAction;
+import org.openide.util.NbPreferences;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,6 +36,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.prefs.BackingStoreException;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang.SystemUtils.*;
@@ -51,53 +56,64 @@ public class GdalActivator implements Activator {
 
     @Override
     public void start() {
-        Path sourceDirPath = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve(SRC_PATH);
-        Path auxdataDirectory = getGDALAuxDataPath();
-        if (auxdataDirectory == null) {
-            SystemUtils.LOG.severe("GDAL configuration error: failed to retrieve auxdata path");
-            return;
-        }
-        final ResourceInstaller resourceInstaller = new ResourceInstaller(sourceDirPath, auxdataDirectory);
-
-        try {
-            resourceInstaller.install(".*", ProgressMonitor.NULL);
-            fixUpPermissions(auxdataDirectory);
-        } catch (IOException e) {
-            SystemUtils.LOG.severe("GDAL configuration error: failed to create " + auxdataDirectory);
-            return;
-        }
-
-        Path zipPath = auxdataDirectory.resolve(OSCategory.getOSCategory().getArchivePath());
-        Path destFolder = zipPath.getParent();
-        final Path binPath = destFolder.resolve(BIN_PATH);
-        try {
-            FileHelper.unzip(zipPath, destFolder, true);
-            String[] jniFiles = OSCategory.getOSCategory().getJniFiles();
-            if (jniFiles == null || jniFiles.length == 0) {
-                throw new IOException("No JNI wrappers found");
+        String gdalPath = NbPreferences.forModule(Dialogs.class).get(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, null);
+        if (gdalPath == null || StringUtils.isNullOrEmpty(gdalPath)
+                || ".".equals(gdalPath) || !Files.exists(Paths.get(gdalPath))) {
+            Path sourceDirPath = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve(SRC_PATH);
+            Path auxdataDirectory = getGDALAuxDataPath();
+            if (auxdataDirectory == null) {
+                SystemUtils.LOG.severe("GDAL configuration error: failed to retrieve auxdata path");
+                return;
             }
-            for (String file : jniFiles) {
-                if (!Files.exists(binPath.resolve(file))) {
-                    Files.move(destFolder.resolve(JAR_PATH).resolve(file), binPath.resolve(file));
+            final ResourceInstaller resourceInstaller = new ResourceInstaller(sourceDirPath, auxdataDirectory);
+
+            try {
+                resourceInstaller.install(".*", ProgressMonitor.NULL);
+                fixUpPermissions(auxdataDirectory);
+            } catch (IOException e) {
+                SystemUtils.LOG.severe("GDAL configuration error: failed to create " + auxdataDirectory);
+                return;
+            }
+
+            Path zipPath = auxdataDirectory.resolve(OSCategory.getOSCategory().getArchivePath());
+            Path destFolder = zipPath.getParent();
+            final Path binPath = destFolder.resolve(BIN_PATH);
+            try {
+                FileHelper.unzip(zipPath, destFolder, true);
+                String[] jniFiles = OSCategory.getOSCategory().getJniFiles();
+                if (jniFiles == null || jniFiles.length == 0) {
+                    throw new IOException("No JNI wrappers found");
+                }
+                for (String file : jniFiles) {
+                    if (!Files.exists(binPath.resolve(file))) {
+                        Files.move(destFolder.resolve(JAR_PATH).resolve(file), binPath.resolve(file));
+                    }
+                }
+            } catch (IOException e) {
+                SystemUtils.LOG.severe(String.format("GDAL configuration error: failed to unzip to %s [Reason: %s]", destFolder, e.getMessage()));
+            }
+
+            NativeLibraryUtils.registerNativePaths(binPath);
+            if (!System.getenv().get("Path").contains(binPath.toString())) {
+                String[] args = OSCategory.getOSCategory().getPathCmd();
+                if (args != null && args.length > 2) {
+                    args[2] = args[2].replace("$1", binPath.toString());
+                    PostExecAction.register("lib-gdal", args);
                 }
             }
-        } catch (IOException e) {
-            SystemUtils.LOG.severe(String.format("GDAL configuration error: failed to unzip to %s [Reason: %s]", destFolder, e.getMessage()));
-        }
 
-        NativeLibraryUtils.registerNativePaths(binPath);
-        if (!System.getenv().get("Path").contains(binPath.toString())) {
-            String[] args = OSCategory.getOSCategory().getPathCmd();
-            if (args != null && args.length > 2) {
-                args[2] = args[2].replace("$1", binPath.toString());
-                PostExecAction.register("lib-gdal", args);
+            try {
+                Files.deleteIfExists(zipPath);
+            } catch (IOException e) {
+                SystemUtils.LOG.warning("GDAL configuration error: failed to delete zip after decompression");
             }
-        }
 
-        try {
-            Files.deleteIfExists(zipPath);
-        } catch (IOException e) {
-            SystemUtils.LOG.warning("GDAL configuration error: failed to delete zip after decompression");
+            try {
+                NbPreferences.forModule(Dialogs.class).put(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, binPath.toString());
+                NbPreferences.forModule(Dialogs.class).flush();
+            } catch (BackingStoreException e) {
+                SystemUtils.LOG.warning("Could not set preferences for the new GDAL path");
+            }
         }
     }
 
