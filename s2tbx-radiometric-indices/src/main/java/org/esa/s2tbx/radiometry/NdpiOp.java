@@ -19,6 +19,7 @@
 package org.esa.s2tbx.radiometry;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
@@ -52,12 +53,14 @@ public class NdpiOp extends BaseIndexOp{
             description = "The green band for the NDPI computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
+    @BandParameter(minWavelength = 525, maxWavelength = 605)
     private String greenSourceBand;
 
     @Parameter(label = "SWIR source band",
             description = "The the short-wave infrared band-I for the NDPI computation. If not provided," +
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
+    @BandParameter(minWavelength = 1550, maxWavelength = 1750)
     private String swirSourceBand;
 
     @Override
@@ -124,6 +127,7 @@ public class NdpiOp extends BaseIndexOp{
         if (swirSourceBand == null) {
             throw new OperatorException("Unable to find band that could be used as SWIR input band. Please specify band.");
         }
+        this.sourceBandNames = new String[] { greenSourceBand, swirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

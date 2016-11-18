@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<!DOCTYPE map
+        PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+        "http://java.sun.com/products/javahelp/map_2_0.dtd">
+
+<map version="2.0">
+
+    <mapID target="ARVIOperator" url="arvi/ArviTool.html"/>
+    <mapID target="ARVIAlgorithm" url="arvi/ArviAlgorithmSpecification.html"/>
+
+    <mapID target="BI2Operator" url="bi2/Bi2Tool.html"/>
+    <mapID target="BI2Algorithm" url="bi2/Bi2AlgorithmSpecification.html"/>
+
+    <mapID target="BIOperator" url="bi/BiTool.html"/>
+    <mapID target="BIAlgorithm" url="bi/BiAlgorithmSpecification.html"/>
+
+    <mapID target="CIOperator" url="ci/CiTool.html"/>
+    <mapID target="CIAlgorithm" url="ci/CiAlgorithmSpecification.html"/>
+
+    <mapID target="DVIOperator" url="dvi/DviTool.html"/>
+    <mapID target="DVIAlgorithm" url="dvi/DviAlgorithmSpecification.html"/>
+
+    <mapID target="GEMIOperator" url="gemi/GemiTool.html"/>
+    <mapID target="GEMIAlgorithm" url="gemi/GemiAlgorithmSpecification.html"/>
+
+    <mapID target="GNDVIOperator" url="gndvi/GndviTool.html"/>
+    <mapID target="GNDVIAlgorithm" url="gndvi/GndviAlgorithmSpecification.html"/>
+
+    <mapID target="IPVIOperator" url="ipvi/IpviTool.html"/>
+    <mapID target="IPVIAlgorithm" url="ipvi/IpviAlgorithmSpecification.html"/>
+
+    <mapID target="IRECIOperator" url="ireci/IreciTool.html"/>
+    <mapID target="IRECIAlgorithm" url="ireci/IreciAlgorithmSpecification.html"/>
+
+    <mapID target="MCARIOperator" url="mcari/McariTool.html"/>
+    <mapID target="MCARIAlgorithm" url="mcari/McariAlgorithmSpecification.html"/>
+
+    <mapID target="MNDWIOperator" url="mndwi/MndwiTool.html"/>
+    <mapID target="MNDWIAlgorithm" url="mndwi/MndwiAlgorithmSpecification.html"/>
+
+    <mapID target="MSAVIOperator" url="msavi/MsaviTool.html"/>
+    <mapID target="MSAVIAlgorithm" url="msavi/MsaviAlgorithmSpecification.html"/>
+
+    <mapID target="MSAVI2Operator" url="msavi2/Msavi2Tool.html"/>
+    <mapID target="MSAVI2Algorithm" url="msavi2/Msavi2AlgorithmSpecification.html"/>
+
+    <mapID target="MTCIOperator" url="mtci/MtciTool.html"/>
+    <mapID target="MTCIAlgorithm" url="mtci/MtciAlgorithmSpecification.html"/>
+
+    <mapID target="NDI45Operator" url="ndi45/Ndi45Tool.html"/>
+    <mapID target="NDI45Algorithm" url="ndi45/Ndi45AlgorithmSpecification.html"/>
+
+    <mapID target="NDPIOperator" url="ndpi/NdpiTool.html"/>
+    <mapID target="NDPIAlgorithm" url="ndpi/NdpiAlgorithmSpecification.html"/>
+
+    <mapID target="NDTIOperator" url="ndti/NdtiTool.html"/>
+    <mapID target="NDTIAlgorithm" url="ndti/NdtiAlgorithmSpecification.html"/>
+
+    <mapID target="NDWI2Operator" url="ndwi2/Ndwi2Tool.html"/>
+    <mapID target="NDWI2Algorithm" url="ndwi2/Ndwi2AlgorithmSpecification.html"/>
+
+    <mapID target="NDWIOperator" url="ndwi/NdwiTool.html"/>
+    <mapID target="NDWIAlgorithm" url="ndwi/NdwiAlgorithmSpecification.html"/>
+
+    <mapID target="PSSRaOperator" url="pssra/PssraTool.html"/>
+    <mapID target="PSSRaAlgorithm" url="pssra/PssraAlgorithmSpecification.html"/>
+
+    <mapID target="PVIOperator" url="pvi/PviTool.html"/>
+    <mapID target="PVIAlgorithm" url="pvi/PviAlgorithmSpecification.html"/>
+
+    <mapID target="REIPOperator" url="reip/ReipTool.html"/>
+    <mapID target="REIPAlgorithm" url="reip/ReipAlgorithmSpecification.html"/>
+
+    <mapID target="RIOperator" url="ri/RiTool.html"/>
+    <mapID target="RIAlgorithm" url="ri/RiAlgorithmSpecification.html"/>
+
+    <mapID target="RVIOperator" url="rvi/RviTool.html"/>
+    <mapID target="RVIAlgorithm" url="rvi/RviAlgorithmSpecification.html"/>
+
+    <mapID target="S2REPOperator" url="s2rep/S2repTool.html"/>
+    <mapID target="S2REPAlgorithm" url="s2rep/S2repAlgorithmSpecification.html"/>
+
+    <mapID target="SAVIOperator" url="savi/SaviTool.html"/>
+    <mapID target="SAVIAlgorithm" url="savi/SaviAlgorithmSpecification.html"/>
+
+    <mapID target="TNDVIOperator" url="tndvi/TndviTool.html"/>
+    <mapID target="TNDVIAlgorithm" url="tndvi/TndviAlgorithmSpecification.html"/>
+
+    <mapID target="TSAVIOperator" url="tsavi/TsaviTool.html"/>
+    <mapID target="TSAVIAlgorithm" url="tsavi/TsaviAlgorithmSpecification.html"/>
+
+    <mapID target="WDVIOperator" url="wdvi/WdviTool.html"/>
+    <mapID target="WDVIAlgorithm" url="wdvi/WdviAlgorithmSpecification.html"/>
+
+    <mapID target="OperatorsIndexList" url="OperatorsIndexList.html"/>
+
+</map>

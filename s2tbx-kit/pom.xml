@@ -171,6 +171,12 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-radiometric-indices-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-biophysical</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -1,0 +1,89 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<html>
+<head>
+    <title>SNAP GEMI - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            GEMI Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>GEMI</h3>
+
+<p>
+    The <u><b>G</b></u>lobal <u><b>E</b></u>nvironmental <u><b>M</b></u>onitoring <u><b>I</b></u>ndex
+    algorithm was developed by Pinty and Verstraete (1991). <br><br>
+
+    They attempt to eliminate the need for a detailed atmospheric correction by constructing a <b>stock</b> atmospheric correction for the vegetation index.<br>
+    Pinty and Verstraete (1991) provide no detailed reasoning for this index, other than that it meets their requirements of insensitivity to the atmosphere empirically.<br>
+    A paper by Leprieur et al. (1994) claims to find that GEMI is superior to other indices for satellite measurements.<br>
+    Qi et al. (1994) shows a violent breakdown of GEMI with respect to soil noise at low vegetation covers. <br><br>
+</p>
+
+
+<p>
+    The GEMI results from the following equation:
+</p>
+
+<p>
+    <b>GEMI = eta * (1 - 0.25 * eta) - (red_factor * red - 0.125) / (1 - red_factor * red)</b> <br><br>
+</p>
+
+<p>
+    , where: <br><br>
+    <b>eta = (2 * (IR_factor * near_IR * IR_factor * near_IR - red_factor * red * red_factor * red) + 1.5 * IR_factor * near_IR + 0.5 * red_factor * red) / (IR_factor * near_IR + red_factor * red + 0.5)</b><br><br>
+
+</p>
+
+<p>
+    The atmosphere is changing all of the time and all remote sensing instruments have to look through it.<br>
+    The atmosphere both attenuates light passing through it and scatters light from suspended aerosols.<br>
+    Also, the atmosphere can vary strongly across a single scene, especially in areas with high relief.<br>
+    This alters the light seen by the instrument and can cause variations in the calculated values of vegetation indices.<br>
+    This is particularly a problem for comparing vegetation index values for different dates.<br>
+    The GEMI index is trying to remedy this problem without the requirement of atmospherically corrected data. <br>
+    <b>WARNING</b>: These indices achieve their reduced sensitivity to the atmosphere by decreasing the dynamic range.<br>
+    They are generally slightly less sensitive to changes in vegetation cover than NDVI.<br>
+    At low levels they are very sensitive to the soil background. (See Qi et al. (1994) for comparisons.) <br><br>
+</p>
+
+<h3>GEMI-Flags</h3>
+
+<p>
+    Also the processor computes an additional flags band called 'gemi_flags'
+    with the following bit coding:</p>
+<table>
+    <tr><th>Bit Position</th><th>Description</th></tr>
+    <tr><td>Bit 0</td><td>The computed value for GEMI is NAN or is Infinite</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for GEMI is less than 0 (zero)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for GEMI is greater than 1 (one)</td></tr>
+</table>
+<p>
+</p>
+<hr>
+</body>
+</html>

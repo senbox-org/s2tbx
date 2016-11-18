@@ -1,0 +1,76 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<html>
+<head>
+    <title>SNAP MCARI - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            MCARI Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>MCARI</h3>
+
+<p>
+    The <u><b>M</b></u>odified <u><b>C</b></u>hlorophyll <u><b>A</b></u>bsorption <u><b>R</b></u>atio <u><b>I</b></u>ndex
+    algorithm was developed by Daughtry et al. (2000) to be responsive to chlorophyll variation.<br><br>
+
+    This algorithm is responsive to both leaf chlorophyll concentrations and ground reflectance. <br><br>
+</p>
+
+
+
+<p>
+    The MCARI results from the following equation:<br><br>
+</p>
+
+<p>
+    <b>MCARI = ((red_factor2 * red2 - red_factor1 * red1) - 0.2 * (red_factor2 * red2 - green_factor * green)) * (red_factor2 * red2 - red_factor1 * red1)</b> <br><br>
+
+</p>
+
+
+<p>
+    For <b>Sentinel-2</b> the formula is: <br><br>
+    <b>[(B5 - B4) - 0.2 * (B5 - B3)] * (B5 - B4)</b>, where (Central wavelength/Bandwidth): B5 = 705 nm (15 nm), B4 = 665 nm (30 nm), B3 = 560 nm (35 nm)
+</p>
+
+<h3>MCARI-Flags</h3>
+
+<p>
+    Also the processor computes an additional flags band called 'mcari_flags'
+    with the following bit coding:</p>
+<table>
+    <tr><th>Bit Position</th><th>Description</th></tr>
+    <tr><td>Bit 0</td><td>The computed value for MCARI is NAN or is Infinite</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for MCARI is less than 0 (zero)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for MCARI is greater than 1 (one)</td></tr>
+</table>
+<p>
+</p>
+<hr>
+</body>
+</html>

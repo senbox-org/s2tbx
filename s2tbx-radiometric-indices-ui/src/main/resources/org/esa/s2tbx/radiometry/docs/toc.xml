@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='ISO-8859-1'  ?>
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<!DOCTYPE toc
+        PUBLIC
+        "-//Sun Microsystems Inc.//DTD
+     JavaHelp TOC Version 2.0//EN"
+        "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+
+<toc version="2.0" categoryclosedimage="folder" categoryopenimage="folder" topicimage="doc">
+
+    <tocitem text="Sentinel Toolbox Application">
+        <tocitem text="Optical">
+            <tocitem text="Thematic Land Processing">
+
+                <tocitem text="Radiometric Indices Complete List" target="OperatorsIndexList"/>
+
+                <tocitem text="Vegetation Radiometric Indices">
+
+                    <tocitem text="SAVI Operator" target="SAVIOperator">
+                        <tocitem text="SAVI Algorithm Specification" target="SAVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="TSAVI Operator" target="TSAVIOperator">
+                        <tocitem text="TSAVI Algorithm Specification" target="TSAVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="MSAVI Operator" target="MSAVIOperator">
+                        <tocitem text="MSAVI Algorithm Specification" target="MSAVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="MSAVI2 Operator" target="MSAVI2Operator">
+                        <tocitem text="MSAVI2 Algorithm Specification" target="MSAVI2Algorithm"/>
+                    </tocitem>
+                    <tocitem text="DVI Operator" target="DVIOperator">
+                        <tocitem text="DVI Algorithm Specification" target="DVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="RVI Operator" target="RVIOperator">
+                        <tocitem text="RVI Algorithm Specification" target="RVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="PVI Operator" target="PVIOperator">
+                        <tocitem text="PVI Algorithm Specification" target="PVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="IPVI Operator" target="IPVIOperator">
+                        <tocitem text="IPVI Algorithm Specification" target="IPVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="WDVI Operator" target="WDVIOperator">
+                        <tocitem text="WDVI Algorithm Specification" target="WDVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="TNDVI Operator" target="TNDVIOperator">
+                        <tocitem text="TNDVI Algorithm Specification" target="TNDVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="GNDVI Operator" target="GNDVIOperator">
+                        <tocitem text="GNDVI Algorithm Specification" target="GNDVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="GEMI Operator" target="GEMIOperator">
+                        <tocitem text="GEMI Algorithm Specification" target="GEMIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="ARVI Operator" target="ARVIOperator">
+                        <tocitem text="ARVI Algorithm Specification" target="ARVIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="NDI45 Operator" target="NDI45Operator">
+                        <tocitem text="NDI45 Algorithm Specification" target="NDI45Algorithm"/>
+                    </tocitem>
+                    <tocitem text="MTCI Operator" target="MTCIOperator">
+                        <tocitem text="MTCI Algorithm Specification" target="MTCIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="MCARI Operator" target="MCARIOperator">
+                        <tocitem text="MCARI Algorithm Specification" target="MCARIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="REIP Operator" target="REIPOperator">
+                        <tocitem text="REIP Algorithm Specification" target="REIPAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="S2REP Operator" target="S2REPOperator">
+                        <tocitem text="S2REP Algorithm Specification" target="S2REPAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="IRECI Operator" target="IRECIOperator">
+                        <tocitem text="IRECI Algorithm Specification" target="IRECIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="PSSRa Operator" target="PSSRaOperator">
+                        <tocitem text="PSSRa Algorithm Specification" target="PSSRaAlgorithm"/>
+                    </tocitem>
+
+                </tocitem>
+
+                <tocitem text="Water Radiometric Indices">
+
+                    <tocitem text="NDWI Operator" target="NDWIOperator">
+                        <tocitem text="NDWI Algorithm Specification" target="NDWIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="NDWI2 Operator" target="NDWI2Operator">
+                        <tocitem text="NDWI2 Algorithm Specification" target="NDWI2Algorithm"/>
+                    </tocitem>
+                    <tocitem text="MNDWI Operator" target="MNDWIOperator">
+                        <tocitem text="MNDWI Algorithm Specification" target="MNDWIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="NDPI Operator" target="NDPIOperator">
+                        <tocitem text="NDPI Algorithm Specification" target="NDPIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="NDTI Operator" target="NDTIOperator">
+                        <tocitem text="NDTI Algorithm Specification" target="NDTIAlgorithm"/>
+                    </tocitem>
+
+                </tocitem>
+
+                <tocitem text="Soil Radiometric Indices">
+
+                    <tocitem text="BI Operator" target="BIOperator">
+                        <tocitem text="BI Algorithm Specification" target="BIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="BI2 Operator" target="BI2Operator">
+                        <tocitem text="BI2 Algorithm Specification" target="BI2Algorithm"/>
+                    </tocitem>
+                    <tocitem text="RI Operator" target="RIOperator">
+                        <tocitem text="RI Algorithm Specification" target="RIAlgorithm"/>
+                    </tocitem>
+                    <tocitem text="CI Operator" target="CIOperator">
+                        <tocitem text="CI Algorithm Specification" target="CIAlgorithm"/>
+                    </tocitem>
+
+                </tocitem>
+
+            </tocitem>
+        </tocitem>
+    </tocitem>
+
+</toc>

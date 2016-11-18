@@ -1,0 +1,87 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<html>
+<head>
+    <title>SNAP MSAVI2 - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            MSAVI2 Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>MSAVI2</h3>
+
+<p>
+    The <b>second</b> <u><b>M</b></u>odified <u><b>S</b></u>oil <u><b>A</b></u>djusted <u><b>V</b></u>egetation <u><b>I</b></u>ndex
+    algorithm was was developed by Qi et al. (1994) as a recursion of <a href="../msavi/MsaviAlgorithmSpecification.html"><b>MSAVI</b></a> <br><br>
+
+    Basically, they use an iterative process and substitute 1 - MSAVI(n-1) as the <b>L</b> factor in MSAVI(n). <br>
+    They then inductively solve the iteration where MSAVI(n) = MSAVI(n-1)<br>
+    In the process, the need to precalculate <a href="../wdvi/WdviAlgorithmSpecification.html"><b>WDVI</b></a> and <b>NDVI</b> and the need to find the soil line are eliminated.<br><br>
+</p>
+
+
+<p>
+    The MSAVI2 results from the following equation:
+</p>
+
+<p>
+    <b>MSAVI2 = (1/2) * ( 2 * (IR_factor * near_IR + 1) - sqrt( ( 2 * IR_factor * near_IR + 1) * ( 2 * IR_factor * near_IR + 1) - 8 * (IR_factor * near_IR - red_factor * red) ) )</b><br><br>
+
+
+</p>
+
+
+<p>
+    Not all soils are alike. Different soils have different reflectance spectra.<br>
+    All of the vegetation indices assume that there is a soil line, where there is a single slope in RED-NIR space.<br>
+    However, it is often the case that there are soils with different RED-NIR slopes in a single image.<br>
+    Also, if the assumption about the isovegetation lines (parallel or intercepting at the origin) is not exactly right,<br>
+    changes in soil moisture (which move along isovegetation lines) will give incorrect answers for the vegetation index.<br>
+    The problem of soil noise is most acute when vegetation cover is low.<br>
+    The following group of indices attempt to reduce soil noise by altering the behavior of the isovegetation lines.<br>
+    All of them are ratio-based, and the way that they attempt to reduce soil noise is by shifting the place where the isovegetation lines meet.<br>
+    <b>WARNING</b>: These indices reduce soil noise at the cost of decreasing the dynamic range of the index.<br>
+    These indices are slightly less sensitive to changes in vegetation cover than NDVI (but more sensitive than PVI) at low levels of vegetation cover.<br>
+    These indices are also more sensitive to atmospheric variations than NDVI (but less so than PVI). (See Qi et al. (1994) for comparisons.) <br><br>
+</p>
+
+<h3>MSAVI2-Flags</h3>
+
+<p>
+    Also the processor computes an additional flags band called 'msavi2_flags'
+    with the following bit coding:</p>
+<table>
+    <tr><th>Bit Position</th><th>Description</th></tr>
+    <tr><td>Bit 0</td><td>The computed value for MSAVI2 is NAN or is Infinite</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for MSAVI2 is less than 0 (zero)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for MSAVI2 is greater than 1 (one)</td></tr>
+</table>
+<p>
+</p>
+<hr>
+</body>
+</html>
