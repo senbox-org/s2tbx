@@ -15,6 +15,7 @@ import org.esa.snap.core.gpf.ui.DefaultIOParametersPanel;
 import org.esa.snap.core.gpf.ui.DefaultSingleTargetProductDialog;
 import org.esa.snap.core.gpf.ui.SourceProductSelector;
 import org.esa.snap.core.util.StringUtils;
+import org.esa.snap.rcp.util.Dialogs;
 import org.esa.snap.tango.TangoIcons;
 import org.esa.snap.ui.AppContext;
 
@@ -32,12 +33,14 @@ import java.util.stream.Collectors;
  */
 public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
 
+    private static final String PROPERTY_UPSAMPLE = "upsamplingMethod";
+    private static final String PROPERTY_DOWNSAMPLE = "downsamplingMethod";
+    private static final String PROPERTY_RESAMPLE = "resampleType";
+    private static final String resampleMessage = "Bands will be resampled at the %s resolution";
+
     private List<Field> bandFields;
     private JLabel messageLabel;
     private JPanel messagePanel;
-    private Property upsampleProperty;
-    private Property downsampleProperty;
-    private static final String resampleMessage = "Bands will be resampled at the %s resolution";
 
     public RadiometricIndicesDialog(String operatorName, AppContext appContext, String title, String helpID) {
         this(operatorName, appContext, title, helpID, true);
@@ -67,8 +70,6 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
 
         BindingContext bindingContext = getBindingContext();
         PropertySet propertySet = bindingContext.getPropertySet();
-        this.upsampleProperty = propertySet.getProperty("upsamplingMethod");
-        this.downsampleProperty = propertySet.getProperty("downsamplingMethod");
 
         this.bandFields.stream()
                 .map(f -> new AbstractMap.SimpleEntry<>(propertySet.getProperty(f.getName()),
@@ -79,12 +80,12 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
                     BandParameter annotation = entry.getValue();
                     if (annotation != null) {
                         final PropertyDescriptor propertyDescriptor = property.getDescriptor();
-                        propertyDescriptor.setDisplayName(String.format("%s [%dnm,%dnm]",
-                                propertyDescriptor.getDisplayName(),
+                        propertyDescriptor.setDescription(propertyDescriptor.getDescription()
+                                + String.format(" Expected wavelength interval: [%dnm, %dnm]",
                                 (int) annotation.minWavelength(), (int) annotation.maxWavelength()));
                     }
                 });
-        propertySet.getProperty("resampleType").addPropertyChangeListener(evt -> checkResampling(getSelectedProduct()));
+        propertySet.getProperty(PROPERTY_RESAMPLE).addPropertyChangeListener(evt -> checkResampling(getSelectedProduct()));
         messagePanel = new JPanel();
         messagePanel.add(new JLabel(TangoIcons.status_dialog_information(TangoIcons.Res.R16)));
         messageLabel = new JLabel(resampleMessage);
@@ -103,6 +104,16 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
     @Override
     public void hide() {
         super.hide();
+    }
+
+    @Override
+    protected void onApply() {
+        if (isResampleNeeded(getSelectedProduct()) &&
+                BaseIndexOp.RESAMPLE_NONE.equals(getBindingContext().getPropertySet().getValue(PROPERTY_RESAMPLE))) {
+            Dialogs.showWarning("Please select how resampling should be performed");
+            return;
+        }
+        super.onApply();
     }
 
     private void insertMessageLabel() {
@@ -133,29 +144,41 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
         return sourceProductSelectorList.get(0).getSelectedProduct();
     }
 
-    private void checkResampling(Product product) {
-        int sceneWidth = 0;
+    private boolean isResampleNeeded(Product product) {
         boolean needsResampling = false;
+        if (product != null) {
+            int sceneWidth = 0;
+            BindingContext bindingContext = getBindingContext();
+            PropertySet propertySet = bindingContext.getPropertySet();
+
+            Set<String> setBandNames = this.bandFields.stream()
+                                                      .map(f -> propertySet.getProperty(f.getName()))
+                                                      .filter(p -> !StringUtils.isNullOrEmpty(p.getValueAsText()))
+                                                      .map(Property::getValueAsText)
+                                                      .collect(Collectors.toSet());
+            if (setBandNames.size() > 0) {
+                BitSet bitSet = new BitSet(setBandNames.size());
+                int idx = 0;
+                for (String bandName : setBandNames) {
+                    Band band = product.getBand(bandName);
+                    bitSet.set(idx++, sceneWidth != 0 && sceneWidth != band.getRasterWidth());
+                    sceneWidth = band.getRasterWidth();
+                }
+                needsResampling = bitSet.nextSetBit(0) != -1;
+            }
+        }
+        return needsResampling;
+    }
+
+    private void checkResampling(Product product) {
         BindingContext bindingContext = getBindingContext();
         PropertySet propertySet = bindingContext.getPropertySet();
-
-        Set<Property> propNames = this.bandFields.stream().map(f -> propertySet.getProperty(f.getName())).collect(Collectors.toSet());
-        Set<String> setBandNames = propNames.stream().filter(p -> !StringUtils.isNullOrEmpty(p.getValueAsText()))
-                .map(Property::getValueAsText).collect(Collectors.toSet());
-        if (setBandNames.size() > 0) {
-            BitSet bitSet = new BitSet(setBandNames.size());
-            int idx = 0;
-            for (String bandName : setBandNames) {
-                Band band = product.getBand(bandName);
-                bitSet.set(idx++, sceneWidth != 0 && sceneWidth != band.getRasterWidth());
-                sceneWidth = band.getRasterWidth();
-            }
-            needsResampling = bitSet.nextSetBit(0) != -1;
-        }
+        boolean needsResampling = isResampleNeeded(product);
         if (!needsResampling) {
-            propertySet.setValue("resampleType", BaseIndexOp.RESAMPLE_NONE);
+            propertySet.setValue(PROPERTY_RESAMPLE, BaseIndexOp.RESAMPLE_NONE);
         }
-        setMessage(propertySet.getValue("resampleType"));
+        setMessage(propertySet.getValue(PROPERTY_RESAMPLE));
+        setEnabled(PROPERTY_RESAMPLE, needsResampling);
         messagePanel.setVisible(needsResampling);
     }
 
@@ -163,20 +186,20 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
         switch (method) {
             case BaseIndexOp.RESAMPLE_LOWEST:
                 messageLabel.setText(String.format(resampleMessage, "lowest"));
-                setEnabled(this.downsampleProperty, true);
-                setEnabled(this.upsampleProperty, false);
+                setEnabled(PROPERTY_DOWNSAMPLE, true);
+                setEnabled(PROPERTY_UPSAMPLE, false);
                 messageLabel.setForeground(Color.BLUE);
                 break;
             case BaseIndexOp.RESAMPLE_HIGHEST:
                 messageLabel.setText(String.format(resampleMessage, "highest"));
-                setEnabled(this.downsampleProperty, false);
-                setEnabled(this.upsampleProperty, true);
+                setEnabled(PROPERTY_DOWNSAMPLE, false);
+                setEnabled(PROPERTY_UPSAMPLE, true);
                 messageLabel.setForeground(Color.BLUE);
                 break;
             case BaseIndexOp.RESAMPLE_NONE:
                 messageLabel.setText("Product needs to be resampled first");
-                setEnabled(this.downsampleProperty, false);
-                setEnabled(this.upsampleProperty, false);
+                setEnabled(PROPERTY_DOWNSAMPLE, false);
+                setEnabled(PROPERTY_UPSAMPLE, false);
                 messageLabel.setForeground(Color.RED);
                 break;
         }
@@ -205,10 +228,10 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
         }
     }
 
-    private void setEnabled(Property property, boolean value) {
+    private void setEnabled(String propertyName, boolean value) {
         if (this.getJDialog().isVisible()) {
             BindingContext bindingContext = getBindingContext();
-            bindingContext.setComponentsEnabled(property.getName(), value);
+            bindingContext.setComponentsEnabled(propertyName, value);
         }
     }
 }
