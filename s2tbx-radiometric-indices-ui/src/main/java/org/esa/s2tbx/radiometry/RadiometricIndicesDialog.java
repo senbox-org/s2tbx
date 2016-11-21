@@ -35,6 +35,8 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
     private List<Field> bandFields;
     private JLabel messageLabel;
     private JPanel messagePanel;
+    private Property upsampleProperty;
+    private Property downsampleProperty;
     private static final String resampleMessage = "Bands will be resampled at the %s resolution";
 
     public RadiometricIndicesDialog(String operatorName, AppContext appContext, String title, String helpID) {
@@ -65,6 +67,9 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
 
         BindingContext bindingContext = getBindingContext();
         PropertySet propertySet = bindingContext.getPropertySet();
+        this.upsampleProperty = propertySet.getProperty("upsamplingMethod");
+        this.downsampleProperty = propertySet.getProperty("downsamplingMethod");
+
         this.bandFields.stream()
                 .map(f -> new AbstractMap.SimpleEntry<>(propertySet.getProperty(f.getName()),
                         f.getAnnotation(BandParameter.class)))
@@ -79,7 +84,7 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
                                 (int) annotation.minWavelength(), (int) annotation.maxWavelength()));
                     }
                 });
-        propertySet.getProperty("resampleMethod").addPropertyChangeListener(evt -> checkResampling(getSelectedProduct()));
+        propertySet.getProperty("resampleType").addPropertyChangeListener(evt -> checkResampling(getSelectedProduct()));
         messagePanel = new JPanel();
         messagePanel.add(new JLabel(TangoIcons.status_dialog_information(TangoIcons.Res.R16)));
         messageLabel = new JLabel(resampleMessage);
@@ -113,6 +118,8 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
         wrapper.setPreferredSize(preferredSize);
         viewport.remove(initial);
         viewport.add(wrapper);
+        final Dimension windowSize = this.getJDialog().getPreferredSize();
+        this.getJDialog().setMinimumSize(new Dimension(windowSize.width, windowSize.height + 30));
     }
 
     /**
@@ -146,9 +153,9 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
             needsResampling = bitSet.nextSetBit(0) != -1;
         }
         if (!needsResampling) {
-            propertySet.setValue("resampleMethod", BaseIndexOp.RESAMPLE_NONE);
+            propertySet.setValue("resampleType", BaseIndexOp.RESAMPLE_NONE);
         }
-        setMessage(propertySet.getValue("resampleMethod"));
+        setMessage(propertySet.getValue("resampleType"));
         messagePanel.setVisible(needsResampling);
     }
 
@@ -156,14 +163,20 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
         switch (method) {
             case BaseIndexOp.RESAMPLE_LOWEST:
                 messageLabel.setText(String.format(resampleMessage, "lowest"));
+                setEnabled(this.downsampleProperty, true);
+                setEnabled(this.upsampleProperty, false);
                 messageLabel.setForeground(Color.BLUE);
                 break;
             case BaseIndexOp.RESAMPLE_HIGHEST:
                 messageLabel.setText(String.format(resampleMessage, "highest"));
+                setEnabled(this.downsampleProperty, false);
+                setEnabled(this.upsampleProperty, true);
                 messageLabel.setForeground(Color.BLUE);
                 break;
             case BaseIndexOp.RESAMPLE_NONE:
                 messageLabel.setText("Product needs to be resampled first");
+                setEnabled(this.downsampleProperty, false);
+                setEnabled(this.upsampleProperty, false);
                 messageLabel.setForeground(Color.RED);
                 break;
         }
@@ -189,6 +202,13 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
                 }
             }
             checkResampling(selectedProduct);
+        }
+    }
+
+    private void setEnabled(Property property, boolean value) {
+        if (this.getJDialog().isVisible()) {
+            BindingContext bindingContext = getBindingContext();
+            bindingContext.setComponentsEnabled(property.getName(), value);
         }
     }
 }

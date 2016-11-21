@@ -39,10 +39,22 @@ public abstract class BaseIndexOp extends Operator {
     @TargetProduct
     protected Product targetProduct;
 
-    @Parameter(label = "Resample Method",
+    @Parameter(label = "Resample Type",
             description = "If selected bands differ in size, the resample method used before computing the index",
             defaultValue = RESAMPLE_NONE, valueSet = { RESAMPLE_NONE, RESAMPLE_LOWEST, RESAMPLE_HIGHEST })
-    protected String resampleMethod;
+    protected String resampleType;
+    @Parameter(alias = "upsampling",
+            label = "Upsampling method",
+            description = "The method used for interpolation (upsampling to a finer resolution).",
+            valueSet = {"Nearest", "Bilinear", "Bicubic"},
+            defaultValue = "Nearest")
+    protected String upsamplingMethod;
+    @Parameter(alias = "downsampling",
+            label = "Downsampling method",
+            description = "The method used for aggregation (downsampling to a coarser resolution).",
+            valueSet = {"First", "Min", "Max", "Mean", "Median"},
+            defaultValue = "First")
+    private String downsamplingMethod;
 
     protected String[] sourceBandNames;
 
@@ -90,7 +102,7 @@ public abstract class BaseIndexOp extends Operator {
         loadSourceBands(sourceProduct);
         int sceneWidth = 0, sceneHeight = 0;
         int resampleStrategy;
-        switch (this.resampleMethod) {
+        switch (this.resampleType) {
             case RESAMPLE_LOWEST:
                 resampleStrategy = 1;
                 break;
@@ -182,6 +194,11 @@ public abstract class BaseIndexOp extends Operator {
         parameters.put("targetWidth", targetWidth);
         parameters.put("targetHeight", targetHeight);
         parameters.put("targetResolution", null);
+        if (RESAMPLE_LOWEST.equals(this.resampleType)) {
+            parameters.put("downsampling", this.downsamplingMethod);
+        } else if (RESAMPLE_HIGHEST.equals(this.resampleType)) {
+            parameters.put("upsampling", this.upsamplingMethod);
+        }
         return GPF.createProduct("Resample", parameters, source);
     }
 
