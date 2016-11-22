@@ -1,3 +1,21 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
@@ -14,6 +32,69 @@
     </tr>
 </table>
 <h1>Radiometric Indices</h1>
+<p>Radiometric indices are quantitative measures of features that are obtained by combining several spectral bands,
+    features that are not otherwise obvious if using only one band.
+</p>
+<p>The indices provided with Sentinel-2 Toolbox, detailed below, are grouped into three categories:</p>
+    <ul>
+        <li>Vegetation indices</li>
+        <li>Soil indices</li>
+        <li>Water indices</li>
+    </ul>
+<p>These indices share the same graphical interface, as in the next figure:</p>
+<table border="0" cellspacing="1" cellpadding="0">
+    <tr>
+        <td style="border: none;">
+            <img src="images/ri_window.png" />
+        </td>
+        <td valign="top" style="border: none;">
+            <table border="0" cellpadding="1" cellspacing="1">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Resample Type</strong></td>
+                        <td>In case when the bands involved in the calculus are not of the same resolution,
+                            this represents the choice of resampling the bands: either use the lowest resolution
+                            band as reference, or the highest resolution one.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Upsampling Method</strong></td>
+                        <td>If the resampling will be done for the highest resolution band,
+                            this is the method used for upsampling lower resolution bands.<br/>
+                            Can be one of: <strong>Nearest neighbour, Bilinear, Bicubic</strong>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Downsampling Method</strong></td>
+                        <td>If the resampling will be done for the lowest resolution band,
+                            this is the method used for downsampling higher resolution bands.<br/>
+                            Can be one of: <strong>First, Min, Max, Mean, Median</strong>.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>[Bx] factor</strong></td>
+                        <td>The weight given to the [Bx] band pixel value.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>[Bx]</strong></td>
+                        <td>The selected band [Bx]</td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</table>
+<p>In case of bands with different resolutions are employed, a message is displayed at the bottom of the window, as it can be seen on the above figure.<br/>
+    If no resample is needed, the parameters <strong>Resample Type, Upsampling Method</strong> and <strong>Downsampling Method</strong> will be disabled.<br/>
+    The parameters <strong>Upsampling Method</strong> and <strong>Downsampling Method</strong> are mutually exclusive.
+</p>
+<br/>
+<p>The following table summarizes the radiometric indices provided with the toolbox:</p>
 <table>
   <tr>
     <td><h4><b>Name</b></h4></td>
