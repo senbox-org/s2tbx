@@ -1,0 +1,75 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<html>
+<head>
+    <title>SNAP PVI - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            PVI Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>PVI</h3>
+
+<p>
+    The <u><b>P</b></u>erpendicular <u><b>V</b></u>egetation <u><b>I</b></u>ndex
+    algorithm was first described by Richardson and Wiegand (1977). <br><br>
+
+    This could be considered a generalization of the DVI which allows for soil lines of different slopes. <br>
+    PVI is quite sensitive to atmospheric variations, (Qi et al., 1994). <br>
+    Consequently, comparing PVI values for data taken at different dates is hazardous unless an atmospheric correction is performed on the data.<br><br>
+</p>
+
+
+<p>
+    The PVI results from the following equation:
+</p>
+
+<p>
+    <br><b>PVI = sin(a) * IR_factor * near_IR - cos(a) * red_factor * red</b><br>
+</p>
+
+<p>
+    where: <b>a</b> is the angle between the soil line and the NIR axis, in degrees. <br>
+</p>
+
+
+<h3>PVI-Flags</h3>
+
+<p>
+    Also the processor computes an additional flags band called 'pvi_flags'
+    with the following bit coding:</p>
+<table>
+    <tr><th>Bit Position</th><th>Description</th></tr>
+    <tr><td>Bit 0</td><td>The computed value for PVI is NAN or is Infinite</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for PVI is less than 0 (zero)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for PVI is greater than 1 (one)</td></tr>
+</table>
+<p>
+</p>
+<hr>
+</body>
+</html>

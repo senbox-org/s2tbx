@@ -1,18 +1,45 @@
+/*
+ *
+ *  * Copyright (C) 2016 CS ROMANIA
+ *  *
+ *  * This program is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU General Public License as published by the Free
+ *  * Software Foundation; either version 3 of the License, or (at your option)
+ *  * any later version.
+ *  * This program is distributed in the hope that it will be useful, but WITHOUT
+ *  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ *  * more details.
+ *  *
+ *  * You should have received a copy of the GNU General Public License along
+ *  *  with this program; if not, see http://www.gnu.org/licenses/
+ *
+ */
+
 package org.esa.s2tbx.radiometry;
 
 import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
+import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
+ * Base class for radiometric indices.
+ *
  * @author Dragos Mihailescu
+ * @author Cosmin Cara
+ *
+ * @since 5.0.0
  */
 public abstract class BaseIndexOp extends Operator {
 
@@ -26,10 +53,32 @@ public abstract class BaseIndexOp extends Operator {
     protected static final int LOW_FLAG_VALUE = 1 << 1;
     protected static final int HIGH_FLAG_VALUE = 1 << 2;
 
+    public static final String RESAMPLE_NONE = "None";
+    public static final String RESAMPLE_LOWEST = "Lowest resolution";
+    public static final String RESAMPLE_HIGHEST = "Highest resolution";
+
     @SourceProduct(alias = "source", description = "The source product.")
     protected Product sourceProduct;
     @TargetProduct
     protected Product targetProduct;
+    @Parameter(label = "Resample Type",
+            description = "If selected bands differ in size, the resample method used before computing the index",
+            defaultValue = RESAMPLE_NONE, valueSet = { RESAMPLE_NONE, RESAMPLE_LOWEST, RESAMPLE_HIGHEST })
+    protected String resampleType;
+    @Parameter(alias = "upsampling",
+            label = "Upsampling Method",
+            description = "The method used for interpolation (upsampling to a finer resolution).",
+            valueSet = {"Nearest", "Bilinear", "Bicubic"},
+            defaultValue = "Nearest")
+    protected String upsamplingMethod;
+    @Parameter(alias = "downsampling",
+            label = "Downsampling Method",
+            description = "The method used for aggregation (downsampling to a coarser resolution).",
+            valueSet = {"First", "Min", "Max", "Mean", "Median"},
+            defaultValue = "First")
+    private String downsamplingMethod;
+
+    protected String[] sourceBandNames;
 
     private FlagCoding flagCoding;
     private List<MaskDescriptor> maskDescriptors;
@@ -38,60 +87,52 @@ public abstract class BaseIndexOp extends Operator {
         maskDescriptors = new ArrayList<>();
     }
 
-    protected class MaskDescriptor {
-
-        String name;
-        String expression;
-        String description;
-        Color color;
-        double transparency;
-
-        public MaskDescriptor(String name, String expression, String description, Color color, double transparency) {
-            this.name = name;
-            this.expression = expression;
-            this.description = description;
-            this.color = color;
-            this.transparency = transparency;
-        }
-    }
-
-    protected class FlagDescriptor {
-        public String name;
-        public int value;
-        public String description;
-
-        public FlagDescriptor(String name, int value, String description) {
-            this.name = name;
-            this.value = value;
-            this.description = description;
-        }
-    }
-
     public abstract String getBandName();
 
     @Override
     public void initialize() throws OperatorException {
-
-        int sceneWidth = sourceProduct.getSceneRasterWidth();
-        int sceneHeight = sourceProduct.getSceneRasterHeight();
+        if (this.sourceProduct == null) {
+            throw new OperatorException("Source product not set");
+        }
+        loadSourceBands(sourceProduct);
+        if (this.sourceBandNames == null || this.sourceBandNames.length == 0) {
+            throw new OperatorException("Source bands not set");
+        }
+        int sceneWidth = 0, sceneHeight = 0;
+        boolean resampleNeeded = !RESAMPLE_NONE.equals(this.resampleType);
+        if (resampleNeeded) {
+            for (String bandName : this.sourceBandNames) {
+                Band band = this.sourceProduct.getBand(bandName);
+                int bandRasterWidth = band.getRasterWidth();
+                if (RESAMPLE_HIGHEST.equals(this.resampleType)) {
+                    if (sceneWidth < bandRasterWidth) {
+                        sceneWidth = bandRasterWidth;
+                        sceneHeight = band.getRasterHeight();
+                    }
+                } else {
+                    if (sceneWidth == 0 || sceneWidth >= bandRasterWidth) {
+                        sceneWidth = bandRasterWidth;
+                        sceneHeight = band.getRasterHeight();
+                    }
+                }
+            }
+            this.sourceProduct = resample(this.sourceProduct, sceneWidth, sceneHeight);
+        } else {
+            sceneWidth = sourceProduct.getSceneRasterWidth();
+            sceneHeight = sourceProduct.getSceneRasterHeight();
+        }
 
         initDefaultMasks();
 
         String name = getBandName();
 
         targetProduct = new Product(name, sourceProduct.getProductType() + "_" + name, sceneWidth, sceneHeight);
-        ProductUtils.copyTiePointGrids(sourceProduct, targetProduct);
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
-        ProductUtils.copyFlagBands(sourceProduct, targetProduct, true);
-        ProductUtils.copyMasks(sourceProduct, targetProduct);
-        ProductUtils.copyOverlayMasks(sourceProduct, targetProduct);
 
-        loadSourceBands(sourceProduct);
-
-        Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        Band outputBand = new Band(name, ProductData.TYPE_FLOAT32, sceneWidth, sceneHeight);
         targetProduct.addBand(outputBand);
 
-        Band flagsOutputBand = new Band(FLAGS_BAND_NAME, ProductData.TYPE_INT32, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        Band flagsOutputBand = new Band(FLAGS_BAND_NAME, ProductData.TYPE_INT32, sceneWidth, sceneHeight);
         flagsOutputBand.setDescription(name + " specific flags");
 
         FlagCoding flagCoding = initFlagCoding();
@@ -101,18 +142,23 @@ public abstract class BaseIndexOp extends Operator {
         targetProduct.addBand(flagsOutputBand);
 
         for (MaskDescriptor maskDescriptor : getMaskDescriptors()) {
-                targetProduct.addMask(maskDescriptor.name, maskDescriptor.expression, maskDescriptor.description, maskDescriptor.color, maskDescriptor.transparency);
+            targetProduct.addMask(maskDescriptor.name, maskDescriptor.expression, maskDescriptor.description, maskDescriptor.color, maskDescriptor.transparency);
         }
 
     }
 
-    protected void addMaskDescriptor(String name, String expression, String description, Color color, double transparency) {
+    @Override
+    public Product getSourceProduct() {
+        return this.sourceProduct;
+    }
+
+    private void addMaskDescriptor(String name, String expression, String description, Color color, double transparency) {
         maskDescriptors.add(new MaskDescriptor(name, expression, description, color, transparency));
     }
 
-    protected List<MaskDescriptor> getMaskDescriptors() { return maskDescriptors; }
+    private List<MaskDescriptor> getMaskDescriptors() { return maskDescriptors; }
 
-    protected void addFlagDescriptor(String name, int value, String description) {
+    private void addFlagDescriptor(String name, int value, String description) {
         MetadataAttribute attribute = new MetadataAttribute(name, ProductData.TYPE_INT32);
         attribute.getData().setElemInt(value);
         attribute.setDescription(description);
@@ -120,6 +166,20 @@ public abstract class BaseIndexOp extends Operator {
     }
 
     protected abstract void loadSourceBands(Product product);
+
+    private Product resample(Product source, int targetWidth, int targetHeight) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("referenceBandName", null);
+        parameters.put("targetWidth", targetWidth);
+        parameters.put("targetHeight", targetHeight);
+        parameters.put("targetResolution", null);
+        if (RESAMPLE_LOWEST.equals(this.resampleType)) {
+            parameters.put("downsampling", this.downsamplingMethod != null ? this.downsamplingMethod : "First");
+        } else if (RESAMPLE_HIGHEST.equals(this.resampleType)) {
+            parameters.put("upsampling", this.upsamplingMethod != null ? this.upsamplingMethod : "Nearest");
+        }
+        return GPF.createProduct("Resample", parameters, source);
+    }
 
     private void initDefaultMasks() {
         addMaskDescriptor(ARITHMETIC_FLAG_NAME, FLAGS_BAND_NAME + "." + ARITHMETIC_FLAG_NAME,
@@ -139,20 +199,37 @@ public abstract class BaseIndexOp extends Operator {
         return flagCoding;
     }
 
-    protected String findBand(float minWavelength, float maxWavelength, Product product) {
+    public static String findBand(float minWavelength, float maxWavelength, Product product) {
         String bestBand = null;
-        float bestBandLowerDelta = Float.MAX_VALUE;
+        float minDelta = Float.MAX_VALUE;
+        float mean = (minWavelength + maxWavelength) / 2;
         for (Band band : product.getBands()) {
             float bandWavelength = band.getSpectralWavelength();
             if (bandWavelength != 0.0F) {
-                float lowerDelta = bandWavelength - minWavelength;
-                if (lowerDelta < bestBandLowerDelta && bandWavelength <= maxWavelength && bandWavelength >= minWavelength) {
+                float delta = Math.abs(bandWavelength - mean);
+                if (delta < minDelta) {
                     bestBand = band.getName();
-                    bestBandLowerDelta = lowerDelta;
+                    minDelta = delta;
                 }
             }
         }
         return bestBand;
     }
 
+    private class MaskDescriptor {
+
+        String name;
+        String expression;
+        String description;
+        Color color;
+        double transparency;
+
+        MaskDescriptor(String name, String expression, String description, Color color, double transparency) {
+            this.name = name;
+            this.expression = expression;
+            this.description = description;
+            this.color = color;
+            this.transparency = transparency;
+        }
+    }
 }

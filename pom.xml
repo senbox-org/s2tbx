@@ -49,6 +49,7 @@
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-radiometric-indices</module>
+        <module>s2tbx-radiometric-indices-ui</module>
         <module>s2tbx-biophysical</module>
         <module>s2tbx-reflectance-to-radiance</module>
         <module>s2tbx-reflectance-to-radiance-ui</module>
@@ -186,6 +187,12 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-rcp</artifactId>
+                <version>${snap.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.esa.snap</groupId>
+                <artifactId>snap-tango</artifactId>
                 <version>${snap.version}</version>
             </dependency>
 

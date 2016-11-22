@@ -1,0 +1,75 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<html>
+<head>
+    <title>SNAP WDVI - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            WDVI Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>WDVI</h3>
+
+<p>
+    The <u><b>W</b></u>eighted <u><b>D</b></u>ifference <u><b>V</b></u>egetation <u><b>I</b></u>ndex
+    algorithm was introduced by Clevers (1988).<br><br>
+
+    This has a relationship to PVI similar to the relationship IPVI has to NDVI.<br>
+    WDVI is a mathematically simpler version of PVI, but it has an unrestricted range.<br>
+    Like PVI, WDVI is very sensitive to atmospheric variations (Qi et al., 1994).<br><br>
+</p>
+
+
+<p>
+    The WDVI results from the following equation:
+</p>
+
+<p>
+    <b>WDVI = (IR_factor * near_IR - g * red_factor * red)</b><br><br>
+</p>
+
+<p>
+    where: <b>g</b> is the slope of the soil line. <br>
+</p>
+
+
+<h3>WDVI-Flags</h3>
+
+<p>
+    Also the processor computes an additional flags band called 'wdvi_flags'
+    with the following bit coding:</p>
+<table>
+    <tr><th>Bit Position</th><th>Description</th></tr>
+    <tr><td>Bit 0</td><td>The computed value for WDVI is NAN or is Infinite</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for WDVI is less than 0 (zero)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for WDVI is greater than 1 (one)</td></tr>
+</table>
+<p>
+</p>
+<hr>
+</body>
+</html>

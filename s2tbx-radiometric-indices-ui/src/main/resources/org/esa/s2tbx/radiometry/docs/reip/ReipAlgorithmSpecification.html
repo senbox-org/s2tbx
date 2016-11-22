@@ -1,0 +1,82 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<html>
+<head>
+    <title>SNAP REIP - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            REIP Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>REIP</h3>
+
+<p>
+    The <u><b>R</b></u>ed-<u><b>E</b></u>dge <u><b>I</b></u>nflection <u><b>P</b></u>oint <b>I</b></u>ndex algorithm was developed for applications in biomass and nitrogen (N) uptake measurment/management in heterogeneous fields.- Guyot et al., (1988) <br><br>
+
+    Red edge, as the inflection point of the strong red absorption to near infrared reflectance, includes the information of both crop N and growth status. <br>
+    The reflectance around red edge is sensitive to wide range of crop chlorophyll content, N content, LAI and biomass (Hatfield et al., 2008; Mutanga and Skidmore, 2007; Steele et al., 2008b) <br><br>
+
+    The <b>REIP</b> general formula is based on linear four-point interpolation technique and it uses four wavebands (670, 700, 740 and 780 nm) - Guyot and Baret, (1988)<br><br>
+
+</p>
+
+
+<p>
+    The REIP results from the following (Sensor-dependent) equation: <br><br>
+</p>
+
+<p>
+    <b>REIP = 700 + 40 * ((r670 + r780)/2 - r700) / (r740 - r700)</b> - as general formula<br><br>
+
+    or: <br><br>
+    <b>REIP = 700 + 40 * ( (red1_factor * red1 + IR_factor * near_IR)/2) - red2_factor * red2 ) / (red3_factor * red3 - red2_factor * red2) )</b><br><br>
+
+</p>
+
+<p>
+    For <b>Sentinel-2</b> the formula is: <br><br>
+    <b>700 + 40 * ((B4 + B7)/2 - B5) / (B6 - B5)</b>, where (Central wavelength/Bandwidth): B7 =  783 nm (15 nm), B6 = 740 nm (15 nm), B5 = 705 nm (15 nm), B4 = 665 nm (30 nm) <br><br>
+
+</p>
+
+
+<h3>REIP-Flags</h3>
+
+<p>
+    Also the processor computes an additional flags band called 'reip_flags'
+    with the following bit coding:</p>
+<table>
+    <tr><th>Bit Position</th><th>Description</th></tr>
+    <tr><td>Bit 0</td><td>The computed value for REIP is NAN or is Infinite</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for REIP is less than 0 (zero)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for REIP is greater than 1 (one)</td></tr>
+</table>
+<p>
+</p>
+<hr>
+</body>
+</html>

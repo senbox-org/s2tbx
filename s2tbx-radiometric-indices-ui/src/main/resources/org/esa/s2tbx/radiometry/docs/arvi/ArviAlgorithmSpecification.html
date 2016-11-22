@@ -1,0 +1,89 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<html>
+<head>
+    <title>SNAP ARVI - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            ARVI Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>ARVI</h3>
+
+<p>
+    The <u><b>A</b></u>tmospherically <u><b>R</b></u>esistant <u><b>V</b></u>egetation <u><b>I</b></u>ndex
+    algorithm was introduced by Kaufman and Tanre (1992). <br><br>
+
+    The resistance of the <b>ARVI</b> to atmospheric effects (in comparison to the NDVI) is accomplished by a self-correction process for the atmospheric effect on the red channel.<br>
+    This is done using the difference in the radiance between the blue and the red channels to correct the radiance in the red channel.<br>
+    Compared to the red band, the blue band is much more easily scattered by the atmosphere particles. This explains why the sky is usually perceived as being blue. <br>
+    Thus, the ARVI index takes advantage of the different scattering responses from the blue and red band to retrieve information regarding the atmosphere opacity. <br>
+
+    Simulations using radiative transfer computations on arithmetic and natural surface spectra, for various atmospheric conditions, show that ARVI has a similar dynamic range to the NDVI, but is, on average, four times less sensitive to atmospheric effects than the NDVI. <br><br>
+</p>
+
+
+<p>
+    The ARVI results from the following equation:
+</p>
+
+<p>
+    <b>ARVI = (IR_factor * near_IR - rb) / (IR_factor * near_IR + rb)</b><br><br>
+</p>
+
+<p>
+    , where: <br><br>
+    <b>rb = (red_factor * red) - gamma * (blue_factor * blue - red_factor * red)</b>, with <b>gamma = 1</b> <br><br>
+
+</p>
+
+<p>
+    The main reason why the blue band is more susceptible to atmospheric scattering than the red band is because its wavelength is shorter. Generally, the shorter wavelength has stronger scattering.<br>
+    It's very similar to the way sea waves behave over oceans. When a large wave strikes an object, such as a ferryboat, it is more capable of continuing on its path by going around the object. On the other hand, it is dispersed more easily when the waves are smaller in size.<br>
+    Consequently, by obtaining the difference between the reflectance of the highly sensitive blue band and the less sensitive red band <b>(blue - red)</b>, it serves like an indicator of what the atmospheric conditions were like. <br><br>
+    Here <b>gamma</b> serves as a weighting function for the difference reflectance of the two bands. Various values can be chosen for it, which mainly depends on the type of aerosol size. <br>
+    According to Kaufaman and Tanre's statement in 1992, it is best to select a gamma value of 1 when information on the aerosol type is not available.<br><br>
+
+    <b>Consequently</b>, the main purpose of the above <b>rb</b> equation is to decrease the influence brought forth from the atmosphere, where a more accurate assessment of the value of the red reflectance can be obtained.<br><br>
+</p>
+
+<h3>ARVI-Flags</h3>
+
+<p>
+    Also the processor computes an additional flags band called 'arvi_flags'
+    with the following bit coding:</p>
+<table>
+    <tr><th>Bit Position</th><th>Description</th></tr>
+    <tr><td>Bit 0</td><td>The computed value for ARVI is NAN or is Infinite</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for ARVI is less than 0 (zero)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for ARVI is greater than 1 (one)</td></tr>
+</table>
+<p>
+</p>
+<hr>
+</body>
+</html>

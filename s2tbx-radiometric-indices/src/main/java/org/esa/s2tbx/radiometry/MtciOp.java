@@ -1,6 +1,25 @@
+/*
+ *
+ *  * Copyright (C) 2016 CS ROMANIA
+ *  *
+ *  * This program is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU General Public License as published by the Free
+ *  * Software Foundation; either version 3 of the License, or (at your option)
+ *  * any later version.
+ *  * This program is distributed in the hope that it will be useful, but WITHOUT
+ *  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ *  * more details.
+ *  *
+ *  * You should have received a copy of the GNU General Public License along
+ *  *  with this program; if not, see http://www.gnu.org/licenses/
+ *
+ */
+
 package org.esa.s2tbx.radiometry;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
@@ -40,18 +59,21 @@ public class MtciOp extends BaseIndexOp{
             description = "The red band (B4) for the MTCI computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
+    @BandParameter(minWavelength = 650, maxWavelength = 680)
     private String redSourceBand4;
 
     @Parameter(label = "Red source band 5",
             description = "The red band (B5) for the MTCI computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
+    @BandParameter(minWavelength = 697, maxWavelength = 712)
     private String redSourceBand5;
 
     @Parameter(label = "NIR source band",
             description = "The near-infrared band for the MTCI computation. If not provided," +
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
+    @BandParameter(minWavelength = 733, maxWavelength = 748)
     private String nirSourceBand;
 
     @Override
@@ -127,6 +149,7 @@ public class MtciOp extends BaseIndexOp{
         if (nirSourceBand == null) {
             throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
         }
+        this.sourceBandNames = new String[] { redSourceBand4, redSourceBand5, nirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

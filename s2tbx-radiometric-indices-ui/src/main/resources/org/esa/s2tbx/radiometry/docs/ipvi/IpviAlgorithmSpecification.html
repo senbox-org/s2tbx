@@ -1,0 +1,85 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<html>
+<head>
+    <title>SNAP IPVI - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            IPVI Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>IPVI</h3>
+
+<p>
+    The <u><b>I</b></u>nfrared <u><b>P</b></u>ercentage <u><b>V</b></u>egetation <u><b>I</b></u>ndex
+    algorithm was first described by Crippen (1990). <br><br>
+
+    Crippen found that the subtraction of the red in the numerator was irrelevant, and proposed this index as a way of improving calculation speed.<br>
+    It is restricted to values between 0 and 1, which eliminates the need for storing a sign for the vegetation index values.<br>
+    It also eliminates the conceptual strangeness of negative values for vegetation indices. <br><br>
+</p>
+
+
+<p>
+    The IPVI results from the following equation:
+</p>
+
+<p>
+    <br><b>IPVI = (IR_factor * near_IR) / (IR_factor * near_IR + red_factor * red)</b><br><br>
+</p>
+
+<p>
+    or:<br><br>
+    <b>IPVI = 1/2 * (NDVI + 1)</b><br><br>
+</p>
+
+<p>
+   where: <b>NDVI = (IR_factor * near_IR - red_factor * red) / (IR_factor * near_IR + red_factor * red)</b><br><br>
+</p>
+
+<p>
+    Conclussions: <br>
+    &nbsp;&nbsp;&nbsp;- IPVI is functionally equivalent to NDVI and RVI, but it only ranges in value from 0.0 - 1.0 <br>
+    &nbsp;&nbsp;&nbsp;- IPVI eliminates one mathematical operation per image pixel which is important for the rapid processing of large amounts of data. <br><br>
+</p>
+
+<h3>IPVI-Flags</h3>
+
+<p>
+    Also the processor computes an additional flags band called 'ipvi_flags'
+    with the following bit coding:</p>
+<table>
+    <tr><th>Bit Position</th><th>Description</th></tr>
+    <tr><td>Bit 0</td><td>The computed value for IPVI is NAN or is Infinite</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for IPVI is less than 0 (zero)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for IPVI is greater than 1 (one)</td></tr>
+</table>
+<p>
+</p>
+<hr>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!--
+  ~ /*
+  ~  * Copyright (C) 2016 CS ROMANIA
+  ~  *
+  ~  * This program is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU General Public License as published by the Free
+  ~  * Software Foundation; either version 3 of the License, or (at your option)
+  ~  * any later version.
+  ~  * This program is distributed in the hope that it will be useful, but WITHOUT
+  ~  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~  * more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public License along
+  ~  *  with this program; if not, see http://www.gnu.org/licenses/
+  ~  */
+  -->
+
+<html>
+<head>
+    <title>SNAP SAVI - Algorithm Specification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            SAVI Algorithm Specification</td>
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a></td>
+    </tr>
+</table>
+
+<h3>SAVI</h3>
+
+<p>
+    The <u><b>S</b></u>oil <u><b>A</b></u>djusted <u><b>V</b></u>egetation <u><b>I</b></u>ndex
+    algorithm was introduced by Huete (1988). <br><br>
+
+    This index attempts to be a hybrid between the ratio-based indices and the perpendicular indices.<br>
+    The reasoning behind this index acknowledges that the isovegetation lines are not parallel, and that they do not all converge at a single point.<br>
+    The initial construction of this index was based on measurements of cotton and range grass canopies with dark and light soil backgrounds,<br>
+    and the adjustment factor L was found by trial and error until a factor that gave equal vegetation index results for the dark and light soils was found.<br>
+    The result is a ratio-based index where the point of convergence is not the origin.<br>
+    The convergence point ends up being in the quadrant of negative NIR and RED values, which causes the isovegetation lines to be more parallel in the region of positive NIR and RED values than is the case for RVI, NDVI, and IPVI.<br>
+    Huete (1988) does present a theoretical basis for this index based on simple radiative transfer, so SAVI probably has one of the better theoretical backgrounds of the vegetation indices.<br><br>
+    However, the theoretical development gives a significantly different correction factor for a leaf area index of 1 (0.5)<br>
+    than resulted from the empirical development for the same leaf area index (0.75).<br>
+    The correction factor was found to vary between 0 for very high densities to 1 for very low densities.<br>
+    The standard value typically used in most applications is 0.5 which is for intermediate vegetation densities. <br><br>
+</p>
+
+
+<p>
+    The SAVI results from the following equation:
+</p>
+
+<p>
+    <b>SAVI = (1 + L) * (IR_factor * near_IR - red_factor * red) / (IR_factor * near_IR + red_factor * red + L)</b><br><br>
+</p>
+
+<p>
+    where: <b>L</b> is a correction factor which ranges from <b>0</b> for very high vegetation cover to <b>1</b> for very low vegetation cover. <br>
+    The most typically used value is <b>0.5</b> which is for intermediate vegetation cover. <br>
+</p>
+
+<p>
+    Not all soils are alike. Different soils have different reflectance spectra.<br>
+    All of the vegetation indices assume that there is a soil line, where there is a single slope in RED-NIR space.<br>
+    However, it is often the case that there are soils with different RED-NIR slopes in a single image.<br>
+    Also, if the assumption about the isovegetation lines (parallel or intercepting at the origin) is not exactly right,<br>
+    changes in soil moisture (which move along isovegetation lines) will give incorrect answers for the vegetation index.<br>
+    The problem of soil noise is most acute when vegetation cover is low.<br>
+    The following group of indices attempt to reduce soil noise by altering the behavior of the isovegetation lines.<br>
+    All of them are ratio-based, and the way that they attempt to reduce soil noise is by shifting the place where the isovegetation lines meet.<br>
+    <b>WARNING</b>: These indices reduce soil noise at the cost of decreasing the dynamic range of the index.<br>
+    These indices are slightly less sensitive to changes in vegetation cover than NDVI (but more sensitive than PVI) at low levels of vegetation cover.<br>
+    These indices are also more sensitive to atmospheric variations than NDVI (but less so than PVI). (See Qi et al. (1994) for comparisons.) <br><br>
+</p>
+
+<h3>SAVI-Flags</h3>
+
+<p>
+    Also the processor computes an additional flags band called 'savi_flags'
+    with the following bit coding:</p>
+<table>
+    <tr><th>Bit Position</th><th>Description</th></tr>
+    <tr><td>Bit 0</td><td>The computed value for SAVI is NAN or is Infinite</td></tr>
+    <tr><td>Bit 1</td><td>The computed value for SAVI is less than 0 (zero)</td></tr>
+    <tr><td>Bit 2</td><td>The computed value for SAVI is greater than 1 (one)</td></tr>
+</table>
+<p>
+</p>
+<hr>
+</body>
+</html>
