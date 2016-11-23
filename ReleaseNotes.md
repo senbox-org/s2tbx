@@ -1,6 +1,68 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 5.0
+--------------------
+
+### Main features
+
+#### Sentinel-2 Product Reader
+
+##### Support for PSD 14 Test product
+
+The Sentinel-2 reader now support PSD 14 with the test product available at this date for both L1C and L2A levels.
+Other formats were implemented but could not be tested.
+PSD 13 products are supported as before.
+
+##### New RGB Profiles
+
+More RGB profile are available: False-color Infrared, False-color Urban, Agriculture, Atmospheric penetration,
+Healthy Vegetation, Land/Water, Atmospherical Removal, Shortwave Infrared, Vegetation Analysis.
+RGB profiles over bands of different resolution can only be seen after resampling the product.
+
+##### Other Sentinel-2 Reader improvements
+
+New bands can be used to keep track of tiles of L1C/L2A products.
+Granules can now be opened without reading the main XML file
+Performance optimisations were performed, it is now much faster to open a product
+
+#### New Processors
+
+##### Reflectance to Radiance Processor
+
+##### IdePix Processor
+
+##### L3 processor integrated via the Standalone Tools Adapter
+
+
+### List of solved issues
+#### Bug
+    * [SIITBX-228] - S2-MSI reader does not load correctly the angles in some products
+    * [SIITBX-229] - Sen2Three progress is going over 100%
+    * [SIITBX-230] - SPOT-6 Reader test if failing
+    * [SIITBX-236] - View synchronization between bands and index masks does not work properly in Sentinel-2 products
+    * [SIITBX-240] - The Mosaic and SC map of Sentinel-2 level3 products are only available at one resolution
+    * [SIITBX-241] - The cache in memory is not properly cleaned when the user closes a Sentinel-2 product
+    * [SIITBX-243] - RGB image views do not update correctly on Mac OS X or even make OS unresponsive
+    * [SIITBX-245] - Cloud_Coverage_Assessment not represented in SNAP
+
+#### Improvement
+    * [SIITBX-111] - Sentinel-2 Reader documentation
+    * [SIITBX-180] - Add more RGB profiles
+    * [SIITBX-216] - Add a band keeping track of tile ids in L1C/L2A product
+    * [SIITBX-237] - Tile Index band : rename, group
+    * [SIITBX-239] - Support for opening a granule without needing files from the full product.
+    * [SIITBX-247] - Support for reading S2 products with new format (PSD14)
+
+#### Requirement
+    * [SIITBX-5] - Extension to diff. Language
+    * [SIITBX-6] - non-native API Wrapper
+    * [SIITBX-26] - Processor reflectance to radiance
+    * [SIITBX-28] - Processor L3
+    * [SIITBX-29] - IdePix Processor
+
+
+
 Changes in S2TBX 4.0
 --------------------
 
