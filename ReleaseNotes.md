@@ -12,9 +12,11 @@ Changes in S2TBX 5.0
 
 In autumn 2016 a new product format will be introduced.
 This new format features the following main evolutions:
-    - The product naming (including the naming of folders and files inside the product structure) has been compacted
-    - The products distributed on the Sentinels Data Hub will embed one single tile of the tiling grid
-    - A full resolution True-Colour Image (TCI) will be included in every product
+
+- The product naming (including the naming of folders and files inside the product structure) has been compacted
+- The products distributed on the Sentinels Data Hub will embed one single tile of the tiling grid
+- A full resolution True-Colour Image (TCI) will be included in every product
+
 (http://step.esa.int/main/sentinel_2l1c_evolution2016/)
 
 The Sentinel-2 reader is now able to support the test product (PSD 14) available at this date for both L1C and L2A levels.
@@ -34,17 +36,20 @@ Some "tile_id" bands and masks has been included to indicate the granule from wh
 
 ##### Sentinel-2 Product Reader documentation
 
-    * Overview of the instrument
-    * Description of supported products
-    * Description of product format
-    * Description of some generated bands: angles, tile index
+* Overview of the instrument
+* Description of supported products
+* Description of product format
+* Description of some generated bands: angles, tile index
 
 ##### Other Sentinel-2 Reader improvements
 
 Granules can now be opened without reading the main XML file
+
 Performance optimisations were performed, it is now much faster to open a product:
-    - New method for reading the GML masks
-    - New method for metadata reading
+
+- New method for reading the GML masks
+- New method for metadata reading
+
 Clean properly cache
 
 
@@ -54,8 +59,11 @@ Clean properly cache
 
 The Reflectance to Radiance Processor converts the Top Of Atmosphere (TOA) reflectance to radiance from a given product.
 The formula implemented is:
+
 radiance = pixelValue * cosinus(radians(incidenceAngle)) * solarIrradiance * scale / (pi * d2)
+
 (the variables are described in the SNAP help)
+
 For Sentinel-2 the incidence angle is replaced with the values from the sun_zenith band.
 
 ##### Sentinel-2 Water Processor - MCI
@@ -64,8 +72,10 @@ The Sentinel-2 MCI Processor calculates the Maximum Chlorophyll Index by exploit
 
 ##### L3 processor integrated via the Standalone Tools Adapter
 
-A new Sen2Three plugin is available to call Sen2Three from the S2TBX, based on generic StandAlone Tools Adapter
-Sen2Three is a level 3 processor for the Spatio-Temporal Synthesis of bottom of atmosphere corrected Sentinel-2 level 2a images
+A new Sen2Three plugin is available to call Sen2Three from the S2TBX, based on generic StandAlone Tools Adapter.
+
+Sen2Three is a level 3 processor for the Spatio-Temporal Synthesis of bottom of atmosphere corrected Sentinel-2 level 2a images.
+
 (http://step.esa.int/main/third-party-plugins-2/sen2three/)
 
 
