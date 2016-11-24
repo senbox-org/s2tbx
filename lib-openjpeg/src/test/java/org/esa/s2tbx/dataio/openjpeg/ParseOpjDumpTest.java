@@ -17,7 +17,7 @@
 
 package org.esa.s2tbx.dataio.openjpeg;
 
-import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.readers.TileLayout;
 import org.junit.Test;
 
 import java.io.File;

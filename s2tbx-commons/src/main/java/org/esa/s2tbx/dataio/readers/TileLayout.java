@@ -15,7 +15,7 @@
  * with this program; if not, see http://www.gnu.org/licenses/
  */
 
-package org.esa.s2tbx.dataio.jp2;
+package org.esa.s2tbx.dataio.readers;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;

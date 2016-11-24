@@ -17,7 +17,8 @@ public abstract class AbstractGDALProductWriterPlugIn implements ProductWriterPl
     private final String driverName;
 
     static {
-        gdal.AllRegister(); // GDAL init drivers
+        if (GdalInstallInfo.isPresent())
+            gdal.AllRegister(); // GDAL init drivers
     }
 
     protected AbstractGDALProductWriterPlugIn(String driverName) {

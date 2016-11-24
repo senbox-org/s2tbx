@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.gdal;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.glevel.MultiLevelModel;
-import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.readers.TileLayout;
 import org.esa.snap.core.image.ResolutionLevel;
 import org.esa.snap.core.image.SingleBandedOpImage;
 import org.esa.snap.core.util.ImageUtils;

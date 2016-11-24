@@ -3,7 +3,6 @@ OpenIDE-Module-Specification-Version: ${project.nbmSpecVersion}
 AutoUpdate-Show-In-Client: false
 AutoUpdate-Essential-Module: true
 OpenIDE-Module-Java-Dependencies: Java > 1.8
-OpenIDE-Module-Layer: org/esa/snap/ui/layer.xml
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Long-Description: <p>This module provides common tools to Sentinel2 Toolbox modules
  </p><p><b>Vendor:</b> CS SI</p><

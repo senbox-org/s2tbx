@@ -17,9 +17,8 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import org.esa.s2tbx.dataio.jp2.TileLayout;
+import org.esa.s2tbx.dataio.readers.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
-import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.snap.runtime.Engine;
 import org.esa.snap.utils.TestUtil;
 import org.junit.*;

@@ -58,7 +58,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-openjpeg</artifactId>
+            <artifactId>lib-gdal</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

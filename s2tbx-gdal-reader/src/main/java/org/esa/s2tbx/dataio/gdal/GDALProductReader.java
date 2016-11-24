@@ -6,9 +6,10 @@ import org.esa.s2tbx.dataio.gdal.internal.BufferTypeDescriptor;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.*;
-import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.util.StringUtils;
-import org.gdal.gdal.*;
+import org.gdal.gdal.Dataset;
+import org.gdal.gdal.Driver;
+import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.geotools.referencing.CRS;
@@ -141,13 +142,13 @@ public class GDALProductReader extends AbstractProductReader {
                 }
 
                 gdalBand.GetOffset(pass1);
-                if (pass1[0] != null && pass1[0].doubleValue() != 0) {
-                    bandComponentElement.setAttributeDouble("offset", pass1[0].doubleValue());
+                if (pass1[0] != null && pass1[0] != 0) {
+                    bandComponentElement.setAttributeDouble("offset", pass1[0]);
                 }
 
                 gdalBand.GetScale(pass1);
-                if (pass1[0] != null && pass1[0].doubleValue() != 1) {
-                    bandComponentElement.setAttributeDouble("scale", pass1[0].doubleValue());
+                if (pass1[0] != null && pass1[0] != 1) {
+                    bandComponentElement.setAttributeDouble("scale", pass1[0]);
                 }
 
                 if (gdalBand.GetUnitType() != null && gdalBand.GetUnitType().length() > 0) {
@@ -175,15 +176,8 @@ public class GDALProductReader extends AbstractProductReader {
             this.product.setModified(false);
             return this.product;
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, ex.getMessage(), ex);
-            IOException exception = null;
-            if (ex instanceof IOException) {
-                exception = (IOException)ex;
-            } else {
-                String msg = "Error while reading file '" + inputFile.toString() + "'.";
-                exception = new IOException(msg, ex);
-            }
-            throw exception;
+            logger.log(Level.SEVERE, String.format("Error while reading file '%s'", inputFile), ex);
+            throw ex;
         } finally {
             gdalProduct.delete();
         }
