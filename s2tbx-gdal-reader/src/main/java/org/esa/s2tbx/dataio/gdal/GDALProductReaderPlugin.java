@@ -19,7 +19,7 @@ public class GDALProductReaderPlugin implements ProductReaderPlugIn {
     private static final String DESCRIPTION = "Raster Files";
 
     static {
-        if (GdalInstallInfo.isPresent()) {
+        if (GdalInstallInfo.INSTANCE.isPresent()) {
             gdal.AllRegister(); // GDAL init drivers
         }
     }
@@ -29,7 +29,10 @@ public class GDALProductReaderPlugin implements ProductReaderPlugIn {
 
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
-        return DecodeQualification.SUITABLE;
+        if (GdalInstallInfo.INSTANCE.isPresent()) {
+            return DecodeQualification.SUITABLE;
+        }
+        return DecodeQualification.UNABLE;
     }
 
     @Override
@@ -44,13 +47,13 @@ public class GDALProductReaderPlugin implements ProductReaderPlugIn {
 
     @Override
     public String[] getFormatNames() {
-        String[] formatNames = GdalInstallInfo.getFormatNames();
+        String[] formatNames = GdalInstallInfo.INSTANCE.getFormatNames();
         return formatNames != null ? formatNames : FORMAT_NAMES;
     }
 
     @Override
     public String[] getDefaultFileExtensions() {
-        String[] extensions = GdalInstallInfo.getExtensions();
+        String[] extensions = GdalInstallInfo.INSTANCE.getExtensions();
         return extensions != null ? extensions : DEFAULT_EXTENSIONS;
     }
 

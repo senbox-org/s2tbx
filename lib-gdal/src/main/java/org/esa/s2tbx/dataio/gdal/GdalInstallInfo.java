@@ -12,38 +12,43 @@ import java.util.List;
 /**
  * Created by kraftek on 11/15/2016.
  */
-public final class GdalInstallInfo {
-    private static Path binLocation;
-    private static Path driversLocation;
-    private static Path dataLocation;
-    private static Path appsLocation;
-    private static String[] fileTypes;
-    private static String[] extensions;
+public enum GdalInstallInfo {
+    INSTANCE;
 
-    public static Path getBinLocation() { return binLocation; }
-    static void setBinLocation(Path binLocation) { GdalInstallInfo.binLocation = binLocation; }
+    private Path binLocation;
+    private Path driversLocation;
+    private Path dataLocation;
+    private Path appsLocation;
+    private String[] fileTypes;
+    private String[] extensions;
 
-    public static Path getDriversLocation() { return driversLocation; }
-    static void setDriversLocation(Path driversLocation) { GdalInstallInfo.driversLocation = driversLocation; }
+    public Path getBinLocation() {
+        return binLocation;
+    }
 
-    public static Path getAppsLocation() { return appsLocation; }
-    static void setAppsLocation(Path appsLocation) { GdalInstallInfo.appsLocation = appsLocation; }
+    void setBinLocation(Path binLocation) { this.binLocation = binLocation; }
 
-    public static Path getDataLocation() { return dataLocation; }
-    static void setDataLocation(Path dataLocation) { GdalInstallInfo.dataLocation = dataLocation; }
+    public Path getDriversLocation() { return driversLocation; }
+    void setDriversLocation(Path driversLocation) { this.driversLocation = driversLocation; }
 
-    public static boolean isPresent() {
+    public Path getAppsLocation() { return appsLocation; }
+    void setAppsLocation(Path appsLocation) { this.appsLocation = appsLocation; }
+
+    public Path getDataLocation() { return dataLocation; }
+    void setDataLocation(Path dataLocation) { this.dataLocation = dataLocation; }
+
+    public boolean isPresent() {
         return binLocation != null && Files.exists(binLocation);
     }
 
-    public static String[] getFormatNames() { return fileTypes; }
-    static void setFormatNames(String[] formats) { GdalInstallInfo.fileTypes = formats; }
+    public String[] getFormatNames() { return fileTypes; }
+    void setFormatNames(String[] formats) { this.fileTypes = formats; }
 
-    public static String[] getExtensions() { return extensions; }
-    static void setExtensions(String[] extensions) { GdalInstallInfo.extensions = extensions; }
+    public String[] getExtensions() { return extensions; }
+    void setExtensions(String[] extensions) { this.extensions = extensions; }
 
     static void runGdalInfo() {
-        if (isPresent()) {
+        if (INSTANCE.isPresent()) {
             List<String> formatsShortDesc = runProcess("gdalinfo", "--formats");
             List<String> fmtNames = new ArrayList<>();
             List<String> exts = new ArrayList<>();
@@ -60,8 +65,8 @@ public final class GdalInstallInfo {
                 }
             }
             if (fmtNames.size() > 0 && exts.size() > 0) {
-                fileTypes = fmtNames.toArray(new String[fmtNames.size()]);
-                extensions = exts.toArray(new String[exts.size()]);
+                INSTANCE.fileTypes = fmtNames.toArray(new String[fmtNames.size()]);
+                INSTANCE.extensions = exts.toArray(new String[exts.size()]);
             }
         }
     }
