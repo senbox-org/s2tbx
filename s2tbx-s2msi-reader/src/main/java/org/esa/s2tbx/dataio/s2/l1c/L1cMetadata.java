@@ -20,18 +20,20 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
-import org.esa.s2tbx.dataio.s2.S2ProductNamingUtils;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.util.SystemUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -104,6 +106,7 @@ public class L1cMetadata extends S2Metadata {
             if(folder == null || xml == null) {
                 String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
                 logger.log(Level.WARNING, errorMessage);
+                continue;
             }
             resourceResolver.put(tileName,folder);
             granuleMetadataPathList.add(xml);

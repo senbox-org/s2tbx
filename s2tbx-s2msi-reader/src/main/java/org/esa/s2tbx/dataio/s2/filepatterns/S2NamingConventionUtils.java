@@ -1,16 +1,12 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
 import org.esa.s2tbx.dataio.s2.S2Config;
-import org.esa.s2tbx.dataio.s2.S2ProductNamingUtils;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -107,7 +103,7 @@ public class S2NamingConventionUtils {
      * @return
      */
     public static Path getFileFromDir(Path path, String[] REGEXs) {
-        if(!Files.isDirectory(path)) {
+        if(path == null || !Files.isDirectory(path)) {
             return null;
         }
         Pattern[] patterns = new Pattern[REGEXs.length];
