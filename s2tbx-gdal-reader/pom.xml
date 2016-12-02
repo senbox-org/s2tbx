@@ -57,6 +57,10 @@
             <artifactId>snap-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-rcp</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>lib-gdal</artifactId>
             <version>${project.version}</version>
@@ -73,10 +77,37 @@
             <scope>test</scope>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>lib-gdal</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
             <artifactId>snap-ui</artifactId>
         </dependency>
+
+
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-filesystems</artifactId>
+            <version>RELEASE82</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-lookup</artifactId>
+            <version>RELEASE82</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-ui</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

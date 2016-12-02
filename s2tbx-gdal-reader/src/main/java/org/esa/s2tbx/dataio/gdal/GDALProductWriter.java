@@ -7,9 +7,11 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.Guardian;
+import org.esa.snap.utils.StringHelper;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.Driver;
 import org.gdal.gdal.gdal;
+import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
 
 import java.io.IOException;
@@ -24,16 +26,16 @@ import java.util.logging.Logger;
 public class GDALProductWriter extends AbstractProductWriter {
     private static final Logger logger = Logger.getLogger(GDALProductWriter.class.getName());
 
-    private final String driverName;
+    private final GDALDriverInfo[] writerDrivers;
 
     private Dataset dataset;
     private Map<Band, org.gdal.gdal.Band> bandsMap;
     private int gdalDataType;
 
-    public GDALProductWriter(ProductWriterPlugIn writerPlugIn, String driverName) {
+    public GDALProductWriter(ProductWriterPlugIn writerPlugIn, GDALDriverInfo[] writerDrivers) {
         super(writerPlugIn);
 
-        this.driverName = driverName;
+        this.writerDrivers = writerDrivers;
     }
 
     @Override
@@ -62,7 +64,18 @@ public class GDALProductWriter extends AbstractProductWriter {
             }
         }
 
-        Driver driver = gdal.GetDriverByName(this.driverName);
+        String driverName = null;
+        String fileName = outputFile.toFile().getName();
+        for (int i=0; i<this.writerDrivers.length && driverName == null; i++) {
+            if (StringHelper.endsWithIgnoreCase(fileName, this.writerDrivers[i].getExtensionName())) {
+                driverName = this.writerDrivers[i].getDriverName();
+            }
+        }
+        if (driverName == null) {
+            throw new IllegalArgumentException("The extension of the file name '" + fileName + "' is unknown.");
+        }
+
+        Driver driver = gdal.GetDriverByName(driverName);
 
         this.dataset = driver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
         this.bandsMap = new HashMap<Band, org.gdal.gdal.Band>(bandCount);
@@ -86,33 +99,37 @@ public class GDALProductWriter extends AbstractProductWriter {
             this.bandsMap.put(sourceBand, gdalBand);
         }
 
+        int result = 0;
         pm.beginTask("Writing band '" + sourceBand.getName() + "'...", sourceHeight);
         try {
             if (this.gdalDataType == gdalconstConstants.GDT_Byte) {
                 byte[] data = (byte[])sourceBuffer.getElems();
-                gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
+                result = gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
             } else if (this.gdalDataType == gdalconstConstants.GDT_Int16) {
                 short[] data = (short[])sourceBuffer.getElems();
-                gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
+                result = gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
             } else if (this.gdalDataType == gdalconstConstants.GDT_UInt16) {
                 short[] data = (short[])sourceBuffer.getElems();
-                gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
+                result = gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
             } else if (this.gdalDataType == gdalconstConstants.GDT_Int32) {
                 int[] data = (int[])sourceBuffer.getElems();
-                gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
+                result = gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
             } else if (this.gdalDataType == gdalconstConstants.GDT_UInt32) {
                 int[] data = (int[])sourceBuffer.getElems();
-                gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
+                result = gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
             } else if (this.gdalDataType == gdalconstConstants.GDT_Float32) {
                 float[] data = (float[])sourceBuffer.getElems();
-                gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
+                result = gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
             } else if (this.gdalDataType == gdalconstConstants.GDT_Float64) {
                 double[] data = (double[])sourceBuffer.getElems();
-                gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
+                result = gdalBand.WriteRaster(sourceOffsetX, sourceOffsetY, sourceWidth, sourceHeight, this.gdalDataType, data);
             } else {
                 throw new IllegalArgumentException("Unknown GDAL data type " + this.gdalDataType + ".");
             }
 
+            if (result != gdalconst.CE_None) {
+                throw new IllegalArgumentException("Failed to write the data for band name '" + sourceBand.getName() + "'.");
+            }
             pm.worked(1);
         } finally {
             pm.done();
