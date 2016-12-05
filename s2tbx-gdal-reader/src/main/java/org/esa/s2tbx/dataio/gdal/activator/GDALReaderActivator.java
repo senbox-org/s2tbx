@@ -72,7 +72,11 @@ public class GDALReaderActivator implements Activator {
                 String driverName = null;
                 String driverDisplayName = null;
                 String extensionName = null;
-                while (it.hasNext() && (extensionName == null || driverName == null || driverDisplayName == null)) {
+                String creationDataTypes = null;
+
+                //System.out.println("\n -------- driver name="+driver.getShortName()+"  size="+map.size()+" -------");
+
+                while (it.hasNext()) {// && (extensionName == null || driverName == null || driverDisplayName == null)) {
                     Map.Entry<Object, Object> entry = it.next();
                     String key = entry.getKey().toString();
                     String value = entry.getValue().toString();
@@ -83,9 +87,13 @@ public class GDALReaderActivator implements Activator {
                     if ("DMD_EXTENSION".equalsIgnoreCase(key) && !StringUtils.isNullOrEmpty(value)) {
                         extensionName = value;
                     }
+                    if ("DMD_CREATIONDATATYPES".equalsIgnoreCase(key) && !StringUtils.isNullOrEmpty(value)) {
+                        creationDataTypes = value;
+                    }
+                    //System.out.println(" key="+key+"  value="+value);
                 }
                 if (extensionName != null && driverName != null && driverDisplayName != null) {
-                    writerItems.add(new GDALDriverInfo("." + extensionName, driverName, driverDisplayName));
+                    writerItems.add(new GDALDriverInfo("." + extensionName, driverName, driverDisplayName, creationDataTypes));
                 }
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);

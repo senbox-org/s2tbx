@@ -1,11 +1,14 @@
 package org.esa.s2tbx.dataio.gdal;
 
+import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.snap.core.dataio.*;
+import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.ExportProductAction;
 import org.esa.snap.rcp.actions.file.ProductFileChooser;
 import org.esa.snap.rcp.util.Dialogs;
+import org.gdal.gdal.gdal;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -48,7 +51,7 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
         ExportDriversFileFilter[] filters = new ExportDriversFileFilter[writerDrivers.length];
         for (int i=0; i< writerDrivers.length; i++) {
             String description = writerDrivers[i].getDriverDisplayName() + " (*" + writerDrivers[i].getExtensionName() + ")";
-            filters[i] = new ExportDriversFileFilter(description, writerDrivers[i].getExtensionName());
+            filters[i] = new ExportDriversFileFilter(description, writerDrivers[i]);
         }
 
         ProductFileChooser fc = buildFileChooserDialog(product, formatName, false, null);
@@ -66,7 +69,7 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
             // cancelled
             return null;
         }
-        FileFilter selectedFileFilter = fc.getFileFilter();
+        ExportDriversFileFilter selectedFileFilter = (ExportDriversFileFilter)fc.getFileFilter();
         if (!selectedFileFilter.accept(newFile)) {
             String message = MessageFormat.format("The extension of the selected file\n" +
                             "''{0}''\n" +
@@ -81,6 +84,13 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
         }
 
         Product exportProduct = fc.getSubsetProduct() != null ? fc.getSubsetProduct() : product;
+        Band sourceBand = exportProduct.getBandAt(0);
+        int gdalDataType = GDALProductWriter.getGDALDataType(sourceBand.getDataType());
+        GDALDriverInfo driverInfo = selectedFileFilter.getDriverInfo();
+        if (!driverInfo.canExportProduct(gdalDataType)) {
+            Dialogs.showWarning(getDisplayName(), driverInfo.getFailedMessageToExportProduct(gdalDataType, "\n"), null);
+            return false;
+        }
 
         return exportProduct(exportProduct, newFile, formatName);
     }

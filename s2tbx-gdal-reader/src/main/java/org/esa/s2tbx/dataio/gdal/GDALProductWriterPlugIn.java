@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.gdal;
 
+import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductWriter;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;

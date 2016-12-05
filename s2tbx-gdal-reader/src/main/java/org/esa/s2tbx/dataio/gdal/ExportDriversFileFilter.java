@@ -1,20 +1,21 @@
 package org.esa.s2tbx.dataio.gdal;
 
+import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.snap.utils.StringHelper;
 
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 
 /**
- * Created by jcoravu on 2/12/2016.
+ * @author Jean Coravu
  */
 public class ExportDriversFileFilter extends FileFilter {
     private final String description;
-    private final String extension;
+    private final GDALDriverInfo driverInfo;
 
-    public ExportDriversFileFilter(String description, String extension) {
+    public ExportDriversFileFilter(String description, GDALDriverInfo driverInfo) {
         this.description = description;
-        this.extension = extension;
+        this.driverInfo = driverInfo;
     }
 
     @Override
@@ -22,11 +23,15 @@ public class ExportDriversFileFilter extends FileFilter {
         if (fileToAccept.isDirectory()) {
             return true;
         }
-        return StringHelper.endsWithIgnoreCase(fileToAccept.getName(), this.extension);
+        return StringHelper.endsWithIgnoreCase(fileToAccept.getName(), this.driverInfo.getExtensionName());
     }
 
     @Override
     public String getDescription() {
         return this.description;
+    }
+
+    public GDALDriverInfo getDriverInfo() {
+        return driverInfo;
     }
 }

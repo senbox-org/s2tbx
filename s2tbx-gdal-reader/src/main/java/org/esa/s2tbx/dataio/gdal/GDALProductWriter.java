@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.snap.core.dataio.AbstractProductWriter;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -64,20 +65,27 @@ public class GDALProductWriter extends AbstractProductWriter {
             }
         }
 
-        String driverName = null;
+        GDALDriverInfo driverInfo = null;
         String fileName = outputFile.toFile().getName();
-        for (int i=0; i<this.writerDrivers.length && driverName == null; i++) {
+        for (int i=0; i<this.writerDrivers.length && driverInfo == null; i++) {
             if (StringHelper.endsWithIgnoreCase(fileName, this.writerDrivers[i].getExtensionName())) {
-                driverName = this.writerDrivers[i].getDriverName();
+                driverInfo = this.writerDrivers[i];
             }
         }
-        if (driverName == null) {
+        if (driverInfo == null) {
             throw new IllegalArgumentException("The extension of the file name '" + fileName + "' is unknown.");
         }
 
-        Driver driver = gdal.GetDriverByName(driverName);
+        if (!driverInfo.canExportProduct(this.gdalDataType)) {
+           throw new IllegalArgumentException(driverInfo.getFailedMessageToExportProduct(this.gdalDataType, " "));
+        }
+
+        Driver driver = gdal.GetDriverByName(driverInfo.getDriverName());
 
         this.dataset = driver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
+        if (this.dataset == null) {
+            throw new IOException("Failed creating the file to export the product.");
+        }
         this.bandsMap = new HashMap<Band, org.gdal.gdal.Band>(bandCount);
     }
 
@@ -142,7 +150,9 @@ public class GDALProductWriter extends AbstractProductWriter {
 
     @Override
     public void close() throws IOException {
-        this.dataset.delete();
+        if (this.dataset != null) {
+            this.dataset.delete();
+        }
     }
 
     @Override
@@ -164,7 +174,7 @@ public class GDALProductWriter extends AbstractProductWriter {
         Guardian.assertWithinRange("sourceOffsetY", sourceOffsetY, 0, sourceBandHeight - sourceHeight);
     }
 
-    private static int getGDALDataType(int bandDataType) {
+    public static int getGDALDataType(int bandDataType) {
         if (bandDataType == ProductData.TYPE_UINT8) {
             return gdalconstConstants.GDT_Byte;
         }
