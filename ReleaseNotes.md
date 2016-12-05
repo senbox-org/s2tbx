@@ -1,6 +1,121 @@
 Sentinel-2 Toolbox Release Notes
 ================================
 
+Changes in S2TBX 5.0
+--------------------
+
+### Main features
+
+#### Sentinel-2 Product Reader
+
+##### Support for PSD 14 Test product
+
+In autumn 2016 a new product format will be introduced.
+This new format features the following main evolutions:
+
+- The product naming (including the naming of folders and files inside the product structure) has been compacted
+- The products distributed on the Sentinels Data Hub will embed one single tile of the tiling grid
+- A full resolution True-Colour Image (TCI) will be included in every product
+
+(http://step.esa.int/main/sentinel_2l1c_evolution2016/)
+
+The Sentinel-2 reader is now able to support the test product (PSD 14) available at this date for both L1C and L2A levels.
+Other formats were implemented but could not be tested.
+PSD 13 products are supported as before.
+
+##### New RGB Profiles
+
+More RGB profile are available: False-color Infrared, False-color Urban, Agriculture, Atmospheric penetration,
+Healthy Vegetation, Land/Water, Atmospherical Removal, Shortwave Infrared, Vegetation Analysis.
+RGB profiles over bands of different resolution can only be seen after resampling the product.
+
+##### Tile Index Band
+
+The different tiles/granules composing the full product overlap.
+Some "tile_id" bands and masks has been included to indicate the granule from which each pixel is extracted.
+
+##### Sentinel-2 Product Reader documentation
+
+* Overview of the instrument
+* Description of supported products
+* Description of product format
+* Description of some generated bands: angles, tile index
+
+##### Other Sentinel-2 Reader improvements
+
+Granules can now be opened without reading the main XML file
+
+Performance optimisations were performed, it is now much faster to open a product:
+
+- New method for reading the GML masks
+- New method for metadata reading
+
+Clean properly cache
+
+
+#### New Processors
+
+##### Reflectance to Radiance Processor
+
+The Reflectance to Radiance Processor converts the Top Of Atmosphere (TOA) reflectance to radiance from a given product.
+The formula implemented is:
+
+radiance = pixelValue * cosinus(radians(incidenceAngle)) * solarIrradiance * scale / (pi * d2)
+
+(the variables are described in the SNAP help)
+
+For Sentinel-2 the incidence angle is replaced with the values from the sun_zenith band.
+
+##### Sentinel-2 Water Processor - MCI
+
+The Sentinel-2 MCI Processor calculates the Maximum Chlorophyll Index by exploiting the height of a measurement over a specific baseline.
+
+##### L3 processor integrated via the Standalone Tools Adapter
+
+A new Sen2Three plugin is available to call Sen2Three from the S2TBX, based on generic StandAlone Tools Adapter.
+
+Sen2Three is a level 3 processor for the Spatio-Temporal Synthesis of bottom of atmosphere corrected Sentinel-2 level 2a images.
+
+(http://step.esa.int/main/third-party-plugins-2/sen2three/)
+
+
+#### Non-native API Wrapper
+
+##### OTB Python API inside SNAP Operator
+
+A example explaining how to access OTB C++ application via Python API inside a SNAP Operator Plugin has been created.
+The example demonstrates computing ndvi for a source product opened in SNAP through OTB
+
+
+
+### List of solved issues
+#### Bug
+    * [SIITBX-228] - S2-MSI reader does not load correctly the angles in some products
+    * [SIITBX-229] - Sen2Three progress is going over 100%
+    * [SIITBX-230] - SPOT-6 Reader test if failing
+    * [SIITBX-236] - View synchronization between bands and index masks does not work properly in Sentinel-2 products
+    * [SIITBX-240] - The Mosaic and SC map of Sentinel-2 level3 products are only available at one resolution
+    * [SIITBX-241] - The cache in memory is not properly cleaned when the user closes a Sentinel-2 product
+    * [SIITBX-243] - RGB image views do not update correctly on Mac OS X or even make OS unresponsive
+    * [SIITBX-245] - Cloud_Coverage_Assessment not represented in SNAP
+
+#### Improvement
+    * [SIITBX-111] - Sentinel-2 Reader documentation
+    * [SIITBX-180] - Add more RGB profiles
+    * [SIITBX-216] - Add a band keeping track of tile ids in L1C/L2A product
+    * [SIITBX-237] - Tile Index band : rename, group
+    * [SIITBX-239] - Support for opening a granule without needing files from the full product.
+    * [SIITBX-247] - Support for reading S2 products with new format (PSD14)
+
+#### Requirement
+    * [SIITBX-5] - Extension to diff. Language
+    * [SIITBX-6] - non-native API Wrapper
+    * [SIITBX-26] - Processor reflectance to radiance
+    * [SIITBX-28] - Processor L3
+    * [SIITBX-29] - Water Processor
+
+
+
 Changes in S2TBX 4.0
 --------------------
 

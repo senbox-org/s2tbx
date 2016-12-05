@@ -2,12 +2,16 @@
 #if($sourceProduct.FileLocation.Directory)
     #set($fileList = $sourceProduct.FileLocation.listFiles())
     #foreach($file in $fileList)
-        #if($file.Name.startsWith("S2A") && $file.Name.endsWith(".xml"))
-            #set($targetName=$file.AbsolutePath.replace("L1C", "L2A").replace("OPER", "USER"))
+        #if($file.Name.startsWith("MTD_MSIL1C.xml") || ($file.Name.startsWith("S2A") && $file.Name.endsWith(".xml") && !$file.Name.endsWith("report.xml")))
+            #set($parentNameAux=$sourceProduct.FileLocation.ParentFile.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+            #set($fileNameAux=$sourceProduct.FileLocation.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+            #set($targetName=$sourceProduct.FileLocation.ParentFile.toPath().resolveSibling($parentNameAux).resolve($fileNameAux).toString())
         #end
     #end
 #else
-    #set($targetName=$sourceProduct.FileLocation.AbsolutePath.replace("L1C", "L2A").replace("OPER", "USER"))
+    #set($parentNameAux=$sourceProduct.FileLocation.ParentFile.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+    #set($fileNameAux=$sourceProduct.FileLocation.Name.replace("L1C", "L2A").replace("OPER", "USER"))
+    #set($targetName=$sourceProduct.FileLocation.ParentFile.toPath().resolveSibling($parentNameAux).resolve($fileNameAux).toString())
 #end
 #set($fileClass=$sourceProductFile.Class.forName("java.io.File"))
 #set($stringClass = $sourceProductFile.Class.forName("java.lang.String"))
