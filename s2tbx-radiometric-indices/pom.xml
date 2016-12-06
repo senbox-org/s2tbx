@@ -30,7 +30,7 @@
     <artifactId>s2tbx-radiometric-indices</artifactId>
     <packaging>nbm</packaging>
 
-    <name>Radiometric Indices Bundle</name>
+    <name>Sentinel-2 Toolbox Radiometric Indices</name>
 
     <dependencies>
         <dependency>
