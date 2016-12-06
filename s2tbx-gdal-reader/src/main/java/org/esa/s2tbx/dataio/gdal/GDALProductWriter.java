@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
@@ -32,6 +33,7 @@ public class GDALProductWriter extends AbstractProductWriter {
     private Dataset dataset;
     private Map<Band, org.gdal.gdal.Band> bandsMap;
     private int gdalDataType;
+    private Driver driver;
 
     public GDALProductWriter(ProductWriterPlugIn writerPlugIn, GDALDriverInfo[] writerDrivers) {
         super(writerPlugIn);
@@ -80,11 +82,17 @@ public class GDALProductWriter extends AbstractProductWriter {
            throw new IllegalArgumentException(driverInfo.getFailedMessageToExportProduct(this.gdalDataType, " "));
         }
 
-        Driver driver = gdal.GetDriverByName(driverInfo.getDriverName());
+        this.driver = gdal.GetDriverByName(driverInfo.getDriverName());
 
-        this.dataset = driver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
+        logger.info("Using the GDAL driver '" + this.driver.getLongName() + "' ("+this.driver.getShortName()+") to save the product.");
+
+//        Vector options = new Vector();
+//        options.add("MINUSERPIXELVALUE=10");
+//        this.dataset = this.driver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType, options);
+
+        this.dataset = this.driver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
         if (this.dataset == null) {
-            throw new IOException("Failed creating the file to export the product.");
+            throw new IOException("Failed creating the file to export the product for driver '" + this.driver.getLongName() + "'.");
         }
         this.bandsMap = new HashMap<Band, org.gdal.gdal.Band>(bandCount);
     }
@@ -104,6 +112,10 @@ public class GDALProductWriter extends AbstractProductWriter {
         if (gdalBand == null) {
             int bandIndex = sourceProduct.getBandIndex(sourceBand.getName());
             gdalBand = this.dataset.GetRasterBand(bandIndex + 1);
+            if (gdalBand == null) {
+                this.dataset.AddBand(this.gdalDataType);
+                throw new NullPointerException("Failed creating the band with index " + bandIndex + " to export the product for driver '" + this.driver.getLongName() + "'.");
+            }
             this.bandsMap.put(sourceBand, gdalBand);
         }
 
@@ -136,7 +148,7 @@ public class GDALProductWriter extends AbstractProductWriter {
             }
 
             if (result != gdalconst.CE_None) {
-                throw new IllegalArgumentException("Failed to write the data for band name '" + sourceBand.getName() + "'.");
+                throw new IllegalArgumentException("Failed to write the data for band name '" + sourceBand.getName() + "' and driver '" + this.driver.getLongName()+"'.");
             }
             pm.worked(1);
         } finally {
@@ -197,5 +209,30 @@ public class GDALProductWriter extends AbstractProductWriter {
             return gdalconstConstants.GDT_Float64;
         }
         throw new IllegalArgumentException("Unknown band data type " + bandDataType + ".");
+    }
+
+    public static int getBandDataType(int gdalDataType) {
+        if (gdalDataType == gdalconstConstants.GDT_Byte) {
+            return ProductData.TYPE_UINT8;
+        }
+        if (gdalDataType == gdalconstConstants.GDT_Int16) {
+            return ProductData.TYPE_INT16;
+        }
+        if (gdalDataType == gdalconstConstants.GDT_UInt16) {
+            return ProductData.TYPE_UINT16;
+        }
+        if (gdalDataType == gdalconstConstants.GDT_Int32) {
+            return ProductData.TYPE_INT32;
+        }
+        if (gdalDataType == gdalconstConstants.GDT_UInt32) {
+            return ProductData.TYPE_UINT32;
+        }
+        if (gdalDataType == gdalconstConstants.GDT_Float32) {
+            return ProductData.TYPE_FLOAT32;
+        }
+        if (gdalDataType == gdalconstConstants.GDT_Float64) {
+            return ProductData.TYPE_FLOAT64;
+        }
+        throw new IllegalArgumentException("Unknown band data type " + gdalDataType + ".");
     }
 }

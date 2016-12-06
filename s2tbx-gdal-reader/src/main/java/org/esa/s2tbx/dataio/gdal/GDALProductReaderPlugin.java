@@ -14,7 +14,7 @@ import java.util.Locale;
  */
 public class GDALProductReaderPlugin implements ProductReaderPlugIn {
     private static final Class[] INPUT_TYPES = new Class[] { String.class, File.class };
-    public static final String[] FORMAT_NAMES = new String[] { "GDAL" };
+    public static final String FORMAT_NAME = "GDAL-READER";
     private static final String[] DEFAULT_EXTENSIONS = new String[] { ".*" };
     private static final String DESCRIPTION = "Raster Files";
 
@@ -48,7 +48,7 @@ public class GDALProductReaderPlugin implements ProductReaderPlugIn {
     @Override
     public String[] getFormatNames() {
         String[] formatNames = GdalInstallInfo.INSTANCE.getFormatNames();
-        return formatNames != null ? formatNames : FORMAT_NAMES;
+        return formatNames != null ? formatNames :  new String[] { FORMAT_NAME };
     }
 
     @Override

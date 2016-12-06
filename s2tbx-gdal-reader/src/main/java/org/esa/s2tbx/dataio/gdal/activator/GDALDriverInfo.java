@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.activator;
 
 import org.gdal.gdal.gdal;
+import org.gdal.gdalconst.gdalconstConstants;
 
 import java.text.MessageFormat;
 
@@ -46,5 +47,17 @@ public class GDALDriverInfo {
         return MessageFormat.format("The GDAL driver ''{0}'' does not support the data type ''{1}'' to create a new product." + separator +
                         "The available types are ''{2}''." ,
                 this.driverDisplayName, gdalDataTypeName, this.creationDataTypes);
+    }
+
+    public int getFirstGDALCreationDataType() {
+        if (this.creationDataTypes != null) {
+            int index = this.creationDataTypes.indexOf(" ");
+            if (index < 0) {
+                index = this.creationDataTypes.length();
+            }
+            String gdalDataTypeName = this.creationDataTypes.substring(0, index).trim();
+            return gdal.GetDataTypeByName(gdalDataTypeName);
+        }
+        return gdalconstConstants.GDT_Byte;
     }
 }
