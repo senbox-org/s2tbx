@@ -31,7 +31,11 @@
     <packaging>nbm</packaging>
 
     <name>Radiometric Indices Bundle</name>
-
+    <version>5.0.1</version>
+    <properties>
+        <s2tbx.nbmSpecVersion>5.0.1</s2tbx.nbmSpecVersion>
+        <s2tbx.version>5.0.0</s2tbx.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.esa.snap</groupId>
