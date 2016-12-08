@@ -17,6 +17,11 @@
     </description>
 
     <dependencies>
+
+
+
+
+
         <dependency>
             <groupId>org.gdal</groupId>
             <artifactId>gdal-local</artifactId>
@@ -89,6 +94,12 @@
         </dependency>
 
 
+        <!-- NetBeans Platform -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-progress-nb</artifactId>
+            <version>RELEASE82</version>
+        </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-filesystems</artifactId>
@@ -108,6 +119,7 @@
             <artifactId>org-openide-util-ui</artifactId>
         </dependency>
 
+        <!-- JUnit -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

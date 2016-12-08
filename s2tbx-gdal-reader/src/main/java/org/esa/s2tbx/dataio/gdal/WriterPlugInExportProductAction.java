@@ -7,14 +7,18 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.ExportProductAction;
 import org.esa.snap.rcp.actions.file.ProductFileChooser;
+import org.esa.snap.rcp.actions.file.ProductOpener;
+import org.esa.snap.rcp.actions.file.WriteProductOperation;
 import org.esa.snap.rcp.util.Dialogs;
 import org.gdal.gdal.gdal;
+import org.netbeans.api.progress.ProgressUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.prefs.Preferences;
 
 /**
  * @author Jean Coravu
@@ -93,5 +97,64 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
         }
 
         return exportProduct(exportProduct, newFile, formatName);
+    }
+
+    private boolean canWriteSelectedFile(File newFile) {
+        if (newFile.isFile() && !newFile.canWrite()) {
+            Dialogs.showWarning(getDisplayName(),
+                    MessageFormat.format("The product\n" +
+                                    "''{0}''\n" +
+                                    "exists and cannot be overwritten, because it is read only.\n" +
+                                    "Please choose another file or remove the write protection.",
+                            newFile.getPath()),
+                    null);
+            return false;
+        }
+        return true;
+    }
+
+    private Boolean exportProduct(Product exportProduct, File newFile, String formatName) {
+        SnapApp.getDefault().setStatusBarMessage(MessageFormat.format("Exporting product ''{0}'' to {1}...", exportProduct.getDisplayName(), newFile));
+
+        WriteProductOperation operation = new WriteProductOperation(exportProduct, newFile, formatName, false);
+        ProgressUtils.runOffEventThreadWithProgressDialog(operation,
+                getDisplayName(),
+                operation.getProgressHandle(),
+                true,
+                50,
+                1000);
+
+        SnapApp.getDefault().setStatusBarMessage("");
+
+        return operation.getStatus();
+    }
+
+    private ProductWriter findProductWriter(Product product, String formatName) {
+        final ProductWriter productWriter = ProductIO.getProductWriter(formatName);
+        if (productWriter == null) {
+            Dialogs.showError(getDisplayName(), MessageFormat.format("No writer found for format {0}.", formatName));
+            return null;
+        }
+        final EncodeQualification encodeQualification = productWriter.getWriterPlugIn().getEncodeQualification(product);
+        if (encodeQualification.getPreservation() == EncodeQualification.Preservation.UNABLE) {
+            Dialogs.showError(getDisplayName(), MessageFormat.format("Writing this product as {0} is not possible:\n"
+                            + encodeQualification.getInfoString(),
+                    formatName
+            ));
+            return null;
+        }
+        return productWriter;
+    }
+
+    private ProductFileChooser buildFileChooserDialog(Product product, String formatName, boolean useSubset, FileFilter filter) {
+        Preferences preferences = SnapApp.getDefault().getPreferences();
+        ProductFileChooser fc = new ProductFileChooser(new File(preferences.get(ProductOpener.PREFERENCES_KEY_LAST_PRODUCT_DIR, ".")));
+        fc.setDialogType(JFileChooser.SAVE_DIALOG);
+        fc.setSubsetEnabled(useSubset);
+        if (filter != null) {
+            fc.addChoosableFileFilter(filter);
+        }
+        fc.setProductToExport(product);
+        return fc;
     }
 }
