@@ -49,6 +49,7 @@
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-gdal-reader</module>
+        <module>s2tbx-gdal-reader-ui</module>
         <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-radiometric-indices</module>
         <module>s2tbx-biophysical</module>

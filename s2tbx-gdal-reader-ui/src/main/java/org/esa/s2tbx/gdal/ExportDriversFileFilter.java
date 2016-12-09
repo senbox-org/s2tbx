@@ -1,4 +1,4 @@
-package org.esa.s2tbx.dataio.gdal;
+package org.esa.s2tbx.gdal;
 
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.snap.utils.StringHelper;

@@ -1,25 +1,15 @@
-package org.esa.s2tbx.dataio.gdal.activator;
+package org.esa.s2tbx.gdal.activator;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 
-import javax.swing.*;
-import java.io.IOException;
-import java.util.Arrays;
-import javax.swing.*;
 import java.io.IOException;
 import java.util.Arrays;
 
-import java.io.IOException;
-import java.util.Arrays;
 import javax.swing.Action;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.lookup.ServiceProvider;
-
-@ServiceProvider(service= org.esa.s2tbx.dataio.gdal.activator.ActionRegistrationService.class)
+@ServiceProvider(service= ActionRegistrationService.class)
 public class ActionRegistrationService {
 
     public ActionRegistrationService() {

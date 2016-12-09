@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.gdal;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.runtime.Activator;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
 import org.esa.snap.utils.PostExecAction;
@@ -127,101 +128,9 @@ public class GDALInstaller {
         if (existingBinPath != null) {
             Path root = existingBinPath.getParent();
             GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
-            gdalInstallInfo.setBinLocation(existingBinPath);
-            gdalInstallInfo.setAppsLocation(root.resolve(APPS_PATH));
-            gdalInstallInfo.setDriversLocation(root.resolve(PLUGINS_PATH));
-            gdalInstallInfo.setDataLocation(root.resolve(DATA_PATH));
+            gdalInstallInfo.setLocations(existingBinPath, root.resolve(APPS_PATH), root.resolve(PLUGINS_PATH), root.resolve(DATA_PATH));
         }
     }
-
-//    static List<GDALWriterPluginInfo> runGdalInfo() {
-//        List<String> formatsShortDesc = runProcess("gdalinfo", "--formats");
-//        List<GDALWriterPluginInfo> writerItems = new ArrayList<>();
-//        List<String> fmtNames = new ArrayList<>();
-//        List<String> exts = new ArrayList<>();
-//        String ext;
-//        String key = "Extension:";
-//        for (int i = 0; i < formatsShortDesc.size(); i++) {
-//            String desc = formatsShortDesc.get(i);
-//            int startIndex = desc.indexOf("(");
-//            if (startIndex >= 0) {
-//                int endIndex = desc.indexOf(")", startIndex + 1);
-//                String format = desc.substring(startIndex, endIndex + 1).trim();
-//                if (format.indexOf("w+") >= 0) {
-//                    String formatName = desc.substring(0, desc.indexOf("-")).trim();
-//                    int dotsIndex = desc.indexOf(":", endIndex + 1);
-//                    String displayName = desc.substring(dotsIndex + 1).trim();
-//                    System.out.println(" 3 format='" + format + "' formatName='" + formatName + "' displayName='" + displayName + "'  desc=" + desc);
-//
-//                    List<String> lines = runProcess("gdalinfo", "--format", formatName);
-//                    String extensionName = null;
-//                    boolean canCreateDataset = false;
-//                    for (int k = 0; k < lines.size() && (canCreateDataset == false || extensionName == null); k++) {
-//                        String line = lines.get(k);
-//                        int index = line.indexOf("Supports:");
-//                        if (index >= 0) {
-//                            if (line.indexOf("Create", index) > 0) {
-//                                canCreateDataset = true;
-//                            }
-//                        } else {
-//                            index = line.indexOf(key);
-//                            if (index >= 0) {
-//                                extensionName = line.substring(index + key.length()).trim();
-//                            }
-//                        }
-//                    }
-//                    if (canCreateDataset && extensionName != null) {
-//                        System.out.println("    => can3 create raster formatName=" + formatName + "  extensionName=" + extensionName + "  displayName=" + displayName);
-//
-//                        writerItems.add(new GDALWriterPluginInfo("." + extensionName, formatName, displayName));
-//                        fmtNames.add(formatName);
-//                        exts.add("." + extensionName);
-//
-//                        if (writerItems.size() > 15) {
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return writerItems;
-//    }
-//
-//    private static List<String> runProcess(String... args) {
-//        List<String> lines = new ArrayList<>();
-//        if (args != null && args.length > 0) {
-//            try {
-//                ProcessBuilder builder = new ProcessBuilder(args);
-//                builder.environment().putAll(System.getenv());
-//                boolean isStopped = false;
-//                final Process process = builder.start();
-//                try {
-//                    Thread.sleep(200);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                try (BufferedReader outReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-//                    while (!isStopped) {
-//                        if (!process.isAlive()) {
-//                            isStopped = true;
-//                        } else {
-//                            Thread.yield();
-//                        }
-//                        while (outReader.ready()) {
-//                            String line = outReader.readLine();
-//                            if (line != null && !line.isEmpty()) {
-//                                lines.add(line);
-//                            }
-//                        }
-//                    }
-//                    outReader.close();
-//                }
-//            } catch (Exception ex) {
-//                SystemUtils.LOG.severe(String.format("Cannot execute %s: %s", args[0], ex.getMessage()));
-//            }
-//        }
-//        return lines;
-//    }
 
     private static Path getGDALAuxDataPath() {
         return SystemUtils.getAuxDataPath().resolve("gdal");

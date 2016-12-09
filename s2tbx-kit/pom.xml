@@ -169,6 +169,12 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-gdal-reader-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-sta-adapters-help</artifactId>
             <version>${project.version}</version>
         </dependency>

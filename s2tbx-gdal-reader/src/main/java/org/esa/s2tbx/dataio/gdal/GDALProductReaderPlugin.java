@@ -18,12 +18,6 @@ public class GDALProductReaderPlugin implements ProductReaderPlugIn {
     private static final String[] DEFAULT_EXTENSIONS = new String[] { ".*" };
     private static final String DESCRIPTION = "Raster Files";
 
-    static {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
-            gdal.AllRegister(); // GDAL init drivers
-        }
-    }
-
     public GDALProductReaderPlugin() {
     }
 

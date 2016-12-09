@@ -1,13 +1,7 @@
 package org.esa.s2tbx.dataio.gdal;
 
-import org.esa.snap.core.util.SystemUtils;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by kraftek on 11/15/2016.
@@ -21,21 +15,44 @@ public enum GdalInstallInfo {
     private Path appsLocation;
     private String[] fileTypes;
     private String[] extensions;
+    private GDALWriterPlugInListener listener;
+    private Integer writeDriverCount;
+
+    void setLocations(Path binLocation, Path appsLocation, Path driversLocation, Path dataLocation) {
+        this.binLocation = binLocation;
+        this.appsLocation = appsLocation;
+        this.driversLocation = driversLocation;
+        this.dataLocation = dataLocation;
+        fireListener();
+    }
+
+    public synchronized void setListener(GDALWriterPlugInListener listener) {
+        this.listener = listener;
+        fireListener();
+    }
+
+    public synchronized void setWriteDriverCount(int writeDriverCount) {
+        this.writeDriverCount = writeDriverCount;
+        fireListener();
+    }
+
+    private void fireListener() {
+        if (this.writeDriverCount != null && this.listener != null) {
+            this.listener.writeDriversSuccessfullyInstalled();
+            this.listener = null;
+            this.writeDriverCount = null;
+        }
+    }
 
     public Path getBinLocation() {
         return binLocation;
     }
 
-    void setBinLocation(Path binLocation) { this.binLocation = binLocation; }
-
     public Path getDriversLocation() { return driversLocation; }
-    void setDriversLocation(Path driversLocation) { this.driversLocation = driversLocation; }
 
     public Path getAppsLocation() { return appsLocation; }
-    void setAppsLocation(Path appsLocation) { this.appsLocation = appsLocation; }
 
     public Path getDataLocation() { return dataLocation; }
-    void setDataLocation(Path dataLocation) { this.dataLocation = dataLocation; }
 
     public boolean isPresent() {
         return binLocation != null && Files.exists(binLocation);

@@ -8,6 +8,7 @@ import org.esa.snap.core.util.ResourceInstaller;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.utils.NativeLibraryUtils;
 import org.esa.snap.utils.TestUtil;
+import org.gdal.gdal.gdal;
 
 import java.awt.image.RenderedImage;
 import java.io.File;
@@ -43,7 +44,10 @@ public class GDALProductReaderTest extends AbstractGDALPlugInTest {
 
         checkTestDirectoryExists();
 
-        this.plugIn = new GDALProductReaderPlugin();
+        if (GdalInstallInfo.INSTANCE.isPresent()) {
+            gdal.AllRegister(); // GDAL init drivers
+            this.plugIn = new GDALProductReaderPlugin();
+        }
     }
 
     public void testReadProductNodes() throws IOException {

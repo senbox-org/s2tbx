@@ -32,7 +32,7 @@ public abstract class AbstractGDALPlugInTest extends TestCase {
         }
 
         Path gdalBinPath = Paths.get(gdalBinDirectoryPathProperty);
-        GdalInstallInfo.INSTANCE.setBinLocation(gdalBinPath);
+        GdalInstallInfo.INSTANCE.setLocations(gdalBinPath, null, null, null);
     }
 
     private void checkJNILibsDirectoryExists() {

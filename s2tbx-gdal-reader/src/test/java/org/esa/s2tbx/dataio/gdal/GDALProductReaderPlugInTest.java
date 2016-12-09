@@ -1,8 +1,6 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import junit.framework.TestCase;
-import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
-import org.esa.s2tbx.dataio.gdal.activator.GDALReaderActivator;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
@@ -23,7 +21,7 @@ import static org.junit.Assert.assertArrayEquals;
  *
  * @author Jean Coravu
  */
-public class GDALProductReaderPlugInTest extends TestCase {
+public class GDALProductReaderPlugInTest extends AbstractGDALPlugInTest {
     private GDALProductReaderPlugin plugIn;
 
     public GDALProductReaderPlugInTest() {
@@ -33,7 +31,10 @@ public class GDALProductReaderPlugInTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        this.plugIn = new GDALProductReaderPlugin();
+        if (GdalInstallInfo.INSTANCE.isPresent()) {
+            gdal.AllRegister(); // GDAL init drivers
+            this.plugIn = new GDALProductReaderPlugin();
+        }
     }
 
     public void testPluginIsLoaded() {

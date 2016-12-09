@@ -17,12 +17,6 @@ import java.util.Locale;
 public class GDALProductWriterPlugIn implements ProductWriterPlugIn {
     public static final String FORMAT_NAME = "GDAL-WRITER";
 
-    static {
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
-            gdal.AllRegister(); // GDAL init drivers
-        }
-    }
-
     private final GDALDriverInfo[] writerDrivers;
 
     public GDALProductWriterPlugIn(GDALDriverInfo[] writerDrivers) {

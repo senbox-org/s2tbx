@@ -2,7 +2,7 @@ package org.esa.s2tbx.dataio.gdal;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
-import org.esa.s2tbx.dataio.gdal.activator.GDALReaderActivator;
+import org.esa.s2tbx.dataio.gdal.activator.GDALPlugInActivator;
 import org.esa.snap.core.dataio.ProductWriter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -34,16 +34,11 @@ public class GDALProductWriterTest extends AbstractGDALPlugInTest {
     protected void setUp() throws Exception {
         super.setUp();
 
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
-            gdal.AllRegister(); // GDAL init drivers
+        GDALDriverInfo[] writerDrivers = GDALPlugInActivator.findWriterDrivers();
+        if (writerDrivers != null && writerDrivers.length > 0) {
+            this.writerPlugIn = new GDALProductWriterPlugIn(writerDrivers);
+            this.readerPlugIn = new GDALProductReaderPlugin();
 
-            List<GDALDriverInfo> writerItems = GDALReaderActivator.findWriterDrivers();
-            if (writerItems.size() > 0) {
-                GDALDriverInfo[] writers = writerItems.toArray(new GDALDriverInfo[writerItems.size()]);
-                this.writerPlugIn = new GDALProductWriterPlugIn(writers);
-                this.readerPlugIn = new GDALProductReaderPlugin();
-
-            }
         }
     }
 

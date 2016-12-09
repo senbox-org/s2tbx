@@ -1,5 +1,7 @@
-package org.esa.s2tbx.dataio.gdal;
+package org.esa.s2tbx.gdal;
 
+import org.esa.s2tbx.dataio.gdal.GDALProductWriter;
+import org.esa.s2tbx.dataio.gdal.GDALProductWriterPlugIn;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.snap.core.dataio.*;
 import org.esa.snap.core.datamodel.Band;
@@ -10,7 +12,6 @@ import org.esa.snap.rcp.actions.file.ProductFileChooser;
 import org.esa.snap.rcp.actions.file.ProductOpener;
 import org.esa.snap.rcp.actions.file.WriteProductOperation;
 import org.esa.snap.rcp.util.Dialogs;
-import org.gdal.gdal.gdal;
 import org.netbeans.api.progress.ProgressUtils;
 
 import javax.swing.*;
