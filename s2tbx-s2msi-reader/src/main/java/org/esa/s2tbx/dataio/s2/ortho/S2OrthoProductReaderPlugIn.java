@@ -27,6 +27,9 @@ import org.esa.snap.core.datamodel.RGBImageProfileManager;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 import static org.esa.s2tbx.dataio.s2.ortho.S2CRSHelper.epsgToDisplayName;
@@ -66,16 +69,24 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
     @Override
     public DecodeQualification getDecodeQualification(Object input) {
         SystemUtils.LOG.fine("Getting decoders...");
-        //File file = preprocessInput(input);
+
         if(!(input instanceof File)) {
             return DecodeQualification.UNABLE;
         }
         File file = (File) input;
+        String canonicalPathString = "";
+        Path canonicalPath;
+        try {
+            canonicalPathString = file.getCanonicalPath();
+            canonicalPath = Paths.get(canonicalPathString);
+        } catch (IOException e) {
+            return DecodeQualification.UNABLE;
+        }
 
-        crsCache.ensureIsCached(file.toPath());
+        crsCache.ensureIsCached(canonicalPath);
 
-        level = crsCache.getProductLevel(file.getAbsolutePath());
-        S2Config.Sentinel2InputType  inputType = crsCache.getInputType(file.getAbsolutePath());
+        level = crsCache.getProductLevel(canonicalPathString);
+        S2Config.Sentinel2InputType  inputType = crsCache.getInputType(canonicalPathString);
 
         if(inputType == null) {
             return DecodeQualification.UNABLE;
@@ -85,7 +96,7 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             return DecodeQualification.UNABLE;
         }
 
-        if(!crsCache.hasEPSG(file.getAbsolutePath(), getEPSG())) {
+        if(!crsCache.hasEPSG(canonicalPathString, getEPSG())) {
             return DecodeQualification.UNABLE;
         }
 
