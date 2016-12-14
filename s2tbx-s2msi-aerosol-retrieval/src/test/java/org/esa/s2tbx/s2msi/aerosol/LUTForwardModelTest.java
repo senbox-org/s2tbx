@@ -8,5 +8,5 @@ package org.esa.s2tbx.s2msi.aerosol;
  *
  * @author olafd
  */
-public class LutForwardModelTest {
+public class LUTForwardModelTest {
 }

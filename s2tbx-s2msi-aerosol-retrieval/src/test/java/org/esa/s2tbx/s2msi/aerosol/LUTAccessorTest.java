@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author olafd
  */
-public class LutAccessorTest {
+public class LUTAccessorTest {
 
     private LUTAccessor firstAccessor;
     private String firstLUTPath;
