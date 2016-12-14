@@ -26,6 +26,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.util.SystemUtils;
 import org.jdom.Attribute;
 import org.jdom.Element;
 
@@ -601,14 +602,25 @@ public abstract class S2Metadata {
             String[] zenithSplit = valuesZenith[rowindex].split(" ");
             String[] azimuthSplit = valuesAzimuth[rowindex].split(" ");
             if(zenithSplit == null || azimuthSplit == null || zenithSplit.length != nCols ||azimuthSplit.length != nCols) {
+                SystemUtils.LOG.severe("zenith and azimuth array length differ in line " + rowindex + " - " + valuesZenith[rowindex] + " - " + valuesAzimuth[rowindex]);
                 return null;
             }
             for (int colindex = 0; colindex < nCols; colindex++) {
-                anglesGrid.getZenith()[rowindex][colindex] = Float.parseFloat(zenithSplit[colindex]);
-                anglesGrid.getAzimuth()[rowindex][colindex] = Float.parseFloat(azimuthSplit[colindex]);
+                anglesGrid.getZenith()[rowindex][colindex] = parseFloat(zenithSplit[colindex]);
+                anglesGrid.getAzimuth()[rowindex][colindex] = parseFloat(azimuthSplit[colindex]);
             }
         }
         return anglesGrid;
+    }
+
+    static float parseFloat(String s) {
+        if ("INF".equals(s)) {
+            return Float.POSITIVE_INFINITY;
+        } else if ("-INF".equals(s)) {
+            return Float.NEGATIVE_INFINITY;
+        } else {
+            return Float.parseFloat(s);
+        }
     }
 
     public static AnglesGrid[] wrapStandardViewingAngles(MetadataElement tileAnglesMetadataElement) {
