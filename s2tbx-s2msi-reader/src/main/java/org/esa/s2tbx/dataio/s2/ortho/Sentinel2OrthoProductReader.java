@@ -39,10 +39,12 @@ import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.SourceImageScaler;
 import org.esa.snap.core.util.SystemUtils;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.referencing.CRS;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -220,7 +222,20 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         product.setPreferredTileSize(S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE);
         product.setNumResolutionsMax(getConfig().getTileLayout(S2SpatialResolution.R10M.resolution).numResolutions);
-        product.setAutoGrouping("sun:view:quality:tile:detector_footprint:nodata:partially_corrected_crosstalk:saturated_l1a:saturated_l1b:defective:ancillary_lost:ancillary_degraded:msi_lost:msi_degraded:opaque_clouds:cirrus_clouds:scl:msc:ddv:tile");
+        product.setAutoGrouping("sun:view:quality:tile:detector_footprint:nodata:partially_corrected_crosstalk:saturated_l1a:saturated_l1b:defective:ancillary_lost:ancillary_degraded:msi_lost:msi_degraded:opaque_clouds:cirrus_clouds:scl:msc:ddv:tile:" +
+                                        "detector_footprint-B01:" +
+                                        "detector_footprint-B02:" +
+                                        "detector_footprint-B03:" +
+                                        "detector_footprint-B04:" +
+                                        "detector_footprint-B05:" +
+                                        "detector_footprint-B06:" +
+                                        "detector_footprint-B07:" +
+                                        "detector_footprint-B08:" +
+                                        "detector_footprint-B8A:" +
+                                        "detector_footprint-B09:" +
+                                        "detector_footprint-B10:" +
+                                        "detector_footprint-B11:" +
+                                        "detector_footprint-B12");
 
         product.setStartTime(parseDate(productCharacteristics.getProductStartTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         product.setEndTime(parseDate(productCharacteristics.getProductStopTime(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
@@ -788,8 +803,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             for (int index = 0; index < productPolygons[i].size(); index++) {
                 Polygon polygon = productPolygons[i].get(index).getPolygon();
 
-                Object[] data1 = {polygon, String.format("Polygon-%s", index)};
-                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("F-%s", index)), true);
+                Object[] data1 = {polygon, String.format("%s[%s]",productPolygons[i].get(index).getId(),index)};
+                SimpleFeatureImpl f1 = new SimpleFeatureImpl(data1, type, new FeatureIdImpl(String.format("%s[%s]",productPolygons[i].get(index).getId(),index)), true);
                 collection.add(f1);
             }
 
@@ -813,7 +828,63 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                     // We need a different name for each resolution version
                     String description = maskInfo.getDescription(i);
-                    String snapName = String.format("%s_%dm", maskInfo.getSnapName()[i], resolution.resolution);
+                    if(!maskInfo.isPerPolygon()) {
+                        String snapName = String.format("%s_%dm", maskInfo.getSnapName()[i], resolution.resolution);
+                        VectorDataNode vdn = new VectorDataNode(snapName, collection);
+                        vdn.setOwner(product);
+                        product.addMask(snapName,
+                                        vdn,
+                                        description,
+                                        maskInfo.getColor()[i],
+                                        maskInfo.getTransparency()[i],
+                                        referenceBand);
+                    } else {
+                        //Currently there are no masks with this characteristics, the code should be tested if a new mask is added
+                        Set<String> distictPolygons = new HashSet<>();
+                        SimpleFeatureIterator simpleFeatureIterator = collection.features();
+                        while(simpleFeatureIterator.hasNext()){
+                            SimpleFeature simpleFeature = simpleFeatureIterator.next();
+                            if(simpleFeature.getID().contains("-")) {
+                                distictPolygons.add(simpleFeature.getID().substring(0, simpleFeature.getID().lastIndexOf("-")));
+                            }
+                        }
+                        simpleFeatureIterator.close();
+                        List<String> distictPolygonsOrdered = S2SceneDescription.asSortedList(distictPolygons);
+
+                        ColorIterator.reset();
+                        for(String subId : distictPolygonsOrdered) {
+                            final DefaultFeatureCollection subCollection = new DefaultFeatureCollection(subId, type);
+                            simpleFeatureIterator = collection.features();
+                            while (simpleFeatureIterator.hasNext()) {
+                                SimpleFeature simpleFeature = simpleFeatureIterator.next();
+                                if(simpleFeature.getID().startsWith(subId)) {
+                                    subCollection.add(simpleFeature);
+                                }
+                            }
+                            simpleFeatureIterator.close();
+                            VectorDataNode vdnPolygon = new VectorDataNode(subId, subCollection);
+                            vdnPolygon.setOwner(product);
+                            String snapName = String.format("%s_%dm", subId, resolution.resolution);
+
+                            product.addMask(snapName,
+                                            vdnPolygon,
+                                            description,
+                                            ColorIterator.next(),
+                                            maskInfo.getTransparency()[i],
+                                            referenceBand);
+                        }
+                    }
+                }
+            } else {
+
+                // This mask is specific to a band
+                Band referenceBand = product.getBand(spectralInfo.getPhysicalBand());
+                String bandName = spectralInfo.getPhysicalBand();
+                String description = maskInfo.getDescriptionForBand(bandName,i);
+
+
+                if(!maskInfo.isPerPolygon()) {
+                    String snapName = maskInfo.getSnapNameForBand(bandName,i);
                     VectorDataNode vdn = new VectorDataNode(snapName, collection);
                     vdn.setOwner(product);
                     product.addMask(snapName,
@@ -822,21 +893,40 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                     maskInfo.getColor()[i],
                                     maskInfo.getTransparency()[i],
                                     referenceBand);
+                } else {
+                    Set<String> distictPolygons = new HashSet<>();
+                    SimpleFeatureIterator simpleFeatureIterator = collection.features();
+                    while(simpleFeatureIterator.hasNext()){
+                        SimpleFeature simpleFeature = simpleFeatureIterator.next();
+                        if(simpleFeature.getID().contains("-")) {
+                            distictPolygons.add(simpleFeature.getID().substring(0, simpleFeature.getID().lastIndexOf("-")));
+                        }
+                    }
+                    simpleFeatureIterator.close();
+                    List<String> distictPolygonsOrdered = S2SceneDescription.asSortedList(distictPolygons);
+
+                    ColorIterator.reset();
+                    for(String subId : distictPolygonsOrdered) {
+                        final DefaultFeatureCollection subCollection = new DefaultFeatureCollection(subId, type);
+                        simpleFeatureIterator = collection.features();
+                        while (simpleFeatureIterator.hasNext()) {
+                            SimpleFeature simpleFeature = simpleFeatureIterator.next();
+                            if(simpleFeature.getID().startsWith(subId)) {
+                                subCollection.add(simpleFeature);
+                            }
+                        }
+                        simpleFeatureIterator.close();
+                        VectorDataNode vdnPolygon = new VectorDataNode(subId, subCollection);
+                        vdnPolygon.setOwner(product);
+
+                        product.addMask(subId,
+                                        vdnPolygon,
+                                        description,
+                                        ColorIterator.next(),
+                                        maskInfo.getTransparency()[i],
+                                        referenceBand);
+                    }
                 }
-            } else {
-                // This mask is specific to a band
-                Band referenceBand = product.getBand(spectralInfo.getPhysicalBand());
-                String bandName = spectralInfo.getPhysicalBand();
-                String snapName = maskInfo.getSnapNameForBand(bandName,i);
-                String description = maskInfo.getDescriptionForBand(bandName,i);
-                VectorDataNode vdn = new VectorDataNode(snapName, collection);
-                vdn.setOwner(product);
-                product.addMask(snapName,
-                                vdn,
-                                description,
-                                maskInfo.getColor()[i],
-                                maskInfo.getTransparency()[i],
-                                referenceBand);
             }
         }
     }
@@ -856,7 +946,6 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 listTileIndexBandInformation.add(makeTileInformation(res, sceneDescription));
             }
         }
-
 
         // Create BandInfo and add to tileInfoList
         for (S2BandInformation bandInformation : listTileIndexBandInformation) {
@@ -1507,6 +1596,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         String line;
         String polygonWKT;
         String type = "";
+        String lastId="id";
 
         WKTReader wkt = new WKTReader();
 
@@ -1518,15 +1608,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         }
         if (f != null) {
             BufferedReader b = new BufferedReader(f);
+
             try {
                 while ((line = b.readLine()) != null) {
-                    if (line.contains("<gml:posList srsDimension")) {
-                        String polygon = line.substring(line.indexOf(">") + 1, line.indexOf("</gml:posList>"));
-                        polygonWKT = convertToWKTPolygon(polygon, readPolygonDimension(line));
-                        EopPolygon polyg = new EopPolygon("id", type, (Polygon) wkt.read(polygonWKT));
-                        polygonsForTile.add(polyg);
+                    if (line.contains("eop:MaskFeature gml:id=")) {
+                        lastId = line.substring(line.indexOf("=\"") + 2, line.indexOf("\">"));
                     } else if (line.contains("</eop:maskType>")) {
                         type = line.substring(line.indexOf(">") + 1, line.indexOf("</eop:maskType>"));
+                    } else if (line.contains("<gml:posList srsDimension")) {
+                        String polygon = line.substring(line.indexOf(">") + 1, line.indexOf("</gml:posList>"));
+                        polygonWKT = convertToWKTPolygon(polygon, readPolygonDimension(line));
+                        EopPolygon polyg = new EopPolygon(lastId, type, (Polygon) wkt.read(polygonWKT));
+                        polygonsForTile.add(polyg);
+                        lastId="id"; //re-initialize lastId
                     }
                 }
             } catch (Exception e) {
