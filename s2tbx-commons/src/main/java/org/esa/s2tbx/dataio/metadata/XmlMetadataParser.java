@@ -176,7 +176,7 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
      */
     protected class MetadataHandler extends DefaultHandler {
         private T result;
-        private String buffer;
+        private StringBuilder buffer = new StringBuilder(512);
         private String currentPath;
         private Stack<MetadataElement> elementStack;
         private Logger systemLogger;
@@ -211,7 +211,8 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            buffer = new String(ch, start, length);
+            //characters() may be called several times for chunks of one element by a SAX parser
+            buffer.append(ch, start, length);
         }
 
         @Override
@@ -221,7 +222,7 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
                 qName = qName.substring(qName.indexOf(":") + 1);
             }
             MetadataElement element = new MetadataElement(qName);
-            buffer = "";
+            buffer.setLength(0);
             currentPath += qName + "/";
             if (attributes != null) {
                 for (int i = 0; i < attributes.getLength(); i++) {
@@ -238,12 +239,13 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
             MetadataElement closingElement =  elementStack.pop();
             if (!elementStack.empty())
             {
-                if (buffer != null && !buffer.isEmpty() && !buffer.startsWith("\n")) {
-                    MetadataAttribute attribute = new MetadataAttribute(closingElement.getName(), inferType(qName, buffer), false);
+                //if (buffer != null && !buffer.isEmpty() && !buffer.startsWith("\n")) {
+                if (buffer.length() > 0 && buffer.charAt(0) != '\n') { // TODO: Unclear what the purpose of the second condition is. Should be dropped.
+                    MetadataAttribute attribute = new MetadataAttribute(closingElement.getName(), inferType(qName, buffer.toString()), false);
                     elementStack.peek().addAttribute(attribute);
                     currentPath = removeClosingElement(currentPath,closingElement.getName());
                     result.indexAttribute(currentPath, attribute);
-                    buffer = "";
+                    buffer.setLength(0);
                 } else {
                     elementStack.peek().addElement(closingElement);
                     currentPath = removeClosingElement(currentPath,closingElement.getName());
@@ -274,7 +276,7 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
     protected class SimpleMetadataHandler extends DefaultHandler {
         private MetadataElement rootElement;
         private Set<String> excludedElements;
-        private String buffer;
+        private StringBuilder buffer = new StringBuilder(512);
         private Stack<MetadataElement> elementStack;
         private Logger systemLogger;
         private String unit;
@@ -302,7 +304,8 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
 
         @Override
         public void characters(char[] ch, int start, int length) throws SAXException {
-            buffer = new String(ch, start, length);
+            //characters() may be called several times for chunks of one element by a SAX parser
+            buffer.append(ch, start, length);
         }
 
         @Override
@@ -313,7 +316,7 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
             }
             if (this.excludedElements == null || !this.excludedElements.contains(qName)) {
                 MetadataElement currentElement = new MetadataElement(qName);
-                buffer = "";
+                buffer.setLength(0);
                 for (int i = 0; i < attributes.getLength(); i++) {
                     MetadataAttribute attribute = new MetadataAttribute(attributes.getQName(i).toUpperCase(), ProductData.ASCII.createInstance(attributes.getValue(i)), false);
                     currentElement.addAttribute(attribute);
@@ -330,13 +333,14 @@ public class XmlMetadataParser<T extends GenericXmlMetadata> {
             if (this.excludedElements == null || !this.excludedElements.contains(qName)) {
                 MetadataElement closingElement = elementStack.pop();
                 if (!elementStack.empty()) {
-                    if (buffer != null && !buffer.isEmpty() && !buffer.startsWith("\n")) {
-                        MetadataAttribute attribute = new MetadataAttribute(closingElement.getName().toUpperCase(), inferType(qName, buffer), false);
+                    //if (buffer != null && !buffer.isEmpty() && !buffer.startsWith("\n")) {
+                    if (buffer.length() > 0 && buffer.charAt(0) != '\n') {  // TODO see above
+                        MetadataAttribute attribute = new MetadataAttribute(closingElement.getName().toUpperCase(), inferType(qName, buffer.toString()), false);
                         if (unit != null) {
                             attribute.setUnit(unit);
                         }
                         elementStack.peek().addAttribute(attribute);
-                        buffer = "";
+                        buffer.setLength(0);
                     } else {
                         elementStack.peek().addElement(closingElement);
                     }
