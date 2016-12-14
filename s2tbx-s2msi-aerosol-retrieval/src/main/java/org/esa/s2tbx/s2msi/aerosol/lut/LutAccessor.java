@@ -19,7 +19,7 @@ import java.util.Properties;
  *
  * @author olafd
  */
-public class LUTAccessor {
+public class LutAccessor {
 
     private File lutFile;
     private final Properties properties;
@@ -27,7 +27,7 @@ public class LUTAccessor {
     private final static String dimnames_name = "dimnames";
     private final String[] intPropertyNames = {lutshape_name};
 
-    public LUTAccessor(File inputFile) throws IOException {
+    public LutAccessor(File inputFile) throws IOException {
         properties = new Properties();
 
         boolean lutExists = false;
