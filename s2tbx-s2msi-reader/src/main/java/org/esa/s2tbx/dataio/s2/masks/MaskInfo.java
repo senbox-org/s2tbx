@@ -38,9 +38,10 @@ public enum MaskInfo {
             new String[]{"detector_footprint"},
             true,
             new int[]{MaskInfo.L1C | MaskInfo.L2A},
-            new Color[]{ColorIterator.next()},
+            new Color[]{Color.RED},
             new double[]{MaskInfo.DEFAULT_TRANSPARENCY},
-            MaskCategory.DETECTOR_FOOTPRINT),
+            MaskCategory.DETECTOR_FOOTPRINT,
+            true),
     MSK_NODATA(
             "MSK_NODATA",
             new String[]{"QT_NODATA_PIXELS", "QT_PARTIALLY_CORRECTED_PIXELS"},
@@ -49,9 +50,10 @@ public enum MaskInfo {
             new String[]{"nodata", "partially_corrected_crosstalk"},
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
-            new Color[]{ColorIterator.next(), ColorIterator.next()},
+            new Color[]{Color.CYAN, Color.PINK},
             new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY},
-            MaskCategory.RADIOMETRIC_QUALITY),
+            MaskCategory.RADIOMETRIC_QUALITY,
+            false),
     MSK_SATURA(
             "MSK_SATURA",
             new String[]{"QT_SATURATED_PIXELS_L1A", "QT_SATURATED_PIXELS_L1B"},
@@ -60,9 +62,10 @@ public enum MaskInfo {
             new String[]{"saturated_l1a", "saturated_l1b"},
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
-            new Color[]{ColorIterator.next(), ColorIterator.next()},
+            new Color[]{Color.BLUE, Color.GREEN},
             new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY},
-            MaskCategory.RADIOMETRIC_QUALITY),
+            MaskCategory.RADIOMETRIC_QUALITY,
+            false),
     MSK_DEFECT(
             "MSK_DEFECT",
             new String[]{"QT_DEFECTIVE_PIXELS"},
@@ -71,9 +74,10 @@ public enum MaskInfo {
             new String[]{"defective"},
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
-            new Color[]{ColorIterator.next()},
+            new Color[]{Color.RED},
             new double[]{MaskInfo.DEFAULT_TRANSPARENCY},
-            MaskCategory.RADIOMETRIC_QUALITY),
+            MaskCategory.RADIOMETRIC_QUALITY,
+            false),
     MSK_TECQUA(
             "MSK_TECQUA",
             new String[]{"ANC_LOST", "ANC_DEG", "MSI_LOST", "MSI_DEG"},
@@ -82,9 +86,10 @@ public enum MaskInfo {
             new String[]{"ancillary_lost", "ancillary_degraded", "msi_lost", "msi_degraded"},
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1A | MaskInfo.L1B | MaskInfo.L1C | MaskInfo.L2A},
-            new Color[]{Color.ORANGE, ColorIterator.next(), ColorIterator.next(), ColorIterator.next()},
+            new Color[]{Color.ORANGE, Color.YELLOW, Color.magenta, Color.RED},
             new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY},
-            MaskCategory.TECHNICAL_QUALITY),
+            MaskCategory.TECHNICAL_QUALITY,
+            false),
 
     MSK_CLOLOW(
             "MSK_CLOLOW",
@@ -94,9 +99,10 @@ public enum MaskInfo {
             new String[]{"coarse_cloud"},
             true,
             new int[]{MaskInfo.L1A | MaskInfo.L1B},
-            new Color[]{ColorIterator.next()},
+            new Color[]{Color.RED.darker()},
             new double[]{MaskInfo.DEFAULT_TRANSPARENCY},
-            MaskCategory.CLOUD),
+            MaskCategory.CLOUD,
+            false),
     MSK_CLOUDS(
             "MSK_CLOUDS",
             new String[]{"OPAQUE", "CIRRUS"},
@@ -105,9 +111,10 @@ public enum MaskInfo {
             new String[]{"opaque_clouds", "cirrus_clouds"},
             false,
             new int[]{MaskInfo.L1C | MaskInfo.L2A, MaskInfo.L1C | MaskInfo.L2A},
-            new Color[]{ColorIterator.next(), ColorIterator.next()},
+            new Color[]{Color.WHITE, Color.ORANGE},
             new double[]{MaskInfo.DEFAULT_TRANSPARENCY, MaskInfo.DEFAULT_TRANSPARENCY},
-            MaskCategory.CLOUD);
+            MaskCategory.CLOUD,
+            false);
 
 
     private final String mainType;
@@ -120,6 +127,7 @@ public enum MaskInfo {
     private final Color [] color;
     private final double [] transparency;
     private final MaskCategory category;
+    private final boolean perPolygon;
 
     public static final int L1A = (1 << 0);
     public static final int L1B = (1 << 1);
@@ -129,7 +137,7 @@ public enum MaskInfo {
 
     private static final double DEFAULT_TRANSPARENCY = 0.5;
 
-    MaskInfo(String mainType, String [] subType, String mainDescription, String [] subDescription, String [] snapName, boolean perBand, int [] levels, Color [] color, double [] transparency, MaskCategory category) {
+    MaskInfo(String mainType, String [] subType, String mainDescription, String [] subDescription, String [] snapName, boolean perBand, int [] levels, Color [] color, double [] transparency, MaskCategory category,boolean perPolygon) {
         this.mainType = mainType;
         this.subType = subType;
         this.mainDescription = mainDescription;
@@ -140,6 +148,7 @@ public enum MaskInfo {
         this.color = color;
         this.transparency = transparency;
         this.category = category;
+        this.perPolygon = perPolygon;
     }
 
     public String getMainType() {
@@ -182,6 +191,13 @@ public enum MaskInfo {
             return null;
         }
         return String.format("%s - %s", getDescription(index), bandName);
+    }
+
+    public String getDescriptionForBandAndDetector(String bandName, String detector,int index) {
+        if(!validateIndex(index)) {
+            return null;
+        }
+        return String.format("%s - %s - Detector %s", getDescription(index), bandName, detector);
     }
 
     public Color [] getColor() {
@@ -250,5 +266,8 @@ public enum MaskInfo {
         }
     }
 
+    public boolean isPerPolygon() {
+        return this.perPolygon;
+    }
 }
 
