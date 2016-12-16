@@ -23,6 +23,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
 import org.esa.snap.core.datamodel.ProductData;
@@ -39,7 +40,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -67,7 +67,7 @@ public abstract class S2Metadata {
 
     private ProductCharacteristics productCharacteristics;
 
-    protected HashMap<String, Path> resourceResolver;
+    protected HashMap<String, VirtualPath> resourceResolver;
 
 
     public S2Metadata(S2Config config) {
@@ -121,7 +121,7 @@ public abstract class S2Metadata {
         this.productCharacteristics = productCharacteristics;
     }
 
-    public Path resolveResource(String identifier) {
+    public VirtualPath resolveResource(String identifier) {
         return resourceResolver.get(identifier);
     }
 
@@ -670,10 +670,10 @@ public abstract class S2Metadata {
      * @param path
      * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
      */
-    public static int getPSD(Path path){
-        try (FileInputStream fileStream = new FileInputStream(path.toString())){
+    public static int getPSD(VirtualPath path){
+        try (InputStream stream = /*new FileInputStream(path.toString())*/path.getInputStream()){
             //FileInputStream fileStream = new FileInputStream(path.toString());
-            String xmlStreamAsString = IOUtils.toString(fileStream);
+            String xmlStreamAsString = IOUtils.toString(stream);
             String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
 
             Pattern p = Pattern.compile(regex);

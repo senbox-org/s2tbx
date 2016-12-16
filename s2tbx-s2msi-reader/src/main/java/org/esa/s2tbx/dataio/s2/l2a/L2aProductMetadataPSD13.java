@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -18,7 +19,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,13 +48,13 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
 
 
 
-    public static L2aProductMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
+    public static L2aProductMetadataPSD13 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L2aProductMetadataPSD13 result = null;
         InputStream stream = null;
         try {
-            if (Files.exists(path)) {
-                stream = Files.newInputStream(path, StandardOpenOption.READ);
+            if (path.exists()) {
+                stream = path.getInputStream();
                 L2aProductMetadataPSD13Parser parser = new L2aProductMetadataPSD13Parser(L2aProductMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.setName("Level-2A_User_Product");
@@ -81,7 +81,7 @@ public class L2aProductMetadataPSD13 extends GenericXmlMetadata implements IL2aP
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getProductOrganization(Path path, S2SpatialResolution resolution) {
+    public S2Metadata.ProductCharacteristics getProductOrganization(VirtualPath path, S2SpatialResolution resolution) {
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setPsd(S2Metadata.getPSD(path));
         String datatakeSensingStart = getAttributeValue(L2aPSD13Constants.PATH_PRODUCT_METADATA_SENSING_START, null);

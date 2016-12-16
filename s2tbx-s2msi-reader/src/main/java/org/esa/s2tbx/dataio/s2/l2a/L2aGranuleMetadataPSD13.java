@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.s2.l2a;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -17,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -49,13 +49,13 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
         }
     }
 
-    public static L2aGranuleMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
+    public static L2aGranuleMetadataPSD13 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L2aGranuleMetadataPSD13 result = null;
         InputStream stream = null;
         try {
-            if (Files.exists(path)) {
-                stream = Files.newInputStream(path, StandardOpenOption.READ);
+            if (path.exists()) {
+                stream = path.getInputStream();
                 L2aGranuleMetadataPSD13Parser parser = new L2aGranuleMetadataPSD13Parser(L2aGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.updateName();
@@ -82,24 +82,34 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getTileProductOrganization(Path path,S2SpatialResolution resolution) {
+    public S2Metadata.ProductCharacteristics getTileProductOrganization(VirtualPath path,S2SpatialResolution resolution) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setPsd(S2Metadata.getPSD(path));
         //DatatakeSensingStart is not in the metadata, but it is needed for the image templates. We read it from the file system
-        Path folder = path.resolveSibling("IMG_DATA");
+        VirtualPath folder = path.resolveSibling("IMG_DATA");
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
         boolean bFound = false;
-        if(Files.exists(folder) && Files.isDirectory(folder)) {
-            File[] resolutions = folder.toFile().listFiles();
+        if(folder.exists() && folder.isDirectory()) {
+            VirtualPath[] resolutions;
+            try {
+                resolutions = folder.listPaths();
+            } catch (IOException e) {
+                resolutions = null;
+            }
             if(resolutions != null) {
-                for (File resolutionFolder : resolutions) {
+                for (VirtualPath resolutionFolder : resolutions) {
                     if (resolutionFolder.isDirectory()) {
-                        File[] images = resolutionFolder.listFiles();
+                        VirtualPath[] images;
+                        try {
+                            images = resolutionFolder.listPaths();
+                        } catch (IOException e) {
+                            images = null;
+                        }
                         if (images != null && images.length > 0) {
-                            for (File image : images) {
-                                String imageName = image.getName();
+                            for (VirtualPath image : images) {
+                                String imageName = image.getFileName().toString();
                                 Matcher matcher = pattern.matcher(imageName);
                                 if (matcher.matches()) {
                                     characteristics.setDatatakeSensingStartTime(matcher.group(2));
@@ -200,7 +210,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
     }
 
     @Override
-    public S2Metadata.MaskFilename[] getMasks(Path path) {
+    public S2Metadata.MaskFilename[] getMasks(VirtualPath path) {
         S2Metadata.MaskFilename[] maskFileNamesArray;
         List<S2Metadata.MaskFilename> aMaskList = new ArrayList<>();
         String[] maskFilenames = getAttributeValues(L2aPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME);
@@ -214,7 +224,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
                 filenameProcessed = filenameProcessed + ".gml";
             }
 
-            Path QIData = path.resolveSibling("QI_DATA");
+            VirtualPath QIData = path.resolveSibling("QI_DATA");
             File GmlData = new File(QIData.toFile(), filenameProcessed);
 
             aMaskList.add(new S2Metadata.MaskFilename(getAttributeSiblingValue(L2aPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,

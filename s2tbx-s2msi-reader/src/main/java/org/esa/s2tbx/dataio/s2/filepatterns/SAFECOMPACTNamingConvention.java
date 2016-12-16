@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductNamingUtils;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -8,7 +9,6 @@ import org.esa.snap.core.util.io.FileUtils;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -84,9 +84,9 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     private S2Config.Sentinel2InputType inputType = null;
     private S2Config.Sentinel2ProductLevel level = S2Config.Sentinel2ProductLevel.UNKNOWN;
     Set<String> epsgCodeList = null;
-    Path inputDirPath = null;
-    Path inputXmlPath = null;
-    private Path inputProductXml = null;
+    VirtualPath inputDirPath = null;
+    VirtualPath inputXmlPath = null;
+    private VirtualPath inputProductXml = null;
     private S2SpatialResolution resolution = S2SpatialResolution.R10M;
 
 
@@ -97,7 +97,7 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     }
 
     @Override
-    public Path getXmlFromDir(Path path) {
+    public VirtualPath getXmlFromDir(VirtualPath path) {
         return S2NamingConventionUtils.getXmlFromDir(path, PRODUCT_XML_REGEX, GRANULE_XML_REGEX);
     }
 
@@ -117,12 +117,12 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     }
 
     @Override
-    public Path getInputXml() {
+    public VirtualPath getInputXml() {
         return inputXmlPath;
     }
 
     @Override
-    public Path getInputProductXml() {
+    public VirtualPath getInputProductXml() {
         return inputProductXml;
     }
 
@@ -140,10 +140,10 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     }
 
     @Override
-    public Path findGranuleFolderFromTileId(String tileId) {
+    public VirtualPath findGranuleFolderFromTileId(String tileId) {
 
-        Path path = null;
-        Path granuleFolder = null;
+        VirtualPath path = null;
+        VirtualPath granuleFolder = null;
         if(getInputType()== S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) {
             granuleFolder = inputXmlPath.resolveSibling("GRANULE");
         } else {
@@ -161,29 +161,29 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
             return null;
         }
 
-        ArrayList<Path> granulePaths = S2NamingConventionUtils.getAllFilesFromDir(granuleFolder,getGranuleREGEXs());
+        ArrayList<VirtualPath> granulePaths = S2NamingConventionUtils.getAllFilesFromDir(granuleFolder,getGranuleREGEXs());
 
-        for (Path granulePath : granulePaths) {
+        for (VirtualPath granulePath : granulePaths) {
             String tileIdAux = S2ProductNamingUtils.getTileIdFromString(granulePath.getFileName().toString());
             if (tileIdentifier.equals(tileIdAux)) {
                 path = granulePath;
             }
         }
 
-        if(Files.exists(path) && Files.isDirectory(path) && S2NamingConventionUtils.matches(path.getFileName().toString(),getGranuleREGEXs())) {
+        if(path.exists() && path.isDirectory() && S2NamingConventionUtils.matches(path.getFileName().toString(),getGranuleREGEXs())) {
             return path;
         }
         return null;
     }
 
     @Override
-    public Path findXmlFromTileId(String tileID) {
-        Path granuleFolderPath = findGranuleFolderFromTileId(tileID);
+    public VirtualPath findXmlFromTileId(String tileID) {
+        VirtualPath granuleFolderPath = findGranuleFolderFromTileId(tileID);
         if(granuleFolderPath == null) {
             return null;
         }
-        Path path = S2NamingConventionUtils.getFileFromDir(granuleFolderPath,getGranuleXmlREGEXs());
-        if(path != null && Files.exists(path)) {
+        VirtualPath path = S2NamingConventionUtils.getFileFromDir(granuleFolderPath,getGranuleXmlREGEXs());
+        if(path != null && path.exists()) {
             return path;
         }
         return null;
@@ -205,19 +205,19 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
     }
 
     @Override
-    public ArrayList<Path> getDatastripXmlPaths() {
+    public ArrayList<VirtualPath> getDatastripXmlPaths() {
         return S2NamingConventionUtils.getDatastripXmlPaths(inputType, getInputXml(), getDatastripREGEXs(), getDatastripXmlREGEXs());
     }
 
     @Override
-    public ArrayList<Path> getGranulesXmlPaths() {
+    public ArrayList<VirtualPath> getGranulesXmlPaths() {
         return S2NamingConventionUtils.getGranulesXmlPaths(inputType, getInputXml(), getGranuleREGEXs(), getGranuleXmlREGEXs());
     }
 
-    public SAFECOMPACTNamingConvention(Path input){
+    public SAFECOMPACTNamingConvention(VirtualPath input){
         String inputName = input.getFileName().toString();
 
-        if(Files.isDirectory(input)) {
+        if(/*Files.isDirectory(input)*/input.isDirectory()) {
             inputDirPath = input;
             Pattern pattern = Pattern.compile(PRODUCT_REGEX);
             if (pattern.matcher(inputName).matches()) {
@@ -288,11 +288,11 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
         }
     }
 
-    private Path getXmlProductFromDir(Path path) {
+    private VirtualPath getXmlProductFromDir(VirtualPath path) {
         return S2NamingConventionUtils.getFileFromDir(path, getProductXmlREGEXs());
     }
 
-    private Path getXmlGranuleFromDir(Path path) {
+    private VirtualPath getXmlGranuleFromDir(VirtualPath path) {
         return S2NamingConventionUtils.getFileFromDir(path, getGranuleXmlREGEXs());
     }
 }

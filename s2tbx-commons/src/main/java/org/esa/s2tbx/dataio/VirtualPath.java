@@ -3,7 +3,9 @@ package org.esa.s2tbx.dataio;
 import com.bc.ceres.core.VirtualDir;
 import org.esa.snap.core.util.SystemUtils;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -11,6 +13,7 @@ import java.io.Reader;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,7 +21,10 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by obarrile on 01/08/2016.
@@ -264,27 +270,66 @@ public class VirtualPath implements Path {
     // VirtualDir methods
 
     public Reader getReader() throws IOException {
+        if(dir == null) {
+            return new InputStreamReader(getInputStream());
+        }
         return dir.getReader(path.toString().replace(FileSystems.getDefault().getSeparator(),separator));
     }
 
     public InputStream getInputStream() throws IOException {
+        if(dir == null) {
+            return new BufferedInputStream(new FileInputStream(path.toFile()));
+        }
         return dir.getInputStream(path.toString().replace(FileSystems.getDefault().getSeparator(),separator));
     }
 
     public File getFile() throws IOException {
+        if(dir == null) {
+            return path.toFile();
+        }
         return dir.getFile(path.toString().replace(FileSystems.getDefault().getSeparator(),separator));
     }
 
     public String[] list() throws IOException {
+        if(dir == null) {
+            if(!Files.isDirectory(path)) {
+                return null;
+            }
+            return path.toFile().list();
+        }
         return dir.list(path.toString().replace(FileSystems.getDefault().getSeparator(),separator));
     }
 
     public String[] list(String subFolder) throws IOException {
+        if(dir == null) {
+            Path subFolderPath = path.resolve(subFolder);
+            if(subFolder == null || !Files.isDirectory(subFolderPath)) {
+                return null;
+            }
+            return subFolderPath.toFile().list();
+        }
         return dir.list(Paths.get(path.toString(),subFolder).toString().replace(FileSystems.getDefault().getSeparator(),separator));
     }
 
+    public String[] listFilter(String pattern) throws IOException {
+        List<String> found = null; // = new ArrayList<>();
+        String[] entries = list();
+        if (entries != null) {
+            found = Arrays.stream(entries).filter(e -> e.toLowerCase().contains(pattern)).collect(Collectors.toList());
+        }
+        return found != null ? found.toArray(new String[found.size()]) : null;
+    }
+
     public VirtualPath[] listPaths() throws IOException {
-        String[] list = dir.list(path.toString().replace(FileSystems.getDefault().getSeparator(),separator));
+        String[] list;
+        if (dir == null) {
+            if(!Files.exists(path) || !Files.isDirectory(path)) {
+                return null;
+            }
+            list = path.toFile().list();
+        } else {
+            list = dir.list(path.toString().replace(FileSystems.getDefault().getSeparator(), separator));
+        }
 
         ArrayList<VirtualPath> listPaths = new ArrayList<>();
         for(String item : list) {
@@ -296,6 +341,9 @@ public class VirtualPath implements Path {
     }
 
     public boolean exists() {
+        if(dir == null) {
+            return Files.exists(path);
+        }
         return dir.exists(path.toString().replace(FileSystems.getDefault().getSeparator(),separator));
     }
 

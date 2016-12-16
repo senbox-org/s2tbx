@@ -1,5 +1,8 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import com.bc.ceres.core.VirtualDir;
+import org.esa.s2tbx.dataio.VirtualPath;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -18,17 +21,30 @@ public class NamingConventionFactory {
      */
     public static INamingConvention createNamingConvention(Path path)  {
 
-        L1BNamingConvention l1bConvention = new L1BNamingConvention(path);
+        //TODO create VirtualPAth
+        VirtualPath virtualPath;
+        if(path.toString().endsWith(".zip")) {
+            //compute relative path.
+            //TODO, currently it supports only if there is a folder with the same name inside the zip
+            String folderName = path.getFileName().toString();
+            folderName = folderName.substring(0,folderName.lastIndexOf(".zip"));
+            virtualPath = new VirtualPath(folderName, VirtualDir.create(path.toFile()));
+        } else {
+            virtualPath = new VirtualPath(path,null);
+        }
+
+
+        L1BNamingConvention l1bConvention = new L1BNamingConvention(virtualPath);
         if(l1bConvention.getInputType() != null){
             return l1bConvention;
         }
 
-        SAFENamingConvention safe = new SAFENamingConvention(path);
+        SAFENamingConvention safe = new SAFENamingConvention(virtualPath);
         if(safe.getInputType() != null){
             return safe;
         }
 
-        SAFECOMPACTNamingConvention safeCompact = new SAFECOMPACTNamingConvention(path);
+        SAFECOMPACTNamingConvention safeCompact = new SAFECOMPACTNamingConvention(virtualPath);
         if(safeCompact.getInputType() != null){
             return safeCompact;
         }

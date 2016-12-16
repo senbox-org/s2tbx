@@ -27,6 +27,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.jp2.internal.JP2TileOpImage;
 import org.esa.s2tbx.dataio.openjpeg.StackTraceUtils;
@@ -113,18 +114,18 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
     protected abstract String getReaderCacheDir();
 
-    protected abstract S2Metadata parseHeader(File file, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException;
+    protected abstract S2Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, boolean isAGranule) throws IOException;
 
     protected abstract String getImagePathString(String imageFileName, S2SpatialResolution resolution);
 
     @Override
-    protected Product getMosaicProduct(File metadataFile) throws IOException {
+    protected Product getMosaicProduct(VirtualPath metadataPath) throws IOException {
 
         if (!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE, S2Config.OPJ_DECOMPRESSOR_EXE)) {
             throw new IOException("Invalid OpenJpeg executables");
         }
 
-        Objects.requireNonNull(metadataFile);
+        Objects.requireNonNull(metadataPath);
 
         boolean isAGranule = namingConvention.getInputType() == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA/*S2OrthoGranuleMetadataFilename.isGranuleFilename(metadataFile.getName())*//*S2ProductNamingUtils.checkStructureFromGranuleXml(metadataFile.toPath())*/;
         boolean foundProductMetadata = true;
@@ -135,42 +136,40 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         TimeProbe timeProbe = TimeProbe.start();
         // update the tile layout
-        if (!updateTileLayout(metadataFile.toPath(), isAGranule)) {
-            throw new IOException(String.format("Unable to get metadata from JP2 images associated to product [%s]", metadataFile.getName()));
+        if (!updateTileLayout(metadataPath, isAGranule)) {
+            throw new IOException(String.format("Unable to get metadata from JP2 images associated to product [%s]", metadataPath.getFileName().toString()));
         }
         SystemUtils.LOG.fine(String.format("[timeprobe] updateTileLayout : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
 
 
         //String filterTileId = null;
-        File rootMetaDataFile = null;
         String granuleDirName = null;
+        VirtualPath rootMetadataPath = null;
 
         timeProbe.reset();
         // we need to recover parent metadata file if we have a granule
         if (isAGranule) {
             try {
-                Objects.requireNonNull(metadataFile.getParentFile());
-                granuleDirName = metadataFile.getParentFile().getName();
+                Objects.requireNonNull(metadataPath.getParent());
+                granuleDirName = metadataPath.getParent().getFileName().toString();
             } catch (NullPointerException npe) {
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataPath.getFileName().toString()));
             }
             //File tileIdFilter = metadataFile.getParentFile();
             //filterTileId = tileIdFilter.getName();
-            Path rootMetadataPath = namingConvention.getInputProductXml();
-            if(rootMetadataPath != null) {
-                rootMetaDataFile = rootMetadataPath.toFile();
-            }
-            if (rootMetaDataFile == null) {
+            rootMetadataPath = namingConvention.getInputProductXml();
+
+            if (rootMetadataPath == null) {
                 foundProductMetadata = false;
-                rootMetaDataFile = metadataFile;
+                rootMetadataPath = metadataPath;
             }
         } else {
-            rootMetaDataFile = metadataFile;
+            rootMetadataPath = metadataPath;
         }
 
         //final String aFilter = filterTileId;
 
-        S2Metadata metadataHeader = parseHeader(rootMetaDataFile, granuleDirName, getConfig(), epsgCode, !foundProductMetadata);
+        S2Metadata metadataHeader = parseHeader(rootMetadataPath, granuleDirName, getConfig(), epsgCode, !foundProductMetadata);
         SystemUtils.LOG.fine(String.format("[timeprobe] metadata parsing : %s ms", timeProbe.elapsed(TimeUnit.MILLISECONDS)));
         timeProbe.reset();
 
@@ -184,13 +183,13 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         // because the tile layout is obtained with the tile in zone UTM 30.
         // But the sceneLayout is computed with the tiles that are in the zone UTM 31 if we select this PlugIn
         if (sceneDescription.getTileIds().size() == 0) {
-            throw new IOException(String.format("No valid tiles associated to product [%s]", metadataFile.getName()));
+            throw new IOException(String.format("No valid tiles associated to product [%s]", metadataPath.getFileName().toString()));
         }
         if (sceneDescription.getSceneDimension(getProductResolution()) == null) {
-            throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
+            throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataPath.getFileName().toString()));
         }
 
-        File productDir = getProductDir(rootMetaDataFile);
+        File productDir = getProductDir(rootMetadataPath);
         initCacheDir(productDir);
 
         S2Metadata.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
@@ -203,7 +202,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         for (MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
             product.getMetadataRoot().addElement(metadataElement);
         }
-        product.setFileLocation(metadataFile);
+        product.setFileLocation(metadataPath.toFile());
 
         try {
             product.setSceneGeoCoding(new CrsGeoCoding(CRS.decode(this.epsgCode),
@@ -1187,17 +1186,19 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                             getConfig().getTileLayout(spatialResolution.resolution));
     }
 
-    static File getProductDir(File productFile) throws IOException {
-        final File resolvedFile = productFile.getCanonicalFile();
+    static File getProductDir(VirtualPath productFile) throws IOException {
+        //TODO revisar esto
+        //final File resolvedFile = productFile.getCanonicalFile();
+        final File resolvedFile = productFile.getFile();
         if (!resolvedFile.exists()) {
             throw new FileNotFoundException("File not found: " + productFile);
         }
 
-        if (productFile.getParentFile() == null) {
+        if (productFile.getParent() == null) {
             return new File(".").getCanonicalFile();
         }
 
-        return productFile.getParentFile();
+        return productFile.getParent().toFile();
     }
 
     private abstract class MultiLevelImageFactory {

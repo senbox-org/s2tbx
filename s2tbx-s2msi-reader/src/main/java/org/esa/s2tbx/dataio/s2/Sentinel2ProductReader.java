@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.s2;
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.readers.PathUtils;
@@ -92,7 +93,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return cacheDir;
     }
 
-    protected abstract Product getMosaicProduct(File granuleMetadataFile) throws IOException;
+    protected abstract Product getMosaicProduct(VirtualPath metadataPath) throws IOException;
 
     protected abstract String getReaderCacheDir();
 
@@ -148,16 +149,16 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             throw new IOException("Unhandled file type.");
         }
 
-        inputFile = namingConvention.getInputXml().toFile();
+        VirtualPath inputPath = namingConvention.getInputXml();
 
-        if (!inputFile.exists()) {
-            throw new FileNotFoundException(inputFile.getPath());
+        if (!inputPath.exists()) {
+            throw new FileNotFoundException(inputPath.getFullPathString());
         }
 
         if (namingConvention.hasValidStructure()) {
-            product = getMosaicProduct(inputFile);
+            product = getMosaicProduct(inputPath);
 
-            addQuicklook(product, getQuicklookFile(inputFile));
+            addQuicklook(product, getQuicklookFile(/*inputFile*/null));//TODO
 
             if (product != null) {
                 product.setModified(false);
