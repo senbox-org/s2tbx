@@ -1,5 +1,6 @@
 package org.esa.s2tbx.s2msi.aerosol.lut;
 
+import com.bc.ceres.binding.ValidationException;
 import org.esa.snap.core.util.ArrayUtils;
 import org.esa.snap.core.util.StringUtils;
 
@@ -10,9 +11,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * todo: add comment
@@ -26,6 +25,20 @@ public class LUTAccessor {
     private final static String lutshape_name = "lutshape";
     private final static String dimnames_name = "dimnames";
     private final String[] intPropertyNames = {lutshape_name};
+
+    private final String[] stringPropertyNames = {"model_type", "aerosol_type"};
+
+    private static final String[] modelTypes = {"MidLatitudeSummer"};
+    private static final String[] aerosolTypes = {"___rural", "maritime", "___urban", "__desert"};
+
+    public static final Map<String, String[]> STRING_PROPERTY_MAP;
+    static
+    {
+        STRING_PROPERTY_MAP = new HashMap<>();
+        STRING_PROPERTY_MAP.put("model_type", modelTypes);
+        STRING_PROPERTY_MAP.put("aerosol_type", aerosolTypes);
+    }
+
 
     public LUTAccessor(File inputFile) throws IOException {
         properties = new Properties();
@@ -49,6 +62,15 @@ public class LUTAccessor {
         }
         if (!lutExists) {
             throw  new IOException("Could not read LUT description file");
+        }
+    }
+
+    void validate() throws ValidationException {
+        final int[] lutShapes = getLUTShapes();
+        final String[] targetNames = getTargetNames();
+        if(lutShapes.length - 1 != targetNames.length) {
+            throw new ValidationException("Look-Up-Table invalid: Parameter " + lutshape_name + " does not match " +
+                                                  "parameter " + dimnames_name);
         }
     }
 
@@ -143,23 +165,17 @@ public class LUTAccessor {
         return targetNames;
     }
 
-    public boolean isDoubleDim(String dimName) {
-        final Object property = properties.get(dimName);
-        return (property instanceof double[]);
-    }
-
     public double[] getDimValues(String dimName) {
         final Object property = properties.get(dimName);
         if (property instanceof double[]) {
             return (double[]) property;
         }
-        throw new IllegalArgumentException("Cannot find values for dimension " + dimName);
-    }
-
-    public String[] getStringDimValues(String dimName) {
-        final Object property = properties.get(dimName);
         if (property instanceof String[]) {
-            return (String[]) property;
+            double[] indices = new double[STRING_PROPERTY_MAP.get(dimName).length];
+            for (int i = 0; i < indices.length; i++) {
+                indices[i] = (double) i;
+            }
+            return indices;
         }
         throw new IllegalArgumentException("Cannot find values for dimension " + dimName);
     }
@@ -187,15 +203,16 @@ public class LUTAccessor {
         return ArrayUtils.getElementIndex(dimName, dimNames);
     }
 
-    public String getOpticalModel() {
-        final Object opticalModelPropery = properties.get("optical_model");
-        if(opticalModelPropery != null) {
-            return opticalModelPropery.toString();
+    public String getModelType() {
+        final Object modelTypeProperty = properties.get("model_type");
+        if(modelTypeProperty != null) {
+            return ((String[]) modelTypeProperty)[0];
         }
-        return "probably_not_momo";
+        return null;
     }
 
     public String getReflectancesType() {
+
         return properties.get("reflectances_type").toString();
     }
 
@@ -209,4 +226,11 @@ public class LUTAccessor {
         return dimdescriptions[getDimIndex(dim)];
     }
 
+    public String[] getInterpolations() {
+        final Object dimInterpolations = properties.get("dimInterpolations");
+        if(dimInterpolations != null) {
+            return (String[]) dimInterpolations;
+        }
+        return new String[0];
+    }
 }
