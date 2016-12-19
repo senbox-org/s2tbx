@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.s2.ortho;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
@@ -80,17 +81,18 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
 
 
         File file = null;
+        VirtualPath virtualPath = null;
         if(!(input instanceof File)){
             throw new IOException("Invalid input");
         }
         if(reader == null) {
             file = (File) input;
-            INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(file.toPath());
+            INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(VirtualPath.transformToVirtualPath(file.toPath()));
             if (namingConvention == null) {
                 throw new IOException("Invalid input");
             }
             S2Config.Sentinel2ProductLevel level = namingConvention.getProductLevel();
-            file = namingConvention.getInputXml().toFile();
+            virtualPath = namingConvention.getInputXml();
             if (level == S2Config.Sentinel2ProductLevel.L2A) {
                 reader = new Sentinel2L2AProductReader(readerPlugIn, epsgCode);
             } else if (level == S2Config.Sentinel2ProductLevel.L1C) {
@@ -101,7 +103,7 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
                 throw new IOException("Invalid input");
             }
         }
-        return reader.readProductNodes(file, subsetDef);
+        return reader.readProductNodes(virtualPath, subsetDef);
 
     }
 

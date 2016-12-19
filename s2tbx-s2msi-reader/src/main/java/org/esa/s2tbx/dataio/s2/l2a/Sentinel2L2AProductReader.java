@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 
 /**
  * <p>
@@ -62,7 +63,7 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     @Override
     public S2SpatialResolution getProductResolution() {
         if(namingConvention == null && (getInput() instanceof File)) {
-            namingConvention = NamingConventionFactory.createNamingConvention(((File) getInput()).toPath());
+            namingConvention = NamingConventionFactory.createNamingConvention(VirtualPath.transformToVirtualPath(((File) getInput()).toPath()));
         }
 
         if(namingConvention == null) {
@@ -94,15 +95,30 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     }
 
     @Override
-    protected DirectoryStream<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution spatialResolution) throws IOException {
+    protected ArrayList<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution spatialResolution) throws IOException {
         /*String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
         VirtualPath pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
 
         return Files.newDirectoryStream(pathToImagesOfResolution, entry -> {
             return entry.toString().endsWith("_" + spatialResolution.resolution + "m.jp2");
         });*/
-        //TODO
-        d
+
+        ArrayList<VirtualPath> imageDirectories = new ArrayList<>();
+        String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
+        VirtualPath pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
+        VirtualPath[] imagePaths = pathToImagesOfResolution.listPaths();
+        if(imagePaths == null || imagePaths.length == 0) {
+            return imageDirectories;
+        }
+
+        for (VirtualPath imagePath : imagePaths) {
+            if (imagePath.getFileName().toString().endsWith("_" + spatialResolution.resolution + "m.jp2")) {
+                imageDirectories.add(imagePath);
+            }
+        }
+
+
+        return imageDirectories;
     }
 
     @Override

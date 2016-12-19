@@ -127,6 +127,7 @@ public class VirtualPath implements Path {
     public VirtualPath getParent() {
         if(path.getFileName() == null || path.getFileName().toString().equals("") || path.getParent() == null)
         {
+            //TODO check if do this or not
             //if parent is null get parent the virtual dir
             Path dirPath = Paths.get(this.dir.getBasePath());
             VirtualPath parent = new VirtualPath(dirPath.getFileName(),VirtualDir.create(dirPath.getParent().toFile()));
@@ -214,8 +215,13 @@ public class VirtualPath implements Path {
     }
 
     @Override
-    public VirtualPath toAbsolutePath() {
-        return new VirtualPath(Paths.get(dir.getBasePath(),path.toString()),null);
+    public Path toAbsolutePath() {
+        if(dir != null) {
+            return Paths.get(dir.getBasePath(), path.toString());
+        }
+        else {
+            return Paths.get(path.toString());
+        }
     }
 
     @Override
@@ -330,6 +336,9 @@ public class VirtualPath implements Path {
         } else {
             list = dir.list(path.toString().replace(FileSystems.getDefault().getSeparator(), separator));
         }
+        if(list == null) {
+            return null;
+        }
 
         ArrayList<VirtualPath> listPaths = new ArrayList<>();
         for(String item : list) {
@@ -340,6 +349,33 @@ public class VirtualPath implements Path {
         return listPaths.toArray(new VirtualPath[list.length]);
     }
 
+    public VirtualPath[] listPaths(String pattern) throws IOException {
+        String[] list;
+        if (dir == null) {
+            if(!Files.exists(path) || !Files.isDirectory(path)) {
+                return null;
+            }
+            list = path.toFile().list();
+        } else {
+            list = dir.list(path.toString().replace(FileSystems.getDefault().getSeparator(), separator));
+        }
+        if(list == null) {
+            return null;
+        }
+
+        ArrayList<VirtualPath> listPaths = new ArrayList<>();
+        for(String item : list) {
+            if(item.contains(pattern)) {
+                listPaths.add(this.resolve(item));
+            }
+        }
+        if(listPaths.size() == 0) {
+            return null;
+        }
+
+        return listPaths.toArray(new VirtualPath[listPaths.size()]);
+    }
+
     public boolean exists() {
         if(dir == null) {
             return Files.exists(path);
@@ -348,6 +384,28 @@ public class VirtualPath implements Path {
     }
 
     public String getFullPathString() {
-        return (dir.getBasePath() + File.separator + path.toString());
+        if(dir != null) {
+            return (dir.getBasePath() + File.separator + path.toString());
+        } else {
+            return path.toString();
+        }
+    }
+
+    public static VirtualPath transformToVirtualPath (Path path) {
+        VirtualPath virtualPath;
+        if(path.toString().endsWith(".zip")) {
+            String folderName = path.getFileName().toString();
+            folderName = folderName.substring(0,folderName.lastIndexOf(".zip"))+".SAFE";
+            //check if a folder with the same name exist
+            VirtualDir dir = VirtualDir.create(path.toFile());
+            if(dir.exists(folderName)) {
+                virtualPath = new VirtualPath(folderName, VirtualDir.create(path.toFile()));
+            } else {
+                virtualPath = new VirtualPath("", VirtualDir.create(path.toFile()));
+            }
+        } else {
+            virtualPath = new VirtualPath(path,null);
+        }
+        return virtualPath;
     }
 }

@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
@@ -56,7 +57,7 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
         File file = (File) input;
-        INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(file.toPath());
+        INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(VirtualPath.transformToVirtualPath(file.toPath()));
         if(namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
             return DecodeQualification.INTENDED;
         }

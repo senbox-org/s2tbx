@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.ortho;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
@@ -50,7 +51,7 @@ public class S2ProductCRSCache {
 
 
         public S2ProductCRSCacheEntry (Path path) {
-            namingConvention = NamingConventionFactory.createNamingConvention(path);
+            namingConvention = NamingConventionFactory.createNamingConvention(VirtualPath.transformToVirtualPath(path));
             if(namingConvention != null) {
                 inputType = namingConvention.getInputType();
                 level = namingConvention.getProductLevel();

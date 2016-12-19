@@ -28,6 +28,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.math3.util.Pair;
 import org.esa.s2tbx.dataio.Utils;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
@@ -172,7 +173,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     @Override
-    protected Product getMosaicProduct(File metadataFile) throws IOException {
+    protected Product getMosaicProduct(VirtualPath metadataPath) throws IOException {
 
         if(!validateOpenJpegExecutables(S2Config.OPJ_INFO_EXE,S2Config.OPJ_DECOMPRESSOR_EXE)){
             throw new IOException("Invalid OpenJpeg executables");
@@ -185,38 +186,38 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             logger.fine("Reading a granule");
         }
 
-        if (!updateTileLayout(metadataFile.toPath(), isAGranule)) {
-            throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataFile.getName()));
+        if (!updateTileLayout(metadataPath, isAGranule)) {
+            throw new IOException(String.format("Unable to retrieve the JPEG tile layout associated to product [%s]", metadataPath.getFileName().toString()));
         }
 
-        Objects.requireNonNull(metadataFile);
+        Objects.requireNonNull(metadataPath);
 
         String filterTileId = null;
-        File productMetadataFile = null;
+        VirtualPath productMetadataPath = null;
         String granuleDirName = null;
 
         // we need to recover parent metadata file if we have a granule
         if (isAGranule) {
 
             try {
-                Objects.requireNonNull(metadataFile.getParentFile());
-                granuleDirName = metadataFile.getParentFile().getName();
-                File tileIdFilter = metadataFile.getParentFile();
-                filterTileId = tileIdFilter.getName();
+                Objects.requireNonNull(metadataPath.getParent());
+                granuleDirName = metadataPath.getParent().getFileName().toString();
+                VirtualPath tileIdFilter = metadataPath.getParent();
+                filterTileId = tileIdFilter.getFileName().toString();
             }   catch (NullPointerException npe){
-                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataFile.getName()));
+                throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataPath.getFileName().toString()));
             }
 
-            Path rootMetadataPath = namingConvention.getInputProductXml();
+            VirtualPath rootMetadataPath = namingConvention.getInputProductXml();
             if(rootMetadataPath != null) {
-                productMetadataFile = rootMetadataPath.toFile();
+                productMetadataPath = rootMetadataPath;
             }
-            if (productMetadataFile == null) {
+            if (productMetadataPath == null) {
                 foundProductMetadata = false;
-                productMetadataFile = metadataFile;
+                productMetadataPath = metadataPath;
             }
         } else {
-            productMetadataFile = metadataFile;
+            productMetadataPath = metadataPath;
         }
 
         final String aFilter = filterTileId;
@@ -224,17 +225,17 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         L1bMetadata metadataHeader;
 
         try {
-            metadataHeader = parseHeader(productMetadataFile, granuleDirName, getConfig(),!foundProductMetadata, namingConvention);
+            metadataHeader = parseHeader(productMetadataPath, granuleDirName, getConfig(),!foundProductMetadata, namingConvention);
         } catch (ParserConfigurationException | SAXException e) {
             SystemUtils.LOG.severe(Utils.getStackTrace(e));
-            throw new IOException("Failed to parse metadata in " + productMetadataFile.getName());
+            throw new IOException("Failed to parse metadata in " + productMetadataPath.getFileName().toString());
         }
 
         L1bSceneDescription sceneDescription = L1bSceneDescription.create(metadataHeader, getProductResolution());
         Map<S2SpatialResolution,Dimension> sceneDimensions = L1bSceneDescription.computeSceneDimensions(metadataHeader);
         logger.fine("Scene Description: " + sceneDescription);
 
-        File productDir = getProductDir(productMetadataFile);
+        VirtualPath productDir = getProductDir(productMetadataPath);
         initCacheDir(productDir);
 
         ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
@@ -256,7 +257,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             sin.put(bandInformation.getPhysicalBand(), bandInformation);
         }
 
-        Map<Pair<String, String>, Map<String, File>> detectorBandInfoMap = new HashMap<>();
+        Map<Pair<String, String>, Map<String, VirtualPath>> detectorBandInfoMap = new HashMap<>();
         Map<String, L1BBandInfo> bandInfoByKey = new HashMap<>();
         if (productCharacteristics.getBandInformations() != null) {
             for (Tile tile : tileList) {
@@ -290,16 +291,16 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
                     }
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand() + ", and detector: " + gf.getDetectorId());
 
-                    File file = new File(productDir, imgFilename);
-                    if (file.exists()) {
+                    VirtualPath path = productDir.resolve(imgFilename);
+                    if (path.exists()) {
                         Pair<String, String> key = new Pair<>(bandInformation.getPhysicalBand(), gf.getDetectorId());
-                        Map<String, File> fileMapper = detectorBandInfoMap.getOrDefault(key, new HashMap<>());
-                        fileMapper.put(tile.getId(), file);
+                        Map<String, VirtualPath> pathMapper = detectorBandInfoMap.getOrDefault(key, new HashMap<>());
+                        pathMapper.put(tile.getId(), path);
                         if (!detectorBandInfoMap.containsKey(key)) {
-                            detectorBandInfoMap.put(key, fileMapper);
+                            detectorBandInfoMap.put(key, pathMapper);
                         }
                     } else {
-                        logger.warning(String.format("Warning: missing file %s\n", file));
+                        logger.warning(String.format("Warning: missing file %s\n", path));
                     }
 
                 }
@@ -362,11 +363,16 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
             }
 
         } else {
-            product = new Product(FileUtils.getFilenameWithoutExtension(productMetadataFile),
+            //TODO remove extension
+            product = new Product(/*FileUtils.getFilenameWithoutExtension(productMetadataFile)*/productMetadataPath.getFileName().toString(),
                                   "S2_MSI_" + productCharacteristics.getProcessingLevel());
         }
 
-        product.setFileLocation(productMetadataFile.getParentFile());
+        if(productMetadataPath.getVirtualDir() == null || !productMetadataPath.getVirtualDir().isCompressed()) {
+            product.setFileLocation(productMetadataPath.getParent().toFile());
+        } else {
+            product.setFileLocation(new File(productMetadataPath.getVirtualDir().getBasePath()));
+        }
 
         for (MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
             product.getMetadataRoot().addElement(metadataElement);
@@ -386,7 +392,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         Objects.requireNonNull(tileList);
         Objects.requireNonNull(product);
 
-        Set<String> ourTileIds = tileBandInfo.getTileIdToFileMap().keySet();
+        Set<String> ourTileIds = tileBandInfo.getTileIdToPathMap().keySet();
         List<Tile> aList = new ArrayList<>(ourTileIds.size());
         List<Coordinate> coords = new ArrayList<>();
         for (String tileId : ourTileIds) {
@@ -444,25 +450,25 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
     }
 
-    private L1BBandInfo createBandInfoFromHeaderInfo(String detector, S2BandInformation bandInformation, Map<String, File> tileFileMap) {
+    private L1BBandInfo createBandInfoFromHeaderInfo(String detector, S2BandInformation bandInformation, Map<String, VirtualPath> tilePathMap) {
         S2SpatialResolution spatialResolution = bandInformation.getResolution();
-        return new L1BBandInfo(tileFileMap,
+        return new L1BBandInfo(tilePathMap,
                                detector,
                                bandInformation,
                                getConfig().getTileLayout(spatialResolution.resolution));
     }
 
-    static File getProductDir(File productFile) throws IOException {
-        final File resolvedFile = productFile.getCanonicalFile();
-        if (!resolvedFile.exists()) {
-            throw new FileNotFoundException("File not found: " + productFile);
+    static VirtualPath getProductDir(VirtualPath productPath) throws IOException {
+
+        if (!productPath.exists()) {
+            throw new FileNotFoundException("File not found: " + productPath.getFullPathString());
         }
 
-        if (productFile.getParentFile() == null) {
-            return new File(".").getCanonicalFile();
-        }
+        //if (productPath.getParent() == null) {
+        //    return new File(".").getCanonicalFile();
+        //}
 
-        return productFile.getParentFile();
+        return productPath.getParent();
     }
 
     private void addTileIndexes(Product product, ArrayList<S2SpatialResolution> resolutions, List<L1bMetadata.Tile> tileList, L1bSceneDescription sceneDescription, Map<S2SpatialResolution,Dimension> sceneDimensions) {
@@ -497,15 +503,15 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         // Create BandInfo and add to tileInfoList
         for (S2BandInformation bandInformation : listTileIndexBandInformation) {
             String detector = bandInformation.getPhysicalBand().substring(0,bandInformation.getPhysicalBand().indexOf("_"));
-            HashMap<String, File> tileFileMap = new HashMap<>();
+            HashMap<String, VirtualPath> tilePathMap = new HashMap<>();
             for (L1bMetadata.Tile tile : tileList) {
                 if(("D" + tile.getDetectorId()).equals(detector)) {
-                    tileFileMap.put(tile.getId(), null); //it is not necessary any file
+                    tilePathMap.put(tile.getId(), null); //it is not necessary any file
                 }
             }
 
-            if (!tileFileMap.isEmpty()) {
-                BandInfo tileInfo = createBandInfoFromHeaderInfo(bandInformation.getPhysicalBand().substring(0,bandInformation.getPhysicalBand().indexOf("_")),bandInformation, tileFileMap);
+            if (!tilePathMap.isEmpty()) {
+                BandInfo tileInfo = createBandInfoFromHeaderInfo(bandInformation.getPhysicalBand().substring(0,bandInformation.getPhysicalBand().indexOf("_")),bandInformation, tilePathMap);
                 if(tileInfo != null) {
                     tileInfoList.add(tileInfo);
                 }
@@ -688,16 +694,21 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
         }
 
         protected PlanarImage createL1bTileImage(String tileId, int level) {
-            File imageFile = tileBandInfo.getTileIdToFileMap().get(tileId);
+            VirtualPath imagePath = tileBandInfo.getTileIdToPathMap().get(tileId);
 
-            PlanarImage planarImage = S2TileOpImage.create(imageFile,
-                                                           getCacheDir(),
-                                                           null, // tileRectangle.getLocation(),
-                                                           tileBandInfo.getImageLayout(),
-                                                           getConfig(),
-                                                           getModel(),
-                                                           getProductResolution(),
-                                                           level);
+            PlanarImage planarImage = null;
+            try {
+                planarImage = S2TileOpImage.create(imagePath.getFile(),
+                                                   getCacheDir(),
+                                                   null, // tileRectangle.getLocation(),
+                                                   tileBandInfo.getImageLayout(),
+                                                   getConfig(),
+                                                   getModel(),
+                                                   getProductResolution(),
+                                                   level);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             logger.fine(String.format("Planar image model: %s", getModel().toString()));
 
@@ -933,8 +944,8 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         private final String detectorId;
 
-        L1BBandInfo(Map<String, File> tileIdToFileMap, String detector, S2BandInformation spectralInfo, TileLayout imageLayout) {
-            super(tileIdToFileMap, spectralInfo, imageLayout);
+        L1BBandInfo(Map<String, VirtualPath> tileIdToPathMap, String detector, S2BandInformation spectralInfo, TileLayout imageLayout) {
+            super(tileIdToPathMap, spectralInfo, imageLayout);
 
             this.detectorId = detector == null ? "" : detector;
         }

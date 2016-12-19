@@ -19,9 +19,9 @@ public class NamingConventionFactory {
      * @param path
      * @return appropriated naming convention or null
      */
-    public static INamingConvention createNamingConvention(Path path)  {
+    public static INamingConvention createNamingConvention(VirtualPath virtualPath)  {
 
-        //TODO create VirtualPAth
+        /*
         VirtualPath virtualPath;
         if(path.toString().endsWith(".zip")) {
             //compute relative path.
@@ -31,7 +31,7 @@ public class NamingConventionFactory {
             virtualPath = new VirtualPath(folderName, VirtualDir.create(path.toFile()));
         } else {
             virtualPath = new VirtualPath(path,null);
-        }
+        }*/
 
 
         L1BNamingConvention l1bConvention = new L1BNamingConvention(virtualPath);

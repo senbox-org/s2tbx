@@ -268,18 +268,18 @@ public class SAFECOMPACTNamingConvention implements INamingConvention {
         if(level == S2Config.Sentinel2ProductLevel.L2A || level == S2Config.Sentinel2ProductLevel.L3) {
 
             if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)) {
-                if (L2aUtils.checkGranuleSpecificFolder(getInputXml().toFile(), "10m")) {
+                if (L2aUtils.checkGranuleSpecificFolder(getInputXml()/*.toFile()*/, "10m")) {
                     resolution = S2SpatialResolution.R10M;
-                } else if (L2aUtils.checkGranuleSpecificFolder(getInputXml().toFile(), "20m")) {
+                } else if (L2aUtils.checkGranuleSpecificFolder(getInputXml()/*.toFile()*/, "20m")) {
                     resolution = S2SpatialResolution.R20M;
                 } else {
                     resolution = S2SpatialResolution.R60M;
                 }
             }
             if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA)) {
-                if (L2aUtils.checkMetadataSpecificFolder(getInputXml().toFile(), "10m")) {
+                if (L2aUtils.checkMetadataSpecificFolder(getInputXml()/*.toFile()*/, "10m")) {
                     resolution = S2SpatialResolution.R10M;
-                } else if (L2aUtils.checkMetadataSpecificFolder(getInputXml().toFile(), "20m")) {
+                } else if (L2aUtils.checkMetadataSpecificFolder(getInputXml()/*.toFile()*/, "20m")) {
                     resolution = S2SpatialResolution.R20M;
                 } else {
                     resolution = S2SpatialResolution.R60M;

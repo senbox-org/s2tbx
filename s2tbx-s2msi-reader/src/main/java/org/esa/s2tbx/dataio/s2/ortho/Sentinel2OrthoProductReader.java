@@ -61,7 +61,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.*;
 import java.awt.image.DataBufferFloat;
 import java.io.*;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -189,8 +188,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
             throw new IOException(String.format("Unable to retrieve the product associated to granule metadata file [%s]", metadataPath.getFileName().toString()));
         }
 
-        File productDir = getProductDir(rootMetadataPath);
-        initCacheDir(productDir);
+        VirtualPath productPath = getProductDir(rootMetadataPath);
+        initCacheDir(productPath);
 
         S2Metadata.ProductCharacteristics productCharacteristics = metadataHeader.getProductCharacteristics();
 
@@ -202,7 +201,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         for (MetadataElement metadataElement : metadataHeader.getMetadataElements()) {
             product.getMetadataRoot().addElement(metadataElement);
         }
-        product.setFileLocation(metadataPath.toFile());
+
+        if(metadataPath.getVirtualDir() == null || !metadataPath.getVirtualDir().isCompressed()) {
+            product.setFileLocation(metadataPath.getParent().toFile());
+        } else {
+            product.setFileLocation(new File(metadataPath.getVirtualDir().getBasePath()));
+        }
 
         try {
             product.setSceneGeoCoding(new CrsGeoCoding(CRS.decode(this.epsgCode),
@@ -250,7 +254,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         // Verify access to granule image files, and store absolute location
         for (S2BandInformation bandInformation : productCharacteristics.getBandInformations()) {
-            HashMap<String, File> tileFileMap = new HashMap<>();
+            HashMap<String, VirtualPath> tilePathMap = new HashMap<>();
             for (S2Metadata.Tile tile : tileList) {
                 S2OrthoGranuleDirFilename gf = S2OrthoGranuleDirFilename.create(tile.getId());
                 if (gf != null) {
@@ -280,17 +284,18 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     }
                     logger.finer("Adding file " + imgFilename + " to band: " + bandInformation.getPhysicalBand());
 
-                    File file = new File(productDir, imgFilename);
-                    if (file.exists()) {
-                        tileFileMap.put(tile.getId(), file);
+                    VirtualPath path = productPath.resolve(imgFilename);
+                    //File file = new File(productDir, imgFilename);
+                    if (path.exists()) {
+                        tilePathMap.put(tile.getId(), path);
                     } else {
-                        logger.warning(String.format("Warning: missing file %s\n", file));
+                        logger.warning(String.format("Warning: missing file %s\n", path.getFullPathString()));
                     }
                 }
             }
 
-            if (!tileFileMap.isEmpty()) {
-                BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+            if (!tilePathMap.isEmpty()) {
+                BandInfo bandInfo = createBandInfoFromHeaderInfo(bandInformation, tilePathMap);
                 if (bandInfo != null) {
                     bandInfoList.add(bandInfo);
                 }
@@ -778,7 +783,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
                 List<EopPolygon> polygonsForTile;
 
-                polygonsForTile = readPolygons(maskFilename.getName().getAbsolutePath());
+                polygonsForTile = readPolygons(maskFilename.getPath());
 
                 for(int i = 0; i<maskInfo.getSubType().length;i++)
                 {
@@ -948,12 +953,12 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
 
         // Create BandInfo and add to tileInfoList
         for (S2BandInformation bandInformation : listTileIndexBandInformation) {
-            HashMap<String, File> tileFileMap = new HashMap<>();
+            HashMap<String, VirtualPath> tilePathMap = new HashMap<>();
             for (S2Metadata.Tile tile : tileList) {
-                tileFileMap.put(tile.getId(), null); //it is not necessary any file
+                tilePathMap.put(tile.getId(), null); //it is not necessary any file
             }
-            if (!tileFileMap.isEmpty()) {
-                BandInfo tileInfo = createBandInfoFromHeaderInfo(bandInformation, tileFileMap);
+            if (!tilePathMap.isEmpty()) {
+                BandInfo tileInfo = createBandInfoFromHeaderInfo(bandInformation, tilePathMap);
                 if(tileInfo != null) {
                     tileInfoList.add(tileInfo);
                 }
@@ -1176,29 +1181,29 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return bandAnglesGrid;
     }
 
-    private BandInfo createBandInfoFromHeaderInfo(S2BandInformation bandInformation, Map<String, File> tileFileMap) {
+    private BandInfo createBandInfoFromHeaderInfo(S2BandInformation bandInformation, Map<String, VirtualPath> tilePathMap) {
         S2SpatialResolution spatialResolution = bandInformation.getResolution();
         if (getConfig().getTileLayout(spatialResolution.resolution) == null) {
             return null;
         }
-        return new BandInfo(tileFileMap,
+        return new BandInfo(tilePathMap,
                             bandInformation,
                             getConfig().getTileLayout(spatialResolution.resolution));
     }
 
-    static File getProductDir(VirtualPath productFile) throws IOException {
+    static VirtualPath getProductDir(VirtualPath productPath) throws IOException {
         //TODO revisar esto
         //final File resolvedFile = productFile.getCanonicalFile();
-        final File resolvedFile = productFile.getFile();
-        if (!resolvedFile.exists()) {
-            throw new FileNotFoundException("File not found: " + productFile);
+        //final File resolvedFile = productFile.getFile();
+        if (!productPath.exists()) {
+            throw new FileNotFoundException("File not found: " + productPath.getFullPathString());
         }
 
-        if (productFile.getParent() == null) {
-            return new File(".").getCanonicalFile();
-        }
+        //if (productFile.getParent() == null) {
+        //    return new File(".").getCanonicalFile();
+        //}
 
-        return productFile.getParent().toFile();
+        return productPath.getParent();
     }
 
     private abstract class MultiLevelImageFactory {
@@ -1284,7 +1289,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 /*
                  * Get the a PlanarImage of the tile at native resolution, with a [0,0] origin
                  */
-                File imageFile = bandInfo.getTileIdToFileMap().get(tileId);
+                VirtualPath imagePath = bandInfo.getTileIdToPathMap().get(tileId);
 
                 // Get the band native resolution
                 S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
@@ -1326,7 +1331,8 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                                                                Math.min(l1cTileLayout.height - y * l1cTileLayout.tileHeight, l1cTileLayout.tileHeight),
                                                                l1cTileLayout.numXTiles, l1cTileLayout.numYTiles, l1cTileLayout.numResolutions);
                             }
-                            opImage = JP2TileOpImage.create(imageFile != null ? imageFile.toPath() : null, getCacheDir().toPath(),
+                            //todo aqui descomprime el fichero, revisar si se quiere hacer todo sin descomprimir
+                            opImage = JP2TileOpImage.create(imagePath != null ? imagePath.toFile().toPath()/*imageFile.toPath()*/ : null, getCacheDir().toPath(),
                                     0, y, x, currentLayout, getModel(), TYPE_USHORT, level);
                             if (opImage != null) {
                                 opImage = TranslateDescriptor.create(opImage,
@@ -1592,7 +1598,7 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         return planarImage;
     }
 
-    private List<EopPolygon> readPolygons (String maskFilename) {
+    /*private List<EopPolygon> readPolygons (String maskFilename) {
         List<EopPolygon> polygonsForTile = new ArrayList<>();
         String line;
         String polygonWKT;
@@ -1633,6 +1639,41 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                 logger.warning(String.format("Warning: impossible to close BufferedReader\n"));
             }
         }
+        return polygonsForTile;
+    }*/
+
+    private List<EopPolygon> readPolygons (VirtualPath path) {
+        List<EopPolygon> polygonsForTile = new ArrayList<>();
+        String line;
+        String polygonWKT;
+        String type = "";
+        String lastId="id";
+
+        WKTReader wkt = new WKTReader();
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(path.getInputStream()))) {
+            try {
+                while ((line = in.readLine()) != null) {
+                    if (line.contains("eop:MaskFeature gml:id=")) {
+                        lastId = line.substring(line.indexOf("=\"") + 2, line.indexOf("\">"));
+                    } else if (line.contains("</eop:maskType>")) {
+                        type = line.substring(line.indexOf(">") + 1, line.indexOf("</eop:maskType>"));
+                    } else if (line.contains("<gml:posList srsDimension")) {
+                        String polygon = line.substring(line.indexOf(">") + 1, line.indexOf("</gml:posList>"));
+                        polygonWKT = convertToWKTPolygon(polygon, readPolygonDimension(line));
+                        EopPolygon polyg = new EopPolygon(lastId, type, (Polygon) wkt.read(polygonWKT));
+                        polygonsForTile.add(polyg);
+                        lastId = "id"; //re-initialize lastId
+                    }
+                }
+            } catch (Exception e) {
+                logger.warning(String.format("Warning: missing polygon in mask %s\n", path.getFileName().toString()));
+            }
+            in.close();
+        } catch (Exception e) {
+            logger.warning(String.format("Warning: impossible to read properly %s\n", path.getFullPathString()));
+        }
+
         return polygonsForTile;
     }
 

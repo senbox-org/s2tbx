@@ -116,7 +116,7 @@ public class SAFENamingConvention implements INamingConvention{
             }
             path = inputXmlPath.getParent().resolveSibling(tileId);
         }
-        if(Files.exists(path) && Files.isDirectory(path) && S2NamingConventionUtils.matches(path.getFileName().toString(),getGranuleREGEXs())) {
+        if(path.exists() && path.isDirectory() && S2NamingConventionUtils.matches(path.getFileName().toString(),getGranuleREGEXs())) {
             return path;
         }
         return null;
@@ -129,7 +129,7 @@ public class SAFENamingConvention implements INamingConvention{
             return null;
         }
         VirtualPath path = S2NamingConventionUtils.getFileFromDir(granuleFolderPath,getGranuleXmlREGEXs());
-        if(Files.exists(path)) {
+        if(path.exists()) {
             return path;
         }
         return null;
@@ -249,17 +249,17 @@ public class SAFENamingConvention implements INamingConvention{
         if(level == S2Config.Sentinel2ProductLevel.L2A || level == S2Config.Sentinel2ProductLevel.L3) {
 
             if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA)) {
-                if (L2aUtils.checkGranuleSpecificFolder(getInputXml().toFile(), "10m")) {
+                if (L2aUtils.checkGranuleSpecificFolder(getInputXml()/*.toFile()*/, "10m")) {
                     resolution = S2SpatialResolution.R10M;
-                } else if (L2aUtils.checkGranuleSpecificFolder(getInputXml().toFile(), "20m")) {
+                } else if (L2aUtils.checkGranuleSpecificFolder(getInputXml()/*.toFile()*/, "20m")) {
                     resolution = S2SpatialResolution.R20M;
                 } else {
                     resolution = S2SpatialResolution.R60M;
                 }
             } else if (inputType.equals(S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA)) {
-                if (L2aUtils.checkMetadataSpecificFolder(getInputXml().toFile(), "10m")) {
+                if (L2aUtils.checkMetadataSpecificFolder(getInputXml()/*.toFile()*/, "10m")) {
                     resolution = S2SpatialResolution.R10M;
-                } else if (L2aUtils.checkMetadataSpecificFolder(getInputXml().toFile(), "20m")) {
+                } else if (L2aUtils.checkMetadataSpecificFolder(getInputXml()/*.toFile()*/, "20m")) {
                     resolution = S2SpatialResolution.R20M;
                 } else {
                     resolution = S2SpatialResolution.R60M;

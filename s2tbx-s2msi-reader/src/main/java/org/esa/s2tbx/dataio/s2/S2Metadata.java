@@ -290,12 +290,12 @@ public abstract class S2Metadata {
     public static class MaskFilename {
         String bandId;
         String type;
-        File name;
+        VirtualPath path;
 
-        public MaskFilename(String bandId, String type, File name) {
+        public MaskFilename(String bandId, String type, VirtualPath path) {
             this.bandId = bandId;
             this.type = type;
-            this.name = name;
+            this.path = path;
         }
 
         public String getBandId() {
@@ -314,12 +314,12 @@ public abstract class S2Metadata {
             this.type = type;
         }
 
-        public File getName() {
-            return name;
+        public VirtualPath getPath() {
+            return path;
         }
 
-        public void setName(File name) {
-            this.name = name;
+        public void setPath(VirtualPath path) {
+            this.path = path;
         }
 
         public String toString() {

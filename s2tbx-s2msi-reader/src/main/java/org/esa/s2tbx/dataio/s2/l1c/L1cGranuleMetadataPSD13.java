@@ -212,7 +212,8 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
 
 
             VirtualPath QIData = path.resolveSibling("QI_DATA");
-            File GmlData = new File(QIData.toFile(), filenameProcessed);
+            VirtualPath GmlData = QIData.resolve(filenameProcessed);
+            //File GmlData = new File(QIData.toFile(), filenameProcessed);
 
             aMaskList.add(new S2Metadata.MaskFilename(getAttributeSiblingValue(L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
                                                                                 L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_BAND, null),

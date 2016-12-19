@@ -225,7 +225,7 @@ public class L2aGranuleMetadataPSD13 extends GenericXmlMetadata implements IL2aG
             }
 
             VirtualPath QIData = path.resolveSibling("QI_DATA");
-            File GmlData = new File(QIData.toFile(), filenameProcessed);
+            VirtualPath GmlData = QIData.resolve(filenameProcessed);
 
             aMaskList.add(new S2Metadata.MaskFilename(getAttributeSiblingValue(L2aPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
                                                                                 L2aPSD13Constants.PATH_GRANULE_METADATA_MASK_BAND, null),
