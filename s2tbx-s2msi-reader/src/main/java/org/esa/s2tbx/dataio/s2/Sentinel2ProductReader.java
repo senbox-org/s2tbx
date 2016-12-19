@@ -27,6 +27,7 @@ import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -146,7 +147,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 file = new File(getInput().toString());
             }
 
-            namingConvention = NamingConventionFactory.createNamingConvention(VirtualPath.transformToVirtualPath(file.toPath()));
+            namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
         } else if(getInput() instanceof VirtualPath) {
             namingConvention = NamingConventionFactory.createNamingConvention((VirtualPath) getInput());
         }

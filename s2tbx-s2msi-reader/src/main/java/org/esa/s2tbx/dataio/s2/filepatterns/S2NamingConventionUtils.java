@@ -1,11 +1,14 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.VirtualPath;
+import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.s2tbx.dataio.s2.S2Config;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -286,4 +289,23 @@ public class S2NamingConventionUtils {
         }
     }
 
+    public static VirtualPath transformToSentinel2VirtualPath (Path path) {
+        VirtualPath virtualPath;
+
+        if(VirtualDirEx.isPackedFile(path.toFile())) {
+            VirtualDirEx virtualDirEx = VirtualDirEx.create(path.toFile());
+            String folderName = PathUtils.getFileNameWithoutExtension(path);
+            if(!folderName.endsWith(".SAFE")) {
+                folderName = folderName +".SAFE";
+            }
+            if(virtualDirEx.exists(folderName)) {
+                virtualPath = new VirtualPath(folderName, virtualDirEx);
+            } else {
+                virtualPath = new VirtualPath("", virtualDirEx);
+            }
+        } else {
+            virtualPath = new VirtualPath(path,null);
+        }
+        return virtualPath;
+    }
 }

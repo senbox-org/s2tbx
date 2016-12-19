@@ -5,6 +5,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
 import org.esa.s2tbx.dataio.s2.masks.MaskInfo;
 import org.esa.s2tbx.dataio.s2.ortho.S2OrthoProductReaderPlugIn;
@@ -34,7 +35,7 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
     @Override
     public S2SpatialResolution getProductResolution() {
         if(namingConvention == null && (getInput() instanceof File)) {
-            namingConvention = NamingConventionFactory.createNamingConvention(VirtualPath.transformToVirtualPath(((File) getInput()).toPath()));
+            namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(((File) getInput()).toPath()));
         }
 
         if(namingConvention == null) {

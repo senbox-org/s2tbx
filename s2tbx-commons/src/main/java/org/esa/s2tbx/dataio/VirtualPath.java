@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio;
 
-import com.bc.ceres.core.VirtualDir;
+//import com.bc.ceres.core.VirtualDir;
+import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.io.BufferedInputStream;
@@ -39,10 +40,10 @@ import java.util.stream.Collectors;
 public class VirtualPath implements Path {
 
     private final Path path; //relative path starting from dir
-    private final VirtualDir dir; //if this is null, the path is an absolute path
+    private final VirtualDirEx dir; //if this is null, the path is an absolute path
     private final String separator; //separator used in the dir file system
 
-    public VirtualPath(Path path, VirtualDir dir) {
+    public VirtualPath(Path path, VirtualDirEx dir) {
         FileSystem fsys = FileSystems.getDefault();
         if(dir != null && dir.isCompressed()) {
             try {
@@ -71,11 +72,11 @@ public class VirtualPath implements Path {
 
     }
 
-    public VirtualPath(String stringPath, VirtualDir dir) {
+    public VirtualPath(String stringPath, VirtualDirEx dir) {
         this(Paths.get(stringPath),dir);
     }
 
-    public VirtualDir getVirtualDir() {
+    public VirtualDirEx getVirtualDir() {
         return dir;
     }
 
@@ -120,7 +121,11 @@ public class VirtualPath implements Path {
 
     @Override
     public Path getFileName() {
-        return path.getFileName();
+        Path name = path.getFileName();
+        if(name != null) {
+            return name;
+        }
+        return Paths.get(getVirtualDir().getBasePath()).getFileName();
     }
 
     @Override
@@ -130,7 +135,7 @@ public class VirtualPath implements Path {
             //TODO check if do this or not
             //if parent is null get parent the virtual dir
             Path dirPath = Paths.get(this.dir.getBasePath());
-            VirtualPath parent = new VirtualPath(dirPath.getFileName(),VirtualDir.create(dirPath.getParent().toFile()));
+            VirtualPath parent = new VirtualPath(dirPath.getFileName(),VirtualDirEx.create(dirPath.getParent().toFile()));
             return parent;
             //TODO update separator
         }
@@ -391,11 +396,14 @@ public class VirtualPath implements Path {
         }
     }
 
-    public static VirtualPath transformToVirtualPath (Path path) {
+    /*public static VirtualPath transformToVirtualPath (Path path) {
         VirtualPath virtualPath;
-        if(path.toString().endsWith(".zip")) {
+        if(path.toString().endsWith(".zip") ) {
             String folderName = path.getFileName().toString();
-            folderName = folderName.substring(0,folderName.lastIndexOf(".zip"))+".SAFE";
+            folderName = folderName.substring(0,folderName.lastIndexOf(".zip"));
+            if(!folderName.endsWith(".SAFE")) {
+                folderName = folderName +".SAFE";
+            }
             //check if a folder with the same name exist
             VirtualDir dir = VirtualDir.create(path.toFile());
             if(dir.exists(folderName)) {
@@ -408,4 +416,24 @@ public class VirtualPath implements Path {
         }
         return virtualPath;
     }
+
+    public static VirtualPath transformToSentinel2VirtualPath (Path path) {
+        VirtualPath virtualPath;
+
+        if(VirtualDirEx.isPackedFile(path.toFile())) {
+            VirtualDirEx virtualDirEx = VirtualDirEx.create(path.toFile());
+            String folderName = PathUtils.getFileNameWithoutExtension(path);
+            if(!folderName.endsWith(".SAFE")) {
+                folderName = folderName +".SAFE";
+            }
+            if(virtualDirEx.exists(folderName)) {
+                virtualPath = new VirtualPath(folderName, virtualDirEx);
+            } else {
+                virtualPath = new VirtualPath("", virtualDirEx);
+            }
+        } else {
+            virtualPath = new VirtualPath(path,null);
+        }
+        return virtualPath;
+    }*/
 }

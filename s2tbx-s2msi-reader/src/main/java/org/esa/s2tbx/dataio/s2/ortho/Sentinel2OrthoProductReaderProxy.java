@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.Sentinel2ProductReader;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.l1c.Sentinel2L1CProductReader;
 import org.esa.s2tbx.dataio.s2.l2a.Sentinel2L2AProductReader;
 import org.esa.s2tbx.dataio.s2.l3.Sentinel2L3ProductReader;
@@ -87,7 +88,7 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
         }
         if(reader == null) {
             file = (File) input;
-            INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(VirtualPath.transformToVirtualPath(file.toPath()));
+            INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
             if (namingConvention == null) {
                 throw new IOException("Invalid input");
             }
