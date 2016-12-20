@@ -82,7 +82,7 @@ public class S2NamingConventionUtils {
 
         String[] listXmlFiles;
         try {
-            listXmlFiles = path.listFilter(".xml");
+            listXmlFiles = path.listEndingBy(".xml");
         } catch (IOException e) {
             return null;
         }
@@ -125,7 +125,7 @@ public class S2NamingConventionUtils {
 
         String[] listXmlFiles;
         try {
-            listXmlFiles = path.listFilter(".xml");
+            listXmlFiles = path.listEndingBy(".xml");
         } catch (IOException e) {
             return null;
         }

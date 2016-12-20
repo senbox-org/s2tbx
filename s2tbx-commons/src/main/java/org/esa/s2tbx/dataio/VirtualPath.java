@@ -331,6 +331,15 @@ public class VirtualPath implements Path {
         return found != null ? found.toArray(new String[found.size()]) : null;
     }
 
+    public String[] listEndingBy(String suffix) throws IOException {
+        List<String> found = null; // = new ArrayList<>();
+        String[] entries = list();
+        if (entries != null) {
+            found = Arrays.stream(entries).filter(e -> e.toLowerCase().endsWith(suffix)).collect(Collectors.toList());
+        }
+        return found != null ? found.toArray(new String[found.size()]) : null;
+    }
+
     public VirtualPath[] listPaths() throws IOException {
         String[] list;
         if (dir == null) {

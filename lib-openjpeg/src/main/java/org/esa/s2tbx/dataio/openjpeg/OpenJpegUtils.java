@@ -140,6 +140,7 @@ public class OpenJpegUtils {
         int xTiles = 0;
         int yTiles = 0;
         int resolutions = 0;
+        int precision = 0;
 
         for (String line : content) {
             if (line.contains("x1") && line.contains("y1")) {
@@ -159,6 +160,9 @@ public class OpenJpegUtils {
             }
             if (line.contains("numresolutions")) {
                 resolutions = Integer.parseInt(line.trim().split("\\=")[1]);
+            }
+            if (line.contains("prec=")) {
+                precision = Integer.parseInt(line.trim().split("\\=")[1]);
             }
         }
 

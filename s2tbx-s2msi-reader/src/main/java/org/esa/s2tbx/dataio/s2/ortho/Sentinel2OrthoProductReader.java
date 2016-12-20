@@ -39,6 +39,7 @@ import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.image.SourceImageScaler;
+import org.esa.snap.core.util.ImageUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -1232,7 +1233,31 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
         public MultiLevelImage createSourceImage(BandInfo bandInfo) {
             BandL1cSceneMultiLevelSource bandScene = new BandL1cSceneMultiLevelSource(sceneDescription, bandInfo, imageToModelTransform);
             SystemUtils.LOG.fine("BandScene: " + bandScene);
-            return new DefaultMultiLevelImage(bandScene);
+
+
+            //S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
+            //Dimension bandDimensionLevel0 = sceneDescription.getSceneDimension(bandNativeResolution);
+            //ImageLayout layout = new ImageLayout(0, 0,bandDimensionLevel0.width, bandDimensionLevel0.height, 0, 0, S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE, null,null);
+            //S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
+            //Dimension bandDimensionLevel0 = sceneDescription.getSceneDimension(bandNativeResolution);
+
+            // Get dimension at level 0
+            S2SpatialResolution bandNativeResolution = bandInfo.getBandInformation().getResolution();
+            Dimension bandDimensionLevel0 = sceneDescription.getSceneDimension(bandNativeResolution);
+
+            // Compute dimension at level 'level' according to "J2K rule"
+            Rectangle bandRectangle = DefaultMultiLevelSource.getLevelImageBounds(
+                    new Rectangle(bandDimensionLevel0.width, bandDimensionLevel0.height),
+                    bandScene.getModel().getScale(0));
+            int[] bandOffsets = {0};
+            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(DataBuffer.TYPE_SHORT, bandRectangle.width, bandRectangle.height);
+            //ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+            //ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.OPAQUE, TYPE_SHORT);
+            ImageLayout layout = new ImageLayout(0, 0,bandRectangle.width, bandRectangle.height, 0, 0, S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE, sampleModel,/*colorModel*/null);
+
+
+
+            return new DefaultMultiLevelImage(bandScene,layout);
         }
     }
 

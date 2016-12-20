@@ -154,7 +154,7 @@ public class S2ProductNamingUtils {
         }
         String[] listXmlFiles;
         try {
-            listXmlFiles = dirPath.listFilter(".xml");
+            listXmlFiles = dirPath.listEndingBy(".xml");
         } catch (IOException e) {
             return null;
         }
