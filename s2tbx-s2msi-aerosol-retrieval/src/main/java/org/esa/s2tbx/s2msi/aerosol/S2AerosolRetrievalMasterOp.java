@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Main Operator producing AOT for GlobAlbedo
+ * Main Operator for aerosol retrieval from S2 MSI following USwansea algorithm as used in GlobAlbedo project.
  */
 @OperatorMetadata(alias = "AerosolRetrieval.S2.Master",
         description = "Aerosol retrieval from S2 MSI following USwansea algorithm as used in GlobAlbedo project.",
@@ -91,37 +91,39 @@ public class S2AerosolRetrievalMasterOp extends Operator {
         s2msiPrepOp.setSourceProduct(sourceProduct);
         final Product extendedSourceProduct = s2msiPrepOp.getTargetProduct();
 
-        Map<String, Object> aotParams = new HashMap<>(4);
-        aotParams.put("soilSpecId", soilSpecId);
-        aotParams.put("vegSpecId", vegSpecId);
-        aotParams.put("scale", scale);
-        aotParams.put("ndviThreshold", ndviThr);
+        setTargetProduct(extendedSourceProduct);    // first test break
 
-        Product aotDownscaledProduct =
-                GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolOp.class), aotParams, extendedSourceProduct, rhAot);
-
-        Product aotGapFilledProduct = aotDownscaledProduct;
-        if (filling) {
-            Map<String, Product> gapFillSourceProducts = new HashMap<>(2);
-            gapFillSourceProducts.put("aotProduct", aotDownscaledProduct);
-            aotGapFilledProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolGapFillingOp.class),
-                                                    GPF.NO_PARAMS, gapFillSourceProducts);
-        }
-
-        targetProduct = aotGapFilledProduct;
-        if (upscaling) {
-            Map<String, Product> upsclProducts = new HashMap<>(2);
-            upsclProducts.put("lowresProduct", aotGapFilledProduct);
-            upsclProducts.put("hiresProduct", extendedSourceProduct);
-            Map<String, Object> sclParams = new HashMap<>(1);
-            sclParams.put("scale", scale);
-            Product aotOrigResolutionProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolUpscaleOp.class),
-                                                                 sclParams, upsclProducts, rhTarget);
-
-            targetProduct = mergeToTargetProduct(extendedSourceProduct, aotOrigResolutionProduct);
-            ProductUtils.copyPreferredTileSize(extendedSourceProduct, targetProduct);
-        }
-        setTargetProduct(targetProduct);
+//        Map<String, Object> aotParams = new HashMap<>(4);
+//        aotParams.put("soilSpecId", soilSpecId);
+//        aotParams.put("vegSpecId", vegSpecId);
+//        aotParams.put("scale", scale);
+//        aotParams.put("ndviThreshold", ndviThr);
+//
+//        Product aotDownscaledProduct =
+//                GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolOp.class), aotParams, extendedSourceProduct, rhAot);
+//
+//        Product aotGapFilledProduct = aotDownscaledProduct;
+//        if (filling) {
+//            Map<String, Product> gapFillSourceProducts = new HashMap<>(2);
+//            gapFillSourceProducts.put("aotProduct", aotDownscaledProduct);
+//            aotGapFilledProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolGapFillingOp.class),
+//                                                    GPF.NO_PARAMS, gapFillSourceProducts);
+//        }
+//
+//        targetProduct = aotGapFilledProduct;     // second test break: set upscaling to false
+//        if (upscaling) {
+//            Map<String, Product> upsclProducts = new HashMap<>(2);
+//            upsclProducts.put("lowresProduct", aotGapFilledProduct);
+//            upsclProducts.put("hiresProduct", extendedSourceProduct);
+//            Map<String, Object> sclParams = new HashMap<>(1);
+//            sclParams.put("scale", scale);
+//            Product aotOrigResolutionProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolUpscaleOp.class),
+//                                                                 sclParams, upsclProducts, rhTarget);
+//
+//            targetProduct = mergeToTargetProduct(extendedSourceProduct, aotOrigResolutionProduct);
+//            ProductUtils.copyPreferredTileSize(extendedSourceProduct, targetProduct);
+//        }
+//        setTargetProduct(targetProduct);
     }
 
     private Product mergeToTargetProduct(Product reflProduct, Product aotOriginalResolutionProduct) {

@@ -103,12 +103,16 @@ public class MomoLut {
             final double[] gasT = getGasTransmission(geomAMF, (float) inPix.wvCol, (float) (inPix.o3du / 1000));
             double[][] lutValues = sdrLut.getValues(inPix.surfPressure, geom.vza, geom.sza, geom.razi, tau);
 
+            // from S2 LUT we get for wvl=1,..,13:
+            // "path_radiance", "view_trans_diff", "spherical_albedo", "global_irradiance",
+            // "view_trans_dir", "sun_trans_dir", "toa_irradiance"
+
             for (int iWvl = 0; iWvl < inPix.nSpecWvl; iWvl++) {
-                double rhoPath = lutValues[iWvl][0] * Math.PI / Math.cos(Math.toRadians(geom.sza));
-                double tupTdown = lutValues[iWvl][1] / Math.cos(Math.toRadians(geom.sza));
-                double spherAlb = lutValues[iWvl][2];
+                double rhoPath = lutValues[iWvl][0] * Math.PI / Math.cos(Math.toRadians(geom.sza)); // path_radiance --> OK
+                double tupTdown = lutValues[iWvl][1] / Math.cos(Math.toRadians(geom.sza));          // tupTdown = view_trans_diff + view_trans_dir
+                double spherAlb = lutValues[iWvl][2];                                               // spherical_albedo --> OK
                 //double tgO3 = Math.exp(inPix.o3du * o3corr[i] * geomAMF/2); // my o3 correction scheme uses AMF=SC/VC not AMF=SC
-                double toaCorr = toaR[iWvl] / gasT[iWvl];
+                double toaCorr = toaR[iWvl] / gasT[iWvl];       // todo: not available from S2 LUT. Discuss with GK what to do here.
                 double a = (toaCorr - rhoPath) / tupTdown;
                 inPix.surfReflec[iView][iWvl] = a / (1 + spherAlb * a);
                 inPix.diffuseFrac[iView][iWvl] = 1.0 - lutValues[iWvl][3];
@@ -147,6 +151,11 @@ public class MomoLut {
         final double[] gasT = getGasTransmission(geomAMF, (float) ipd.wvCol, (float) (ipd.o3du / 1000));
         final double toa = ipd.toaReflec[0] / gasT[0];
         int iAot = 0;
+
+        // from S2 LUT we get for wvl=1,..,13:
+        // "path_radiance", "view_trans_diff", "spherical_albedo", "global_irradiance",
+        // "view_trans_dir", "sun_trans_dir", "toa_irradiance"
+
         double[][] lutValues = sdrLut.getValues(ipd.surfPressure, ipd.geom.vza, ipd.geom.sza, ipd.geom.razi, aot[iAot]);
         double rhoPath1 = lutValues[0][0] * Math.PI / Math.cos(Math.toRadians(ipd.geom.sza));
         double rhoPath0 = rhoPath1;
@@ -154,7 +163,7 @@ public class MomoLut {
             rhoPath0 = rhoPath1;
             iAot++;
             lutValues = sdrLut.getValues(ipd.surfPressure, ipd.geom.vza, ipd.geom.sza, ipd.geom.razi, aot[iAot]);
-            rhoPath1 = lutValues[0][0] * Math.PI / Math.cos(Math.toRadians(ipd.geom.sza));
+            rhoPath1 = lutValues[0][0] * Math.PI / Math.cos(Math.toRadians(ipd.geom.sza));  // rho_path --> OK
         }
         if (iAot == 0) return 0.005;
         if (rhoPath1 < toa) return 2.0;
