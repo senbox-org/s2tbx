@@ -51,6 +51,8 @@ public class TileLayout {
     public final int numResolutions;
     public int numBands;
 
+    public int dataType = 0;
+
     public TileLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions) {
         this.width = width;
         this.height = height;
@@ -60,6 +62,11 @@ public class TileLayout {
         this.numYTiles = numYTiles;
         this.numResolutions = numResolutions;
         this.numBands = 1;
+    }
+
+    public TileLayout(int width, int height, int tileWidth, int tileHeight, int numXTiles, int numYTiles, int numResolutions, int dataType) {
+        this(width,height,tileWidth,tileHeight, numXTiles, numYTiles, numResolutions);
+        this.dataType = dataType;
     }
 
     @Override
@@ -76,6 +83,7 @@ public class TileLayout {
         if (tileHeight != that.tileHeight) return false;
         if (tileWidth != that.tileWidth) return false;
         if (width != that.width) return false;
+        if (dataType != that.dataType) return false;
 
         return true;
     }
@@ -89,6 +97,7 @@ public class TileLayout {
         result = 31 * result + numXTiles;
         result = 31 * result + numYTiles;
         result = 31 * result + numResolutions;
+        result = 31 * result + dataType;
         return result;
     }
 

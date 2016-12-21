@@ -17,9 +17,11 @@
 package org.esa.s2tbx.dataio.openjpeg;
 
 import org.apache.commons.lang.SystemUtils;
+import org.esa.s2tbx.dataio.BucketMap;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 
+import java.awt.image.DataBuffer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,6 +38,13 @@ import java.util.List;
  * @author Oscar Picas-Puig
  */
 public class OpenJpegUtils {
+
+    private static final BucketMap<Integer, Integer> dataTypeMap = new BucketMap<Integer, Integer>() {{
+        put(1, 8, DataBuffer.TYPE_BYTE);
+        put(9, 15, DataBuffer.TYPE_USHORT);
+        put(16, DataBuffer.TYPE_SHORT);
+        put(17, 32, DataBuffer.TYPE_FLOAT);
+    }};
 
     /**
      * Get the tile layout with opj_dump
@@ -166,7 +175,7 @@ public class OpenJpegUtils {
             }
         }
 
-        return new TileLayout(Width, Height, tileWidth, tileHeight, xTiles, yTiles, resolutions);
+        return new TileLayout(Width, Height, tileWidth, tileHeight, xTiles, yTiles, resolutions, dataTypeMap.get(precision) );
 
     }
 
