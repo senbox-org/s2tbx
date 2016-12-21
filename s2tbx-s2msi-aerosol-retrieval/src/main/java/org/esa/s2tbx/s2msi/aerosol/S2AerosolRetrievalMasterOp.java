@@ -26,7 +26,6 @@ import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -59,20 +58,33 @@ public class S2AerosolRetrievalMasterOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
+    // todo: add labels, descriptions...
     @Parameter(defaultValue = "true")
     private boolean copyToaReflBands;
+
     @Parameter(defaultValue = "false")
     private boolean filling;
+
     @Parameter(defaultValue = "false")
     private boolean upscaling;
+
     @Parameter(defaultValue = "1")
     private int soilSpecId;
+
     @Parameter(defaultValue = "5")
     private int vegSpecId;
-    @Parameter(defaultValue = "9")
+
+    @Parameter(description = "Full path to S2 Lookup Table.",    // todo: define how to finally specify
+            label = "Path to S2 Lookup Table")
+    private String pathToLut;
+
+    @Parameter(description = "The downscaling factor for AOT retrieval grid. E.g. 50 for S2 20m --> 1km",
+            label = "Downscaling factor for AOT retrieval grid",
+            defaultValue = "50")
     private int scale;
+
     @Parameter(defaultValue = "0.3")
-    private float ndviThr;
+    private float ndviThreshold;
 
     @Override
     public void initialize() throws OperatorException {
@@ -83,24 +95,36 @@ public class S2AerosolRetrievalMasterOp extends Operator {
 
         Dimension targetDim = ImageManager.getPreferredTileSize(sourceProduct);         // original grid
         Dimension aotDim = new Dimension(targetDim.width / 9, targetDim.height / 9);    // AOT grid (downscaled)
-        RenderingHints rhTarget = new RenderingHints(GPF.KEY_TILE_SIZE, targetDim);
-        RenderingHints rhAot = new RenderingHints(GPF.KEY_TILE_SIZE, aotDim);
+
+//        RenderingHints rhTarget = new RenderingHints(GPF.KEY_TILE_SIZE, targetDim);
+//        RenderingHints rhAot = new RenderingHints(GPF.KEY_TILE_SIZE, aotDim);
 
         S2AerosolMsiPreparationOp s2msiPrepOp = new S2AerosolMsiPreparationOp();
         s2msiPrepOp.setParameterDefaultValues();
         s2msiPrepOp.setSourceProduct(sourceProduct);
         final Product extendedSourceProduct = s2msiPrepOp.getTargetProduct();
 
-        setTargetProduct(extendedSourceProduct);    // first test break
+//        setTargetProduct(extendedSourceProduct);    // first test break  --> OK
 
-//        Map<String, Object> aotParams = new HashMap<>(4);
-//        aotParams.put("soilSpecId", soilSpecId);
-//        aotParams.put("vegSpecId", vegSpecId);
-//        aotParams.put("scale", scale);
-//        aotParams.put("ndviThreshold", ndviThr);
-//
+        Map<String, Object> aotParams = new HashMap<>(4);
+        aotParams.put("soilSpecId", soilSpecId);
+        aotParams.put("vegSpecId", vegSpecId);
+        aotParams.put("scale", scale);
+        aotParams.put("ndviThreshold", ndviThreshold);
+
 //        Product aotDownscaledProduct =
 //                GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolOp.class), aotParams, extendedSourceProduct, rhAot);
+        S2AerosolOp s2AerosolOp = new S2AerosolOp();
+        s2AerosolOp.setParameterDefaultValues();
+        s2AerosolOp.setSourceProduct(extendedSourceProduct);
+        s2AerosolOp.setParameter("pathToLut", pathToLut);
+        s2AerosolOp.setParameter("soilSpecId", soilSpecId);
+        s2AerosolOp.setParameter("vegSpecId", vegSpecId);
+        s2AerosolOp.setParameter("scale", scale);
+        s2AerosolOp.setParameter("ndviThreshold", ndviThreshold);
+        final Product aotDownscaledProduct = s2AerosolOp.getTargetProduct();
+
+        targetProduct = aotDownscaledProduct;
 //
 //        Product aotGapFilledProduct = aotDownscaledProduct;
 //        if (filling) {
@@ -128,7 +152,7 @@ public class S2AerosolRetrievalMasterOp extends Operator {
 
     private Product mergeToTargetProduct(Product reflProduct, Product aotOriginalResolutionProduct) {
         final String targetProductName = reflProduct.getName() + "_AOT";
-        final String targetProductType = reflProduct.getProductType() + " GlobAlbedo AOT";
+        final String targetProductType = reflProduct.getProductType() + " S2 MSI AOT";
         final int rasterWidth = reflProduct.getSceneRasterWidth();
         final int rasterHeight = reflProduct.getSceneRasterHeight();
 

@@ -6,9 +6,9 @@
 package org.esa.s2tbx.s2msi.aerosol.math;
 
 import org.esa.s2tbx.s2msi.aerosol.InputPixelData;
-import org.esa.s2tbx.s2msi.aerosol.lut.MomoLut;
+import org.esa.s2tbx.s2msi.aerosol.lut.S2LutUtils;
 import org.esa.snap.core.gpf.OperatorException;
-import org.esa.snap.core.util.Guardian;
+import org.esa.snap.core.util.math.LookupTable;
 
 /**
  *
@@ -25,29 +25,54 @@ public class BrentFitFunction implements Function {
 
     private final int model;
     private final InputPixelData[] inPixField;
-    private final MomoLut lut;
+//    private final MomoLut lut;
+    private final LookupTable s2Lut;
+    private final double[] aotGrid;
     private final double[] specWeights;
     private final double[] specSoil;
     private final double[] specVeg;
 
-    public BrentFitFunction(int modelType, InputPixelData[] inPixField, MomoLut lut, double[] specWeights) {
-        Guardian.assertEquals("modelType", modelType, ANGULAR_MODEL);
-        this.model = modelType;
-        this.inPixField = inPixField;
-        this.lut = lut;
-        this.specWeights = specWeights;
-        this.specSoil = null;
-        this.specVeg = null;
-    }
+//    public BrentFitFunction(int modelType, InputPixelData[] inPixField, MomoLut lut, double[] specWeights) {
+//        Guardian.assertEquals("modelType", modelType, ANGULAR_MODEL);
+//        this.model = modelType;
+//        this.inPixField = inPixField;
+//        this.lut = lut;
+//        this.specWeights = specWeights;
+//        this.specSoil = null;
+//        this.specVeg = null;
+//    }
 
-    public BrentFitFunction(int modelType, InputPixelData[] inPixField, MomoLut lut, double[] specWeights, double[] specSoil, double[] specVeg) {
+//    public BrentFitFunction(int modelType, InputPixelData[] inPixField, LookupTable lut, double[] aotGrid, double[] specWeights) {
+//        Guardian.assertEquals("modelType", modelType, ANGULAR_MODEL);
+//        this.model = modelType;
+//        this.inPixField = inPixField;
+//        this.s2Lut = lut;
+//        this.aotGrid = aotGrid;
+//        this.specWeights = specWeights;
+//        this.specSoil = null;
+//        this.specVeg = null;
+//    }
+
+
+//    public BrentFitFunction(int modelType, InputPixelData[] inPixField, MomoLut lut, double[] specWeights, double[] specSoil, double[] specVeg) {
+//        this.model = modelType;
+//        this.inPixField = inPixField;
+//        this.lut = lut;
+//        this.specWeights = specWeights;
+//        this.specSoil = specSoil;
+//        this.specVeg = specVeg;
+//    }
+
+    public BrentFitFunction(int modelType, InputPixelData[] inPixField, LookupTable lut, double[] aotGrid, double[] specWeights, double[] specSoil, double[] specVeg) {
         this.model = modelType;
         this.inPixField = inPixField;
-        this.lut = lut;
+        this.s2Lut = lut;
+        this.aotGrid = aotGrid;
         this.specWeights = specWeights;
         this.specSoil = specSoil;
         this.specVeg = specVeg;
     }
+
 
     @Override
     public synchronized double f(double tau) {
@@ -65,13 +90,15 @@ public class BrentFitFunction implements Function {
                 min = i;
             }
         }
-        return lut.getMaxAOT(inPixField[min]);
+//        return lut.getMaxAOT(inPixField[min]);
+        return S2LutUtils.getMaxAOT(inPixField[min], s2Lut, aotGrid);
     }
 
     //private methods
 
     private double fPix(double tau, InputPixelData inPixData){
-        lut.getSdrAndDiffuseFrac(inPixData, tau);
+//        lut.getSdrAndDiffuseFrac(inPixData, tau);
+        S2LutUtils.getSdrAndDiffuseFrac(inPixData, s2Lut, tau);    // todo
         double fmin = isSdrNegativ(inPixData.getSurfReflec());
 
         if ( !(fmin > 0) ) {

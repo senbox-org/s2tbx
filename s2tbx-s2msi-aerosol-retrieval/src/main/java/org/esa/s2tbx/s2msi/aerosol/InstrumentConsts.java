@@ -23,23 +23,30 @@ class InstrumentConsts {
     public static final String MSI_INSTRUMENT_NAME = "MSI";
 
     public static final String[] REFLEC_NAMES = S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES;
+
     public static final String[] GEOM_NAMES = {
             S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[0],
             S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[2],
             S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[1],
             S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[3]
     };
+
     public static final String IDEPIX_FLAG_BAND_NAME = "pixel_classif_flags";
-    public static final String VALID_RETRIEVAL_EXPRESSION = "(!l1_flags.INVALID "
-            + " &&  " + IDEPIX_FLAG_BAND_NAME + ".F_LAND "
+
+    public static final String VALID_RETRIEVAL_EXPRESSION =
+                        IDEPIX_FLAG_BAND_NAME + ".F_LAND "
             + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_SNOW_ICE "
             + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_CLOUD "   // ???
             + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_CLOUD_BUFFER "   // ???
             + " && (" + S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[0] + "<70))";
-    public static final String VALID_AOT_OUT_EXPRESSION = "(!l1_flags.INVALID "
-            + " &&  " + IDEPIX_FLAG_BAND_NAME + ".F_LAND "
-//                + " && (!" + idepixFlagBandName + ".F_CLOUD_BUFFER || " + idepixFlagBandName + ".F_SNOW_ICE)"
+
+    public static final String VALID_AOT_OUT_EXPRESSION =
+                    IDEPIX_FLAG_BAND_NAME + ".F_LAND "
+            + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_SNOW_ICE "
+            + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_CLOUD "   // ???
+            + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_CLOUD_BUFFER "   // ???
             + " && (" + S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[0] + "<70))";
+
     public static final String SURFACE_PRESSURE_NAME = "surfPressEstimate";
     public static final String OZONE_NAME = "ozone";
     public static final String NDVI_NAME = "toaNdvi";

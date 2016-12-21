@@ -3,6 +3,8 @@ package org.esa.s2tbx.s2msi.aerosol;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.aerosol.lut.Luts;
 import org.esa.s2tbx.s2msi.aerosol.lut.MomoLut;
+import org.esa.s2tbx.s2msi.aerosol.lut.S2LutAccessor;
+import org.esa.s2tbx.s2msi.aerosol.lut.S2LutUtils;
 import org.esa.s2tbx.s2msi.aerosol.math.BrentFitFunction;
 import org.esa.s2tbx.s2msi.aerosol.util.AerosolUtils;
 import org.esa.s2tbx.s2msi.aerosol.util.PixelGeometry;
@@ -15,14 +17,13 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.Guardian;
+import org.esa.snap.core.util.math.LookupTable;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.BorderExtender;
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,8 +43,13 @@ public class S2AerosolOp extends Operator {
 
     @SourceProduct
     private Product sourceProduct;
+
     @TargetProduct
     private Product targetProduct;
+
+    @Parameter(description = "Full path to S2 Lookup Table.",
+            label = "Path to S2 Lookup Table")
+    private String pathToLut;
 
     // todo: define what we need from this
     private String surfaceSpecName = "surface_reflectance_spec.asc";
@@ -53,7 +59,7 @@ public class S2AerosolOp extends Operator {
     @Parameter(defaultValue = "1")
     private int soilSpecId;
 
-    @Parameter(defaultValue = "9")
+    @Parameter(defaultValue = "50")
     private int scale;
 
     @Parameter(defaultValue = "0.2")
@@ -75,6 +81,8 @@ public class S2AerosolOp extends Operator {
     private double[] specWeights;
 
     private MomoLut momo;
+    private LookupTable s2Lut;
+    private double[] aotGrid;
 
     private BorderExtender borderExt;
     private Rectangle pixelWindow;
@@ -130,7 +138,8 @@ public class S2AerosolOp extends Operator {
         sourceNoDataValues.putAll(getSourceNoDataValues(auxBandNames));
 
         try {
-            createMomoLookupTable();
+//            createMomoLookupTable();
+            createS2LookupTable();
         } catch (IOException e) {
             throw new OperatorException("Failed to read LUTs. " + e.getMessage(), e);
         }
@@ -151,8 +160,9 @@ public class S2AerosolOp extends Operator {
             return;
         }
 
-        Map<String, Tile> sourceTiles = getSourceTiles(InstrumentConsts.GEOM_NAMES, srcRec, borderExt);
+        Map<String, Tile> sourceTiles = new HashMap<>();
         sourceTiles.putAll(getSourceTiles(InstrumentConsts.REFLEC_NAMES, srcRec, borderExt));
+        sourceTiles.putAll(getSourceTiles(InstrumentConsts.GEOM_NAMES, srcRec, borderExt));
         sourceTiles.putAll(getSourceTiles(auxBandNames, srcRec, borderExt));
 
         int x0 = (int) targetRectangle.getX();
@@ -175,7 +185,8 @@ public class S2AerosolOp extends Operator {
         BrentFitFunction brentFitFunction = null;
         InputPixelData[] inPixField = readDarkestNPixels(sourceTiles, iX, iY, pixelWindow);
         if (inPixField != null) {
-            brentFitFunction = new BrentFitFunction(BrentFitFunction.SPECTRAL_MODEL, inPixField, momo, specWeights, soilSurfSpec, vegSurfSpec);
+//            brentFitFunction = new BrentFitFunction(BrentFitFunction.SPECTRAL_MODEL, inPixField, momo, specWeights, soilSurfSpec, vegSurfSpec);
+            brentFitFunction = new BrentFitFunction(BrentFitFunction.SPECTRAL_MODEL, inPixField, s2Lut, aotGrid, specWeights, soilSurfSpec, vegSurfSpec);
         }
         retrieveAndSetTarget(inPixField, brentFitFunction, targetTiles, iX, iY);
     }
@@ -205,9 +216,9 @@ public class S2AerosolOp extends Operator {
         PixelGeometry geomFward;
         double[][] toaRefl = new double[2][nSpecWvl];
         int skip = 0;
-            geomNadir = new PixelGeometry(tileValues[0], tileValues[1], tileValues[2], tileValues[3]);
-            geomFward = geomNadir;
-            skip += 4;
+        geomNadir = new PixelGeometry(tileValues[0], tileValues[1], tileValues[2], tileValues[3]);
+        geomFward = geomNadir;
+        skip += 4;
         for (int i = 0; i < nSpecWvl; i++) {
             toaRefl[0][i] = tileValues[skip + i];
             toaRefl[1][i] = tileValues[skip + i];
@@ -269,7 +280,7 @@ public class S2AerosolOp extends Operator {
     }
 
     private Map<String, Tile> getSourceTiles(String[] bandNames, Rectangle srcRec, BorderExtender borderExt) {
-        Map<String, Tile> tileMap = new HashMap<String, Tile>(bandNames.length);
+        Map<String, Tile> tileMap = new HashMap<>(bandNames.length);
         for (String name : bandNames) {
             RasterDataNode b = (name.equals(validName)) ? validBand : sourceProduct.getRasterDataNode(name);
             tileMap.put(name, getSourceTile(b, srcRec, borderExt));
@@ -278,7 +289,7 @@ public class S2AerosolOp extends Operator {
     }
 
     private Map<String, Double> getSourceNoDataValues(String[] bandNames) {
-        Map<String, Double> noDataMap = new HashMap<String, Double>(bandNames.length);
+        Map<String, Double> noDataMap = new HashMap<>(bandNames.length);
         for (String name : bandNames) {
             RasterDataNode b = (name.equals(validName)) ? validBand : sourceProduct.getRasterDataNode(name);
             noDataMap.put(name, b.getGeophysicalNoDataValue());
@@ -313,7 +324,8 @@ public class S2AerosolOp extends Operator {
         if (nAve > 0.95 * pixelWindow.width * pixelWindow.height) {
             for (int i = 0; i < sumVal.length; i++) sumVal[i] /= nAve;
             InputPixelData ipd = createInPixelData(sumVal);
-            if (momo.isInsideLut(ipd)) {
+//            if (momo.isInsideLut(ipd)) {
+            if (S2LutUtils.isInsideLut(ipd, s2Lut)) {
                 inPixField = new InputPixelData[]{ipd};
             }
         }
@@ -357,7 +369,8 @@ public class S2AerosolOp extends Operator {
                             && (ndvi <= ndviArr[ndviArr.length - 1 - NPixel])) {
                         valid = valid && readAllValues(x, y, sourceTiles, tileValues);
                         InputPixelData ipd = createInPixelData(tileValues);
-                        if (valid && momo.isInsideLut(ipd)) {
+//                        if (valid && momo.isInsideLut(ipd)) {
+                        if (valid && S2LutUtils.isInsideLut(ipd, s2Lut)) {
                             inPixelList.add(ipd);
                         }
                     }
@@ -469,13 +482,30 @@ public class S2AerosolOp extends Operator {
         }
     }
 
-    private void createMomoLookupTable() throws IOException {
-        // todo: Scientists to provide LUTs for S2 MSI !!!
-        final String lutInstrument = InstrumentConsts.MSI_INSTRUMENT_NAME;
-        ImageInputStream aotIis = Luts.getAotLutData(lutInstrument);
-        ImageInputStream gasIis = Luts.getCwvLutData(lutInstrument);
-        momo = new MomoLut(aotIis, gasIis, InstrumentConsts.N_LUT_BANDS);
+    private void createS2LookupTable() throws IOException {
+        File lutFile;
+        URL lutResource;
+        if (pathToLut != null && (new File(pathToLut)).exists()) {
+            lutFile = new File(pathToLut);
+        } else if ((lutResource = S2LutAccessor.class.getResource("sentinel-2a_lut_smsi_v0.6.memmap.d")) != null) {
+            // search in resources as backup
+            lutFile = new File(lutResource.getPath());
+        } else {
+            throw new IOException("");
+        }
+
+        S2LutAccessor s2LutAccessor = new S2LutAccessor(lutFile);
+        s2Lut = s2LutAccessor.readLut(ProgressMonitor.NULL);
+        aotGrid = s2Lut.getDimension(1).getSequence();
     }
+
+//    private void createMomoLookupTable() throws IOException {
+//        // todo: Scientists to provide LUTs for S2 MSI !!!
+//        final String lutInstrument = InstrumentConsts.MSI_INSTRUMENT_NAME;
+//        ImageInputStream aotIis = Luts.getAotLutData(lutInstrument);
+//        ImageInputStream gasIis = Luts.getCwvLutData(lutInstrument);
+//        momo = new MomoLut(aotIis, gasIis, InstrumentConsts.N_LUT_BANDS);
+//    }
 
     private float[][] getSpectralWvl(String[] bandNames) {
         float[][] wvl = new float[2][bandNames.length];
