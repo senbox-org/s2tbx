@@ -198,7 +198,7 @@ public class SAFENamingConvention implements INamingConvention{
     public SAFENamingConvention(VirtualPath input){
         String inputName = input.getFileName().toString();
 
-        if(/*Files.isDirectory(input)*/input.isDirectory()) {
+        if(input.isDirectory()) {
             inputDirPath = input;
             Pattern pattern = Pattern.compile(PRODUCT_REGEX);
             if (pattern.matcher(inputName).matches()) {

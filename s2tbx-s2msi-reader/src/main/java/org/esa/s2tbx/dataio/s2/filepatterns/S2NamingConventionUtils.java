@@ -301,10 +301,10 @@ public class S2NamingConventionUtils {
             if(virtualDirEx.exists(folderName)) {
                 virtualPath = new VirtualPath(folderName, virtualDirEx);
             } else {
-                virtualPath = new VirtualPath("", virtualDirEx);
+                virtualPath = new VirtualPath(".", virtualDirEx);
             }
         } else {
-            virtualPath = new VirtualPath(path,null);
+            virtualPath = new VirtualPath(path);
         }
         return virtualPath;
     }

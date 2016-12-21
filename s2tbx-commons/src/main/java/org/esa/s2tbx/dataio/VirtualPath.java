@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio;
 
 //import com.bc.ceres.core.VirtualDir;
+import com.bc.ceres.core.VirtualDir;
 import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.snap.core.util.SystemUtils;
 
@@ -57,14 +58,14 @@ public class VirtualPath implements Path {
             if (path != null) {
                 this.path = path;
             } else {
-                this.path = Paths.get("");
+                this.path = Paths.get(".");
             }
             separator = File.separator;
         } else {
             if (path != null) {
                 this.path = fsys.getPath(Paths.get(path.toString()).toString());
             } else {
-                this.path = Paths.get("");
+                this.path = Paths.get(".");
             }
             separator = fsys.getSeparator();
         }
@@ -73,7 +74,15 @@ public class VirtualPath implements Path {
     }
 
     public VirtualPath(String stringPath, VirtualDirEx dir) {
-        this(Paths.get(stringPath),dir);
+        this(Paths.get(stringPath), dir);
+    }
+
+    public VirtualPath(Path path) {
+        this(path, null);
+    }
+
+    public VirtualPath(String stringPath) {
+        this(stringPath, null);
     }
 
     public VirtualDirEx getVirtualDir() {
@@ -122,15 +131,44 @@ public class VirtualPath implements Path {
     @Override
     public Path getFileName() {
         Path name = path.getFileName();
-        if(name != null) {
+        if(name != null && !name.toString().equals(".")) {
             return name;
         }
+        if(name != null && name.equals(".")) {
+            return this.getParent().getFileName();
+        }
+
         return Paths.get(getVirtualDir().getBasePath()).getFileName();
     }
 
     @Override
     public VirtualPath getParent() {
-        if(path.getFileName() == null || path.getFileName().toString().equals("") || path.getParent() == null)
+        Path normalizedPath = path.normalize();
+        if(normalizedPath.getParent() != null) {
+            return new VirtualPath(normalizedPath.getParent(), this.dir);
+        }
+
+        if(normalizedPath.getNameCount() == 1) {
+            return new VirtualPath(".", this.dir);
+        }
+
+        if(normalizedPath.getNameCount() == 0) {
+            if(VirtualDirEx.isPackedFile(new File(dir.getBasePath())) || dir.isCompressed()) {
+                return null;
+            } else {
+                //It is possible in this case to change the VirtualDir
+                Path dirPath = Paths.get(this.dir.getBasePath());
+                VirtualPath parent = new VirtualPath(dirPath.getFileName(),VirtualDirEx.create(dirPath.getParent().toFile()));
+                return parent;
+            }
+        }
+        return null;
+
+
+
+
+
+        /*if(path.getFileName() == null || path.getFileName().toString().equals("") || path.getParent() == null)
         {
             //TODO check if do this or not
             //if parent is null get parent the virtual dir
@@ -141,7 +179,7 @@ public class VirtualPath implements Path {
         }
 
         VirtualPath parent = new VirtualPath(path.getParent(), this.dir);
-        return parent;
+        return parent;*/
     }
 
     @Override
@@ -189,21 +227,33 @@ public class VirtualPath implements Path {
 
     @Override
     public VirtualPath resolve(Path other) {
+        if(path.getFileName().toString().equals(".")) {
+            return new VirtualPath(path.resolveSibling(other),this.dir);
+        }
         return new VirtualPath(path.resolve(other),this.dir);
     }
 
     @Override
     public VirtualPath resolve(String other) {
+        if(path.getFileName().toString().equals(".")) {
+            return new VirtualPath(path.resolveSibling(other),this.dir);
+        }
         return new VirtualPath(path.resolve(other),this.dir);
     }
 
     @Override
     public VirtualPath resolveSibling(Path other) {
+        if(path.getFileName().toString().equals(".")) {
+            return new VirtualPath(path.normalize().resolveSibling(other),this.dir);
+        }
         return new VirtualPath(path.resolveSibling(other),this.dir);
     }
 
     @Override
     public VirtualPath resolveSibling(String other) {
+        if(path.getFileName().toString().equals(".")) {
+            return new VirtualPath(path.normalize().resolveSibling(other),this.dir);
+        }
         return new VirtualPath(path.resolveSibling(other),this.dir);
     }
 
@@ -393,6 +443,9 @@ public class VirtualPath implements Path {
     public boolean exists() {
         if(dir == null) {
             return Files.exists(path);
+        }
+        if(path == null || path.getNameCount() == 0 || path.getNameCount() == 1 && path.toString().equals(".")) {
+            return Files.exists(Paths.get(dir.getBasePath().toString()));
         }
         return dir.exists(path.toString().replace(FileSystems.getDefault().getSeparator(),separator));
     }

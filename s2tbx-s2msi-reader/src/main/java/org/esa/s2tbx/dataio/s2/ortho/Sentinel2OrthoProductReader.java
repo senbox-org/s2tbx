@@ -1250,7 +1250,11 @@ public abstract class Sentinel2OrthoProductReader extends Sentinel2ProductReader
                     new Rectangle(bandDimensionLevel0.width, bandDimensionLevel0.height),
                     bandScene.getModel().getScale(0));
             int[] bandOffsets = {0};
-            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(DataBuffer.TYPE_SHORT, bandRectangle.width, bandRectangle.height);
+            int dataType = DataBuffer.TYPE_SHORT;
+            if(bandInfo.getImageLayout().dataType != 0) {
+                dataType = bandInfo.getImageLayout().dataType;
+            }
+            SampleModel sampleModel = ImageUtils.createSingleBandedSampleModel(/*DataBuffer.TYPE_SHORT*/dataType, bandRectangle.width, bandRectangle.height);
             //ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             //ColorModel colorModel = new ComponentColorModel(colorSpace, false, false, Transparency.OPAQUE, TYPE_SHORT);
             ImageLayout layout = new ImageLayout(0, 0,bandRectangle.width, bandRectangle.height, 0, 0, S2Config.DEFAULT_JAI_TILE_SIZE, S2Config.DEFAULT_JAI_TILE_SIZE, sampleModel,/*colorModel*/null);

@@ -63,6 +63,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     private S2Config config;
     private File cacheDir;
     private Product product;
+    VirtualPath inputPath;
 
     protected INamingConvention namingConvention;
 
@@ -157,7 +158,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             throw new IOException("Unhandled file type.");
         }
 
-        VirtualPath inputPath = namingConvention.getInputXml();
+        inputPath = namingConvention.getInputXml();
 
         if (!inputPath.exists()) {
             throw new FileNotFoundException(inputPath.getFullPathString());
@@ -166,8 +167,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         if (namingConvention.hasValidStructure()) {
             product = getMosaicProduct(inputPath);
 
-            //addQuicklook(product, getQuicklookFile(/*inputFile*/null));//TODO
-
+            addQuicklook(product, getQuicklookFile(inputPath));
             if (product != null) {
                 product.setModified(false);
             }
@@ -184,8 +184,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
     }
 
-    private File getQuicklookFile(final File metadataFile) {
-        File[] files = metadataFile.getParentFile().listFiles(new FilenameFilter() {
+    private File getQuicklookFile(final VirtualPath metadataPath) {
+        /*File[] files = metadataFile.getParentFile().listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.endsWith(".png") && (name.startsWith("S2") || name.startsWith("BWI_"));
             }
@@ -193,6 +193,25 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         if (files != null && files.length > 0) {
             return files[0];
         }
+        return null;*/
+
+        String[] files = null;
+        try {
+            files = metadataPath.getParent().list();
+        } catch (IOException e) {
+            return null;
+        }
+
+        if(files == null || files.length == 0) {
+            return null;
+        }
+
+        for(String file : files) {
+            if(file.endsWith(".png") && (file.startsWith("S2") || file.startsWith("BWI_"))) {
+                return metadataPath.resolveSibling(file).toFile();
+            }
+        }
+
         return null;
     }
 
@@ -254,8 +273,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         TileLayout tileLayoutForResolution = null;
 
         if (productMetadataFilePath.exists() && productMetadataFilePath.getFileName().toString().endsWith(".xml")) {
-            VirtualPath productFolder = productMetadataFilePath.getParent();
-            VirtualPath granulesFolder = productFolder.resolve("GRANULE");
+            //VirtualPath productFolder = productMetadataFilePath.getParent();
+            VirtualPath granulesFolder = productMetadataFilePath.resolveSibling("GRANULE");
             try {
                 VirtualPath[] granulesFolderList = granulesFolder.listPaths();
 
@@ -297,7 +316,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             for (VirtualPath imageFilePath : getImageDirectories(pathToImages, resolution)) {
                 try {
                     tileLayoutForResolution =
-                            OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath.getFile().toPath()); //TODO cambiar xa q no descomprima
+                            OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath.getFile().toPath());
                     if (tileLayoutForResolution != null) {
                         break;
                     }
@@ -435,6 +454,9 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                     sourceImage = null;
                 }
             }
+        }
+        if(inputPath != null) {
+            inputPath.getVirtualDir().close();
         }
         super.close();
     }
