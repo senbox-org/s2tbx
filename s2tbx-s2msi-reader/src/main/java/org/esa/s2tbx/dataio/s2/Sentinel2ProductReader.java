@@ -456,7 +456,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             }
         }
         if(inputPath != null) {
-            inputPath.getVirtualDir().close();
+            inputPath.close();
         }
         super.close();
     }

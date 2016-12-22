@@ -55,14 +55,14 @@ public class VirtualPath implements Path {
         }
 
         if(fsys == null) {
-            if (path != null) {
+            if (path != null && !path.toString().equals("")) {
                 this.path = path;
             } else {
                 this.path = Paths.get(".");
             }
             separator = File.separator;
         } else {
-            if (path != null) {
+            if (path != null && !path.toString().equals("")) {
                 this.path = fsys.getPath(Paths.get(path.toString()).toString());
             } else {
                 this.path = Paths.get(".");
@@ -148,11 +148,11 @@ public class VirtualPath implements Path {
             return new VirtualPath(normalizedPath.getParent(), this.dir);
         }
 
-        if(normalizedPath.getNameCount() == 1) {
+        if(normalizedPath.getNameCount() == 1 && !normalizedPath.toString().equals("")) {
             return new VirtualPath(".", this.dir);
         }
 
-        if(normalizedPath.getNameCount() == 0) {
+        if(normalizedPath.getNameCount() == 0 || normalizedPath.toString().equals("")) {
             if(VirtualDirEx.isPackedFile(new File(dir.getBasePath())) || dir.isCompressed()) {
                 return null;
             } else {
@@ -498,4 +498,10 @@ public class VirtualPath implements Path {
         }
         return virtualPath;
     }*/
+
+    public void close() {
+        if(dir != null) {
+            dir.close();
+        }
+    }
 }
