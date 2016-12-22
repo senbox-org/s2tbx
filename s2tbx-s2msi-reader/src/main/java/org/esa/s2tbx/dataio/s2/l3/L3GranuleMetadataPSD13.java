@@ -81,7 +81,6 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setPsd(S2Metadata.getPSD(path));
         //DatatakeSensingStart is not in the metadata, but is it needed for the image templates in level3??. We read it from the file system
-        //TODO review
         VirtualPath folder = path.resolveSibling("IMG_DATA");
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");

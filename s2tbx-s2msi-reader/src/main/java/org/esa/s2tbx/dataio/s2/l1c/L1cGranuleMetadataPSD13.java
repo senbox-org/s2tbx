@@ -56,7 +56,7 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
         InputStream stream = null;
         try {
             if (path.exists()) {
-                stream = /*Files.newInputStream(path, StandardOpenOption.READ)*/path.getInputStream();
+                stream = path.getInputStream();
                 L1cGranuleMetadataPSD13Parser parser = new L1cGranuleMetadataPSD13Parser(L1cGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.updateName();
@@ -213,7 +213,6 @@ public class L1cGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1cG
 
             VirtualPath QIData = path.resolveSibling("QI_DATA");
             VirtualPath GmlData = QIData.resolve(filenameProcessed);
-            //File GmlData = new File(QIData.toFile(), filenameProcessed);
 
             aMaskList.add(new S2Metadata.MaskFilename(getAttributeSiblingValue(L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_FILENAME, maskFilename,
                                                                                 L1cPSD13Constants.PATH_GRANULE_METADATA_MASK_BAND, null),

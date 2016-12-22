@@ -107,7 +107,7 @@ public class L1bMetadata extends S2Metadata {
 
 
         //Init Tiles
-        for (VirtualPath granuleMetadataPath : /*fullTileNamesList*/granuleMetadataPathList) {
+        for (VirtualPath granuleMetadataPath : granuleMetadataPathList) {
             initTile(granuleMetadataPath, namingConvention);
         }
     }

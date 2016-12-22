@@ -68,13 +68,6 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
 
     @Override
     protected ArrayList<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution spatialResolution) throws IOException {
-       /* String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
-        Path pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
-
-        return Files.newDirectoryStream(pathToImagesOfResolution, entry -> {
-            return entry.toString().endsWith("_" + spatialResolution.resolution + "m.jp2");
-        });*/
-
         ArrayList<VirtualPath> imageDirectories = new ArrayList<>();
         String resolutionFolder = "R" + Integer.toString(spatialResolution.resolution) + "m";
         VirtualPath pathToImagesOfResolution = pathToImages.resolve(resolutionFolder);
@@ -88,7 +81,6 @@ public class Sentinel2L3ProductReader  extends Sentinel2OrthoProductReader {
                 imageDirectories.add(imagePath);
             }
         }
-
 
         return imageDirectories;
     }

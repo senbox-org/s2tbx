@@ -60,12 +60,6 @@ public class S2ProductCRSCache {
                     epsgCodeList.addAll(namingConvention.getEPSGList());
                 }
             }
-
-            /*inputType = S2ProductNamingManager.getInputType(path);
-            if(inputType == null) return;
-            level = S2ProductNamingManager.getLevel(path,inputType);
-            if(level == S2Config.Sentinel2ProductLevel.UNKNOWN) return;
-            epsgCodeList.addAll(S2ProductNamingManager.getEpsgCodeList(path,inputType));*/
         }
 
 

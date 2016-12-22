@@ -185,16 +185,6 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     }
 
     private File getQuicklookFile(final VirtualPath metadataPath) {
-        /*File[] files = metadataFile.getParentFile().listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".png") && (name.startsWith("S2") || name.startsWith("BWI_"));
-            }
-        });
-        if (files != null && files.length > 0) {
-            return files[0];
-        }
-        return null;*/
-
         String[] files = null;
         try {
             files = metadataPath.getParent().list();

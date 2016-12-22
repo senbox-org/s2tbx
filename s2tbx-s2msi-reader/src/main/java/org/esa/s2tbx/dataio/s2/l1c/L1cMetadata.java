@@ -158,7 +158,6 @@ public class L1cMetadata extends S2Metadata {
             tile.setViewingIncidenceAnglesGrids(granuleMetadata.getViewingAnglesGrid());
         }
 
-        //granuleMetadata.getMasks(path);
         tile.setMaskFilenames(granuleMetadata.getMasks(path));
 
         addTileToList(tile);

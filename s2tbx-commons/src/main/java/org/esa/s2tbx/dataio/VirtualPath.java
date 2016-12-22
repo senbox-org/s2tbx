@@ -163,23 +163,6 @@ public class VirtualPath implements Path {
             }
         }
         return null;
-
-
-
-
-
-        /*if(path.getFileName() == null || path.getFileName().toString().equals("") || path.getParent() == null)
-        {
-            //TODO check if do this or not
-            //if parent is null get parent the virtual dir
-            Path dirPath = Paths.get(this.dir.getBasePath());
-            VirtualPath parent = new VirtualPath(dirPath.getFileName(),VirtualDirEx.create(dirPath.getParent().toFile()));
-            return parent;
-            //TODO update separator
-        }
-
-        VirtualPath parent = new VirtualPath(path.getParent(), this.dir);
-        return parent;*/
     }
 
     @Override
@@ -457,48 +440,7 @@ public class VirtualPath implements Path {
             return path.toString();
         }
     }
-
-    /*public static VirtualPath transformToVirtualPath (Path path) {
-        VirtualPath virtualPath;
-        if(path.toString().endsWith(".zip") ) {
-            String folderName = path.getFileName().toString();
-            folderName = folderName.substring(0,folderName.lastIndexOf(".zip"));
-            if(!folderName.endsWith(".SAFE")) {
-                folderName = folderName +".SAFE";
-            }
-            //check if a folder with the same name exist
-            VirtualDir dir = VirtualDir.create(path.toFile());
-            if(dir.exists(folderName)) {
-                virtualPath = new VirtualPath(folderName, VirtualDir.create(path.toFile()));
-            } else {
-                virtualPath = new VirtualPath("", VirtualDir.create(path.toFile()));
-            }
-        } else {
-            virtualPath = new VirtualPath(path,null);
-        }
-        return virtualPath;
-    }
-
-    public static VirtualPath transformToSentinel2VirtualPath (Path path) {
-        VirtualPath virtualPath;
-
-        if(VirtualDirEx.isPackedFile(path.toFile())) {
-            VirtualDirEx virtualDirEx = VirtualDirEx.create(path.toFile());
-            String folderName = PathUtils.getFileNameWithoutExtension(path);
-            if(!folderName.endsWith(".SAFE")) {
-                folderName = folderName +".SAFE";
-            }
-            if(virtualDirEx.exists(folderName)) {
-                virtualPath = new VirtualPath(folderName, virtualDirEx);
-            } else {
-                virtualPath = new VirtualPath("", virtualDirEx);
-            }
-        } else {
-            virtualPath = new VirtualPath(path,null);
-        }
-        return virtualPath;
-    }*/
-
+    
     public void close() {
         if(dir != null) {
             dir.close();

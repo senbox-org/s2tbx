@@ -16,22 +16,10 @@ public class NamingConventionFactory {
     /**
      * Checks the different NamingConventions and returns an instance to the first that matches().
      * It is obtained by using exclusively the REGEX, the metadata file is not open to get the format.
-     * @param path
+     * @param virtualPath
      * @return appropriated naming convention or null
      */
     public static INamingConvention createNamingConvention(VirtualPath virtualPath)  {
-
-        /*
-        VirtualPath virtualPath;
-        if(path.toString().endsWith(".zip")) {
-            //compute relative path.
-            //TODO, currently it supports only if there is a folder with the same name inside the zip
-            String folderName = path.getFileName().toString();
-            folderName = folderName.substring(0,folderName.lastIndexOf(".zip"));
-            virtualPath = new VirtualPath(folderName, VirtualDir.create(path.toFile()));
-        } else {
-            virtualPath = new VirtualPath(path,null);
-        }*/
 
 
         L1BNamingConvention l1bConvention = new L1BNamingConvention(virtualPath);

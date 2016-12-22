@@ -364,7 +364,7 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
 
         } else {
             //TODO remove extension
-            product = new Product(/*FileUtils.getFilenameWithoutExtension(productMetadataFile)*/productMetadataPath.getFileName().toString(),
+            product = new Product(productMetadataPath.getFileName().toString(),
                                   "S2_MSI_" + productCharacteristics.getProcessingLevel());
         }
 
@@ -459,14 +459,9 @@ public class Sentinel2L1BProductReader extends Sentinel2ProductReader {
     }
 
     static VirtualPath getProductDir(VirtualPath productPath) throws IOException {
-
         if (!productPath.exists()) {
             throw new FileNotFoundException("File not found: " + productPath.getFullPathString());
         }
-
-        //if (productPath.getParent() == null) {
-        //    return new File(".").getCanonicalFile();
-        //}
 
         return productPath.getParent();
     }
