@@ -10,9 +10,9 @@ package org.esa.s2tbx.s2msi.aerosol.util;
  * @author akheckel
  */
 public class PixelGeometry {
-    public final float sza;
-    public final float vza;
-    public final float razi;
+    public float sza;
+    public float vza;
+    public float razi;
 
     public PixelGeometry(double sza, double saa, double vza, double vaa) {
         this.sza = (float) sza;
@@ -26,4 +26,27 @@ public class PixelGeometry {
         return relAzi;
     }
 
+    public float getSza() {
+        return sza;
+    }
+
+    public void setSza(float sza) {
+        this.sza = sza;
+    }
+
+    public float getVza() {
+        return vza;
+    }
+
+    public void setVza(float vza) {
+        this.vza = vza;
+    }
+
+    public float getRazi() {
+        return razi;
+    }
+
+    public void setRazi(float razi) {
+        this.razi = razi;
+    }
 }

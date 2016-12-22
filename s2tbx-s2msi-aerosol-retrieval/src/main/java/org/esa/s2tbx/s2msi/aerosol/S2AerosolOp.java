@@ -1,13 +1,12 @@
 package org.esa.s2tbx.s2msi.aerosol;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.s2msi.aerosol.lut.Luts;
-import org.esa.s2tbx.s2msi.aerosol.lut.MomoLut;
 import org.esa.s2tbx.s2msi.aerosol.lut.S2LutAccessor;
 import org.esa.s2tbx.s2msi.aerosol.lut.S2LutUtils;
 import org.esa.s2tbx.s2msi.aerosol.math.BrentFitFunction;
 import org.esa.s2tbx.s2msi.aerosol.util.AerosolUtils;
 import org.esa.s2tbx.s2msi.aerosol.util.PixelGeometry;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
@@ -19,15 +18,12 @@ import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.math.LookupTable;
 
-import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.BorderExtender;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,18 +49,17 @@ public class S2AerosolOp extends Operator {
 
     // todo: define what we need from this
     private String surfaceSpecName = "surface_reflectance_spec.asc";
-    @Parameter(defaultValue = "2")
-    private int vegSpecId;
 
-    @Parameter(defaultValue = "1")
-    private int soilSpecId;
+//    @Parameter(defaultValue = "2")
+//    private int vegSpecId;
+    private int vegSpecId = 2;
 
-    @Parameter(defaultValue = "50")
+//    @Parameter(defaultValue = "1")
+//    private int soilSpecId;
+    private int soilSpecId = 1;
+
+    @Parameter(defaultValue = "20")
     private int scale;
-
-    @Parameter(defaultValue = "0.2")
-    private float ndviThreshold;
-
 
     private String productName;
     private String productType;
@@ -80,7 +75,6 @@ public class S2AerosolOp extends Operator {
     private double[] vegSurfSpec;
     private double[] specWeights;
 
-    private MomoLut momo;
     private LookupTable s2Lut;
     private double[] aotGrid;
 
@@ -91,18 +85,19 @@ public class S2AerosolOp extends Operator {
     private Band aotBand;
     private Band aotErrorBand;
     private Band latBand;
-
-
-    private boolean addFitBands = false;
-    private Map<String, Double> sourceNoDataValues;
+    private Band lonBand;
 
     private String validName;
     private String[] auxBandNames;
+
+    private double julianDay;
 
     @Override
     public void initialize() throws OperatorException {
         productName = sourceProduct.getName() + "_AOT";
         productType = sourceProduct.getProductType() + "_AOT";
+
+        julianDay = sourceProduct.getStartTime().getMJD();
 
         initRasterDimensions(sourceProduct, scale);
 
@@ -112,14 +107,14 @@ public class S2AerosolOp extends Operator {
 
         auxBandNames = new String[]{
                 InstrumentConsts.SURFACE_PRESSURE_NAME,
-                InstrumentConsts.OZONE_NAME,
-                validName,
-                InstrumentConsts.NDVI_NAME
+                InstrumentConsts.ELEVATION_NAME,
+                validName
         };
 
         specWeights = AerosolUtils.normalize(InstrumentConsts.FIT_WEIGHTS);
         specWvl = getSpectralWvl(InstrumentConsts.REFLEC_NAMES);
         nSpecWvl = specWvl[0].length;
+
         readSurfaceSpectra(surfaceSpecName);
 
         // in the source product we have:
@@ -129,16 +124,7 @@ public class S2AerosolOp extends Operator {
         // - elevation
         // - surfPressEstimate
 
-        if (!sourceProduct.containsBand(InstrumentConsts.NDVI_NAME)) {
-            createNdviBand();
-        }
-
-        sourceNoDataValues = getSourceNoDataValues(InstrumentConsts.GEOM_NAMES);
-        sourceNoDataValues.putAll(getSourceNoDataValues(InstrumentConsts.REFLEC_NAMES));
-        sourceNoDataValues.putAll(getSourceNoDataValues(auxBandNames));
-
         try {
-//            createMomoLookupTable();
             createS2LookupTable();
         } catch (IOException e) {
             throw new OperatorException("Failed to read LUTs. " + e.getMessage(), e);
@@ -165,15 +151,13 @@ public class S2AerosolOp extends Operator {
         sourceTiles.putAll(getSourceTiles(InstrumentConsts.GEOM_NAMES, srcRec, borderExt));
         sourceTiles.putAll(getSourceTiles(auxBandNames, srcRec, borderExt));
 
-        int x0 = (int) targetRectangle.getX();
-        int y0 = (int) targetRectangle.getY();
-        int width = (int) targetRectangle.getWidth() + x0 - 1;
-        int height = (int) targetRectangle.getHeight() + y0 - 1;
-
-        for (int iY = y0; iY <= height; iY++) {
+        for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
             checkForCancellation();
-            for (int iX = x0; iX <= width; iX++) {
-                processSuperPixel(sourceTiles, iX, iY, targetTiles);
+            for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
+                if (x == 0) {
+//                    System.out.println("x = " + x);
+                }
+                processSuperPixel(sourceTiles, x, y, targetTiles);
             }
             pm.worked(1);
         }
@@ -185,23 +169,32 @@ public class S2AerosolOp extends Operator {
         BrentFitFunction brentFitFunction = null;
         InputPixelData[] inPixField = readDarkestNPixels(sourceTiles, iX, iY, pixelWindow);
         if (inPixField != null) {
-//            brentFitFunction = new BrentFitFunction(BrentFitFunction.SPECTRAL_MODEL, inPixField, momo, specWeights, soilSurfSpec, vegSurfSpec);
-            brentFitFunction = new BrentFitFunction(BrentFitFunction.SPECTRAL_MODEL, inPixField, s2Lut, aotGrid, specWeights, soilSurfSpec, vegSurfSpec);
+            brentFitFunction = new BrentFitFunction(BrentFitFunction.SPECTRAL_MODEL,
+                                                    inPixField,
+                                                    s2Lut,
+                                                    julianDay,
+                                                    aotGrid,
+                                                    specWeights,
+                                                    soilSurfSpec,
+                                                    vegSurfSpec);
         }
         retrieveAndSetTarget(inPixField, brentFitFunction, targetTiles, iX, iY);
     }
 
-    private void retrieveAndSetTarget(InputPixelData[] inPixField, BrentFitFunction brentFitFunction, Map<Band, Tile> targetTiles, int iX, int iY) {
+    private void retrieveAndSetTarget(InputPixelData[] inPixField,
+                                      BrentFitFunction brentFitFunction,
+                                      Map<Band, Tile> targetTiles,
+                                      int x, int y) {
         // run retrieval and set target samples
         if (inPixField != null) {
             RetrievalResults result = executeRetrieval(brentFitFunction);
             if (!result.isRetrievalFailed()) {
-                setTargetSamples(targetTiles, iX, iY, result);
+                setTargetSamples(targetTiles, x, y, result);
             } else {
-                setInvalidTargetSamples(targetTiles, iX, iY);
+                setInvalidTargetSamples(targetTiles, x, y);
             }
         } else {
-            setInvalidTargetSamples(targetTiles, iX, iY);
+            setInvalidTargetSamples(targetTiles, x, y);
         }
     }
 
@@ -225,15 +218,17 @@ public class S2AerosolOp extends Operator {
         }
         skip += nSpecWvl;
         double surfP = Math.min(tileValues[skip], 1013.25);
-        double o3DU = ensureO3DobsonUnits(tileValues[skip + 1]);
-        float wvCol = 2.5f;
-        return new InputPixelData(geomNadir, geomFward, surfP, o3DU, wvCol, specWvl[0], toaRefl[0], toaRefl[1]);
+        double wvCol = 2500.0;
+        return new InputPixelData(geomNadir, geomFward, surfP, wvCol, specWvl[0], toaRefl[0], toaRefl[1]);
     }
 
     private void createTargetProduct() {
         targetProduct = new Product(productName, productType, tarRasterWidth, tarRasterHeight);
         createTargetProductBands();
+
+        targetProduct.setSceneGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 2));
         setTargetProduct(targetProduct);
+
     }
 
     private void createTargetProductBands() {
@@ -243,26 +238,11 @@ public class S2AerosolOp extends Operator {
         aotErrorBand = AerosolUtils.createTargetBand(AotConsts.aotErr, tarRasterWidth, tarRasterHeight);
         aotErrorBand.setValidPixelExpression(InstrumentConsts.VALID_RETRIEVAL_EXPRESSION);
         targetProduct.addBand(aotErrorBand);
+
         latBand = new Band("latitude", ProductData.TYPE_FLOAT32, tarRasterWidth, tarRasterHeight);
         targetProduct.addBand(latBand);
-
-        if (addFitBands) {
-            Band targetBand = new Band("fit_err", ProductData.TYPE_FLOAT32, tarRasterWidth, tarRasterHeight);
-            targetBand.setDescription("aot uncertainty");
-            targetBand.setNoDataValue(-1);
-            targetBand.setNoDataValueUsed(true);
-            targetBand.setValidPixelExpression("");
-            targetBand.setUnit("dl");
-            targetProduct.addBand(targetBand);
-
-            targetBand = new Band("fit_curv", ProductData.TYPE_FLOAT32, tarRasterWidth, tarRasterHeight);
-            targetBand.setDescription("aot uncertainty");
-            targetBand.setNoDataValue(-1);
-            targetBand.setNoDataValueUsed(true);
-            targetBand.setValidPixelExpression("");
-            targetBand.setUnit("dl");
-            targetProduct.addBand(targetBand);
-        }
+        lonBand = new Band("longitude", ProductData.TYPE_FLOAT32, tarRasterWidth, tarRasterHeight);
+        targetProduct.addBand(lonBand);
     }
 
     private Rectangle getSourceRectangle(Rectangle targetRectangle, Rectangle pixelWindow) {
@@ -288,59 +268,19 @@ public class S2AerosolOp extends Operator {
         return tileMap;
     }
 
-    private Map<String, Double> getSourceNoDataValues(String[] bandNames) {
-        Map<String, Double> noDataMap = new HashMap<>(bandNames.length);
-        for (String name : bandNames) {
-            RasterDataNode b = (name.equals(validName)) ? validBand : sourceProduct.getRasterDataNode(name);
-            noDataMap.put(name, b.getGeophysicalNoDataValue());
-        }
-        return noDataMap;
-    }
-
-    private InputPixelData[] readAveragePixel(Map<String, Tile> sourceTiles, int iX, int iY, Rectangle pixelWindow) {
-        InputPixelData[] inPixField = null;
-
-        boolean valid = uniformityTest(sourceTiles, iX, iY);
-        if (!valid) return null;
-
-        double[] tileValues = new double[sourceTiles.size()];
-        double[] sumVal = new double[sourceTiles.size()];
-        for (int k = 0; k < sumVal.length; k++) sumVal[k] = 0;
-        int nAve = 0;
-        int xOffset = iX * pixelWindow.width + pixelWindow.x;
-        int yOffset = iY * pixelWindow.height + pixelWindow.y;
-        for (int y = yOffset; y < yOffset + pixelWindow.height; y++) {
-            for (int x = xOffset; x < xOffset + pixelWindow.width; x++) {
-                valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
-                if (valid) {
-                    valid = valid && readAllValues(x, y, sourceTiles, tileValues);
-                    if (valid) {
-                        addToSumArray(tileValues, sumVal);
-                        nAve++;
-                    }
-                }
-            }
-        }
-        if (nAve > 0.95 * pixelWindow.width * pixelWindow.height) {
-            for (int i = 0; i < sumVal.length; i++) sumVal[i] /= nAve;
-            InputPixelData ipd = createInPixelData(sumVal);
-//            if (momo.isInsideLut(ipd)) {
-            if (S2LutUtils.isInsideLut(ipd, s2Lut)) {
-                inPixField = new InputPixelData[]{ipd};
-            }
-        }
-        return inPixField;
-    }
-
     private InputPixelData[] readDarkestNPixels(Map<String, Tile> sourceTiles, int iX, int iY, Rectangle pixelWindow) {
+        // todo: find darkest pixels from band 3 (not from NDVI)
         boolean valid = uniformityTest(sourceTiles, iX, iY);
-        if (!valid) return null;
+        if (!valid) {
+            return null;
+        }
 
-        int NPixel = 10;
-        ArrayList<InputPixelData> inPixelList = new ArrayList<InputPixelData>(pixelWindow.height * pixelWindow.width);
+        int NPixel = 30;  // we want to find the 30 darkest pixels
+        ArrayList<InputPixelData> inPixelList = new ArrayList<>(pixelWindow.height * pixelWindow.width);
         InputPixelData[] inPixField = null;
-        float ndvi;
-        float[] ndviArr = new float[pixelWindow.height * pixelWindow.width];
+
+        float b3Refl;
+        float[] b3Arr = new float[pixelWindow.height * pixelWindow.width];
 
         double[] tileValues = new double[sourceTiles.size()];
 
@@ -350,26 +290,32 @@ public class S2AerosolOp extends Operator {
         for (int y = yOffset; y < yOffset + pixelWindow.height; y++) {
             for (int x = xOffset; x < xOffset + pixelWindow.width; x++) {
                 valid = sourceTiles.get(validName).getSampleBoolean(x, y);
-                final int ndviArrIndex = (y - yOffset) * pixelWindow.width + (x - xOffset);
-                ndviArr[ndviArrIndex] = (valid) ? sourceTiles.get(InstrumentConsts.NDVI_NAME).getSampleFloat(x, y) : -1;
-                if (valid) nValid++;
+                final int b3ArrIndex = (y - yOffset) * pixelWindow.width + (x - xOffset);
+                b3Arr[b3ArrIndex] = (valid) ?
+                        sourceTiles.get(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[2]).getSampleFloat(x, y) : -1;
+                if (valid) {
+                    nValid++;
+                }
             }
         }
 
         // return null if not enough valid pixels
-        if (nValid < 0.95 * pixelWindow.width * pixelWindow.height) return null;
+//        if (nValid < 0.95 * pixelWindow.width * pixelWindow.height) {
+        if (nValid < 0.25 * pixelWindow.width * pixelWindow.height) {
+            return null;
+        }
 
-        Arrays.sort(ndviArr);
-        if (ndviArr[ndviArr.length - 10 - NPixel] > ndviThreshold) {
+        Arrays.sort(b3Arr);
+        double b3Threshold = 0.0; // todo: define
+        if (b3Arr[b3Arr.length - NPixel] > b3Threshold) {
             for (int y = yOffset; y < yOffset + pixelWindow.height; y++) {
                 for (int x = xOffset; x < xOffset + pixelWindow.width; x++) {
                     valid = sourceTiles.get(validName).getSampleBoolean(x, y);
-                    ndvi = sourceTiles.get(InstrumentConsts.NDVI_NAME).getSampleFloat(x, y);
-                    if (valid && (ndvi >= ndviArr[ndviArr.length - 10 - NPixel])
-                            && (ndvi <= ndviArr[ndviArr.length - 1 - NPixel])) {
-                        valid = valid && readAllValues(x, y, sourceTiles, tileValues);
+                    b3Refl = sourceTiles.get(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[2]).getSampleFloat(x, y);
+                    if (valid && (b3Refl >= b3Arr[b3Arr.length - 2*NPixel])
+                            && (b3Refl <= b3Arr[b3Arr.length - NPixel- 1])) {
+                        valid = readAllValues(x, y, sourceTiles, tileValues);
                         InputPixelData ipd = createInPixelData(tileValues);
-//                        if (valid && momo.isInsideLut(ipd)) {
                         if (valid && S2LutUtils.isInsideLut(ipd, s2Lut)) {
                             inPixelList.add(ipd);
                         }
@@ -384,26 +330,25 @@ public class S2AerosolOp extends Operator {
         return inPixField;
     }
 
-    private void setTargetSamples(Map<Band, Tile> targetTiles, int iX, int iY, RetrievalResults result) {
+    private void setTargetSamples(Map<Band, Tile> targetTiles, int x, int y, RetrievalResults result) {
 
-        float[] latLon = getLatLon(iX, iY, pixelWindow, sourceProduct);
-        targetTiles.get(latBand).setSample(iX, iY, latLon[0]);
+        float[] latLon = getLatLon(x, y, pixelWindow, sourceProduct);
+        targetTiles.get(latBand).setSample(x, y, latLon[0]);
+        targetTiles.get(lonBand).setSample(x, y, latLon[1]);
 
-        targetTiles.get(aotBand).setSample(iX, iY, result.getOptAOT());
-        targetTiles.get(aotErrorBand).setSample(iX, iY, result.getRetrievalErr());
-        if (addFitBands) {
-            targetTiles.get(targetProduct.getBand("fit_err")).setSample(iX, iY, result.getOptErr());
-            targetTiles.get(targetProduct.getBand("fit_curv")).setSample(iX, iY, result.getCurvature());
-        }
+        targetTiles.get(aotBand).setSample(x, y, result.getOptAOT());
+        targetTiles.get(aotErrorBand).setSample(x, y, result.getRetrievalErr());
     }
 
-    private void setInvalidTargetSamples(Map<Band, Tile> targetTiles, int iX, int iY) {
-        float[] latLon = getLatLon(iX, iY, pixelWindow, sourceProduct);
+    private void setInvalidTargetSamples(Map<Band, Tile> targetTiles, int x, int y) {
+        float[] latLon = getLatLon(x, y, pixelWindow, sourceProduct);
         for (Tile t : targetTiles.values()) {
             if (t.getRasterDataNode() == latBand) {
-                targetTiles.get(targetProduct.getBand("latitude")).setSample(iX, iY, latLon[0]);
-            } else {
-                t.setSample(iX, iY, t.getRasterDataNode().getNoDataValue());
+                targetTiles.get(targetProduct.getBand("latitude")).setSample(x, y, latLon[0]);
+            } else if (t.getRasterDataNode() == lonBand) {
+                targetTiles.get(targetProduct.getBand("longitude")).setSample(x, y, latLon[1]);
+            }else {
+                t.setSample(x, y, t.getRasterDataNode().getNoDataValue());
             }
         }
     }
@@ -414,23 +359,6 @@ public class S2AerosolOp extends Operator {
         }
     }
 
-    private void createConstOzoneBand(float ozonAtmCm) {
-        String ozoneExpr = String.format("%5.3f", ozonAtmCm);
-        VirtualBand ozoneBand = new VirtualBand(InstrumentConsts.OZONE_NAME, ProductData.TYPE_FLOAT32,
-                                                srcRasterWidth, srcRasterHeight, ozoneExpr);
-        ozoneBand.setDescription("constant ozone band");
-        ozoneBand.setNoDataValue(0);
-        ozoneBand.setNoDataValueUsed(true);
-        ozoneBand.setUnit("atm.cm");
-        sourceProduct.addBand(ozoneBand);
-    }
-
-    private void createNdviBand() {
-        VirtualBand ndviBand = new VirtualBand(InstrumentConsts.NDVI_NAME, ProductData.TYPE_FLOAT32,
-                                               srcRasterWidth, srcRasterHeight, InstrumentConsts.NDVI_EXPRESSION);
-        sourceProduct.addBand(ndviBand);
-    }
-
     private void readSurfaceSpectra(String fname) {
         Guardian.assertNotNull("specWvl", specWvl);
         final InputStream inputStream = S2AerosolOp.class.getResourceAsStream(fname);
@@ -438,19 +366,22 @@ public class S2AerosolOp extends Operator {
         BufferedReader reader;
         reader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
-        float[] fullWvl = new float[10000];    // todo: what's this???
-        float[] fullSoil = new float[10000];
-        float[] fullVeg = new float[10000];
+
+        List<Float> fullWvlList = new ArrayList<>();
+        List<Float> fullSoilList = new ArrayList<>();
+        List<Float> fullVegList = new ArrayList<>();
+
         int nWvl = 0;
         try {
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 if (!(line.isEmpty() || line.startsWith("#") || line.startsWith("*"))) {
                     String[] stmp = line.split("[ \t]+");
-                    fullWvl[nWvl] = Float.valueOf(stmp[0]);
-                    if (fullWvl[nWvl] < 100) fullWvl[nWvl] *= 1000; // conversion from um to nm
-                    fullSoil[nWvl] = Float.valueOf(stmp[this.soilSpecId]);
-                    fullVeg[nWvl] = Float.valueOf(stmp[this.vegSpecId]);
+                    float val = Float.valueOf(stmp[0]);
+                    if (val < 100) val *= 1000;  // conversion from um to nm
+                    fullWvlList.add(val);
+                    fullSoilList.add(Float.valueOf(stmp[this.soilSpecId]));
+                    fullVegList.add(Float.valueOf(stmp[this.vegSpecId]));
                     nWvl++;
                 }
             }
@@ -466,15 +397,21 @@ public class S2AerosolOp extends Operator {
             float wvl = specWvl[0][i];
             float width = specWvl[1][i];
             int count = 0;
-            while (j < nWvl && fullWvl[j] < wvl - width / 2) j++;
-            if (j == nWvl) throw new OperatorException("wavelength not found reading surface spectra");
-            while (fullWvl[j] < wvl + width / 2) {
-                soilSurfSpec[i] += fullSoil[j];
-                vegSurfSpec[i] += fullVeg[j];
+            while (j < nWvl && fullWvlList.get(j) < wvl - width / 2) {
+                j++;
+            }
+            if (j == nWvl) {
+                throw new OperatorException("wavelength not found reading surface spectra");
+            }
+            while (fullWvlList.get(j) < wvl + width / 2) {
+                soilSurfSpec[i] += fullSoilList.get(j);
+                vegSurfSpec[i] += fullVegList.get(j);
                 count++;
                 j++;
             }
-            if (j == nWvl) throw new OperatorException("wavelength window exceeds surface spectra range");
+            if (j == nWvl) {
+                throw new OperatorException("wavelength window exceeds surface spectra range");
+            }
             if (count > 0) {
                 soilSurfSpec[i] /= count;
                 vegSurfSpec[i] /= count;
@@ -499,14 +436,6 @@ public class S2AerosolOp extends Operator {
         aotGrid = s2Lut.getDimension(1).getSequence();
     }
 
-//    private void createMomoLookupTable() throws IOException {
-//        // todo: Scientists to provide LUTs for S2 MSI !!!
-//        final String lutInstrument = InstrumentConsts.MSI_INSTRUMENT_NAME;
-//        ImageInputStream aotIis = Luts.getAotLutData(lutInstrument);
-//        ImageInputStream gasIis = Luts.getCwvLutData(lutInstrument);
-//        momo = new MomoLut(aotIis, gasIis, InstrumentConsts.N_LUT_BANDS);
-//    }
-
     private float[][] getSpectralWvl(String[] bandNames) {
         float[][] wvl = new float[2][bandNames.length];
         for (int i = 0; i < bandNames.length; i++) {
@@ -520,46 +449,27 @@ public class S2AerosolOp extends Operator {
         boolean valid = true;
         for (int i = 0; i < InstrumentConsts.GEOM_NAMES.length; i++) {
             tileValues[i] = sourceTiles.get(InstrumentConsts.GEOM_NAMES[i]).getSampleDouble(x, y);
-            valid = valid && (sourceNoDataValues.get(InstrumentConsts.GEOM_NAMES[i]).compareTo(tileValues[i]) != 0);
-
+            valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
         }
         int skip = InstrumentConsts.GEOM_NAMES.length;
         for (int i = 0; i < InstrumentConsts.REFLEC_NAMES.length; i++) {
             tileValues[i + skip] = sourceTiles.get(InstrumentConsts.REFLEC_NAMES[i]).getSampleDouble(x, y);
-            valid = valid && (sourceNoDataValues.get(InstrumentConsts.REFLEC_NAMES[i]).compareTo(tileValues[i + skip]) != 0);
+            valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
         }
         skip += InstrumentConsts.REFLEC_NAMES.length;
 
         // surface pressure data
         tileValues[skip] = sourceTiles.get(InstrumentConsts.SURFACE_PRESSURE_NAME).getSampleDouble(x, y);
-        valid = valid && (sourceNoDataValues.get(InstrumentConsts.SURFACE_PRESSURE_NAME).compareTo(tileValues[skip]) != 0);
+        valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
 
-        // ozone data
-        tileValues[skip + 1] = sourceTiles.get(InstrumentConsts.OZONE_NAME).getSampleDouble(x, y);
-        valid = valid && (sourceNoDataValues.get(InstrumentConsts.OZONE_NAME).compareTo(tileValues[skip + 1]) != 0);
+        // elevation data
+        tileValues[skip + 1] = sourceTiles.get(InstrumentConsts.ELEVATION_NAME).getSampleDouble(x, y);
+        valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
 
         return valid;
     }
 
-    private void addToSumArray(double[] tileValues, double[] sumVal) {
-        for (int i = 0; i < sumVal.length; i++) {
-            sumVal[i] += tileValues[i];
-        }
-    }
-
-    //
-//     verify that ozone column is in DU
-//     function assumes 2 common possibilities:
-//         1. Ozone column being in DU (generally 100 < ozDU < 1000)
-//         2. Ozone column being in atm.cm (generally < 1 )
-//     conversion factor is 1000
-//     return ozone column in [DU]
-//
-    private double ensureO3DobsonUnits(double ozoneColumn) {
-        return (ozoneColumn < 1) ? ozoneColumn * 1000 : ozoneColumn;
-    }
-
-    //      Test whether @validBand contains any valid datapoint in the given source rectangle
+    //      Test whether validBand contains any valid datapoint in the given source rectangle
     private boolean containsTileValidData(Rectangle srcRec) {
         Tile validTile = getSourceTile(validBand, srcRec);
         for (Tile.Pos pos : validTile) {
@@ -575,7 +485,6 @@ public class S2AerosolOp extends Operator {
     private boolean uniformityTest(Map<String, Tile> sourceTiles, int iX, int iY) {
         String nirName = InstrumentConsts.REFLEC_NAMES[11];  // todo: define
         Guardian.assertNotNullOrEmpty("nirName is empty", nirName);
-        double nan = sourceNoDataValues.get(nirName);
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
         int xOffset = iX * pixelWindow.width + pixelWindow.x;
@@ -584,13 +493,13 @@ public class S2AerosolOp extends Operator {
             for (int x = xOffset; x < xOffset + pixelWindow.width; x++) {
                 boolean valid = sourceTiles.get(validName).getSampleBoolean(x, y);
                 double value = sourceTiles.get(nirName).getSampleDouble(x, y);
-                if (valid && Double.compare(nan, value) != 0) {
+                if (valid && !Double.isNaN(value)) {
                     if (value < min) min = value;
                     if (value > max) max = value;
                 }
             }
         }
-        return ((max - min) < 20);
+        return ((max - min) < 0.2);
     }
 
     private float[] getLatLon(int iX, int iY, Rectangle pixelWindow, Product sourceProduct) {

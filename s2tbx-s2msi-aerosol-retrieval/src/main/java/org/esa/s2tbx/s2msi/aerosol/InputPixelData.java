@@ -7,24 +7,22 @@ import org.esa.s2tbx.s2msi.aerosol.util.PixelGeometry;
  * @author akheckel
  */
 public class InputPixelData {
-    public final PixelGeometry geom;
-    public final PixelGeometry geomFward;
-    public final double surfPressure;
-    public final double o3du;
-    public final double wvCol;
-    public final int nSpecWvl;
-    public final float[] specWvl;
-    public final double[] toaReflec;
-    public final double[] toaReflecFward;
-    public final double[][] surfReflec;
-    public final double[][] diffuseFrac;
+    public PixelGeometry geom;
+    public PixelGeometry geomFward;
+    public double surfPressure;
+    public double wvCol;
+    public int nSpecWvl;
+    public float[] specWvl;
+    public double[] toaReflec;
+    public double[] toaReflecFward;
+    public double[][] surfReflec;
+    public double[][] diffuseFrac;
 
-    public InputPixelData(PixelGeometry geom, PixelGeometry geomFward, double surfPressure, double o3du,
+    public InputPixelData(PixelGeometry geom, PixelGeometry geomFward, double surfPressure,
                           double wvCol, float[] specWvl, double[] toaReflec, double[] toaReflecFward) {
         this.geom = geom;
         this.geomFward = geomFward;
         this.surfPressure = surfPressure;
-        this.o3du = o3du;
         this.wvCol = wvCol;
         this.specWvl = specWvl;
         this.nSpecWvl = specWvl.length;
@@ -46,4 +44,36 @@ public class InputPixelData {
         return toaReflec;
     }
 
+
+    public PixelGeometry getGeom() {
+        return geom;
+    }
+
+    public void setGeom(PixelGeometry geom) {
+        this.geom = geom;
+    }
+
+    public void setWvCol(double wvCol) {
+        this.wvCol = wvCol;
+    }
+
+    public void setSurfPressure(double surfPressure) {
+        this.surfPressure = surfPressure;
+    }
+
+    public void setSpecWvl(float[] specWvl) {
+        this.specWvl = specWvl;
+    }
+
+    public void setnSpecWvl(int nSpecWvl) {
+        this.nSpecWvl = nSpecWvl;
+    }
+
+    public void setToaReflec(double[] toaReflec) {
+        this.toaReflec = toaReflec;
+    }
+
+    public void setGeomFward(PixelGeometry geomFward) {
+        this.geomFward = geomFward;
+    }
 }

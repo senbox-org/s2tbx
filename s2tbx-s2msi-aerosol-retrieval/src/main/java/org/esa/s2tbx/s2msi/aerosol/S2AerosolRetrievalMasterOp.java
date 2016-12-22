@@ -26,6 +26,7 @@ import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -62,6 +63,9 @@ public class S2AerosolRetrievalMasterOp extends Operator {
     @Parameter(defaultValue = "true")
     private boolean copyToaReflBands;
 
+    @Parameter(defaultValue = "true", description = "if true, aerosol retrieval is done, otherwise Idepix only")
+    private boolean computeAerosol;
+
     @Parameter(defaultValue = "false")
     private boolean filling;
 
@@ -78,9 +82,9 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             label = "Path to S2 Lookup Table")
     private String pathToLut;
 
-    @Parameter(description = "The downscaling factor for AOT retrieval grid. E.g. 50 for S2 20m --> 1km",
+    @Parameter(description = "The downscaling factor for AOT retrieval grid. E.g. 20 for S2 60m --> 1.2km",
             label = "Downscaling factor for AOT retrieval grid",
-            defaultValue = "50")
+            defaultValue = "20")
     private int scale;
 
     @Parameter(defaultValue = "0.3")
@@ -96,58 +100,52 @@ public class S2AerosolRetrievalMasterOp extends Operator {
         Dimension targetDim = ImageManager.getPreferredTileSize(sourceProduct);         // original grid
         Dimension aotDim = new Dimension(targetDim.width / 9, targetDim.height / 9);    // AOT grid (downscaled)
 
-//        RenderingHints rhTarget = new RenderingHints(GPF.KEY_TILE_SIZE, targetDim);
-//        RenderingHints rhAot = new RenderingHints(GPF.KEY_TILE_SIZE, aotDim);
+        RenderingHints rhTarget = new RenderingHints(GPF.KEY_TILE_SIZE, targetDim);
+        RenderingHints rhAot = new RenderingHints(GPF.KEY_TILE_SIZE, aotDim);
 
         S2AerosolMsiPreparationOp s2msiPrepOp = new S2AerosolMsiPreparationOp();
         s2msiPrepOp.setParameterDefaultValues();
         s2msiPrepOp.setSourceProduct(sourceProduct);
         final Product extendedSourceProduct = s2msiPrepOp.getTargetProduct();
 
-//        setTargetProduct(extendedSourceProduct);    // first test break  --> OK
+        setTargetProduct(extendedSourceProduct);    // first test break  --> OK
 
-        Map<String, Object> aotParams = new HashMap<>(4);
-        aotParams.put("soilSpecId", soilSpecId);
-        aotParams.put("vegSpecId", vegSpecId);
-        aotParams.put("scale", scale);
-        aotParams.put("ndviThreshold", ndviThreshold);
+        Product aotDownscaledProduct = extendedSourceProduct;
+        if (computeAerosol) {
+            S2AerosolOp s2AerosolOp = new S2AerosolOp();
+            s2AerosolOp.setParameterDefaultValues();
+            s2AerosolOp.setSourceProduct(extendedSourceProduct);
+            s2AerosolOp.setParameter("pathToLut", pathToLut);
+            s2AerosolOp.setParameter("soilSpecId", soilSpecId);
+            s2AerosolOp.setParameter("vegSpecId", vegSpecId);
+            s2AerosolOp.setParameter("scale", scale);
+            s2AerosolOp.setParameter("ndviThreshold", ndviThreshold);
+            aotDownscaledProduct = s2AerosolOp.getTargetProduct();
+        }
 
-//        Product aotDownscaledProduct =
-//                GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolOp.class), aotParams, extendedSourceProduct, rhAot);
-        S2AerosolOp s2AerosolOp = new S2AerosolOp();
-        s2AerosolOp.setParameterDefaultValues();
-        s2AerosolOp.setSourceProduct(extendedSourceProduct);
-        s2AerosolOp.setParameter("pathToLut", pathToLut);
-        s2AerosolOp.setParameter("soilSpecId", soilSpecId);
-        s2AerosolOp.setParameter("vegSpecId", vegSpecId);
-        s2AerosolOp.setParameter("scale", scale);
-        s2AerosolOp.setParameter("ndviThreshold", ndviThreshold);
-        final Product aotDownscaledProduct = s2AerosolOp.getTargetProduct();
+        Product aotGapFilledProduct = aotDownscaledProduct;
+        if (computeAerosol && filling) {
+            Map<String, Product> gapFillSourceProducts = new HashMap<>(2);
+            gapFillSourceProducts.put("aotProduct", aotDownscaledProduct);
+            aotGapFilledProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolGapFillingOp.class),
+                                                    GPF.NO_PARAMS, gapFillSourceProducts);
+        }
 
-        targetProduct = aotDownscaledProduct;
-//
-//        Product aotGapFilledProduct = aotDownscaledProduct;
-//        if (filling) {
-//            Map<String, Product> gapFillSourceProducts = new HashMap<>(2);
-//            gapFillSourceProducts.put("aotProduct", aotDownscaledProduct);
-//            aotGapFilledProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolGapFillingOp.class),
-//                                                    GPF.NO_PARAMS, gapFillSourceProducts);
-//        }
-//
-//        targetProduct = aotGapFilledProduct;     // second test break: set upscaling to false
-//        if (upscaling) {
-//            Map<String, Product> upsclProducts = new HashMap<>(2);
-//            upsclProducts.put("lowresProduct", aotGapFilledProduct);
-//            upsclProducts.put("hiresProduct", extendedSourceProduct);
-//            Map<String, Object> sclParams = new HashMap<>(1);
-//            sclParams.put("scale", scale);
-//            Product aotOrigResolutionProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolUpscaleOp.class),
-//                                                                 sclParams, upsclProducts, rhTarget);
-//
-//            targetProduct = mergeToTargetProduct(extendedSourceProduct, aotOrigResolutionProduct);
-//            ProductUtils.copyPreferredTileSize(extendedSourceProduct, targetProduct);
-//        }
-//        setTargetProduct(targetProduct);
+        targetProduct = aotGapFilledProduct;     // second test break: set upscaling to false
+        if (computeAerosol && upscaling) {
+            // todo: does not yet work
+            Map<String, Product> upsclProducts = new HashMap<>(2);
+            upsclProducts.put("lowresProduct", aotGapFilledProduct);
+            upsclProducts.put("hiresProduct", extendedSourceProduct);
+            Map<String, Object> sclParams = new HashMap<>(1);
+            sclParams.put("scale", scale);
+            Product aotOrigResolutionProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolUpscaleOp.class),
+                                                                 sclParams, upsclProducts, rhTarget);
+
+            targetProduct = mergeToTargetProduct(extendedSourceProduct, aotOrigResolutionProduct);
+            ProductUtils.copyPreferredTileSize(extendedSourceProduct, targetProduct);
+        }
+        setTargetProduct(targetProduct);
     }
 
     private Product mergeToTargetProduct(Product reflProduct, Product aotOriginalResolutionProduct) {

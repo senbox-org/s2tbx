@@ -54,37 +54,6 @@ public class AerosolUtils {
         return targetBand;
     }
 
-    public static Rectangle getSzaRegion(RasterDataNode szaBand, boolean hasSolarElevation, double szaLimit) throws OperatorException {
-        int srcWidth = szaBand.getRasterWidth();
-        int srcHeight = szaBand.getRasterHeight();
-        float[] sza0 = new float[srcHeight];
-        float[] sza1 = new float[srcHeight];
-        try {
-            szaBand.readPixels(0, 0, 1, srcHeight, sza0, ProgressMonitor.NULL);
-            szaBand.readPixels(srcWidth - 1, 0, 1, srcHeight, sza1, ProgressMonitor.NULL);
-        } catch (IOException ex) {
-            throw new OperatorException(ex);
-        }
-        int start = 0;
-        int end = srcHeight - 1;
-        if (hasSolarElevation) {
-            while (start < srcHeight - 1 && (90 - sza0[start]) > szaLimit && (90 - sza1[start]) > szaLimit) {
-                start++;
-            }
-            while (end > start && (90 - sza0[end]) > szaLimit && (90 - sza1[end]) > szaLimit) {
-                end--;
-            }
-        } else {
-            while (start < srcHeight - 1 && (sza0[start]) > szaLimit && (sza1[start]) > szaLimit) {
-                start++;
-            }
-            while (end > start && (sza0[end]) > szaLimit && (sza1[end]) > szaLimit) {
-                end--;
-            }
-        }
-        return new Rectangle(0, start, srcWidth, end - start + 1);
-    }
-
     public static Band createBooleanExpressionBand(String expression, Product sourceProduct) {
         BandMathsOp.BandDescriptor bandDescriptor = new BandMathsOp.BandDescriptor();
         bandDescriptor.name = "band1";

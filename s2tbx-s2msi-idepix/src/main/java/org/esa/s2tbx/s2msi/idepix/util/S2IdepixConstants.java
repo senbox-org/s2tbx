@@ -70,6 +70,21 @@ public class S2IdepixConstants {
             2190.0f     // B12
     };
 
+    public static final double[] S2_SOLAR_IRRADIANCES = {
+            1913.57,     // B1
+            1941.63,     // B2
+            1822.61,     // B3
+            1512.79,     // B4
+            1425.56,     // B5
+            1288.32,     // B6
+            1163.19,     // B7
+            1036.39,     // B8
+            955.19,      // B8A
+            813.04,      // B9
+            367.15,      // B10
+            245.59,      // B11
+            85.25        // B12
+    };
 
     public static final String INPUT_INCONSISTENCY_ERROR_MESSAGE =
             "Selected cloud screening algorithm cannot be used with given input product. \n\n" +

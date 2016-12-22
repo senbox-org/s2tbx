@@ -1,6 +1,8 @@
 package org.esa.s2tbx.s2msi.aerosol.lut;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.s2msi.aerosol.InputPixelData;
+import org.esa.s2tbx.s2msi.aerosol.util.PixelGeometry;
 import org.esa.snap.core.util.math.LookupTable;
 import org.junit.Assume;
 import org.junit.Before;
@@ -11,6 +13,8 @@ import java.io.IOException;
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author olafd
@@ -98,6 +102,42 @@ public class S2LutInterpolationTest {
         assertEquals(7, snapS2Lut.getDimension(8).getSequence().length);
         assertEquals(1.0, snapS2Lut.getDimension(8).getMin(), 1.E-6);
         assertEquals(7.0, snapS2Lut.getDimension(8).getMax(), 1.E-6);
+    }
+
+    @Test
+    public void testIsInsideLut() throws Exception {
+        double wv = 1500;
+        double sza = 50.0;
+        double vza = 30.0;
+        double raa = 10.0;
+
+        final PixelGeometry pg = new PixelGeometry(sza, 0.0, vza, 0.0);
+        InputPixelData ipd = new InputPixelData(pg, null, 0.0, wv, new float[]{1.0f}, null, null);
+        assertTrue(S2LutUtils.isInsideLut(ipd, snapS2Lut));
+
+        ipd.setWvCol(6000);
+        assertFalse(S2LutUtils.isInsideLut(ipd, snapS2Lut));
+
+        ipd.setWvCol(wv);
+        assertTrue(S2LutUtils.isInsideLut(ipd, snapS2Lut));
+
+        ipd.getGeom().setSza(100);
+        assertFalse(S2LutUtils.isInsideLut(ipd, snapS2Lut));
+
+        ipd.getGeom().setSza((float) sza);
+        assertTrue(S2LutUtils.isInsideLut(ipd, snapS2Lut));
+
+        ipd.getGeom().setVza(1000);
+        assertFalse(S2LutUtils.isInsideLut(ipd, snapS2Lut));
+
+        ipd.getGeom().setVza((float) vza);
+        assertTrue(S2LutUtils.isInsideLut(ipd, snapS2Lut));
+
+        ipd.getGeom().setRazi(-98.7f);
+        assertFalse(S2LutUtils.isInsideLut(ipd, snapS2Lut));
+
+        ipd.getGeom().setRazi((float) raa);
+        assertTrue(S2LutUtils.isInsideLut(ipd, snapS2Lut));
     }
 
     @Test
