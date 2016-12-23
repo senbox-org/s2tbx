@@ -1,5 +1,6 @@
 package org.esa.s2tbx.dataio.s2.l3;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -13,7 +14,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,13 +29,13 @@ public class L3Metadata extends S2Metadata {
 
     protected Logger logger = SystemUtils.LOG;
 
-    public static L3Metadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    public static L3Metadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
 
-        return new L3Metadata(file.toPath(), granuleName, config, epsg, productResolution, isAGranule, namingConvention);
+        return new L3Metadata(path, granuleName, config, epsg, productResolution, isAGranule, namingConvention);
 
     }
 
-    private L3Metadata(Path path, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws  IOException, ParserConfigurationException, SAXException {
+    private L3Metadata(VirtualPath path, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws  IOException, ParserConfigurationException, SAXException {
         super(config);
 
         resetTileList();
@@ -54,7 +54,7 @@ public class L3Metadata extends S2Metadata {
 
     }
 
-    private int initProduct(Path path, String granuleName, String epsg, S2SpatialResolution productResolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private int initProduct(VirtualPath path, String granuleName, String epsg, S2SpatialResolution productResolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
         IL3ProductMetadata metadataProduct = L3MetadataFactory.createL3ProductMetadata(path);
         if(metadataProduct == null) {
             throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
@@ -78,16 +78,16 @@ public class L3Metadata extends S2Metadata {
         getMetadataElements().add(metadataProduct.getMetadataElement());
 
         //add datastrip metadatas
-        for(Path datastripPath : namingConvention.getDatastripXmlPaths()) {
+        for(VirtualPath datastripPath : namingConvention.getDatastripXmlPaths()) {
             IL3DatastripMetadata metadataDatastrip = L3MetadataFactory.createL3DatastripMetadata(datastripPath);
             getMetadataElements().add(metadataDatastrip.getMetadataElement());
         }
 
         //Check if the tiles found in metadata exist and add them to granuleMetadataPathList
-        ArrayList<Path> granuleMetadataPathList = new ArrayList<>();
+        ArrayList<VirtualPath> granuleMetadataPathList = new ArrayList<>();
         for (String tileName : tileNames) {
-            Path folder = namingConvention.findGranuleFolderFromTileId(tileName);
-            Path xml = namingConvention.findXmlFromTileId(tileName);
+            VirtualPath folder = namingConvention.findGranuleFolderFromTileId(tileName);
+            VirtualPath xml = namingConvention.findXmlFromTileId(tileName);
             if(folder == null || xml == null) {
                 String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
                 logger.log(Level.WARNING, errorMessage);
@@ -98,7 +98,7 @@ public class L3Metadata extends S2Metadata {
 
         //Init Tiles
         int maxIndex=1;
-        for (Path granuleMetadataPath : granuleMetadataPathList) {
+        for (VirtualPath granuleMetadataPath : granuleMetadataPathList) {
             int maxIndexTile =initTile(granuleMetadataPath, epsg, productResolution, namingConvention);
             if (maxIndexTile > maxIndex) {
                 maxIndex = maxIndexTile;
@@ -107,7 +107,7 @@ public class L3Metadata extends S2Metadata {
         return maxIndex;
     }
 
-    private int initTile(Path path, String epsg, S2SpatialResolution resolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private int initTile(VirtualPath path, String epsg, S2SpatialResolution resolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
 
         IL3GranuleMetadata granuleMetadata = L3MetadataFactory.createL3GranuleMetadata(path);
         if(granuleMetadata == null) {

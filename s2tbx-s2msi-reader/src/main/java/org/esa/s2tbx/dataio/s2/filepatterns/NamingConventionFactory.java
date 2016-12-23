@@ -1,5 +1,8 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import com.bc.ceres.core.VirtualDir;
+import org.esa.s2tbx.dataio.VirtualPath;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -13,22 +16,23 @@ public class NamingConventionFactory {
     /**
      * Checks the different NamingConventions and returns an instance to the first that matches().
      * It is obtained by using exclusively the REGEX, the metadata file is not open to get the format.
-     * @param path
+     * @param virtualPath
      * @return appropriated naming convention or null
      */
-    public static INamingConvention createNamingConvention(Path path)  {
+    public static INamingConvention createNamingConvention(VirtualPath virtualPath)  {
 
-        L1BNamingConvention l1bConvention = new L1BNamingConvention(path);
+
+        L1BNamingConvention l1bConvention = new L1BNamingConvention(virtualPath);
         if(l1bConvention.getInputType() != null){
             return l1bConvention;
         }
 
-        SAFENamingConvention safe = new SAFENamingConvention(path);
+        SAFENamingConvention safe = new SAFENamingConvention(virtualPath);
         if(safe.getInputType() != null){
             return safe;
         }
 
-        SAFECOMPACTNamingConvention safeCompact = new SAFECOMPACTNamingConvention(path);
+        SAFECOMPACTNamingConvention safeCompact = new SAFECOMPACTNamingConvention(virtualPath);
         if(safeCompact.getInputType() != null){
             return safeCompact;
         }

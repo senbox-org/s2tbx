@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.s2.l3;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -17,7 +18,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,13 +46,13 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
 
 
 
-    public static L3ProductMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
+    public static L3ProductMetadataPSD13 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L3ProductMetadataPSD13 result = null;
         InputStream stream = null;
         try {
-            if (Files.exists(path)) {
-                stream = Files.newInputStream(path, StandardOpenOption.READ);
+            if (path.exists()) {
+                stream = path.getInputStream();
                 L3ProductMetadataPSD13Parser parser = new L3ProductMetadataPSD13Parser(L3ProductMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.setName("Level-3_User_Product");
@@ -77,7 +77,7 @@ public class L3ProductMetadataPSD13 extends GenericXmlMetadata implements IL3Pro
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getProductOrganization(Path path, S2SpatialResolution resolution) {
+    public S2Metadata.ProductCharacteristics getProductOrganization(VirtualPath path, S2SpatialResolution resolution) {
         L3Metadata.ProductCharacteristics characteristics = new L3Metadata.ProductCharacteristics();
         characteristics.setPsd(S2Metadata.getPSD(path));
         //is this right for level 3? Is datatake start time used?

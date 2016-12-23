@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -49,11 +50,11 @@ import java.util.logging.Logger;
 public class L1bMetadata extends S2Metadata {
     protected Logger logger = SystemUtils.LOG;
 
-    public static L1bMetadata parseHeader(File file, String granuleName, S2Config config, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
-        return new L1bMetadata(file.toPath(), granuleName, config, isAGranule, namingConvention);
+    public static L1bMetadata parseHeader(VirtualPath path, String granuleName, S2Config config, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+        return new L1bMetadata(path, granuleName, config, isAGranule, namingConvention);
     }
 
-    private L1bMetadata(Path path, String granuleName, S2Config config, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private L1bMetadata(VirtualPath path, String granuleName, S2Config config, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
         super(config);
 
         resetTileList();
@@ -66,7 +67,7 @@ public class L1bMetadata extends S2Metadata {
     }
 
 
-    private void initProduct(Path path, String granuleName, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private void initProduct(VirtualPath path, String granuleName, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
 
         IL1bProductMetadata metadataProduct = L1bMetadataFactory.createL1bProductMetadata(path);
         if(metadataProduct == null) {
@@ -86,15 +87,15 @@ public class L1bMetadata extends S2Metadata {
         getMetadataElements().add(metadataProduct.getMetadataElement());
 
         //add datastrip metadata
-        for(Path datastripPath : namingConvention.getDatastripXmlPaths()) {
+        for(VirtualPath datastripPath : namingConvention.getDatastripXmlPaths()) {
             IL1bDatastripMetadata metadataDatastrip = L1bMetadataFactory.createL1bDatastripMetadata(datastripPath);
             getMetadataElements().add(metadataDatastrip.getMetadataElement());
         }
 
-        ArrayList<Path> granuleMetadataPathList = new ArrayList<>();
+        ArrayList<VirtualPath> granuleMetadataPathList = new ArrayList<>();
         for (String tileName : tileNames) {
-            Path folder = namingConvention.findGranuleFolderFromTileId(tileName);
-            Path xml = namingConvention.findXmlFromTileId(tileName);
+            VirtualPath folder = namingConvention.findGranuleFolderFromTileId(tileName);
+            VirtualPath xml = namingConvention.findXmlFromTileId(tileName);
             if(folder == null || xml == null) {
                 String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
                 logger.log(Level.WARNING, errorMessage);
@@ -106,12 +107,12 @@ public class L1bMetadata extends S2Metadata {
 
 
         //Init Tiles
-        for (Path granuleMetadataPath : /*fullTileNamesList*/granuleMetadataPathList) {
+        for (VirtualPath granuleMetadataPath : granuleMetadataPathList) {
             initTile(granuleMetadataPath, namingConvention);
         }
     }
 
-    private void initTile(Path path, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private void initTile(VirtualPath path, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
         IL1bGranuleMetadata granuleMetadata = L1bMetadataFactory.createL1bGranuleMetadata(path);
         if(granuleMetadata == null) {
             throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));

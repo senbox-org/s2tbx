@@ -17,9 +17,11 @@
 package org.esa.s2tbx.dataio.openjpeg;
 
 import org.apache.commons.lang.SystemUtils;
+import org.esa.s2tbx.dataio.BucketMap;
 import org.esa.s2tbx.dataio.Utils;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 
+import java.awt.image.DataBuffer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,6 +38,13 @@ import java.util.List;
  * @author Oscar Picas-Puig
  */
 public class OpenJpegUtils {
+
+    private static final BucketMap<Integer, Integer> dataTypeMap = new BucketMap<Integer, Integer>() {{
+        put(1, 8, DataBuffer.TYPE_BYTE);
+        put(9, 15, DataBuffer.TYPE_USHORT);
+        put(16, DataBuffer.TYPE_SHORT);
+        put(17, 32, DataBuffer.TYPE_FLOAT);
+    }};
 
     /**
      * Get the tile layout with opj_dump
@@ -140,6 +149,7 @@ public class OpenJpegUtils {
         int xTiles = 0;
         int yTiles = 0;
         int resolutions = 0;
+        int precision = 0;
 
         for (String line : content) {
             if (line.contains("x1") && line.contains("y1")) {
@@ -160,9 +170,12 @@ public class OpenJpegUtils {
             if (line.contains("numresolutions")) {
                 resolutions = Integer.parseInt(line.trim().split("\\=")[1]);
             }
+            if (line.contains("prec=")) {
+                precision = Integer.parseInt(line.trim().split("\\=")[1]);
+            }
         }
 
-        return new TileLayout(Width, Height, tileWidth, tileHeight, xTiles, yTiles, resolutions);
+        return new TileLayout(Width, Height, tileWidth, tileHeight, xTiles, yTiles, resolutions, dataTypeMap.get(precision) );
 
     }
 

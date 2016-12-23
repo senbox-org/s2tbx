@@ -18,34 +18,21 @@
 package org.esa.s2tbx.dataio.s2;
 
 
-import com.sun.media.jfxmedia.logging.Logger;
 import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.snap.core.datamodel.MetadataAttribute;
 import org.esa.snap.core.datamodel.MetadataElement;
-import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.SystemUtils;
-import org.jdom.Attribute;
-import org.jdom.Element;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,7 +54,7 @@ public abstract class S2Metadata {
 
     private ProductCharacteristics productCharacteristics;
 
-    protected HashMap<String, Path> resourceResolver;
+    protected HashMap<String, VirtualPath> resourceResolver;
 
 
     public S2Metadata(S2Config config) {
@@ -121,7 +108,7 @@ public abstract class S2Metadata {
         this.productCharacteristics = productCharacteristics;
     }
 
-    public Path resolveResource(String identifier) {
+    public VirtualPath resolveResource(String identifier) {
         return resourceResolver.get(identifier);
     }
 
@@ -290,12 +277,12 @@ public abstract class S2Metadata {
     public static class MaskFilename {
         String bandId;
         String type;
-        File name;
+        VirtualPath path;
 
-        public MaskFilename(String bandId, String type, File name) {
+        public MaskFilename(String bandId, String type, VirtualPath path) {
             this.bandId = bandId;
             this.type = type;
-            this.name = name;
+            this.path = path;
         }
 
         public String getBandId() {
@@ -314,12 +301,12 @@ public abstract class S2Metadata {
             this.type = type;
         }
 
-        public File getName() {
-            return name;
+        public VirtualPath getPath() {
+            return path;
         }
 
-        public void setName(File name) {
-            this.name = name;
+        public void setPath(VirtualPath path) {
+            this.path = path;
         }
 
         public String toString() {
@@ -670,10 +657,10 @@ public abstract class S2Metadata {
      * @param path
      * @return the psd version number or 0 if a problem occurs while reading the file or the version is not found.
      */
-    public static int getPSD(Path path){
-        try (FileInputStream fileStream = new FileInputStream(path.toString())){
+    public static int getPSD(VirtualPath path){
+        try (InputStream stream = /*new FileInputStream(path.toString())*/path.getInputStream()){
             //FileInputStream fileStream = new FileInputStream(path.toString());
-            String xmlStreamAsString = IOUtils.toString(fileStream);
+            String xmlStreamAsString = IOUtils.toString(stream);
             String regex = "psd-\\d{2,}.sentinel2.eo.esa.int";
 
             Pattern p = Pattern.compile(regex);

@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.ortho;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.l2a.L2aUtils;
@@ -104,10 +105,10 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             return DecodeQualification.INTENDED;
         }
 
-        //if product is level2 or level3, check the specific folder
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(file, getResolution()))
+        //if product is level2 or level3, check the specific folder//TODO revisar
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_PRODUCT_METADATA) && !L2aUtils.checkMetadataSpecificFolder(new VirtualPath(canonicalPath,null), getResolution()))
             return DecodeQualification.UNABLE;
-        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(file, getResolution()))
+        if ((inputType == S2Config.Sentinel2InputType.INPUT_TYPE_GRANULE_METADATA) && !L2aUtils.checkGranuleSpecificFolder(new VirtualPath(canonicalPath,null), getResolution()))
             return DecodeQualification.UNABLE;
 
         //level=S2Config.Sentinel2ProductLevel.L2A;

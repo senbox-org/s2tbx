@@ -1,0 +1,9 @@
+{
+  "testProducts": [
+    {
+      "id": "S2L1C-Multi-ZIP-34",
+      "relativePath": "S2/ZIP/S2A_MSIL1C_20161207T091352_N0204_R050_T34QBK_20161207T092405.zip",
+      "description": "Sentinel2 L1C product in a ZIP"
+    }
+  ]
+}

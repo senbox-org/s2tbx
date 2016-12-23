@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.s2.l3;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
@@ -16,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,13 +44,13 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
         }
     }
 
-    public static L3GranuleMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
+    public static L3GranuleMetadataPSD13 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L3GranuleMetadataPSD13 result = null;
         InputStream stream = null;
         try {
-            if (Files.exists(path)) {
-                stream = Files.newInputStream(path, StandardOpenOption.READ);
+            if (path.exists()) {
+                stream = path.getInputStream();
                 L3GranuleMetadataPSD13Parser parser = new L3GranuleMetadataPSD13Parser(L3GranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.updateName();
@@ -76,26 +76,33 @@ public class L3GranuleMetadataPSD13 extends GenericXmlMetadata implements IL3Gra
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getTileProductOrganization(Path path, S2SpatialResolution resolution) {
+    public S2Metadata.ProductCharacteristics getTileProductOrganization(VirtualPath path, S2SpatialResolution resolution) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setPsd(S2Metadata.getPSD(path));
         //DatatakeSensingStart is not in the metadata, but is it needed for the image templates in level3??. We read it from the file system
-        //TODO review
-        Path folder = path.resolveSibling("IMG_DATA");
+        VirtualPath folder = path.resolveSibling("IMG_DATA");
         Pattern pattern = Pattern.compile(SAFECOMPACTNamingConvention.SPECTRAL_BAND_REGEX);
         characteristics.setDatatakeSensingStartTime("Unknown");
         boolean bFound = false;
-        if(Files.exists(folder) && Files.isDirectory(folder)) {
-            File[] resolutions = folder.toFile().listFiles();
+        if(folder.exists() && folder.isDirectory()) {
+            VirtualPath[] resolutions = null;
+            try {
+                resolutions = folder.listPaths();
+            } catch (IOException e) {
+            }
+
             if(resolutions != null) {
-                for (File resolutionFolder : resolutions) {
+                for (VirtualPath resolutionFolder : resolutions) {
                     if (resolutionFolder.isDirectory()) {
-                        File[] images = resolutionFolder.listFiles();
+                        String[] images = null;
+                        try {
+                            images = resolutionFolder.list();
+                        } catch (IOException e) {
+                        }
                         if (images != null && images.length > 0) {
-                            for (File image : images) {
-                                String imageName = image.getName();
-                                Matcher matcher = pattern.matcher(imageName);
+                            for (String image : images) {
+                                Matcher matcher = pattern.matcher(image);
                                 if (matcher.matches()) {
                                     characteristics.setDatatakeSensingStartTime(matcher.group(2));
                                     bFound = true;

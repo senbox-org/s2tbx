@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.s2;
 
 
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.l1c.IL1cGranuleMetadata;
 import org.esa.s2tbx.dataio.s2.l1c.L1cMetadataFactory;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
@@ -56,7 +57,7 @@ public class MetadataTest {
         try {
             File file = new File(url.toURI());
             psd12RootXmlFileName = file.toPath();
-            IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(psd12RootXmlFileName);
+            IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(new VirtualPath(psd12RootXmlFileName,null));
             assertNotNull(productMetadata.getMetadataElement());
         } catch (IOException e) {
             org.junit.Assert.fail(e.getMessage());
@@ -80,7 +81,7 @@ public class MetadataTest {
 
         File file = new File(url.toURI());
         psd12RootXmlFileName = file.toPath();
-        IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(psd12RootXmlFileName);
+        IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(new VirtualPath(psd12RootXmlFileName,null));
 
         return productMetadata;
     }
@@ -92,7 +93,7 @@ public class MetadataTest {
 
         File file = new File(url.toURI());
         tilePath = file.toPath();
-        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(tilePath);
+        IL1cGranuleMetadata granuleMetadata = L1cMetadataFactory.createL1cGranuleMetadata(new VirtualPath(tilePath,null));
 
         return granuleMetadata;
     }
@@ -105,7 +106,7 @@ public class MetadataTest {
         try {
             File file = new File(url.toURI());
             psd12RootXmlFileName = file.toPath();
-            IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(psd12RootXmlFileName);
+            IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(new VirtualPath(psd12RootXmlFileName,null));
             assertNotNull(productMetadata.getMetadataElement());
             String[] tiles = productMetadata.getTiles().toArray(new String[productMetadata.getTiles().size()]);
             assertEquals("S2A_OPER_MSI_L1C_TL_CGS1_20130621T120000_A000065_T14SLD_N01.01", tiles[0]);
@@ -135,7 +136,7 @@ public class MetadataTest {
 
         File file = new File(url.toURI());
         psd12RootXmlFileName = file.toPath();
-        IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(psd12RootXmlFileName);
+        IL1cProductMetadata productMetadata = L1cMetadataFactory.createL1cProductMetadata(new VirtualPath(psd12RootXmlFileName,null));
 
         assertNotNull(productMetadata);
 

@@ -17,10 +17,12 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
 import org.esa.snap.core.dataio.DecodeQualification;
@@ -56,48 +58,12 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
         File file = (File) input;
-        INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(file.toPath());
+        INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
         if(namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
             return DecodeQualification.INTENDED;
         }
         return DecodeQualification.UNABLE;
 
-
-        /*String fileName = file.getName();
-        Matcher matcher = PATTERN.matcher(fileName);
-
-        // Checking for file regex first, it is quicker than File.isFile()
-        if (!matcher.matches()) {
-            return DecodeQualification.UNABLE;
-        }
-
-        if (!file.isFile()) {
-            File xmlFile = getInputXmlFileFromDirectory(file);
-            if (xmlFile == null) {
-                return DecodeQualification.UNABLE;
-            }
-            fileName = xmlFile.getName();
-            matcher.reset();
-            matcher = PATTERN.matcher(fileName);
-            if (!matcher.matches()) {
-                return DecodeQualification.UNABLE;
-            }
-        }
-
-        // test for granule filename first as it is more restrictive
-        if (S2L1BGranuleMetadataFilename.isGranuleFilename(fileName)) {
-            String levelFromName = matcher.group(4).substring(0, 3);
-            if (levelFromName.equals(L1B_LEVEL)) {
-                decodeQualification = DecodeQualification.INTENDED;
-            }
-        } else if (S2ProductFilename.isMetadataFilename(fileName)) {
-            String levelFromName = matcher.group(4).substring(3, 6);
-            if (levelFromName.equals("L1B")) {
-                decodeQualification = DecodeQualification.INTENDED;
-            }
-        }
-
-        return decodeQualification;*/
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.s2.l1c;
 
 import com.bc.ceres.core.Assert;
 import org.apache.commons.io.IOUtils;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
 import org.esa.s2tbx.dataio.s2.S2BandInformation;
@@ -17,7 +18,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,13 +46,13 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
         }
     }
 
-    public static L1cProductMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
+    public static L1cProductMetadataPSD13 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L1cProductMetadataPSD13 result = null;
         InputStream stream = null;
         try {
-            if (Files.exists(path)) {
-                stream = Files.newInputStream(path, StandardOpenOption.READ);
+            if (path.exists()) {
+                stream = path.getInputStream();
                 L1cProductMetadataPSD13Parser parser = new L1cProductMetadataPSD13Parser(L1cProductMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.setName("Level-1C_User_Product");
@@ -80,7 +80,7 @@ public class L1cProductMetadataPSD13 extends GenericXmlMetadata implements IL1cP
     }
 
     @Override
-    public S2Metadata.ProductCharacteristics getProductOrganization(Path xmlPath) {
+    public S2Metadata.ProductCharacteristics getProductOrganization(VirtualPath xmlPath) {
 
         S2Metadata.ProductCharacteristics characteristics = new S2Metadata.ProductCharacteristics();
         characteristics.setPsd(S2Metadata.getPSD(xmlPath));

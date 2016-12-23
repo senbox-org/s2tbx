@@ -1,6 +1,9 @@
 package org.esa.s2tbx.dataio.s2.l2a;
 
+import org.esa.s2tbx.dataio.VirtualPath;
+
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -8,18 +11,23 @@ import java.nio.file.Path;
  */
 public class L2aUtils {
 
-    public static boolean checkGranuleSpecificFolder(File fileGranule, String specificFolder) {
+    public static boolean checkGranuleSpecificFolder(VirtualPath pathGranule, String specificFolder) {
 
         if (specificFolder.equals("Multi"))
             return true;
-        Path rootPath = fileGranule.toPath().getParent();
-        File imgFolder = rootPath.resolve("IMG_DATA").toFile();
-        File[] files = imgFolder.listFiles();
+        VirtualPath rootPath = pathGranule.getParent();
+        VirtualPath imgFolder = rootPath.resolve("IMG_DATA");
+        VirtualPath[] paths;
+        try {
+            paths = imgFolder.listPaths();
+        } catch (IOException e) {
+            paths = null;
+        }
 
-        if (files != null) {
-            for (File imgData : files) {
+        if (paths != null) {
+            for (VirtualPath imgData : paths) {
                 if (imgData.isDirectory()) {
-                    if (imgData.getName().equals("R" + specificFolder)) {
+                    if (imgData.getFileName().toString().equals("R" + specificFolder)) {
                         return true;
                     }
                 }
@@ -28,24 +36,34 @@ public class L2aUtils {
         return false;
     }
 
-    public static boolean checkMetadataSpecificFolder(File fileMetadata, String specificFolder) {
+    public static boolean checkMetadataSpecificFolder(VirtualPath pathMetadata, String specificFolder) {
 
         if (specificFolder.equals("Multi"))
             return true;
-        Path rootPath = fileMetadata.toPath().getParent();
-        File granuleFolder = rootPath.resolve("GRANULE").toFile();
-        File[] files = granuleFolder.listFiles();
+        VirtualPath rootPath = pathMetadata.getParent();
+        VirtualPath granuleFolder = rootPath.resolve("GRANULE");
+        VirtualPath[] paths;
+        try {
+            paths = granuleFolder.listPaths();
+        } catch (IOException e) {
+            paths = null;
+        }
 
-        if (files != null) {
-            for (File granule : files) {
+        if (paths != null) {
+            for (VirtualPath granule : paths) {
                 if (granule.isDirectory()) {
-                    Path granulePath = new File(granule.toString()).toPath();
-                    File internalGranuleFolder = granulePath.resolve("IMG_DATA").toFile();
-                    File[] files2 = internalGranuleFolder.listFiles();
+
+                    VirtualPath internalGranuleFolder = granule.resolve("IMG_DATA");
+                    VirtualPath[] files2 ;
+                    try {
+                        files2 = internalGranuleFolder.listPaths();
+                    } catch (IOException e) {
+                        files2 = null;
+                    }
                     if (files2 != null) {
-                        for (File imgData : files2) {
+                        for (VirtualPath imgData : files2) {
                             if (imgData.isDirectory()) {
-                                if (imgData.getName().equals("R" + specificFolder)) {
+                                if (imgData.getFileName().toString().equals("R" + specificFolder)) {
                                     return true;
                                 }
                             }

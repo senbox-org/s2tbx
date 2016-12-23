@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l2a;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2Metadata;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
@@ -28,7 +29,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,12 +49,12 @@ public class L2aMetadata extends S2Metadata {
 
     protected Logger logger = SystemUtils.LOG;
 
-    public static L2aMetadata parseHeader(File file, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
-        return new L2aMetadata(file.toPath(), granuleName, config, epsg, productResolution, isAGranule, namingConvention);
+    public static L2aMetadata parseHeader(VirtualPath path, String granuleName, S2Config config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+        return new L2aMetadata(path, granuleName, config, epsg, productResolution, isAGranule, namingConvention);
     }
 
 
-    private L2aMetadata(Path path, String granuleName, S2Config s2config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private L2aMetadata(VirtualPath path, String granuleName, S2Config s2config, String epsg, S2SpatialResolution productResolution, boolean isAGranule, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
         super(s2config);
         resetTileList();
 
@@ -66,7 +66,7 @@ public class L2aMetadata extends S2Metadata {
     }
 
 
-    private void initProduct(Path path, String granuleName, String epsg, S2SpatialResolution productResolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private void initProduct(VirtualPath path, String granuleName, String epsg, S2SpatialResolution productResolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
         IL2aProductMetadata metadataProduct = L2aMetadataFactory.createL2aProductMetadata(path);
         if(metadataProduct == null) {
             throw new IOException(String.format("Unable to read metadata from %s",path.getFileName().toString()));
@@ -91,16 +91,16 @@ public class L2aMetadata extends S2Metadata {
         getMetadataElements().add(metadataProduct.getMetadataElement());
 
         //add datastrip metadatas
-        for(Path datastripPath : namingConvention.getDatastripXmlPaths()) {
+        for(VirtualPath datastripPath : namingConvention.getDatastripXmlPaths()) {
             IL2aDatastripMetadata metadataDatastrip = L2aMetadataFactory.createL2aDatastripMetadata(datastripPath);
             getMetadataElements().add(metadataDatastrip.getMetadataElement());
         }
 
         //Check if the tiles found in metadata exist and add them to granuleMetadataPathList
-        ArrayList<Path> granuleMetadataPathList = new ArrayList<>();
+        ArrayList<VirtualPath> granuleMetadataPathList = new ArrayList<>();
         for (String tileName : tileNames) {
-            Path folder = namingConvention.findGranuleFolderFromTileId(tileName);
-            Path xml = namingConvention.findXmlFromTileId(tileName);
+            VirtualPath folder = namingConvention.findGranuleFolderFromTileId(tileName);
+            VirtualPath xml = namingConvention.findXmlFromTileId(tileName);
             if(folder == null || xml == null) {
                 String errorMessage = "Corrupted product: the file for the granule " + tileName + " is missing";
                 logger.log(Level.WARNING, errorMessage);
@@ -111,12 +111,12 @@ public class L2aMetadata extends S2Metadata {
         }
 
         //Init Tiles
-        for (Path granuleMetadataPath : granuleMetadataPathList) {
+        for (VirtualPath granuleMetadataPath : granuleMetadataPathList) {
             initTile(granuleMetadataPath, epsg, productResolution, namingConvention);
         }
     }
 
-    private void initTile(Path path, String epsg, S2SpatialResolution resolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
+    private void initTile(VirtualPath path, String epsg, S2SpatialResolution resolution, INamingConvention namingConvention) throws IOException, ParserConfigurationException, SAXException {
 
         IL2aGranuleMetadata granuleMetadata = L2aMetadataFactory.createL2aGranuleMetadata(path);
         if(granuleMetadata == null) {
