@@ -25,7 +25,8 @@ public class S2LutUtils {
         return wvInside && szaInside && vzaInside && raaInside;
     }
 
-    public static synchronized double getMaxAOT(InputPixelData ipd, LookupTable s2Lut, double[] aot) {
+//    public static synchronized double getMaxAOT(InputPixelData ipd, LookupTable s2Lut, double[] aot) {
+    public static double getMaxAOT(InputPixelData ipd, LookupTable s2Lut, double[] aot) {
 
         // input required:
         //        "water_vapour": [500,.., 5000],
@@ -75,7 +76,8 @@ public class S2LutUtils {
         return aot[iAot - 1] + (aot[iAot] - aot[iAot - 1]) * (ipd.toaReflec[0] - rhoPath0) / (rhoPath1 - rhoPath0);
     }
 
-    public static synchronized void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, double tau) {
+//    public static synchronized void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, double tau) {
+    public static void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, double tau) {
         // todo: ugly that void is returned here
 
         Guardian.assertNotNull("InputPixelData.diffuseFrac[][]", ipd.diffuseFrac);

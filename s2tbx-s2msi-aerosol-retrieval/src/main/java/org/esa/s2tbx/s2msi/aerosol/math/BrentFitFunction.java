@@ -46,7 +46,7 @@ public class BrentFitFunction implements Function {
 
 
     @Override
-    public synchronized double f(double tau) {
+    public double f(double tau) {
         double fmin = 0;
         for (InputPixelData anInPixField : inPixField) {
             fmin += fPix(tau, anInPixField);
@@ -54,7 +54,7 @@ public class BrentFitFunction implements Function {
         return fmin;
     }
 
-    public synchronized double getMaxAOT() {
+    public double getMaxAOT() {
         int min = 0;
         for (int i = 0; i < inPixField.length; i++) {
             if (inPixField[i].getToaReflec()[0] < inPixField[min].getToaReflec()[0]) {

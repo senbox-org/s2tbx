@@ -5,15 +5,11 @@
 
 package org.esa.s2tbx.s2msi.aerosol.util;
 
-import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.aerosol.AotConsts;
+import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.snap.core.datamodel.*;
-import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.common.BandMathsOp;
 import org.esa.snap.core.util.Guardian;
-
-import java.awt.*;
-import java.io.IOException;
 
 /**
  *
@@ -65,6 +61,15 @@ public class AerosolUtils {
         bandMathsOp.setSourceProduct(sourceProduct);
         bandMathsOp.setTargetBandDescriptors(bandDescriptor);
         return bandMathsOp.getTargetProduct().getBandAt(0);
+    }
+
+    public static boolean isS2GeometryBand(Band b) {
+        for (String name:S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES) {
+            if (b.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static double[] normalize(double[] doubles) {

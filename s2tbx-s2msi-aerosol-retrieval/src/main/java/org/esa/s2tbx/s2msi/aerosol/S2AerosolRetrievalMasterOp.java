@@ -21,12 +21,12 @@
 
 package org.esa.s2tbx.s2msi.aerosol;
 
+import org.esa.s2tbx.s2msi.aerosol.util.AerosolUtils;
 import org.esa.s2tbx.s2msi.idepix.util.AlgorithmSelector;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -34,11 +34,8 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
-import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.ProductUtils;
 
-import java.awt.*;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -63,20 +60,17 @@ public class S2AerosolRetrievalMasterOp extends Operator {
     @Parameter(defaultValue = "true")
     private boolean copyToaReflBands;
 
+    @Parameter(defaultValue = "true")
+    private boolean copyGeometryBands;
+
     @Parameter(defaultValue = "true", description = "if true, aerosol retrieval is done, otherwise Idepix only")
     private boolean computeAerosol;
 
-    @Parameter(defaultValue = "false")
+    @Parameter(defaultValue = "true")
     private boolean filling;
 
-    @Parameter(defaultValue = "false")
+    @Parameter(defaultValue = "true")
     private boolean upscaling;
-
-    @Parameter(defaultValue = "1")
-    private int soilSpecId;
-
-    @Parameter(defaultValue = "5")
-    private int vegSpecId;
 
     @Parameter(description = "Full path to S2 Lookup Table.",    // todo: define how to finally specify
             label = "Path to S2 Lookup Table")
@@ -87,9 +81,6 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             defaultValue = "20")
     private int scale;
 
-    @Parameter(defaultValue = "0.3")
-    private float ndviThreshold;
-
     @Override
     public void initialize() throws OperatorException {
         final boolean inputProductIsValid = S2IdepixUtils.validateInputProduct(sourceProduct, AlgorithmSelector.MSI);
@@ -97,18 +88,12 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             throw new OperatorException(S2IdepixConstants.INPUT_INCONSISTENCY_ERROR_MESSAGE);
         }
 
-        Dimension targetDim = ImageManager.getPreferredTileSize(sourceProduct);         // original grid
-        Dimension aotDim = new Dimension(targetDim.width / 9, targetDim.height / 9);    // AOT grid (downscaled)
-
-        RenderingHints rhTarget = new RenderingHints(GPF.KEY_TILE_SIZE, targetDim);
-        RenderingHints rhAot = new RenderingHints(GPF.KEY_TILE_SIZE, aotDim);
-
         S2AerosolMsiPreparationOp s2msiPrepOp = new S2AerosolMsiPreparationOp();
         s2msiPrepOp.setParameterDefaultValues();
         s2msiPrepOp.setSourceProduct(sourceProduct);
         final Product extendedSourceProduct = s2msiPrepOp.getTargetProduct();
 
-        setTargetProduct(extendedSourceProduct);    // first test break  --> OK
+        setTargetProduct(extendedSourceProduct);
 
         Product aotDownscaledProduct = extendedSourceProduct;
         if (computeAerosol) {
@@ -116,31 +101,26 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             s2AerosolOp.setParameterDefaultValues();
             s2AerosolOp.setSourceProduct(extendedSourceProduct);
             s2AerosolOp.setParameter("pathToLut", pathToLut);
-            s2AerosolOp.setParameter("soilSpecId", soilSpecId);
-            s2AerosolOp.setParameter("vegSpecId", vegSpecId);
             s2AerosolOp.setParameter("scale", scale);
-            s2AerosolOp.setParameter("ndviThreshold", ndviThreshold);
             aotDownscaledProduct = s2AerosolOp.getTargetProduct();
         }
 
         Product aotGapFilledProduct = aotDownscaledProduct;
         if (computeAerosol && filling) {
-            Map<String, Product> gapFillSourceProducts = new HashMap<>(2);
-            gapFillSourceProducts.put("aotProduct", aotDownscaledProduct);
-            aotGapFilledProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolGapFillingOp.class),
-                                                    GPF.NO_PARAMS, gapFillSourceProducts);
+            S2AerosolGapFillingOp gapFillingOp = new S2AerosolGapFillingOp();
+            gapFillingOp.setParameterDefaultValues();
+            gapFillingOp.setSourceProduct("aotProduct", aotDownscaledProduct);
+            aotGapFilledProduct = gapFillingOp.getTargetProduct();
         }
 
         targetProduct = aotGapFilledProduct;     // second test break: set upscaling to false
         if (computeAerosol && upscaling) {
-            // todo: does not yet work
-            Map<String, Product> upsclProducts = new HashMap<>(2);
-            upsclProducts.put("lowresProduct", aotGapFilledProduct);
-            upsclProducts.put("hiresProduct", extendedSourceProduct);
-            Map<String, Object> sclParams = new HashMap<>(1);
-            sclParams.put("scale", scale);
-            Product aotOrigResolutionProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2AerosolUpscaleOp.class),
-                                                                 sclParams, upsclProducts, rhTarget);
+            S2AerosolUpscaleOp upscaleOp = new S2AerosolUpscaleOp();
+            upscaleOp.setParameterDefaultValues();
+            upscaleOp.setSourceProduct("lowresProduct", aotGapFilledProduct);
+            upscaleOp.setSourceProduct("hiresProduct", extendedSourceProduct);
+            upscaleOp.setParameter("scale", scale);
+            Product aotOrigResolutionProduct = upscaleOp.getTargetProduct();
 
             targetProduct = mergeToTargetProduct(extendedSourceProduct, aotOrigResolutionProduct);
             ProductUtils.copyPreferredTileSize(extendedSourceProduct, targetProduct);
@@ -169,7 +149,17 @@ public class S2AerosolRetrievalMasterOp extends Operator {
                     !targetProduct.containsBand(sourceBandName) &&
                     sourceBand.getSpectralWavelength() > 0);
 
-            if (copyBand && !targetProduct.containsBand(sourceBandName)) {
+            if (copyBand) {
+                ProductUtils.copyBand(sourceBandName, reflProduct, targetProduct, true);
+            }
+        }
+        for (Band sourceBand : reflProduct.getBands()) {
+            final String sourceBandName = sourceBand.getName();
+            final boolean copyBand = (copyGeometryBands &&
+                    !targetProduct.containsBand(sourceBandName) &&
+                    AerosolUtils.isS2GeometryBand(sourceBand));
+
+            if (copyBand) {
                 ProductUtils.copyBand(sourceBandName, reflProduct, targetProduct, true);
             }
         }

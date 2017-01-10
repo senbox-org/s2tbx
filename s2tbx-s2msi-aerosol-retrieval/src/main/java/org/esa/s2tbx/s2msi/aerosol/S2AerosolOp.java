@@ -12,6 +12,7 @@ import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
+import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
@@ -28,13 +29,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * todo: add comment
- * To change this template use File | Settings | File Templates.
- * Date: 22.09.2016
- * Time: 14:25
+ * Aerosol retrieval operator from S2 MSI following USwansea algorithm as used in GlobAlbedo project.
  *
  * @author olafd
  */
+@OperatorMetadata(alias = "AerosolRetrieval.S2.Aerosol",
+        description = "Aerosol retrieval operator from S2 MSI following USwansea algorithm as used in GlobAlbedo project.",
+        authors = "Olaf Danne, Marco Zuehlke, Grit Kirches, Andreas Heckel",
+        internal = true,
+        version = "1.0",
+        copyright = "(C) 2010, 2016 by University Swansea and Brockmann Consult")
 public class S2AerosolOp extends Operator {
 
     @SourceProduct
@@ -50,11 +54,11 @@ public class S2AerosolOp extends Operator {
     // todo: define what we need from this
     private String surfaceSpecName = "surface_reflectance_spec.asc";
 
-//    @Parameter(defaultValue = "2")
+    //    @Parameter(defaultValue = "2")
 //    private int vegSpecId;
     private int vegSpecId = 2;
 
-//    @Parameter(defaultValue = "1")
+    //    @Parameter(defaultValue = "1")
 //    private int soilSpecId;
     private int soilSpecId = 1;
 
@@ -91,6 +95,9 @@ public class S2AerosolOp extends Operator {
     private String[] auxBandNames;
 
     private double julianDay;
+
+//    private static int _xdebug = 20;
+//    private static int _ydebug = 70;
 
     @Override
     public void initialize() throws OperatorException {
@@ -137,6 +144,12 @@ public class S2AerosolOp extends Operator {
     }
 
     @Override
+    public void dispose() {
+        targetProduct.setSceneGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 2));
+        super.dispose();
+    }
+
+    @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm) throws OperatorException {
 
         Rectangle srcRec = getSourceRectangle(targetRectangle, pixelWindow);
@@ -154,9 +167,6 @@ public class S2AerosolOp extends Operator {
         for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
             checkForCancellation();
             for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
-                if (x == 0) {
-//                    System.out.println("x = " + x);
-                }
                 processSuperPixel(sourceTiles, x, y, targetTiles);
             }
             pm.worked(1);
@@ -164,10 +174,10 @@ public class S2AerosolOp extends Operator {
         pm.done();
     }
 
-    private void processSuperPixel(Map<String, Tile> sourceTiles, int iX, int iY, Map<Band, Tile> targetTiles) {
+    private void processSuperPixel(Map<String, Tile> sourceTiles, int x, int y, Map<Band, Tile> targetTiles) {
         // read pixel data and init brent fit
         BrentFitFunction brentFitFunction = null;
-        InputPixelData[] inPixField = readDarkestNPixels(sourceTiles, iX, iY, pixelWindow);
+        InputPixelData[] inPixField = readDarkestNPixels(sourceTiles, x, y, pixelWindow);
         if (inPixField != null) {
             brentFitFunction = new BrentFitFunction(BrentFitFunction.SPECTRAL_MODEL,
                                                     inPixField,
@@ -178,7 +188,7 @@ public class S2AerosolOp extends Operator {
                                                     soilSurfSpec,
                                                     vegSurfSpec);
         }
-        retrieveAndSetTarget(inPixField, brentFitFunction, targetTiles, iX, iY);
+        retrieveAndSetTarget(inPixField, brentFitFunction, targetTiles, x, y);
     }
 
     private void retrieveAndSetTarget(InputPixelData[] inPixField,
@@ -226,7 +236,7 @@ public class S2AerosolOp extends Operator {
         targetProduct = new Product(productName, productType, tarRasterWidth, tarRasterHeight);
         createTargetProductBands();
 
-        targetProduct.setSceneGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 2));
+//        targetProduct.setSceneGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 2));
         setTargetProduct(targetProduct);
 
     }
@@ -269,7 +279,6 @@ public class S2AerosolOp extends Operator {
     }
 
     private InputPixelData[] readDarkestNPixels(Map<String, Tile> sourceTiles, int iX, int iY, Rectangle pixelWindow) {
-        // todo: find darkest pixels from band 3 (not from NDVI)
         boolean valid = uniformityTest(sourceTiles, iX, iY);
         if (!valid) {
             return null;
@@ -300,20 +309,19 @@ public class S2AerosolOp extends Operator {
         }
 
         // return null if not enough valid pixels
-//        if (nValid < 0.95 * pixelWindow.width * pixelWindow.height) {
         if (nValid < 0.25 * pixelWindow.width * pixelWindow.height) {
             return null;
         }
 
         Arrays.sort(b3Arr);
-        double b3Threshold = 0.0; // todo: define
+        double b3Threshold = 0.0; // todo: define. Do we need this??
         if (b3Arr[b3Arr.length - NPixel] > b3Threshold) {
             for (int y = yOffset; y < yOffset + pixelWindow.height; y++) {
                 for (int x = xOffset; x < xOffset + pixelWindow.width; x++) {
                     valid = sourceTiles.get(validName).getSampleBoolean(x, y);
                     b3Refl = sourceTiles.get(S2IdepixConstants.S2_MSI_REFLECTANCE_BAND_NAMES[2]).getSampleFloat(x, y);
-                    if (valid && (b3Refl >= b3Arr[b3Arr.length - 2*NPixel])
-                            && (b3Refl <= b3Arr[b3Arr.length - NPixel- 1])) {
+                    if (valid && (b3Refl >= b3Arr[b3Arr.length - 2 * NPixel])
+                            && (b3Refl <= b3Arr[b3Arr.length - NPixel - 1])) {
                         valid = readAllValues(x, y, sourceTiles, tileValues);
                         InputPixelData ipd = createInPixelData(tileValues);
                         if (valid && S2LutUtils.isInsideLut(ipd, s2Lut)) {
@@ -347,7 +355,7 @@ public class S2AerosolOp extends Operator {
                 targetTiles.get(targetProduct.getBand("latitude")).setSample(x, y, latLon[0]);
             } else if (t.getRasterDataNode() == lonBand) {
                 targetTiles.get(targetProduct.getBand("longitude")).setSample(x, y, latLon[1]);
-            }else {
+            } else {
                 t.setSample(x, y, t.getRasterDataNode().getNoDataValue());
             }
         }
@@ -378,7 +386,9 @@ public class S2AerosolOp extends Operator {
                 if (!(line.isEmpty() || line.startsWith("#") || line.startsWith("*"))) {
                     String[] stmp = line.split("[ \t]+");
                     float val = Float.valueOf(stmp[0]);
-                    if (val < 100) val *= 1000;  // conversion from um to nm
+                    if (val < 100) {
+                        val *= 1000;  // conversion from um to nm
+                    }
                     fullWvlList.add(val);
                     fullSoilList.add(Float.valueOf(stmp[this.soilSpecId]));
                     fullVegList.add(Float.valueOf(stmp[this.vegSpecId]));
