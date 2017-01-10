@@ -17,9 +17,11 @@
 
 package org.esa.s2tbx.dataio.s2.ortho;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleDirFilename;
 import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename;
@@ -50,7 +52,7 @@ public class S2ProductCRSCache {
 
 
         public S2ProductCRSCacheEntry (Path path) {
-            namingConvention = NamingConventionFactory.createNamingConvention(path);
+            namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(path));
             if(namingConvention != null) {
                 inputType = namingConvention.getInputType();
                 level = namingConvention.getProductLevel();
@@ -58,12 +60,6 @@ public class S2ProductCRSCache {
                     epsgCodeList.addAll(namingConvention.getEPSGList());
                 }
             }
-
-            /*inputType = S2ProductNamingManager.getInputType(path);
-            if(inputType == null) return;
-            level = S2ProductNamingManager.getLevel(path,inputType);
-            if(level == S2Config.Sentinel2ProductLevel.UNKNOWN) return;
-            epsgCodeList.addAll(S2ProductNamingManager.getEpsgCodeList(path,inputType));*/
         }
 
 

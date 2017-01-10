@@ -17,14 +17,17 @@
 
 package org.esa.s2tbx.dataio.s2;
 
+import com.bc.ceres.core.VirtualDir;
 import com.bc.ceres.glevel.MultiLevelImage;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.openjpeg.OpenJpegUtils;
 import org.esa.s2tbx.dataio.readers.PathUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
+import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
 import org.esa.snap.core.dataio.AbstractProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
@@ -60,6 +63,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     private S2Config config;
     private File cacheDir;
     private Product product;
+    VirtualPath inputPath;
 
     protected INamingConvention namingConvention;
 
@@ -92,11 +96,11 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         return cacheDir;
     }
 
-    protected abstract Product getMosaicProduct(File granuleMetadataFile) throws IOException;
+    protected abstract Product getMosaicProduct(VirtualPath metadataPath) throws IOException;
 
     protected abstract String getReaderCacheDir();
 
-    protected void initCacheDir(File productDir) throws IOException {
+    protected void initCacheDir(VirtualPath productPath) throws IOException {
         Path versionFile = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("version/version.properties");
         Properties versionProp = new Properties();
 
@@ -112,20 +116,20 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             throw new IOException("Unable to get project.version property from " + versionFile);
         }
 
-        String md5sum = getMD5sum(productDir.toString());
+        String md5sum = getMD5sum(productPath.getFullPathString());
         if (md5sum == null) {
-            throw new IOException("Unable to get md5sum of path " + productDir.toString());
+            throw new IOException("Unable to get md5sum of path " + productPath.getFullPathString());
         }
 
         cacheDir = new File(new File(SystemUtils.getCacheDir(), "s2tbx" + File.separator + getReaderCacheDir() + File.separator + version + File.separator + md5sum),
-                            productDir.getName());
+                            productPath.getFileName().toString());
 
         //noinspection ResultOfMethodCallIgnored
         cacheDir.mkdirs();
         if (!cacheDir.exists() || !cacheDir.isDirectory() || !cacheDir.canWrite()) {
             throw new IOException("Can't access package cache directory");
         }
-        SystemUtils.LOG.fine("Successfully set up cache dir for product " + productDir.getName() + " to " + cacheDir.toString());
+        SystemUtils.LOG.fine("Successfully set up cache dir for product " + productPath.getFileName().toString() + " to " + cacheDir.toString());
     }
 
 
@@ -133,32 +137,37 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
     protected Product readProductNodesImpl() throws IOException {
         SystemUtils.LOG.fine("readProductNodeImpl, " + getInput().toString());
 
-        final File inputFile;
-        File file;
+        if(getInput() instanceof File) {
+            final File inputFile;
+            File file;
 
-        String longInput = GetLongPathNameW(getInput().toString());
-        if (longInput.length() != 0) {
-            file = new File(longInput);
-        } else {
-            file = new File(getInput().toString());
+            String longInput = GetLongPathNameW(getInput().toString());
+            if (longInput.length() != 0) {
+                file = new File(longInput);
+            } else {
+                file = new File(getInput().toString());
+            }
+
+            namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
+        } else if(getInput() instanceof VirtualPath) {
+            namingConvention = NamingConventionFactory.createNamingConvention((VirtualPath) getInput());
         }
 
-        namingConvention = NamingConventionFactory.createNamingConvention(file.toPath());
+
         if(namingConvention == null) {
             throw new IOException("Unhandled file type.");
         }
 
-        inputFile = namingConvention.getInputXml().toFile();
+        inputPath = namingConvention.getInputXml();
 
-        if (!inputFile.exists()) {
-            throw new FileNotFoundException(inputFile.getPath());
+        if (!inputPath.exists()) {
+            throw new FileNotFoundException(inputPath.getFullPathString());
         }
 
         if (namingConvention.hasValidStructure()) {
-            product = getMosaicProduct(inputFile);
+            product = getMosaicProduct(inputPath);
 
-            addQuicklook(product, getQuicklookFile(inputFile));
-
+            addQuicklook(product, getQuicklookFile(inputPath));
             if (product != null) {
                 product.setModified(false);
             }
@@ -175,15 +184,24 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
         }
     }
 
-    private File getQuicklookFile(final File metadataFile) {
-        File[] files = metadataFile.getParentFile().listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".png") && (name.startsWith("S2") || name.startsWith("BWI_"));
-            }
-        });
-        if (files != null && files.length > 0) {
-            return files[0];
+    private File getQuicklookFile(final VirtualPath metadataPath) {
+        String[] files = null;
+        try {
+            files = metadataPath.getParent().list();
+        } catch (IOException e) {
+            return null;
         }
+
+        if(files == null || files.length == 0) {
+            return null;
+        }
+
+        for(String file : files) {
+            if(file.endsWith(".png") && (file.startsWith("S2") || file.startsWith("BWI_"))) {
+                return metadataPath.resolveSibling(file).toFile();
+            }
+        }
+
         return null;
     }
 
@@ -194,7 +212,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @param isGranule        true if it is the metadata file of a granule
      * @return false when every tileLayout is null
      */
-    protected boolean updateTileLayout(Path metadataFilePath, boolean isGranule) {
+    protected boolean updateTileLayout(VirtualPath metadataFilePath, boolean isGranule) {
         boolean valid = false;
         for (S2SpatialResolution layoutResolution : S2SpatialResolution.values()) {
             TileLayout tileLayout;
@@ -221,11 +239,11 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @param resolution              the resolution for which we wan to find the tile layout
      * @return the tile layout for the resolution, or {@code null} if none was found
      */
-    public TileLayout retrieveTileLayoutFromGranuleMetadataFile(Path granuleMetadataFilePath, S2SpatialResolution resolution) {
+    public TileLayout retrieveTileLayoutFromGranuleMetadataFile(VirtualPath granuleMetadataFilePath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
 
-        if (Files.exists(granuleMetadataFilePath) && granuleMetadataFilePath.toString().endsWith(".xml")) {
-            Path granuleDirPath = granuleMetadataFilePath.getParent();
+        if (granuleMetadataFilePath.exists() && granuleMetadataFilePath.getFileName().toString().endsWith(".xml")) {
+            VirtualPath granuleDirPath = granuleMetadataFilePath.getParent();
             tileLayoutForResolution = retrieveTileLayoutFromGranuleDirectory(granuleDirPath, resolution);
         }
 
@@ -241,19 +259,21 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @param resolution              the resolution for which we wan to find the tile layout
      * @return the tile layout for the resolution, or {@code null} if none was found
      */
-    public TileLayout retrieveTileLayoutFromProduct(Path productMetadataFilePath, S2SpatialResolution resolution) {
+    public TileLayout retrieveTileLayoutFromProduct(VirtualPath productMetadataFilePath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
 
-        if (Files.exists(productMetadataFilePath) && productMetadataFilePath.toString().endsWith(".xml")) {
-            Path productFolder = productMetadataFilePath.getParent();
-            Path granulesFolder = productFolder.resolve("GRANULE");
+        if (productMetadataFilePath.exists() && productMetadataFilePath.getFileName().toString().endsWith(".xml")) {
+            //VirtualPath productFolder = productMetadataFilePath.getParent();
+            VirtualPath granulesFolder = productMetadataFilePath.resolveSibling("GRANULE");
             try {
-                DirectoryStream<Path> granulesFolderStream = Files.newDirectoryStream(granulesFolder);
+                VirtualPath[] granulesFolderList = granulesFolder.listPaths();
 
-                for (Path granulePath : granulesFolderStream) {
-                    tileLayoutForResolution = retrieveTileLayoutFromGranuleDirectory(granulePath, resolution);
-                    if (tileLayoutForResolution != null) {
-                        break;
+                if(granulesFolderList != null && granulesFolderList.length > 0) {
+                    for (VirtualPath granulePath : granulesFolderList) {
+                        tileLayoutForResolution = retrieveTileLayoutFromGranuleDirectory(granulePath, resolution);
+                        if (tileLayoutForResolution != null) {
+                            break;
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -275,17 +295,18 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @param resolution          the resolution for which we wan to find the tile layout
      * @return the tile layout for the resolution, or {@code null} if none was found
      */
-    private TileLayout retrieveTileLayoutFromGranuleDirectory(Path granuleMetadataPath, S2SpatialResolution resolution) {
+    private TileLayout retrieveTileLayoutFromGranuleDirectory(VirtualPath granuleMetadataPath, S2SpatialResolution resolution) {
         TileLayout tileLayoutForResolution = null;
 
-        Path pathToImages = granuleMetadataPath.resolve("IMG_DATA");
+        VirtualPath pathToImages = granuleMetadataPath.resolve("IMG_DATA");
 
         try {
 
-            for (Path imageFilePath : getImageDirectories(pathToImages, resolution)) {
+
+            for (VirtualPath imageFilePath : getImageDirectories(pathToImages, resolution)) {
                 try {
                     tileLayoutForResolution =
-                            OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath);
+                            OpenJpegUtils.getTileLayoutWithOpenJPEG(S2Config.OPJ_INFO_EXE, imageFilePath.getFile().toPath());
                     if (tileLayoutForResolution != null) {
                         break;
                     }
@@ -331,8 +352,27 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
      * @return a {@link DirectoryStream<Path>}, iterator on the list of image path
      * @throws IOException if an I/O error occurs
      */
-    protected DirectoryStream<Path> getImageDirectories(Path pathToImages, S2SpatialResolution resolution) throws IOException {
-        return Files.newDirectoryStream(pathToImages, entry -> {
+    protected ArrayList<VirtualPath> getImageDirectories(VirtualPath pathToImages, S2SpatialResolution resolution) throws IOException {
+
+        ArrayList<VirtualPath> imageDirectories = new ArrayList<>();
+        VirtualPath[] imagePaths = pathToImages.listPaths();
+        if(imagePaths == null || imagePaths.length == 0) {
+            return imageDirectories;
+        }
+
+        String[] bandNames = getBandNames(resolution);
+        if (bandNames != null) {
+            for (String bandName : bandNames) {
+                for(VirtualPath imagePath : imagePaths) {
+                    if (imagePath.getFileName().toString().endsWith(bandName + ".jp2")) {
+                        imageDirectories.add(imagePath);
+                    }
+                }
+            }
+        }
+
+        return imageDirectories;
+        /*return Files.newDirectoryStream(pathToImages, entry -> {
             String[] bandNames = getBandNames(resolution);
             if (bandNames != null) {
                 for (String bandName : bandNames) {
@@ -342,7 +382,7 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 }
             }
             return false;
-        });
+        });*/
     }
 
     protected Band addBand(Product product, BandInfo bandInfo, Dimension nativeResolutionDimensions) {
@@ -405,16 +445,19 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
                 }
             }
         }
+        if(inputPath != null) {
+            inputPath.close();
+        }
         super.close();
     }
 
     public static class BandInfo {
-        private final Map<String, File> tileIdToFileMap;
+        private final Map<String, VirtualPath> tileIdToPathMap;
         private final S2BandInformation bandInformation;
         private final TileLayout imageLayout;
 
-        public BandInfo(Map<String, File> tileIdToFileMap, S2BandInformation spectralInformation, TileLayout imageLayout) {
-            this.tileIdToFileMap = Collections.unmodifiableMap(tileIdToFileMap);
+        public BandInfo(Map<String, VirtualPath> tileIdToPathMap, S2BandInformation spectralInformation, TileLayout imageLayout) {
+            this.tileIdToPathMap = Collections.unmodifiableMap(tileIdToPathMap);
             this.bandInformation = spectralInformation;
             this.imageLayout = imageLayout;
         }
@@ -423,8 +466,8 @@ public abstract class Sentinel2ProductReader extends AbstractProductReader {
             return bandInformation;
         }
 
-        public Map<String, File> getTileIdToFileMap() {
-            return tileIdToFileMap;
+        public Map<String, VirtualPath> getTileIdToPathMap() {
+            return tileIdToPathMap;
         }
 
         public TileLayout getImageLayout() {

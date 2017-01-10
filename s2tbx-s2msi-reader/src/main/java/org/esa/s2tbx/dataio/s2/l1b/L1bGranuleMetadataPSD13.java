@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.s2.l1b;
 import com.bc.ceres.core.Assert;
 import com.vividsolutions.jts.geom.Coordinate;
 import org.apache.commons.io.IOUtils;
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.jp2.TileLayout;
 import org.esa.s2tbx.dataio.metadata.GenericXmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -52,13 +53,13 @@ public class L1bGranuleMetadataPSD13 extends GenericXmlMetadata implements IL1bG
         }
     }
 
-    public static L1bGranuleMetadataPSD13 create(Path path) throws IOException, ParserConfigurationException, SAXException {
+    public static L1bGranuleMetadataPSD13 create(VirtualPath path) throws IOException, ParserConfigurationException, SAXException {
         Assert.notNull(path);
         L1bGranuleMetadataPSD13 result = null;
         InputStream stream = null;
         try {
-            if (Files.exists(path)) {
-                stream = Files.newInputStream(path, StandardOpenOption.READ);
+            if (path.exists()) {
+                stream = path.getInputStream();
                 L1bGranuleMetadataPSD13Parser parser = new L1bGranuleMetadataPSD13Parser(L1bGranuleMetadataPSD13.class);
                 result = parser.parse(stream);
                 result.updateName();

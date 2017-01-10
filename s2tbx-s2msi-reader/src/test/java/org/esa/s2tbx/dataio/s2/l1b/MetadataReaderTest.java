@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.junit.Test;
 
 import java.io.File;
@@ -32,7 +33,7 @@ public class MetadataReaderTest {
 
     public IL1bProductMetadata getUserProduct() throws Exception
     {
-        IL1bProductMetadata productMetadata = L1bMetadataFactory.createL1bProductMetadata(buildPathResource("S2A_OPER_MTD_SAFL1B_PDMC_20140926T120000_R069_V20130707T171925_20130707T172037.xml"));
+        IL1bProductMetadata productMetadata = L1bMetadataFactory.createL1bProductMetadata(new VirtualPath(buildPathResource("S2A_OPER_MTD_SAFL1B_PDMC_20140926T120000_R069_V20130707T171925_20130707T172037.xml"), null));
 
         return productMetadata;
     }
@@ -61,7 +62,7 @@ public class MetadataReaderTest {
     {
         IL1bGranuleMetadata granuleMetadata = null;
 
-        granuleMetadata = L1bMetadataFactory.createL1bGranuleMetadata(buildPathResource("S2A_OPER_MTD_L1B_GR_MPS__20140926T120000_S20130707T171927_D06.xml"));
+        granuleMetadata = L1bMetadataFactory.createL1bGranuleMetadata(new VirtualPath(buildPathResource("S2A_OPER_MTD_L1B_GR_MPS__20140926T120000_S20130707T171927_D06.xml"),null));
         assertNotNull(granuleMetadata);
     }
 
@@ -70,7 +71,7 @@ public class MetadataReaderTest {
     {
         IL1bDatastripMetadata datastripMetadata = null;
 
-        datastripMetadata = L1bMetadataFactory.createL1bDatastripMetadata(buildPathResource("S2A_OPER_MTD_L1B_DS_MPS__20140926T120000_S20130707T171925.xml"));
+        datastripMetadata = L1bMetadataFactory.createL1bDatastripMetadata(new VirtualPath(buildPathResource("S2A_OPER_MTD_L1B_DS_MPS__20140926T120000_S20130707T171925.xml"),null));
         assertNotNull(datastripMetadata);
     }
 }

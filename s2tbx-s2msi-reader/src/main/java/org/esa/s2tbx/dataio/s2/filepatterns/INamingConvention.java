@@ -1,9 +1,9 @@
 package org.esa.s2tbx.dataio.s2.filepatterns;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2SpatialResolution;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -20,18 +20,18 @@ public interface INamingConvention {
     String[] getDatastripXmlREGEXs();
     boolean matches(String filename);
     boolean hasValidStructure();
-    Path getXmlFromDir(Path path);
+    VirtualPath getXmlFromDir(VirtualPath path);
     S2Config.Sentinel2InputType getInputType();
     S2Config.Sentinel2ProductLevel getProductLevel();
     Set<String> getEPSGList();
-    Path getInputXml();
-    Path getInputProductXml();
+    VirtualPath getInputXml();
+    VirtualPath getInputProductXml();
     S2SpatialResolution getResolution();
     String getProductName();
     boolean matchesProductMetadata(String filename);
-    ArrayList<Path> getDatastripXmlPaths();
-    ArrayList<Path> getGranulesXmlPaths();
+    ArrayList<VirtualPath> getDatastripXmlPaths();
+    ArrayList<VirtualPath> getGranulesXmlPaths();
     String findGranuleId(Collection<String> availableGranuleIds, String granuleFolder);
-    Path findGranuleFolderFromTileId(String tileId);
-    Path findXmlFromTileId(String tileID);
+    VirtualPath findGranuleFolderFromTileId(String tileId);
+    VirtualPath findXmlFromTileId(String tileID);
 }

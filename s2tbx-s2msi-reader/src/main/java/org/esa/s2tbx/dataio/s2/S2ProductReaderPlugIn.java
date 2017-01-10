@@ -17,6 +17,7 @@
 
 package org.esa.s2tbx.dataio.s2;
 
+import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
 
@@ -39,7 +40,7 @@ public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
 
     @Override
     public Class[] getInputTypes() {
-        return new Class[]{String.class, File.class};
+        return new Class[]{String.class, File.class, VirtualPath.class};
     }
 
 
