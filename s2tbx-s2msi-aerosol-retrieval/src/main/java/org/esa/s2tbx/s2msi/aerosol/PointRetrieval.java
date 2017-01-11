@@ -12,10 +12,10 @@ import org.esa.s2tbx.s2msi.aerosol.math.Function;
 /**
  * Provides aerosol retrieval class
  * currently not thread safe !!!
- *     subsequent calls to Brent and Powell.
- *     Somewhere along that line thread safety is broken
+ * subsequent calls to Brent and Powell.
+ * Somewhere along that line thread safety is broken
  * --> instantiate locally in computeTileStack()
- * 
+ *
  * @author akheckel
  */
 class PointRetrieval {
@@ -28,8 +28,16 @@ class PointRetrieval {
 
 // public methods
 
-    public synchronized RetrievalResults runRetrieval(double maxAOT) {
-        double[] brent = Brent.brent(0.001, 0.5 * maxAOT, maxAOT, brentFitFct, 5e-6);
+    //    public synchronized RetrievalResults runRetrieval(double maxAOT) {
+    public RetrievalResults runRetrieval(double maxAOT) {
+//        double[] brent = Brent.brent(0.001, 0.5 * maxAOT, maxAOT, brentFitFct, 5e-6);
+        double[] brent = Brent.brent(0.001, 0.5 * maxAOT, maxAOT, brentFitFct, 5e-3);   // should be enough?! speed-up of 40%
+
+        // test:
+//        double[] brent = new double[2];
+//        brent[0] = (new BrentSolver(5e-3)).solve(100, (UnivariateFunction) brentFitFct, 0.001, maxAOT, 0.5 * maxAOT);
+//        brent[1] = 0.0;
+
         float optAOT = (float) brent[0];
         float optErr = (float) brent[1];
         boolean failed = (optAOT <= 0.003);
@@ -45,15 +53,14 @@ class PointRetrieval {
     private double calcErrFromCurv(double optErr, double a) {
         if (a < 0) {
             return Math.sqrt(optErr / 0.8 * 2 / 1e-4) + 0.03;
-        }
-        else {
+        } else {
             return Math.sqrt(optErr / 0.8 * 2 / a) + 0.03;
         }
     }
 
     private double calcCurvature(double optAOT, double optErr, double maxAOT) {
-        double p1 = 0.33*maxAOT;
-        double p2 = 0.66*maxAOT;
+        double p1 = 0.33 * maxAOT;
+        double p2 = 0.66 * maxAOT;
         final double[] x0 = {1, 1, 1};
         final double[] x1 = {p1, optAOT, p2};
         final double[] x2 = {x1[0] * x1[0], x1[1] * x1[1], x1[2] * x1[2]};

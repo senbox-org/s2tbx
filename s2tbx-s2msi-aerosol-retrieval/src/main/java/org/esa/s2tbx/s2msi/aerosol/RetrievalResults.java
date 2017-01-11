@@ -24,23 +24,15 @@ class RetrievalResults {
         this.curvature = curv;
     }
 
-    public synchronized float getCurvature() {
-        return curvature;
-    }
-
-    public synchronized float getOptAOT() {
+    public float getOptAOT() {
         return optAOT;
     }
 
-    public synchronized float getOptErr() {
-        return optErr;
-    }
-
-    public synchronized float getRetrievalErr() {
+    public float getRetrievalErr() {
         return retrievalErr;
     }
 
-    public synchronized boolean isRetrievalFailed() {
+    public boolean isRetrievalFailed() {
         return retrievalFailed;
     }
 

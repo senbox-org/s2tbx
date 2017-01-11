@@ -30,9 +30,12 @@ public class S2LutInterpolationTest {
         Assume.assumeTrue(lutResource != null);
 
         assert lutResource != null;
+        final long t1 = System.currentTimeMillis();
         final File lutFile = new File(lutResource.getPath());
         S2LutAccessor s2LutAccessor = new S2LutAccessor(lutFile);
         snapS2Lut = s2LutAccessor.readLut(ProgressMonitor.NULL);
+        final long t2 = System.currentTimeMillis();
+        System.out.println("time (ms) for reading Lut = " + (t2 - t1));
     }
 
     @Test
@@ -289,6 +292,14 @@ public class S2LutInterpolationTest {
             result_wvl_13[i] = snapS2Lut.getValue(S2LutInterpolationTestInputArrays.lutGridCoordWvl_13[i]);
             assertEquals(expected_wvl_13[i], result_wvl_13[i], delta[i]);
         }
+
+        // speed test:
+        final long t1 = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            snapS2Lut.getValue(S2LutInterpolationTestInputArrays.lutGridCoordWvl_13[3]);
+        }
+        final long t2 = System.currentTimeMillis();
+        System.out.println("time (ms) for 1 million lookups: = " + (t2 - t1));
     }
 
 }

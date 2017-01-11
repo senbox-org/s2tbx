@@ -40,7 +40,9 @@ public class Brent {
             double xm = 0.5 * (a + b);
             double tol1 = tol * Math.abs(x) + ZEPS;
             double tol2 = 2.0 * tol1;
+//            System.out.println("x, xm = " + x + ", " + xm);
             if (Math.abs(x - xm) <= (tol2 - 0.5 * (b - a))) {
+//                System.out.println("iter = " + iter);
                 return new double[]{x, fx};
             }
             if (Math.abs(e) > tol1) {

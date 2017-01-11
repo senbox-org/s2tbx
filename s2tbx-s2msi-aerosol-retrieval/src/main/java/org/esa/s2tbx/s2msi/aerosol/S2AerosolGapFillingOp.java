@@ -9,6 +9,7 @@ import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
+import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.BitSetter;
@@ -19,13 +20,16 @@ import java.awt.*;
 import java.util.Map;
 
 /**
- * todo: add comment
- * To change this template use File | Settings | File Templates.
- * Date: 22.09.2016
- * Time: 14:28
+ * Operator for gap filling in aerosol retrieval from S2 MSI.
  *
  * @author olafd
  */
+@OperatorMetadata(alias = "AerosolRetrieval.S2.Gapfilling",
+        description = "Operator for gap filling in aerosol retrieval from S2 MSI.",
+        authors = "Olaf Danne, Marco Zuehlke, Grit Kirches, Andreas Heckel",
+        internal = true,
+        version = "1.0",
+        copyright = "(C) 2010, 2016 by University Swansea and Brockmann Consult")
 public class S2AerosolGapFillingOp extends Operator {
 
     private static final int F_INTERP = 1;
