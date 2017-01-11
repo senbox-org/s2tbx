@@ -1822,183 +1822,363 @@
     ],
     "masks": [
       {
-        "name": "detector_footprint_B2",
+        "name": "detector_footprint-B02-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B2"
       },
       {
-        "name": "detector_footprint_B3",
+        "name": "detector_footprint-B02-10",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "178,0,0",
+        "description": "Detector footprint mask - B2"
+      },
+      {
+        "name": "detector_footprint-B02-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B2"
+      },
+      {
+        "name": "detector_footprint-B02-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B2"
+      },
+      {
+        "name": "detector_footprint-B03-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B3"
       },
       {
-        "name": "detector_footprint_B4",
+        "name": "detector_footprint-B03-10",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "178,0,0",
+        "description": "Detector footprint mask - B3"
+      },
+      {
+        "name": "detector_footprint-B03-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B3"
+      },
+      {
+        "name": "detector_footprint-B03-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B3"
+      },
+      {
+        "name": "detector_footprint-B04-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B4"
       },
       {
-        "name": "detector_footprint_B5",
+        "name": "detector_footprint-B04-10",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "178,0,0",
+        "description": "Detector footprint mask - B4"
+      },
+      {
+        "name": "detector_footprint-B04-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B4"
+      },
+      {
+        "name": "detector_footprint-B04-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B4"
+      },
+      {
+        "name": "detector_footprint-B05-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B5"
       },
       {
-        "name": "detector_footprint_B6",
+        "name": "detector_footprint-B05-10",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "178,0,0",
+        "description": "Detector footprint mask - B5"
+      },
+      {
+        "name": "detector_footprint-B05-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B5"
+      },
+      {
+        "name": "detector_footprint-B05-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B5"
+      },
+      {
+        "name": "detector_footprint-B06-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B6"
       },
       {
-        "name": "detector_footprint_B7",
+        "name": "detector_footprint-B06-10",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "178,0,0",
+        "description": "Detector footprint mask - B6"
+      },
+      {
+        "name": "detector_footprint-B06-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B6"
+      },
+      {
+        "name": "detector_footprint-B06-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B6"
+      },
+      {
+        "name": "detector_footprint-B07-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B7"
       },
       {
-        "name": "detector_footprint_B8",
+        "name": "detector_footprint-B07-10",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "178,0,0",
+        "description": "Detector footprint mask - B7"
+      },
+      {
+        "name": "detector_footprint-B07-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B7"
+      },
+      {
+        "name": "detector_footprint-B07-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B7"
+      },
+      {
+        "name": "detector_footprint-B08-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B8"
       },
       {
-        "name": "detector_footprint_B8A",
+        "name": "detector_footprint-B08-10",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "178,0,0",
+        "description": "Detector footprint mask - B8"
+      },
+      {
+        "name": "detector_footprint-B08-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B8"
+      },
+      {
+        "name": "detector_footprint-B08-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B8"
+      },
+      {
+        "name": "detector_footprint-B8A-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B8A"
       },
       {
-        "name": "detector_footprint_B11",
+        "name": "detector_footprint-B8A-10",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "178,0,0",
+        "description": "Detector footprint mask - B8A"
+      },
+      {
+        "name": "detector_footprint-B8A-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B8A"
+      },
+      {
+        "name": "detector_footprint-B8A-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B8A"
+      },
+      {
+        "name": "detector_footprint-B11-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B11"
       },
       {
-        "name": "detector_footprint_B12",
+        "name": "detector_footprint-B11-10",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "178,0,0",
+        "description": "Detector footprint mask - B11"
+      },
+      {
+        "name": "detector_footprint-B11-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B11"
+      },
+      {
+        "name": "detector_footprint-B11-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B11"
+      },
+      {
+        "name": "detector_footprint-B12-09",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "255,0,0",
         "description": "Detector footprint mask - B12"
       },
       {
-        "name": "nodata_B2",
+        "name": "detector_footprint-B12-10",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
         "color": "178,0,0",
+        "description": "Detector footprint mask - B12"
+      },
+      {
+        "name": "detector_footprint-B12-11",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "124,0,0",
+        "description": "Detector footprint mask - B12"
+      },
+      {
+        "name": "detector_footprint-B12-12",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,0,255",
+        "description": "Detector footprint mask - B12"
+      },
+      {
+        "name": "nodata_B2",
+        "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B2"
       },
       {
         "name": "partially_corrected_crosstalk_B2",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B2"
       },
       {
         "name": "nodata_B3",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,0,0",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B3"
       },
       {
         "name": "partially_corrected_crosstalk_B3",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B3"
       },
       {
         "name": "nodata_B4",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,0,0",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B4"
       },
       {
         "name": "partially_corrected_crosstalk_B4",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B4"
       },
       {
         "name": "nodata_B5",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,0,0",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B5"
       },
       {
         "name": "partially_corrected_crosstalk_B5",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B5"
       },
       {
         "name": "nodata_B6",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,0,0",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B6"
       },
       {
         "name": "partially_corrected_crosstalk_B6",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B6"
       },
       {
         "name": "nodata_B7",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,0,0",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B7"
       },
       {
         "name": "partially_corrected_crosstalk_B7",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B7"
       },
       {
         "name": "nodata_B8",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,0,0",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B8"
       },
       {
         "name": "partially_corrected_crosstalk_B8",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B8"
       },
       {
         "name": "nodata_B8A",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,0,0",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B8A"
       },
       {
         "name": "partially_corrected_crosstalk_B8A",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B8A"
       },
       {
         "name": "nodata_B11",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,0,0",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B11"
       },
       {
         "name": "partially_corrected_crosstalk_B11",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B11"
       },
       {
         "name": "nodata_B12",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,0,0",
+        "color": "0,255,255",
         "description": "Radiometric quality mask - No–data pixels - B12"
       },
       {
         "name": "partially_corrected_crosstalk_B12",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,0,0",
+        "color": "255,175,175",
         "description": "Radiometric quality mask - Pixels partially corrected during cross-talk processing - B12"
       },
       {
@@ -2010,7 +2190,7 @@
       {
         "name": "saturated_l1b_B2",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B2"
       },
       {
@@ -2022,7 +2202,7 @@
       {
         "name": "saturated_l1b_B3",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B3"
       },
       {
@@ -2034,7 +2214,7 @@
       {
         "name": "saturated_l1b_B4",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B4"
       },
       {
@@ -2046,7 +2226,7 @@
       {
         "name": "saturated_l1b_B5",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B5"
       },
       {
@@ -2058,7 +2238,7 @@
       {
         "name": "saturated_l1b_B6",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B6"
       },
       {
@@ -2070,7 +2250,7 @@
       {
         "name": "saturated_l1b_B7",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B7"
       },
       {
@@ -2082,7 +2262,7 @@
       {
         "name": "saturated_l1b_B8",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B8"
       },
       {
@@ -2094,7 +2274,7 @@
       {
         "name": "saturated_l1b_B8A",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B8A"
       },
       {
@@ -2106,7 +2286,7 @@
       {
         "name": "saturated_l1b_B11",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B11"
       },
       {
@@ -2118,67 +2298,67 @@
       {
         "name": "saturated_l1b_B12",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,178",
+        "color": "0,255,0",
         "description": "Radiometric quality mask - Saturated pixels after on-ground radiometric processing - B12"
       },
       {
         "name": "defective_B2",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B2"
       },
       {
         "name": "defective_B3",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B3"
       },
       {
         "name": "defective_B4",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B4"
       },
       {
         "name": "defective_B5",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B5"
       },
       {
         "name": "defective_B6",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B6"
       },
       {
         "name": "defective_B7",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B7"
       },
       {
         "name": "defective_B8",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B8"
       },
       {
         "name": "defective_B8A",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B8A"
       },
       {
         "name": "defective_B11",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B11"
       },
       {
         "name": "defective_B12",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,0,124",
+        "color": "255,0,0",
         "description": "Radiometric quality mask - Defective pixels (matching defective columns) - B12"
       },
       {
@@ -2190,19 +2370,19 @@
       {
         "name": "ancillary_degraded_B2",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B2"
       },
       {
         "name": "msi_lost_B2",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B2"
       },
       {
         "name": "msi_degraded_B2",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B2"
       },
       {
@@ -2214,19 +2394,19 @@
       {
         "name": "ancillary_degraded_B3",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B3"
       },
       {
         "name": "msi_lost_B3",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B3"
       },
       {
         "name": "msi_degraded_B3",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B3"
       },
       {
@@ -2238,19 +2418,19 @@
       {
         "name": "ancillary_degraded_B4",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B4"
       },
       {
         "name": "msi_lost_B4",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B4"
       },
       {
         "name": "msi_degraded_B4",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B4"
       },
       {
@@ -2262,19 +2442,19 @@
       {
         "name": "ancillary_degraded_B5",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B5"
       },
       {
         "name": "msi_lost_B5",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B5"
       },
       {
         "name": "msi_degraded_B5",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B5"
       },
       {
@@ -2286,19 +2466,19 @@
       {
         "name": "ancillary_degraded_B6",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B6"
       },
       {
         "name": "msi_lost_B6",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B6"
       },
       {
         "name": "msi_degraded_B6",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B6"
       },
       {
@@ -2310,19 +2490,19 @@
       {
         "name": "ancillary_degraded_B7",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B7"
       },
       {
         "name": "msi_lost_B7",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B7"
       },
       {
         "name": "msi_degraded_B7",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B7"
       },
       {
@@ -2334,19 +2514,19 @@
       {
         "name": "ancillary_degraded_B8",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B8"
       },
       {
         "name": "msi_lost_B8",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B8"
       },
       {
         "name": "msi_degraded_B8",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B8"
       },
       {
@@ -2358,19 +2538,19 @@
       {
         "name": "ancillary_degraded_B8A",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B8A"
       },
       {
         "name": "msi_lost_B8A",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B8A"
       },
       {
         "name": "msi_degraded_B8A",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B8A"
       },
       {
@@ -2382,19 +2562,19 @@
       {
         "name": "ancillary_degraded_B11",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B11"
       },
       {
         "name": "msi_lost_B11",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B11"
       },
       {
         "name": "msi_degraded_B11",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B11"
       },
       {
@@ -2406,43 +2586,43 @@
       {
         "name": "ancillary_degraded_B12",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,255,0",
+        "color": "255,255,0",
         "description": "Technical quality mask - Ancillary degraded data - B12"
       },
       {
         "name": "msi_lost_B12",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,178,0",
+        "color": "255,0,255",
         "description": "Technical quality mask - MSI lost data - B12"
       },
       {
         "name": "msi_degraded_B12",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "0,124,0",
+        "color": "255,0,0",
         "description": "Technical quality mask - MSI degraded data - B12"
       },
       {
         "name": "opaque_clouds_10m",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,178,0",
+        "color": "255,255,255",
         "description": "Finer cloud mask - Opaque clouds"
       },
       {
         "name": "opaque_clouds_20m",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "178,178,0",
+        "color": "255,255,255",
         "description": "Finer cloud mask - Opaque clouds"
       },
       {
         "name": "cirrus_clouds_10m",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,124,0",
+        "color": "255,200,0",
         "description": "Finer cloud mask - Cirrus clouds"
       },
       {
         "name": "cirrus_clouds_20m",
         "type": "org.esa.snap.core.datamodel.Mask$VectorDataType",
-        "color": "124,124,0",
+        "color": "255,200,0",
         "description": "Finer cloud mask - Cirrus clouds"
       },
       {

@@ -1044,18 +1044,6 @@
         ],
         "masks": [
             {
-                "name": "tile_60m_t30syj",
-                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-                "color": "128,0,255",
-                "description": "S2A_OPER_MSI_L1C_TL_SGS__20160511T162431_A004624_T30SYJ_N02.02"
-            },
-            {
-                "name": "tile_60m_t30tyk",
-                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
-                "color": "0,255,128",
-                "description": "S2A_OPER_MSI_L1C_TL_SGS__20160511T162431_A004624_T30TYK_N02.02"
-            },
-            {
                 "name": "tile_10m_t30syj",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "128,0,255",
@@ -1075,6 +1063,18 @@
             },
             {
                 "name": "tile_20m_t30tyk",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "0,255,128",
+                "description": "S2A_OPER_MSI_L1C_TL_SGS__20160511T162431_A004624_T30TYK_N02.02"
+            },
+            {
+                "name": "tile_60m_t30syj",
+                "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
+                "color": "128,0,255",
+                "description": "S2A_OPER_MSI_L1C_TL_SGS__20160511T162431_A004624_T30SYJ_N02.02"
+            },
+            {
+                "name": "tile_60m_t30tyk",
                 "type": "org.esa.snap.core.datamodel.Mask$BandMathsType",
                 "color": "0,255,128",
                 "description": "S2A_OPER_MSI_L1C_TL_SGS__20160511T162431_A004624_T30TYK_N02.02"

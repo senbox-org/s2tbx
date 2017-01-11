@@ -58,4 +58,8 @@ public class ColorIterator {
         }
         return colorIterator.next();
     }
+
+    public static void reset() {
+        colorIterator = colors.iterator();
+    }
 }
