@@ -13,9 +13,13 @@
     <packaging>nbm</packaging>
     <artifactId>s2tbx-commons</artifactId>
     <name>Sentinel-2 Toolbox Common Tools</name>
-    <description>
-        This module provides common tools to Sentinel2 Toolbox modules
-    </description>
+    <description>This module provides common tools to Sentinel2 Toolbox modules</description>
+
+    <version>5.0.1</version>
+    <properties>
+        <s2tbx.nbmSpecVersion>5.0.1</s2tbx.nbmSpecVersion>
+        <s2tbx.version>5.0.0</s2tbx.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -43,6 +47,10 @@
             <artifactId>snap-rcp</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.esa.snap</groupId>
+            <artifactId>snap-tango</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.xeustechnologies</groupId>
             <artifactId>jtar</artifactId>
         </dependency>
@@ -57,6 +65,11 @@
         <dependency>
             <groupId>org.jvnet.ogc</groupId>
             <artifactId>ogc-tools-gml-jts</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-awt</artifactId>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

@@ -401,16 +401,20 @@ public class ReflectanceToRadianceOp extends Operator {
      * @param sourceBandName the band name
      * @return the band index
      */
-    private int extractSourceBandIndex(MetadataElement metadataRoot, String sourceBandName) {
-        String[] bandListPath = {"Level-1C_User_Product", "General_Info", "Product_Info", "Query_Options", "Band_List"};
+    private static int extractSourceBandIndex(MetadataElement metadataRoot, String sourceBandName) {
+        String[] bandListPath = {"Level-1C_User_Product", "General_Info", "Product_Image_Characteristics", "Spectral_Information_List"};
         MetadataElement bandListElement = findTreeElement(metadataRoot, bandListPath);
         if (bandListElement != null) {
-            for (int i = 0; i < bandListElement.getNumAttributes(); i++) {
-                MetadataAttribute metadataAttribute = bandListElement.getAttributeAt(i);
+            for (int i = 0; i < bandListElement.getNumElements(); i++) {
+                MetadataElement metadataElement = bandListElement.getElementAt(i);
+                MetadataAttribute metadataAttribute = metadataElement.getAttribute("physicalBand");
                 ProductData data = metadataAttribute.getData();
                 String bandName = data.getElemString();
                 if (sourceBandName.equals(bandName)) {
-                    return i;
+                    MetadataAttribute bandIdAttribute = metadataElement.getAttribute("bandId");
+                    ProductData bandIdData = bandIdAttribute.getData();
+                    String bandIdAsString = bandIdData.getElemString();
+                    return Integer.parseInt(bandIdAsString);
                 }
             }
         }
