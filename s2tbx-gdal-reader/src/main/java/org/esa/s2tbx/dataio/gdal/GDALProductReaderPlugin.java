@@ -10,13 +10,15 @@ import java.io.File;
 import java.util.Locale;
 
 /**
+ * Reader plugin for products using the GDAL library.
+ *
  * @author Jean Coravu
  */
 public class GDALProductReaderPlugin implements ProductReaderPlugIn {
     private static final Class[] INPUT_TYPES = new Class[] { String.class, File.class };
     public static final String FORMAT_NAME = "GDAL-READER";
     private static final String[] DEFAULT_EXTENSIONS = new String[] { ".*" };
-    private static final String DESCRIPTION = "Raster Files";
+    private static final String DESCRIPTION = "GDAL Generic Raster Files";
 
     public GDALProductReaderPlugin() {
     }

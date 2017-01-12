@@ -2,6 +2,7 @@ package org.esa.s2tbx.gdal;
 
 import org.esa.s2tbx.dataio.gdal.GDALProductWriter;
 import org.esa.s2tbx.dataio.gdal.GDALProductWriterPlugIn;
+import org.esa.s2tbx.dataio.gdal.GDALUtils;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.snap.core.dataio.*;
 import org.esa.snap.core.datamodel.Band;
@@ -12,11 +13,15 @@ import org.esa.snap.rcp.actions.file.ProductFileChooser;
 import org.esa.snap.rcp.actions.file.ProductOpener;
 import org.esa.snap.rcp.actions.file.WriteProductOperation;
 import org.esa.snap.rcp.util.Dialogs;
+import org.gdal.gdal.gdal;
 import org.netbeans.api.progress.ProgressUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.basic.BasicFileChooserUI;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.prefs.Preferences;
@@ -25,6 +30,7 @@ import java.util.prefs.Preferences;
  * @author Jean Coravu
  */
 public class WriterPlugInExportProductAction extends ExportProductAction {
+    private String enteredFileName;
 
     public WriterPlugInExportProductAction() {
         super();
@@ -59,22 +65,41 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
             filters[i] = new ExportDriversFileFilter(description, writerDrivers[i]);
         }
 
-        ProductFileChooser fc = buildFileChooserDialog(product, formatName, false, null);
-        for (int i=0; i<filters.length; i++) {
-            fc.addChoosableFileFilter(filters[i]);
-        }
-        int returnVal = fc.showSaveDialog(SnapApp.getDefault().getMainFrame());
-        if (returnVal != JFileChooser.APPROVE_OPTION) {
-            // cancelled
-            return null;
-        }
+        final ProductFileChooser fileChooser = buildFileChooserDialog(product, formatName, false, null);
+        fileChooser.addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                ExportDriversFileFilter selectedFileFilter = (ExportDriversFileFilter) fileChooser.getFileFilter();
+                String fileName = enteredFileName;
+                int index = fileName.lastIndexOf(".");
+                if (index >= 0) {
+                    fileName = fileName.substring(0, index);
+                }
+                fileName += selectedFileFilter.getDriverInfo().getExtensionName();
+                BasicFileChooserUI basicFileChooserUI = (BasicFileChooserUI) fileChooser.getUI();
+                basicFileChooserUI.setFileName(fileName);
+            }
+        });
 
-        File newFile = fc.getSelectedFile();
-        if (newFile == null) {
-            // cancelled
-            return null;
+        fileChooser.addPropertyChangeListener(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                BasicFileChooserUI basicFileChooserUI = (BasicFileChooserUI) fileChooser.getUI();
+                if (event.getOldValue() != null && event.getNewValue() == null) {
+                    enteredFileName = basicFileChooserUI.getFileName();
+                }
+            }
+        });
+
+        for (int i=0; i<filters.length; i++) {
+            fileChooser.addChoosableFileFilter(filters[i]);
         }
-        ExportDriversFileFilter selectedFileFilter = (ExportDriversFileFilter)fc.getFileFilter();
+        int returnVal = fileChooser.showSaveDialog(SnapApp.getDefault().getMainFrame());
+        if (returnVal != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null) {
+            return null; // cancelled
+        }
+        File newFile = fileChooser.getSelectedFile();
+        ExportDriversFileFilter selectedFileFilter = (ExportDriversFileFilter)fileChooser.getFileFilter();
         if (!selectedFileFilter.accept(newFile)) {
             String message = MessageFormat.format("The extension of the selected file\n" +
                             "''{0}''\n" +
@@ -88,12 +113,16 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
             return false;
         }
 
-        Product exportProduct = fc.getSubsetProduct() != null ? fc.getSubsetProduct() : product;
+        Product exportProduct = fileChooser.getSubsetProduct() != null ? fileChooser.getSubsetProduct() : product;
         Band sourceBand = exportProduct.getBandAt(0);
-        int gdalDataType = GDALProductWriter.getGDALDataType(sourceBand.getDataType());
+        int gdalDataType = GDALUtils.getGDALDataType(sourceBand.getDataType());
         GDALDriverInfo driverInfo = selectedFileFilter.getDriverInfo();
         if (!driverInfo.canExportProduct(gdalDataType)) {
-            Dialogs.showWarning(getDisplayName(), driverInfo.getFailedMessageToExportProduct(gdalDataType, "\n"), null);
+            String gdalDataTypeName = gdal.GetDataTypeName(gdalDataType);
+            String message = MessageFormat.format("The GDAL driver ''{0}'' does not support the data type ''{1}'' to create a new product." +
+                            "\nThe available types are ''{2}''." ,
+                    driverInfo.getDriverDisplayName(), gdalDataTypeName, driverInfo.getCreationDataTypes());
+            Dialogs.showWarning(getDisplayName(), message, null);
             return false;
         }
 

@@ -30,7 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Generic GDAL Reader.
+ * Generic reader for products using the GDAL library.
  *
  * @author Jean Coravu
  */
@@ -55,8 +55,6 @@ public class GDALProductReader extends AbstractProductReader {
         bufferTypes.put(gdalconstConstants.GDT_Float64,
                         new BufferTypeDescriptor(64, true, ProductData.TYPE_FLOAT64, DataBuffer.TYPE_DOUBLE));
     }
-
-    private Product product;
 
     protected GDALProductReader(ProductReaderPlugIn readerPlugIn) {
         super(readerPlugIn);
@@ -85,25 +83,25 @@ public class GDALProductReader extends AbstractProductReader {
             String productName = inputFile.getFileName().toString();
             String productType = "GDAL";
 
-            this.product = new Product(productName, productType, imageWidth, imageHeight);
-            this.product.setPreferredTileSize(JAI.getDefaultTileSize());
-            this.product.setFileLocation(inputFile.toFile());
+            Product product = new Product(productName, productType, imageWidth, imageHeight);
+            product.setPreferredTileSize(JAI.getDefaultTileSize());
+            product.setFileLocation(inputFile.toFile());
 
             int bandCount = gdalProduct.getRasterCount();
 
             MetadataElement metadataElement = buildMetadataElement(gdalProduct);
-            MetadataElement metadataRoot = this.product.getMetadataRoot();
+            MetadataElement metadataRoot = product.getMetadataRoot();
             metadataRoot.addElement(metadataElement);
 
             GeoCoding geoCoding = buildGeoCoding(gdalProduct);
             if (geoCoding != null) {
-                this.product.setSceneGeoCoding(geoCoding);
+                product.setSceneGeoCoding(geoCoding);
             }
 
             Double[] pass1 = new Double[1];
 
             for (int bandIndex = 0; bandIndex < bandCount; bandIndex++) {
-                // Bands are not 0-base indexed, so we must add 1
+                // bands are not 0-base indexed, so we must add 1
                 org.gdal.gdal.Band gdalBand = gdalProduct.GetRasterBand(bandIndex + 1);
                 int gdalDataType = gdalBand.getDataType();
                 BufferTypeDescriptor dataBufferType = bufferTypes.get(gdalDataType);
@@ -163,18 +161,18 @@ public class GDALProductReader extends AbstractProductReader {
 
                 productBand.setSourceImage(new DefaultMultiLevelImage(source));
 
-                this.product.addBand(productBand);
+                product.addBand(productBand);
 
                 // add the mask
                 org.gdal.gdal.Band maskBand = gdalBand.GetMaskBand();
                 if (maskBand != null) {
                     String maskName = "mask_" + String.valueOf(bandIndex + 1);
                     Mask mask = Mask.BandMathsType.create(maskName, null, imageWidth, imageHeight, bandName, Color.white, 0.5);
-                    this.product.addMask(mask);
+                    product.addMask(mask);
                 }
             }
-            this.product.setModified(false);
-            return this.product;
+            product.setModified(false);
+            return product;
         } catch (Exception ex) {
             logger.log(Level.SEVERE, String.format("Error while reading file '%s'", inputFile), ex);
             throw ex;
@@ -188,7 +186,7 @@ public class GDALProductReader extends AbstractProductReader {
         // do nothing
     }
 
-    public static Path getFileInput(Object input) {
+    private static Path getFileInput(Object input) {
         if (input instanceof String) {
             return Paths.get((String) input);
         } else if (input instanceof File) {

@@ -15,14 +15,19 @@ import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.gdalconst.gdalconstConstants;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
+ * Generic writer for products using the GDAL library.
+ *
  * @author Jean Coravu
  */
 public class GDALProductWriter extends AbstractProductWriter {
@@ -47,7 +52,7 @@ public class GDALProductWriter extends AbstractProductWriter {
 
         logger.info("Saving the product using the GDAL writer into the file '" + output.toString() + "'.");
 
-        Path outputFile = GDALProductReader.getFileInput(output);
+        Path outputFile = getFileInput(output);
         if (outputFile == null) {
             throw new IOException("The file '"+ output.toString() + "' to save the product is invalid.");
         }
@@ -59,10 +64,10 @@ public class GDALProductWriter extends AbstractProductWriter {
         int bandCount = sourceProduct.getNumBands();
 
         Band sourceBand = sourceProduct.getBandAt(0);
-        this.gdalDataType = getGDALDataType(sourceBand.getDataType());
+        this.gdalDataType = GDALUtils.getGDALDataType(sourceBand.getDataType());
         for (int i=1; i<bandCount; i++) {
             sourceBand = sourceProduct.getBandAt(i);
-            if (this.gdalDataType != getGDALDataType(sourceBand.getDataType())) {
+            if (this.gdalDataType != GDALUtils.getGDALDataType(sourceBand.getDataType())) {
                 throw new IllegalArgumentException("Different data type " + sourceBand.getDataType() + " for band index " + i + ".");
             }
         }
@@ -79,16 +84,16 @@ public class GDALProductWriter extends AbstractProductWriter {
         }
 
         if (!driverInfo.canExportProduct(this.gdalDataType)) {
-           throw new IllegalArgumentException(driverInfo.getFailedMessageToExportProduct(this.gdalDataType, " "));
+            String gdalDataTypeName = gdal.GetDataTypeName(this.gdalDataType);
+            String message = MessageFormat.format("The GDAL driver ''{0}'' does not support the data type ''{1}'' to create a new product." +
+                            " The available types are ''{2}''." ,
+                    driverInfo.getDriverDisplayName(), gdalDataTypeName, driverInfo.getCreationDataTypes());
+            throw new IllegalArgumentException(message);
         }
 
         this.driver = gdal.GetDriverByName(driverInfo.getDriverName());
 
         logger.info("Using the GDAL driver '" + this.driver.getLongName() + "' ("+this.driver.getShortName()+") to save the product.");
-
-//        Vector options = new Vector();
-//        options.add("MINUSERPIXELVALUE=10");
-//        this.dataset = this.driver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType, options);
 
         this.dataset = this.driver.Create(outputFile.toString(), imageWidth, imageHeight, bandCount, this.gdalDataType);
         if (this.dataset == null) {
@@ -171,6 +176,17 @@ public class GDALProductWriter extends AbstractProductWriter {
     public void deleteOutput() throws IOException {
     }
 
+    private static Path getFileInput(Object input) {
+        if (input instanceof String) {
+            return Paths.get((String) input);
+        } else if (input instanceof File) {
+            return ((File) input).toPath();
+        } else if (input instanceof Path) {
+            return (Path) input;
+        }
+        return null;
+    }
+
     private static void checkBufferSize(int sourceWidth, int sourceHeight, ProductData sourceBuffer) {
         int expectedBufferSize = sourceWidth * sourceHeight;
         int actualBufferSize = sourceBuffer.getNumElems();
@@ -184,55 +200,5 @@ public class GDALProductWriter extends AbstractProductWriter {
         Guardian.assertWithinRange("sourceHeight", sourceHeight, 1, sourceBandHeight);
         Guardian.assertWithinRange("sourceOffsetX", sourceOffsetX, 0, sourceBandWidth - sourceWidth);
         Guardian.assertWithinRange("sourceOffsetY", sourceOffsetY, 0, sourceBandHeight - sourceHeight);
-    }
-
-    public static int getGDALDataType(int bandDataType) {
-        if (bandDataType == ProductData.TYPE_UINT8) {
-            return gdalconstConstants.GDT_Byte;
-        }
-        if (bandDataType == ProductData.TYPE_INT16) {
-            return gdalconstConstants.GDT_Int16;
-        }
-        if (bandDataType == ProductData.TYPE_UINT16) {
-            return gdalconstConstants.GDT_UInt16;
-        }
-        if (bandDataType == ProductData.TYPE_INT32) {
-            return gdalconstConstants.GDT_Int32;
-        }
-        if (bandDataType == ProductData.TYPE_UINT32) {
-            return gdalconstConstants.GDT_UInt32;
-        }
-        if (bandDataType == ProductData.TYPE_FLOAT32) {
-            return gdalconstConstants.GDT_Float32;
-        }
-        if (bandDataType == ProductData.TYPE_FLOAT64) {
-            return gdalconstConstants.GDT_Float64;
-        }
-        throw new IllegalArgumentException("Unknown band data type " + bandDataType + ".");
-    }
-
-    public static int getBandDataType(int gdalDataType) {
-        if (gdalDataType == gdalconstConstants.GDT_Byte) {
-            return ProductData.TYPE_UINT8;
-        }
-        if (gdalDataType == gdalconstConstants.GDT_Int16) {
-            return ProductData.TYPE_INT16;
-        }
-        if (gdalDataType == gdalconstConstants.GDT_UInt16) {
-            return ProductData.TYPE_UINT16;
-        }
-        if (gdalDataType == gdalconstConstants.GDT_Int32) {
-            return ProductData.TYPE_INT32;
-        }
-        if (gdalDataType == gdalconstConstants.GDT_UInt32) {
-            return ProductData.TYPE_UINT32;
-        }
-        if (gdalDataType == gdalconstConstants.GDT_Float32) {
-            return ProductData.TYPE_FLOAT32;
-        }
-        if (gdalDataType == gdalconstConstants.GDT_Float64) {
-            return ProductData.TYPE_FLOAT64;
-        }
-        throw new IllegalArgumentException("Unknown band data type " + gdalDataType + ".");
     }
 }

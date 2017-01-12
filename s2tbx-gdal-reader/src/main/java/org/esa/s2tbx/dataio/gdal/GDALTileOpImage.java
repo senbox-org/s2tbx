@@ -27,6 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * A JAI operator for handling the tiles of the products imported with the GDAL library.
+ *
  * @author Jean Coravu
  */
 class GDALTileOpImage extends SingleBandedOpImage {
@@ -94,6 +96,20 @@ class GDALTileOpImage extends SingleBandedOpImage {
         }
     }
 
+    /**
+     * Factory method for creating a TileOpImage instance.
+     *
+     * @param imageFile         The file path
+     * @param bandIndex         The index of the band for which the operator is created
+     * @param row               The row of the tile in the scene layout
+     * @param col               The column of the tile in the scene layout
+     * @param tileLayout        The scene layout
+     * @param imageModel        The multi-level image model
+     * @param dataBufferType    The data type of the tile raster
+     * @param level             The resolution at which the tile is created
+     *
+     * @return                  The TileOpImage instance
+     */
     static PlanarImage create(Path imageFile, int bandIndex, int row, int col, TileLayout tileLayout, MultiLevelModel imageModel, int dataBufferType, int level) {
         Assert.notNull(tileLayout, "imageLayout");
         Assert.notNull(imageModel, "imageModel");

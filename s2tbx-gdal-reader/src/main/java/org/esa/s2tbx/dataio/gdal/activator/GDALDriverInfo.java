@@ -6,6 +6,8 @@ import org.gdal.gdalconst.gdalconstConstants;
 import java.text.MessageFormat;
 
 /**
+ * Simple class containing information about a GDAL driver.
+ *
  * @author Jean Coravu
  */
 public class GDALDriverInfo {
@@ -14,6 +16,12 @@ public class GDALDriverInfo {
     private final String driverDisplayName;
     private final String creationDataTypes;
 
+    /**
+     * @param extensionName         The driver extension name
+     * @param driverName            The driver name
+     * @param driverDisplayName     The driver display name
+     * @param creationDataTypes     The data types used to create a band (ex: Byte Int16 UInt16 Int32 UInt32 Float32 Float64)
+     */
     public GDALDriverInfo(String extensionName, String driverName, String driverDisplayName, String creationDataTypes) {
         this.extensionName = extensionName;
         this.driverName = driverName;
@@ -33,6 +41,17 @@ public class GDALDriverInfo {
         return driverName;
     }
 
+    public String getCreationDataTypes() {
+        return creationDataTypes;
+    }
+
+    /**
+     * Check if the available creation data types of the driver contains the GDAL data type.
+     *
+     * @param gdalDataType  The GDAl data type to check
+     *
+     * @return              true if the driver can export the product containing the specified data type; false otherwise
+     */
     public boolean canExportProduct(int gdalDataType) {
         boolean allowedDataType = true;
         String gdalDataTypeName = gdal.GetDataTypeName(gdalDataType);
@@ -40,24 +59,5 @@ public class GDALDriverInfo {
             allowedDataType = this.creationDataTypes.contains(gdalDataTypeName);
         }
         return allowedDataType;
-    }
-
-    public String getFailedMessageToExportProduct(int gdalDataType, String separator) {
-        String gdalDataTypeName = gdal.GetDataTypeName(gdalDataType);
-        return MessageFormat.format("The GDAL driver ''{0}'' does not support the data type ''{1}'' to create a new product." + separator +
-                        "The available types are ''{2}''." ,
-                this.driverDisplayName, gdalDataTypeName, this.creationDataTypes);
-    }
-
-    public int getFirstGDALCreationDataType() {
-        if (this.creationDataTypes != null) {
-            int index = this.creationDataTypes.indexOf(" ");
-            if (index < 0) {
-                index = this.creationDataTypes.length();
-            }
-            String gdalDataTypeName = this.creationDataTypes.substring(0, index).trim();
-            return gdal.GetDataTypeByName(gdalDataTypeName);
-        }
-        return gdalconstConstants.GDT_Byte;
     }
 }

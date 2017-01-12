@@ -38,7 +38,8 @@ public class GDALProductReaderPlugInTest extends AbstractGDALPlugInTest {
     }
 
     public void testPluginIsLoaded() {
-        Iterator<ProductReaderPlugIn> iterator = ProductIOPlugInManager.getInstance().getReaderPlugIns(GDALProductReaderPlugin.FORMAT_NAME);
+        String formatName = getFormatNameToTest();
+        Iterator<ProductReaderPlugIn> iterator = ProductIOPlugInManager.getInstance().getReaderPlugIns(formatName);
         ProductReaderPlugIn loadedPlugIn = iterator.next();
         assertEquals(this.plugIn.getClass(), loadedPlugIn.getClass());
     }
@@ -46,14 +47,19 @@ public class GDALProductReaderPlugInTest extends AbstractGDALPlugInTest {
     public void testFormatNames() {
         String[] formatNames = this.plugIn.getFormatNames();
         assertNotNull(formatNames);
+
         assertEquals(1, formatNames.length);
-        assertEquals(GDALProductReaderPlugin.FORMAT_NAME, formatNames[0]);
+
+        String formatName = getFormatNameToTest();
+        assertEquals(formatName, formatNames[0]);
     }
 
     public void testInputTypes() {
         Class[] classes = this.plugIn.getInputTypes();
         assertNotNull(classes);
+
         assertEquals(2, classes.length);
+
         List<Class> list = Arrays.asList(classes);
         assertEquals(true, list.contains(File.class));
         assertEquals(true, list.contains(String.class));
@@ -62,8 +68,17 @@ public class GDALProductReaderPlugInTest extends AbstractGDALPlugInTest {
     public void testProductFileFilter() {
         SnapFileFilter snapFileFilter = this.plugIn.getProductFileFilter();
         assertNotNull(snapFileFilter);
-        assertArrayEquals(this.plugIn.getDefaultFileExtensions(), snapFileFilter.getExtensions());
-        assertEquals(this.plugIn.getFormatNames()[0], snapFileFilter.getFormatName());
+
+        String[] defaultExtensions = new String[] { ".*" };
+        assertArrayEquals(defaultExtensions, snapFileFilter.getExtensions());
+
+        String formatName = getFormatNameToTest();
+        assertEquals(formatName, snapFileFilter.getFormatName());
+
         assertEquals(true, snapFileFilter.getDescription().contains(this.plugIn.getDescription(Locale.getDefault())));
+    }
+
+    private static String getFormatNameToTest() {
+        return "GDAL-READER";
     }
 }

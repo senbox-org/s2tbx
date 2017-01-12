@@ -56,6 +56,11 @@ public class GDALInstaller {
     public GDALInstaller() {
     }
 
+    /**
+     * Install the GDAL library if missing.
+     *
+     * @throws IOException
+     */
     public void install() throws IOException {
         Path auxdataFolderPath = getGDALAuxDataPath();
         if (auxdataFolderPath == null) {

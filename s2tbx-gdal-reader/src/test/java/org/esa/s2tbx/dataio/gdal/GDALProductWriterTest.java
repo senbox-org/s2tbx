@@ -9,6 +9,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.io.FileUtils;
 import org.gdal.gdal.gdal;
+import org.gdal.gdalconst.gdalconstConstants;
 
 import javax.media.jai.JAI;
 import java.io.File;
@@ -27,14 +28,13 @@ public class GDALProductWriterTest extends AbstractGDALPlugInTest {
     private GDALProductReaderPlugin readerPlugIn;
 
     public GDALProductWriterTest() {
-
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        GDALDriverInfo[] writerDrivers = GDALPlugInActivator.findWriterDrivers();
+        GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
         if (writerDrivers != null && writerDrivers.length > 0) {
             this.writerPlugIn = new GDALProductWriterPlugIn(writerDrivers);
             this.readerPlugIn = new GDALProductReaderPlugin();
@@ -49,8 +49,18 @@ public class GDALProductWriterTest extends AbstractGDALPlugInTest {
             GDALDriverInfo[] writerDrivers = this.writerPlugIn.getWriterDrivers();
             for (int k=0; k<writerDrivers.length; k++) {
                 GDALDriverInfo driverInfo = writerDrivers[k];
-                int gdalDataType = driverInfo.getFirstGDALCreationDataType();
-                int bandDataType = GDALProductWriter.getBandDataType(gdalDataType);
+                int gdalDataType = gdalconstConstants.GDT_Byte;
+                String creationDataTypes = driverInfo.getCreationDataTypes();
+                if (driverInfo.getCreationDataTypes() != null) {
+                    int index = creationDataTypes.indexOf(" ");
+                    if (index < 0) {
+                        index = creationDataTypes.length();
+                    }
+                    String gdalDataTypeName = creationDataTypes.substring(0, index).trim();
+                    gdalDataType = gdal.GetDataTypeByName(gdalDataTypeName);
+                }
+
+                int bandDataType = GDALUtils.getBandDataType(gdalDataType);
                 File file = new File(folder, "tempFile" + driverInfo.getExtensionName());
                 file.delete();
                 try {
@@ -101,10 +111,13 @@ public class GDALProductWriterTest extends AbstractGDALPlugInTest {
                     Product finalProduct = reader.readProductNodes(file, null);
                     assertNotNull(finalProduct);
 
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
+                    assertEquals(product.getSceneRasterWidth(), finalProduct.getSceneRasterWidth());
+                    assertEquals(product.getSceneRasterHeight(), finalProduct.getSceneRasterHeight());
+                    assertEquals(product.getNumBands(), finalProduct.getNumBands());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
                 } finally {
-//                file.delete();
+                    file.delete();
                 }
             }
         } finally {

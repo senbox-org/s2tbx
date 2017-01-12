@@ -5,9 +5,11 @@ import org.esa.s2tbx.dataio.gdal.activator.GDALPlugInActivator;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
+import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
 import org.gdal.gdal.gdal;
 
+import javax.media.jai.JAI;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -30,7 +32,7 @@ public class GDALProductWriterPlugInTest extends AbstractGDALPlugInTest {
     protected void setUp() throws Exception {
         super.setUp();
 
-        GDALDriverInfo[] writerDrivers = GDALPlugInActivator.findWriterDrivers();
+        GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
         if (writerDrivers != null && writerDrivers.length > 0) {
             this.plugIn = new GDALProductWriterPlugIn(writerDrivers);
             ProductIOPlugInManager.getInstance().addWriterPlugIn(plugIn);
@@ -68,13 +70,21 @@ public class GDALProductWriterPlugInTest extends AbstractGDALPlugInTest {
         assertNull(snapFileFilter);
     }
 
-    public void testEncodingQualification() throws Exception {
+    public void testEncodingQualificationWithNullProduct() throws Exception {
         EncodeQualification encodeQualification = this.plugIn.getEncodeQualification(null);
         assertNotNull(encodeQualification);
         assertEquals(EncodeQualification.Preservation.FULL, encodeQualification.getPreservation());
     }
 
+    public void testEncodingQualificationWithNonNullProduct() throws Exception {
+        Product product = new Product("tempProduct", "GDAL", 20, 30);
+        product.setPreferredTileSize(JAI.getDefaultTileSize());
+        EncodeQualification encodeQualification = this.plugIn.getEncodeQualification(product);
+        assertNotNull(encodeQualification);
+        assertEquals(EncodeQualification.Preservation.FULL, encodeQualification.getPreservation());
+    }
+
     private String[] getFormatNamesToCheck() {
-        return  new String[] { GDALProductWriterPlugIn.FORMAT_NAME };
+        return new String[] { "GDAL-WRITER" };
     }
 }

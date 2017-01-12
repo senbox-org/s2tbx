@@ -12,6 +12,8 @@ import java.io.File;
 import java.util.Locale;
 
 /**
+ * Writer plugin for products using the GDAL library.
+ *
  * @author Jean Coravu
  */
 public class GDALProductWriterPlugIn implements ProductWriterPlugIn {

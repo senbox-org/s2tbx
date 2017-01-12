@@ -1,7 +1,7 @@
 package org.esa.s2tbx.dataio.gdal;
 
 /**
- * Created by jcoravu on 8/12/2016.
+ * @author Jean Coravu
  */
 public interface GDALWriterPlugInListener {
 

@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
+ *  A single banded multi-level image source for products imported with the GDAL library.
+ *
  * @author Jean Coravu
  */
 class GDALMultiLevelSource extends AbstractMultiLevelSource {
