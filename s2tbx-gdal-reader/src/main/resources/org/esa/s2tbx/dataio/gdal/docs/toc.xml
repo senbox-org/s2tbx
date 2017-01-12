@@ -25,10 +25,10 @@
     <tocitem text="Sentinel Toolbox Application">
             <tocitem text="Import and Export">
                 <tocitem text="Import Raster Data">
-					<tocitem text="Optical Sensors">
-						<tocitem text="GDAL reader" target="reader_gdal"/>
-						<tocitem text="GDAL writer" target="writer_gdal"/>
-					</tocitem>
+                    <tocitem text="GDAL reader" target="readerGDAL"/>
+                </tocitem>
+                <tocitem text="Export Raster Data">
+                    <tocitem text="GDAL writer" target="writerGDAL"/>
                 </tocitem>
             </tocitem>
     </tocitem>

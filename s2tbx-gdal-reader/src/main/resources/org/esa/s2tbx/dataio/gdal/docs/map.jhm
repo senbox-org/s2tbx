@@ -20,6 +20,6 @@
         "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
 <map version="2.0">
-    <mapID target="reader_gdal" url="gdal/GDAL-reader.html"/>
-    <mapID target="writer_gdal" url="gdal/GDAL-writer.html"/>
+    <mapID target="readerGDAL" url="gdal/GDALReader.html"/>
+    <mapID target="writerGDAL" url="gdal/GDALWriter.html"/>
 </map>
