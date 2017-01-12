@@ -1,5 +1,124 @@
 <filesystem>
 
+    <folder name="OperatorUIs">
+        <file name="org.esa.s2tbx.radiometry.Savi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="SaviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Tsavi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="TsaviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Ipvi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="IpviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Rvi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="RviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Dvi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="DviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Wdvi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="WdviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Pvi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="PviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Msavi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="MsaviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Msavi2">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="Msavi2Op"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Gemi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="GemiOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Tndvi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="TndviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Ndwi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="NdwiOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Ndwi2">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="Ndwi2Op"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Mndwi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="MndwiOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Ndti">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="NdtiOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Gndvi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="GndviOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Pssra">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="PssraOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Ndi45">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="Ndi45Op"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Mtci">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="MtciOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Mcari">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="McariOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Treci">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="IreciOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.S2Rep">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="S2repOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Ndpi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="NdpiOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Ci">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="CiOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Bi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="BiOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Bi2">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="Bi2Op"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Ri">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="RiOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Reip">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="ReipOp"/>
+        </file>
+        <file name="org.esa.s2tbx.radiometry.Arvi">
+            <attr name="operatorUIClass" stringvalue="org.esa.s2tbx.radiometry.RadiometricIndicesUI"/>
+            <attr name="operatorName" stringvalue="ArviOp"/>
+        </file>
+    </folder>
+
     <folder name="Actions">
         <folder name="Operators">
             <file name="org-esa-s2tbx-radiometry-SaviOpAction.instance">
