@@ -34,8 +34,9 @@
 
     <h3>Export products using the GDAL library</h3>
 
-    <p>This command allows to export by means of the GDAL library the data of products from DIMAP format into serveral raster formats.
-	   The library version used is 2.1.0.
+    <p>This command allows to export the data of products from DIMAP format into serveral raster formats.
+	   The library version used is 2.1.0. The raster format to export the product corresponds to the driver whose
+	   extension is the same with the file exention to write the data.
     </p>
     <p>For more details please see: <a href="http://www.gdal.org/">GDAL - Geospatial Data Abstraction Library</a></p>
     <p>Images data products are delivered in several image formats, as shown in the table
@@ -62,11 +63,11 @@
         </tr>
         <tr>
             <td>*.ntf</td>
-            <td>NITF -- National Imagery Transmission Format</td>
+            <td>National Imagery Transmission Format</td>
         </tr>
         <tr>
             <td>*.img</td>
-            <td>GDAL supports Erdas Imagine .img format for read access and write. The driver supports reading overviews, 
+            <td>Erdas Imagine format for read access and write. The driver supports reading overviews, 
 			palettes, and georeferencing. It supports the Erdas band types u8, s8, u16, s16, u32, s32, f32, f64, c64 and c128.
 			Compressed and missing tiles in Erdas files should be handled properly on read. Files between 2GiB and 4GiB in size 
 			should work on Windows NT, and may work on some Unix platforms. Files with external spill files (needed for datasets 
@@ -74,7 +75,7 @@
         </tr>
         <tr>
             <td>*.bmp</td>
-            <td>MS Windows Device Independent Bitmap</td>
+            <td>Microsoft Windows Device Independent Bitmap</td>
         </tr>
         <tr>
             <td>*.pix</td>
