@@ -18,7 +18,7 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>GDAL Scene Product Reader</title>
+    <title>GDAL Scene Product Writer</title>
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
@@ -34,12 +34,10 @@
 
     <h3>Export products using the GDAL library</h3>
 
-    <p>This command allows to export the data of products from DIMAP format into serveral raster formats.
-	   The library version used is 2.1.0. The raster format to export the product corresponds to the driver whose
-	   extension is the same with the file exention to write the data.
+    <p>This command allows to save products into serveral formats. The GDAL library version used is 2.1.0. 
+	   The format used to save the product corresponds to the file type selected in the dialog window.
     </p>
-    <p>For more details please see: <a href="http://www.gdal.org/">GDAL - Geospatial Data Abstraction Library</a></p>
-    <p>Images data products are delivered in several image formats, as shown in the table
+    <p>Images data products are delivered in several image formats, as shown in the table:
     </p>
     <table>
         <tr><th>File extension</th><th>Description</th></tr>
@@ -126,6 +124,8 @@
             <td>SAGA GIS Binary Grid</td>
         </tr>
     </table>
+
+    <p>For more details please see: <a href="http://www.gdal.org/">GDAL - Geospatial Data Abstraction Library</a></p>
 	
 </body>
 </html>
