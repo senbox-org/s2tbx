@@ -34,14 +34,18 @@
 
     <h3>Import products using the GDAL library</h3>
 
-    <p>This command allows to open the data of different products in SNAP. The GDAL library version used is 2.1.0.
+    <p>This command allows to open the data of different products in SNAP.
 	   If there is no suitable reader to open a certain product, then the GDAL reader tries to open the product.
 	   If there is at least a suitable reader to open a certain product except the GDAL reader, then a dialog window 
 	   is displayed to choose the reader used to open the product. If the GDAL reader cannot open the product then a message dialog is displayed.
 	</p>
 	<p>	   
-	   Most of the supported raster formats are: GeoTIFF, Erdas Imagine, ECW, MrSID, JPEG2000, DTED, NITF, GeoPackage.
+	   Most known raster formats supported are: GeoTIFF, Erdas Imagine, ECW, MrSID, JPEG2000, DTED, NITF, GeoPackage.
     </p>
+	<p>	   
+	   The GDAL library version used is 2.0.1. If this library is already installed, then it is used; otherwise the application will install it. 
+	   This functionality is available on machines with the Microsoft Windows operating system.
+    </p>	
     <p>For more details please see: <a href="http://www.gdal.org/">GDAL - Geospatial Data Abstraction Library</a></p>
 
 </body>
