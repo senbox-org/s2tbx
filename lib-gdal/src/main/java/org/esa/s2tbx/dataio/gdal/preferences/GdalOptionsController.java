@@ -55,7 +55,7 @@ import java.util.prefs.Preferences;
 public class GdalOptionsController extends DefaultConfigController {
 
     public static final String PREFERENCE_KEY_GDAL_BIN_PATH = "gdal.path";
-    public static final String DEFAULT_VALUE_GDAL_BIN_PATH = ".";
+    public static final String DEFAULT_VALUE_GDAL_BIN_PATH = "";
 
     private BindingContext context;
     private Preferences preferences;
@@ -135,11 +135,6 @@ public class GdalOptionsController extends DefaultConfigController {
                 defaultValue = ".";
             }
             File value = getPropertyValue(property.getName(), defaultValue);
-            try {
-                System.loadLibrary("gdaljni");
-            } catch (UnsatisfiedLinkError error) {
-                Dialogs.showError("The GDAL Java binding library was not found in the path");
-            }
             property.setValue(value);
         } catch (ValidationException e) {
             e.printStackTrace();

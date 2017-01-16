@@ -31,12 +31,14 @@ public class GDALPlugInActivator implements Activator {
             GDALInstaller installer = new GDALInstaller();
             installer.install();
 
-            GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
-            if (writerDrivers != null && writerDrivers.length > 0) {
-                GDALProductWriterPlugIn plugIn = new GDALProductWriterPlugIn(writerDrivers);
-                ProductIOPlugInManager.getInstance().addWriterPlugIn(plugIn);
+            if (GdalInstallInfo.INSTANCE.isPresent()) {
+                GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
+                if (writerDrivers != null && writerDrivers.length > 0) {
+                    GDALProductWriterPlugIn plugIn = new GDALProductWriterPlugIn(writerDrivers);
+                    ProductIOPlugInManager.getInstance().addWriterPlugIn(plugIn);
 
-                GdalInstallInfo.INSTANCE.setWriteDriverCount(writerDrivers.length);
+                    GdalInstallInfo.INSTANCE.setWriteDriverCount(writerDrivers.length);
+                }
             }
         } catch (Exception ex) {
             logger.log(Level.SEVERE, ex.getMessage(), ex);

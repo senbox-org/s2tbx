@@ -16,13 +16,14 @@
 
 package org.esa.s2tbx.dataio.gdal;
 
-import com.bc.ceres.core.ProgressMonitor;
-import org.esa.snap.core.util.ResourceInstaller;
+import org.esa.s2tbx.dataio.gdal.preferences.GdalOptionsController;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.runtime.Activator;
+import org.esa.snap.rcp.util.Dialogs;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
 import org.esa.snap.utils.PostExecAction;
+import org.openide.util.NbPreferences;
 
 import java.io.*;
 import java.net.URL;
@@ -33,6 +34,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -49,9 +51,9 @@ public class GDALInstaller {
 
     private static final String SRC_PATH = "auxdata/gdal";
     private static final String BIN_PATH = "bin";
-    private static final String APPS_PATH = BIN_PATH + "/gdal/apps";
-    private static final String PLUGINS_PATH = BIN_PATH + "/gdal/plugins";
-    private static final String DATA_PATH = BIN_PATH + "/gdal-data";
+    private static final String APPS_PATH = "gdal/apps";
+    private static final String PLUGINS_PATH = "gdal/plugins";
+    private static final String DATA_PATH = "gdal-data";
 
     public GDALInstaller() {
     }
@@ -62,58 +64,137 @@ public class GDALInstaller {
      * @throws IOException
      */
     public void install() throws IOException {
-        Path auxdataFolderPath = getGDALAuxDataPath();
-        if (auxdataFolderPath == null) {
-            logger.log(Level.SEVERE, "GDAL configuration error: failed to retrieve auxdata path.");
-            return;
-        }
         OSCategory osCategory = OSCategory.getOSCategory();
         String[] jniFiles = osCategory.getJniFiles();
         if (jniFiles == null || jniFiles.length == 0) {
             logger.log(Level.SEVERE, "No JNI wrappers found.");
             return;
         }
-        if (osCategory.getDirectory() == null) {
-            logger.log(Level.SEVERE, "No folder found.");
-            return;
+
+        Preferences preferences = NbPreferences.forModule(Dialogs.class);
+        String gdalBinFolderPathAsString = preferences.get(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, null);
+        String mapLibraryName = System.mapLibraryName("gdal201");
+        String pathEnvironment = System.getenv("PATH");
+        if (StringUtils.isNullOrEmpty(gdalBinFolderPathAsString)) {
+            installDistribution(osCategory, mapLibraryName, pathEnvironment);
+
+            // save in the preferences the GDAL bin folder path if it is installed
+            GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
+            if (gdalInstallInfo.isPresent()) {
+                preferences.put(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, gdalInstallInfo.getBinLocation().toString());
+            }
+        } else {
+            Path gdalBinFolderPath = Paths.get(gdalBinFolderPathAsString);
+            processInstalledDistribution(gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
         }
-        if (osCategory.getZipFileName() == null) {
-            logger.log(Level.SEVERE, "No zip file name found.");
-            return;
-        }
+    }
 
-        String zipArchivePath = osCategory.getDirectory() + "/" + osCategory.getZipFileName();
+    private void processInstalledDistribution(Path gdalBinFolderPath, OSCategory osCategory, String mapLibraryName, String pathEnvironment) throws IOException {
+        Path pathItem = gdalBinFolderPath.resolve(mapLibraryName);
+        if (Files.exists(pathItem)) {
+            // the library file exists on the local disk
+            if (registerNativePaths(gdalBinFolderPath, osCategory)) {
+                boolean canSetLocations = true;
 
-        Path zipFilePath = auxdataFolderPath.resolve(zipArchivePath);
-        Path destinationFolder = zipFilePath.getParent();
-        Path javaJNIFolderPath = destinationFolder.resolve("java-jni");
+                Path gdalAppsFolderPath = gdalBinFolderPath.resolve(APPS_PATH);
 
-        String zipFilePathFromSources = SRC_PATH + "/" + zipArchivePath;
-        URL zipFileURLFromSources = getClass().getClassLoader().getResource(zipFilePathFromSources);
+                boolean foundBinFolderInPath = findFolderInPathEnvironment(gdalBinFolderPath, pathEnvironment);
+                if (!foundBinFolderInPath) {
+                    canSetLocations = false;
+                    String[] args = osCategory.getPathCmd();
+                    if (args != null && args.length > 2) {
+                        args[2] = args[2].replace("$1", gdalBinFolderPath.toString() + File.pathSeparator + gdalAppsFolderPath.toString());
+                        PostExecAction.register("lib-gdal [$PATH]", args);
+                    }
+                }
 
-        if (!Files.exists(javaJNIFolderPath)) {
-            Files.createDirectories(javaJNIFolderPath);
-            try {
-                FileHelper.copyFile(zipFileURLFromSources, zipFilePath);
-                copyFilesFromZip(zipFilePath.toFile(), javaJNIFolderPath, jniFiles);
-            } finally {
-                try {
-                    Files.deleteIfExists(zipFilePath);
-                } catch (IOException e) {
-                    logger.log(Level.SEVERE, "GDAL configuration error: failed to delete zip after decompression.", e);
+                Path gdalDataFolderPath = gdalBinFolderPath.resolve(DATA_PATH);
+                String gdalDataEnvironment = System.getenv("GDAL_DATA");
+                boolean canSetGDALDataEnvironment = false;
+                if (gdalDataEnvironment == null) {
+                    canSetGDALDataEnvironment = true;
+                } else {
+                    canSetGDALDataEnvironment = !findFolderInPathEnvironment(gdalDataFolderPath, gdalDataEnvironment);
+                }
+                if (canSetGDALDataEnvironment) {
+                    canSetLocations = false;
+                    String[] args = osCategory.getDataPathCmd();
+                    if (args != null && args.length > 2) {
+                        args[2] = args[2].replace("$1", gdalDataFolderPath.toString());
+                        PostExecAction.register("lib-gdal [$GDAL_DATA]", args);
+                    }
+                }
+
+                Path gdalDriverFolderPath = gdalBinFolderPath.resolve(PLUGINS_PATH);
+                String gdalDriverPathEnvironment = System.getenv("GDAL_DRIVER_PATH");
+                boolean canSetGDALDriverPathEnvironment = false;
+                if (gdalDriverPathEnvironment == null) {
+                    canSetGDALDriverPathEnvironment = true;
+                } else {
+                    canSetGDALDriverPathEnvironment = !findFolderInPathEnvironment(gdalDriverFolderPath, gdalDriverPathEnvironment);
+                }
+                if (canSetGDALDriverPathEnvironment) {
+                    canSetLocations = false;
+                    String[] args = osCategory.getDriverPathCmd();
+                    if (args != null && args.length > 2) {
+                        args[2] = args[2].replace("$1", gdalDriverFolderPath.toString());
+                        PostExecAction.register("lib-gdal [$GDAL_DRIVER_PATH]", args);
+                    }
+                }
+
+                if (canSetLocations) {
+                    GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
+                    gdalInstallInfo.setLocations(gdalBinFolderPath, gdalAppsFolderPath, gdalDriverFolderPath, gdalDataFolderPath);
                 }
             }
+        } else {
+            logger.log(Level.SEVERE, "The GDAL bin folder '"+gdalBinFolderPath.toString()+"' does not contain the library '" + mapLibraryName + "'.");
         }
-        NativeLibraryUtils.registerNativePaths(javaJNIFolderPath);
+    }
 
-        String pathEnvironment = System.getenv("PATH");
-        String mapLibraryName = System.mapLibraryName("gdal201");
-        Path existingBinPath = findExistingBinPath(pathEnvironment, mapLibraryName);
-        if (existingBinPath == null) {
+    private static boolean registerNativePaths(Path gdalBinFolderPath, OSCategory osCategory) throws IOException {
+        Path[] array = findFolderPathsForJNIFiles(gdalBinFolderPath, osCategory);
+        if (array == null || array.length == 0) {
+            logger.log(Level.SEVERE, "No JNI wrappers found in the folder '" + gdalBinFolderPath.toString() + "'.");
+            return false;
+        }
+        NativeLibraryUtils.registerNativePaths(array);
+        return true;
+    }
+
+    private void installDistribution(OSCategory osCategory, String mapLibraryName, String pathEnvironment) throws IOException {
+        Path gdalBinFolderPath = findFileNameInFoldersOfPathEnvironment(pathEnvironment, mapLibraryName);
+        if (gdalBinFolderPath == null) {
+            Path auxdataFolderPath = getGDALAuxDataPath();
+            if (auxdataFolderPath == null) {
+                logger.log(Level.SEVERE, "Failed to retrieve the GDAL folder path from the local disk.");
+                return;
+            }
+            if (osCategory.getDirectory() == null) {
+                logger.log(Level.SEVERE, "No folder found.");
+                return;
+            }
+            if (osCategory.getZipFileName() == null) {
+                logger.log(Level.SEVERE, "No zip file name found.");
+                return;
+            }
+
+            // the library file does not exist on  the local disk among the folders from path environment
+            String zipArchivePath = osCategory.getDirectory() + "/" + osCategory.getZipFileName();
+
+            String zipFilePathFromSources = SRC_PATH + "/" + zipArchivePath;
+            URL zipFileURLFromSources = getClass().getClassLoader().getResource(zipFilePathFromSources);
+            Path zipFilePath = auxdataFolderPath.resolve(zipArchivePath);
+            Path gdalRootFolderPath = zipFilePath.getParent();
+
+            if (!Files.exists(gdalRootFolderPath)) {
+                Files.createDirectories(gdalRootFolderPath);
+            }
+
             fixUpPermissions(auxdataFolderPath);
             try {
                 FileHelper.copyFile(zipFileURLFromSources, zipFilePath);
-                FileHelper.unzip(zipFilePath, destinationFolder, true);
+                FileHelper.unzip(zipFilePath, gdalRootFolderPath, true);
             } finally {
                 try {
                     Files.deleteIfExists(zipFilePath);
@@ -121,44 +202,28 @@ public class GDALInstaller {
                     logger.log(Level.SEVERE, "GDAL configuration error: failed to delete zip after decompression.", e);
                 }
             }
-
-            existingBinPath = findExistingBinPath(pathEnvironment, mapLibraryName);
-
-            Path binPath = destinationFolder.resolve(BIN_PATH);
-            if (!pathEnvironment.contains(binPath.toString())) {
-                String[] args = osCategory.getPathCmd();
-                if (args != null && args.length > 2) {
-                    args[2] = args[2].replace("$1", binPath.toString() + File.pathSeparator + destinationFolder.resolve(APPS_PATH).toString());
-                    PostExecAction.register("lib-gdal [$PATH]", args);
-                }
-            }
-            if (System.getenv("GDAL_DRIVER_PATH") == null) {
-                String[] args = osCategory.getDriverPathCmd();
-                if (args != null && args.length > 2) {
-                    args[2] = args[2].replace("$1", destinationFolder.resolve(PLUGINS_PATH).toString());
-                    PostExecAction.register("lib-gdal [$GDAL_DRIVER_PATH]", args);
-                }
-            }
-            if (System.getenv("GDAL_DATA") == null) {
-                String[] args = osCategory.getDataPathCmd();
-                if (args != null && args.length > 2) {
-                    args[2] = args[2].replace("$1", destinationFolder.resolve(DATA_PATH).toString());
-                    PostExecAction.register("lib-gdal [$GDAL_DATA]", args);
-                }
-            }
+            gdalBinFolderPath = gdalRootFolderPath.resolve(BIN_PATH);
         }
-        if (existingBinPath != null) {
-            Path root = existingBinPath.getParent();
-            Path appsLocation = root.resolve(APPS_PATH);
-            Path driversLocation = root.resolve(PLUGINS_PATH);
-            Path dataLocation = root.resolve(DATA_PATH);
-            GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
-            gdalInstallInfo.setLocations(existingBinPath, appsLocation, driversLocation, dataLocation);
-        }
+        processInstalledDistribution(gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
     }
 
     private static Path getGDALAuxDataPath() {
         return SystemUtils.getAuxDataPath().resolve("gdal");
+    }
+
+    private static boolean findFolderInPathEnvironment(Path folderPathToCheck, String pathEnvironment) throws IOException {
+        String fullFolderPath = folderPathToCheck.toFile().getCanonicalPath();
+        boolean foundFolderInPath = false;
+        StringTokenizer str = new StringTokenizer(pathEnvironment, File.pathSeparator);
+        while (str.hasMoreTokens() && !foundFolderInPath) {
+            String currentFolderPathAsString = str.nextToken();
+            Path currentFolderPath = Paths.get(currentFolderPathAsString);
+            String currentFullFolderPath = currentFolderPath.toFile().getCanonicalPath();
+            if (currentFullFolderPath.equals(fullFolderPath)) {
+                foundFolderInPath = true;
+            }
+        }
+        return foundFolderInPath;
     }
 
     private static void fixUpPermissions(Path destPath) throws IOException {
@@ -177,13 +242,62 @@ public class GDALInstaller {
         });
     }
 
-    private static Path findExistingBinPath(String pathEnvironment, String mapLibraryName) {
+    private static Path[] findFolderPathsForJNIFiles(Path gdalBinFolderPath, OSCategory osCategory) throws IOException {
+        String[] jniFileNames = osCategory.getJniFiles();
+        Map<String, Path> jniPaths = new HashMap<String, Path>();
+        for (int i=0; i<jniFileNames.length; i++) {
+            String jniLibraryFileName = System.mapLibraryName(jniFileNames[i]);
+            jniPaths.put(jniLibraryFileName, null);
+        }
+
+        Set<Path> uniqueFolderPaths = new HashSet<Path>(jniFileNames.length);
+        Stack<Path> stack = new Stack<Path>();
+        stack.push(gdalBinFolderPath);
+        boolean findAllJNIFolders = false;
+        while (!stack.isEmpty() && !findAllJNIFolders) {
+            Path currentFolderPath = stack.pop();
+            Iterator<Map.Entry<String, Path>> it = jniPaths.entrySet().iterator();
+            boolean canContinue = false;
+            while (it.hasNext()) {
+                Map.Entry<String, Path> entry = it.next();
+                String jniLibraryFileName = entry.getKey();
+                if (entry.getValue() == null) {
+                    canContinue = true;
+                    Path jniPathItem = currentFolderPath.resolve(jniLibraryFileName);
+                    if (Files.exists(jniPathItem)) {
+                        entry.setValue(currentFolderPath);
+                        uniqueFolderPaths.add(currentFolderPath);
+                    }
+                }
+            }
+            if (canContinue) {
+                Stream<Path> result = Files.list(currentFolderPath);
+                Iterator<Path> itItems = result.iterator();
+                while (itItems.hasNext()) {
+                    Path itemPath = itItems.next();
+                    if (itemPath.toFile().isDirectory()) {
+                        stack.push(itemPath);
+                    }
+                }
+            } else {
+                findAllJNIFolders = true;
+            }
+        }
+        if (findAllJNIFolders) {
+            Path[] array = new Path[uniqueFolderPaths.size()];
+            uniqueFolderPaths.toArray(array);
+            return array;
+        }
+        return null;
+    }
+
+    private static Path findFileNameInFoldersOfPathEnvironment(String pathEnvironment, String fileNameToCheck) {
         StringTokenizer str = new StringTokenizer(pathEnvironment, File.pathSeparator);
         while (str.hasMoreTokens()) {
-            String folderPath = str.nextToken();
-            Path pathItem = Paths.get(folderPath, mapLibraryName);
+            String currentFolderPath = str.nextToken();
+            Path pathItem = Paths.get(currentFolderPath, fileNameToCheck);
             if (Files.exists(pathItem)) {
-                return Paths.get(folderPath);
+                return Paths.get(currentFolderPath);
             }
         }
         return null;
@@ -210,67 +324,35 @@ public class GDALInstaller {
         }
     }
 
-    private static void copyFilesFromZip(File sourceZipFile, Path destinationFolder, String[] filesToCopy) throws IOException {
-        if (sourceZipFile == null || destinationFolder == null) {
-            throw new IllegalArgumentException("One of the arguments is null");
-        }
-        if (!Files.exists(destinationFolder)) {
-            Files.createDirectory(destinationFolder);
-        }
-        byte[] buffer;
-        try (ZipFile zipFile = new ZipFile(sourceZipFile)) {
-            ZipEntry entry;
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            while (entries.hasMoreElements()) {
-                entry = entries.nextElement();
-                for (int i=0; i<filesToCopy.length; i++) {
-                    if (entry.getName().equalsIgnoreCase(filesToCopy[i])) {
-                        Path filePath = destinationFolder.resolve(entry.getName());
-                        Path strippedFilePath = destinationFolder.resolve(filePath.getFileName());
-                        try (InputStream inputStream = zipFile.getInputStream(entry)) {
-                            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(strippedFilePath.toFile()))) {
-                                buffer = new byte[4096];
-                                int read;
-                                while ((read = inputStream.read(buffer)) > -1) {
-                                    bos.write(buffer, 0, read);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private enum OSCategory {
         WIN_32("gdal-2.1.0-win32", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip",
                 new String[] { "SETX", "PATH", "\"$1;%PATH%\"" },
                 new String[] { "SETX", "GDAL_DRIVER_PATH", "\"$1;%PATH%\"" },
                 new String[] { "SETX", "GDAL_DATA", "\"$1\"" },
-                "bin/gdal/java/gdaljni.dll", "bin/gdal/java/gdalconstjni.dll", "bin/gdal/java/ogrjni.dll", "bin/gdal/java/osrjni.dll"),
+                "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
         WIN_64("gdal-2.1.0-win64", "release-1500-x64-gdal-2-1-0-mapserver-7-0-1.zip",
                 new String[] { "SETX", "PATH", "\"$1;%PATH%\"" },
                 new String[] { "SETX", "GDAL_DRIVER_PATH", "\"$1;%PATH%\"" },
                 new String[] { "SETX", "GDAL_DATA", "\"$1\"" },
-                "bin/gdal/java/gdaljni.dll", "bin/gdal/java/gdalconstjni.dll", "bin/gdal/java/ogrjni.dll", "bin/gdal/java/osrjni.dll"),
-        LINUX_64("gdal-2.1.0-linux64", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip",
+                "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
+        LINUX_64(null, null,
                 new String[] { "SET", "LD_LIBRARY_PATH", "\"$1:%LD_LIBRARY_PATH%\"" },
                 new String[] { "SET", "GDAL_DRIVER_PATH", "\"$1\"" },
                 new String[] { "SET", "GDAL_DATA", "\"$1\"" },
-                "gdaljni.so", "gdalconstjni.so", "ogrjni.so", "osrjni.so"),
+                "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
         MAC_OS_X(null, null, null, null, null),
         UNSUPPORTED(null, null, null, null, null);
 
         String directory;
-        String zipFile;
+        String zipFileName;
         String[] jniFiles;
         String[] cmdPath;
         String[] cmdDriverPath;
         String[] cmdDataPath;
 
-        OSCategory(String directory, String zipFile, String[] cmdLine, String[] cmdDriverPath, String[] cmdDataPath, String... jniFiles) {
+        OSCategory(String directory, String zipFileName, String[] cmdLine, String[] cmdDriverPath, String[] cmdDataPath, String... jniFiles) {
             this.directory = directory;
-            this.zipFile = zipFile;
+            this.zipFileName = zipFileName;
             this.cmdPath = cmdLine;
             this.cmdDriverPath = cmdDriverPath;
             this.cmdDataPath = cmdDataPath;
@@ -287,7 +369,7 @@ public class GDALInstaller {
 
         String getDirectory() { return this.directory; }
 
-        String getZipFileName() { return this.zipFile; }
+        String getZipFileName() { return this.zipFileName; }
 
         static OSCategory getOSCategory() {
             OSCategory category;
