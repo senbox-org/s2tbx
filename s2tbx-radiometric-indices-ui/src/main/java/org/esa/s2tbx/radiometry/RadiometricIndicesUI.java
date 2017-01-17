@@ -54,8 +54,8 @@ public class RadiometricIndicesUI extends BaseOperatorUI {
     @Override
     public UIValidation validateParameters() {
         return this.baseUI.validateParameters() ?
-                new UIValidation(UIValidation.State.WARNING, "Product needs to be resampled first") :
-                new UIValidation(UIValidation.State.OK, "");
+                new UIValidation(UIValidation.State.OK, "") :
+                new UIValidation(UIValidation.State.WARNING, "Product needs to be resampled first");
     }
 
     @Override
