@@ -104,8 +104,13 @@ class RadiometricIndicesPanel {
     }
 
     boolean validateParameters() {
-        return isResampleNeeded(getSourceProduct()) &&
-                BaseIndexOp.RESAMPLE_NONE.equals(bindingContext.getPropertySet().getValue(PROPERTY_RESAMPLE));
+        boolean ret = true;
+        if (isResampleNeeded(getSourceProduct())) {
+            if (!BaseIndexOp.RESAMPLE_NONE.equals(bindingContext.getPropertySet().getValue(PROPERTY_RESAMPLE))) {
+                ret = false;
+            }
+        }
+        return ret;
     }
 
     /**
