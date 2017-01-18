@@ -16,14 +16,11 @@
 
 package org.esa.s2tbx.dataio.gdal;
 
-import org.esa.s2tbx.dataio.gdal.preferences.GdalOptionsController;
+import org.esa.s2tbx.jni.EnvironmentVariables;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.rcp.util.Dialogs;
 import org.esa.snap.utils.FileHelper;
 import org.esa.snap.utils.NativeLibraryUtils;
-import org.esa.snap.utils.PostExecAction;
-import org.openide.util.NbPreferences;
 
 import java.io.*;
 import java.net.URL;
@@ -34,7 +31,6 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang.SystemUtils.*;
@@ -67,47 +63,54 @@ public class GDALInstaller {
             logger.log(Level.SEVERE, "The GDAL library is available only on Windows operation system.");
             return;
         }
-        String[] jniFiles = osCategory.getJniFiles();
-        if (jniFiles == null || jniFiles.length == 0) {
-            logger.log(Level.SEVERE, "No JNI wrappers found.");
+
+        Path gdalFolderPath = getGDALFolderPath();
+        if (gdalFolderPath == null) {
+            logger.log(Level.SEVERE, "Failed to retrieve the GDAL folder path on the local disk.");
             return;
         }
+        if (!Files.exists(gdalFolderPath)) {
+            Files.createDirectories(gdalFolderPath);
+        }
 
-        Preferences preferences = NbPreferences.forModule(Dialogs.class);
+        //Preferences preferences = NbPreferences.forModule(Dialogs.class);
         String gdalBinFolderPathAsString = null;//preferences.get(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, null);
         String mapLibraryName = System.mapLibraryName("gdal201");
         String pathEnvironment = System.getenv("PATH");
         if (StringUtils.isNullOrEmpty(gdalBinFolderPathAsString)) {
-            installDistribution(osCategory, mapLibraryName, pathEnvironment);
+            installDistribution(gdalFolderPath, osCategory, mapLibraryName, pathEnvironment);
 
             // save in the preferences the GDAL bin folder path if it is installed
             GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
             if (gdalInstallInfo.isPresent()) {
-                preferences.put(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, gdalInstallInfo.getBinLocation().toString());
+                //preferences.put(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, gdalInstallInfo.getBinLocation().toString());
             }
         } else {
             Path gdalBinFolderPath = Paths.get(gdalBinFolderPathAsString);
-            processInstalledDistribution(gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
+            processInstalledDistribution(gdalFolderPath, gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
         }
     }
 
-    private void processInstalledDistribution(Path gdalBinFolderPath, OSCategory osCategory, String mapLibraryName, String pathEnvironment) throws IOException {
+    private void processInstalledDistribution(Path gdalFolderPath, Path gdalBinFolderPath, OSCategory osCategory, String mapLibraryName, String pathEnvironment) throws IOException {
         Path pathItem = gdalBinFolderPath.resolve(mapLibraryName);
         if (Files.exists(pathItem)) {
             // the library file exists on the local disk
-            if (registerNativePaths(gdalBinFolderPath, osCategory)) {
-                boolean canSetLocations = true;
+            String libraryFileName = System.mapLibraryName("environment-variables");
+            Path libraryFilePath = gdalFolderPath.resolve(libraryFileName);
+            if (!Files.exists(libraryFilePath)) {
+                String libraryFilePathFromSources = SRC_PATH + "/" + libraryFileName;
+                URL libraryFileURLFromSources = getClass().getClassLoader().getResource(libraryFilePathFromSources);
+                FileHelper.copyFile(libraryFileURLFromSources, libraryFilePath);
+            }
+            NativeLibraryUtils.registerNativePaths(libraryFilePath.getParent());
 
+            if (registerNativePaths(gdalBinFolderPath, osCategory)) {
                 Path gdalAppsFolderPath = gdalBinFolderPath.resolve(APPS_PATH);
 
                 boolean foundBinFolderInPath = findFolderInPathEnvironment(gdalBinFolderPath, pathEnvironment);
                 if (!foundBinFolderInPath) {
-                    canSetLocations = false;
-                    String[] args = osCategory.getPathCmd();
-                    if (args != null && args.length > 2) {
-                        args[2] = args[2].replace("$1", gdalBinFolderPath.toString() + File.pathSeparator + gdalAppsFolderPath.toString());
-                        PostExecAction.register("lib-gdal [$PATH]", args);
-                    }
+                    String value = gdalBinFolderPath.toString() + File.pathSeparator + gdalAppsFolderPath.toString();
+                    EnvironmentVariables.setEnvironmentVariable("PATH", value, File.pathSeparator);
                 }
 
                 Path gdalDataFolderPath = gdalBinFolderPath.resolve(DATA_PATH);
@@ -119,12 +122,8 @@ public class GDALInstaller {
                     canSetGDALDataEnvironment = !findFolderInPathEnvironment(gdalDataFolderPath, gdalDataEnvironment);
                 }
                 if (canSetGDALDataEnvironment) {
-                    canSetLocations = false;
-                    String[] args = osCategory.getDataPathCmd();
-                    if (args != null && args.length > 2) {
-                        args[2] = args[2].replace("$1", gdalDataFolderPath.toString());
-                        PostExecAction.register("lib-gdal [$GDAL_DATA]", args);
-                    }
+                    String value = gdalDataFolderPath.toString();
+                    EnvironmentVariables.setEnvironmentVariable("GDAL_DATA", value, File.pathSeparator);
                 }
 
                 Path gdalDriverFolderPath = gdalBinFolderPath.resolve(PLUGINS_PATH);
@@ -136,18 +135,12 @@ public class GDALInstaller {
                     canSetGDALDriverPathEnvironment = !findFolderInPathEnvironment(gdalDriverFolderPath, gdalDriverPathEnvironment);
                 }
                 if (canSetGDALDriverPathEnvironment) {
-                    canSetLocations = false;
-                    String[] args = osCategory.getDriverPathCmd();
-                    if (args != null && args.length > 2) {
-                        args[2] = args[2].replace("$1", gdalDriverFolderPath.toString());
-                        PostExecAction.register("lib-gdal [$GDAL_DRIVER_PATH]", args);
-                    }
+                    String value = gdalDriverFolderPath.toString();
+                    EnvironmentVariables.setEnvironmentVariable("GDAL_DRIVER_PATH", value, File.pathSeparator);
                 }
 
-                if (canSetLocations) {
-                    GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
-                    gdalInstallInfo.setLocations(gdalBinFolderPath, gdalAppsFolderPath, gdalDriverFolderPath, gdalDataFolderPath);
-                }
+                GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
+                gdalInstallInfo.setLocations(gdalBinFolderPath, gdalAppsFolderPath, gdalDriverFolderPath, gdalDataFolderPath);
             }
         } else {
             logger.log(Level.SEVERE, "The GDAL bin folder '"+gdalBinFolderPath.toString()+"' does not contain the library '" + mapLibraryName + "'.");
@@ -164,14 +157,9 @@ public class GDALInstaller {
         return true;
     }
 
-    private void installDistribution(OSCategory osCategory, String mapLibraryName, String pathEnvironment) throws IOException {
-        Path gdalBinFolderPath = findFileNameInFoldersOfPathEnvironment(pathEnvironment, mapLibraryName);
+    private void installDistribution(Path gdalFolderPath, OSCategory osCategory, String mapLibraryName, String pathEnvironment) throws IOException {
+        Path gdalBinFolderPath = null;//findFileNameInFoldersOfPathEnvironment(pathEnvironment, mapLibraryName);
         if (gdalBinFolderPath == null) {
-            Path auxdataFolderPath = getGDALAuxDataPath();
-            if (auxdataFolderPath == null) {
-                logger.log(Level.SEVERE, "Failed to retrieve the GDAL folder path from the local disk.");
-                return;
-            }
             if (osCategory.getDirectory() == null) {
                 logger.log(Level.SEVERE, "No folder found.");
                 return;
@@ -183,33 +171,34 @@ public class GDALInstaller {
 
             // the library file does not exist on  the local disk among the folders from path environment
             String zipArchivePath = osCategory.getDirectory() + "/" + osCategory.getZipFileName();
+            Path zipFilePathOnLocalDisk = gdalFolderPath.resolve(zipArchivePath);
+            Path gdalDistributionRootFolderPath = zipFilePathOnLocalDisk.getParent();
 
-            String zipFilePathFromSources = SRC_PATH + "/" + zipArchivePath;
-            URL zipFileURLFromSources = getClass().getClassLoader().getResource(zipFilePathFromSources);
-            Path zipFilePath = auxdataFolderPath.resolve(zipArchivePath);
-            Path gdalRootFolderPath = zipFilePath.getParent();
+            fixUpPermissions(gdalFolderPath);
 
-            if (!Files.exists(gdalRootFolderPath)) {
-                Files.createDirectories(gdalRootFolderPath);
-            }
-
-            fixUpPermissions(auxdataFolderPath);
-            try {
-                FileHelper.copyFile(zipFileURLFromSources, zipFilePath);
-                FileHelper.unzip(zipFilePath, gdalRootFolderPath, true);
-            } finally {
+            if (!Files.exists(gdalDistributionRootFolderPath)) {
+                Files.createDirectories(gdalDistributionRootFolderPath);
                 try {
-                    Files.deleteIfExists(zipFilePath);
-                } catch (IOException e) {
-                    logger.log(Level.SEVERE, "GDAL configuration error: failed to delete zip after decompression.", e);
+                    String zipFilePathFromSources = SRC_PATH + "/" + zipArchivePath;
+                    URL zipFileURLFromSources = getClass().getClassLoader().getResource(zipFilePathFromSources);
+                    FileHelper.copyFile(zipFileURLFromSources, zipFilePathOnLocalDisk);
+                    FileHelper.unzip(zipFilePathOnLocalDisk, gdalDistributionRootFolderPath, true);
+                } finally {
+                    try {
+                        Files.deleteIfExists(zipFilePathOnLocalDisk);
+                    } catch (IOException e) {
+                        logger.log(Level.SEVERE, "GDAL configuration error: failed to delete zip after decompression.", e);
+                    }
                 }
             }
-            gdalBinFolderPath = gdalRootFolderPath.resolve(BIN_PATH);
+
+            gdalBinFolderPath = gdalDistributionRootFolderPath.resolve(BIN_PATH);
         }
-        processInstalledDistribution(gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
+
+        processInstalledDistribution(gdalFolderPath, gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
     }
 
-    private static Path getGDALAuxDataPath() {
+    private static Path getGDALFolderPath() {
         return SystemUtils.getAuxDataPath().resolve("gdal");
     }
 
@@ -328,19 +317,10 @@ public class GDALInstaller {
 
     private enum OSCategory {
         WIN_32("gdal-2.1.0-win32", "release-1500-gdal-2-1-0-mapserver-7-0-1.zip",
-                new String[] { "SETX", "PATH", "\"$1;%PATH%\"" },
-                new String[] { "SETX", "GDAL_DRIVER_PATH", "\"$1;%PATH%\"" },
-                new String[] { "SETX", "GDAL_DATA", "\"$1\"" },
                 "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
         WIN_64("gdal-2.1.0-win64", "release-1500-x64-gdal-2-1-0-mapserver-7-0-1.zip",
-                new String[] { "SETX", "PATH", "\"$1;%PATH%\"" },
-                new String[] { "SETX", "GDAL_DRIVER_PATH", "\"$1;%PATH%\"" },
-                new String[] { "SETX", "GDAL_DATA", "\"$1\"" },
                 "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
         LINUX_64(null, null,
-                new String[] { "SET", "LD_LIBRARY_PATH", "\"$1:%LD_LIBRARY_PATH%\"" },
-                new String[] { "SET", "GDAL_DRIVER_PATH", "\"$1\"" },
-                new String[] { "SET", "GDAL_DATA", "\"$1\"" },
                 "gdaljni", "gdalconstjni", "ogrjni", "osrjni"),
         MAC_OS_X(null, null, null, null, null),
         UNSUPPORTED(null, null, null, null, null);
@@ -348,24 +328,12 @@ public class GDALInstaller {
         String directory;
         String zipFileName;
         String[] jniFiles;
-        String[] cmdPath;
-        String[] cmdDriverPath;
-        String[] cmdDataPath;
 
-        OSCategory(String directory, String zipFileName, String[] cmdLine, String[] cmdDriverPath, String[] cmdDataPath, String... jniFiles) {
+        OSCategory(String directory, String zipFileName, String... jniFiles) {
             this.directory = directory;
             this.zipFileName = zipFileName;
-            this.cmdPath = cmdLine;
-            this.cmdDriverPath = cmdDriverPath;
-            this.cmdDataPath = cmdDataPath;
             this.jniFiles = jniFiles;
         }
-
-        String[] getPathCmd() { return this.cmdPath; }
-
-        String[] getDriverPathCmd() { return this.cmdDriverPath; }
-
-        String[] getDataPathCmd() { return this.cmdDataPath; }
 
         String[] getJniFiles() { return this.jniFiles; }
 
