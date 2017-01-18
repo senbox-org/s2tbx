@@ -21,10 +21,8 @@ import com.bc.ceres.binding.Property;
 import com.bc.ceres.binding.PropertyDescriptor;
 import com.bc.ceres.binding.PropertySet;
 import com.bc.ceres.binding.ValidationException;
-import com.bc.ceres.swing.TableLayout;
 import com.bc.ceres.swing.binding.BindingContext;
-import com.bc.ceres.swing.binding.PropertyEditor;
-import com.bc.ceres.swing.binding.PropertyEditorRegistry;
+import com.bc.ceres.swing.binding.internal.TextComponentAdapter;
 import org.esa.snap.rcp.preferences.DefaultConfigController;
 import org.esa.snap.rcp.preferences.Preference;
 import org.esa.snap.rcp.util.Dialogs;
@@ -33,6 +31,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -53,7 +52,6 @@ import java.util.prefs.Preferences;
         "Options_Keywords_GdalOptions=gdal"
 })
 public class GdalOptionsController extends DefaultConfigController {
-
     public static final String PREFERENCE_KEY_GDAL_BIN_PATH = "gdal.path";
     public static final String DEFAULT_VALUE_GDAL_BIN_PATH = "";
 
@@ -68,52 +66,53 @@ public class GdalOptionsController extends DefaultConfigController {
     @Override
     protected JPanel createPanel(BindingContext context) {
         this.context = context;
-        preferences = NbPreferences.forModule(Dialogs.class);
-
-        TableLayout tableLayout = new TableLayout(1);
-        tableLayout.setTableAnchor(TableLayout.Anchor.NORTHWEST);
-        tableLayout.setTablePadding(4, 10);
-        tableLayout.setTableFill(TableLayout.Fill.HORIZONTAL);
-        tableLayout.setTableWeightX(1.0);
-        tableLayout.setRowWeightY(1, 1.0);
-
-        JPanel pageUI = new JPanel(tableLayout);
-
-        PropertyEditorRegistry registry = PropertyEditorRegistry.getInstance();
+        this.preferences = NbPreferences.forModule(Dialogs.class);
 
         Property gdalPathProperty = context.getPropertySet().getProperty(PREFERENCE_KEY_GDAL_BIN_PATH);
-        final PropertyDescriptor descriptor = gdalPathProperty.getDescriptor();
-        descriptor.setAttribute("directory", true);
+        PropertyDescriptor propertyDescriptor = gdalPathProperty.getDescriptor();
+        propertyDescriptor.setAttribute("directory", true);
         setPropertyValue(gdalPathProperty, DEFAULT_VALUE_GDAL_BIN_PATH);
-        if (descriptor.getDefaultValue() == null) {
-            descriptor.setDefaultValue(gdalPathProperty.getValue());
+        if (propertyDescriptor.getDefaultValue() == null) {
+            propertyDescriptor.setDefaultValue(gdalPathProperty.getValue());
         }
 
-        PropertyEditor editor;
-        editor = registry.getPropertyEditor("org.esa.snap.ui.tooladapter.model.FolderEditor");
-        if (editor == null) {
-            editor = registry.findPropertyEditor(descriptor);
-        }
-        JComponent[] components = editor.createComponents(descriptor, context);
+        JLabel gdalLabel = new JLabel(propertyDescriptor.getDisplayName());
+        JTextField textField = new JTextField();
+        JButton button = new JButton("...");
+        Insets margins = button.getMargin();
+        button.setMargin(new Insets(margins.top, 5, margins.bottom, 5));
 
+        TextComponentAdapter adapter = new TextComponentAdapter(textField);
+        context.bind(propertyDescriptor.getName(), adapter);
 
-        pageUI.add(components[1]);
-        pageUI.add(components[0]);
+        gdalLabel.setEnabled(false);
+        textField.setEnabled(false);
+        button.setEnabled(false);
 
+        Box top = Box.createHorizontalBox();
+        top.add(gdalLabel);
+        top.add(Box.createHorizontalStrut(5));
+        top.add(textField);
+        top.add(Box.createHorizontalStrut(5));
+        top.add(button);
+
+        JPanel pageUI = new JPanel(new BorderLayout());
+        pageUI.add(top, BorderLayout.NORTH);
 
         return pageUI;
     }
 
     @Override
     public void update() {
-        Property property = context.getPropertySet().getProperty(PREFERENCE_KEY_GDAL_BIN_PATH);
+        Property property = this.context.getPropertySet().getProperty(PREFERENCE_KEY_GDAL_BIN_PATH);
         if (property != null) {
-            preferences.put(PREFERENCE_KEY_GDAL_BIN_PATH, property.getValueAsText());
+            this.preferences.put(PREFERENCE_KEY_GDAL_BIN_PATH, property.getValueAsText());
             property.getDescriptor().setDefaultValue(property.getValue());
-        }
-        try {
-            preferences.flush();
-        } catch (BackingStoreException ignored) {
+            try {
+                this.preferences.flush();
+            } catch (BackingStoreException ignored) {
+                // ignore exception
+            }
         }
     }
 
@@ -123,17 +122,14 @@ public class GdalOptionsController extends DefaultConfigController {
     }
 
     private File getPropertyValue(String key, String defaultValue) {
-        if (preferences == null) {
-            preferences = NbPreferences.forModule(Dialogs.class);
+        if (this.preferences == null) {
+            this.preferences = NbPreferences.forModule(Dialogs.class);
         }
-        return new File(preferences.get(key, defaultValue));
+        return new File(this.preferences.get(key, defaultValue));
     }
 
     private void setPropertyValue(Property property, String defaultValue) {
         try {
-            if (defaultValue == null) {
-                defaultValue = ".";
-            }
             File value = getPropertyValue(property.getName(), defaultValue);
             property.setValue(value);
         } catch (ValidationException e) {
@@ -142,9 +138,7 @@ public class GdalOptionsController extends DefaultConfigController {
     }
 
     static class GdalOptionsBean {
-
         @Preference(label = "GDAL binaries path", key = PREFERENCE_KEY_GDAL_BIN_PATH)
         File path = new File(DEFAULT_VALUE_GDAL_BIN_PATH);
-
     }
 }

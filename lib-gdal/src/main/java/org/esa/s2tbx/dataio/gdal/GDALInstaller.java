@@ -36,8 +36,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import static org.apache.commons.lang.SystemUtils.*;
 
@@ -65,6 +63,10 @@ public class GDALInstaller {
      */
     public void install() throws IOException {
         OSCategory osCategory = OSCategory.getOSCategory();
+        if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+            logger.log(Level.SEVERE, "The GDAL library is available only on Windows operation system.");
+            return;
+        }
         String[] jniFiles = osCategory.getJniFiles();
         if (jniFiles == null || jniFiles.length == 0) {
             logger.log(Level.SEVERE, "No JNI wrappers found.");
@@ -72,7 +74,7 @@ public class GDALInstaller {
         }
 
         Preferences preferences = NbPreferences.forModule(Dialogs.class);
-        String gdalBinFolderPathAsString = preferences.get(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, null);
+        String gdalBinFolderPathAsString = null;//preferences.get(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, null);
         String mapLibraryName = System.mapLibraryName("gdal201");
         String pathEnvironment = System.getenv("PATH");
         if (StringUtils.isNullOrEmpty(gdalBinFolderPathAsString)) {
