@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import com.bc.ceres.core.ProgressMonitor;
+import junit.framework.TestCase;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.s2tbx.dataio.gdal.activator.GDALPlugInActivator;
 import org.esa.snap.core.dataio.ProductWriter;
@@ -18,19 +19,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * The system properties to set:
- * gdal.distribution.root.dir : the folder containing the GDAL distribution
- * snap.writer.tests.data.dir : the folder to create a temp folder used to write the products
+ * snap.reader.tests.data.dir : the test folder
  *
  * @author Jean Coravu
  */
-public class GDALProductWriterTest extends AbstractGDALPlugInTest {
+public class GDALProductWriterTest extends TestCase {
     private GDALProductWriterPlugIn writerPlugIn;
     private GDALProductReaderPlugin readerPlugIn;
-    private Path testFolderPath;
+    private Path testsFolderPath;
 
     public GDALProductWriterTest() {
     }
@@ -39,29 +42,96 @@ public class GDALProductWriterTest extends AbstractGDALPlugInTest {
     protected void setUp() throws Exception {
         super.setUp();
 
-        checkWriteTestDirectoryExists();
+        GDALInstaller installer = new GDALInstaller();
+        installer.install();
 
-        GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
-        if (writerDrivers != null && writerDrivers.length > 0) {
+        checkTestDirectoryExists();
+
+        if (GdalInstallInfo.INSTANCE.isPresent()) {
+            GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
             this.writerPlugIn = new GDALProductWriterPlugIn(writerDrivers);
             this.readerPlugIn = new GDALProductReaderPlugin();
         }
     }
 
-    private void checkWriteTestDirectoryExists() {
-        String testDirectoryPathPropertyName = "snap.writer.tests.data.dir";
+    public final void testWriterDrivers() {
+        if (GdalInstallInfo.INSTANCE.isPresent()) {
+            GDALDriverInfo[] writerDrivers = this.writerPlugIn.getWriterDrivers();
+            assertNotNull(writerDrivers);
 
-        String testDirectoryPathProperty = System.getProperty(testDirectoryPathPropertyName);
-        assertNotNull("The system property '" + testDirectoryPathPropertyName + "' representing the test directory used to write the products is not set.", testDirectoryPathProperty);
-        this.testFolderPath = Paths.get(testDirectoryPathProperty);
-        if (!this.testFolderPath.toFile().isDirectory()) {
-            fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
+            Map<String, String> extensionMap = new HashMap<String, String>();
+            extensionMap.put("KEA", ".kea");
+            extensionMap.put("netCDF", ".nc");
+            extensionMap.put("GTiff", ".tif");
+            extensionMap.put("NITF", ".ntf");
+            extensionMap.put("HFA", ".img");
+            extensionMap.put("BMP", ".bmp");
+            extensionMap.put("PCIDSK", ".pix");
+            extensionMap.put("ILWIS", ".mpr");
+            extensionMap.put("SGI", ".rgb");
+            extensionMap.put("RMF", ".rsw");
+            extensionMap.put("RST", ".rst");
+            extensionMap.put("GSBG", ".grd");
+            extensionMap.put("GS7BG", ".grd");
+            extensionMap.put("PNM", ".pnm");
+            extensionMap.put("MFF", ".hdr");
+            extensionMap.put("BT", ".bt");
+            extensionMap.put("GTX", ".gtx");
+            extensionMap.put("KRO", ".kro");
+            extensionMap.put("SAGA", ".sdat");
+
+            assertEquals(writerDrivers.length, extensionMap.size());
+
+            Map<String, String> creationTypesMap = new HashMap<String, String>();
+            creationTypesMap.put("KEA", "Byte Int16 UInt16 Int32 UInt32 Float32 Float64");
+            creationTypesMap.put("netCDF", "null");
+            creationTypesMap.put("GTiff", "Byte UInt16 Int16 UInt32 Int32 Float32 Float64 CInt16 CInt32 CFloat32 CFloat64");
+            creationTypesMap.put("NITF", "Byte UInt16 Int16 UInt32 Int32 Float32");
+            creationTypesMap.put("HFA", "Byte Int16 UInt16 Int32 UInt32 Float32 Float64 CFloat32 CFloat64");
+            creationTypesMap.put("BMP", "Byte");
+            creationTypesMap.put("PCIDSK", "Byte UInt16 Int16 Float32 CInt16 CFloat32");
+            creationTypesMap.put("ILWIS", "Byte Int16 Int32 Float64");
+            creationTypesMap.put("SGI", "Byte");
+            creationTypesMap.put("RMF", "Byte Int16 Int32 Float64");
+            creationTypesMap.put("RST", "Byte Int16 Float32");
+            creationTypesMap.put("GSBG", "Byte Int16 UInt16 Float32");
+            creationTypesMap.put("GS7BG", "Byte Int16 UInt16 Float32 Float64");
+            creationTypesMap.put("PNM", "Byte UInt16");
+            creationTypesMap.put("MFF", "Byte UInt16 Float32 CInt16 CFloat32");
+            creationTypesMap.put("BT", "Int16 Int32 Float32");
+            creationTypesMap.put("GTX", "Float32");
+            creationTypesMap.put("KRO", "Byte UInt16 Float32");
+            creationTypesMap.put("SAGA", "Byte Int16 UInt16 Int32 UInt32 Float32 Float64");
+
+            assertEquals(writerDrivers.length, creationTypesMap.size());
+
+            for (int k = 0; k < writerDrivers.length; k++) {
+                String driverExtension = extensionMap.get(writerDrivers[k].getDriverName());
+                assertNotNull(driverExtension);
+                assertEquals(driverExtension, writerDrivers[k].getExtensionName());
+
+                String driverCreationTypes = creationTypesMap.get(writerDrivers[k].getDriverName());
+                StringTokenizer str = new StringTokenizer(driverCreationTypes, " ");
+                while (str.hasMoreTokens()) {
+                    String gdalDataTypeName = str.nextToken();
+                    int gdalDataType = gdal.GetDataTypeByName(gdalDataTypeName);
+                    boolean result = writerDrivers[k].canExportProduct(gdalDataType);
+                    assertTrue(result);
+                }
+            }
         }
     }
 
     public final void testWriteFileOnDisk() throws IOException {
-        Path gdalTestsFolderPath = this.testFolderPath.resolve("gdal-writer-tests");
-        Files.createDirectories(gdalTestsFolderPath);
+        if (!GdalInstallInfo.INSTANCE.isPresent()) {
+            return;
+        }
+
+        Path tempTestsFolderPath = this.testsFolderPath.resolve("_temp");
+        Path gdalTestsFolderPath = tempTestsFolderPath.resolve("gdal_writer_tests");
+        if (!Files.exists(gdalTestsFolderPath)) {
+            Files.createDirectories(gdalTestsFolderPath);
+        }
 
         try {
             GDALDriverInfo[] writerDrivers = this.writerPlugIn.getWriterDrivers();
@@ -140,6 +210,15 @@ public class GDALProductWriterTest extends AbstractGDALPlugInTest {
             }
         } finally {
             FileUtils.deleteTree(gdalTestsFolderPath.toFile());
+        }
+    }
+
+    private void checkTestDirectoryExists() {
+        String testDirectoryPathProperty = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
+        assertNotNull("The system property '" + TestUtil.PROPERTYNAME_DATA_DIR + "' representing the test directory is not set.", testDirectoryPathProperty);
+        this.testsFolderPath = Paths.get(testDirectoryPathProperty);
+        if (!Files.exists(this.testsFolderPath)) {
+            fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
         }
     }
 }

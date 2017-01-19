@@ -1,9 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.activator;
 
 import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconstConstants;
-
-import java.text.MessageFormat;
 
 /**
  * Simple class containing information about a GDAL driver.

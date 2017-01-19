@@ -58,9 +58,17 @@ public class GDALInstaller {
      * @throws IOException
      */
     public void install() throws IOException {
-        OSCategory osCategory = OSCategory.getOSCategory();
         if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
             logger.log(Level.SEVERE, "The GDAL library is available only on Windows operation system.");
+            return;
+        }
+        OSCategory osCategory = OSCategory.getOSCategory();
+        if (osCategory.getDirectory() == null) {
+            logger.log(Level.SEVERE, "No folder found.");
+            return;
+        }
+        if (osCategory.getZipFileName() == null) {
+            logger.log(Level.SEVERE, "No zip file name found.");
             return;
         }
 
@@ -73,33 +81,35 @@ public class GDALInstaller {
             Files.createDirectories(gdalFolderPath);
         }
 
-        //Preferences preferences = NbPreferences.forModule(Dialogs.class);
-        String gdalBinFolderPathAsString = null;//preferences.get(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, null);
         String mapLibraryName = System.mapLibraryName("gdal201");
         String pathEnvironment = System.getenv("PATH");
-        if (StringUtils.isNullOrEmpty(gdalBinFolderPathAsString)) {
-            installDistribution(gdalFolderPath, osCategory, mapLibraryName, pathEnvironment);
-
-            // save in the preferences the GDAL bin folder path if it is installed
-            GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
-            if (gdalInstallInfo.isPresent()) {
-                //preferences.put(GdalOptionsController.PREFERENCE_KEY_GDAL_BIN_PATH, gdalInstallInfo.getBinLocation().toString());
-            }
-        } else {
-            Path gdalBinFolderPath = Paths.get(gdalBinFolderPathAsString);
-            processInstalledDistribution(gdalFolderPath, gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
-        }
+        installDistribution(gdalFolderPath, osCategory, mapLibraryName, pathEnvironment);
     }
 
-    public void processInstalledDistribution(Path gdalDistributionRootFolderPath) throws IOException {
-        if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
-            logger.log(Level.SEVERE, "The GDAL library is available only on Windows operation system.");
-            return;
+    private void installDistribution(Path gdalFolderPath, OSCategory osCategory, String mapLibraryName, String pathEnvironment) throws IOException {
+        // the library file does not exist on  the local disk among the folders from path environment
+        String zipArchivePath = osCategory.getDirectory() + "/" + osCategory.getZipFileName();
+        Path zipFilePathOnLocalDisk = gdalFolderPath.resolve(zipArchivePath);
+        Path gdalDistributionRootFolderPath = zipFilePathOnLocalDisk.getParent();
+
+        fixUpPermissions(gdalFolderPath);
+
+        if (!Files.exists(gdalDistributionRootFolderPath)) {
+            Files.createDirectories(gdalDistributionRootFolderPath);
+            try {
+                String zipFilePathFromSources = SRC_PATH + "/" + zipArchivePath;
+                URL zipFileURLFromSources = getClass().getClassLoader().getResource(zipFilePathFromSources);
+                FileHelper.copyFile(zipFileURLFromSources, zipFilePathOnLocalDisk);
+                FileHelper.unzip(zipFilePathOnLocalDisk, gdalDistributionRootFolderPath, true);
+            } finally {
+                try {
+                    Files.deleteIfExists(zipFilePathOnLocalDisk);
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, "GDAL configuration error: failed to delete zip after decompression.", e);
+                }
+            }
         }
-        Path gdalFolderPath = gdalDistributionRootFolderPath.getParent();
-        String mapLibraryName = System.mapLibraryName("gdal201");
-        String pathEnvironment = System.getenv("PATH");
-        OSCategory osCategory = OSCategory.getOSCategory();
+
         Path gdalBinFolderPath = gdalDistributionRootFolderPath.resolve(BIN_PATH);
         processInstalledDistribution(gdalFolderPath, gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
     }
@@ -164,47 +174,6 @@ public class GDALInstaller {
         Path nativeFolderPath = gdalBinFolderPath.resolve("gdal/java");
         NativeLibraryUtils.registerNativePaths(nativeFolderPath);
         return true;
-    }
-
-    private void installDistribution(Path gdalFolderPath, OSCategory osCategory, String mapLibraryName, String pathEnvironment) throws IOException {
-        Path gdalBinFolderPath = null;//findFileNameInFoldersOfPathEnvironment(pathEnvironment, mapLibraryName);
-        if (gdalBinFolderPath == null) {
-            if (osCategory.getDirectory() == null) {
-                logger.log(Level.SEVERE, "No folder found.");
-                return;
-            }
-            if (osCategory.getZipFileName() == null) {
-                logger.log(Level.SEVERE, "No zip file name found.");
-                return;
-            }
-
-            // the library file does not exist on  the local disk among the folders from path environment
-            String zipArchivePath = osCategory.getDirectory() + "/" + osCategory.getZipFileName();
-            Path zipFilePathOnLocalDisk = gdalFolderPath.resolve(zipArchivePath);
-            Path gdalDistributionRootFolderPath = zipFilePathOnLocalDisk.getParent();
-
-            fixUpPermissions(gdalFolderPath);
-
-            if (!Files.exists(gdalDistributionRootFolderPath)) {
-                Files.createDirectories(gdalDistributionRootFolderPath);
-                try {
-                    String zipFilePathFromSources = SRC_PATH + "/" + zipArchivePath;
-                    URL zipFileURLFromSources = getClass().getClassLoader().getResource(zipFilePathFromSources);
-                    FileHelper.copyFile(zipFileURLFromSources, zipFilePathOnLocalDisk);
-                    FileHelper.unzip(zipFilePathOnLocalDisk, gdalDistributionRootFolderPath, true);
-                } finally {
-                    try {
-                        Files.deleteIfExists(zipFilePathOnLocalDisk);
-                    } catch (IOException e) {
-                        logger.log(Level.SEVERE, "GDAL configuration error: failed to delete zip after decompression.", e);
-                    }
-                }
-            }
-
-            gdalBinFolderPath = gdalDistributionRootFolderPath.resolve(BIN_PATH);
-        }
-
-        processInstalledDistribution(gdalFolderPath, gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
     }
 
     private static Path getGDALFolderPath() {
