@@ -161,12 +161,8 @@ public class GDALInstaller {
     }
 
     private static boolean registerNativePaths(Path gdalBinFolderPath, OSCategory osCategory) throws IOException {
-        Path[] array = findFolderPathsForJNIFiles(gdalBinFolderPath, osCategory);
-        if (array == null || array.length == 0) {
-            logger.log(Level.SEVERE, "No JNI wrappers found in the folder '" + gdalBinFolderPath.toString() + "'.");
-            return false;
-        }
-        NativeLibraryUtils.registerNativePaths(array);
+        Path nativeFolderPath = gdalBinFolderPath.resolve("gdal/java");
+        NativeLibraryUtils.registerNativePaths(nativeFolderPath);
         return true;
     }
 
@@ -244,67 +240,6 @@ public class GDALInstaller {
                 setExecutablePermissions(path);
             }
         });
-    }
-
-    private static Path[] findFolderPathsForJNIFiles(Path gdalBinFolderPath, OSCategory osCategory) throws IOException {
-        String[] jniFileNames = osCategory.getJniFiles();
-        Map<String, Path> jniPaths = new HashMap<String, Path>();
-        for (int i=0; i<jniFileNames.length; i++) {
-            String jniLibraryFileName = System.mapLibraryName(jniFileNames[i]);
-            jniPaths.put(jniLibraryFileName, null);
-        }
-
-        Set<Path> uniqueFolderPaths = new HashSet<Path>(jniFileNames.length);
-        Stack<Path> stack = new Stack<Path>();
-        stack.push(gdalBinFolderPath);
-        boolean findAllJNIFolders = false;
-        while (!stack.isEmpty() && !findAllJNIFolders) {
-            Path currentFolderPath = stack.pop();
-            Iterator<Map.Entry<String, Path>> it = jniPaths.entrySet().iterator();
-            boolean canContinue = false;
-            while (it.hasNext()) {
-                Map.Entry<String, Path> entry = it.next();
-                String jniLibraryFileName = entry.getKey();
-                if (entry.getValue() == null) {
-                    canContinue = true;
-                    Path jniPathItem = currentFolderPath.resolve(jniLibraryFileName);
-                    if (Files.exists(jniPathItem)) {
-                        entry.setValue(currentFolderPath);
-                        uniqueFolderPaths.add(currentFolderPath);
-                    }
-                }
-            }
-            if (canContinue) {
-                Stream<Path> result = Files.list(currentFolderPath);
-                Iterator<Path> itItems = result.iterator();
-                while (itItems.hasNext()) {
-                    Path itemPath = itItems.next();
-                    if (itemPath.toFile().isDirectory()) {
-                        stack.push(itemPath);
-                    }
-                }
-            } else {
-                findAllJNIFolders = true;
-            }
-        }
-        if (findAllJNIFolders) {
-            Path[] array = new Path[uniqueFolderPaths.size()];
-            uniqueFolderPaths.toArray(array);
-            return array;
-        }
-        return null;
-    }
-
-    private static Path findFileNameInFoldersOfPathEnvironment(String pathEnvironment, String fileNameToCheck) {
-        StringTokenizer str = new StringTokenizer(pathEnvironment, File.pathSeparator);
-        while (str.hasMoreTokens()) {
-            String currentFolderPath = str.nextToken();
-            Path pathItem = Paths.get(currentFolderPath, fileNameToCheck);
-            if (Files.exists(pathItem)) {
-                return Paths.get(currentFolderPath);
-            }
-        }
-        return null;
     }
 
     private static void setExecutablePermissions(Path executablePathName) {

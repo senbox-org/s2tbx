@@ -8,23 +8,29 @@ import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.utils.TestUtil;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 
 import javax.media.jai.JAI;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
  * The system properties to set:
  * gdal.distribution.root.dir : the folder containing the GDAL distribution
+ * snap.writer.tests.data.dir : the folder to create a temp folder used to write the products
  *
  * @author Jean Coravu
  */
 public class GDALProductWriterTest extends AbstractGDALPlugInTest {
     private GDALProductWriterPlugIn writerPlugIn;
     private GDALProductReaderPlugin readerPlugIn;
+    private Path testFolderPath;
 
     public GDALProductWriterTest() {
     }
@@ -33,17 +39,30 @@ public class GDALProductWriterTest extends AbstractGDALPlugInTest {
     protected void setUp() throws Exception {
         super.setUp();
 
+        checkWriteTestDirectoryExists();
+
         GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
         if (writerDrivers != null && writerDrivers.length > 0) {
             this.writerPlugIn = new GDALProductWriterPlugIn(writerDrivers);
             this.readerPlugIn = new GDALProductReaderPlugin();
+        }
+    }
 
+    private void checkWriteTestDirectoryExists() {
+        String testDirectoryPathPropertyName = "snap.writer.tests.data.dir";
+
+        String testDirectoryPathProperty = System.getProperty(testDirectoryPathPropertyName);
+        assertNotNull("The system property '" + testDirectoryPathPropertyName + "' representing the test directory used to write the products is not set.", testDirectoryPathProperty);
+        this.testFolderPath = Paths.get(testDirectoryPathProperty);
+        if (!this.testFolderPath.toFile().isDirectory()) {
+            fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
         }
     }
 
     public final void testWriteFileOnDisk() throws IOException {
-        File folder = new File("D:/GDAL-driver-tests");
-        folder.mkdirs();
+        Path gdalTestsFolderPath = this.testFolderPath.resolve("gdal-writer-tests");
+        Files.createDirectories(gdalTestsFolderPath);
+
         try {
             GDALDriverInfo[] writerDrivers = this.writerPlugIn.getWriterDrivers();
             for (int k=0; k<writerDrivers.length; k++) {
@@ -60,7 +79,7 @@ public class GDALProductWriterTest extends AbstractGDALPlugInTest {
                 }
 
                 int bandDataType = GDALUtils.getBandDataType(gdalDataType);
-                File file = new File(folder, "tempFile" + driverInfo.getExtensionName());
+                File file = new File(gdalTestsFolderPath.toFile(), "tempFile" + driverInfo.getExtensionName());
                 file.delete();
                 try {
                     Product product = new Product("tempProduct", "GDAL", 20, 30);
@@ -120,7 +139,7 @@ public class GDALProductWriterTest extends AbstractGDALPlugInTest {
                 }
             }
         } finally {
-            FileUtils.deleteTree(folder);
+            FileUtils.deleteTree(gdalTestsFolderPath.toFile());
         }
     }
 }
