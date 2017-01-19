@@ -17,8 +17,7 @@ import java.util.List;
 
 /**
  * The system properties to set:
- * gdal.bin.dir : the folder containing the GDAL binaries
- * gdal.jni.libs.dir : the folder containing the following libraries: gdaljni.dll, gdalconstjni.dll, ogrjni.dll, osrjni.dll
+ * gdal.distribution.root.dir : the folder containing the GDAL distribution
  *
  * @author Jean Coravu
  */

@@ -1,9 +1,8 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import junit.framework.TestCase;
-import org.esa.snap.utils.NativeLibraryUtils;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -17,35 +16,20 @@ public abstract class AbstractGDALPlugInTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        checkJNILibsDirectoryExists();
-        checkGDALBinDirectoryExists();
+        checkGDALDistributionRootFolder();
     }
 
-    private void checkGDALBinDirectoryExists() {
-        String gdalBinPropertyName = "gdal.bin.dir";
+    private void checkGDALDistributionRootFolder() throws IOException {
+        String gdalDistributionPropertyName = "gdal.distribution.root.dir";
 
-        String gdalBinDirectoryPathProperty = System.getProperty(gdalBinPropertyName);
-        assertNotNull("The system property '" + gdalBinPropertyName + "' representing the directory containing the libraries is not set.", gdalBinDirectoryPathProperty);
-        File gdalBinFolder = new File(gdalBinDirectoryPathProperty);
-        if (!gdalBinFolder.isDirectory()) {
-            fail("The directory path containing the libraries '"+gdalBinDirectoryPathProperty+"' is not valid.");
+        String gdalDistributionFolderPathProperty = System.getProperty(gdalDistributionPropertyName);
+        assertNotNull("The system property '" + gdalDistributionPropertyName + "' representing the directory with the GDAL distribution is not set.", gdalDistributionFolderPathProperty);
+        Path gdalDistributionRootFolderPath = Paths.get(gdalDistributionFolderPathProperty);
+        if (!gdalDistributionRootFolderPath.toFile().isDirectory()) {
+            fail("The directory path containing the distribution '"+gdalDistributionFolderPathProperty+"' is not valid.");
         }
 
-        Path gdalBinPath = Paths.get(gdalBinDirectoryPathProperty);
-        GdalInstallInfo.INSTANCE.setLocations(gdalBinPath, null, null, null);
-    }
-
-    private void checkJNILibsDirectoryExists() {
-        String jniLibsPropertyName = "gdal.jni.libs.dir";
-
-        String jniLibsDirectoryPathProperty = System.getProperty(jniLibsPropertyName);
-        assertNotNull("The system property '" + jniLibsPropertyName + "' representing the directory containing the JNI libraries is not set.", jniLibsDirectoryPathProperty);
-        File jniLibsFolder = new File(jniLibsDirectoryPathProperty);
-        if (!jniLibsFolder.isDirectory()) {
-            fail("The directory path containing the JNI libraries '"+jniLibsDirectoryPathProperty+"' is not valid.");
-        }
-
-        Path jniLibsPath = Paths.get(jniLibsDirectoryPathProperty);
-        NativeLibraryUtils.registerNativePaths(jniLibsPath);
+        GDALInstaller installer = new GDALInstaller();
+        installer.processInstalledDistribution(gdalDistributionRootFolderPath);
     }
 }

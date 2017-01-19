@@ -91,6 +91,19 @@ public class GDALInstaller {
         }
     }
 
+    public void processInstalledDistribution(Path gdalDistributionRootFolderPath) throws IOException {
+        if (!org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) {
+            logger.log(Level.SEVERE, "The GDAL library is available only on Windows operation system.");
+            return;
+        }
+        Path gdalFolderPath = gdalDistributionRootFolderPath.getParent();
+        String mapLibraryName = System.mapLibraryName("gdal201");
+        String pathEnvironment = System.getenv("PATH");
+        OSCategory osCategory = OSCategory.getOSCategory();
+        Path gdalBinFolderPath = gdalDistributionRootFolderPath.resolve(BIN_PATH);
+        processInstalledDistribution(gdalFolderPath, gdalBinFolderPath, osCategory, mapLibraryName, pathEnvironment);
+    }
+
     private void processInstalledDistribution(Path gdalFolderPath, Path gdalBinFolderPath, OSCategory osCategory, String mapLibraryName, String pathEnvironment) throws IOException {
         Path pathItem = gdalBinFolderPath.resolve(mapLibraryName);
         if (Files.exists(pathItem)) {
