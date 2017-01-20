@@ -35,8 +35,9 @@
         <module>s2tbx-cache-ui</module>
         <module>s2tbx-s2msi-reader</module>
         <module>s2tbx-s2msi-reader-ui</module>
-        <module>s2tbx-jp2-reader</module>
         <module>lib-openjpeg</module>
+        <module>s2tbx-jp2-reader</module>
+        <module>s2tbx-jp2-writer</module>
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-spot6-reader</module>
@@ -53,6 +54,9 @@
         <module>s2tbx-biophysical</module>
         <module>s2tbx-reflectance-to-radiance</module>
         <module>s2tbx-reflectance-to-radiance-ui</module>
+        <module>lib-gdal</module>
+        <module>s2tbx-gdal-reader</module>
+        <module>s2tbx-gdal-reader-ui</module>
     </modules>
 
     <packaging>pom</packaging>

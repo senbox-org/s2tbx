@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright (C) 2014-2015 CS SI
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~  with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>GDAL Scene Product Reader</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+    <table class="header">
+        <tr class="header">
+            <td class="header">&nbsp; Import products using the GDAL library</td>
+            <td class="header" align="right">
+                <a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg" border=0></a>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Import products using the GDAL library</h3>
+
+    <p>This command allows to open the data of different products in SNAP.
+	   If there is no suitable reader to open a certain product, then the GDAL reader tries to open the product.
+	   If there is at least a suitable reader to open a certain product except the GDAL reader, then a dialog window 
+	   is displayed to choose the reader used to open the product. If the GDAL reader cannot open the product then a message dialog is displayed.
+       If there is an intented reader to open a certain product, then that reader is used automatically to open the product.
+    </p>
+	<p>	   
+	   Most known raster formats supported are: GeoTIFF, Erdas Imagine, ECW, MrSID, JPEG2000, DTED, NITF, GeoPackage.
+    </p>
+	<p>	   
+	   The GDAL library version used is 2.1.0. If this library is already installed, then it is used; otherwise the application will install it.
+	   This functionality is available on machines with the Microsoft Windows operating system.
+    </p>	
+    <p>For more details please see: <a href="http://www.gdal.org/">GDAL - Geospatial Data Abstraction Library</a></p>
+
+</body>
+</html>

@@ -86,13 +86,19 @@
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
+            <artifactId>lib-openjpeg</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-jp2-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
-            <artifactId>lib-openjpeg</artifactId>
+            <artifactId>s2tbx-jp2-writer</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -190,6 +196,24 @@
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-reflectance-to-radiance-ui</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>lib-gdal</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-gdal-reader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.esa.s2tbx</groupId>
+            <artifactId>s2tbx-gdal-reader-ui</artifactId>
             <version>${project.version}</version>
         </dependency>
 

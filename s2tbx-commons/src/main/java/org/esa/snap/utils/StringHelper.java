@@ -45,4 +45,8 @@ public class StringHelper {
         }
         return found;
     }
+
+    public static boolean containsIgnoreCase(String input, String value) {
+        return (input != null && value != null && input.toLowerCase().contains(value.toLowerCase()));
+    }
 }

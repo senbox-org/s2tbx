@@ -1,0 +1,79 @@
+<!--
+  ~ Copyright (C) 2010 Brockmann Consult GmbH (info@brockmann-consult.de)
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU General Public License as published by the Free
+  ~ Software Foundation; either version 3 of the License, or (at your option)
+  ~ any later version.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT
+  ~ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  ~ FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+  ~ more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along
+  ~ with this program; if not, see http://www.gnu.org/licenses/
+  -->
+
+<html>
+<head>
+    <title>Sentinel Toolbox Help - Export JP2</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+<table class="header">
+    <tr class="header">
+        <td class="header">&nbsp;
+            Export JP2
+        </td>
+
+        <td class="header" align="right"><a href="nbdocs://org.esa.snap.snap.help/org/esa/snap/snap/help/docs/general/overview/SnapOverview.html"><img src="../images/snap_header.jpg"
+                                                                                                                                                       border=0></a></td>
+    </tr>
+</table>
+
+
+<h3>Export JP2 Product</h3>
+
+<p>This command allows to export the data of the current product to JP2 file.</p>
+
+<p>JPEG 2000 (JP2) is an image compression standard and coding system. Although the JPEG 2000 standard format does not include geocoding,
+    it does allow for extra information to be inserted within the file. The goecoding is encripted using  Geography Markup Language (GML). The primary
+    role of GMLJP2 is to provide an XML encoding of the metadata necessary to make the JPEG document a georeferenced or geographic image
+    This is accomplished by providing, in GML, the description of the image geometry. JPEG 2000 files
+    containing GMLJP2 markup can be located and displayed in the correct position on the earth's surface by a Geographic Information System (GIS)
+    that supports the format. Generally,  GML data can be used to encode coverage metadata, geographic features, annotations, and supporting components
+    for coordinate reference systems and unit of measure definitions.
+    The JP2 encoding is done using the openjpeg library which is an open-source JPEG-2000 codec written in C language.<br/>
+    For further information have a look at the following documentations:
+<ul>
+    <li><a href="https://jpeg.org/jpeg2000/">JPEG2000 Homepage</a></li>
+    <li><a href="http://www.openjpeg.org/">OpenJPEG Homepage</a></li>
+    <li><a href="http://www.opengeospatial.org/standards/gml">GML Homepage</a></li>
+</ul>
+
+<h3>Constraints of written JP2 product files</h3>
+
+<p>The exported JP2 files written by the OpenJpeg library contain all the JP2 file format headers except for the XML header box that is added manually.
+    This XML header box is used for additional information like geoCoding with Geography Markup Language provided as XML encoding thus allowing a
+    better support of several Snap Toolbox features.<br/>
+</p>
+
+<p>
+    For features and limitations of the JP2 export and constraints of interaction with other GIS tools, please see
+    the following list:
+</p>
+<ul>
+    <li>All bands of a JP2 file must have at most 16 bit-depth; so products with bands that have bit-depth greater than 16 will not be encoded, 
+        due to Openjpeg library limitations.</li>
+    <li>The data of a band is always written raw and unscaled.</li>
+    <li>The JP2 does not contain Vector data.</li>
+    <li>The additional information in the JP2 file consists only of geoCoding, no other metadata information is available.</li>
+    <li>JP2 supports all projections available in the SNAP application, although exports projections only in tie-point grid format.<br/></li>
+    <li>The masks of the exported product can not be saved in the JP2 format.</li>
+
+</ul>
+
+<hr>
+</body>
+</html>

@@ -178,32 +178,52 @@ public class JP2ProductReader extends AbstractProductReader {
                     metadataRoot.addElement(metadata.getRootElement());
                     String crsGeocoding = metadata.getCrsGeocoding();
                     Point2D origin = metadata.getOrigin();
+                    GeoCoding geoCoding = null;
                     if (crsGeocoding != null && origin != null) {
-                        GeoCoding geoCoding = null;
                         try {
                             geoCoding = new CrsGeoCoding(CRS.decode(crsGeocoding.replace("::", ":")),
-                                                         imageWidth, imageHeight,
-                                                         origin.getX(), origin.getY(),
-                                                         metadata.getStepX(), -metadata.getStepY());
+                                    imageWidth, imageHeight,
+                                    origin.getX(), origin.getY(),
+                                    metadata.getStepX(), -metadata.getStepY());
                         } catch (Exception gEx) {
-                            try {
+                        }
+                    }
+                    if(geoCoding == null){
+                        try {
+                            float[] latPoints = null;
+                            float[] lonPoints = null;
+                            if(origin != null){
                                 float oX = (float) origin.getX();
                                 float oY = (float) origin.getY();
                                 float h = (float) imageHeight * (float) metadata.getStepY();
                                 float w = (float) imageWidth * (float) metadata.getStepX();
-                                float[] latPoints = new float[]{oY + h, oY + h, oY, oY};
-                                float[] lonPoints = new float[]{oX, oX + w, oX, oX + w};
+                                latPoints = new float[]{oY + h, oY + h, oY, oY};
+                                lonPoints = new float[]{oX, oX + w, oX, oX + w};
+                            } else {
+                                List<Point2D> polygonPositions = metadata.getPolygonPositions();
+                                if (polygonPositions != null) {
+                                    latPoints = new float[]{(float) polygonPositions.get(0).getY(),
+                                            (float) polygonPositions.get(1).getY(),
+                                            (float) polygonPositions.get(3).getY(),
+                                            (float) polygonPositions.get(2).getY()};
+                                    lonPoints = new float[]{(float) polygonPositions.get(0).getX(),
+                                            (float) polygonPositions.get(1).getX(),
+                                            (float) polygonPositions.get(3).getX(),
+                                            (float) polygonPositions.get(2).getX()};
+                                }
+                            }
+                            if(latPoints != null ) {
                                 TiePointGrid latGrid = createTiePointGrid("latitude", 2, 2, 0, 0, imageWidth, imageHeight, latPoints);
                                 TiePointGrid lonGrid = createTiePointGrid("longitude", 2, 2, 0, 0, imageWidth, imageHeight, lonPoints);
                                 geoCoding = new TiePointGeoCoding(latGrid, lonGrid);
                                 product.addTiePointGrid(latGrid);
                                 product.addTiePointGrid(lonGrid);
-                            } catch (Exception ignored) {
                             }
+                        } catch (Exception ignored) {
                         }
-                        if (geoCoding != null) {
-                            product.setSceneGeoCoding(geoCoding);
-                        }
+                    }
+                    if (geoCoding != null) {
+                        product.setSceneGeoCoding(geoCoding);
                     }
                 }
                 List<CodeStreamInfo.TileComponentInfo> componentTilesInfo = csInfo.getComponentTilesInfo();
@@ -211,9 +231,9 @@ public class JP2ProductReader extends AbstractProductReader {
                 for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
                     int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
                     Band virtualBand = new Band("band_" + String.valueOf(bandIdx + 1),
-                                                precisionTypeMap.get(precision),
-                                                imageWidth,
-                                                imageHeight);
+                            precisionTypeMap.get(precision),
+                            imageWidth,
+                            imageHeight);
                     JP2MultiLevelSource source = new JP2MultiLevelSource(
                             getFileInput(getInput()),
                             tmpFolder,

@@ -22,6 +22,8 @@ import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.snap.core.datamodel.ProductData;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Metadata extracted from JP2 XML blocks.
@@ -135,9 +137,23 @@ public class Jp2XmlMetadata extends XmlMetadata {
     public String getCrsGeocoding() {
         String crs = null;
         String srs = getAttributeValue(JP2ProductReaderConstants.TAG_CRS_NAME, null);
+        if (srs == null){
+            srs = getAttributeValue(JP2ProductReaderConstants.TAG_CRS_NAME_VARIANT, null);
+        }
         if (srs != null && srs.contains("crs")) {
             crs = srs.substring(srs.indexOf("crs:") + 4);
         }
         return crs;
+    }
+
+    public List<Point2D> getPolygonPositions() {
+        List<Point2D> positions = new ArrayList<>();
+        String[] values = getAttributeValues(JP2ProductReaderConstants.TAG_POLYGON_POSITIONS);
+        for(int i = 0; i< values.length; i++){
+            String[] splits = values[i].split(" ");
+            positions.add(new Point2D.Double(Double.parseDouble(splits[0]),
+                    Double.parseDouble(splits[1])));
+        }
+        return positions;
     }
 }
