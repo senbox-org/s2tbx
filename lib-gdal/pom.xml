@@ -171,6 +171,38 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>unix</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-install-plugin</artifactId>
+                        <version>2.5.1</version>
+                        <configuration>
+                            <groupId>org.gdal</groupId>
+                            <artifactId>gdal-local</artifactId>
+                            <version>2.1.0</version>
+                            <packaging>jar</packaging>
+                            <file>${basedir}/src/main/resources/auxdata/gdal/gdal-unix/gdal.jar</file>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>install-jar</id>
+                                <goals>
+                                    <goal>install-file</goal>
+                                </goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
