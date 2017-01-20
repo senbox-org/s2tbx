@@ -109,7 +109,13 @@ public class GDALProductReader extends AbstractProductReader {
                     throw new IllegalArgumentException("Unknown raster data type " + gdalDataType + ".");
                 }
                 int tileWidth = gdalBand.GetBlockXSize();
+                if (tileWidth <= 1) {
+                    tileWidth = imageWidth;
+                }
                 int tileHeight = gdalBand.GetBlockYSize();
+                if (tileHeight <= 1) {
+                    tileHeight = imageHeight;
+                }
                 int levels = gdalBand.GetOverviewCount() + 1;
                 String colorInterpretationName = gdal.GetColorInterpretationName(gdalBand.GetRasterColorInterpretation());
 
