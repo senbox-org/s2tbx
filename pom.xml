@@ -35,8 +35,10 @@
         <module>s2tbx-cache-ui</module>
         <module>s2tbx-s2msi-reader</module>
         <module>s2tbx-s2msi-reader-ui</module>
-        <module>s2tbx-jp2-reader</module>
         <module>lib-openjpeg</module>
+        <module>s2tbx-jp2-reader</module>
+        <module>s2tbx-jp2-writer</module>
+        <module>lib-gdal</module>
         <module>s2tbx-commons</module>
         <module>s2tbx-spot-reader</module>
         <module>s2tbx-spot6-reader</module>
@@ -47,6 +49,8 @@
         <module>s2tbx-s2msi-mci-ui</module>
         <module>s2tbx-rapideye-reader</module>
         <module>s2tbx-deimos-reader</module>
+        <module>s2tbx-gdal-reader</module>
+        <module>s2tbx-gdal-reader-ui</module>
         <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-radiometric-indices</module>
         <module>s2tbx-radiometric-indices-ui</module>
@@ -58,8 +62,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>5.0.0</snap.version>
+        <snap.version>5.0.1-SNAPSHOT</snap.version>
         <s2tbx.version>5.0.1</s2tbx.version>
+        <tests.version>5.0.0</tests.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>
         <netbeans.version>RELEASE82</netbeans.version>
@@ -225,7 +230,7 @@
             <dependency>
                 <groupId>org.esa.snap</groupId>
                 <artifactId>snap-reader-tests</artifactId>
-                <version>${snap.version}</version>
+                <version>${tests.version}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -234,7 +239,7 @@
                 <artifactId>snap-reader-tests</artifactId>
                 <type>test-jar</type>
                 <scope>test</scope>
-                <version>${snap.version}</version>
+                <version>${tests.version}</version>
             </dependency>
 
             <!-- NetBeans -->
@@ -327,6 +332,12 @@
                 <groupId>com.github.relaxng</groupId>
                 <artifactId>relaxngDatatype</artifactId>
                 <version>2011.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.gdal</groupId>
+                <artifactId>gdal-local</artifactId>
+                <version>2.1.0</version>
             </dependency>
 
         </dependencies>

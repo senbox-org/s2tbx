@@ -182,9 +182,9 @@ public class JP2ProductReader extends AbstractProductReader {
                     if (crsGeocoding != null && origin != null) {
                         try {
                             geoCoding = new CrsGeoCoding(CRS.decode(crsGeocoding.replace("::", ":")),
-                                                         imageWidth, imageHeight,
-                                                         origin.getX(), origin.getY(),
-                                                         metadata.getStepX(), -metadata.getStepY());
+                                    imageWidth, imageHeight,
+                                    origin.getX(), origin.getY(),
+                                    metadata.getStepX(), -metadata.getStepY());
                         } catch (Exception gEx) {
                         }
                     }
@@ -231,9 +231,9 @@ public class JP2ProductReader extends AbstractProductReader {
                 for (int bandIdx = 0; bandIdx < numBands; bandIdx++) {
                     int precision = imageInfo.getComponents().get(bandIdx).getPrecision();
                     Band virtualBand = new Band("band_" + String.valueOf(bandIdx + 1),
-                                                precisionTypeMap.get(precision),
-                                                imageWidth,
-                                                imageHeight);
+                            precisionTypeMap.get(precision),
+                            imageWidth,
+                            imageHeight);
                     JP2MultiLevelSource source = new JP2MultiLevelSource(
                             getFileInput(getInput()),
                             tmpFolder,

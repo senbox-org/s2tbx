@@ -330,7 +330,8 @@ public class RasterUtils {
                     srcPos = roi.x + col * imageWidth;
                     dstPos = (col - roi.y) * roi.width;
                     if (srcPos < pixels.length && dstPos < values.length) {
-                        for (int i = 0; i < Math.min(roi.width, pixels.length - srcPos) - dstPos; i++) {
+                        //for (int i = 0; i < Math.min(roi.width, pixels.length - srcPos) - dstPos; i++) {
+                        for (int i = 0; i < Math.min(roi.width, pixels.length - srcPos); i++) {
                             values[dstPos + i] = (short) pixels[srcPos + i];
                         }
                     }

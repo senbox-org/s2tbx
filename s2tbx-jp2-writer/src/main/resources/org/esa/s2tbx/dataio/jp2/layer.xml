@@ -1,0 +1,28 @@
+<filesystem>
+
+    <folder name="Actions">
+        <folder name="Writers">
+            <file name="org-esa-s2tbx-dataio-jp2-ExportJP2Product.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.context"/>
+                <attr name="type" stringvalue="org.esa.snap.core.datamodel.ProductNode"/>
+                <attr name="selectionType" stringvalue="EXACTLY_ONE"/>
+                <attr name="delegate" methodvalue="org.esa.snap.rcp.actions.file.ExportProductAction.create"/>
+                <attr name="displayName" stringvalue="JPEG-2000"/>
+                <attr name="formatName" stringvalue="JPEG2000"/>
+                <attr name="useAllFileFilter" boolvalue="false"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
+        <folder name="File">
+            <folder name="Export">
+                <file name="org-esa-s2tbx-dataio-jp2-ExportJP2Product.shadow">
+                    <attr name="originalFile"
+                          stringvalue="Actions/Writers/org-esa-s2tbx-dataio-jp2-ExportJP2Product.instance"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>

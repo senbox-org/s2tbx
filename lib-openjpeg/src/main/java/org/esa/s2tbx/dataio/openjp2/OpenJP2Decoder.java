@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -89,12 +90,10 @@ public class OpenJP2Decoder implements AutoCloseable {
         ImageComponent component = ((ImageComponent[]) jImage.comps.toArray(jImage.numcomps))[this.bandIndex];
         width = component.w;
         height = component.h;
-        this.pendingWrites = new HashSet<>();
+        this.pendingWrites = Collections.synchronizedSet(new HashSet<>());
         this.writeCompletedCallback = value -> {
-            synchronized (pendingWrites) {
-                if (value != null) {
-                    pendingWrites.remove(value);
-                }
+            if (value != null) {
+                pendingWrites.remove(value);
             }
             return null;
         };
@@ -246,7 +245,7 @@ public class OpenJP2Decoder implements AutoCloseable {
         int width;
         int height;
         int[] pixels;
-        if (this.pendingWrites.contains(this.tileFile)) {
+        while (this.pendingWrites.contains(this.tileFile)) {
             Thread.yield();
         }
         /*int bands = 1; // always the cached (uncompressed) info has 1 band
