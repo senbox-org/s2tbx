@@ -44,13 +44,13 @@ public class GDALProductReaderPlugin implements ProductReaderPlugIn {
     @Override
     public String[] getFormatNames() {
         String[] formatNames = GdalInstallInfo.INSTANCE.getFormatNames();
-        return formatNames != null ? formatNames :  new String[] { FORMAT_NAME };
+        return (formatNames == null) ? new String[] { FORMAT_NAME } : formatNames;
     }
 
     @Override
     public String[] getDefaultFileExtensions() {
         String[] extensions = GdalInstallInfo.INSTANCE.getExtensions();
-        return extensions != null ? extensions : DEFAULT_EXTENSIONS;
+        return (extensions == null) ? DEFAULT_EXTENSIONS : extensions;
     }
 
     @Override
@@ -60,6 +60,19 @@ public class GDALProductReaderPlugin implements ProductReaderPlugIn {
 
     @Override
     public SnapFileFilter getProductFileFilter() {
-        return new SnapFileFilter(getFormatNames()[0], getDefaultFileExtensions()[0], DESCRIPTION);
+        return new SnapFileFilter(getFormatNames()[0], getDefaultFileExtensions()[0], DESCRIPTION) {
+            @Override
+            public boolean accept(File file) {
+                boolean accepted = super.accept(file);
+
+                if (!accepted) {
+                    String[] fileExentions = getExtensions();
+                    if (fileExentions != null) {
+                        accepted = fileExentions[0].equals(DEFAULT_EXTENSIONS[0]);
+                    }
+                }
+                return accepted;
+            }
+        };
     }
 }
