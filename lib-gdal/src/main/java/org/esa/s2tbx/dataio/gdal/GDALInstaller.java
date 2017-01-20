@@ -131,21 +131,18 @@ public class GDALInstaller {
                 String pathEnvironment = EnvironmentVariables.getEnvironmentVariable("PATH");
                 boolean foundBinFolderInPath = findFolderInPathEnvironment(gdalBinFolderPath, pathEnvironment);
                 if (!foundBinFolderInPath) {
-                    String value = gdalBinFolderPath.toString() + File.pathSeparator + gdalAppsFolderPath.toString();
                     StringBuilder newPathValue = new StringBuilder();
                     newPathValue.append("PATH")
-                                .append("=")
-                                .append(gdalBinFolderPath.toString())
-                                .append(File.pathSeparator)
-                                .append(gdalAppsFolderPath.toString())
-                                .append(File.pathSeparator)
-                                .append(pathEnvironment);
-
+                            .append("=")
+                            .append(gdalBinFolderPath.toString())
+                            .append(File.pathSeparator)
+                            .append(gdalAppsFolderPath.toString())
+                            .append(File.pathSeparator)
+                            .append(pathEnvironment);
                     EnvironmentVariables.setEnvironmentVariable(newPathValue.toString());
                 }
 
                 Path gdalDataFolderPath = gdalBinFolderPath.resolve(DATA_PATH);
-
                 StringBuilder gdalDataValue = new StringBuilder();
                 gdalDataValue.append("GDAL_DATA")
                         .append("=")
@@ -153,20 +150,11 @@ public class GDALInstaller {
                 EnvironmentVariables.setEnvironmentVariable(gdalDataValue.toString());
 
                 Path gdalDriverFolderPath = gdalBinFolderPath.resolve(PLUGINS_PATH);
-                String gdalDriverPathEnvironment = EnvironmentVariables.getEnvironmentVariable("GDAL_DRIVER_PATH");
-                boolean canSetGDALDriverPathEnvironment = false;
-                if (gdalDriverPathEnvironment == null) {
-                    canSetGDALDriverPathEnvironment = true;
-                } else {
-                    canSetGDALDriverPathEnvironment = !findFolderInPathEnvironment(gdalDriverFolderPath, gdalDriverPathEnvironment);
-                }
-                if (canSetGDALDriverPathEnvironment) {
-                    StringBuilder gdalDriverValue = new StringBuilder();
-                    gdalDriverValue.append("GDAL_DRIVER_PATH")
-                                   .append("=")
-                                   .append(gdalDriverFolderPath.toString());
-                    EnvironmentVariables.setEnvironmentVariable(gdalDriverValue.toString());
-                }
+                StringBuilder gdalDriverValue = new StringBuilder();
+                gdalDriverValue.append("GDAL_DRIVER_PATH")
+                        .append("=")
+                        .append(gdalDriverFolderPath.toString());
+                EnvironmentVariables.setEnvironmentVariable(gdalDriverValue.toString());
 
                 GdalInstallInfo gdalInstallInfo = GdalInstallInfo.INSTANCE;
                 gdalInstallInfo.setLocations(gdalBinFolderPath, gdalAppsFolderPath, gdalDriverFolderPath, gdalDataFolderPath);
