@@ -41,6 +41,8 @@ class GDALTileOpImage extends SingleBandedOpImage {
     private final int sourceX;
     private final int sourceY;
 
+    private ImageReader imageReader;
+
     private GDALTileOpImage(Path imageFile, int bandIndex, int sourceX, int sourceY, TileLayout tileLayout, MultiLevelModel imageModel, int dataBufferType, int level) {
         super(dataBufferType, null, tileLayout.tileWidth, tileLayout.tileHeight,
                 getTileDimensionAtResolutionLevel(tileLayout.tileWidth, tileLayout.tileHeight, level),
@@ -64,35 +66,40 @@ class GDALTileOpImage extends SingleBandedOpImage {
         int fileTileY = destRect.y / this.tileLayout.tileHeight;
         int fileTileOriginX = destRect.x - (fileTileX * this.tileLayout.tileWidth);
         int fileTileOriginY = destRect.y - (fileTileY * this.tileLayout.tileHeight);
-        ImageReader imageReader = null;
-        try {
-            imageReader = new ImageReader(this.imageFile, this.bandIndex, this.sourceX, this.sourceY, this.dataBufferType, getLevel());
-            int fileTileWidth = imageReader.getBandWidth();
-            int fileTileHeight = imageReader.getBandHeight();
-            Rectangle fileTileRect = new Rectangle(0, 0, fileTileWidth, fileTileHeight);
+        if (this.imageReader == null) {
+            this.imageReader = new ImageReader(this.imageFile, this.bandIndex, this.sourceX, this.sourceY, this.dataBufferType, getLevel());
+        }
+        int fileTileWidth = imageReader.getBandWidth();
+        int fileTileHeight = imageReader.getBandHeight();
+        Rectangle fileTileRect = new Rectangle(0, 0, fileTileWidth, fileTileHeight);
 
-            int tileWidth = getTileWidth();
-            int tileHeight = getTileHeight();
-            Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
+        int tileWidth = getTileWidth();
+        int tileHeight = getTileHeight();
+        Rectangle tileRect = new Rectangle(fileTileOriginX, fileTileOriginY, tileWidth, tileHeight);
 
-            Rectangle intersection = fileTileRect.intersection(tileRect);
-            if (!intersection.isEmpty()) {
-                try {
-                    RenderedImage readTileImage = imageReader.read(intersection);
-                    if (readTileImage != null) {
-                        int bandList[] = new int[] { 0 }; // the band index is zero
-                        Raster imageRaster = readTileImage.getData();
-                        Raster readBandRaster = imageRaster.createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bandList);
-                        dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
-                    }
-                } catch (IOException ex) {
-                    logger.log(Level.SEVERE, ex.getMessage(), ex);
+        Rectangle intersection = fileTileRect.intersection(tileRect);
+        if (!intersection.isEmpty()) {
+            try {
+                RenderedImage readTileImage = imageReader.read(intersection);
+                if (readTileImage != null) {
+                    int bandList[] = new int[]{0}; // the band index is zero
+                    Raster imageRaster = readTileImage.getData();
+                    Raster readBandRaster = imageRaster.createChild(0, 0, readTileImage.getWidth(), readTileImage.getHeight(), 0, 0, bandList);
+                    dest.setDataElements(dest.getMinX(), dest.getMinY(), readBandRaster);
                 }
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
-        } finally {
-            if (imageReader != null) {
-                imageReader.close();
-            }
+        }
+    }
+
+    @Override
+    public synchronized void dispose() {
+        super.dispose();
+
+        if (this.imageReader != null) {
+            this.imageReader.close();
+            this.imageReader = null;
         }
     }
 

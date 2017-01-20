@@ -3,6 +3,7 @@ package org.esa.s2tbx.dataio.gdal;
 import com.bc.ceres.glevel.support.AbstractMultiLevelSource;
 import com.bc.ceres.glevel.support.DefaultMultiLevelModel;
 import com.bc.ceres.glevel.support.DefaultMultiLevelSource;
+import org.esa.s2tbx.dataio.TileImageDisposer;
 import org.esa.s2tbx.dataio.readers.TileLayout;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
@@ -32,6 +33,7 @@ class GDALMultiLevelSource extends AbstractMultiLevelSource {
     private final Path sourceFile;
     private final int dataBufferType;
     private final int bandIndex;
+    private final TileImageDisposer tileManager;
 
     GDALMultiLevelSource(Path sourceFile, int bandIndex, int numBands, int imageWidth, int imageHeight,
                                 int tileWidth, int tileHeight, int levels, int dataBufferType, GeoCoding geoCoding) {
@@ -52,6 +54,8 @@ class GDALMultiLevelSource extends AbstractMultiLevelSource {
         }
         this.tileLayout = new TileLayout(imageWidth, imageHeight, tileWidth, tileHeight, numTilesX, numTilesY, levels);
         this.tileLayout.numBands = numBands;
+
+        this.tileManager = new TileImageDisposer();
     }
 
     @Override
@@ -65,6 +69,8 @@ class GDALMultiLevelSource extends AbstractMultiLevelSource {
                 PlanarImage opImage;
                 opImage = createTileImage(x, y, level);
                 if (opImage != null) {
+                    this.tileManager.registerForDisposal(opImage);
+
                     float xTrans = (float) (y * this.tileLayout.tileWidth * factorX);
                     float yTrans = (float) (x * this.tileLayout.tileHeight * factorY);
                     opImage = TranslateDescriptor.create(opImage, xTrans, yTrans, Interpolation.getInstance(Interpolation.INTERP_NEAREST), null);
@@ -107,6 +113,14 @@ class GDALMultiLevelSource extends AbstractMultiLevelSource {
             mosaicOp = BorderDescriptor.create(mosaicOp, 0, rightPad, 0, bottomPad, borderExtender, null);
         }
         return mosaicOp;
+    }
+
+    @Override
+    public synchronized void reset() {
+        super.reset();
+
+        this.tileManager.disposeAll();
+        System.gc();
     }
 
     private PlanarImage createTileImage(int row, int col, int level) {
