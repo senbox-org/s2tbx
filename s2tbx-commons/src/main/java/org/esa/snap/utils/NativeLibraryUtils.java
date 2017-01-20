@@ -40,7 +40,9 @@ public class NativeLibraryUtils {
         String propertyValue = System.getProperty(ENV_LIB_PATH);
         StringBuilder builder = new StringBuilder();
         for (String path : paths) {
-            if (!StringUtils.isNullOrEmpty(propertyValue) && !propertyValue.contains(path)) {
+            if (!StringUtils.isNullOrEmpty(propertyValue) &&
+                    (!propertyValue.contains(path) ||
+                            propertyValue.contains(path + File.separator))) {
                 builder.append(path).append(File.pathSeparator);
             }
         }
