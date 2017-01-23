@@ -78,7 +78,7 @@ public class S2LutUtils {
     }
 
     //    public static synchronized void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, double tau) {
-    public static void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, double tau) {
+    public static void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, int doy, double tau) {
         // todo: ugly that void is returned here
 
         Guardian.assertNotNull("InputPixelData.diffuseFrac[][]", ipd.diffuseFrac);
@@ -114,7 +114,10 @@ public class S2LutUtils {
             final double spherAlb = s2Lut.getValue(wv, tau, sza, vza, raa, altitude, at, iWvl, sphericalAlbedoResultIndex);
             final double eg0 = s2Lut.getValue(wv, tau, sza, vza, raa, altitude, at, iWvl, globalIrradianceResultIndex);
 
-            final double lToa = ipd.getToaReflec()[iWvl];
+            final double distanceCorr = getDistanceCorr(doy);
+//            final double lToa = ipd.getToaReflec()[iWvl];
+            final double lToa = ipd.getToaReflec()[iWvl]/distanceCorr;
+
             final double radToa = convertReflToRad(lToa, iWvl, sza, julianDay);  // convert to radiance
 
             // todo: implement here as in Python S2 AC, radToa is l_toa below:
@@ -158,7 +161,7 @@ public class S2LutUtils {
                     Math.sin(Math.toRadians(sza)) * Math.sin(Math.toRadians(vza)) * Math.cos(Math.toRadians(raa));
 
 //            ray_phase_func = 0.75 * (1.0 - cos_scatt_angle * cos_scatt_angle)
-            final double rayPhaseFunc = 0.75 * (1.0 - cosScattAngle*cosScattAngle);
+            final double rayPhaseFunc = 0.75 * (1.0 - cosScattAngle * cosScattAngle);
 //
 //            # eq. 6-13
 //            l_path_toa_tosa = (e_s * k_ray * m_corr_ray * tau_ray_s * ray_phase_func) / (
@@ -169,7 +172,7 @@ public class S2LutUtils {
 //            # eq. 6-15
 //            l_toa_tosa = (l_toa - l_path_toa_tosa * tau_ozone_v * tau_strat_aero_v) / (
 //                    tau_ray_v * tau_ozone_v * tau_strat_aero_v)
-            final double lToaTosa = (radToa - lPathToaTosa*tauOzoneV*tauStratAeroV) / (tauRayV*tauOzoneV*tauStratAeroV);
+            final double lToaTosa = (radToa - lPathToaTosa * tauOzoneV * tauStratAeroV) / (tauRayV * tauOzoneV * tauStratAeroV);
 //
 //            # eq. 6-17
 //            # first line
@@ -200,6 +203,12 @@ public class S2LutUtils {
             // now GK derived this term from formulas above as: e_diff/e_g
             ipd.diffuseFrac[0][iWvl] = eDiff / eg;
         }
+    }
+
+    private static double getDistanceCorr(int doy) {
+        final double gamma = 2.0 * Math.PI * (doy - 1) / 365.0;
+        return 1.000110 + 0.034221 * Math.cos(gamma) + 0.001280 * Math.sin(gamma) +
+                0.000719 * Math.cos(2.0 * gamma) + 0.000077 * Math.sin(2.0 * gamma);
     }
 
     private static double convertReflToRad(double refl, int iWvl, double sza, double julianDay) {

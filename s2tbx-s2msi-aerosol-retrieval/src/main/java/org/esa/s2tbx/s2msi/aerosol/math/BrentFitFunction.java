@@ -27,17 +27,20 @@ public class BrentFitFunction implements Function {
     private final InputPixelData[] inPixField;
     private final LookupTable s2Lut;
     private final double julianDay;
+    private final int dayOfYear;
     private final double[] aotGrid;
     private final double[] specWeights;
     private final double[] specSoil;
     private final double[] specVeg;
 
 
-    public BrentFitFunction(int modelType, InputPixelData[] inPixField, LookupTable lut, double julianDay, double[] aotGrid, double[] specWeights, double[] specSoil, double[] specVeg) {
+    public BrentFitFunction(int modelType, InputPixelData[] inPixField, LookupTable lut, double julianDay,
+                            int dayOfYear, double[] aotGrid, double[] specWeights, double[] specSoil, double[] specVeg) {
         this.model = modelType;
         this.inPixField = inPixField;
         this.s2Lut = lut;
         this.julianDay = julianDay;
+        this.dayOfYear = dayOfYear;
         this.aotGrid = aotGrid;
         this.specWeights = specWeights;
         this.specSoil = specSoil;
@@ -67,7 +70,7 @@ public class BrentFitFunction implements Function {
     //private methods
 
     private double fPix(double tau, InputPixelData inPixData){
-        S2LutUtils.getSdrAndDiffuseFrac(inPixData, s2Lut, julianDay, tau);    // todo
+        S2LutUtils.getSdrAndDiffuseFrac(inPixData, s2Lut, julianDay, dayOfYear, tau);    // todo
         double fmin = isSdrNegativ(inPixData.getSurfReflec());
 
         if ( !(fmin > 0) ) {
