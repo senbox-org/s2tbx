@@ -49,7 +49,7 @@ public class GDALProductReaderTest extends TestCase {
         }
     }
 
-    public void testReadProductNodes() throws IOException {
+    public void testJP2ReadProductNodes() throws IOException {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             File file = this.gdalTestsFolderPath.resolve("S2A_4.jp2").toFile();
 
@@ -79,6 +79,39 @@ public class GDALProductReaderTest extends TestCase {
 
             bandValue = band.getSampleFloat(297, 338);
             assertEquals(7.0f, bandValue);
+        }
+    }
+
+    public void testNITFReadProductNodes() throws IOException {
+        if (GdalInstallInfo.INSTANCE.isPresent()) {
+            File file = this.gdalTestsFolderPath.resolve("U_1005A.NTF").toFile();
+
+            GDALProductReader reader = (GDALProductReader)this.plugIn.createReaderInstance();
+            Product finalProduct = reader.readProductNodes(file, null);
+            assertNull(finalProduct.getSceneGeoCoding());
+            assertEquals(1, finalProduct.getBands().length);
+            assertEquals("GDAL", finalProduct.getProductType());
+            assertEquals(64, finalProduct.getSceneRasterWidth());
+            assertEquals(64, finalProduct.getSceneRasterHeight());
+
+            Band band = finalProduct.getBandAt(0);
+            assertEquals(20, band.getDataType());
+            assertEquals(4096, band.getNumDataElems());
+
+            float bandValue = band.getSampleFloat(32, 11);
+            assertEquals(108.0f, bandValue);
+
+            bandValue = band.getSampleFloat(33, 32);
+            assertEquals(217.0f, bandValue);
+
+            bandValue = band.getSampleFloat(30, 30);
+            assertEquals(211.0f, bandValue);
+
+            bandValue = band.getSampleFloat(27, 29);
+            assertEquals(224.0f, bandValue);
+
+            bandValue = band.getSampleFloat(15, 33);
+            assertEquals(133.0f, bandValue);
         }
     }
 

@@ -5,13 +5,15 @@ import junit.framework.TestCase;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.s2tbx.dataio.gdal.activator.GDALPlugInActivator;
 import org.esa.snap.core.dataio.ProductWriter;
-import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.utils.TestUtil;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import javax.media.jai.JAI;
 import java.io.File;
@@ -19,10 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * The system properties to set:
@@ -122,7 +121,7 @@ public class GDALProductWriterTest extends TestCase {
         }
     }
 
-    public final void testWriteFileOnDisk() throws IOException {
+    public final void testWriteFileOnDisk() throws IOException, FactoryException, TransformException {
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
             return;
         }
@@ -132,6 +131,23 @@ public class GDALProductWriterTest extends TestCase {
         if (!Files.exists(gdalTestsFolderPath)) {
             Files.createDirectories(gdalTestsFolderPath);
         }
+
+        int sceneRasterWidth = 20;
+        int sceneRasterHeight = 30;
+        double originX = 0.0d;
+        double originY = 0.0d;
+        double pixelSizeX = 1.234d;
+        double pixelSizeY = 5.678d;
+        String wellKnownText = "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]";
+        CoordinateReferenceSystem crs = CRS.parseWKT(wellKnownText);
+        GeoCoding geoCoding = new CrsGeoCoding(crs, sceneRasterWidth, sceneRasterHeight, originX, originY, pixelSizeX, pixelSizeY);
+
+        Set<String> driverNamesToIgnoreGeoCoding = new HashSet<String>();
+        driverNamesToIgnoreGeoCoding.add("netCDF");
+        driverNamesToIgnoreGeoCoding.add("NITF");
+        driverNamesToIgnoreGeoCoding.add("ILWIS");
+        driverNamesToIgnoreGeoCoding.add("RMF");
+        driverNamesToIgnoreGeoCoding.add("MFF");
 
         try {
             GDALDriverInfo[] writerDrivers = this.writerPlugIn.getWriterDrivers();
@@ -147,12 +163,17 @@ public class GDALProductWriterTest extends TestCase {
                     String gdalDataTypeName = creationDataTypes.substring(0, index).trim();
                     gdalDataType = gdal.GetDataTypeByName(gdalDataTypeName);
                 }
+                boolean canIgnore = driverNamesToIgnoreGeoCoding.contains(driverInfo.getDriverName());
 
                 int bandDataType = GDALUtils.getBandDataType(gdalDataType);
                 File file = new File(gdalTestsFolderPath.toFile(), "tempFile" + driverInfo.getExtensionName());
                 file.delete();
                 try {
-                    Product product = new Product("tempProduct", "GDAL", 20, 30);
+                    Product product = new Product("tempProduct", "GDAL", sceneRasterWidth, sceneRasterHeight);
+                    if (!canIgnore) {
+                        product.setSceneGeoCoding(geoCoding);
+                    }
+
                     product.setPreferredTileSize(JAI.getDefaultTileSize());
                     Band firstBand = product.addBand("band_1", bandDataType);
 
@@ -198,6 +219,10 @@ public class GDALProductWriterTest extends TestCase {
                     GDALProductReader reader = (GDALProductReader)this.readerPlugIn.createReaderInstance();
                     Product finalProduct = reader.readProductNodes(file, null);
                     assertNotNull(finalProduct);
+
+                    if (!canIgnore) {
+                        assertNotNull(finalProduct.getSceneGeoCoding());
+                    }
 
                     assertEquals(product.getSceneRasterWidth(), finalProduct.getSceneRasterWidth());
                     assertEquals(product.getSceneRasterHeight(), finalProduct.getSceneRasterHeight());
