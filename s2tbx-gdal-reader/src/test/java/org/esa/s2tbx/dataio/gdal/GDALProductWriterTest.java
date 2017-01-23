@@ -139,8 +139,8 @@ public class GDALProductWriterTest extends TestCase {
         double pixelSizeX = 1.234d;
         double pixelSizeY = 5.678d;
         String wellKnownText = "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]],AUTHORITY[\"EPSG\",\"4326\"]]";
-        CoordinateReferenceSystem crs = CRS.parseWKT(wellKnownText);
-        GeoCoding geoCoding = new CrsGeoCoding(crs, sceneRasterWidth, sceneRasterHeight, originX, originY, pixelSizeX, pixelSizeY);
+        CoordinateReferenceSystem crsToSave = CRS.parseWKT(wellKnownText);
+        GeoCoding geoCodingToSave = new CrsGeoCoding(crsToSave, sceneRasterWidth, sceneRasterHeight, originX, originY, pixelSizeX, pixelSizeY);
 
         Set<String> driverNamesToIgnoreGeoCoding = new HashSet<String>();
         driverNamesToIgnoreGeoCoding.add("netCDF");
@@ -171,7 +171,7 @@ public class GDALProductWriterTest extends TestCase {
                 try {
                     Product product = new Product("tempProduct", "GDAL", sceneRasterWidth, sceneRasterHeight);
                     if (!canIgnore) {
-                        product.setSceneGeoCoding(geoCoding);
+                        product.setSceneGeoCoding(geoCodingToSave);
                     }
 
                     product.setPreferredTileSize(JAI.getDefaultTileSize());
@@ -221,7 +221,14 @@ public class GDALProductWriterTest extends TestCase {
                     assertNotNull(finalProduct);
 
                     if (!canIgnore) {
-                        assertNotNull(finalProduct.getSceneGeoCoding());
+                        GeoCoding loadedGeoCoding = finalProduct.getSceneGeoCoding();
+                        assertNotNull(loadedGeoCoding);
+
+                        CoordinateReferenceSystem loadedGeoCodingGeoCRS = loadedGeoCoding.getGeoCRS();
+                        assertEquals(crsToSave.getCoordinateSystem().getDimension(), loadedGeoCodingGeoCRS.getCoordinateSystem().getDimension());
+                        assertEquals(crsToSave.getCoordinateSystem().getName().getVersion(), loadedGeoCodingGeoCRS.getCoordinateSystem().getName().getVersion());
+                        assertNull(loadedGeoCodingGeoCRS.getCoordinateSystem().getRemarks());
+                        assertNull(loadedGeoCodingGeoCRS.getCoordinateSystem().getName().getAuthority());
                     }
 
                     assertEquals(product.getSceneRasterWidth(), finalProduct.getSceneRasterWidth());
