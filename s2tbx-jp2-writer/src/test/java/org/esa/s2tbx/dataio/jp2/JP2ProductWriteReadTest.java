@@ -1,9 +1,17 @@
 package org.esa.s2tbx.dataio.jp2;
 
-import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.jp2.internal.JP2Constants;
+
 import org.esa.snap.core.dataio.ProductIO;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.CrsGeoCoding;
+import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.PixelPos;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.TiePointGeoCoding;
+import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.datamodel.VirtualBand;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.utils.TestUtil;
@@ -11,17 +19,15 @@ import org.geotools.referencing.CRS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Created by Razvan Dumitrascu on 1/6/2017.
+ *  @author  Razvan Dumitrascu
+ *  @since 5.0.2.
  */
 public class JP2ProductWriteReadTest {
 

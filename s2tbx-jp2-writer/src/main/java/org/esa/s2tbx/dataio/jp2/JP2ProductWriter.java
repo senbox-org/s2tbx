@@ -1,10 +1,10 @@
 package org.esa.s2tbx.dataio.jp2;
 
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.s2tbx.dataio.jp2.internal.JP2Constants;
 import org.esa.s2tbx.dataio.jp2.internal.JP2DataException;
-import org.esa.s2tbx.dataio.jp2.internal.JP2ImageWriter;
 import org.esa.s2tbx.dataio.jp2.metadata.JP2Metadata;
+import org.esa.s2tbx.dataio.jp2.internal.JP2Constants;
+import org.esa.s2tbx.dataio.jp2.internal.JP2ImageWriter;
 import org.esa.snap.core.dataio.AbstractProductWriter;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Band;
@@ -13,7 +13,6 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.io.FileUtils;
-
 import javax.imageio.IIOImage;
 import javax.media.jai.JAI;
 import javax.media.jai.operator.FormatDescriptor;
@@ -27,7 +26,8 @@ import java.util.ArrayList;
 /**
  * A product writer implementation for the JPEG-2000 format.
  *
- * Created by Razvan Dumitrascu on 12/9/2016.
+ *  @author  Razvan Dumitrascu
+ *  @since 5.0.2
  */
 public class JP2ProductWriter extends AbstractProductWriter {
 
@@ -82,7 +82,7 @@ public class JP2ProductWriter extends AbstractProductWriter {
 
     private void ensureNamingConvention() {
         if (this.outputFile != null) {
-            getSourceProduct().setName(FileUtils.getFilenameWithoutExtension(outputFile)+ JP2Constants.FILE_EXTENSIONS[0]);
+            getSourceProduct().setName(FileUtils.getFilenameWithoutExtension(this.outputFile)+ JP2Constants.FILE_EXTENSIONS[0]);
         }
     }
 
@@ -100,7 +100,7 @@ public class JP2ProductWriter extends AbstractProductWriter {
                 bandsToWrite.add(band);
             }
         }
-        int maxSourceDataType = getMaxElemSizeBandDataType(sourceProduct.getBands());
+        final int maxSourceDataType = getMaxElemSizeBandDataType(sourceProduct.getBands());
         final int targetDataType =  ImageManager.getDataBufferType(maxSourceDataType);
         RenderedImage writeImage;
         if (bandsToWrite.size() > 1) {
@@ -117,12 +117,11 @@ public class JP2ProductWriter extends AbstractProductWriter {
 
         IIOImage outputImage = new IIOImage(writeImage, null, null);
 
-        GeoCoding geoCoding = sourceProduct.getSceneGeoCoding();
+        final GeoCoding geoCoding = sourceProduct.getSceneGeoCoding();
         final int width = sourceProduct.getSceneRasterWidth();
         final int height = sourceProduct.getSceneRasterHeight();
-        this.imageWriter.setNumberResolution(bandsToWrite.get(0).getSourceImage().getModel().getLevelCount());
         if (geoCoding != null) {
-            JP2Metadata metadata = new JP2Metadata(null, this.imageWriter);
+            final JP2Metadata metadata = new JP2Metadata(null, this.imageWriter);
             metadata.createJP2Metadata(geoCoding, width, height);
             this.imageWriter.write(metadata, outputImage, null);
         } else {

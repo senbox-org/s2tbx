@@ -8,13 +8,13 @@ import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
-
 import java.util.Locale;
 
 /**
  * Plugin for writing JP2 files
  *
- * Created by Razvan Dumitrascu on 12/9/2016.
+ *  @author  Razvan Dumitrascu
+ *  @since 5.0.2
  */
 public class JP2ProductWriterPlugIn implements ProductWriterPlugIn {
     @Override

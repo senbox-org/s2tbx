@@ -1,13 +1,11 @@
 package org.esa.s2tbx.dataio.jp2.metadata;
 
-
 import org.esa.s2tbx.dataio.jp2.internal.JP2ImageWriter;
 import org.esa.snap.core.datamodel.CrsGeoCoding;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.geotools.referencing.CRS;
 import org.w3c.dom.Node;
-
 import javax.imageio.ImageWriteParam;
 import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
@@ -15,13 +13,15 @@ import javax.imageio.metadata.IIOMetadata;
 
 /**
  * Class for generating the metadata for the JPEG2000 files
- * Created by Razvan Dumitrascu on 11/25/2016.
+ *
+ *  @author  Razvan Dumitrascu
+ *  @since 5.0.2
  */
 public class JP2Metadata extends IIOMetadata{
 
-    public JP2MetadataResources jp2resources  = new JP2MetadataResources();
-
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(JP2Metadata.class.getName());
+
+    public JP2MetadataResources jp2resources  = new JP2MetadataResources();
 
     /**
      *
@@ -38,7 +38,7 @@ public class JP2Metadata extends IIOMetadata{
      * @param width , width of the product
      * @param height , height of the product
      */
-    public void createJP2Metadata(GeoCoding geoCoding, int width, int height){
+    public void createJP2Metadata(final GeoCoding geoCoding, final int width, final int height){
         if(geoCoding==null){
             logger.warning("GeoCoding has not been received");
             throw new IllegalArgumentException("No GeoCoding has been received");
@@ -65,20 +65,20 @@ public class JP2Metadata extends IIOMetadata{
 
         final PixelPos pixelPos = new PixelPos();
 
-        double latitude  = geoCoding.getGeoPos(new PixelPos(0, 0), null).getLat();
-        double longitude = geoCoding.getGeoPos(new PixelPos(0, 0), null).getLon();
+        final double latitude  = geoCoding.getGeoPos(new PixelPos(0, 0), null).getLat();
+        final double longitude = geoCoding.getGeoPos(new PixelPos(0, 0), null).getLon();
 
         pixelPos.setLocation(width,0);
-        double latitude2  = geoCoding.getGeoPos(pixelPos, null).getLat();
-        double longitude2 = geoCoding.getGeoPos(pixelPos, null).getLon();
+        final double latitude2  = geoCoding.getGeoPos(pixelPos, null).getLat();
+        final double longitude2 = geoCoding.getGeoPos(pixelPos, null).getLon();
 
         pixelPos.setLocation(width, height);
-        double latitude3  = geoCoding.getGeoPos(pixelPos, null).getLat();
-        double longitude3 = geoCoding.getGeoPos(pixelPos, null).getLon();
+        final double latitude3  = geoCoding.getGeoPos(pixelPos, null).getLat();
+        final double longitude3 = geoCoding.getGeoPos(pixelPos, null).getLon();
 
         pixelPos.setLocation(0,height);
-        double latitude4  = geoCoding.getGeoPos(pixelPos, null).getLat();
-        double longitude4 = geoCoding.getGeoPos(pixelPos, null).getLon();
+        final double latitude4  = geoCoding.getGeoPos(pixelPos, null).getLat();
+        final double longitude4 = geoCoding.getGeoPos(pixelPos, null).getLon();
 
         this.jp2resources.setPoint2D(longitude + "", latitude + "",longitude2 + "", latitude2+ "", longitude3 + "",
                 latitude3 + "",longitude4 + "", latitude4 + "" );
