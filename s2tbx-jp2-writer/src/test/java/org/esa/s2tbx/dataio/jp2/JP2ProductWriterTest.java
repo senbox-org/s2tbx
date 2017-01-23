@@ -1,28 +1,32 @@
 package org.esa.s2tbx.dataio.jp2;
 
 import com.bc.ceres.core.ProgressMonitor;
-import junit.framework.TestCase;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.utils.TestUtil;
-
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
- * Created by Razvan Dumitrascu on 1/5/2017.
+ *  @author  Razvan Dumitrascu
+ *  @since 5.0.2
  */
-public class JP2ProductWriterTest extends TestCase {
+public class JP2ProductWriterTest {
     private final String FILE_NAME = "test_product.jp2";
     private JP2ProductWriter _productWriter;
     private Product _product;
 
     private String productsFolder = "_temp" + File.separator;
 
-    @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME).delete();
 
         _productWriter = new JP2ProductWriter(new JP2ProductWriterPlugIn());
@@ -32,25 +36,26 @@ public class JP2ProductWriterTest extends TestCase {
         fillBandWithData(_product.getBand("band_01"), 1);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         _productWriter.close();
         new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME).delete();
     }
 
+    @Test
     public void testJP2ProductWriterCreation() {
         final JP2ProductWriter productWriter = new JP2ProductWriter(new JP2ProductWriterPlugIn());
         assertNotNull(productWriter.getWriterPlugIn());
     }
-
+    @Test
     public void testThatStringIsAValidOutput() throws IOException {
         _productWriter.writeProductNodes(_product, new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME));
     }
-
+    @Test
     public void testThatFileIsAValidOutput() throws IOException {
         _productWriter.writeProductNodes(_product, new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME));
     }
-
+    @Test
     public void testWriteProductNodes_ChangeFileSize() throws IOException {
         _productWriter.writeProductNodes(_product, new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME));
         assertTrue(new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME).length() == 0);

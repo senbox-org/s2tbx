@@ -5,11 +5,12 @@ import java.io.File;
 /**
  * A class containing JPEG2000-related constants and  definitions needed fot the JP2 Writer
  *
- * Created by Razvan Dumitrascu on 11/23/2016.
+ *  @author  Razvan Dumitrascu
+ *  @since 5.0.2
  */
 public class JP2Constants {
 
-    //JP2ProductWriterplugin constants
+    //JP2ProductWriterPlugIn constants
     public static final String DESCRIPTION = "JPEG-2000 Product";
     public static final String[] FILE_EXTENSIONS = {".jp2", ".jpeg2000"};
     public static final String[] FORMAT_NAMES = new String[] { "JPEG2000" };

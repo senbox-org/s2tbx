@@ -93,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>org.esa.snap</groupId>
-            <artifactId>snap-rcp</artifactId>
+            <artifactId>snap-ui</artifactId>
         </dependency>
     </dependencies>
 

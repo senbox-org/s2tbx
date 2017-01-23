@@ -5,7 +5,8 @@ import java.awt.geom.Point2D;
 /**
  * Class containing all the resources needed for the JP2metadata
  *
- * Created by Razvan Dumitrascu on 11/30/2016.
+ *  @author  Razvan Dumitrascu
+ *  @since 5.0.2
  */
 public class JP2MetadataResources {
 

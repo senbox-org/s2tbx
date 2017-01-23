@@ -11,12 +11,14 @@ import java.util.logging.Logger;
 
 /**
  * Class that prints the JP2 XML header
- * Created by Razvan Dumitrascu on 11/15/2016.
+ *
+ *  @author  Razvan Dumitrascu
+ *  @since 5.0.2
  */
 public class JP2XMLBoxWriter {
     private FileOutputStream fileOutputStream;
     private JP2MetadataResources jp2MetadataResources;
-    private int identation;
+    private int indentation;
     private final static Logger logger = Logger.getLogger(JP2XMLBoxWriter.class.getName());
 
     /**
@@ -34,7 +36,7 @@ public class JP2XMLBoxWriter {
      * @throws XMLStreamException
      * @throws IOException
      */
-    public void setResources(FileOutputStream fileOutputStream, JP2MetadataResources jp2Metadata) throws XMLStreamException, IOException {
+    public void setResources(final FileOutputStream fileOutputStream, final JP2MetadataResources jp2Metadata) throws XMLStreamException, IOException {
         if(fileOutputStream == null){
             logger.warning("no fileOutputStream has been set");
             throw new IllegalArgumentException();
@@ -47,17 +49,17 @@ public class JP2XMLBoxWriter {
         this.fileOutputStream = fileOutputStream;
         this.jp2MetadataResources = jp2Metadata;
 
-        xmlJP2WriteStream(fileOutputStream);
+        xmlJP2WriteStream();
 
     }
 
     /**
      * Creates the outputFactory and the XML Stream writer from the the JP2 output stream writer
      */
-    private void xmlJP2WriteStream(FileOutputStream fileOutputStream ) throws XMLStreamException, IOException {
+    private void xmlJP2WriteStream( ) throws XMLStreamException, IOException {
 
-        XMLOutputFactory outputFactory = XMLOutputFactory.newFactory();
-        XMLStreamWriter tmpWriter = outputFactory.createXMLStreamWriter(this.fileOutputStream);
+        final XMLOutputFactory outputFactory = XMLOutputFactory.newFactory();
+        final XMLStreamWriter tmpWriter = outputFactory.createXMLStreamWriter(this.fileOutputStream);
         writeStartDocument(tmpWriter);
         tmpWriter.flush();
         tmpWriter.close();
@@ -78,31 +80,31 @@ public class JP2XMLBoxWriter {
         if(this.jp2MetadataResources.getEpsgNumber()!=0){
             tmpWriter.writeAttribute("srsName","urn:ogc:def:crs:EPSG::" + this.jp2MetadataResources.getEpsgNumber());
         }
-        this.identation++;
-        writeIdentation(this.identation,tmpWriter);
+        this.indentation++;
+        writeIndentation(this.indentation,tmpWriter);
         writePolygon(tmpWriter);
-        this.identation--;
-        writeIdentation(this.identation,tmpWriter);
+        this.indentation--;
+        writeIndentation(this.indentation,tmpWriter);
         tmpWriter.writeEndDocument();
         this.fileOutputStream.write(0x00);
     }
 
     private void writePolygon(XMLStreamWriter tmpWriter) throws XMLStreamException{
-        this.identation++;
-        writeIdentation(this.identation,tmpWriter);
+        this.indentation++;
+        writeIndentation(this.indentation,tmpWriter);
         tmpWriter.writeStartElement("gml:exterior");
-        this.identation++;
-        writeIdentation(this.identation,tmpWriter);
+        this.indentation++;
+        writeIndentation(this.indentation,tmpWriter);
         tmpWriter.writeStartElement("gml:LinearRing");
-        this.identation++;
+        this.indentation++;
         for(int index=0;index<4;index++) {
-            writeIdentation(this.identation,tmpWriter);
+            writeIndentation(this.indentation,tmpWriter);
             tmpWriter.writeStartElement("gml:pos");
             tmpWriter.writeCharacters(this.jp2MetadataResources.getPoint(index).getX() + " " + this.jp2MetadataResources.getPoint(index).getY());
             tmpWriter.writeEndElement();
         }
         //write once more the starting corner (the upper left corner of the product)
-        writeIdentation(this.identation,tmpWriter);
+        writeIndentation(this.indentation,tmpWriter);
         tmpWriter.writeStartElement("gml:pos");
         tmpWriter.writeCharacters(this.jp2MetadataResources.getPoint(0).getX() + " " + this.jp2MetadataResources.getPoint(0).getY());
         tmpWriter.writeEndElement();
@@ -111,12 +113,13 @@ public class JP2XMLBoxWriter {
 
     private  void writeEndElement(int numberOfElementsToClose,XMLStreamWriter tmpWriter) throws XMLStreamException {
         for(int index=0; index<numberOfElementsToClose;index++){
-            this.identation--;
-            writeIdentation(this.identation,tmpWriter);
+            this.indentation--;
+            writeIndentation(this.indentation,tmpWriter);
             tmpWriter.writeEndElement();
         }
     }
-    private void writeIdentation(int depth,XMLStreamWriter tmpWriter ) throws XMLStreamException {
+
+    private void writeIndentation(int depth, XMLStreamWriter tmpWriter ) throws XMLStreamException {
         tmpWriter.writeCharacters("\n");
         for(int x=0; x<depth; x++) {
             tmpWriter.writeCharacters("  ");

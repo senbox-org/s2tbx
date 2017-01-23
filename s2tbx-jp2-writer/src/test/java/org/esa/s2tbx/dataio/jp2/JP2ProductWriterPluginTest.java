@@ -21,7 +21,8 @@ import static org.junit.Assert.assertNotNull;
 
 
 /**
- * Created by Razvan Dumitrascu on 10/28/2016.
+ *  @author  Razvan Dumitrascu
+ *  @since 5.0.2
  */
 public class JP2ProductWriterPluginTest {
     private JP2ProductWriterPlugIn plugIn;
