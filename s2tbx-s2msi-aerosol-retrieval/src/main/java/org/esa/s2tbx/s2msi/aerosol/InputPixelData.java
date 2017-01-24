@@ -4,11 +4,13 @@ import org.esa.s2tbx.s2msi.aerosol.util.PixelGeometry;
 
 /**
  *
- * @author akheckel
+ * @author akheckel, Tonio Fincke
  */
 public class InputPixelData {
+    public final double elevation;
     public PixelGeometry geom;
     public PixelGeometry geomFward;
+    public final double ozone;
     public double surfPressure;
     public double wvCol;
     public int nSpecWvl;
@@ -18,10 +20,12 @@ public class InputPixelData {
     public double[][] surfReflec;
     public double[][] diffuseFrac;
 
-    public InputPixelData(PixelGeometry geom, PixelGeometry geomFward, double surfPressure,
+    public InputPixelData(PixelGeometry geom, PixelGeometry geomFward, double elevation, double ozone, double surfPressure,
                           double wvCol, float[] specWvl, double[] toaReflec, double[] toaReflecFward) {
         this.geom = geom;
         this.geomFward = geomFward;
+        this.elevation = elevation;
+        this.ozone = ozone;
         this.surfPressure = surfPressure;
         this.wvCol = wvCol;
         this.specWvl = specWvl;

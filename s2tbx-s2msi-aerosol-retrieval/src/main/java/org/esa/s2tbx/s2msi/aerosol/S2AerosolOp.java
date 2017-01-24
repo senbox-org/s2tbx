@@ -115,6 +115,7 @@ public class S2AerosolOp extends Operator {
         validName = validBand.getName();
 
         auxBandNames = new String[]{
+                InstrumentConsts.OZONE_NAME,
                 InstrumentConsts.SURFACE_PRESSURE_NAME,
                 InstrumentConsts.ELEVATION_NAME,
                 validName
@@ -230,9 +231,12 @@ public class S2AerosolOp extends Operator {
             toaRefl[1][i] = tileValues[skip + i];
         }
         skip += nSpecWvl;
-        double surfP = Math.min(tileValues[skip], 1013.25);
+        double ozone = tileValues[skip++];
+        double surfP = Math.min(tileValues[skip++], 1013.25);
+        double elevation = tileValues[skip];
+        //todo derive water vapour from LUT
         double wvCol = 2500.0;
-        return new InputPixelData(geomNadir, geomFward, surfP, wvCol, specWvl[0], toaRefl[0], toaRefl[1]);
+        return new InputPixelData(geomNadir, geomFward, elevation, ozone, surfP, wvCol, specWvl[0], toaRefl[0], toaRefl[1]);
     }
 
     private void createTargetProduct() {
@@ -471,12 +475,16 @@ public class S2AerosolOp extends Operator {
         }
         skip += InstrumentConsts.REFLEC_NAMES.length;
 
+        // ozone data
+        tileValues[skip++] = sourceTiles.get(InstrumentConsts.OZONE_NAME).getSampleDouble(x, y);
+        valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
+
         // surface pressure data
-        tileValues[skip] = sourceTiles.get(InstrumentConsts.SURFACE_PRESSURE_NAME).getSampleDouble(x, y);
+        tileValues[skip++] = sourceTiles.get(InstrumentConsts.SURFACE_PRESSURE_NAME).getSampleDouble(x, y);
         valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
 
         // elevation data
-        tileValues[skip + 1] = sourceTiles.get(InstrumentConsts.ELEVATION_NAME).getSampleDouble(x, y);
+        tileValues[skip] = sourceTiles.get(InstrumentConsts.ELEVATION_NAME).getSampleDouble(x, y);
         valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
 
         return valid;

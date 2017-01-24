@@ -33,6 +33,7 @@ public class S2AerosolMsiPreparationOp extends Operator {
         final boolean needPixelClassif = (!sourceProduct.containsBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS));
 
         final boolean needElevation = (!sourceProduct.containsBand("elevation"));
+        final boolean needOzone = (!sourceProduct.containsBand(InstrumentConsts.OZONE_NAME));
         final boolean needSurfacePres = (!sourceProduct.containsBand("surfPressEstimate"));
 
         // subset might have set product type to null, thus:
@@ -75,15 +76,28 @@ public class S2AerosolMsiPreparationOp extends Operator {
         }
 
         // create surface pressure estimate product if band is missing in sourceProduct
+        if (needOzone) {
+            String ozoneExpr = "0.00710444";                               //todo check which unit is required
+            final VirtualBand ozoneBand = new VirtualBand(InstrumentConsts.OZONE_NAME,
+                                                             ProductData.TYPE_FLOAT32,
+                                                             rasterWidth, rasterHeight, ozoneExpr);
+            ozoneBand.setDescription("estimated ozone");
+            ozoneBand.setNoDataValue(0);
+            ozoneBand.setNoDataValueUsed(true);
+            ozoneBand.setUnit("kgm^-2");
+            targetProduct.addBand(ozoneBand);
+        }
+
+        // create surface pressure estimate product if band is missing in sourceProduct
         if (needSurfacePres) {
-            String presExpr = "(1013.25 * exp(-elevation/8400))";
+            String presExpr = "(101325.0 * exp(-elevation/8400))";   //todo check which unit is required
             final VirtualBand surfPresBand = new VirtualBand("surfPressEstimate",
                                                              ProductData.TYPE_FLOAT32,
                                                              rasterWidth, rasterHeight, presExpr);
-            surfPresBand.setDescription("estimated sea level pressure (p0=1013.25hPa, hScale=8.4km)");
+            surfPresBand.setDescription("estimated sea level pressure (p0=101325 Pa, hScale=8.4km)");
             surfPresBand.setNoDataValue(0);
             surfPresBand.setNoDataValueUsed(true);
-            surfPresBand.setUnit("hPa");
+            surfPresBand.setUnit("Pascal");
             targetProduct.addBand(surfPresBand);
         }
 
