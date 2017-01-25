@@ -91,10 +91,6 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-ui</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
@@ -105,6 +101,8 @@
                 <configuration>
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.reflectance2radiance.*</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.jp2</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.jp2.internal</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
@@ -134,16 +132,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>nbm-maven-plugin</artifactId>
-                <configuration>
-                    <publicPackages>
-                        <publicPackage>org.esa.s2tbx.dataio.jp2</publicPackage>
-                        <publicPackage>org.esa.s2tbx.dataio.jp2.internal</publicPackage>
-                    </publicPackages>
-                </configuration>
             </plugin>
         </plugins>
     </build>
