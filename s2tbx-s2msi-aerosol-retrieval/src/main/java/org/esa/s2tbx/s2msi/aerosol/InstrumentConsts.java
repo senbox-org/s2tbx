@@ -41,8 +41,8 @@ class InstrumentConsts {
             + " && !" + IDEPIX_FLAG_BAND_NAME + ".F_CLOUD_BUFFER "   // ???
             + " && (" + S2IdepixConstants.S2_MSI_ANNOTATION_BAND_NAMES[0] + "<70)";
 
-    public static final String OZONE_NAME = "ozoneEstimate";
-    public static final String SURFACE_PRESSURE_NAME = "surfPressEstimate";
+    public static final String OZONE_NAME = "tco3";
+    public static final String SURFACE_PRESSURE_NAME = "sp";
     public static final String ELEVATION_NAME = "elevation";
 
     // todo: normalize these elsewhere, see old code
