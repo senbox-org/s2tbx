@@ -4,14 +4,20 @@ import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
-import org.esa.snap.utils.TestUtil;
+import org.esa.snap.core.util.io.FileUtils;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -22,12 +28,27 @@ public class JP2ProductWriterTest {
     private final String FILE_NAME = "test_product.jp2";
     private JP2ProductWriter _productWriter;
     private Product _product;
+    private static Path testsFolderPath;
 
-    private String productsFolder = "_temp" + File.separator;
+    @BeforeClass
+    public static void oneTimeSetUp() throws IOException {
+        Path temp = Files.createTempDirectory("_temp");
+        testsFolderPath = temp;
+        if (!Files.exists(testsFolderPath)) {
+            fail("The test directory path '"+temp+"' is not valid.");
+        }
+    }
+
+    @AfterClass
+    public static void oneTimeTearDown() {
+        if (!FileUtils.deleteTree(testsFolderPath.toFile())) {
+            fail("Unable to delete test directory");
+        }
+    }
 
     @Before
     public void setUp() throws Exception {
-        new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME).delete();
+        new File(testsFolderPath.toFile(), FILE_NAME).delete();
 
         _productWriter = new JP2ProductWriter(new JP2ProductWriterPlugIn());
 
@@ -39,7 +60,7 @@ public class JP2ProductWriterTest {
     @After
     public void tearDown() throws Exception {
         _productWriter.close();
-        new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME).delete();
+        new File(testsFolderPath.toFile(), FILE_NAME).delete();
     }
 
     @Test
@@ -47,22 +68,25 @@ public class JP2ProductWriterTest {
         final JP2ProductWriter productWriter = new JP2ProductWriter(new JP2ProductWriterPlugIn());
         assertNotNull(productWriter.getWriterPlugIn());
     }
+
     @Test
     public void testThatStringIsAValidOutput() throws IOException {
-        _productWriter.writeProductNodes(_product, new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME));
+        _productWriter.writeProductNodes(_product, new File(testsFolderPath.toFile(), FILE_NAME));
     }
+
     @Test
     public void testThatFileIsAValidOutput() throws IOException {
-        _productWriter.writeProductNodes(_product, new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME));
+        _productWriter.writeProductNodes(_product, new File(testsFolderPath.toFile(), FILE_NAME));
     }
+
     @Test
     public void testWriteProductNodes_ChangeFileSize() throws IOException {
-        _productWriter.writeProductNodes(_product, new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME));
-        assertTrue(new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME).length() == 0);
+        File writtenFile = new File(testsFolderPath.toFile(), FILE_NAME);
+        _productWriter.writeProductNodes(_product, writtenFile);
+        assertTrue(writtenFile.length() == 0);
         writeBand(_product);
         _productWriter.close();
-
-        assertTrue(new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME).length() > 0);
+        assertTrue(writtenFile.length() > 0);
     }
 
     private void fillBandWithData(final Band band, final int start)throws IOException {
