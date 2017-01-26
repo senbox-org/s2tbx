@@ -1,21 +1,48 @@
-package org.esa.s2tbx.gdal.activator;
+package org.esa.s2tbx.gdal;
 
+import org.esa.s2tbx.dataio.gdal.GDALWriterPlugInListener;
+import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.modules.OnStart;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.swing.Action;
+/**
+ * @author Jean Coravu
+ */
+@OnStart
+public class GDALMenuActionRegistrar implements Runnable, GDALWriterPlugInListener {
+    private static final Logger logger = Logger.getLogger(GDALMenuActionRegistrar.class.getName());
 
-@ServiceProvider(service= ActionRegistrationService.class)
-public class ActionRegistrationService {
-
-    public ActionRegistrationService() {
+    public GDALMenuActionRegistrar() {
     }
 
-    public void registerAction(String category, String menuPath, Action action) throws IOException {
+    @Override
+    public void run() {
+        GdalInstallInfo.INSTANCE.setListener(this);
+    }
+
+    @Override
+    public void writeDriversSuccessfullyInstalled() {
+        try {
+            String actionDisplayName = "GDAL";
+            AbstractAction action = new WriterPlugInExportProductAction();
+            action.putValue(Action.NAME, actionDisplayName);
+            action.putValue("displayName", actionDisplayName);
+            String menuPath = "Menu/File/Export";
+            String category = "GDAL";
+            registerAction(category, menuPath, action);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+    }
+
+    private static void registerAction(String category, String menuPath, Action action) throws IOException {
         String actionName = (String)action.getValue(Action.NAME);
         // add update action
         String originalFile = "Actions/" + category + "/" + actionName + ".instance";
@@ -37,7 +64,7 @@ public class ActionRegistrationService {
         }
     }
 
-    private FileObject getFolderAt(String inputPath) throws IOException {
+    private static FileObject getFolderAt(String inputPath) throws IOException {
         String parts[] = inputPath.split("/");
         FileObject existing = FileUtil.getConfigFile(inputPath);
         if (existing != null)
