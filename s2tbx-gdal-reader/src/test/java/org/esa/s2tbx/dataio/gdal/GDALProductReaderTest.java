@@ -29,7 +29,7 @@ public class GDALProductReaderTest {
     private Path gdalTestsFolderPath;
 
     @Before
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         checkTestDirectoryExists();
 
         GDALInstaller installer = new GDALInstaller();

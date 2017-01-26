@@ -25,7 +25,7 @@ public class GDALProductWriterPlugInTest {
     private GDALProductWriterPlugIn plugIn;
 
     @Before
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         GDALInstaller installer = new GDALInstaller();
         installer.install();
         if (GdalInstallInfo.INSTANCE.isPresent()) {
