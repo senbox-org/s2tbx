@@ -5,6 +5,7 @@ import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.snap.core.dataio.AbstractProductWriter;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.util.Guardian;
@@ -100,6 +101,13 @@ public class GDALProductWriter extends AbstractProductWriter {
             throw new IOException("Failed creating the file to export the product for driver '" + this.driver.getLongName() + "'.");
         }
         this.bandsMap = new HashMap<Band, org.gdal.gdal.Band>(bandCount);
+
+        GeoCoding geoCoding = sourceProduct.getSceneGeoCoding();
+        if (geoCoding == null) {
+            this.dataset.SetProjection("");
+        } else {
+            this.dataset.SetProjection(geoCoding.getGeoCRS().toWKT());
+        }
     }
 
     @Override

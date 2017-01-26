@@ -82,7 +82,7 @@ public class GDALProductReaderTest extends TestCase {
         }
     }
 
-    public void testNITFReadProductNodes2() throws IOException {
+    public void testNITFReadProductNodes() throws IOException {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             File file = this.gdalTestsFolderPath.resolve("U_1005A.NTF").toFile();
 
