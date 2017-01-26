@@ -333,6 +333,12 @@
                 <version>2011.1</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.esa.s2tbx.gdal</groupId>
+                <artifactId>gdal</artifactId>
+                <version>2.1.0</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

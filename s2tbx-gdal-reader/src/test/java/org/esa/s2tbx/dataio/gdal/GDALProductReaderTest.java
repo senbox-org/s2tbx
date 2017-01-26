@@ -1,25 +1,22 @@
 package org.esa.s2tbx.dataio.gdal;
 
-import com.bc.ceres.glevel.MultiLevelImage;
-import junit.framework.TestCase;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.util.ResourceInstaller;
-import org.esa.snap.core.util.SystemUtils;
-import org.esa.snap.utils.NativeLibraryUtils;
 import org.esa.snap.utils.TestUtil;
 import org.gdal.gdal.gdal;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * The system properties to set:
@@ -27,17 +24,12 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author Jean Coravu
  */
-public class GDALProductReaderTest extends TestCase {
+public class GDALProductReaderTest {
     private GDALProductReaderPlugin plugIn;
     private Path gdalTestsFolderPath;
 
-    public GDALProductReaderTest() {
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setUp() throws Exception {
         checkTestDirectoryExists();
 
         GDALInstaller installer = new GDALInstaller();
@@ -49,6 +41,7 @@ public class GDALProductReaderTest extends TestCase {
         }
     }
 
+    @Test
     public void testJP2ReadProductNodes() throws IOException {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             File file = this.gdalTestsFolderPath.resolve("S2A_4.jp2").toFile();
@@ -66,22 +59,23 @@ public class GDALProductReaderTest extends TestCase {
             assertEquals(117649, band.getNumDataElems());
 
             float bandValue = band.getSampleFloat(320, 110);
-            assertEquals(18.0f, bandValue);
+            assertEquals(18.0f, bandValue, 0);
 
             bandValue = band.getSampleFloat(333, 320);
-            assertEquals(12.0f, bandValue);
+            assertEquals(12.0f, bandValue, 0);
 
             bandValue = band.getSampleFloat(300, 300);
-            assertEquals(10.0f, bandValue);
+            assertEquals(10.0f, bandValue, 0);
 
             bandValue = band.getSampleFloat(277, 298);
-            assertEquals(9.0f, bandValue);
+            assertEquals(9.0f, bandValue, 0);
 
             bandValue = band.getSampleFloat(297, 338);
-            assertEquals(7.0f, bandValue);
+            assertEquals(7.0f, bandValue, 0);
         }
     }
 
+    @Test
     public void testNITFReadProductNodes() throws IOException {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             File file = this.gdalTestsFolderPath.resolve("U_1005A.NTF").toFile();
@@ -99,19 +93,19 @@ public class GDALProductReaderTest extends TestCase {
             assertEquals(4096, band.getNumDataElems());
 
             float bandValue = band.getSampleFloat(32, 11);
-            assertEquals(108.0f, bandValue);
+            assertEquals(108.0f, bandValue, 0);
 
             bandValue = band.getSampleFloat(33, 32);
-            assertEquals(217.0f, bandValue);
+            assertEquals(217.0f, bandValue, 0);
 
             bandValue = band.getSampleFloat(30, 30);
-            assertEquals(211.0f, bandValue);
+            assertEquals(211.0f, bandValue, 0);
 
             bandValue = band.getSampleFloat(27, 29);
-            assertEquals(224.0f, bandValue);
+            assertEquals(224.0f, bandValue, 0);
 
             bandValue = band.getSampleFloat(15, 33);
-            assertEquals(133.0f, bandValue);
+            assertEquals(133.0f, bandValue, 0);
         }
     }
 
