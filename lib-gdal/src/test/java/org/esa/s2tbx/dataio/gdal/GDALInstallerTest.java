@@ -1,18 +1,20 @@
 package org.esa.s2tbx.dataio.gdal;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import static org.junit.Assert.fail;
 
 /**
  * @author Jean Coravu
  */
-public class GDALInstallerTest extends TestCase {
+public class GDALInstallerTest {
 
     public GDALInstallerTest() {
     }
 
+    @Test
     public void testInstall() {
         try {
             GDALInstaller installer = new GDALInstaller();
