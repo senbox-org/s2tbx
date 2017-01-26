@@ -232,7 +232,7 @@ public class S2AerosolOp extends Operator {
         }
         skip += nSpecWvl;
         double ozone = tileValues[skip++];
-        double surfP = Math.min(tileValues[skip++], 1013.25);
+        double surfP = Math.min(tileValues[skip++], 101325.0);
         double elevation = tileValues[skip];
         //todo derive water vapour from LUT
         double wvCol = 2500.0;
@@ -241,6 +241,7 @@ public class S2AerosolOp extends Operator {
 
     private void createTargetProduct() {
         targetProduct = new Product(productName, productType, tarRasterWidth, tarRasterHeight);
+        targetProduct.setPreferredTileSize(new Dimension(610 / scale, 610 / scale));
         createTargetProductBands();
 
 //        targetProduct.setSceneGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 2));
