@@ -169,6 +169,12 @@ public class S2AerosolRetrievalMasterOp extends Operator {
                 ProductUtils.copyBand(sourceBandName, aotOriginalResolutionProduct, targetProduct, true);
             }
         }
+        for (Band sourceBand : reflProduct.getBands()) {
+            final String sourceBandName = sourceBand.getName();
+            if (!sourceBand.isFlagBand() && !targetProduct.containsBand(sourceBandName)) {
+                ProductUtils.copyBand(sourceBandName, reflProduct, targetProduct, true);
+            }
+        }
         return targetProduct;
     }
 
