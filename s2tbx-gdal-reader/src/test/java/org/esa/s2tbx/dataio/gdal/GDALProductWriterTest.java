@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.gdal;
 
 import com.bc.ceres.core.ProgressMonitor;
-import junit.framework.TestCase;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.s2tbx.dataio.gdal.activator.GDALPlugInActivator;
 import org.esa.snap.core.dataio.ProductWriter;
@@ -11,6 +10,10 @@ import org.esa.snap.utils.TestUtil;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.geotools.referencing.CRS;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -20,8 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
+
+import static org.junit.Assert.*;
 
 /**
  * The system properties to set:
@@ -29,22 +33,31 @@ import java.util.*;
  *
  * @author Jean Coravu
  */
-public class GDALProductWriterTest extends TestCase {
+public class GDALProductWriterTest {
     private GDALProductWriterPlugIn writerPlugIn;
     private GDALProductReaderPlugin readerPlugIn;
-    private Path testsFolderPath;
+    private static Path testsFolderPath;
 
-    public GDALProductWriterTest() {
+    @BeforeClass
+    public static void oneTimeSetUp() throws IOException {
+        Path temp = Files.createTempDirectory("_temp");
+        testsFolderPath = temp;
+        if (!Files.exists(testsFolderPath)) {
+            fail("The test directory path '"+temp+"' is not valid.");
+        }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @AfterClass
+    public static void oneTimeTearDown() {
+        if (!FileUtils.deleteTree(testsFolderPath.toFile())) {
+            fail("Unable to delete test directory");
+        }
+    }
 
+    @Before
+    public void setUp() throws Exception {
         GDALInstaller installer = new GDALInstaller();
         installer.install();
-
-        checkTestDirectoryExists();
 
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
@@ -53,6 +66,7 @@ public class GDALProductWriterTest extends TestCase {
         }
     }
 
+    @Test
     public final void testWriterDrivers() {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             GDALDriverInfo[] writerDrivers = this.writerPlugIn.getWriterDrivers();
@@ -121,16 +135,13 @@ public class GDALProductWriterTest extends TestCase {
         }
     }
 
+    @Test
     public final void testWriteFileOnDisk() throws IOException, FactoryException, TransformException {
         if (!GdalInstallInfo.INSTANCE.isPresent()) {
             return;
         }
 
-        Path tempTestsFolderPath = this.testsFolderPath.resolve("_temp");
-        Path gdalTestsFolderPath = tempTestsFolderPath.resolve("gdal_writer_tests");
-        if (!Files.exists(gdalTestsFolderPath)) {
-            Files.createDirectories(gdalTestsFolderPath);
-        }
+        Path gdalTestsFolderPath = this.testsFolderPath;
 
         int sceneRasterWidth = 20;
         int sceneRasterHeight = 30;
@@ -167,8 +178,8 @@ public class GDALProductWriterTest extends TestCase {
 
                 int bandDataType = GDALUtils.getBandDataType(gdalDataType);
                 File file = new File(gdalTestsFolderPath.toFile(), "tempFile" + driverInfo.getExtensionName());
-                file.delete();
                 try {
+                    file.delete();
                     Product product = new Product("tempProduct", "GDAL", sceneRasterWidth, sceneRasterHeight);
                     if (!canIgnore) {
                         product.setSceneGeoCoding(geoCodingToSave);
@@ -240,17 +251,6 @@ public class GDALProductWriterTest extends TestCase {
                     file.delete();
                 }
             }
-        } finally {
-            FileUtils.deleteTree(gdalTestsFolderPath.toFile());
-        }
-    }
-
-    private void checkTestDirectoryExists() {
-        String testDirectoryPathProperty = System.getProperty(TestUtil.PROPERTYNAME_DATA_DIR);
-        assertNotNull("The system property '" + TestUtil.PROPERTYNAME_DATA_DIR + "' representing the test directory is not set.", testDirectoryPathProperty);
-        this.testsFolderPath = Paths.get(testDirectoryPathProperty);
-        if (!Files.exists(this.testsFolderPath)) {
-            fail("The test directory path '"+testDirectoryPathProperty+"' is not valid.");
-        }
+        } finally {}
     }
 }

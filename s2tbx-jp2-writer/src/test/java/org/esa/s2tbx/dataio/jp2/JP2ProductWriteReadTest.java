@@ -14,13 +14,17 @@ import org.esa.snap.core.datamodel.TiePointGrid;
 import org.esa.snap.core.datamodel.VirtualBand;
 import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.io.FileUtils;
-import org.esa.snap.utils.TestUtil;
 import org.geotools.referencing.CRS;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
@@ -31,13 +35,29 @@ import static org.junit.Assert.assertEquals;
  */
 public class JP2ProductWriteReadTest {
 
-    private String productsFolder = "_temp" + File.separator;
     private final String FILE_NAME = "test_product.jp2";
     private Product outProduct;
     private File location;
+    private static Path testsFolderPath;
+
+    @BeforeClass
+    public static void oneTimeSetUp() throws IOException {
+        Path temp = Files.createTempDirectory("_temp");
+        testsFolderPath = temp;
+        if (!Files.exists(testsFolderPath)) {
+            fail("The test directory path '"+temp+"' is not valid.");
+        }
+    }
+
+    @AfterClass
+    public static void oneTimeTearDown() {
+        if (!FileUtils.deleteTree(testsFolderPath.toFile())) {
+            fail("Unable to delete test directory");
+        }
+    }
+
     @Before
     public void setup() {
-
         final int width = 14;
         final int height = 14;
         outProduct = new Product("JP2Product", "JPEG-2000", width, height);
@@ -48,10 +68,10 @@ public class JP2ProductWriteReadTest {
 
     @After
     public void tearDown() {
-        if (!FileUtils.deleteTree(new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME))) {
-            fail("unable to delete test directory");
-        }
-    }
+        if (!(new File(testsFolderPath.toFile(), FILE_NAME)).delete()) {
+            fail("Unable to delete test file");
+        }}
+
     @Test
     public void testWriteReadBeamMetadata() throws IOException {
         final Band expectedBand = outProduct.getBand("band_1");
@@ -175,11 +195,9 @@ public class JP2ProductWriteReadTest {
     }
 
     private Product writeReadProduct() throws IOException {
-        location = new File(TestUtil.getTestDirectory(productsFolder), FILE_NAME);
-
+        location = new File(testsFolderPath.toFile(), FILE_NAME);
         final String JP2FormatName = JP2Constants.FORMAT_NAMES[0];
         ProductIO.writeProduct(outProduct, location.getAbsolutePath(), JP2FormatName);
-
         return ProductIO.readProduct(location, JP2FormatName);
     }
 
