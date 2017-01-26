@@ -1,14 +1,16 @@
 package org.esa.s2tbx.dataio.gdal;
 
-import junit.framework.TestCase;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
-import org.esa.s2tbx.dataio.gdal.activator.GDALPlugInActivator;
 import org.esa.snap.core.dataio.EncodeQualification;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
-import org.gdal.gdal.gdal;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import javax.media.jai.JAI;
 import java.io.File;
@@ -19,19 +21,13 @@ import java.util.List;
 /**
  * @author Jean Coravu
  */
-public class GDALProductWriterPlugInTest extends TestCase {
+public class GDALProductWriterPlugInTest {
     private GDALProductWriterPlugIn plugIn;
 
-    public GDALProductWriterPlugInTest() {
-    }
-
-    @Override
+    @Before
     protected void setUp() throws Exception {
-        super.setUp();
-
         GDALInstaller installer = new GDALInstaller();
         installer.install();
-
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
             if (writerDrivers != null && writerDrivers.length > 0) {
@@ -41,6 +37,7 @@ public class GDALProductWriterPlugInTest extends TestCase {
         }
     }
 
+    @Test
     public void testPluginIsLoaded() {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             String[] formatNamesToCheck = getFormatNamesToCheck();
@@ -50,6 +47,7 @@ public class GDALProductWriterPlugInTest extends TestCase {
         }
     }
 
+    @Test
     public void testFormatNames() {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             String[] formatNames = this.plugIn.getFormatNames();
@@ -61,6 +59,7 @@ public class GDALProductWriterPlugInTest extends TestCase {
         }
     }
 
+    @Test
     public void testOutputTypes() {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             Class[] classes = this.plugIn.getOutputTypes();
@@ -73,6 +72,7 @@ public class GDALProductWriterPlugInTest extends TestCase {
         }
     }
 
+    @Test
     public void testProductFileFilter() {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             SnapFileFilter snapFileFilter = this.plugIn.getProductFileFilter();
@@ -80,6 +80,7 @@ public class GDALProductWriterPlugInTest extends TestCase {
         }
     }
 
+    @Test
     public void testEncodingQualificationWithNullProduct() throws Exception {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             EncodeQualification encodeQualification = this.plugIn.getEncodeQualification(null);
@@ -88,6 +89,7 @@ public class GDALProductWriterPlugInTest extends TestCase {
         }
     }
 
+    @Test
     public void testEncodingQualificationWithNonNullProduct() throws Exception {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             Product product = new Product("tempProduct", "GDAL", 20, 30);
