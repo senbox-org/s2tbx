@@ -30,8 +30,6 @@ public class S2AerosolMsiPreparationOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
 
-        final boolean needPixelClassif = (!sourceProduct.containsBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS));
-
         // subset might have set product type to null, thus:
         if (sourceProduct.getDescription() == null) sourceProduct.setDescription("Sentinel S2A product");
 
@@ -49,9 +47,17 @@ public class S2AerosolMsiPreparationOp extends Operator {
         ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
         ProductUtils.copyFlagBands(sourceProduct, targetProduct, true);
 
+        // copy all bands from sourceProduct
+        for (Band srcBand : sourceProduct.getBands()) {
+            String srcName = srcBand.getName();
+            if (!srcBand.isFlagBand()) {
+                ProductUtils.copyBand(srcName, sourceProduct, targetProduct, true);
+            }
+        }
+
         // create pixel classification if missing in sourceProduct
         // and add flag band to targetProduct
-        if (needPixelClassif) {
+        if (!sourceProduct.containsBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS)) {
             S2IdepixOp s2IdepixOp = new S2IdepixOp();
             s2IdepixOp.setParameterDefaultValues();
             s2IdepixOp.setParameter("copyToaReflectances", false);
@@ -59,14 +65,6 @@ public class S2AerosolMsiPreparationOp extends Operator {
             s2IdepixOp.setSourceProduct(sourceProduct);
             final Product idepixProduct = s2IdepixOp.getTargetProduct();
             ProductUtils.copyFlagBands(idepixProduct, targetProduct, true);
-        }
-
-        // copy all bands from sourceProduct
-        for (Band srcBand : sourceProduct.getBands()) {
-            String srcName = srcBand.getName();
-            if (!srcBand.isFlagBand()) {
-                ProductUtils.copyBand(srcName, sourceProduct, targetProduct, true);
-            }
         }
 
         // create elevation band if band is missing in sourceProduct
