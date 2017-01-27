@@ -10,6 +10,7 @@ package org.esa.s2tbx.s2msi.aerosol.util;
  * @author akheckel
  */
 public class PixelGeometry {
+
     public float sza;
     public float vza;
     public float razi;
@@ -20,10 +21,10 @@ public class PixelGeometry {
         this.razi = getRelativeAzi((float)saa, (float)vaa);
     }
 
-    private float getRelativeAzi(float saa, float vaa) {
-        float relAzi = Math.abs(saa - vaa);
-        relAzi = (relAzi > 180.0f) ? 180 - (360 - relAzi) : 180 - relAzi;
-        return relAzi;
+    public static float getRelativeAzi(float saa, float vaa) {
+        final double saaRad = Math.toRadians(saa);
+        final double vaaRad = Math.toRadians(vaa);
+        return (float) (Math.toDegrees(Math.acos(Math.cos(saaRad) * Math.cos(vaaRad) + Math.sin(saaRad) * Math.sin(vaaRad))));
     }
 
     public float getSza() {
