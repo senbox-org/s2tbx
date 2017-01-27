@@ -11,43 +11,43 @@ package org.esa.s2tbx.s2msi.aerosol.util;
  */
 public class PixelGeometry {
 
-    public float sza;
-    public float vza;
-    public float razi;
+    public double sza;
+    public double vza;
+    public double razi;
 
     public PixelGeometry(double sza, double saa, double vza, double vaa) {
-        this.sza = (float) sza;
-        this.vza = (float) vza;
-        this.razi = getRelativeAzi((float)saa, (float)vaa);
+        this.sza = sza;
+        this.vza = vza;
+        this.razi = getRelativeAzi(saa, vaa);
     }
 
-    public static float getRelativeAzi(float saa, float vaa) {
+    public static double getRelativeAzi(double saa, double vaa) {
         final double saaRad = Math.toRadians(saa);
         final double vaaRad = Math.toRadians(vaa);
-        return (float) (Math.toDegrees(Math.acos(Math.cos(saaRad) * Math.cos(vaaRad) + Math.sin(saaRad) * Math.sin(vaaRad))));
+        return Math.toDegrees(Math.acos(Math.cos(saaRad) * Math.cos(vaaRad) + Math.sin(saaRad) * Math.sin(vaaRad)));
     }
 
-    public float getSza() {
+    public double getSza() {
         return sza;
     }
 
-    public void setSza(float sza) {
+    public void setSza(double sza) {
         this.sza = sza;
     }
 
-    public float getVza() {
+    public double getVza() {
         return vza;
     }
 
-    public void setVza(float vza) {
+    public void setVza(double vza) {
         this.vza = vza;
     }
 
-    public float getRazi() {
+    public double getRazi() {
         return razi;
     }
 
-    public void setRazi(float razi) {
+    public void setRazi(double razi) {
         this.razi = razi;
     }
 }
