@@ -78,7 +78,7 @@ public class S2AerosolMsiPreparationOp extends Operator {
         }
 
         // create ozone band if band is missing in sourceProduct
-        if (!targetProduct.containsBand(InstrumentConsts.OZONE_NAME)) {
+        if (!targetProduct.containsRasterDataNode(InstrumentConsts.OZONE_NAME)) {
             String ozoneExpr = "0.00710444";
             final VirtualBand ozoneBand = new VirtualBand(InstrumentConsts.OZONE_NAME, ProductData.TYPE_FLOAT32,
                                                              rasterWidth, rasterHeight, ozoneExpr);
@@ -90,7 +90,7 @@ public class S2AerosolMsiPreparationOp extends Operator {
         }
 
         // create surface pressure estimate product if band is missing in sourceProduct
-        if (!targetProduct.containsBand(InstrumentConsts.SURFACE_PRESSURE_NAME)) {
+        if (!targetProduct.containsRasterDataNode(InstrumentConsts.SURFACE_PRESSURE_NAME)) {
             String presExpr = "(101325.0 * exp(-elevation/8400))";
             final VirtualBand surfPresBand = new VirtualBand(InstrumentConsts.SURFACE_PRESSURE_NAME,
                                                              ProductData.TYPE_FLOAT32,

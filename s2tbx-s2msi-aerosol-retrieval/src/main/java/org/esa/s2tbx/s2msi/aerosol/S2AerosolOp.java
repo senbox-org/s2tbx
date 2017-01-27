@@ -92,7 +92,7 @@ public class S2AerosolOp extends Operator {
     private Band lonBand;
 
     private String validName;
-    private String[] auxBandNames;
+    private String[] auxRasterDataNodeNames;
 
     private double julianDay;
     private int dayOfYear;
@@ -114,7 +114,7 @@ public class S2AerosolOp extends Operator {
         validBand = AerosolUtils.createBooleanExpressionBand(validExpression, sourceProduct);
         validName = validBand.getName();
 
-        auxBandNames = new String[]{
+        auxRasterDataNodeNames = new String[]{
                 InstrumentConsts.OZONE_NAME,
                 InstrumentConsts.SURFACE_PRESSURE_NAME,
                 InstrumentConsts.ELEVATION_NAME,
@@ -165,7 +165,7 @@ public class S2AerosolOp extends Operator {
         Map<String, Tile> sourceTiles = new HashMap<>();
         sourceTiles.putAll(getSourceTiles(InstrumentConsts.REFLEC_NAMES, srcRec, borderExt));
         sourceTiles.putAll(getSourceTiles(InstrumentConsts.GEOM_NAMES, srcRec, borderExt));
-        sourceTiles.putAll(getSourceTiles(auxBandNames, srcRec, borderExt));
+        sourceTiles.putAll(getSourceTiles(auxRasterDataNodeNames, srcRec, borderExt));
 
         for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
             checkForCancellation();
@@ -277,9 +277,9 @@ public class S2AerosolOp extends Operator {
         tarRasterWidth = srcRasterWidth / scale;
     }
 
-    private Map<String, Tile> getSourceTiles(String[] bandNames, Rectangle srcRec, BorderExtender borderExt) {
-        Map<String, Tile> tileMap = new HashMap<>(bandNames.length);
-        for (String name : bandNames) {
+    private Map<String, Tile> getSourceTiles(String[] rasterDataNodeNames, Rectangle srcRec, BorderExtender borderExt) {
+        Map<String, Tile> tileMap = new HashMap<>(rasterDataNodeNames.length);
+        for (String name : rasterDataNodeNames) {
             RasterDataNode b = (name.equals(validName)) ? validBand : sourceProduct.getRasterDataNode(name);
             tileMap.put(name, getSourceTile(b, srcRec, borderExt));
         }
