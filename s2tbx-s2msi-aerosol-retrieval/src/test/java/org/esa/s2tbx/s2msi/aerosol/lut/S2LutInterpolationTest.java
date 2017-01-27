@@ -127,19 +127,19 @@ public class S2LutInterpolationTest {
         ipd.getGeom().setSza(100);
         assertFalse(S2LutUtils.isInsideLut(ipd, snapS2Lut));
 
-        ipd.getGeom().setSza((float) sza);
+        ipd.getGeom().setSza(sza);
         assertTrue(S2LutUtils.isInsideLut(ipd, snapS2Lut));
 
         ipd.getGeom().setVza(1000);
         assertFalse(S2LutUtils.isInsideLut(ipd, snapS2Lut));
 
-        ipd.getGeom().setVza((float) vza);
+        ipd.getGeom().setVza(vza);
         assertTrue(S2LutUtils.isInsideLut(ipd, snapS2Lut));
 
-        ipd.getGeom().setRazi(-98.7f);
+        ipd.getGeom().setRazi(-98.7);
         assertFalse(S2LutUtils.isInsideLut(ipd, snapS2Lut));
 
-        ipd.getGeom().setRazi((float) raa);
+        ipd.getGeom().setRazi(raa);
         assertTrue(S2LutUtils.isInsideLut(ipd, snapS2Lut));
     }
 
