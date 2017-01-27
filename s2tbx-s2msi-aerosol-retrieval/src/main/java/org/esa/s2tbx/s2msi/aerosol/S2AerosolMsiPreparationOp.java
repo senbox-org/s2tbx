@@ -32,10 +32,6 @@ public class S2AerosolMsiPreparationOp extends Operator {
 
         final boolean needPixelClassif = (!sourceProduct.containsBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS));
 
-        final boolean needElevation = (!sourceProduct.containsBand("elevation"));
-        final boolean needOzone = (!sourceProduct.containsBand(InstrumentConsts.OZONE_NAME));
-        final boolean needSurfacePres = (!sourceProduct.containsBand(InstrumentConsts.SURFACE_PRESSURE_NAME));
-
         // subset might have set product type to null, thus:
         if (sourceProduct.getDescription() == null) sourceProduct.setDescription("Sentinel S2A product");
 
@@ -65,8 +61,16 @@ public class S2AerosolMsiPreparationOp extends Operator {
             ProductUtils.copyFlagBands(idepixProduct, targetProduct, true);
         }
 
-        // create elevation product if band is missing in sourceProduct
-        if (needElevation) {
+        // copy all bands from sourceProduct
+        for (Band srcBand : sourceProduct.getBands()) {
+            String srcName = srcBand.getName();
+            if (!srcBand.isFlagBand()) {
+                ProductUtils.copyBand(srcName, sourceProduct, targetProduct, true);
+            }
+        }
+
+        // create elevation band if band is missing in sourceProduct
+        if (!targetProduct.containsBand("elevation")) {
             final Product elevProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(CreateElevationBandOp.class),
                                                           GPF.NO_PARAMS, sourceProduct);
             Guardian.assertNotNull("elevProduct", elevProduct);
@@ -75,8 +79,8 @@ public class S2AerosolMsiPreparationOp extends Operator {
             ProductUtils.copyBand(srcBand.getName(), elevProduct, targetProduct, true);
         }
 
-        // create surface pressure estimate product if band is missing in sourceProduct
-        if (needOzone) {
+        // create ozone band if band is missing in sourceProduct
+        if (!targetProduct.containsBand(InstrumentConsts.OZONE_NAME)) {
             String ozoneExpr = "0.00710444";
             final VirtualBand ozoneBand = new VirtualBand(InstrumentConsts.OZONE_NAME, ProductData.TYPE_FLOAT32,
                                                              rasterWidth, rasterHeight, ozoneExpr);
@@ -88,7 +92,7 @@ public class S2AerosolMsiPreparationOp extends Operator {
         }
 
         // create surface pressure estimate product if band is missing in sourceProduct
-        if (needSurfacePres) {
+        if (!targetProduct.containsBand(InstrumentConsts.SURFACE_PRESSURE_NAME)) {
             String presExpr = "(101325.0 * exp(-elevation/8400))";
             final VirtualBand surfPresBand = new VirtualBand(InstrumentConsts.SURFACE_PRESSURE_NAME,
                                                              ProductData.TYPE_FLOAT32,
@@ -100,20 +104,13 @@ public class S2AerosolMsiPreparationOp extends Operator {
             targetProduct.addBand(surfPresBand);
         }
 
-        // copy all bands from sourceProduct
-        for (Band srcBand : sourceProduct.getBands()) {
-            String srcName = srcBand.getName();
-            if (!srcBand.isFlagBand()) {
-                ProductUtils.copyBand(srcName, sourceProduct, targetProduct, true);
-            }
-        }
-
         // in the end we have in the target product:
         // - B1,...,B12
         // - sun_zenith, sun_azimuth, view_zenith_mean, view_azimuth_mean
         // - pixel_classif_flag
         // - elevation
-        // - surfPressEstimate
+        // - tco3 (ozone)
+        // - sp (surface pressure)
 
         setTargetProduct(targetProduct);
     }
