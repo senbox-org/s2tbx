@@ -21,10 +21,12 @@ import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeConstants;
 import org.esa.s2tbx.dataio.rapideye.metadata.RapidEyeMetadata;
 import org.esa.s2tbx.dataio.readers.GeoTiffBasedReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.TreeNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Reader for RapidEye L3 (GeoTIFF) products.
@@ -33,8 +35,8 @@ import java.io.IOException;
  */
 public class RapidEyeL3Reader extends GeoTiffBasedReader<RapidEyeMetadata> {
 
-    protected RapidEyeL3Reader(ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
+    protected RapidEyeL3Reader(RapidEyeL3ReaderPlugin readerPlugIn, Path colorPaletteFilePath) {
+        super(readerPlugIn, colorPaletteFilePath);
     }
 
     @Override

@@ -32,10 +32,15 @@ import java.util.Locale;
  * @author Ramona Manda
  */
 public class SpotTake5ProductReaderPlugin extends BaseProductReaderPlugIn {
+    private static final String COLOR_PALETTE_FILE_NAME = "Spot_color_palette.cpd";
+
+    public SpotTake5ProductReaderPlugin() {
+        super("org/" + SpotTake5ProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+    }
 
     @Override
     public ProductReader createReaderInstance() {
-        return new SpotTake5ProductReader(this);
+        return new SpotTake5ProductReader(this, getColorPaletteFilePath());
     }
 
     @Override
@@ -58,9 +63,6 @@ public class SpotTake5ProductReaderPlugin extends BaseProductReaderPlugIn {
         return SpotConstants.SPOT4_TAKE5_READER_INPUT_TYPES;
     }
 
-    /*@Override
-    protected String[] getProductFilePatterns() { return SpotConstants.SPOT4_TAKE5_FILENAME_PATTERNS; }*/
-
     @Override
     protected String[] getMinimalPatternList() { return SpotConstants.SPOT4TAKE5_MINIMAL_PRODUCT_PATTERNS; }
 
@@ -70,5 +72,10 @@ public class SpotTake5ProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("SPOT", new String[] { "XS1", "XS2", "XS3" }));
+    }
+
+    @Override
+    protected String getColorPaletteFileName() {
+        return SpotTake5ProductReaderPlugin.COLOR_PALETTE_FILE_NAME;
     }
 }

@@ -32,6 +32,11 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class SpotDimapProductReaderPlugin extends BaseProductReaderPlugIn {
+    private static final String COLOR_PALETTE_FILE_NAME = "Spot_color_palette.cpd";
+
+    public SpotDimapProductReaderPlugin() {
+        super("org/" + SpotDimapProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+    }
 
     @Override
     public Class[] getInputTypes() {
@@ -58,9 +63,6 @@ public class SpotDimapProductReaderPlugin extends BaseProductReaderPlugIn {
         return SpotConstants.DIMAP_DESCRIPTION;
     }
 
-    /*@Override
-    protected String[] getProductFilePatterns() { return SpotConstants.DIMAP_FILENAME_PATTERNS; }*/
-
     @Override
     protected String[] getMinimalPatternList() { return SpotConstants.DIMAP_MINIMAL_PRODUCT_PATTERNS; }
 
@@ -72,4 +74,8 @@ public class SpotDimapProductReaderPlugin extends BaseProductReaderPlugIn {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("SPOT", new String[] { "XS1", "XS2", "XS3" }));
     }
 
+    @Override
+    protected String getColorPaletteFileName() {
+        return SpotDimapProductReaderPlugin.COLOR_PALETTE_FILE_NAME;
+    }
 }

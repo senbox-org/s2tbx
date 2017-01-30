@@ -46,7 +46,7 @@ public class DeimosProductReaderTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         DeimosProductReaderPlugin plugin = new DeimosProductReaderPlugin();
-        reader = new DeimosProductReader(plugin);
+        reader = new DeimosProductReader(plugin, plugin.getColorPaletteFilePath());
     }
 
     @Test

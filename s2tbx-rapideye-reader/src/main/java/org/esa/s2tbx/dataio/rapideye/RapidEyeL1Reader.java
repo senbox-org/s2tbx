@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.rapideye;
 
 import com.bc.ceres.core.Assert;
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFMetadata;
 import org.esa.s2tbx.dataio.nitf.NITFReaderWrapper;
@@ -37,6 +38,7 @@ import org.esa.snap.core.util.TreeNode;
 import javax.imageio.IIOException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,10 +53,13 @@ import java.util.logging.Level;
 public class RapidEyeL1Reader extends RapidEyeReader {
 
     private final Map<Band, NITFReaderWrapper> readerMap;
+    private final Path colorPaletteFilePath;
 
-    public RapidEyeL1Reader(ProductReaderPlugIn readerPlugIn) {
+    public RapidEyeL1Reader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
-        readerMap = new HashMap<>();
+
+        this.colorPaletteFilePath = colorPaletteFilePath;
+        this.readerMap = new HashMap<>();
     }
 
     @Override
@@ -212,12 +217,14 @@ public class RapidEyeL1Reader extends RapidEyeReader {
     private void addBandToProduct(Product product, NITFReaderWrapper reader, int bandIndex) {
         Assert.notNull(product);
         Assert.notNull(reader);
-        Band band = product.addBand(RapidEyeConstants.BAND_NAMES[bandIndex], metadata.getPixelFormat());
+        Band band = new ColorPaletteBand(RapidEyeConstants.BAND_NAMES[bandIndex], metadata.getPixelFormat(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
         band.setSpectralWavelength(RapidEyeConstants.WAVELENGTHS[bandIndex]);
         band.setUnit("nm");
         band.setSpectralBandwidth(RapidEyeConstants.BANDWIDTHS[bandIndex]);
         band.setSpectralBandIndex(bandIndex);
         band.setScalingFactor(metadata.getScaleFactor(bandIndex));
+
+        product.addBand(band);
         readerMap.put(band, reader);
     }
 

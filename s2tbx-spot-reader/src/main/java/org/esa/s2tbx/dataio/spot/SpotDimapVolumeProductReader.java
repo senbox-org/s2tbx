@@ -20,6 +20,7 @@ package org.esa.s2tbx.dataio.spot;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.dataio.BandMatrix;
 import org.esa.s2tbx.dataio.ByteArrayOutputStream;
+import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
@@ -41,6 +42,7 @@ import java.awt.geom.Point2D;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,12 +52,12 @@ import java.util.Map;
  * @author Cosmin Cara
  */
 public class SpotDimapVolumeProductReader extends SpotProductReader {
-
     private final Map<Band, BandMatrix> bandMap;
     protected final Map<int[], ProductData> readLines;
 
-    protected SpotDimapVolumeProductReader(ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
+    protected SpotDimapVolumeProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+        super(readerPlugIn, colorPaletteFilePath);
+
         bandMap = new HashMap<Band, BandMatrix>();
         readLines = new HashMap<int[], ProductData>();
     }
@@ -100,10 +102,7 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
         int width = wrappingMetadata.getExpectedVolumeWidth();
         int height = wrappingMetadata.getExpectedVolumeHeight();
 
-        Product rootProduct = new Product(dimapMetadata.getProductName(),
-                SpotConstants.DIMAP_FORMAT_NAMES[0],
-                width,
-                height);
+        Product rootProduct = new Product(dimapMetadata.getProductName(), SpotConstants.DIMAP_FORMAT_NAMES[0], width, height);
         rootProduct.getMetadataRoot().addElement(wrappingMetadata.getRootElement());
         ProductData.UTC centerTime = dimapMetadata.getCenterTime();
         rootProduct.setStartTime(centerTime);
@@ -113,9 +112,9 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
         int numBands = dimapMetadata.getNumBands();
         String[] bandNames = wrappingMetadata.getComponentMetadata(0).getBandNames();
         for (int i = 0; i < numBands; i++) {
-            Band virtualBand = new Band(bandNames[i], dimapMetadata.getPixelDataType(), width, height);
-            rootProduct.addBand(virtualBand);
-            bandMap.put(virtualBand, new BandMatrix(wrappingMetadata.getExpectedTileComponentRows(), wrappingMetadata.getExpectedTileComponentCols()));
+            ColorPaletteBand band = new ColorPaletteBand(bandNames[i], dimapMetadata.getPixelDataType(), width, height, this.colorPaletteFilePath);
+            rootProduct.addBand(band);
+            bandMap.put(band, new BandMatrix(wrappingMetadata.getExpectedTileComponentRows(), wrappingMetadata.getExpectedTileComponentCols()));
         }
 
         for (int fileIndex = 0; fileIndex < wrappingMetadata.getNumComponents(); fileIndex++) {
@@ -181,14 +180,14 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
         }
     }
 
-    void addBands(Product product, SpotDimapMetadata componentMetadata)
-    {
+    private void addBands(Product product, SpotDimapMetadata componentMetadata) {
         String[] bandUnits = componentMetadata.getBandUnits();
         try {
             if (SpotConstants.DIMAP.equals(componentMetadata.getFormatName())) {
                 String[] rasterFileNames = componentMetadata.getRasterFileNames();
-                if (rasterFileNames == null || rasterFileNames.length == 0)
+                if (rasterFileNames == null || rasterFileNames.length == 0) {
                     throw new InvalidMetadataException("No raster file name found in metadata");
+                }
                 String rasterFileName = componentMetadata.getPath().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(), componentMetadata.getRasterFileNames()[0].toLowerCase());
                 File rasterFile = productDirectory.getFile(rasterFileName);
                 GeoTiffProductReader tiffReader = new GeoTiffProductReader(getReaderPlugIn());
@@ -199,11 +198,12 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
                     if (tiffMetadata != null) {
                         XmlMetadata.CopyChildElements(tiffMetadata, product.getMetadataRoot());
                     }
-                    if (product.getSceneGeoCoding() == null)
+                    if (product.getSceneGeoCoding() == null) {
                         tiffProduct.transferGeoCodingTo(product, null);
-                    if (product.getPreferredTileSize() == null)
+                    }
+                    if (product.getPreferredTileSize() == null) {
                         product.setPreferredTileSize(tiffProduct.getPreferredTileSize());
-
+                    }
                     int numTiffBands = tiffProduct.getNumBands();
                     logger.info("Read bands for component " + componentMetadata.getProductName());
                     for (int idx = 0; idx < numTiffBands; idx++) {
@@ -241,7 +241,7 @@ public class SpotDimapVolumeProductReader extends SpotProductReader {
         }
     }
 
-    void addMasks(Product product, SpotDimapMetadata componentMetadata) {
+    private void addMasks(Product product, SpotDimapMetadata componentMetadata) {
         logger.info("Create masks");
         int noDataValue,saturatedValue;
         if ((noDataValue = componentMetadata.getNoDataValue()) >= 0 && !product.getMaskGroup().contains(SpotConstants.NODATA_VALUE)) {

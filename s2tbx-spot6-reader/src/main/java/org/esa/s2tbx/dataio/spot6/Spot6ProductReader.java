@@ -2,6 +2,7 @@ package org.esa.s2tbx.dataio.spot6;
 
 import com.bc.ceres.core.ProgressMonitor;
 import com.bc.ceres.glevel.support.DefaultMultiLevelImage;
+import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.readers.ColorIterator;
 import org.esa.s2tbx.dataio.readers.GMLReader;
@@ -23,6 +24,7 @@ import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -35,10 +37,8 @@ import java.util.logging.Logger;
  * @author Cosmin Cara
  */
 public class Spot6ProductReader extends AbstractProductReader {
+    private static final Logger logger = Logger.getLogger(Spot6ProductReader.class.getName());
 
-    private Spot6ProductReaderPlugin plugIn;
-    private VirtualDirEx productDirectory;
-    private VolumeMetadata metadata;
     private final static Map<Integer, Integer> typeMap = new HashMap<Integer, Integer>() {{
         put(ProductData.TYPE_UINT8, DataBuffer.TYPE_BYTE);
         put(ProductData.TYPE_INT8, DataBuffer.TYPE_BYTE);
@@ -48,14 +48,15 @@ public class Spot6ProductReader extends AbstractProductReader {
         put(ProductData.TYPE_INT32, DataBuffer.TYPE_INT);
         put(ProductData.TYPE_FLOAT32, DataBuffer.TYPE_FLOAT);
     }};
-    private final Logger logger;
+
+    private VirtualDirEx productDirectory;
+    private VolumeMetadata metadata;
     private Set<WeakReference<Product>> tileRefs;
 
     protected Spot6ProductReader(Spot6ProductReaderPlugin readerPlugIn) {
         super(readerPlugIn);
-        plugIn = readerPlugIn;
-        logger = Logger.getLogger(Spot6ProductReader.class.getName());
-        tileRefs = new HashSet<>();
+
+        this.tileRefs = new HashSet<>();
     }
 
     @Override
@@ -103,7 +104,8 @@ public class Spot6ProductReader extends AbstractProductReader {
 
     @Override
     protected Product readProductNodesImpl() throws IOException {
-        productDirectory = plugIn.getInput(getInput());
+        Spot6ProductReaderPlugin readerPlugin = (Spot6ProductReaderPlugin)getReaderPlugIn();
+        productDirectory = readerPlugin.getInput(getInput());
         metadata = VolumeMetadata.create(productDirectory.getFile(Spot6Constants.ROOT_METADATA).toPath());
         Product product = null;
         if (metadata != null) {
@@ -137,8 +139,9 @@ public class Spot6ProductReader extends AbstractProductReader {
             } else {
                 initProductTiePointGeoCoding(maxResImageMetadata, product);
             }
-            boolean shouldGroup = imageMetadataList.size() > 1;
-            String grouping = "";
+
+            Path colorPaletteFilePath = readerPlugin.getColorPaletteFilePath();
+
             for (ImageMetadata imageMetadata : imageMetadataList) {
                 product.getMetadataRoot().addElement(imageMetadata.getRootElement());
                 int numBands = imageMetadata.getNumBands();
@@ -170,9 +173,8 @@ public class Spot6ProductReader extends AbstractProductReader {
                 }
                 final Stx[] statistics = imageMetadata.getBandsStatistics();
                 for (int i = 0; i < numBands; i++) {
-                    Band targetBand = new Band(bandInfos[i].getId(), pixelDataType,
-                                                Math.round(width / factorX),
-                                                Math.round(height / factorY));
+                    Band targetBand = new ColorPaletteBand(bandInfos[i].getId(), pixelDataType, Math.round(width / factorX),
+                                                           Math.round(height / factorY), colorPaletteFilePath);
                     targetBand.setSpectralBandIndex(numBands > 1 ? i : -1);
                     targetBand.setSpectralWavelength(bandInfos[i].getCentralWavelength());
                     targetBand.setSpectralBandwidth(bandInfos[i].getBandwidth());

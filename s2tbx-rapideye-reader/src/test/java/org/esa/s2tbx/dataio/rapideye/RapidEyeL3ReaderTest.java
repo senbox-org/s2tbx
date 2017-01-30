@@ -46,7 +46,7 @@ public class RapidEyeL3ReaderTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         RapidEyeL3ReaderPlugin plugin = new RapidEyeL3ReaderPlugin();
-        reader = new RapidEyeL3Reader(plugin);
+        reader = new RapidEyeL3Reader(plugin, plugin.getColorPaletteFilePath());
     }
 
     @Test

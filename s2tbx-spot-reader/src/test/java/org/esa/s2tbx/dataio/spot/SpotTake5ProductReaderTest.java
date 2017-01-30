@@ -46,7 +46,7 @@ public class SpotTake5ProductReaderTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         SpotTake5ProductReaderPlugin plugin = new SpotTake5ProductReaderPlugin();
-        reader = new SpotTake5ProductReader(plugin);
+        reader = new SpotTake5ProductReader(plugin, plugin.getColorPaletteFilePath());
     }
 
     @Test

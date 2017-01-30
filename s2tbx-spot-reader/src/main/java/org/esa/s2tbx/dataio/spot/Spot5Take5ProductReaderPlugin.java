@@ -29,10 +29,15 @@ import java.util.Locale;
  * Created by kraftek on 9/9/2015.
  */
 public class Spot5Take5ProductReaderPlugin extends BaseProductReaderPlugIn {
+    private static final String COLOR_PALETTE_FILE_NAME = "Spot_color_palette.cpd";
+
+    public Spot5Take5ProductReaderPlugin() {
+        super("org/" + Spot5Take5ProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+    }
 
     @Override
     public ProductReader createReaderInstance() {
-        return new SpotTake5ProductReader(this);
+        return new SpotTake5ProductReader(this, getColorPaletteFilePath());
     }
 
     @Override
@@ -64,5 +69,10 @@ public class Spot5Take5ProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("SPOT", new String[] { "XS1", "XS2", "XS3" }));
+    }
+
+    @Override
+    protected String getColorPaletteFileName() {
+        return Spot5Take5ProductReaderPlugin.COLOR_PALETTE_FILE_NAME;
     }
 }

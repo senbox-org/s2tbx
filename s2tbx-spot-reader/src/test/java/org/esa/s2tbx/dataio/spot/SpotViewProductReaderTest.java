@@ -46,7 +46,7 @@ public class SpotViewProductReaderTest {
         assumeTrue(TestUtil.testdataAvailable());
 
         SpotViewProductReaderPlugin plugin = new SpotViewProductReaderPlugin();
-        reader = new SpotViewProductReader(plugin);
+        reader = new SpotViewProductReader(plugin, plugin.getColorPaletteFilePath());
     }
 
     @Test

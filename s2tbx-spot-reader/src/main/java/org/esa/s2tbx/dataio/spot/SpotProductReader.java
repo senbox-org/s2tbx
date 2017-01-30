@@ -23,7 +23,10 @@ import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.SpotSceneMetadata;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
+
+import java.nio.file.Path;
 
 /**
  * This is the base class for SPOT DIMAP readers, which regroups common
@@ -35,8 +38,8 @@ public abstract class SpotProductReader extends GeoTiffBasedReader<SpotDimapMeta
 
     protected SpotSceneMetadata wrappingMetadata;
 
-    protected SpotProductReader(ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
+    protected SpotProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+        super(readerPlugIn, colorPaletteFilePath);
     }
 
     public void setProductDirectory(VirtualDirEx productDirectory) {

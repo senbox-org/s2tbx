@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.readers;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.FileImageInputStreamSpi;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
@@ -43,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -57,19 +59,21 @@ import java.util.logging.Logger;
  * This class has been created from the need of gathering all common code of several similar readers into a single place.
  */
 public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends AbstractProductReader {
+    protected static final Logger logger = Logger.getLogger(GeoTiffBasedReader.class.getName());
 
     private final Class<M> metadataClass;
     protected List<M> metadata;
     protected Product product;
-    protected final Logger logger;
     protected ImageInputStreamSpi imageInputStreamSpi;
     protected VirtualDirEx productDirectory;
     protected final Map<Band, Band> bandMap;
     protected List<String> rasterFileNames;
+    protected final Path colorPaletteFilePath;
 
-    protected GeoTiffBasedReader(ProductReaderPlugIn readerPlugIn) {
+    protected GeoTiffBasedReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
-        logger = Logger.getLogger(GeoTiffBasedReader.class.getName());
+
+        this.colorPaletteFilePath = colorPaletteFilePath;
         this.metadataClass = getTypeArgument();
         registerMetadataParser();
         registerSpi();
@@ -206,7 +210,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
      *
      * @return  The preferred tile dimensions.
      */
-    protected Dimension getPreferredTileSize() {
+    private static Dimension getPreferredTileSize(Product product) {
         Dimension tileSize = null;
         if (product != null) {
             tileSize = product.getPreferredTileSize();
@@ -251,7 +255,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                 throw ex;
             }
             if (firstMetadata.getRasterWidth() > 0 && firstMetadata.getRasterHeight() > 0) {
-                createProduct(firstMetadata.getRasterWidth(), firstMetadata.getRasterHeight(), firstMetadata);
+                product = createProduct(firstMetadata.getRasterWidth(), firstMetadata.getRasterHeight(), firstMetadata);
             }
             for (int i = 0; i < rasterMetadataList.size(); i++) {
                 M currentMetadata = rasterMetadataList.get(i);
@@ -289,9 +293,9 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
      * @return  An instance of the product
      */
     protected Product createProduct(int width, int height, M metadataFile) {
-        product = new Product((metadataFile != null && metadataFile.getProductName() != null) ? metadataFile.getProductName() : getProductGenericName(),
-                              getReaderPlugIn().getFormatNames()[0],
-                              width, height);
+        String name = (metadataFile != null && metadataFile.getProductName() != null) ? metadataFile.getProductName() : getProductGenericName();
+        String type = getReaderPlugIn().getFormatNames()[0];
+        product = new Product(name, type, width, height);
         File fileLocation = null;
         try {
             // in case of zip products, getTempDir returns the temporary location of the uncompressed product
@@ -347,8 +351,9 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                 }
                 tiffProduct.transferGeoCodingTo(product, null);
                 Dimension preferredTileSize = tiffProduct.getPreferredTileSize();
-                if (preferredTileSize == null)
-                    preferredTileSize = getPreferredTileSize();
+                if (preferredTileSize == null) {
+                    preferredTileSize = getPreferredTileSize(product);
+                }
                 product.setPreferredTileSize(preferredTileSize);
                 int numBands = tiffProduct.getNumBands();
                 String bandPrefix = "";
@@ -362,7 +367,7 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                 for (int idx = 0; idx < numBands; idx++) {
                     Band srcBand = tiffProduct.getBandAt(idx);
                     String bandName = bandPrefix + getBandNames()[idx];
-                    Band targetBand = product.addBand(bandName, srcBand.getDataType());
+                    Band targetBand = new ColorPaletteBand(bandName, srcBand.getDataType(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
                     targetBand.setNoDataValue(srcBand.getNoDataValue());
                     targetBand.setNoDataValueUsed(srcBand.isNoDataValueUsed());
                     targetBand.setSpectralWavelength(srcBand.getSpectralWavelength());
@@ -375,6 +380,8 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
                     targetBand.setImageInfo(srcBand.getImageInfo());
                     targetBand.setSpectralBandIndex(srcBand.getSpectralBandIndex());
                     targetBand.setDescription(srcBand.getDescription());
+
+                    product.addBand(targetBand);
                     bandMap.put(targetBand, srcBand);
                 }
             }

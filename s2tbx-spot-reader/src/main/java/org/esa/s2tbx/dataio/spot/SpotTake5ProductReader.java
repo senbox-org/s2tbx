@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -40,6 +41,7 @@ import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,22 +61,24 @@ import java.util.logging.Logger;
  * @author Ramona Manda
  */
 public class SpotTake5ProductReader extends AbstractProductReader {
+    private static final Logger logger = Logger.getLogger(SpotTake5ProductReader.class.getName());
 
-    private final Logger logger;
     private SpotTake5Metadata imageMetadata;
     private VirtualDirEx input;
     private final Map<Band, GeoTiffProductReader> readerMap;
     private final Map<Band, Band> bandMap;
+    private final Path colorPaletteFilePath;
 
     static {
         XmlMetadataParserFactory.registerParser(SpotTake5Metadata.class, new XmlMetadataParser<SpotTake5Metadata>(SpotTake5Metadata.class));
     }
 
-    protected SpotTake5ProductReader(ProductReaderPlugIn readerPlugIn) {
+    protected SpotTake5ProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
-        logger = Logger.getLogger(SpotTake5ProductReader.class.getName());
-        readerMap = new HashMap<Band, GeoTiffProductReader>();
-        bandMap = new HashMap<Band, Band>();
+
+        this.colorPaletteFilePath = colorPaletteFilePath;
+        this.readerMap = new HashMap<Band, GeoTiffProductReader>();
+        this.bandMap = new HashMap<Band, Band>();
     }
 
     @Override
@@ -291,7 +295,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
      * @param tiffFile       the file from which to take the bands
      * @param bandNamePrefix the name to start all the bands names
      */
-    void addBands(Product product, String tiffFile, String bandNamePrefix) {
+    private void addBands(Product product, String tiffFile, String bandNamePrefix) {
         logger.info("Read product component: " + tiffFile);
         String[] bandNames = imageMetadata.getBandNames();
         try {
@@ -313,7 +317,8 @@ public class SpotTake5ProductReader extends AbstractProductReader {
                     if (product.getBand(bandName) != null) {
                         bandName = bandPrefix + bandName;
                     }
-                    Band targetBand = product.addBand(bandName, srcBand.getDataType());
+                    ColorPaletteBand targetBand = new ColorPaletteBand(bandName, srcBand.getDataType(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
+                    product.addBand(targetBand);
                     readerMap.put(targetBand, tiffReader);
                     bandMap.put(targetBand, srcBand);
                     //targetBand.setRasterData(srcBand.getRasterData());
@@ -352,7 +357,7 @@ public class SpotTake5ProductReader extends AbstractProductReader {
      * @param bandName the name of the band to be added
      * @return the newly added band
      */
-    Band addMaskBand(Product product, String tiffFile, String bandName) {
+    private Band addMaskBand(Product product, String tiffFile, String bandName) {
         logger.info("Read band for mask: " + tiffFile);
         try {
             File rasterFile = input.getFile(tiffFile);

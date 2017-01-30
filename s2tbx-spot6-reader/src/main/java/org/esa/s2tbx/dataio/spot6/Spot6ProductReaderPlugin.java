@@ -31,10 +31,12 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class Spot6ProductReaderPlugin extends BaseProductReaderPlugIn {
+    private static final String COLOR_PALETTE_FILE_NAME = "Spot6_color_palette.cpd";
 
     public Spot6ProductReaderPlugin() {
-        super();
-        folderDepth = 4;
+        super("org/esa/s2tbx/dataio/spot6/" + Spot6ProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+
+        this.folderDepth = 4;
     }
 
     @Override
@@ -79,5 +81,10 @@ public class Spot6ProductReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("SPOT 6/7", Spot6Constants.SPOT6_RGB_PROFILE));
+    }
+
+    @Override
+    protected String getColorPaletteFileName() {
+        return Spot6ProductReaderPlugin.COLOR_PALETTE_FILE_NAME;
     }
 }

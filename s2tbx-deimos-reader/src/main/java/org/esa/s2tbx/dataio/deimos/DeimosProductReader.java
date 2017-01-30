@@ -26,6 +26,9 @@ import org.esa.snap.core.datamodel.Mask;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.TiePointGeoCoding;
 import org.esa.snap.core.datamodel.TiePointGrid;
+import org.esa.snap.core.util.SystemUtils;
+
+import java.nio.file.Path;
 
 /**
  * This product reader is intended for reading DEIMOS-1 files
@@ -35,8 +38,8 @@ import org.esa.snap.core.datamodel.TiePointGrid;
  */
 public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
 
-    protected DeimosProductReader(ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
+    protected DeimosProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+        super(readerPlugIn, colorPaletteFilePath);
     }
 
     @Override
@@ -103,6 +106,7 @@ public class DeimosProductReader extends GeoTiffBasedReader<DeimosMetadata> {
     @Override
     protected void addBands(Product product, DeimosMetadata componentMetadata, int componentIndex) {
         super.addBands(product, componentMetadata, componentIndex);
+
         if (DeimosConstants.PROCESSING_1R.equals(componentMetadata.getProcessingLevel())) {
             initGeoCoding(product);
         }

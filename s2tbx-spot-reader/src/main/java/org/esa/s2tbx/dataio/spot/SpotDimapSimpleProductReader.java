@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.Assert;
+import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.spot.dimap.SpotConstants;
 import org.esa.s2tbx.dataio.spot.dimap.SpotDimapMetadata;
@@ -31,6 +32,7 @@ import org.geotools.metadata.InvalidMetadataException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * This rootProduct reader is intended for reading SPOT-1 to SPOT-5 scene files
@@ -40,8 +42,8 @@ import java.io.IOException;
  */
 public class SpotDimapSimpleProductReader extends SpotProductReader {
 
-    protected SpotDimapSimpleProductReader(ProductReaderPlugIn readerPlugIn) {
-        super(readerPlugIn);
+    protected SpotDimapSimpleProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
+        super(readerPlugIn, colorPaletteFilePath);
     }
 
     @Override
@@ -108,16 +110,18 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
             try {
                 if (SpotConstants.DIMAP.equals(componentMetadata.getFormatName())) {
                     String[] fileNames = componentMetadata.getRasterFileNames();
-                    if (fileNames == null || fileNames.length == 0)
+                    if (fileNames == null || fileNames.length == 0) {
                         throw new InvalidMetadataException("No raster file found in metadata");
+                    }
                     String rasterFileName = componentMetadata.getPath().toLowerCase().replace(componentMetadata.getFileName().toLowerCase(), fileNames[0].toLowerCase());
                     File rasterFile = productDirectory.getFile(rasterFileName);
                     GeoTiffProductReader tiffReader = new GeoTiffReaderEx(getReaderPlugIn());
                     logger.info("Read product nodes");
                     Product tiffProduct = tiffReader.readProductNodes(rasterFile, null);
                     if (tiffProduct != null) {
-                        if (product == null)
+                        if (product == null) {
                             product = createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), wrappingMetadata.getComponentMetadata(0));
+                        }
                         MetadataElement tiffMetadata = tiffProduct.getMetadataRoot();
                         if (tiffMetadata != null) {
                             XmlMetadata.CopyChildElements(tiffMetadata, product.getMetadataRoot());
@@ -140,7 +144,7 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
                         for (int idx = 0; idx < numBands; idx++) {
                             Band srcBand = tiffProduct.getBandAt(idx);
                             String bandName = bandPrefix + (idx < bandNames.length ? bandNames[idx] : SpotConstants.DEFAULT_BAND_NAME_PREFIX + idx);
-                            Band targetBand = product.addBand(bandName, srcBand.getDataType());
+                            Band targetBand = new ColorPaletteBand(bandName, srcBand.getDataType(), product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
                             targetBand.setNoDataValue(componentMetadata.getNoDataValue() > -1 ? componentMetadata.getNoDataValue() : srcBand.getNoDataValue());
                             targetBand.setNoDataValueUsed((componentMetadata.getNoDataValue() > -1));
                             targetBand.setSpectralWavelength(componentMetadata.getWavelength(idx) > 0 ? componentMetadata.getWavelength(idx) : srcBand.getSpectralWavelength());
@@ -153,6 +157,9 @@ public class SpotDimapSimpleProductReader extends SpotProductReader {
                             targetBand.setImageInfo(srcBand.getImageInfo());
                             targetBand.setSpectralBandIndex(srcBand.getSpectralBandIndex());
                             targetBand.setDescription(bandName);
+
+                            product.addBand(targetBand);
+
                             readBandStatistics(targetBand, idx, componentMetadata);
                             bandMap.put(targetBand, srcBand);
                         }

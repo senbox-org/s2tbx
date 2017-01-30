@@ -18,6 +18,7 @@
 package org.esa.s2tbx.dataio.spot;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.s2tbx.dataio.metadata.XmlMetadata;
 import org.esa.s2tbx.dataio.metadata.XmlMetadataParser;
@@ -51,6 +52,7 @@ import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteOrder;
+import java.nio.file.Path;
 import java.util.logging.Logger;
 
 /**
@@ -62,23 +64,25 @@ import java.util.logging.Logger;
  * @author Cosmin Cara
  */
 public class SpotViewProductReader extends AbstractProductReader {
+    private static final Logger logger = Logger.getLogger(SpotViewProductReader.class.getName());
 
     private ImageInputStream imageInputStream;
     private SpotViewMetadata metadata;
     private SpotDimapMetadata imageMetadata;
-    private final Logger logger;
     private VirtualDirEx zipDir;
     private final Object sharedLock;
+    private final Path colorPaletteFilePath;
 
     static {
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new XmlMetadataParser<SpotDimapMetadata>(SpotDimapMetadata.class));
         XmlMetadataParserFactory.registerParser(SpotViewMetadata.class, new XmlMetadataParser<SpotViewMetadata>(SpotViewMetadata.class));
     }
 
-    protected SpotViewProductReader(ProductReaderPlugIn readerPlugIn) {
+    protected SpotViewProductReader(ProductReaderPlugIn readerPlugIn, Path colorPaletteFilePath) {
         super(readerPlugIn);
-        logger = Logger.getLogger(SpotViewProductReader.class.getName());
-        sharedLock = new Object();
+
+        this.colorPaletteFilePath = colorPaletteFilePath;
+        this.sharedLock = new Object();
     }
 
     @Override
@@ -216,7 +220,8 @@ public class SpotViewProductReader extends AbstractProductReader {
 
         final String[] bandNames = metadata.getBandNames();
         for (int i = 0; i < bandNames.length; i++) {
-            final Band band = new Band(bandNames[i], dataType, product.getSceneRasterWidth(), product.getSceneRasterHeight());
+            ColorPaletteBand band = new ColorPaletteBand(bandNames[i], dataType, product.getSceneRasterWidth(), product.getSceneRasterHeight(), this.colorPaletteFilePath);
+
             band.setSpectralWavelength(imageMetadata.getWavelength(i));
             band.setSpectralBandwidth(imageMetadata.getBandwidth(i));
             //band.setScalingOffset(imageMetadata.getScalingOffset(i));

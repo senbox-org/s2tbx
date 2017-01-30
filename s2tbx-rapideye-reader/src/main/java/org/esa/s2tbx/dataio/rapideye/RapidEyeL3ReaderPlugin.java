@@ -22,7 +22,12 @@ import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
+import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.utils.FileHelper;
 
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.Locale;
 
 /**
@@ -30,6 +35,11 @@ import java.util.Locale;
  * RE L3 products have a GeoTIFF raster.
  */
 public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
+    private static final String COLOR_PALETTE_FILE_NAME = "RapidEye_color_palette.cpd";
+
+    public RapidEyeL3ReaderPlugin() {
+        super("org/esa/s2tbx/dataio/rapideye/" + RapidEyeL3ReaderPlugin.COLOR_PALETTE_FILE_NAME);
+    }
 
     @Override
     public Class[] getInputTypes() {
@@ -38,7 +48,7 @@ public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new RapidEyeL3Reader(this);
+        return new RapidEyeL3Reader(this, getColorPaletteFilePath());
     }
 
     @Override
@@ -65,5 +75,10 @@ public class RapidEyeL3ReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("RapidEye L3", new String[] { "red", "green", "blue" }));
+    }
+
+    @Override
+    protected String getColorPaletteFileName() {
+        return RapidEyeL3ReaderPlugin.COLOR_PALETTE_FILE_NAME;
     }
 }

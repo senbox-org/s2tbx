@@ -32,6 +32,11 @@ import java.util.Locale;
  * @author Cosmin Cara
  */
 public class RapidEyeL1ReaderPlugin extends BaseProductReaderPlugIn {
+    private static final String COLOR_PALETTE_FILE_NAME = "RapidEye_color_palette.cpd";
+
+    public RapidEyeL1ReaderPlugin() {
+        super("org/esa/s2tbx/dataio/rapideye/" + RapidEyeL1ReaderPlugin.COLOR_PALETTE_FILE_NAME);
+    }
 
     @Override
     public Class[] getInputTypes() {
@@ -40,7 +45,7 @@ public class RapidEyeL1ReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new RapidEyeL1Reader(this);
+        return new RapidEyeL1Reader(this, getColorPaletteFilePath());
     }
 
     @Override
@@ -58,9 +63,6 @@ public class RapidEyeL1ReaderPlugin extends BaseProductReaderPlugIn {
         return RapidEyeConstants.L1_DESCRIPTION;
     }
 
-    /*@Override
-    protected String[] getProductFilePatterns() { return RapidEyeConstants.L1_FILENAME_PATTERNS; }*/
-
     @Override
     protected String[] getMinimalPatternList() { return RapidEyeConstants.L1_MINIMAL_PRODUCT_PATTERNS; }
 
@@ -70,5 +72,10 @@ public class RapidEyeL1ReaderPlugin extends BaseProductReaderPlugIn {
     @Override
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("RapidEye L1", new String[] { "red", "green", "blue" }));
+    }
+
+    @Override
+    protected String getColorPaletteFileName() {
+        return RapidEyeL1ReaderPlugin.COLOR_PALETTE_FILE_NAME;
     }
 }

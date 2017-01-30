@@ -22,7 +22,12 @@ import org.esa.s2tbx.dataio.readers.BaseProductReaderPlugIn;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.RGBImageProfile;
 import org.esa.snap.core.datamodel.RGBImageProfileManager;
+import org.esa.snap.core.util.SystemUtils;
+import org.esa.snap.utils.FileHelper;
 
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.Locale;
 
 /**
@@ -32,6 +37,11 @@ import java.util.Locale;
  * @author  Cosmin Cara
  */
 public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
+    private static final String COLOR_PALETTE_FILE_NAME = "Deimos_color_palette.cpd";
+
+    public DeimosProductReaderPlugin() {
+        super("org/esa/s2tbx/dataio/deimos/" + DeimosProductReaderPlugin.COLOR_PALETTE_FILE_NAME);
+    }
 
     @Override
     public Class[] getInputTypes() {
@@ -40,7 +50,7 @@ public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
 
     @Override
     public ProductReader createReaderInstance() {
-        return new DeimosProductReader(this);
+        return new DeimosProductReader(this, getColorPaletteFilePath());
     }
 
     @Override
@@ -58,9 +68,6 @@ public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
         return DeimosConstants.DIMAP_DESCRIPTION;
     }
 
-    /*@Override
-    protected String[] getProductFilePatterns() { return DeimosConstants.FILENAME_PATTERNS; }*/
-
     @Override
     protected String[] getMinimalPatternList() { return DeimosConstants.MINIMAL_PRODUCT_PATTERNS; }
 
@@ -72,4 +79,8 @@ public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("DEIMOS-1", new String[] { "Red", "Green", "NIR" }));
     }
 
+    @Override
+    protected String getColorPaletteFileName() {
+        return DeimosProductReaderPlugin.COLOR_PALETTE_FILE_NAME;
+    }
 }

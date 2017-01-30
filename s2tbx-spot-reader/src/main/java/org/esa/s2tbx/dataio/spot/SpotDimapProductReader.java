@@ -39,6 +39,7 @@ import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageInputStreamSpi;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -49,20 +50,20 @@ import java.util.logging.Logger;
  * @author Cosmin Cara
  */
 public class SpotDimapProductReader extends AbstractProductReader {
+    private static final Logger logger = Logger.getLogger(SpotDimapProductReader.class.getName());
 
     private ImageInputStreamSpi channelImageInputStreamSpi;
     private VirtualDirEx productDirectory;
     private SpotSceneMetadata metadata;
     private SpotProductReader internalReader;
-    private final Logger logger;
 
     static {
         XmlMetadataParserFactory.registerParser(SpotDimapMetadata.class, new SpotDimapMetadata.SpotDimapMetadataParser(SpotDimapMetadata.class));
     }
 
-    protected SpotDimapProductReader(ProductReaderPlugIn readerPlugIn) {
+    protected SpotDimapProductReader(SpotDimapProductReaderPlugin readerPlugIn) {
         super(readerPlugIn);
-        logger = Logger.getLogger(SpotDimapProductReader.class.getName());
+
         registerSpi();
     }
 
@@ -71,9 +72,11 @@ public class SpotDimapProductReader extends AbstractProductReader {
         productDirectory = ((BaseProductReaderPlugIn)getReaderPlugIn()).getInput(getInput());
         metadata = SpotSceneMetadata.create(productDirectory, this.logger);
         VolumeMetadata volumeMetadata = metadata.getVolumeMetadata();
+        SpotDimapProductReaderPlugin readerPlugIn = (SpotDimapProductReaderPlugin)getReaderPlugIn();
+        Path colorPaletteFilePath = readerPlugIn.getColorPaletteFilePath();
         if (volumeMetadata != null) {
             if (SpotConstants.PROFILE_MULTI_VOLUME.equals(volumeMetadata.getProfileName())) {
-                internalReader = new SpotDimapVolumeProductReader(getReaderPlugIn());
+                internalReader = new SpotDimapVolumeProductReader(readerPlugIn, colorPaletteFilePath);
                 logger.info("Multi-volume product detected.");
             } else {
                 if (!SpotConstants.PROFILE_VOLUME.equals(volumeMetadata.getProfileName())) {
@@ -81,13 +84,12 @@ public class SpotDimapProductReader extends AbstractProductReader {
                 } else {
                     logger.info("Single volume product detected.");
                 }
-                internalReader = new SpotDimapSimpleProductReader(getReaderPlugIn());
+                internalReader = new SpotDimapSimpleProductReader(readerPlugIn, colorPaletteFilePath);
             }
         } else {
             logger.warning("No volume metadata found. Will assume single volume product.");
-            internalReader = new SpotDimapSimpleProductReader(getReaderPlugIn());
+            internalReader = new SpotDimapSimpleProductReader(readerPlugIn, colorPaletteFilePath);
         }
-        //internalReader.setLogger(logger);
         internalReader.setMetadata(metadata);
         internalReader.setProductDirectory(productDirectory);
         return internalReader.readProductNodes(getInput(), null);
