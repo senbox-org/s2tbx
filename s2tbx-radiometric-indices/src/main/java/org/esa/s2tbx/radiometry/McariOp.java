@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -73,6 +72,12 @@ public class McariOp extends BaseIndexOp{
     @BandParameter(minWavelength = 543, maxWavelength = 577)
     private String greenSourceBand;
 
+    public McariOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -90,7 +95,6 @@ public class McariOp extends BaseIndexOp{
             Tile mcariFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float mcariValue;
-            int mcariFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -101,19 +105,7 @@ public class McariOp extends BaseIndexOp{
 
                     mcariValue = ( (redB5 - redB4) - 0.2f*(redB5 - green) ) * (redB5 - redB4);
 
-                    mcariFlagsValue = 0;
-                    if (Float.isNaN(mcariValue) || Float.isInfinite(mcariValue)) {
-                        mcariFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        mcariValue = 0.0f;
-                    }
-                    if (mcariValue < 0.0f) {
-                        mcariFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (mcariValue > 1.0f) {
-                        mcariFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    mcari.setSample(x, y, mcariValue);
-                    mcariFlags.setSample(x, y, mcariFlagsValue);
+                    mcari.setSample(x, y, computeFlag(x, y, mcariValue, mcariFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -121,32 +113,6 @@ public class McariOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (red1SourceBand == null) {
-            red1SourceBand = findBand(650, 680, product); /* (600, 650) */
-            getLogger().info("Using band '" + red1SourceBand + "' as red input band (B4).");
-        }
-        if (red2SourceBand == null) {
-            red2SourceBand = findBand(697, 712, product); /* (600, 650) */
-            getLogger().info("Using band '" + red2SourceBand + "' as red input band (B5).");
-        }
-        if (greenSourceBand == null) {
-            greenSourceBand = findBand(543, 577, product); /* (495, 570) */
-            getLogger().info("Using band '" + greenSourceBand + "' as GREEN input band.");
-        }
-        if (red1SourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B4). Please specify band.");
-        }
-        if (red2SourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B5). Please specify band.");
-        }
-        if (greenSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as green input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { red1SourceBand, red2SourceBand, greenSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

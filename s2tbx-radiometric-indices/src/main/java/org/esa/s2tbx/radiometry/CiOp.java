@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -65,6 +64,12 @@ public class CiOp extends BaseIndexOp{
     @BandParameter(minWavelength = 495, maxWavelength = 570)
     private String greenSourceBand;
 
+    public CiOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -82,7 +87,6 @@ public class CiOp extends BaseIndexOp{
             Tile ciFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ciValue;
-            int ciFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -92,19 +96,7 @@ public class CiOp extends BaseIndexOp{
 
                     ciValue = (red - green)/(red + green);
 
-                    ciFlagsValue = 0;
-                    if (Float.isNaN(ciValue) || Float.isInfinite(ciValue)) {
-                        ciFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        ciValue = 0.0f;
-                    }
-                    if (ciValue < 0.0f) {
-                        ciFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (ciValue > 1.0f) {
-                        ciFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    ci.setSample(x, y, ciValue);
-                    ciFlags.setSample(x, y, ciFlagsValue);
+                    ci.setSample(x, y, computeFlag(x, y, ciValue, ciFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -112,27 +104,6 @@ public class CiOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (redSourceBand == null) {
-            redSourceBand = findBand(600, 650, product); /* Band Centre = 550.7 nm, Band width 88.6 nm*/
-            getLogger().info("Using band '" + redSourceBand + "' as RED input band.");
-        }
-        if (greenSourceBand == null) {
-            greenSourceBand = findBand(495, 570, product); /* Band Centre = 664.8 nm, Band width 65.8 nm*/
-            getLogger().info("Using band '" + greenSourceBand + "' as GREEN input band.");
-        }
-
-        if (redSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band. Please specify band.");
-        }
-        if (greenSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as green input band. Please specify band.");
-        }
-
-        this.sourceBandNames = new String[] { redSourceBand, greenSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

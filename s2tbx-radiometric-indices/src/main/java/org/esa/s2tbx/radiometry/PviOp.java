@@ -19,8 +19,8 @@
 package org.esa.s2tbx.radiometry;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -37,7 +37,7 @@ import java.util.Map;
         description = "Perpendicular Vegetation Index retrieves the Isovegetation lines parallel to soil line. Soil line has an arbitrary slope and passes through origin",
         authors = "Dragos Mihailescu",
         copyright = "Copyright (C) 2016 by CS ROMANIA")
-public class PviOp extends BaseIndexOp{
+public class PviOp extends BaseIndexOp {
 
     // constants
     public static final String BAND_NAME = "pvi";
@@ -55,13 +55,21 @@ public class PviOp extends BaseIndexOp{
             description = "The red band for the PVI computation. If not provided, the " +
                     "operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
+    @BandParameter(minWavelength = 600, maxWavelength = 650)
     private String redSourceBand;
 
     @Parameter(label = "NIR source band",
             description = "The near-infrared band for the PVI computation. If not provided," +
                     " the operator will try to find the best fitting band.",
             rasterDataNodeType = Band.class)
+    @BandParameter(minWavelength = 800, maxWavelength = 900)
     private String nirSourceBand;
+
+    public PviOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
 
     @Override
     public String getBandName() {
@@ -79,7 +87,6 @@ public class PviOp extends BaseIndexOp{
             Tile pviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float pviValue;
-            int pviFlagsValue;
 
             double radiansAngle = Math.toRadians(angleSoilLineNIRAxis);
 
@@ -88,21 +95,9 @@ public class PviOp extends BaseIndexOp{
                     final float nir = nirFactor * nirTile.getSampleFloat(x, y);
                     final float red = redFactor * redTile.getSampleFloat(x, y);
 
-                    pviValue = (float) (( Math.sin(radiansAngle)*nir ) - ( Math.cos(radiansAngle)*red ));
+                    pviValue = (float) ((Math.sin(radiansAngle) * nir) - (Math.cos(radiansAngle) * red));
 
-                    pviFlagsValue = 0;
-                    if (Float.isNaN(pviValue) || Float.isInfinite(pviValue)) {
-                        pviFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        pviValue = 0.0f;
-                    }
-                    if (pviValue < 0.0f) {
-                        pviFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (pviValue > 1.0f) {
-                        pviFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    pvi.setSample(x, y, pviValue);
-                    pviFlags.setSample(x, y, pviFlagsValue);
+                    pvi.setSample(x, y, computeFlag(x, y, pviValue, pviFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -111,24 +106,6 @@ public class PviOp extends BaseIndexOp{
             pm.done();
         }
     }
-
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (redSourceBand == null) {
-            redSourceBand = findBand(600, 650, product);
-            getLogger().info("Using band '" + redSourceBand + "' as red input band.");
-        }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(800, 900, product);
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
-        }
-        if (redSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band. Please specify band.");
-        }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
-        }
-    }
-
 
     public static class Spi extends OperatorSpi {
 

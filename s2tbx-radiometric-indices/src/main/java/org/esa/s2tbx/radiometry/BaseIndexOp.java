@@ -18,20 +18,22 @@
 
 package org.esa.s2tbx.radiometry;
 
+import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.gpf.GPF;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
+import org.esa.snap.core.gpf.Tile;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.ProductUtils;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Base class for radiometric indices.
@@ -43,6 +45,10 @@ import java.util.Map;
  */
 public abstract class BaseIndexOp extends Operator {
 
+    public static final String RESAMPLE_NONE = "None";
+    public static final String RESAMPLE_LOWEST = "Lowest resolution";
+    public static final String RESAMPLE_HIGHEST = "Highest resolution";
+
     protected static final String FLAGS_BAND_NAME = "flags";
 
     protected static final String ARITHMETIC_FLAG_NAME = "ARITHMETIC";
@@ -53,9 +59,8 @@ public abstract class BaseIndexOp extends Operator {
     protected static final int LOW_FLAG_VALUE = 1 << 1;
     protected static final int HIGH_FLAG_VALUE = 1 << 2;
 
-    public static final String RESAMPLE_NONE = "None";
-    public static final String RESAMPLE_LOWEST = "Lowest resolution";
-    public static final String RESAMPLE_HIGHEST = "Highest resolution";
+    protected float lowValueThreshold;
+    protected float highValueThreshold;
 
     @SourceProduct(alias = "source", description = "The source product.")
     protected Product sourceProduct;
@@ -77,14 +82,20 @@ public abstract class BaseIndexOp extends Operator {
             valueSet = {"First", "Min", "Max", "Mean", "Median"},
             defaultValue = "First")
     private String downsamplingMethod;
-
     protected String[] sourceBandNames;
+    private List<Field> bandFields;
 
     private FlagCoding flagCoding;
     private List<MaskDescriptor> maskDescriptors;
 
     protected BaseIndexOp() {
         maskDescriptors = new ArrayList<>();
+        bandFields = Arrays.stream(getClass().getDeclaredFields())
+                .filter(f -> f.getAnnotation(Parameter.class) != null
+                        && f.getAnnotation(BandParameter.class) != null)
+                .collect(Collectors.toList());
+        lowValueThreshold = 0.0f;
+        highValueThreshold = 1.0f;
     }
 
     public abstract String getBandName();
@@ -152,6 +163,53 @@ public abstract class BaseIndexOp extends Operator {
         return this.sourceProduct;
     }
 
+    protected float computeFlag(int x, int y, float computedValue, Tile flagTile) {
+        int flag = 0;
+        if (Float.isNaN(computedValue) || Float.isInfinite(computedValue)) {
+            flag = ARITHMETIC_FLAG_VALUE;
+            computedValue = 0.0f;
+        } else if (computedValue < this.lowValueThreshold) {
+            flag |= LOW_FLAG_VALUE;
+        } else if (computedValue > this.highValueThreshold) {
+            flag |= HIGH_FLAG_VALUE;
+        }
+        flagTile.setSample(x, y, flag);
+        return computedValue;
+    }
+
+    protected void loadSourceBands(Product product) throws OperatorException {
+        final List<String> bands = new ArrayList<>();
+        bandFields.forEach(bandField -> {
+                    Parameter paramAnnotation = bandField.getAnnotation(Parameter.class);
+                    BandParameter bandAnnotation = bandField.getAnnotation(BandParameter.class);
+                    try {
+                        bandField.setAccessible(true);
+                        Object value = bandField.get(this);
+                        if (value == null) {
+                            String bandName = findBand((int) bandAnnotation.minWavelength(),
+                                                       (int) bandAnnotation.maxWavelength(),
+                                                       product);
+                            if (bandName != null) {
+                                bandField.set(this, bandName);
+                                bands.add(bandName);
+                                getLogger().fine(String.format("Using band '%s' as %s",
+                                        bandName, paramAnnotation.label()));
+                            } else {
+                                throw new OperatorException(
+                                        String.format("Unable to find band that could be used as %s. Please specify band.",
+                                                paramAnnotation.label()));
+                            }
+                        } else {
+                            bands.add(value.toString());
+                        }
+                    } catch (IllegalAccessException e) {
+                        getLogger().severe(e.getMessage());
+                    }
+
+                });
+        this.sourceBandNames = bands.toArray(new String[bands.size()]);
+    }
+
     private void addMaskDescriptor(String name, String expression, String description, Color color, double transparency) {
         maskDescriptors.add(new MaskDescriptor(name, expression, description, color, transparency));
     }
@@ -164,8 +222,6 @@ public abstract class BaseIndexOp extends Operator {
         attribute.setDescription(description);
         flagCoding.addAttribute(attribute);
     }
-
-    protected abstract void loadSourceBands(Product product);
 
     private Product resample(Product source, int targetWidth, int targetHeight) {
         Map<String, Object> parameters = new HashMap<>();

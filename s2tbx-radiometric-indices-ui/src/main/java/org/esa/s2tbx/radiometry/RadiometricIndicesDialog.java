@@ -59,6 +59,7 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
     private List<Field> bandFields;
     private JLabel messageLabel;
     private JPanel messagePanel;
+    private volatile boolean productChanged;
 
     public RadiometricIndicesDialog(String operatorName, AppContext appContext, String title, String helpID) {
         this(operatorName, appContext, title, helpID, true);
@@ -94,7 +95,9 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
                         f.getAnnotation(BandParameter.class)))
                 .forEach(entry -> {
                     Property property = entry.getKey();
-                    property.addPropertyChangeListener(evt -> checkResampling(getSelectedProduct()));
+                    property.addPropertyChangeListener(evt -> {
+                        if (!productChanged) checkResampling(getSelectedProduct());
+                    });
                     BandParameter annotation = entry.getValue();
                     if (annotation != null) {
                         final PropertyDescriptor propertyDescriptor = property.getDescriptor();
@@ -180,7 +183,9 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
                 for (String bandName : setBandNames) {
                     Band band = product.getBand(bandName);
                     bitSet.set(idx++, sceneWidth != 0 && sceneWidth != band.getRasterWidth());
-                    sceneWidth = band.getRasterWidth();
+                    if (band != null) {
+                        sceneWidth = band.getRasterWidth();
+                    }
                 }
                 needsResampling = bitSet.nextSetBit(0) != -1;
             }
@@ -229,20 +234,25 @@ public class RadiometricIndicesDialog extends DefaultSingleTargetProductDialog {
     private void processSelectedProduct() {
         Product selectedProduct = getSelectedProduct();
         if (selectedProduct != null) {
-            BindingContext bindingContext = getBindingContext();
-            PropertySet propertySet = bindingContext.getPropertySet();
-            propertySet.setDefaultValues();
+            productChanged = true;
+            try {
+                BindingContext bindingContext = getBindingContext();
+                PropertySet propertySet = bindingContext.getPropertySet();
+                propertySet.setDefaultValues();
 
-            for (Field field : this.bandFields) {
-                BandParameter annotation = field.getAnnotation(BandParameter.class);
-                float min = annotation.minWavelength();
-                float max = annotation.maxWavelength();
-                if (min != 0.0f && max != 0.0f) {
-                    String bandName = BaseIndexOp.findBand(min, max, selectedProduct);
-                    propertySet.setValue(field.getName(), bandName);
+                for (Field field : this.bandFields) {
+                    BandParameter annotation = field.getAnnotation(BandParameter.class);
+                    float min = annotation.minWavelength();
+                    float max = annotation.maxWavelength();
+                    if (min != 0.0f && max != 0.0f) {
+                        String bandName = BaseIndexOp.findBand(min, max, selectedProduct);
+                        propertySet.setValue(field.getName(), bandName);
+                    }
                 }
+                checkResampling(selectedProduct);
+            } finally {
+                productChanged = false;
             }
-            checkResampling(selectedProduct);
         }
     }
 

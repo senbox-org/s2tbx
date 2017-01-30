@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -83,6 +82,12 @@ public class ReipOp extends BaseIndexOp{
     @BandParameter(minWavelength = 773, maxWavelength = 793)
     private String nirSourceBand;
 
+    public ReipOp() {
+        super();
+        this.lowValueThreshold = 700f;
+        this.highValueThreshold = 760f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -101,7 +106,6 @@ public class ReipOp extends BaseIndexOp{
             Tile reipFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float reipValue;
-            int reipFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -113,19 +117,7 @@ public class ReipOp extends BaseIndexOp{
 
                     reipValue = 700.0f + 40.0f * ( ( ( (nir + redB4) / 2.0f ) - redB5 ) / (redB6 - redB5) );
 
-                    reipFlagsValue = 0;
-                    if (Float.isNaN(reipValue) || Float.isInfinite(reipValue)) {
-                        reipFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        reipValue = 0.0f;
-                    }
-                    if (reipValue < 0.0f) {
-                        reipFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (reipValue > 1.0f) {
-                        reipFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    reip.setSample(x, y, reipValue);
-                    reipFlags.setSample(x, y, reipFlagsValue);
+                    reip.setSample(x, y, computeFlag(x, y, reipValue, reipFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -133,39 +125,6 @@ public class ReipOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (redSourceBand4 == null) {
-            redSourceBand4 = findBand(650, 680, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand4 + "' as red input band (B4).");
-        }
-        if (redSourceBand5 == null) {
-            redSourceBand5 = findBand(697, 712, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand5 + "' as red input band (B5).");
-        }
-        if (redSourceBand6 == null) {
-            redSourceBand6 = findBand(732, 747, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand6 + "' as red input band (B6).");
-        }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(773, 793, product); /* (800, 900) */
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
-        }
-        if (redSourceBand4 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B4). Please specify band.");
-        }
-        if (redSourceBand5 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B5). Please specify band.");
-        }
-        if (redSourceBand6 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B6). Please specify band.");
-        }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { redSourceBand4, redSourceBand5, redSourceBand6, nirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {
