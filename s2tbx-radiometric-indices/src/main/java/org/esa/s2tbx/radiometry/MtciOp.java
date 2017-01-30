@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -76,6 +75,12 @@ public class MtciOp extends BaseIndexOp{
     @BandParameter(minWavelength = 733, maxWavelength = 748)
     private String nirSourceBand;
 
+    public MtciOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = Float.MAX_VALUE;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -93,7 +98,6 @@ public class MtciOp extends BaseIndexOp{
             Tile mtciFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float mtciValue;
-            int mtciFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -104,19 +108,7 @@ public class MtciOp extends BaseIndexOp{
 
                     mtciValue = (nir - redB5) / (redB5 - redB4);
 
-                    mtciFlagsValue = 0;
-                    if (Float.isNaN(mtciValue) || Float.isInfinite(mtciValue)) {
-                        mtciFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        mtciValue = 0.0f;
-                    }
-                    if (mtciValue < 0.0f) {
-                        mtciFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (mtciValue > 1.0f) {
-                        mtciFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    mtci.setSample(x, y, mtciValue);
-                    mtciFlags.setSample(x, y, mtciFlagsValue);
+                    mtci.setSample(x, y, computeFlag(x, y, mtciValue, mtciFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -124,32 +116,6 @@ public class MtciOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (redSourceBand4 == null) {
-            redSourceBand4 = findBand(650, 680, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand4 + "' as red input band (B4).");
-        }
-        if (redSourceBand5 == null) {
-            redSourceBand5 = findBand(697, 712, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand5 + "' as red input band (B5).");
-        }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(733, 748, product); /* (800, 900) */
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
-        }
-        if (redSourceBand4 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B4). Please specify band.");
-        }
-        if (redSourceBand5 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B5). Please specify band.");
-        }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { redSourceBand4, redSourceBand5, nirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

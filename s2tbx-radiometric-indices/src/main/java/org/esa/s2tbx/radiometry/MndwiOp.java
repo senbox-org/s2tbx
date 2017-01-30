@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -63,6 +62,12 @@ public class MndwiOp extends BaseIndexOp{
     @BandParameter(minWavelength = 3000, maxWavelength = 8000)
     private String mirSourceBand;
 
+    public MndwiOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -79,7 +84,6 @@ public class MndwiOp extends BaseIndexOp{
             Tile mndwiFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float mndwiValue;
-            int mndwiFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -89,19 +93,7 @@ public class MndwiOp extends BaseIndexOp{
 
                     mndwiValue = (green - mir)/(green + mir);
 
-                    mndwiFlagsValue = 0;
-                    if (Float.isNaN(mndwiValue) || Float.isInfinite(mndwiValue)) {
-                        mndwiFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        mndwiValue = 0.0f;
-                    }
-                    if (mndwiValue < 0.0f) {
-                        mndwiFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (mndwiValue > 1.0f) {
-                        mndwiFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    mndwi.setSample(x, y, mndwiValue);
-                    mndwiFlags.setSample(x, y, mndwiFlagsValue);
+                    mndwi.setSample(x, y, computeFlag(x, y, mndwiValue, mndwiFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -109,25 +101,6 @@ public class MndwiOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (greenSourceBand == null) {
-            greenSourceBand = findBand(495, 570, product); /* (500, 590) */
-            getLogger().info("Using band '" + greenSourceBand + "' as GREEN input band.");
-        }
-        if (mirSourceBand == null) {
-            mirSourceBand = findBand(3000, 8000, product);
-            getLogger().info("Using band '" + mirSourceBand + "' as MIR input band.");
-        }
-        if (greenSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as green input band. Please specify band.");
-        }
-        if (mirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as mir input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { greenSourceBand, mirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

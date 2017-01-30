@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -63,6 +62,12 @@ public class PssraOp extends BaseIndexOp{
     @BandParameter(minWavelength = 773, maxWavelength = 793)
     private String nirSourceBand;
 
+    public PssraOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -79,28 +84,15 @@ public class PssraOp extends BaseIndexOp{
             Tile pssraFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float pssraValue;
-            int pssraFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
                     final float nir = nirFactor * nirTile.getSampleFloat(x, y);
                     final float red = redFactor * redTile.getSampleFloat(x, y);
 
-                    pssraValue = nir / red; /* verify if red = 0 */
+                    pssraValue = nir / red;
 
-                    pssraFlagsValue = 0;
-                    if (Float.isNaN(pssraValue) || Float.isInfinite(pssraValue)) {
-                        pssraFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        pssraValue = 0.0f;
-                    }
-                    if (pssraValue < 0.0f) {
-                        pssraFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (pssraValue > 1.0f) {
-                        pssraFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    pssra.setSample(x, y, pssraValue);
-                    pssraFlags.setSample(x, y, pssraFlagsValue);
+                    pssra.setSample(x, y, computeFlag(x, y, pssraValue, pssraFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -108,25 +100,6 @@ public class PssraOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (redSourceBand == null) {
-            redSourceBand = findBand(650, 680, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand + "' as red input band.");
-        }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(773, 793, product); /* (800, 900) */
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
-        }
-        if (redSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band. Please specify band.");
-        }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { redSourceBand, nirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

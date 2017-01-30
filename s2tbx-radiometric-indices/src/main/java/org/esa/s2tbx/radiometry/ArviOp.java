@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -76,6 +75,12 @@ public class ArviOp extends BaseIndexOp{
     @BandParameter(minWavelength = 800, maxWavelength = 900)
     private String nirSourceBand;
 
+    public ArviOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -94,9 +99,7 @@ public class ArviOp extends BaseIndexOp{
             Tile arviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float rbEquationValue;
-
             float arviValue;
-            int arviFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -109,19 +112,7 @@ public class ArviOp extends BaseIndexOp{
 
                     arviValue = (nir - rbEquationValue) / (nir + rbEquationValue);
 
-                    arviFlagsValue = 0;
-                    if (Float.isNaN(arviValue) || Float.isInfinite(arviValue)) {
-                        arviFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        arviValue = 0.0f;
-                    }
-                    if (arviValue < 0.0f) {
-                        arviFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (arviValue > 1.0f) {
-                        arviFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    arvi.setSample(x, y, arviValue);
-                    arviFlags.setSample(x, y, arviFlagsValue);
+                    arvi.setSample(x, y, computeFlag(x, y, arviValue, arviFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -129,33 +120,6 @@ public class ArviOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (blueSourceBand == null) {
-            blueSourceBand = findBand(450, 495, product);
-            getLogger().info("Using band '" + blueSourceBand + "' as BLUE input band.");
-        }
-        if (redSourceBand == null) {
-            redSourceBand = findBand(600, 650, product);
-            getLogger().info("Using band '" + redSourceBand + "' as RED input band.");
-        }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(800, 900, product);
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
-        }
-
-        if (blueSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as blue input band. Please specify band.");
-        }
-        if (redSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band. Please specify band.");
-        }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { blueSourceBand, redSourceBand, nirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

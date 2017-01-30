@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -63,6 +62,12 @@ public class GndviOp extends BaseIndexOp{
     @BandParameter(minWavelength = 773, maxWavelength = 793)
     private String nirSourceBand;
 
+    public GndviOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -79,7 +84,6 @@ public class GndviOp extends BaseIndexOp{
             Tile gndviFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float gndviValue;
-            int gndviFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -89,19 +93,7 @@ public class GndviOp extends BaseIndexOp{
 
                     gndviValue = (nir - green)/(nir + green);
 
-                    gndviFlagsValue = 0;
-                    if (Float.isNaN(gndviValue) || Float.isInfinite(gndviValue)) {
-                        gndviFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        gndviValue = 0.0f;
-                    }
-                    if (gndviValue < 0.0f) {
-                        gndviFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (gndviValue > 1.0f) {
-                        gndviFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    gndvi.setSample(x, y, gndviValue);
-                    gndviFlags.setSample(x, y, gndviFlagsValue);
+                    gndvi.setSample(x, y, computeFlag(x, y, gndviValue, gndviFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -109,25 +101,6 @@ public class GndviOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (greenSourceBand == null) {
-            greenSourceBand = findBand(543, 577, product); /* (495, 570) */
-            getLogger().info("Using band '" + greenSourceBand + "' as GREEN input band.");
-        }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(773, 793, product); /* (800, 900) */
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
-        }
-        if (greenSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as green input band. Please specify band.");
-        }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { greenSourceBand, nirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

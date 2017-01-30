@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -83,6 +82,12 @@ public class S2repOp extends BaseIndexOp{
     @BandParameter(minWavelength = 773, maxWavelength = 793)
     private String nirSourceBand;
 
+    public S2repOp() {
+        super();
+        this.lowValueThreshold = 690f;
+        this.highValueThreshold = 740f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -101,7 +106,6 @@ public class S2repOp extends BaseIndexOp{
             Tile s2repFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float s2repValue;
-            int s2repFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -113,19 +117,7 @@ public class S2repOp extends BaseIndexOp{
 
                     s2repValue = 705.0f + 35.0f * ( ( ( (nir + redB4) / 2.0f ) - redB5 ) / (redB6 - redB5) );
 
-                    s2repFlagsValue = 0;
-                    if (Float.isNaN(s2repValue) || Float.isInfinite(s2repValue)) {
-                        s2repFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        s2repValue = 0.0f;
-                    }
-                    if (s2repValue < 0.0f) {
-                        s2repFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (s2repValue > 1.0f) {
-                        s2repFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    s2rep.setSample(x, y, s2repValue);
-                    s2repFlags.setSample(x, y, s2repFlagsValue);
+                    s2rep.setSample(x, y, computeFlag(x, y, s2repValue, s2repFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -133,39 +125,6 @@ public class S2repOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (redSourceBand4 == null) {
-            redSourceBand4 = findBand(650, 680, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand4 + "' as red input band (B4).");
-        }
-        if (redSourceBand5 == null) {
-            redSourceBand5 = findBand(697, 712, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand5 + "' as red input band (B5).");
-        }
-        if (redSourceBand6 == null) {
-            redSourceBand6 = findBand(732, 747, product); /* (600, 650) */
-            getLogger().info("Using band '" + redSourceBand6 + "' as red input band (B6).");
-        }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(773, 793, product); /* (800, 900) */
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
-        }
-        if (redSourceBand4 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B4). Please specify band.");
-        }
-        if (redSourceBand5 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B5). Please specify band.");
-        }
-        if (redSourceBand6 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B6). Please specify band.");
-        }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { redSourceBand4, redSourceBand5, redSourceBand6, nirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

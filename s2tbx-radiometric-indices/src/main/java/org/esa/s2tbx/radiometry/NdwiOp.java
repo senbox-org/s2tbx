@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -63,6 +62,12 @@ public class NdwiOp extends BaseIndexOp{
     @BandParameter(minWavelength = 800, maxWavelength = 900)
     private String nirSourceBand;
 
+    public NdwiOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -79,7 +84,6 @@ public class NdwiOp extends BaseIndexOp{
             Tile ndwiFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ndwiValue;
-            int ndwiFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -89,19 +93,7 @@ public class NdwiOp extends BaseIndexOp{
 
                     ndwiValue = (nir - mir)/(nir + mir);
 
-                    ndwiFlagsValue = 0;
-                    if (Float.isNaN(ndwiValue) || Float.isInfinite(ndwiValue)) {
-                        ndwiFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        ndwiValue = 0.0f;
-                    }
-                    if (ndwiValue < 0.0f) {
-                        ndwiFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (ndwiValue > 1.0f) {
-                        ndwiFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    ndwi.setSample(x, y, ndwiValue);
-                    ndwiFlags.setSample(x, y, ndwiFlagsValue);
+                    ndwi.setSample(x, y, computeFlag(x, y, ndwiValue, ndwiFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -109,25 +101,6 @@ public class NdwiOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (mirSourceBand == null) {
-            mirSourceBand = findBand(3000, 8000, product);
-            getLogger().info("Using band '" + mirSourceBand + "' as MIR input band.");
-        }
-        if (nirSourceBand == null) {
-            nirSourceBand = findBand(800, 900, product);
-            getLogger().info("Using band '" + nirSourceBand + "' as NIR input band.");
-        }
-        if (mirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as mir input band. Please specify band.");
-        }
-        if (nirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as nir input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { mirSourceBand, nirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {

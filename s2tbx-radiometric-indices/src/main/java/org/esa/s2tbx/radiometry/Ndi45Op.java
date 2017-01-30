@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -63,6 +62,11 @@ public class Ndi45Op extends BaseIndexOp{
     @BandParameter(minWavelength = 698, maxWavelength = 713)
     private String redSourceBand5;
 
+    public Ndi45Op() {
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -79,7 +83,6 @@ public class Ndi45Op extends BaseIndexOp{
             Tile ndi45Flags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ndi45Value;
-            int ndi45FlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -88,19 +91,7 @@ public class Ndi45Op extends BaseIndexOp{
 
                     ndi45Value = (redB5 - redB4) / (redB5 + redB4);
 
-                    ndi45FlagsValue = 0;
-                    if (Float.isNaN(ndi45Value) || Float.isInfinite(ndi45Value)) {
-                        ndi45FlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        ndi45Value = 0.0f;
-                    }
-                    if (ndi45Value < 0.0f) {
-                        ndi45FlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (ndi45Value > 1.0f) {
-                        ndi45FlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    ndi45.setSample(x, y, ndi45Value);
-                    ndi45Flags.setSample(x, y, ndi45FlagsValue);
+                    ndi45.setSample(x, y, computeFlag(x, y, ndi45Value, ndi45Flags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -108,25 +99,6 @@ public class Ndi45Op extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (redSourceBand4 == null) {
-            redSourceBand4 = findBand(650, 680, product);
-            getLogger().info("Using band '" + redSourceBand4 + "' as red input band (B4).");
-        }
-        if (redSourceBand5 == null) {
-            redSourceBand5 = findBand(698, 713, product);
-            getLogger().info("Using band '" + redSourceBand5 + "' as red input band (B5).");
-        }
-        if (redSourceBand4 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B4). Please specify band.");
-        }
-        if (redSourceBand4 == null) {
-            throw new OperatorException("Unable to find band that could be used as red input band (B5). Please specify band.");
-        }
-        this.sourceBandNames = new String[] { redSourceBand4, redSourceBand5 };
     }
 
     public static class Spi extends OperatorSpi {

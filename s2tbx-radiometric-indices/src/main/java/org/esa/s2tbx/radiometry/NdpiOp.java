@@ -21,7 +21,6 @@ package org.esa.s2tbx.radiometry;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.radiometry.annotations.BandParameter;
 import org.esa.snap.core.datamodel.Band;
-import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.Tile;
@@ -63,6 +62,12 @@ public class NdpiOp extends BaseIndexOp{
     @BandParameter(minWavelength = 1550, maxWavelength = 1750)
     private String swirSourceBand;
 
+    public NdpiOp() {
+        super();
+        this.lowValueThreshold = -1f;
+        this.highValueThreshold = 1f;
+    }
+
     @Override
     public String getBandName() {
         return BAND_NAME;
@@ -79,7 +84,6 @@ public class NdpiOp extends BaseIndexOp{
             Tile ndpiFlags = targetTiles.get(targetProduct.getBand(FLAGS_BAND_NAME));
 
             float ndpiValue;
-            int ndpiFlagsValue;
 
             for (int y = rectangle.y; y < rectangle.y + rectangle.height; y++) {
                 for (int x = rectangle.x; x < rectangle.x + rectangle.width; x++) {
@@ -89,19 +93,7 @@ public class NdpiOp extends BaseIndexOp{
 
                     ndpiValue = (green - swir)/(green + swir);// (1 - green/swir)/(1 + green/swir)
 
-                    ndpiFlagsValue = 0;
-                    if (Float.isNaN(ndpiValue) || Float.isInfinite(ndpiValue)) {
-                        ndpiFlagsValue |= ARITHMETIC_FLAG_VALUE;
-                        ndpiValue = 0.0f;
-                    }
-                    if (ndpiValue < 0.0f) {
-                        ndpiFlagsValue |= LOW_FLAG_VALUE;
-                    }
-                    if (ndpiValue > 1.0f) {
-                        ndpiFlagsValue |= HIGH_FLAG_VALUE;
-                    }
-                    ndpi.setSample(x, y, ndpiValue);
-                    ndpiFlags.setSample(x, y, ndpiFlagsValue);
+                    ndpi.setSample(x, y, computeFlag(x, y, ndpiValue, ndpiFlags));
                 }
                 checkForCancellation();
                 pm.worked(1);
@@ -109,25 +101,6 @@ public class NdpiOp extends BaseIndexOp{
         } finally {
             pm.done();
         }
-    }
-
-    @Override
-    protected void loadSourceBands(Product product) throws OperatorException {
-        if (greenSourceBand == null) {
-            greenSourceBand = findBand(525, 605, product);
-            getLogger().info("Using band '" + greenSourceBand + "' as GREEN input band.");
-        }
-        if (swirSourceBand == null) {
-            swirSourceBand = findBand(1550, 1750, product);
-            getLogger().info("Using band '" + swirSourceBand + "' as SWIR input band.");
-        }
-        if (greenSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as GREEN input band. Please specify band.");
-        }
-        if (swirSourceBand == null) {
-            throw new OperatorException("Unable to find band that could be used as SWIR input band. Please specify band.");
-        }
-        this.sourceBandNames = new String[] { greenSourceBand, swirSourceBand };
     }
 
     public static class Spi extends OperatorSpi {
