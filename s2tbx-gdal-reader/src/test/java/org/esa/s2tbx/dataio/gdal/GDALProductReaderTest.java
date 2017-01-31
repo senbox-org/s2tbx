@@ -13,10 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * The system properties to set:
@@ -30,14 +27,13 @@ public class GDALProductReaderTest {
 
     @Before
     public void setUp() throws Exception {
-        checkTestDirectoryExists();
-
         GDALInstaller installer = new GDALInstaller();
         installer.install();
 
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             gdal.AllRegister(); // GDAL init drivers
             this.plugIn = new GDALProductReaderPlugin();
+            checkTestDirectoryExists();
         }
     }
 
