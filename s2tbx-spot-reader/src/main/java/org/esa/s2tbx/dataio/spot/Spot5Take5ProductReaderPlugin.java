@@ -70,9 +70,4 @@ public class Spot5Take5ProductReaderPlugin extends BaseProductReaderPlugIn {
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("SPOT", new String[] { "XS1", "XS2", "XS3" }));
     }
-
-    @Override
-    protected String getColorPaletteFileName() {
-        return Spot5Take5ProductReaderPlugin.COLOR_PALETTE_FILE_NAME;
-    }
 }

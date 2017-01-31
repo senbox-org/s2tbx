@@ -73,9 +73,4 @@ public class RapidEyeL1ReaderPlugin extends BaseProductReaderPlugIn {
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("RapidEye L1", new String[] { "red", "green", "blue" }));
     }
-
-    @Override
-    protected String getColorPaletteFileName() {
-        return RapidEyeL1ReaderPlugin.COLOR_PALETTE_FILE_NAME;
-    }
 }

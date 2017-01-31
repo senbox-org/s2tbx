@@ -26,12 +26,14 @@ public class ColorPaletteBand extends Band {
 
     @Override
     public synchronized ImageInfo createDefaultImageInfo(double[] histoSkipAreas, ProgressMonitor pm) {
-        try {
-            ColorPaletteDef colorPaletteDef = ColorPaletteDef.loadColorPaletteDef(this.colorPaletteFilePath.toFile());
-            return new ImageInfo(colorPaletteDef);
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, String.format("Unable to load the custom color palette from file '%s'.", this.colorPaletteFilePath.toString()), ex);
-            return super.createDefaultImageInfo(histoSkipAreas, pm);
+        if (this.colorPaletteFilePath != null) {
+            try {
+                ColorPaletteDef colorPaletteDef = ColorPaletteDef.loadColorPaletteDef(this.colorPaletteFilePath.toFile());
+                return new ImageInfo(colorPaletteDef);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, String.format("Unable to load the custom color palette from file '%s'.", this.colorPaletteFilePath.toString()), ex);
+            }
         }
+        return super.createDefaultImageInfo(histoSkipAreas, pm);
     }
 }

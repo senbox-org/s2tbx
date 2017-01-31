@@ -82,9 +82,4 @@ public class Spot6ProductReaderPlugin extends BaseProductReaderPlugIn {
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("SPOT 6/7", Spot6Constants.SPOT6_RGB_PROFILE));
     }
-
-    @Override
-    protected String getColorPaletteFileName() {
-        return Spot6ProductReaderPlugin.COLOR_PALETTE_FILE_NAME;
-    }
 }

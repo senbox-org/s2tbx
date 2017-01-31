@@ -22,6 +22,7 @@ import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.SystemUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
 import org.esa.snap.utils.FileHelper;
@@ -60,36 +61,46 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
     private static Map<Object, String[]> cachedFiles = new WeakHashMap<>();
 
     protected final ProductContentEnforcer enforcer;
+    private final Path colorPaletteFilePath;
     protected int folderDepth;
 
     protected BaseProductReaderPlugIn(String colorPaletteFilePathFromSources) {
-        folderDepth = 1;
+        this.folderDepth = 1;
         String[] patternList = getMinimalPatternList();
         for (String pattern : patternList) {
-            folderDepth = Math.max(folderDepth, pattern.split("\\[/").length - 1);
+            this.folderDepth = Math.max(this.folderDepth, pattern.split("\\[/").length - 1);
         }
-        enforcer = ProductContentEnforcer.create(patternList, getExclusionPatternList());
+        this.enforcer = ProductContentEnforcer.create(patternList, getExclusionPatternList());
         registerRGBProfile();
 
-        Path destinationFilePath = getColorPaletteFilePath();
-        if (!Files.exists(destinationFilePath)) {
-            URL colorPaletteFileURLFromSources = getClass().getClassLoader().getResource(colorPaletteFilePathFromSources);
-            if (colorPaletteFileURLFromSources == null) {
-                logger.log(Level.SEVERE, "The reader color palette file '" + colorPaletteFilePathFromSources + "' does not exist in the sources.");
+        if (StringUtils.isNullOrEmpty(colorPaletteFilePathFromSources)) {
+            this.colorPaletteFilePath = null;
+        } else {
+            int index = colorPaletteFilePathFromSources.lastIndexOf("/");
+            if (index >= 0) {
+                index++;
             } else {
-                try {
-                    FileHelper.copyFile(colorPaletteFileURLFromSources, destinationFilePath);
-                } catch (IOException ex) {
-                    logger.log(Level.SEVERE, String.format("Unable to copy the reader color palette '%s' from the sources.", colorPaletteFilePathFromSources), ex);
+                index = 0;
+            }
+            String colorPaletteFileName = colorPaletteFilePathFromSources.substring(index);
+            this.colorPaletteFilePath = SystemUtils.getAuxDataPath().resolve("color_palettes").resolve(colorPaletteFileName);
+            if (!Files.exists(this.colorPaletteFilePath)) {
+                URL colorPaletteFileURLFromSources = getClass().getClassLoader().getResource(colorPaletteFilePathFromSources);
+                if (colorPaletteFileURLFromSources == null) {
+                    logger.log(Level.SEVERE, "The reader color palette file '" + colorPaletteFilePathFromSources + "' does not exist in the sources.");
+                } else {
+                    try {
+                        FileHelper.copyFile(colorPaletteFileURLFromSources, this.colorPaletteFilePath);
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, String.format("Unable to copy the reader color palette '%s' from the sources.", colorPaletteFilePathFromSources), ex);
+                    }
                 }
             }
         }
     }
 
-    protected abstract String getColorPaletteFileName();
-
     public final Path getColorPaletteFilePath() {
-        return SystemUtils.getAuxDataPath().resolve("color_palettes").resolve(getColorPaletteFileName());
+        return this.colorPaletteFilePath;
     }
 
     @Override

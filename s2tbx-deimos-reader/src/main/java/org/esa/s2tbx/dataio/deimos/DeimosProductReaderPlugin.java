@@ -78,9 +78,4 @@ public class DeimosProductReaderPlugin extends BaseProductReaderPlugIn {
     protected void registerRGBProfile() {
         RGBImageProfileManager.getInstance().addProfile(new RGBImageProfile("DEIMOS-1", new String[] { "Red", "Green", "NIR" }));
     }
-
-    @Override
-    protected String getColorPaletteFileName() {
-        return DeimosProductReaderPlugin.COLOR_PALETTE_FILE_NAME;
-    }
 }
