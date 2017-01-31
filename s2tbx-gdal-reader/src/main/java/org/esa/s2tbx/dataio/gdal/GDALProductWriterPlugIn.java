@@ -37,7 +37,7 @@ public class GDALProductWriterPlugIn implements ProductWriterPlugIn {
 
     @Override
     public String[] getDefaultFileExtensions() {
-        return null;
+        return new String[0];
     }
 
     @Override
