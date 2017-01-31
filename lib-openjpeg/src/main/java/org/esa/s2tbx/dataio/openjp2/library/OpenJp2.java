@@ -19,9 +19,9 @@ public class OpenJp2 implements StdCallLibrary {
 
     static {
         Native.register(OpenJp2.class, JNA_LIBRARY_NAME);
-        if (!Native.isProtected()) {
+        /*if (!Native.isProtected()) {
             Native.setProtected(true);
-        }
+        }*/
     }
 
     /**
