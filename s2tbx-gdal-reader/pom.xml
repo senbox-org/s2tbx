@@ -105,6 +105,8 @@
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.dataio.gdal</publicPackage>
                         <publicPackage>org.esa.s2tbx.dataio.gdal.activator</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.gdal.reader.plugins</publicPackage>
+                        <publicPackage>org.esa.s2tbx.dataio.gdal.writer.plugins</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>

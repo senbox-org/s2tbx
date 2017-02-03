@@ -10,19 +10,10 @@ public enum GdalInstallInfo {
     INSTANCE;
 
     private Path binLocation;
-    private Path driversLocation;
-    private Path dataLocation;
-    private Path appsLocation;
-    private String[] fileTypes;
-    private String[] extensions;
     private GDALWriterPlugInListener listener;
-    private Integer writeDriverCount;
 
-    void setLocations(Path binLocation, Path appsLocation, Path driversLocation, Path dataLocation) {
+    synchronized void setLocations(Path binLocation, Path appsLocation, Path driversLocation, Path dataLocation) {
         this.binLocation = binLocation;
-        this.appsLocation = appsLocation;
-        this.driversLocation = driversLocation;
-        this.dataLocation = dataLocation;
         fireListener();
     }
 
@@ -31,34 +22,14 @@ public enum GdalInstallInfo {
         fireListener();
     }
 
-    public synchronized void setWriteDriverCount(int writeDriverCount) {
-        this.writeDriverCount = writeDriverCount;
-        fireListener();
-    }
-
     private void fireListener() {
-        if (this.writeDriverCount != null && this.listener != null) {
+        if (this.listener != null && isPresent()) {
             this.listener.writeDriversSuccessfullyInstalled();
             this.listener = null;
-            this.writeDriverCount = null;
         }
     }
 
-    public Path getBinLocation() {
-        return binLocation;
-    }
-
-    public Path getDriversLocation() { return driversLocation; }
-
-    public Path getAppsLocation() { return appsLocation; }
-
-    public Path getDataLocation() { return dataLocation; }
-
     public boolean isPresent() {
-        return binLocation != null && Files.exists(binLocation);
+        return this.binLocation != null && Files.exists(this.binLocation);
     }
-
-    public String[] getFormatNames() { return fileTypes; }
-
-    public String[] getExtensions() { return extensions; }
 }

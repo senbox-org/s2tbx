@@ -57,4 +57,8 @@ public class GDALDriverInfo {
         }
         return allowedDataType;
     }
+
+    public final String getWriterPluginFormatName() {
+        return "GDAL-" + this.driverName + "-WRITER";
+    }
 }

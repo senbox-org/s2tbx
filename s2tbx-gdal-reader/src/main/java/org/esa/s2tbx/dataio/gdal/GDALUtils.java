@@ -65,6 +65,13 @@ public class GDALUtils {
     }
 
     /**
+     *  Init the drivers if the GDAL library is installed.
+     */
+    public static void initDrivers() {
+        gdal.AllRegister(); // GDAL init drivers
+    }
+
+    /**
      *  Load the writer drivers if the GDAL library is installed.
      *
      * @return  The GDAL writer drivers
@@ -110,10 +117,26 @@ public class GDALUtils {
                 String extensionName = null;
                 String creationDataTypes = null;
 
-                while (it.hasNext()) {// && (extensionName == null || driverName == null || driverDisplayName == null)) {
+                String extension = null;
+                String extensions = null;
+                boolean canOpen = false;
+
+                while (it.hasNext()) {
                     Map.Entry<Object, Object> entry = it.next();
                     String key = entry.getKey().toString();
                     String value = entry.getValue().toString();
+
+                    if ("DCAP_OPEN".equalsIgnoreCase(key) && "YES".equalsIgnoreCase(value)) {
+                        canOpen = true;
+                    }
+                    if ("DMD_EXTENSION".equalsIgnoreCase(key)) {
+                        extension = value;
+                    }
+                    if ("DMD_EXTENSIONS".equalsIgnoreCase(key)) {
+                        extensions = value;
+                    }
+
+
                     if ("DCAP_CREATE".equalsIgnoreCase(key) && "YES".equalsIgnoreCase(value)) {
                         driverName = driver.getShortName();
                         driverDisplayName = driver.getLongName();
@@ -133,11 +156,20 @@ public class GDALUtils {
                         creationDataTypes = value;
                     }
                 }
+
+//                if (canOpen && (!StringUtils.isNullOrEmpty(extension) || !StringUtils.isNullOrEmpty(extensions))) {
+//                    System.out.println((i+1) + ". driver.name="+driver.getShortName()+"     drvier.longName="+driver.getLongName()+"      extension='"+extension+"'"+"    extensions='"+extensions+"'");
+//                } else {
+//                    System.out.println((i+1) + ". driver.name="+driver.getShortName());
+//                }
+
                 if ("Leveller".equalsIgnoreCase(driverName) && creationDataTypes == null) {
                     creationDataTypes = "Float32"; // the band type is always Float32. (http://www.gdal.org/frmt_leveller.html)
                 }
                 if (extensionName != null && driverName != null && driverDisplayName != null) {
                     if (!driversToIgnore.contains(driverName)) {
+                        System.out.println((i+1) + ". writer.driverName="+driverName+ "   writer.driverDisplayName="+driverDisplayName + "   extensionName="+extensionName+"  creationDataTypes="+creationDataTypes);
+
                         writerItems.add(new GDALDriverInfo("." + extensionName, driverName, driverDisplayName, creationDataTypes));
                     }
                 }
@@ -145,6 +177,8 @@ public class GDALUtils {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
             }
         }
+        System.out.println("----------writers.size="+writerItems.size());
+
         return writerItems.toArray(new GDALDriverInfo[writerItems.size()]);
     }
 }

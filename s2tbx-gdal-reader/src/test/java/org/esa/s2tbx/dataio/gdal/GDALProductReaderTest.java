@@ -1,9 +1,11 @@
 package org.esa.s2tbx.dataio.gdal;
 
+import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
+import org.esa.s2tbx.dataio.gdal.reader.plugins.JP2OpenJPEGDriverProductReaderPlugIn;
+import org.esa.s2tbx.dataio.gdal.reader.plugins.NITFDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.utils.TestUtil;
-import org.gdal.gdal.gdal;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,7 +24,6 @@ import static org.junit.Assert.*;
  * @author Jean Coravu
  */
 public class GDALProductReaderTest {
-    private GDALProductReaderPlugin plugIn;
     private Path gdalTestsFolderPath;
 
     @Before
@@ -31,8 +32,7 @@ public class GDALProductReaderTest {
         installer.install();
 
         if (GdalInstallInfo.INSTANCE.isPresent()) {
-            gdal.AllRegister(); // GDAL init drivers
-            this.plugIn = new GDALProductReaderPlugin();
+            GDALUtils.initDrivers();
             checkTestDirectoryExists();
         }
     }
@@ -42,7 +42,8 @@ public class GDALProductReaderTest {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             File file = this.gdalTestsFolderPath.resolve("S2A_4.jp2").toFile();
 
-            GDALProductReader reader = (GDALProductReader)this.plugIn.createReaderInstance();
+            JP2OpenJPEGDriverProductReaderPlugIn readerPlugin = new JP2OpenJPEGDriverProductReaderPlugIn();
+            GDALProductReader reader = (GDALProductReader)readerPlugin.createReaderInstance();
             Product finalProduct = reader.readProductNodes(file, null);
             assertNotNull(finalProduct.getSceneGeoCoding());
             assertEquals(3, finalProduct.getBands().length);
@@ -76,7 +77,8 @@ public class GDALProductReaderTest {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             File file = this.gdalTestsFolderPath.resolve("U_1005A.NTF").toFile();
 
-            GDALProductReader reader = (GDALProductReader)this.plugIn.createReaderInstance();
+            NITFDriverProductReaderPlugIn readerPlugin = new NITFDriverProductReaderPlugIn();
+            GDALProductReader reader = (GDALProductReader)readerPlugin.createReaderInstance();
             Product finalProduct = reader.readProductNodes(file, null);
             assertNull(finalProduct.getSceneGeoCoding());
             assertEquals(1, finalProduct.getBands().length);

@@ -1,9 +1,8 @@
 package org.esa.s2tbx.gdal;
 
-import org.esa.s2tbx.dataio.gdal.GDALProductWriter;
-import org.esa.s2tbx.dataio.gdal.GDALProductWriterPlugIn;
 import org.esa.s2tbx.dataio.gdal.GDALUtils;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
+import org.esa.s2tbx.dataio.gdal.writer.plugins.AbstractDriverProductWriterPlugIn;
 import org.esa.snap.core.dataio.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -24,6 +23,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
@@ -46,26 +48,22 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
     public void actionPerformed(ActionEvent event) {
         Product product = SnapApp.getDefault().getAppContext().getSelectedProduct();
         setProduct(product);
-        String formatName = GDALProductWriterPlugIn.FORMAT_NAME;
-        setFormatName(formatName);
-        exportProduct(product, formatName);
+        exportProduct(product);
     }
 
-    private Boolean exportProduct(Product product, String formatName) {
-        ProductWriter productWriter = findProductWriter(product, formatName);
-        if (productWriter == null) {
-            return null;
+    private Boolean exportProduct(Product product) {
+        List<ExportDriversFileFilter> filters = new ArrayList<ExportDriversFileFilter>();
+        Iterator<ProductWriterPlugIn> it = ProductIOPlugInManager.getInstance().getAllWriterPlugIns();
+        while (it.hasNext()) {
+            ProductWriterPlugIn productWriterPlugIn = it.next();
+            if (productWriterPlugIn instanceof AbstractDriverProductWriterPlugIn) {
+                GDALDriverInfo writerDriver = ((AbstractDriverProductWriterPlugIn)productWriterPlugIn).getWriterDriver();
+                String description = writerDriver.getDriverDisplayName() + " (*" + writerDriver.getExtensionName() + ")";
+                filters.add(new ExportDriversFileFilter(description, writerDriver));
+            }
         }
 
-        GDALProductWriterPlugIn plugIn = (GDALProductWriterPlugIn)productWriter.getWriterPlugIn();
-        GDALDriverInfo[] writerDrivers = plugIn.getWriterDrivers();
-        ExportDriversFileFilter[] filters = new ExportDriversFileFilter[writerDrivers.length];
-        for (int i=0; i< writerDrivers.length; i++) {
-            String description = writerDrivers[i].getDriverDisplayName() + " (*" + writerDrivers[i].getExtensionName() + ")";
-            filters[i] = new ExportDriversFileFilter(description, writerDrivers[i]);
-        }
-
-        final ProductFileChooser fileChooser = buildFileChooserDialog(product, formatName, false, null);
+        ProductFileChooser fileChooser = buildFileChooserDialog(product, false, null);
         fileChooser.addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
@@ -91,9 +89,10 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
             }
         });
 
-        for (int i=0; i<filters.length; i++) {
-            fileChooser.addChoosableFileFilter(filters[i]);
+        for (int i=0; i<filters.size(); i++) {
+            fileChooser.addChoosableFileFilter(filters.get(i));
         }
+
         int returnVal = fileChooser.showSaveDialog(SnapApp.getDefault().getMainFrame());
         if (returnVal != JFileChooser.APPROVE_OPTION || fileChooser.getSelectedFile() == null) {
             return null; // cancelled
@@ -126,6 +125,7 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
             return false;
         }
 
+        String formatName = selectedFileFilter.getDriverInfo().getWriterPluginFormatName();
         return exportProduct(exportProduct, newFile, formatName);
     }
 
@@ -159,24 +159,7 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
         return operation.getStatus();
     }
 
-    private ProductWriter findProductWriter(Product product, String formatName) {
-        final ProductWriter productWriter = ProductIO.getProductWriter(formatName);
-        if (productWriter == null) {
-            Dialogs.showError(getDisplayName(), MessageFormat.format("No writer found for format {0}.", formatName));
-            return null;
-        }
-        final EncodeQualification encodeQualification = productWriter.getWriterPlugIn().getEncodeQualification(product);
-        if (encodeQualification.getPreservation() == EncodeQualification.Preservation.UNABLE) {
-            Dialogs.showError(getDisplayName(), MessageFormat.format("Writing this product as {0} is not possible:\n"
-                            + encodeQualification.getInfoString(),
-                    formatName
-            ));
-            return null;
-        }
-        return productWriter;
-    }
-
-    private ProductFileChooser buildFileChooserDialog(Product product, String formatName, boolean useSubset, FileFilter filter) {
+    private ProductFileChooser buildFileChooserDialog(Product product, boolean useSubset, FileFilter filter) {
         Preferences preferences = SnapApp.getDefault().getPreferences();
         ProductFileChooser fc = new ProductFileChooser(new File(preferences.get(ProductOpener.PREFERENCES_KEY_LAST_PRODUCT_DIR, ".")));
         fc.setDialogType(JFileChooser.SAVE_DIALOG);
