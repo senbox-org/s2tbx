@@ -22,11 +22,13 @@ import java.util.Set;
  */
 public abstract class AbstractDriverProductReaderPlugIn implements ProductReaderPlugIn {
     private final Set<String> extensions;
+    private final String driverName;
     private final String driverDisplayName;
     private final String pluginFormatName;
 
     protected AbstractDriverProductReaderPlugIn(String driverName, String driverDisplayName) {
         this.extensions = new HashSet<String>();
+        this.driverName = driverName;
         this.driverDisplayName = driverDisplayName;
         this.pluginFormatName = "GDAL-" + driverName + "-READER";
     }
@@ -95,6 +97,10 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
 
     protected final void addExtensin(String extension) {
         this.extensions.add(extension);
+    }
+
+    public final String getDriverName() {
+        return driverName;
     }
 }
 

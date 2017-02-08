@@ -119,7 +119,6 @@ public class GDALProductWriter extends AbstractProductWriter {
             int bandIndex = sourceProduct.getBandIndex(sourceBand.getName());
             gdalBand = this.gdalDataset.GetRasterBand(bandIndex + 1);
             if (gdalBand == null) {
-                this.gdalDataset.AddBand(this.gdalDataType);
                 throw new NullPointerException("Failed creating the band with index " + bandIndex + " to export the product for driver '" + this.gdalDriver.getLongName() + "'.");
             }
             this.bandsMap.put(sourceBand, gdalBand);

@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.gdal.writer.plugins.AbstractDriverProductWriterPlugI
 import org.esa.snap.core.dataio.*;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.rcp.SnapApp;
 import org.esa.snap.rcp.actions.file.ExportProductAction;
 import org.esa.snap.rcp.actions.file.ProductFileChooser;
@@ -23,9 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
@@ -62,16 +61,28 @@ public class WriterPlugInExportProductAction extends ExportProductAction {
                 filters.add(new ExportDriversFileFilter(description, writerDriver));
             }
         }
-
+        if (filters.size() > 1) {
+            Comparator<ExportDriversFileFilter> comparator = new Comparator<ExportDriversFileFilter>() {
+                @Override
+                public int compare(ExportDriversFileFilter item1, ExportDriversFileFilter item2) {
+                    return item1.getDescription().compareToIgnoreCase(item2.getDescription());
+                }
+            };
+            Collections.sort(filters, comparator);
+        }
         ProductFileChooser fileChooser = buildFileChooserDialog(product, false, null);
         fileChooser.addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 ExportDriversFileFilter selectedFileFilter = (ExportDriversFileFilter) fileChooser.getFileFilter();
                 String fileName = enteredFileName;
-                int index = fileName.lastIndexOf(".");
-                if (index >= 0) {
-                    fileName = fileName.substring(0, index);
+                if (StringUtils.isNullOrEmpty(fileName)) {
+                    fileName = selectedFileFilter.getDriverInfo().getDriverDisplayName();
+                } else {
+                    int index = fileName.lastIndexOf(".");
+                    if (index >= 0) {
+                        fileName = fileName.substring(0, index);
+                    }
                 }
                 fileName += selectedFileFilter.getDriverInfo().getExtensionName();
                 BasicFileChooserUI basicFileChooserUI = (BasicFileChooserUI) fileChooser.getUI();

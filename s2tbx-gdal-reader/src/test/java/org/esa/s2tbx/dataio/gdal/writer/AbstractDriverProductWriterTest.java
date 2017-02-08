@@ -1,10 +1,13 @@
-package org.esa.s2tbx.dataio.gdal;
+package org.esa.s2tbx.dataio.gdal.writer;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.dataio.gdal.GDALInstaller;
+import org.esa.s2tbx.dataio.gdal.GDALUtils;
+import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
 import org.esa.s2tbx.dataio.gdal.activator.GDALDriverInfo;
 import org.esa.s2tbx.dataio.gdal.reader.GDALProductReader;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.*;
-import org.esa.s2tbx.dataio.gdal.writer.plugins.*;
+import org.esa.s2tbx.dataio.gdal.reader.plugins.AbstractDriverProductReaderPlugIn;
+import org.esa.s2tbx.dataio.gdal.writer.plugins.AbstractDriverProductWriterPlugIn;
 import org.esa.snap.core.dataio.ProductWriter;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.io.FileUtils;
@@ -24,48 +27,57 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
- * The system properties to set:
- * snap.reader.tests.data.dir : the test folder
- *
  * @author Jean Coravu
  */
-public class GDALProductWriterTest {
+public abstract class AbstractDriverProductWriterTest {
     private static Path testsFolderPath;
+
+    private final String driverName;
+    private final String fileExtension;
+    private final String driverCreationTypes;
+    private final AbstractDriverProductReaderPlugIn readerPlugIn;
+    private final AbstractDriverProductWriterPlugIn writerPlugIn;
+
+    protected AbstractDriverProductWriterTest(String driverName, String fileExtension, String driverCreationTypes, AbstractDriverProductReaderPlugIn readerPlugIn, AbstractDriverProductWriterPlugIn writerPlugIn) {
+        this.driverName = driverName;
+        this.fileExtension = fileExtension;
+        this.driverCreationTypes = driverCreationTypes;
+        this.readerPlugIn = readerPlugIn;
+        this.writerPlugIn = writerPlugIn;
+    }
 
     @BeforeClass
     public static void oneTimeSetUp() throws IOException {
-        Path temp = Files.createTempDirectory("_temp");
-        testsFolderPath = temp;
+        testsFolderPath = Files.createTempDirectory("_temp");
         if (!Files.exists(testsFolderPath)) {
-            fail("The test directory path '"+temp+"' is not valid.");
+            fail("The test directory path '"+testsFolderPath+"' is not valid.");
         }
     }
 
     @AfterClass
     public static void oneTimeTearDown() {
         if (!FileUtils.deleteTree(testsFolderPath.toFile())) {
-            fail("Unable to delete test directory");
+            fail("Unable to delete test directory.");
         }
     }
 
     @Before
-    public void setUp() throws Exception {
+    public final void setUp() throws Exception {
         GDALInstaller installer = new GDALInstaller();
         installer.install();
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             GDALUtils.initDrivers();
         }
     }
-
     @Test
     public final void testWriteFileOnDisk() throws IOException, FactoryException, TransformException {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
@@ -88,48 +100,42 @@ public class GDALProductWriterTest {
             driverNamesToIgnoreGeoCoding.add("RMF");
             driverNamesToIgnoreGeoCoding.add("MFF");
 
-            try {
-                List<DriverWriter> driversToTest = buildDriversToTestList();
+            GDALDriverInfo driverInfo = this.writerPlugIn.getWriterDriver();
 
-                for (int k=0; k<driversToTest.size(); k++) {
-                    DriverWriter driverWriterToTest = driversToTest.get(k);
-                    AbstractDriverProductWriterPlugIn writerPlugIn = driverWriterToTest.getWriterPlugIn();
-                    GDALDriverInfo driverInfo = writerPlugIn.getWriterDriver();
+            assertEquals(this.driverName, driverInfo.getDriverName());
+            assertEquals(this.driverName, this.readerPlugIn.getDriverName());
 
-                    assertEquals(driverWriterToTest.getFileExtension(), driverInfo.getExtensionName());
+            assertEquals(this.fileExtension, driverInfo.getExtensionName());
 
-                    checkDriverCreationTypes(driverWriterToTest, driverInfo);
-
-                    int gdalDataType = getBandDataTypeToSave(driverInfo);
-                    boolean canIgnore = driverNamesToIgnoreGeoCoding.contains(driverInfo.getDriverName());
-                    int bandDataType = GDALUtils.getBandDataType(gdalDataType);
-                    File file = new File(gdalTestsFolderPath.toFile(), "tempFile" + driverInfo.getExtensionName());
-                    try {
-                        file.delete();
-                        Product product = buildProductToSave(driverInfo, canIgnore, sceneRasterWidth, sceneRasterHeight, geoCodingToSave, bandDataType);
-
-                        checkSaveProductToFile(file, writerPlugIn, product);
-
-                        checkReadProductFromFile(file, driverWriterToTest.getReaderPlugIn(), product, canIgnore);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    } finally {
-                        file.delete();
-                    }
+            if (this.driverCreationTypes != null && driverInfo.getCreationDataTypes() != null) {
+                StringTokenizer str = new StringTokenizer(this.driverCreationTypes, " ");
+                while (str.hasMoreTokens()) {
+                    String gdalDataTypeName = str.nextToken();
+                    int gdalDataType = gdal.GetDataTypeByName(gdalDataTypeName);
+                    boolean result = driverInfo.canExportProduct(gdalDataType);
+                    assertTrue(result);
                 }
-            } finally {}
-        }
-    }
+            } else if (this.driverCreationTypes != null && driverInfo.getCreationDataTypes() == null) {
+                fail("The driver creation types does not match.");
+            } else if (this.driverCreationTypes == null && driverInfo.getCreationDataTypes() != null) {
+                fail("The driver creation types does not match.");
+            }
 
-    private static void checkDriverCreationTypes(DriverWriter driverWriterToTest, GDALDriverInfo driverInfo) {
-        String driverCreationTypes = driverWriterToTest.getDriverCreationTypes();
-        if (driverCreationTypes != null) {
-            StringTokenizer str = new StringTokenizer(driverCreationTypes, " ");
-            while (str.hasMoreTokens()) {
-                String gdalDataTypeName = str.nextToken();
-                int gdalDataType = gdal.GetDataTypeByName(gdalDataTypeName);
-                boolean result = driverInfo.canExportProduct(gdalDataType);
-                assertTrue(result);
+            int gdalDataType = getBandDataTypeToSave(driverInfo);
+            boolean canIgnore = driverNamesToIgnoreGeoCoding.contains(driverInfo.getDriverName());
+            int bandDataType = GDALUtils.getBandDataType(gdalDataType);
+            File file = new File(gdalTestsFolderPath.toFile(), this.driverName + driverInfo.getExtensionName());
+            try {
+                file.delete();
+                Product product = buildProductToSave(driverInfo, canIgnore, sceneRasterWidth, sceneRasterHeight, geoCodingToSave, bandDataType);
+
+                checkSaveProductToFile(file, this.writerPlugIn, product);
+
+                checkReadProductFromFile(file, this.readerPlugIn, product, canIgnore);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                file.delete();
             }
         }
     }
@@ -223,65 +229,5 @@ public class GDALProductWriterTest {
         assertEquals(savedProduct.getSceneRasterWidth(), finalProduct.getSceneRasterWidth());
         assertEquals(savedProduct.getSceneRasterHeight(), finalProduct.getSceneRasterHeight());
         assertEquals(savedProduct.getNumBands(), finalProduct.getNumBands());
-    }
-
-    private static class DriverWriter {
-        private final String driverName;
-        private final String fileExtension;
-        private final String driverCreationTypes;
-        private final AbstractDriverProductReaderPlugIn readerPlugIn;
-        private final AbstractDriverProductWriterPlugIn writerPlugIn;
-
-        DriverWriter(String driverName, String fileExtension, String driverCreationTypes, AbstractDriverProductReaderPlugIn readerPlugIn, AbstractDriverProductWriterPlugIn writerPlugIn) {
-            this.driverName = driverName;
-            this.fileExtension = fileExtension;
-            this.driverCreationTypes = driverCreationTypes;
-            this.readerPlugIn = readerPlugIn;
-            this.writerPlugIn = writerPlugIn;
-        }
-
-        public AbstractDriverProductReaderPlugIn getReaderPlugIn() {
-            return readerPlugIn;
-        }
-
-        public AbstractDriverProductWriterPlugIn getWriterPlugIn() {
-            return writerPlugIn;
-        }
-
-        public String getDriverName() {
-            return driverName;
-        }
-
-        public String getFileExtension() {
-            return fileExtension;
-        }
-
-        public String getDriverCreationTypes() {
-            return driverCreationTypes;
-        }
-    }
-
-    private static List<DriverWriter> buildDriversToTestList() {
-        List<DriverWriter> driversToTest = new ArrayList<DriverWriter>();
-        driversToTest.add(new DriverWriter("KEA", ".kea", "Byte Int16 UInt16 Int32 UInt32 Float32 Float64", new KEADriverProductReaderPlugIn(), new KEADriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("netCDF", ".nc", null, new NetCDFDriverProductReaderPlugIn(), new NetCDFDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("GTiff", ".tif", "Byte UInt16 Int16 UInt32 Int32 Float32 Float64 CInt16 CInt32 CFloat32 CFloat64", new GTiffDriverProductReaderPlugIn(), new GTiffDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("NITF", ".ntf", "Byte UInt16 Int16 UInt32 Int32 Float32", new NITFDriverProductReaderPlugIn(), new NITFDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("HFA", ".img", "Byte Int16 UInt16 Int32 UInt32 Float32 Float64 CFloat32 CFloat64", new HFADriverProductReaderPlugIn(), new HFADriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("BMP", ".bmp", "Byte", new BMPDriverProductReaderPlugIn(), new BMPDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("PCIDSK", ".pix", "Byte UInt16 Int16 Float32 CInt16 CFloat32", new PCIDSKDriverProductReaderPlugIn(), new PCIDSKDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("ILWIS", ".mpr", "Byte Int16 Int32 Float64", new ILWISDriverProductReaderPlugIn(), new ILWISDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("SGI", ".rgb", "Byte", new SGIDriverProductReaderPlugIn(), new SGIDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("RMF", ".rsw", "Byte Int16 Int32 Float64", new RMFDriverProductReaderPlugIn(), new RMFDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("RST", ".rst", "Byte Int16 Float32", new RSTDriverProductReaderPlugIn(), new RSTDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("GSBG", ".grd", "Byte Int16 UInt16 Float32", new GSBGDriverProductReaderPlugIn(), new GSBGDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("GS7BG", ".grd", "Byte Int16 UInt16 Float32 Float64", new GS7BGDriverProductReaderPlugIn(), new GS7BGDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("PNM", ".pnm", "Byte UInt16", new PNMDriverProductReaderPlugIn(), new PNMDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("MFF", ".hdr", "Byte UInt16 Float32 CInt16 CFloat32", new MFFDriverProductReaderPlugIn(), new MFFDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("BT", ".bt", "Int16 Int32 Float32", new BTDriverProductReaderPlugIn(), new BTDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("GTX", ".gtx", "Float32", new GTXDriverProductReaderPlugIn(), new GTXDriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("KRO", ".kro", "Byte UInt16 Float32", new KRODriverProductReaderPlugIn(), new KRODriverProductWriterPlugIn()));
-        driversToTest.add(new DriverWriter("SAGA", ".sdat", "Byte Int16 UInt16 Int32 UInt32 Float32 Float64", new SAGADriverProductReaderPlugIn(), new SAGADriverProductWriterPlugIn()));
-        return driversToTest;
     }
 }
