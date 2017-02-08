@@ -15,7 +15,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Jean Coravu
  */
-public class JP2OpenJPEGDriverProductReaderTest extends AbstractDriverProductReaderTest {
+public class JP2OpenJPEGDriverProductReaderTest extends AbstractTestDriverProductReader {
 
     public JP2OpenJPEGDriverProductReaderTest() {
     }

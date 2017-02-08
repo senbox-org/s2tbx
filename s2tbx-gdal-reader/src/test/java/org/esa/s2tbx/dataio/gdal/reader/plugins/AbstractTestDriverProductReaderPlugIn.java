@@ -6,6 +6,7 @@ import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
 import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
 import org.esa.snap.core.util.io.SnapFileFilter;
+import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,22 +14,23 @@ import java.io.File;
 import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Jean Coravu
  */
-public class AbstractDriverProductReaderPlugInTest {
+public abstract class AbstractTestDriverProductReaderPlugIn {
     private final AbstractDriverProductReaderPlugIn readerPlugIn;
     private final Set<String> extensions;
     private final String driverName;
 
-    protected AbstractDriverProductReaderPlugInTest(String driverName, AbstractDriverProductReaderPlugIn readerPlugIn) {
+    protected AbstractTestDriverProductReaderPlugIn(String driverName, AbstractDriverProductReaderPlugIn readerPlugIn) {
         this.driverName = driverName;
         this.readerPlugIn = readerPlugIn;
         this.extensions = new HashSet<String>();
     }
 
-    protected AbstractDriverProductReaderPlugInTest(String extension, String driverName, AbstractDriverProductReaderPlugIn readerPlugIn) {
+    protected AbstractTestDriverProductReaderPlugIn(String extension, String driverName, AbstractDriverProductReaderPlugIn readerPlugIn) {
         this(driverName, readerPlugIn);
 
         addExtensin(extension);
@@ -36,10 +38,14 @@ public class AbstractDriverProductReaderPlugInTest {
 
     @Before
     public final void setUp() throws Exception {
-        GDALInstaller installer = new GDALInstaller();
-        installer.install();
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALUtils.initDrivers();
+        assumeTrue(TestUtil.testdataAvailable());
+
+        if (!GdalInstallInfo.INSTANCE.isPresent()) {
+            GDALInstaller installer = new GDALInstaller();
+            installer.install();
+            if (GdalInstallInfo.INSTANCE.isPresent()) {
+                GDALUtils.initDrivers();
+            }
         }
     }
 

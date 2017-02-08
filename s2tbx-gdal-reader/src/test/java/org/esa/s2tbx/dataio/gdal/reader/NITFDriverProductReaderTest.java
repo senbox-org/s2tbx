@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.JP2OpenJPEGDriverProductReaderPlugIn;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.NITFDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Jean Coravu
  */
-public class NITFDriverProductReaderTest extends AbstractDriverProductReaderTest {
+public class NITFDriverProductReaderTest extends AbstractTestDriverProductReader {
 
     public NITFDriverProductReaderTest() {
     }

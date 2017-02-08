@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.PCIDSKDriverProductReaderPlugIn;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.PNMDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -16,7 +15,7 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Jean Coravu
  */
-public class PNMDriverProductReaderTest extends AbstractDriverProductReaderTest {
+public class PNMDriverProductReaderTest extends AbstractTestDriverProductReader {
 
     public PNMDriverProductReaderTest() {
     }

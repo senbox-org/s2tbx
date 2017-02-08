@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * The system properties to set:
@@ -19,20 +20,23 @@ import static org.junit.Assert.fail;
  *
  * @author Jean Coravu
  */
-public abstract class AbstractDriverProductReaderTest {
+public abstract class AbstractTestDriverProductReader {
     protected Path gdalTestsFolderPath;
 
-    protected AbstractDriverProductReaderTest() {
+    protected AbstractTestDriverProductReader() {
     }
 
     @Before
     public void setUp() throws Exception {
-        GDALInstaller installer = new GDALInstaller();
-        installer.install();
+        assumeTrue(TestUtil.testdataAvailable());
 
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALUtils.initDrivers();
-            checkTestDirectoryExists();
+        if (!GdalInstallInfo.INSTANCE.isPresent()) {
+            GDALInstaller installer = new GDALInstaller();
+            installer.install();
+            if (GdalInstallInfo.INSTANCE.isPresent()) {
+                GDALUtils.initDrivers();
+                checkTestDirectoryExists();
+            }
         }
     }
 

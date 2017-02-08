@@ -3,7 +3,7 @@ package org.esa.s2tbx.dataio.gdal.writer.plugins;
 /**
  * @author Jean Coravu
  */
-public class PCIDSKDriverProductWriterPlugInTest extends AbstractDriverProductWriterPlugInTest {
+public class PCIDSKDriverProductWriterPlugInTest extends AbstractTestDriverProductWriterPlugIn {
 
     public PCIDSKDriverProductWriterPlugInTest() {
         super("PCIDSK", new PCIDSKDriverProductWriterPlugIn());

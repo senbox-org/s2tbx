@@ -1,10 +1,13 @@
 package org.esa.s2tbx.dataio.gdal;
 
+import org.esa.snap.utils.TestUtil;
 import org.junit.Test;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Jean Coravu
@@ -16,6 +19,8 @@ public class GDALInstallerTest {
 
     @Test
     public void testInstall() {
+        assumeTrue(TestUtil.testdataAvailable());
+
         try {
             GDALInstaller installer = new GDALInstaller();
             installer.install();

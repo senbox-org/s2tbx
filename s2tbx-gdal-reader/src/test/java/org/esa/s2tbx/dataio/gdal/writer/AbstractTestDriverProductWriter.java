@@ -11,6 +11,7 @@ import org.esa.s2tbx.dataio.gdal.writer.plugins.AbstractDriverProductWriterPlugI
 import org.esa.snap.core.dataio.ProductWriter;
 import org.esa.snap.core.datamodel.*;
 import org.esa.snap.core.util.io.FileUtils;
+import org.esa.snap.utils.TestUtil;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.geotools.referencing.CRS;
@@ -34,11 +35,12 @@ import java.util.StringTokenizer;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Jean Coravu
  */
-public abstract class AbstractDriverProductWriterTest {
+public abstract class AbstractTestDriverProductWriter {
     private static Path testsFolderPath;
 
     private final String driverName;
@@ -47,7 +49,7 @@ public abstract class AbstractDriverProductWriterTest {
     private final AbstractDriverProductReaderPlugIn readerPlugIn;
     private final AbstractDriverProductWriterPlugIn writerPlugIn;
 
-    protected AbstractDriverProductWriterTest(String driverName, String fileExtension, String driverCreationTypes, AbstractDriverProductReaderPlugIn readerPlugIn, AbstractDriverProductWriterPlugIn writerPlugIn) {
+    protected AbstractTestDriverProductWriter(String driverName, String fileExtension, String driverCreationTypes, AbstractDriverProductReaderPlugIn readerPlugIn, AbstractDriverProductWriterPlugIn writerPlugIn) {
         this.driverName = driverName;
         this.fileExtension = fileExtension;
         this.driverCreationTypes = driverCreationTypes;
@@ -72,17 +74,19 @@ public abstract class AbstractDriverProductWriterTest {
 
     @Before
     public final void setUp() throws Exception {
-        GDALInstaller installer = new GDALInstaller();
-        installer.install();
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALUtils.initDrivers();
+        assumeTrue(TestUtil.testdataAvailable());
+
+        if (!GdalInstallInfo.INSTANCE.isPresent()) {
+            GDALInstaller installer = new GDALInstaller();
+            installer.install();
+            if (GdalInstallInfo.INSTANCE.isPresent()) {
+                GDALUtils.initDrivers();
+            }
         }
     }
     @Test
     public final void testWriteFileOnDisk() throws IOException, FactoryException, TransformException {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
-            Path gdalTestsFolderPath = this.testsFolderPath;
-
             int sceneRasterWidth = 20;
             int sceneRasterHeight = 30;
             double originX = 0.0d;
@@ -124,7 +128,7 @@ public abstract class AbstractDriverProductWriterTest {
             int gdalDataType = getBandDataTypeToSave(driverInfo);
             boolean canIgnore = driverNamesToIgnoreGeoCoding.contains(driverInfo.getDriverName());
             int bandDataType = GDALUtils.getBandDataType(gdalDataType);
-            File file = new File(gdalTestsFolderPath.toFile(), this.driverName + driverInfo.getExtensionName());
+            File file = new File(this.testsFolderPath.toFile(), this.driverName + driverInfo.getExtensionName());
             try {
                 file.delete();
                 Product product = buildProductToSave(driverInfo, canIgnore, sceneRasterWidth, sceneRasterHeight, geoCodingToSave, bandDataType);

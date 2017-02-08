@@ -6,7 +6,7 @@ import org.esa.s2tbx.dataio.gdal.writer.plugins.NetCDFDriverProductWriterPlugIn;
 /**
  * @author Jean Coravu
  */
-public class NetCDFDriverProductWriterTest extends AbstractDriverProductWriterTest {
+public class NetCDFDriverProductWriterTest extends AbstractTestDriverProductWriter {
 
     public NetCDFDriverProductWriterTest() {
         super("netCDF", ".nc", null, new NetCDFDriverProductReaderPlugIn(), new NetCDFDriverProductWriterPlugIn());

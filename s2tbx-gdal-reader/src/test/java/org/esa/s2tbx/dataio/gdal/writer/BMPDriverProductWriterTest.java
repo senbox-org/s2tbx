@@ -6,7 +6,7 @@ import org.esa.s2tbx.dataio.gdal.writer.plugins.BMPDriverProductWriterPlugIn;
 /**
  * @author Jean Coravu
  */
-public class BMPDriverProductWriterTest extends AbstractDriverProductWriterTest {
+public class BMPDriverProductWriterTest extends AbstractTestDriverProductWriter {
 
     public BMPDriverProductWriterTest() {
         super("BMP", ".bmp", "Byte", new BMPDriverProductReaderPlugIn(), new BMPDriverProductWriterPlugIn());

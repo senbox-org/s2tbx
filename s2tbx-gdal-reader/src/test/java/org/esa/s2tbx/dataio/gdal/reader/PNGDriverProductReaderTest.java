@@ -2,7 +2,6 @@ package org.esa.s2tbx.dataio.gdal.reader;
 
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.PNGDriverProductReaderPlugIn;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.PNMDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.junit.Test;
@@ -16,7 +15,7 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Jean Coravu
  */
-public class PNGDriverProductReaderTest extends AbstractDriverProductReaderTest {
+public class PNGDriverProductReaderTest extends AbstractTestDriverProductReader {
 
     public PNGDriverProductReaderTest() {
     }

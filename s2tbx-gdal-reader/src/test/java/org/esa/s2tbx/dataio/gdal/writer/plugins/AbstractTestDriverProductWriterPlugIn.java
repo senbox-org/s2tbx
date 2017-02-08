@@ -8,6 +8,7 @@ import org.esa.snap.core.dataio.ProductIOPlugInManager;
 import org.esa.snap.core.dataio.ProductWriterPlugIn;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.util.io.SnapFileFilter;
+import org.esa.snap.utils.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,25 +19,30 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * @author Jean Coravu
  */
-public abstract class AbstractDriverProductWriterPlugInTest {
+public abstract class AbstractTestDriverProductWriterPlugIn {
     private final AbstractDriverProductWriterPlugIn writerPlugIn;
     private final String driverName;
 
-    protected AbstractDriverProductWriterPlugInTest(String driverName, AbstractDriverProductWriterPlugIn writerPlugIn) {
+    protected AbstractTestDriverProductWriterPlugIn(String driverName, AbstractDriverProductWriterPlugIn writerPlugIn) {
         this.driverName = driverName;
         this.writerPlugIn = writerPlugIn;
     }
 
     @Before
     public void setUp() throws Exception {
-        GDALInstaller installer = new GDALInstaller();
-        installer.install();
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALUtils.initDrivers();
+        assumeTrue(TestUtil.testdataAvailable());
+
+        if (!GdalInstallInfo.INSTANCE.isPresent()) {
+            GDALInstaller installer = new GDALInstaller();
+            installer.install();
+            if (GdalInstallInfo.INSTANCE.isPresent()) {
+                GDALUtils.initDrivers();
+            }
         }
     }
 

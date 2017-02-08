@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.KRODriverProductReaderPlugIn;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.RSTDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Jean Coravu
  */
-public class RSTDriverProductReaderTest extends AbstractDriverProductReaderTest {
+public class RSTDriverProductReaderTest extends AbstractTestDriverProductReader {
 
     public RSTDriverProductReaderTest() {
     }

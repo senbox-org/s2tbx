@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.GS7BGDriverProductReaderPlugIn;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.GSBGDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -16,7 +15,7 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Jean Coravu
  */
-public class GSBGDriverProductReaderTest extends AbstractDriverProductReaderTest {
+public class GSBGDriverProductReaderTest extends AbstractTestDriverProductReader {
 
     public GSBGDriverProductReaderTest() {
     }

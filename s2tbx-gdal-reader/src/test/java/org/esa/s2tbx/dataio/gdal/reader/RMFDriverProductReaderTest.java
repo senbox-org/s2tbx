@@ -1,7 +1,6 @@
 package org.esa.s2tbx.dataio.gdal.reader;
 
 import org.esa.s2tbx.dataio.gdal.GdalInstallInfo;
-import org.esa.s2tbx.dataio.gdal.reader.plugins.PCIDSKDriverProductReaderPlugIn;
 import org.esa.s2tbx.dataio.gdal.reader.plugins.RMFDriverProductReaderPlugIn;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
@@ -16,7 +15,7 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Jean Coravu
  */
-public class RMFDriverProductReaderTest extends AbstractDriverProductReaderTest {
+public class RMFDriverProductReaderTest extends AbstractTestDriverProductReader {
 
     public RMFDriverProductReaderTest() {
     }
