@@ -19,8 +19,6 @@ public class GDALInstallerTest {
 
     @Test
     public void testInstall() {
-        assumeTrue(TestUtil.testdataAvailable());
-
         try {
             GDALInstaller installer = new GDALInstaller();
             installer.install();
