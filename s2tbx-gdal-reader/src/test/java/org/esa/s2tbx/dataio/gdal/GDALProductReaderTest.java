@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * The system properties to set:
@@ -27,13 +28,17 @@ public class GDALProductReaderTest {
 
     @Before
     public void setUp() throws Exception {
-        GDALInstaller installer = new GDALInstaller();
-        installer.install();
+        assumeTrue(TestUtil.testdataAvailable());
 
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
-            gdal.AllRegister(); // GDAL init drivers
-            this.plugIn = new GDALProductReaderPlugin();
-            checkTestDirectoryExists();
+        if (!GdalInstallInfo.INSTANCE.isPresent()) {
+            GDALInstaller installer = new GDALInstaller();
+            installer.install();
+
+            if (GdalInstallInfo.INSTANCE.isPresent()) {
+                gdal.AllRegister(); // GDAL init drivers
+                this.plugIn = new GDALProductReaderPlugin();
+                checkTestDirectoryExists();
+            }
         }
     }
 

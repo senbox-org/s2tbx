@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * The system properties to set:
@@ -60,13 +61,17 @@ public class GDALProductWriterTest {
 
     @Before
     public void setUp() throws Exception {
-        GDALInstaller installer = new GDALInstaller();
-        installer.install();
+        assumeTrue(TestUtil.testdataAvailable());
 
-        if (GdalInstallInfo.INSTANCE.isPresent()) {
-            GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
-            this.writerPlugIn = new GDALProductWriterPlugIn(writerDrivers);
-            this.readerPlugIn = new GDALProductReaderPlugin();
+        if (!GdalInstallInfo.INSTANCE.isPresent()) {
+            GDALInstaller installer = new GDALInstaller();
+            installer.install();
+
+            if (GdalInstallInfo.INSTANCE.isPresent()) {
+                GDALDriverInfo[] writerDrivers = GDALUtils.loadAvailableWriterDrivers();
+                this.writerPlugIn = new GDALProductWriterPlugIn(writerDrivers);
+                this.readerPlugIn = new GDALProductReaderPlugin();
+            }
         }
     }
 
