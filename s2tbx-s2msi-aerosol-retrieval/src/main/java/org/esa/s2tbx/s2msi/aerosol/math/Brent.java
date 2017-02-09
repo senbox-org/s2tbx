@@ -34,15 +34,13 @@ public class Brent {
         double w = bx;
         double v = bx;
         double fw = fun.f(x);
-        double fv = fun.f(x);
-        double fx = fun.f(x);
+        double fv = fw;
+        double fx = fw;
         for (int iter = 0; iter < ITMAX; iter++) {
             double xm = 0.5 * (a + b);
             double tol1 = tol * Math.abs(x) + ZEPS;
             double tol2 = 2.0 * tol1;
-//            System.out.println("x, xm = " + x + ", " + xm);
             if (Math.abs(x - xm) <= (tol2 - 0.5 * (b - a))) {
-//                System.out.println("iter = " + iter);
                 return new double[]{x, fx};
             }
             if (Math.abs(e) > tol1) {

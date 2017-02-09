@@ -4,6 +4,8 @@ import org.esa.s2tbx.s2msi.aerosol.InputPixelData;
 import org.esa.s2tbx.s2msi.aerosol.S2AerosolConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.snap.core.util.Guardian;
+import org.esa.snap.core.util.math.FracIndex;
+import org.esa.snap.core.util.math.IntervalPartition;
 import org.esa.snap.core.util.math.LookupTable;
 import org.esa.snap.core.util.math.MathUtils;
 
@@ -57,20 +59,31 @@ public class S2LutUtils {
         final double sza = ipd.geom.sza;
         final double vza = ipd.geom.vza;
         final double raa = ipd.geom.razi;
-        final double altitude = 1.0; // todo: get from Idepix product
-        final double at = 0.0; // get started with this
+        final double altitude = ipd.elevation / 1000.0;
+        final double aerosolType = 3.0; // get started with this
 
         final double wvl_0 = S2LutConstants.dimValues[10][0];
         final double rhoPathLutResultIndex = 1.0;
-        double lPath = s2Lut.getValue(wv, aod, sza, vza, raa, altitude, at, wvl_0, rhoPathLutResultIndex);
+
+        final FracIndex[] fracIndices = FracIndex.createArray(9);
+        final IntervalPartition[] partitions = s2Lut.getDimensions();
+        final double[] coordinates = new double[]{wv, aod, sza, vza, raa, altitude, aerosolType, wvl_0, rhoPathLutResultIndex};
+
+        for (int i = 0; i < 9; i++) {
+            LookupTable.computeFracIndex(partitions[i], coordinates[i], fracIndices[i]);
+        }
+
+        double[] v = new double[1 << fracIndices.length];
+        double lPath = s2Lut.getValue(fracIndices, v);
         // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));      // TODO: GK to check if this factor is correct
         double lPath0 = lPath;
-        int iAot = 0;
+        int iAot = -1;
         while (iAot < aot.length - 1 && lPath < ipd.toaReflec[0]) {
             lPath0 = lPath;
             iAot++;
-            final double aotLut = s2Lut.getDimension(1).getSequence()[iAot];
-            lPath = s2Lut.getValue(wv, aotLut, sza, vza, raa, altitude, at, wvl_0, rhoPathLutResultIndex);
+            fracIndices[1].i = iAot;
+            fracIndices[1].f = 0.0;
+            lPath = s2Lut.getValue(fracIndices, v);
             // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));  // TODO: GK to check if this factor is correct (s.a.)
         }
         if (iAot == 0) {
@@ -82,8 +95,7 @@ public class S2LutUtils {
         return aot[iAot - 1] + (aot[iAot] - aot[iAot - 1]) * (ipd.toaReflec[0] - lPath0) / (lPath - lPath0);
     }
 
-    //    public static synchronized void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, double tau) {
-    public static void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, int doy, double tau) {
+    public static void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, double distanceCorrection, double tau) {
         // todo: ugly that void is returned here
 
         Guardian.assertNotNull("InputPixelData.diffuseFrac[][]", ipd.diffuseFrac);
@@ -102,30 +114,54 @@ public class S2LutUtils {
         // "path_radiance", "view_trans_diff", "spherical_albedo", "global_irradiance",
         // "view_trans_dir", "sun_trans_dir", "toa_irradiance"
 
-        final double rhoPathLutResultIndex = 1.0;
-        final double viewTransDiffResultIndex = 2.0;
-        final double sphericalAlbedoResultIndex = 3.0;
-        final double globalIrradianceResultIndex = 4.0;
-        final double viewTransDirResultIndex = 5.0;
-        final double sunTransDirResultIndex = 6.0;
-        final double toaIrradianceResultIndex = 7.0;
+        final double cosineOfSZA = Math.cos(Math.toRadians(sza));
+        final double cosineOfVZA = Math.cos(Math.toRadians(vza));
+//            # Ozone:
+//            # eq. 6-1
+//            m_corr_ozone = 0      // later
+//            final double mCorrOzone = 0.0;
+        final double airMassOzoneCorrection = ozone - OZONE_STANDARD;
+        //            # eq. 6-9
+        final double mCorrRay = (surfPressure - PRESSURE_STANDARD) / PRESSURE_STANDARD;
+//            # Stratospheric aerosol:
+//            # eq. 6-4
+//            # if AOD < 0.03, we don't do anything -->
+//            tau_strat_aero_v = 1.0
+        final double tauStratAeroView = 1.0;
+        final double tauStratAeroSun = 1.0;
+//            # eq. 6-12
+        final double cosScattAngle = cosineOfSZA * cosineOfVZA +
+                Math.sin(Math.toRadians(sza)) * Math.sin(Math.toRadians(vza)) * Math.cos(Math.toRadians(raa));
+        final double rayPhaseFunc = 0.75 * (1.0 - cosScattAngle * cosScattAngle);
+
+        final FracIndex[] fracIndexes = FracIndex.createArray(8);
+        final IntervalPartition[] partitions = s2Lut.getDimensions();
+        final double[] coordinates = new double[]{wv, tau, sza, vza, raa, altitude, aerosolType};
+
+        for (int i = 0; i < 7; i++) {
+            LookupTable.computeFracIndex(partitions[i], coordinates[i], fracIndexes[i]);
+        }
 
         for (int iWvl = 0; iWvl < ipd.nSpecWvl; iWvl++) {
-            double lPath0 = s2Lut.getValue(wv, tau, sza, vza, raa, altitude, aerosolType, iWvl, rhoPathLutResultIndex);
-            // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));   // TODO: GK to check if this factor is correct (s.a.)
-            double viewTransDiff = s2Lut.getValue(wv, tau, sza, vza, raa, altitude, aerosolType, iWvl, viewTransDiffResultIndex);
-            double viewTransDir = s2Lut.getValue(wv, tau, sza, vza, raa, altitude, aerosolType, iWvl, viewTransDirResultIndex);
-            double sunTransDir = s2Lut.getValue(wv, tau, sza, vza, raa, altitude, aerosolType, iWvl, sunTransDirResultIndex);
-            double toaIrradiance = s2Lut.getValue(wv, tau, sza, vza, raa, altitude, aerosolType, iWvl, toaIrradianceResultIndex);
-            final double tupTdown = viewTransDiff + viewTransDir; // GK
-            final double spherAlb = s2Lut.getValue(wv, tau, sza, vza, raa, altitude, aerosolType, iWvl, sphericalAlbedoResultIndex);
-            final double eg0 = s2Lut.getValue(wv, tau, sza, vza, raa, altitude, aerosolType, iWvl, globalIrradianceResultIndex);
+            LookupTable.computeFracIndex(partitions[7], iWvl, fracIndexes[7]);
+            final double[] atmosphericParameters = s2Lut.getValues(fracIndexes);
+            // "path_radiance", "view_trans_diff", "spherical_albedo", "global_irradiance",
+            // "view_trans_dir", "sun_trans_dir", "toa_irradiance"
+            final double lPath0 = atmosphericParameters[0];
+            final double viewTransDiff = atmosphericParameters[1];
+            final double spherAlb = atmosphericParameters[2];
+            final double eg0 = atmosphericParameters[3];
+            final double viewTransDir = atmosphericParameters[4];
+            final double sunTransDir = atmosphericParameters[5];
+            double toaIrradiance = atmosphericParameters[6];
 
-            final double distanceCorr = getDistanceCorr(doy);
-//            final double lToa = ipd.getToaReflec()[iWvl];
+
+            // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));   // TODO: GK to check if this factor is correct (s.a.)
+            final double tupTdown = viewTransDiff + viewTransDir; // GK
+
             final double reflToa = ipd.getToaReflec()[iWvl];
 
-            final double lToa = convertReflToRad(reflToa, iWvl, sza, julianDay) / distanceCorr;
+            final double lToa = convertReflToRad(reflToa, iWvl, sza, julianDay) / distanceCorrection;
             ;  // convert to radiance
 
             final double absorptionCoefficient = OZONE_ABSORPTION_COEFFICENTS_PER_S2_BAND[iWvl];
@@ -133,30 +169,17 @@ public class S2LutUtils {
             // todo: implement here as in Python S2 AC, radToa is l_toa below:
 //            e_s *= cos_sza
             toaIrradiance /= 10000;
-            final double cosineOfSZA = Math.cos(Math.toRadians(sza));
-            final double cosineOfVZA = Math.cos(Math.toRadians(vza));
             toaIrradiance *= cosineOfSZA;
 //
 //            # Ozone:
-//            # eq. 6-1
-//            m_corr_ozone = 0      // later
-//            final double mCorrOzone = 0.0;
-            final double airMassOzoneCorrection = ozone - OZONE_STANDARD;
 //            # eq. 6-2
             final double tauOzoneSun = Math.exp(-(absorptionCoefficient * airMassOzoneCorrection / cosineOfSZA));
 //            # eq. 6-3
 //            tau_ozone_v = 1.0
 //            final double tauOzoneV = 1.0;
             final double tauOzoneView = Math.exp(-(absorptionCoefficient * airMassOzoneCorrection / cosineOfVZA));
-//            # Stratospheric aerosol:
-//            # eq. 6-4
-//            # if AOD < 0.03, we don't do anything -->
-//            tau_strat_aero_v = 1.0
-            final double tauStratAeroView = 1.0;
-            final double tauStratAeroSun = 1.0;
-//
-//            # eq. 6-9
-            final double mCorrRay = (surfPressure - PRESSURE_STANDARD) / PRESSURE_STANDARD;
+////            # Stratospheric aerosol:
+
 //            m_corr_ray = 0
 //            final double mCorrRay = 0.0;
 //            # eq. 6-10
@@ -170,20 +193,14 @@ public class S2LutUtils {
             final double tauRayView = Math.exp(-(0.5 * kRay * mCorrRay / cosineOfVZA));
 //            tau_ray_v = 1.0
 //            final double tauRayV = 1.0;
-//
-//            # eq. 6-12
-//            cos_scatt_angle = cos_sza * cos_vza + sin_sza * sin_vza * cos_relazi
-            final double cosScattAngle = Math.cos(Math.toRadians(sza)) * Math.cos(Math.toRadians(vza)) +
-                    Math.sin(Math.toRadians(sza)) * Math.sin(Math.toRadians(vza)) * Math.cos(Math.toRadians(raa));
 
-//            ray_phase_func = 0.75 * (1.0 - cos_scatt_angle * cos_scatt_angle)
-            final double rayPhaseFunc = 0.75 * (1.0 - cosScattAngle * cosScattAngle);
 //
 //            # eq. 6-13
 //            l_path_toa_tosa = (e_s * k_ray * m_corr_ray * tau_ray_s * ray_phase_func) / (
 //                    4.0 * np.pi * cos_sza * cos_vza)
             final double lPathToaTosa = (toaIrradiance * kRay * mCorrRay * tauRaySun * rayPhaseFunc) /
-                    (4.0 * Math.PI * Math.cos(Math.toRadians(sza)) * Math.cos(Math.toRadians(vza)));
+                    (4.0 * Math.PI * cosineOfSZA * cosineOfVZA);
+//                    (4.0 * Math.PI * Math.cos(Math.toRadians(sza)) * Math.cos(Math.toRadians(vza)));
 //
 //            # eq. 6-14
             final double tosaIrradiance = toaIrradiance * tauRaySun * tauOzoneSun * tauStratAeroSun;
@@ -225,7 +242,7 @@ public class S2LutUtils {
         }
     }
 
-    private static double getDistanceCorr(int doy) {
+    public static double getDistanceCorr(int doy) {
         final double gamma = 2.0 * Math.PI * (doy - 1) / 365.0;
         return 1.000110 + 0.034221 * Math.cos(gamma) + 0.001280 * Math.sin(gamma) +
                 0.000719 * Math.cos(2.0 * gamma) + 0.000077 * Math.sin(2.0 * gamma);

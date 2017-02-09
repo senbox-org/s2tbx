@@ -95,7 +95,7 @@ public class S2AerosolOp extends Operator {
     private String[] auxRasterDataNodeNames;
 
     private double julianDay;
-    private int dayOfYear;
+    private double distanceCorrection;
 
 //    private static int _xdebug = 20;
 //    private static int _ydebug = 70;
@@ -106,7 +106,8 @@ public class S2AerosolOp extends Operator {
         productType = sourceProduct.getProductType() + "_AOT";
 
         julianDay = sourceProduct.getStartTime().getMJD();
-        dayOfYear = sourceProduct.getStartTime().getAsCalendar().get(Calendar.DAY_OF_YEAR);
+        final int dayOfYear = sourceProduct.getStartTime().getAsCalendar().get(Calendar.DAY_OF_YEAR);
+        distanceCorrection = S2LutUtils.getDistanceCorr(dayOfYear);
 
         initRasterDimensions(sourceProduct, scale);
 
@@ -186,7 +187,7 @@ public class S2AerosolOp extends Operator {
                                                     inPixField,
                                                     s2Lut,
                                                     julianDay,
-                                                    dayOfYear,
+                                                    distanceCorrection,
                                                     aotGrid,
                                                     specWeights,
                                                     soilSurfSpec,
