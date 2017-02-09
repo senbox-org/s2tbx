@@ -88,6 +88,6 @@ public class S2IdepixConstants {
 
     public static final String INPUT_INCONSISTENCY_ERROR_MESSAGE =
             "Selected cloud screening algorithm cannot be used with given input product. \n\n" +
-                    "Valid are: MERIS, VGT, AATSR, AVHRR, MODIS, Landsat8, SeaWIFS, colocated MERIS/AATSR L1b products.";
+                    "Input product must be S2 MSI L1C product.";
 
 }
