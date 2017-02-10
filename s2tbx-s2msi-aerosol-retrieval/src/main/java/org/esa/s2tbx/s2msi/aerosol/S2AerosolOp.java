@@ -158,10 +158,6 @@ public class S2AerosolOp extends Operator {
 
         Rectangle srcRec = getSourceRectangle(targetRectangle, pixelWindow);
 
-        //todo remove me
-        System.out.println("srcRec = " + srcRec);
-        System.out.println("targetRectangle = " + targetRectangle);
-
         if (!containsTileValidData(srcRec)) {
             setInvalidTargetSamples(targetTiles);
             return;
