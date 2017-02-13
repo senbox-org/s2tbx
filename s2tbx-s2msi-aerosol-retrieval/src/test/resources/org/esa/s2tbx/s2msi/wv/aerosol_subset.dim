@@ -1,0 +1,1027 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dimap_Document name="aerosol_subset.dim">
+    <Metadata_Id>
+        <METADATA_FORMAT version="2.12.1">DIMAP</METADATA_FORMAT>
+        <METADATA_PROFILE>BEAM-DATAMODEL-V1</METADATA_PROFILE>
+    </Metadata_Id>
+    <Dataset_Id>
+        <DATASET_SERIES>BEAM-PRODUCT</DATASET_SERIES>
+        <DATASET_NAME>aerosol_subset</DATASET_NAME>
+    </Dataset_Id>
+    <Production>
+        <DATASET_PRODUCER_NAME />
+        <PRODUCT_TYPE>COLLOCATED S2 MSI AOT</PRODUCT_TYPE>
+        <PRODUCT_SCENE_RASTER_START_TIME>04-JAN-2016 08:40:40.172000</PRODUCT_SCENE_RASTER_START_TIME>
+        <PRODUCT_SCENE_RASTER_STOP_TIME>04-JAN-2016 08:40:40.172000</PRODUCT_SCENE_RASTER_STOP_TIME>
+    </Production>
+    <Coordinate_Reference_System>
+        <WKT>
+             PROJCS["WGS 84 / UTM zone 34S", 
+               GEOGCS["WGS 84", 
+                 DATUM["World Geodetic System 1984", 
+                   SPHEROID["WGS 84", 6378137.0, 298.257223563, AUTHORITY["EPSG","7030"]], 
+                   AUTHORITY["EPSG","6326"]], 
+                 PRIMEM["Greenwich", 0.0, AUTHORITY["EPSG","8901"]], 
+                 UNIT["degree", 0.017453292519943295], 
+                 AXIS["Geodetic latitude", NORTH], 
+                 AXIS["Geodetic longitude", EAST], 
+                 AUTHORITY["EPSG","4326"]], 
+               PROJECTION["Transverse_Mercator"], 
+               PARAMETER["central_meridian", 21.0], 
+               PARAMETER["latitude_of_origin", 0.0], 
+               PARAMETER["scale_factor", 0.9996], 
+               PARAMETER["false_easting", 500000.0], 
+               PARAMETER["false_northing", 10000000.0], 
+               UNIT["m", 1.0], 
+               AXIS["Easting", EAST], 
+               AXIS["Northing", NORTH], 
+               AUTHORITY["EPSG","32734"]]
+        </WKT>
+    </Coordinate_Reference_System>
+    <Geoposition>
+        <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+    </Geoposition>
+    <Flag_Coding name="pixel_classif_flags">
+        <Flag>
+            <Flag_Name>F_INVALID</Flag_Name>
+            <Flag_Index>1</Flag_Index>
+            <Flag_description>Invalid pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CLOUD</Flag_Name>
+            <Flag_Index>2</Flag_Index>
+            <Flag_description>Pixels which are either cloud_sure or cloud_ambiguous</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CLOUD_AMBIGUOUS</Flag_Name>
+            <Flag_Index>4</Flag_Index>
+            <Flag_description>Semi transparent clouds, or clouds where the detection level is uncertain</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CLOUD_SURE</Flag_Name>
+            <Flag_Index>8</Flag_Index>
+            <Flag_description>Fully opaque clouds with full confidence of their detection</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CLOUD_BUFFER</Flag_Name>
+            <Flag_Index>16</Flag_Index>
+            <Flag_description>A buffer of n pixels around a cloud. n is a user supplied parameter. Applied to pixels masked as 'cloud'</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CLOUD_SHADOW</Flag_Name>
+            <Flag_Index>32</Flag_Index>
+            <Flag_description>Pixels is affect by a cloud shadow</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CIRRUS_AMBIGUOUS</Flag_Name>
+            <Flag_Index>64</Flag_Index>
+            <Flag_description>Cirrus clouds, or clouds where the detection level is uncertain</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CIRRUS_SURE</Flag_Name>
+            <Flag_Index>128</Flag_Index>
+            <Flag_description>Cirrus clouds with full confidence of their detection</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_COASTLINE</Flag_Name>
+            <Flag_Index>256</Flag_Index>
+            <Flag_description>Pixels at a coastline</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CLEAR_SNOW</Flag_Name>
+            <Flag_Index>512</Flag_Index>
+            <Flag_description>Clear snow/ice pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CLEAR_LAND</Flag_Name>
+            <Flag_Index>1024</Flag_Index>
+            <Flag_description>Clear land pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_CLEAR_WATER</Flag_Name>
+            <Flag_Index>2048</Flag_Index>
+            <Flag_description>Clear water pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_LAND</Flag_Name>
+            <Flag_Index>4096</Flag_Index>
+            <Flag_description>Land pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_WATER</Flag_Name>
+            <Flag_Index>8192</Flag_Index>
+            <Flag_description>Water pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_BRIGHT</Flag_Name>
+            <Flag_Index>16384</Flag_Index>
+            <Flag_description>Bright pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_WHITE</Flag_Name>
+            <Flag_Index>32768</Flag_Index>
+            <Flag_description>White pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_BRIGHTWHITE</Flag_Name>
+            <Flag_Index>65536</Flag_Index>
+            <Flag_description>'Brightwhite' pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_HIGH</Flag_Name>
+            <Flag_Index>131072</Flag_Index>
+            <Flag_description>High pixels</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_VEG_RISK</Flag_Name>
+            <Flag_Index>262144</Flag_Index>
+            <Flag_description>Pixels with vegetation risk</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>F_SEAICE</Flag_Name>
+            <Flag_Index>524288</Flag_Index>
+            <Flag_description>Sea ice pixels</Flag_description>
+        </Flag>
+    </Flag_Coding>
+    <Flag_Coding name="collocation_flags">
+        <Flag>
+            <Flag_Name>SLAVE_PRESENT</Flag_Name>
+            <Flag_Index>1</Flag_Index>
+            <Flag_description>Data for the slave is present.</Flag_description>
+        </Flag>
+    </Flag_Coding>
+    <Flag_Coding name="aot_flags">
+        <Flag>
+            <Flag_Name>aot_climatology</Flag_Name>
+            <Flag_Index>1</Flag_Index>
+            <Flag_description>aot from climatology only</Flag_description>
+        </Flag>
+        <Flag>
+            <Flag_Name>aot_interp</Flag_Name>
+            <Flag_Index>2</Flag_Index>
+            <Flag_description>aot spatially interpolated</Flag_description>
+        </Flag>
+    </Flag_Coding>
+    <Raster_Dimensions>
+        <NCOLS>100</NCOLS>
+        <NROWS>100</NROWS>
+        <NBANDS>10</NBANDS>
+    </Raster_Dimensions>
+    <Data_Access>
+        <DATA_FILE_FORMAT>ENVI</DATA_FILE_FORMAT>
+        <DATA_FILE_FORMAT_DESC>ENVI File Format</DATA_FILE_FORMAT_DESC>
+        <DATA_FILE_ORGANISATION>BAND_SEPARATE</DATA_FILE_ORGANISATION>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/pixel_classif_flags.hdr" />
+            <BAND_INDEX>0</BAND_INDEX>
+        </Data_File>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/collocation_flags.hdr" />
+            <BAND_INDEX>1</BAND_INDEX>
+        </Data_File>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/aot_flags.hdr" />
+            <BAND_INDEX>2</BAND_INDEX>
+        </Data_File>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/B8A.hdr" />
+            <BAND_INDEX>3</BAND_INDEX>
+        </Data_File>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/B9.hdr" />
+            <BAND_INDEX>4</BAND_INDEX>
+        </Data_File>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/view_zenith_mean.hdr" />
+            <BAND_INDEX>5</BAND_INDEX>
+        </Data_File>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/view_azimuth_mean.hdr" />
+            <BAND_INDEX>6</BAND_INDEX>
+        </Data_File>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/sun_zenith.hdr" />
+            <BAND_INDEX>7</BAND_INDEX>
+        </Data_File>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/sun_azimuth.hdr" />
+            <BAND_INDEX>8</BAND_INDEX>
+        </Data_File>
+        <Data_File>
+            <DATA_FILE_PATH href="aerosol_subset.data/elevation.hdr" />
+            <BAND_INDEX>9</BAND_INDEX>
+        </Data_File>
+        <Tie_Point_Grid_File>
+            <TIE_POINT_GRID_FILE_PATH href="aerosol_subset.data/tie_point_grids/sp.hdr" />
+            <TIE_POINT_GRID_INDEX>0</TIE_POINT_GRID_INDEX>
+        </Tie_Point_Grid_File>
+        <Tie_Point_Grid_File>
+            <TIE_POINT_GRID_FILE_PATH href="aerosol_subset.data/tie_point_grids/tco3.hdr" />
+            <TIE_POINT_GRID_INDEX>1</TIE_POINT_GRID_INDEX>
+        </Tie_Point_Grid_File>
+    </Data_Access>
+    <Tie_Point_Grids>
+        <NUM_TIE_POINT_GRIDS>2</NUM_TIE_POINT_GRIDS>
+        <Tie_Point_Grid_Info>
+            <TIE_POINT_GRID_INDEX>0</TIE_POINT_GRID_INDEX>
+            <TIE_POINT_DESCRIPTION>Surface pressure</TIE_POINT_DESCRIPTION>
+            <PHYSICAL_UNIT>Pa</PHYSICAL_UNIT>
+            <TIE_POINT_GRID_NAME>sp</TIE_POINT_GRID_NAME>
+            <DATA_TYPE>float32</DATA_TYPE>
+            <NCOLS>3</NCOLS>
+            <NROWS>3</NROWS>
+            <OFFSET_X>-99.5</OFFSET_X>
+            <OFFSET_Y>-99.5</OFFSET_Y>
+            <STEP_X>100.0</STEP_X>
+            <STEP_Y>100.0</STEP_Y>
+            <CYCLIC>false</CYCLIC>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Tie_Point_Grid_Info>
+        <Tie_Point_Grid_Info>
+            <TIE_POINT_GRID_INDEX>1</TIE_POINT_GRID_INDEX>
+            <TIE_POINT_DESCRIPTION>Total column ozone</TIE_POINT_DESCRIPTION>
+            <PHYSICAL_UNIT>kg m**-2</PHYSICAL_UNIT>
+            <TIE_POINT_GRID_NAME>tco3</TIE_POINT_GRID_NAME>
+            <DATA_TYPE>float32</DATA_TYPE>
+            <NCOLS>3</NCOLS>
+            <NROWS>3</NROWS>
+            <OFFSET_X>-99.5</OFFSET_X>
+            <OFFSET_Y>-99.5</OFFSET_Y>
+            <STEP_X>100.0</STEP_X>
+            <STEP_Y>100.0</STEP_Y>
+            <CYCLIC>false</CYCLIC>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Tie_Point_Grid_Info>
+    </Tie_Point_Grids>
+    <Image_Display>
+        <Band_Statistics>
+            <BAND_INDEX>3</BAND_INDEX>
+            <STX_MIN>0.13779999315738678</STX_MIN>
+            <STX_MAX>0.34700000286102295</STX_MAX>
+            <STX_MEAN>0.19631996996402712</STX_MEAN>
+            <STX_STD_DEV>0.019867720943903714</STX_STD_DEV>
+            <STX_RES_LEVEL>0</STX_RES_LEVEL>
+            <HISTOGRAM>1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,1,0,0,0,0,0,0,1,2,2,2,3,1,1,4,1,2,6,6,5,4,4,4,11,8,3,5,10,9,10,6,14,14,10,15,7,18,15,16,20,22,22,30,34,24,27,23,33,35,42,29,47,30,45,49,55,61,43,62,54,58,52,50,64,67,76,83,92,73,66,77,79,86,91,84,84,77,91,93,82,82,81,77,81,61,77,88,77,88,77,92,72,56,64,60,78,76,84,60,83,78,62,118,77,73,69,90,74,83,73,62,66,74,108,81,74,83,91,91,77,71,66,82,53,79,89,55,71,56,70,64,50,69,63,63,69,103,50,62,67,61,57,59,53,53,55,60,47,58,59,48,47,59,45,52,48,57,28,50,38,57,38,31,39,32,43,41,52,43,31,34,41,36,36,35,42,34,44,40,38,34,29,31,43,35,36,28,26,28,38,23,35,26,18,30,33,23,30,28,30,22,24,17,14,16,23,24,16,18,20,25,20,13,16,14,13,14,9,12,15,16,12,7,9,11,5,7,5,8,7,3,5,3,7,5,4,6,4,2,6,7,5,1,3,4,2,1,1,2,3,2,2,1,0,3,3,1,0,3,1,1,1,1,1,0,2,3,0,3,0,1,2,0,2,0,0,1,0,2,0,1,0,2,0,0,1,0,0,0,0,2,2,1,0,1,1,0,0,0,1,1,0,1,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1</HISTOGRAM>
+            <NUM_COLORS>256</NUM_COLORS>
+            <Color_Palette_Point>
+                <SAMPLE>0.16027265044976957</SAMPLE>
+                <COLOR red="0" green="0" blue="0" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>0.19704608965548687</SAMPLE>
+                <COLOR red="128" green="128" blue="128" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>0.23381952886120416</SAMPLE>
+                <COLOR red="255" green="255" blue="255" alpha="255" />
+            </Color_Palette_Point>
+            <NO_DATA_COLOR red="0" green="0" blue="0" alpha="0" />
+            <HISTOGRAM_MATCHING>None</HISTOGRAM_MATCHING>
+        </Band_Statistics>
+        <Band_Statistics>
+            <BAND_INDEX>4</BAND_INDEX>
+            <STX_MIN>0.05180000141263008</STX_MIN>
+            <STX_MAX>0.14880000054836273</STX_MAX>
+            <STX_MEAN>0.0767191801015288</STX_MEAN>
+            <STX_STD_DEV>0.008595811445289309</STX_STD_DEV>
+            <STX_RES_LEVEL>0</STX_RES_LEVEL>
+            <HISTOGRAM>1,0,0,0,2,0,0,0,0,0,1,0,1,0,0,0,0,0,0,2,0,0,1,0,0,0,1,0,1,0,3,0,3,0,1,2,1,3,2,2,6,2,6,2,10,7,10,4,9,15,15,22,17,19,15,18,7,27,31,31,28,18,20,44,44,38,18,48,41,47,45,45,52,54,39,39,60,58,53,61,68,74,100,88,79,34,69,76,73,98,85,76,89,102,38,92,101,94,101,107,77,94,98,93,44,91,102,89,71,93,86,91,73,47,95,86,85,85,111,88,89,63,89,35,95,85,84,84,70,77,76,87,37,88,91,75,91,78,72,96,81,75,35,88,80,68,62,84,69,62,54,28,74,59,82,66,73,68,63,68,63,21,62,53,66,65,61,59,48,60,21,58,59,50,47,62,63,53,38,43,20,47,41,40,42,43,47,39,32,25,47,32,25,29,41,31,34,26,39,16,45,46,30,37,32,34,36,26,14,13,32,28,22,22,24,24,21,10,9,25,20,18,13,13,15,7,14,6,16,15,18,11,5,9,8,9,10,6,9,3,4,6,7,4,3,5,3,2,5,4,4,2,2,5,2,1,0,0,2,1,0,1,3,2,0,0,0,0,1,4,0,0,1,0,0,1,0,1,1,1,0,0,0,1,0,0,2,0,0,1,2,1,1,0,0,0,0,0,1,0,0,0,1,0,1,0,0,2,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1</HISTOGRAM>
+            <NUM_COLORS>256</NUM_COLORS>
+            <Color_Palette_Point>
+                <SAMPLE>0.06127265757822897</SAMPLE>
+                <COLOR red="0" green="0" blue="0" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>0.07699726681312313</SAMPLE>
+                <COLOR red="128" green="128" blue="128" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>0.0927218760480173</SAMPLE>
+                <COLOR red="255" green="255" blue="255" alpha="255" />
+            </Color_Palette_Point>
+            <NO_DATA_COLOR red="0" green="0" blue="0" alpha="0" />
+            <HISTOGRAM_MATCHING>None</HISTOGRAM_MATCHING>
+        </Band_Statistics>
+        <Band_Statistics>
+            <BAND_INDEX>5</BAND_INDEX>
+            <STX_MIN>7.341940402984619</STX_MIN>
+            <STX_MAX>7.9652018547058105</STX_MAX>
+            <STX_MEAN>7.636849341201788</STX_MEAN>
+            <STX_STD_DEV>0.15109450859876913</STX_STD_DEV>
+            <STX_RES_LEVEL>0</STX_RES_LEVEL>
+            <HISTOGRAM>2,1,1,2,2,2,2,3,3,3,3,4,4,4,5,9,5,5,6,6,6,6,7,7,7,7,8,8,8,10,12,13,9,10,10,10,10,11,11,11,11,12,12,12,14,17,17,16,14,14,14,14,15,15,15,15,16,16,16,19,21,20,21,21,18,18,18,19,19,19,19,20,20,20,23,25,25,25,25,23,23,23,23,23,23,23,24,24,24,28,29,29,28,29,26,26,26,27,26,25,25,25,25,25,30,29,28,29,29,26,26,26,27,25,25,25,25,25,25,30,29,29,29,28,26,26,26,27,25,25,25,25,25,26,30,29,29,29,27,26,26,26,27,25,25,25,25,25,27,30,29,29,28,27,26,27,26,26,25,25,25,25,25,27,31,29,29,28,27,26,26,26,26,25,25,25,25,25,28,30,30,29,27,27,26,26,26,26,25,25,25,25,25,29,30,29,29,27,27,26,27,26,25,25,25,25,25,25,30,30,29,29,27,27,26,26,26,24,25,25,26,24,24,29,30,28,28,26,26,25,25,25,24,24,24,25,23,24,24,30,27,26,26,25,24,26,23,23,24,23,23,24,23,23,26,27,24,26,25,23,23,24,22,22,24,22,21,25,22,22,26,24,23,25,22,22,23,22,21,21,23,21,22,23,21,20,25,22,22,25,20,21,22,21,20,21,22,20,20,23,20,20,23,21,20,22,21,19,22,20,19,21,22,19,19,23,20,19,22,19,20,23,19,19,22,20,20,22,19,19,22,21,19,20,22,20,20,22,19,20,23,19,20,22,19,21,22,19,20,19,24,19,19,23,19,20,23,19,19,23,20,19,22,19,20,21,21,19,19,23,20,19,22,19,21,22,19,20,22,20,20,22,19,20,20,22,20,19,22,21,19,22,20,19,23,20,19,22,20,20,20,22,19,20,23,19,19,22,20,20,22,19,19,23,20,19,21,20,20,21,21,19,20,22,18,19,21,18,19,20,17,18,19,17,17,16,18,17,16,17,16,15,17,16,14,16,15,14,15,14,13,13,15,13,12,14,12,12,14,11,11,13,11,11,11,10,10,11,10,9,10,10,9,9,9,8,9,9,7,8,7,7,8,6,6,7,6,6,6,5,5,6,5,4,5,4,4,4,3,3,3,3,3,2,2,2,2,2,1,1,1,2</HISTOGRAM>
+            <NUM_COLORS>256</NUM_COLORS>
+            <Color_Palette_Point>
+                <SAMPLE>1.8422948103398085</SAMPLE>
+                <COLOR red="0" green="0" blue="0" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>5.726166549138725</SAMPLE>
+                <COLOR red="128" green="128" blue="128" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>9.610038287937641</SAMPLE>
+                <COLOR red="255" green="255" blue="255" alpha="255" />
+            </Color_Palette_Point>
+            <NO_DATA_COLOR red="0" green="0" blue="0" alpha="0" />
+            <HISTOGRAM_MATCHING>None</HISTOGRAM_MATCHING>
+        </Band_Statistics>
+        <Band_Statistics>
+            <BAND_INDEX>6</BAND_INDEX>
+            <STX_MIN>101.61615753173828</STX_MIN>
+            <STX_MAX>111.33248901367188</STX_MAX>
+            <STX_MEAN>109.063429292297</STX_MEAN>
+            <STX_STD_DEV>2.9938923550371563</STX_STD_DEV>
+            <STX_RES_LEVEL>0</STX_RES_LEVEL>
+            <HISTOGRAM>100,0,0,0,0,0,0,0,0,0,0,53,47,0,0,0,0,0,0,0,0,0,0,100,0,0,0,0,0,0,0,0,0,0,0,100,0,0,0,0,0,0,0,0,0,0,0,100,0,0,0,0,0,0,0,0,0,0,0,100,0,0,0,0,0,0,0,0,0,0,27,73,0,0,0,0,0,0,0,0,0,0,52,48,0,0,0,0,0,0,0,0,0,0,69,31,0,0,0,0,0,0,0,0,0,0,81,19,0,0,0,0,0,0,0,0,0,14,76,10,0,0,0,0,0,0,0,0,0,30,67,3,0,0,0,0,0,0,0,0,0,42,58,0,0,0,0,0,0,0,0,0,0,52,48,0,0,0,0,0,0,0,0,0,10,50,40,0,0,0,0,0,0,0,0,0,21,46,33,0,0,0,0,0,0,0,0,0,30,43,27,0,0,0,0,0,0,0,0,0,38,41,21,0,0,0,0,0,0,0,0,7,38,38,17,0,0,0,0,0,0,0,0,16,36,35,13,0,0,0,0,0,0,0,0,24,33,34,9,0,0,0,0,0,0,0,0,30,32,32,6,0,0,0,0,0,0,0,6,31,30,30,3,0,0,0,0,0,0,0,13,29,29,29,0,0,0,0,0,0,0,0,20,27,28,25,0,0,0,0,0,0,0,0,25,27,26,22,0,0,0,0,0,0,0,5,26,25,25,19,0,0,0,0,0,0,0,11,25,24,24,16,0,0,0,0,0,0,0,17,23,23,23,14,0,0,0,0,0,0,0,22,22,23,22,11,0,0,0,0,0,0,5,21,22,22,21,9,0,0,0,0,0,0,10,21,21,20,21,7,0,0,0,0,0,0,14,21,20,20,20,5,0,0,0,0,0,0,19,20,19,20,19,3,0,0,0,0,0,4,19,19,19,19,19,1,0,0,0,0,0,9,18,18,19,18,18,0,0,0,0,0,0,13,18,18,17,18,16,0,0,0,0,0,0,17,17,18,17,17,14,0,0,0,0,0,4,17,17,16,17,17,12,0,0,0,0,0,8,16,17,16,16,17,10,0,0,0,0,0,12,16,16,15,16,16,9,0,0,0,0,0,15,16,15,16,15,16,7,1,39,98,156,212,274,324,370,367,371,371,375,377,369,373,374,351,299,245,193,138,87,36</HISTOGRAM>
+            <NUM_COLORS>256</NUM_COLORS>
+            <Color_Palette_Point>
+                <SAMPLE>48.435310676693916</SAMPLE>
+                <COLOR red="0" green="0" blue="0" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>87.13307819515467</SAMPLE>
+                <COLOR red="128" green="128" blue="128" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>125.83084571361542</SAMPLE>
+                <COLOR red="255" green="255" blue="255" alpha="255" />
+            </Color_Palette_Point>
+            <NO_DATA_COLOR red="0" green="0" blue="0" alpha="0" />
+            <HISTOGRAM_MATCHING>None</HISTOGRAM_MATCHING>
+        </Band_Statistics>
+        <Band_Statistics>
+            <BAND_INDEX>7</BAND_INDEX>
+            <STX_MIN>28.068681716918945</STX_MIN>
+            <STX_MAX>28.127933502197266</STX_MAX>
+            <STX_MEAN>28.098296271133417</STX_MEAN>
+            <STX_STD_DEV>0.015230246468669183</STX_STD_DEV>
+            <STX_RES_LEVEL>0</STX_RES_LEVEL>
+            <HISTOGRAM>2,2,1,2,2,4,2,4,2,6,4,5,5,5,7,5,8,4,10,5,10,6,10,9,9,9,9,11,10,12,10,12,13,11,13,11,15,12,15,12,16,15,15,16,15,17,16,17,16,18,19,17,19,17,22,17,22,19,21,21,21,22,20,25,20,25,18,25,20,25,20,22,24,21,25,18,25,20,25,19,23,22,23,23,20,23,21,26,19,23,22,23,22,21,23,21,24,21,22,22,24,22,21,22,22,23,21,22,23,23,22,22,22,22,23,21,22,23,22,23,20,24,20,25,21,22,22,23,23,20,24,20,25,19,24,20,25,20,23,23,21,25,19,24,19,26,20,23,21,23,23,21,24,19,26,20,23,21,23,22,22,21,22,24,22,23,20,24,22,22,21,22,23,22,22,22,23,22,23,21,22,23,22,22,21,23,23,21,23,22,23,22,22,21,23,23,21,22,21,25,20,24,19,25,23,21,22,21,25,20,24,18,26,20,24,20,23,23,22,24,18,26,20,24,19,24,22,23,22,20,24,21,25,19,24,22,23,21,21,23,22,24,20,24,22,23,21,21,23,22,23,20,23,23,22,23,21,23,22,23,20,23,23,22,22,20,25,20,25,18,25,22,23,22,20,25,20,25,18,25,20,25,21,21,24,21,25,18,25,20,25,19,23,22,23,23,20,24,20,26,19,23,22,23,22,21,22,22,25,20,23,21,24,22,21,22,22,23,21,22,23,22,23,22,22,22,23,21,22,23,22,23,20,24,20,25,21,22,22,23,23,20,24,20,25,19,24,20,25,20,23,23,21,25,19,24,19,26,20,23,21,23,23,21,23,20,26,20,23,21,23,22,22,22,21,25,21,23,20,24,22,22,21,22,23,22,22,22,23,22,23,21,22,23,22,22,21,23,23,21,23,20,25,22,22,21,23,23,21,22,21,25,20,24,19,25,20,24,22,21,25,20,24,18,26,20,24,20,23,23,22,24,18,26,20,24,20,23,22,23,22,20,25,21,24,19,24,22,23,21,21,21,21,21,19,22,17,22,17,19,17,19,17,17,16,17,16,16,16,14,16,14,14,13,14,13,13,11,13,11,13,9,12,10,11,9,9,9,9,9,7,8,7,8,6,6,6,6,7,3,6,3,6,2,4,2,4,2,2,1,2,2</HISTOGRAM>
+            <NUM_COLORS>256</NUM_COLORS>
+            <Color_Palette_Point>
+                <SAMPLE>28.0711119659245</SAMPLE>
+                <COLOR red="0" green="0" blue="0" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>28.096861032769084</SAMPLE>
+                <COLOR red="128" green="128" blue="128" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>28.122610099613667</SAMPLE>
+                <COLOR red="255" green="255" blue="255" alpha="255" />
+            </Color_Palette_Point>
+            <NO_DATA_COLOR red="0" green="0" blue="0" alpha="0" />
+            <HISTOGRAM_MATCHING>None</HISTOGRAM_MATCHING>
+        </Band_Statistics>
+        <Band_Statistics>
+            <BAND_INDEX>8</BAND_INDEX>
+            <STX_MIN>78.35211181640625</STX_MIN>
+            <STX_MAX>78.50603485107422</STX_MAX>
+            <STX_MEAN>78.42914292755142</STX_MEAN>
+            <STX_STD_DEV>0.033308227206929046</STX_STD_DEV>
+            <STX_RES_LEVEL>0</STX_RES_LEVEL>
+            <HISTOGRAM>1,1,0,2,0,2,2,1,3,0,4,0,4,3,2,5,0,6,2,4,5,2,7,1,7,3,5,6,3,8,4,7,5,5,8,4,9,5,8,6,7,8,7,8,8,8,8,8,9,8,9,9,9,9,11,8,11,8,11,11,10,12,8,13,10,12,12,10,14,9,14,12,12,14,11,16,9,16,12,14,14,13,16,13,15,15,13,17,13,18,13,17,15,16,16,16,17,17,16,18,16,18,17,18,17,18,18,19,17,21,16,21,19,19,20,18,21,19,20,22,18,24,16,25,19,22,22,20,24,20,23,22,21,26,18,27,22,24,23,22,26,22,26,23,24,26,22,28,24,27,25,24,26,26,26,26,26,27,27,26,30,26,27,28,28,28,26,30,27,30,29,28,30,28,31,27,30,30,30,30,27,31,29,28,31,28,31,28,30,29,29,31,27,30,30,29,29,28,32,27,31,30,28,30,27,31,30,28,31,27,32,29,29,29,28,31,27,30,32,26,32,27,32,29,28,31,27,30,28,30,32,26,32,28,30,30,28,29,28,33,27,29,32,27,30,28,30,30,28,30,29,29,31,29,30,28,30,28,29,31,28,29,30,30,30,28,31,28,29,29,29,30,29,30,29,30,30,28,29,29,30,29,30,29,30,28,30,30,29,28,30,30,29,29,30,29,29,30,28,30,30,29,28,30,30,29,30,30,28,29,29,31,28,29,31,29,29,29,29,30,28,30,28,31,30,28,30,30,29,28,29,31,29,29,30,29,29,29,30,28,30,28,30,29,28,28,27,29,27,29,25,29,27,25,30,25,28,24,27,27,22,30,22,27,25,24,27,21,28,21,25,25,22,26,21,26,21,23,25,20,24,19,25,22,20,24,20,22,19,22,22,19,21,21,19,20,20,18,21,19,19,18,20,18,17,20,17,20,16,17,19,15,19,16,17,17,15,18,14,19,13,16,16,14,18,11,18,13,14,16,12,16,11,15,13,13,15,11,14,10,14,13,11,13,10,13,10,12,11,10,12,10,10,10,11,9,10,10,10,8,9,9,8,10,7,10,7,7,9,6,10,5,8,7,5,9,4,9,4,6,6,4,9,1,8,4,4,6,2,7,1,6,4,2,6,0,5,1,4,3,1,4,0,3,1,2,2,0,2,0,1,1</HISTOGRAM>
+            <NUM_COLORS>256</NUM_COLORS>
+            <Color_Palette_Point>
+                <SAMPLE>78.361732006073</SAMPLE>
+                <COLOR red="0" green="0" blue="0" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>78.42396260797977</SAMPLE>
+                <COLOR red="128" green="128" blue="128" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>78.48619320988655</SAMPLE>
+                <COLOR red="255" green="255" blue="255" alpha="255" />
+            </Color_Palette_Point>
+            <NO_DATA_COLOR red="0" green="0" blue="0" alpha="0" />
+            <HISTOGRAM_MATCHING>None</HISTOGRAM_MATCHING>
+        </Band_Statistics>
+        <Band_Statistics>
+            <BAND_INDEX>9</BAND_INDEX>
+            <STX_MIN>1286.600341796875</STX_MIN>
+            <STX_MAX>1435.04931640625</STX_MAX>
+            <STX_MEAN>1355.8891871337885</STX_MEAN>
+            <STX_STD_DEV>24.590862745465703</STX_STD_DEV>
+            <STX_RES_LEVEL>0</STX_RES_LEVEL>
+            <HISTOGRAM>3,2,3,4,6,4,4,5,5,10,3,5,5,1,5,7,4,3,4,3,3,0,3,6,4,3,2,0,0,3,3,2,3,4,2,4,2,1,1,2,3,4,2,2,2,5,1,1,1,8,3,1,6,2,2,2,2,2,2,3,6,2,1,1,6,1,0,2,2,4,3,6,4,5,4,2,0,3,3,4,3,7,7,3,4,1,7,5,3,4,4,4,5,6,2,7,5,4,3,5,3,7,9,7,7,7,7,6,11,10,6,12,8,12,3,15,13,11,8,12,13,13,22,17,16,15,22,18,10,26,27,24,16,26,24,22,36,27,33,35,40,39,30,32,42,44,43,46,37,53,43,38,54,44,53,42,61,52,37,38,49,40,41,40,31,34,31,36,38,22,46,31,49,33,44,39,30,35,35,36,37,32,38,38,43,48,40,35,45,37,45,36,31,42,31,38,43,42,52,52,45,47,31,41,47,40,46,35,51,46,54,55,37,44,45,50,49,53,65,51,67,40,62,55,44,53,56,57,45,46,50,48,48,54,49,51,62,53,49,52,51,56,41,53,49,51,51,47,44,55,53,43,44,54,52,52,59,39,36,49,48,48,47,43,41,51,51,38,36,47,45,41,44,53,35,32,35,46,39,37,36,27,22,35,23,26,18,34,22,33,25,18,25,31,22,19,24,17,27,28,24,31,23,23,26,27,21,24,23,29,27,34,25,22,29,22,25,22,28,29,17,24,22,28,29,14,26,18,21,30,30,21,23,19,15,26,22,21,18,14,19,18,21,15,19,31,24,22,17,20,27,15,17,19,18,24,20,16,10,10,13,19,16,16,15,21,20,22,15,12,14,18,19,20,19,11,21,17,13,13,21,18,13,6,11,21,12,12,15,9,13,6,16,15,10,16,14,11,16,10,13,6,11,11,11,15,15,4,11,8,8,10,6,16,13,10,10,6,9,7,7,4,7,4,10,10,10,5,3,6,6,3,7,6,2,4,3,1,3,3,3,2,4,0,2,3,0,5,2,2,1,1,1,2,2,2,0,1,1,2,0,1,1,0,1,2,1,4,2,2,1,0,0,2,1,2,0,1,2,1,2,0,1,1,2,1,0,0,0,0,0,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,1,0,1,0,1</HISTOGRAM>
+            <NUM_COLORS>256</NUM_COLORS>
+            <Color_Palette_Point>
+                <SAMPLE>1293.5588874816895</SAMPLE>
+                <COLOR red="0" green="0" blue="0" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>1347.9225256443024</SAMPLE>
+                <COLOR red="128" green="128" blue="128" alpha="255" />
+            </Color_Palette_Point>
+            <Color_Palette_Point>
+                <SAMPLE>1402.2861638069153</SAMPLE>
+                <COLOR red="255" green="255" blue="255" alpha="255" />
+            </Color_Palette_Point>
+            <NO_DATA_COLOR red="0" green="0" blue="0" alpha="0" />
+            <HISTOGRAM_MATCHING>None</HISTOGRAM_MATCHING>
+        </Band_Statistics>
+    </Image_Display>
+    <Masks>
+        <Mask type="Maths">
+            <NAME value="lc_invalid" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Invalid pixels" />
+            <COLOR red="55" green="87" blue="38" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_INVALID" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_cloud" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Pixels which are either cloud_sure or cloud_ambiguous" />
+            <COLOR red="178" green="178" blue="0" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CLOUD or pixel_classif_flags.F_CLOUD_SURE or pixel_classif_flags.F_CLOUD_AMBIGUOUS" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_cloud_ambiguous" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Semi transparent clouds, or clouds where the detection level is uncertain" />
+            <COLOR red="255" green="219" blue="156" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CLOUD_AMBIGUOUS" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_cloud_sure" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Fully opaque clouds with full confidence of their detection" />
+            <COLOR red="224" green="224" blue="30" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CLOUD_SURE" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_cloud_buffer" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="A buffer of n pixels around a cloud. n is a user supplied parameter. Applied to pixels masked as 'cloud'" />
+            <COLOR red="255" green="0" blue="0" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CLOUD_BUFFER" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_cloud_shadow" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Pixels is affect by a cloud shadow" />
+            <COLOR red="0" green="255" blue="255" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CLOUD_SHADOW" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_cirrus_sure" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Cirrus clouds with full confidence of their detection" />
+            <COLOR red="236" green="157" blue="75" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CIRRUS_SURE" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_cirrus_ambiguous" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Cirrus clouds, or clouds where the detection level is uncertain" />
+            <COLOR red="23" green="89" blue="184" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CIRRUS_AMBIGUOUS" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_coastline" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Pixels at a coastline" />
+            <COLOR red="240" green="64" blue="62" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_COASTLINE" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_clear_snow" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Clear snow/ice pixels" />
+            <COLOR red="112" green="55" blue="221" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CLEAR_SNOW" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_clear_land" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Clear land pixels" />
+            <COLOR red="245" green="173" blue="4" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CLEAR_LAND" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_clear_water" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Clear water pixels" />
+            <COLOR red="27" green="206" blue="84" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_CLEAR_WATER" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_land" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Land pixels" />
+            <COLOR red="199" green="156" blue="237" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_LAND" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_water" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Water pixels" />
+            <COLOR red="43" green="225" blue="255" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_WATER" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_bright" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Bright pixels" />
+            <COLOR red="213" green="177" blue="200" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_BRIGHT" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_white" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="White pixels" />
+            <COLOR red="225" green="221" blue="117" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_WHITE" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_brightwhite" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="'Brightwhite' pixels" />
+            <COLOR red="115" green="75" blue="61" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_BRIGHTWHITE" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_high" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="High pixels" />
+            <COLOR red="221" green="139" blue="81" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_HIGH" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="lc_veg_risk" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="Pixels with vegetation risk" />
+            <COLOR red="87" green="67" blue="192" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="pixel_classif_flags.F_VEG_RISK" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="aot_climatology" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="aot from climatology only" />
+            <COLOR red="0" green="0" blue="255" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="aot_flags.aot_climatology" />
+        </Mask>
+        <Mask type="Maths">
+            <NAME value="aot_interp" />
+            <MASK_RASTER_WIDTH value="100" />
+            <MASK_RASTER_HEIGHT value="100" />
+            <DESCRIPTION value="aot spatially interpolated" />
+            <COLOR red="0" green="255" blue="255" alpha="255" />
+            <TRANSPARENCY value="0.5" />
+            <IMAGE_TO_MODEL_TRANSFORM value="60.0,0.0,0.0,-60.0,529980.0,6464020.0" />
+            <EXPRESSION value="aot_flags.aot_interp" />
+        </Mask>
+    </Masks>
+    <Image_Interpretation>
+        <Spectral_Band_Info>
+            <BAND_INDEX>0</BAND_INDEX>
+            <BAND_DESCRIPTION />
+            <BAND_NAME>pixel_classif_flags</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>int32</DATA_TYPE>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <BAND_WAVELEN>0.0</BAND_WAVELEN>
+            <BANDWIDTH>0.0</BANDWIDTH>
+            <FLAG_CODING_NAME>pixel_classif_flags</FLAG_CODING_NAME>
+            <SCALING_FACTOR>1.0</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>false</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>0.0</NO_DATA_VALUE>
+            <VALID_MASK_TERM>collocation_flags.SLAVE_PRESENT</VALID_MASK_TERM>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+        <Spectral_Band_Info>
+            <BAND_INDEX>1</BAND_INDEX>
+            <BAND_DESCRIPTION />
+            <BAND_NAME>collocation_flags</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>int8</DATA_TYPE>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <BAND_WAVELEN>0.0</BAND_WAVELEN>
+            <BANDWIDTH>0.0</BANDWIDTH>
+            <FLAG_CODING_NAME>collocation_flags</FLAG_CODING_NAME>
+            <SCALING_FACTOR>1.0</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>false</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>0.0</NO_DATA_VALUE>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+        <Spectral_Band_Info>
+            <BAND_INDEX>2</BAND_INDEX>
+            <BAND_DESCRIPTION>aerosol retrieval qa flags</BAND_DESCRIPTION>
+            <BAND_NAME>aot_flags</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>uint8</DATA_TYPE>
+            <PHYSICAL_UNIT>dl</PHYSICAL_UNIT>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <BAND_WAVELEN>0.0</BAND_WAVELEN>
+            <BANDWIDTH>0.0</BANDWIDTH>
+            <FLAG_CODING_NAME>aot_flags</FLAG_CODING_NAME>
+            <SCALING_FACTOR>1.0</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>false</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>0.0</NO_DATA_VALUE>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+        <Spectral_Band_Info>
+            <BAND_INDEX>3</BAND_INDEX>
+            <BAND_DESCRIPTION>Reflectance in band B8A</BAND_DESCRIPTION>
+            <BAND_NAME>B8A</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>uint16</DATA_TYPE>
+            <PHYSICAL_UNIT>dl</PHYSICAL_UNIT>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <SPECTRAL_BAND_INDEX>8</SPECTRAL_BAND_INDEX>
+            <BAND_WAVELEN>865.0</BAND_WAVELEN>
+            <BANDWIDTH>79.0</BANDWIDTH>
+            <SCALING_FACTOR>1.0E-4</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>false</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>0.0</NO_DATA_VALUE>
+            <VALID_MASK_TERM>B8A.raw &gt; 0</VALID_MASK_TERM>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+        <Spectral_Band_Info>
+            <BAND_INDEX>4</BAND_INDEX>
+            <BAND_DESCRIPTION>Reflectance in band B9</BAND_DESCRIPTION>
+            <BAND_NAME>B9</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>uint16</DATA_TYPE>
+            <PHYSICAL_UNIT>dl</PHYSICAL_UNIT>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <SPECTRAL_BAND_INDEX>9</SPECTRAL_BAND_INDEX>
+            <BAND_WAVELEN>945.0</BAND_WAVELEN>
+            <BANDWIDTH>79.0</BANDWIDTH>
+            <SCALING_FACTOR>1.0E-4</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>false</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>0.0</NO_DATA_VALUE>
+            <VALID_MASK_TERM>B9.raw &gt; 0</VALID_MASK_TERM>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+        <Spectral_Band_Info>
+            <BAND_INDEX>5</BAND_INDEX>
+            <BAND_DESCRIPTION>Viewing incidence zenith angle</BAND_DESCRIPTION>
+            <BAND_NAME>view_zenith_mean</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>float32</DATA_TYPE>
+            <PHYSICAL_UNIT>°</PHYSICAL_UNIT>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <BAND_WAVELEN>0.0</BAND_WAVELEN>
+            <BANDWIDTH>0.0</BANDWIDTH>
+            <SCALING_FACTOR>1.0</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>true</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>NaN</NO_DATA_VALUE>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+        <Spectral_Band_Info>
+            <BAND_INDEX>6</BAND_INDEX>
+            <BAND_DESCRIPTION>Viewing incidence azimuth angle</BAND_DESCRIPTION>
+            <BAND_NAME>view_azimuth_mean</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>float32</DATA_TYPE>
+            <PHYSICAL_UNIT>°</PHYSICAL_UNIT>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <BAND_WAVELEN>0.0</BAND_WAVELEN>
+            <BANDWIDTH>0.0</BANDWIDTH>
+            <SCALING_FACTOR>1.0</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>true</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>NaN</NO_DATA_VALUE>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+        <Spectral_Band_Info>
+            <BAND_INDEX>7</BAND_INDEX>
+            <BAND_DESCRIPTION>Solar zenith angle</BAND_DESCRIPTION>
+            <BAND_NAME>sun_zenith</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>float32</DATA_TYPE>
+            <PHYSICAL_UNIT>°</PHYSICAL_UNIT>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <BAND_WAVELEN>0.0</BAND_WAVELEN>
+            <BANDWIDTH>0.0</BANDWIDTH>
+            <SCALING_FACTOR>1.0</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>true</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>NaN</NO_DATA_VALUE>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+        <Spectral_Band_Info>
+            <BAND_INDEX>8</BAND_INDEX>
+            <BAND_DESCRIPTION>Solar azimuth angle</BAND_DESCRIPTION>
+            <BAND_NAME>sun_azimuth</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>float32</DATA_TYPE>
+            <PHYSICAL_UNIT>°</PHYSICAL_UNIT>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <BAND_WAVELEN>0.0</BAND_WAVELEN>
+            <BANDWIDTH>0.0</BANDWIDTH>
+            <SCALING_FACTOR>1.0</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>true</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>NaN</NO_DATA_VALUE>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+        <Spectral_Band_Info>
+            <BAND_INDEX>9</BAND_INDEX>
+            <BAND_DESCRIPTION>SRTM 3Sec</BAND_DESCRIPTION>
+            <BAND_NAME>elevation</BAND_NAME>
+            <BAND_RASTER_WIDTH>100</BAND_RASTER_WIDTH>
+            <BAND_RASTER_HEIGHT>100</BAND_RASTER_HEIGHT>
+            <DATA_TYPE>float32</DATA_TYPE>
+            <PHYSICAL_UNIT>m</PHYSICAL_UNIT>
+            <SOLAR_FLUX>0.0</SOLAR_FLUX>
+            <BAND_WAVELEN>0.0</BAND_WAVELEN>
+            <BANDWIDTH>0.0</BANDWIDTH>
+            <SCALING_FACTOR>1.0</SCALING_FACTOR>
+            <SCALING_OFFSET>0.0</SCALING_OFFSET>
+            <LOG10_SCALED>false</LOG10_SCALED>
+            <NO_DATA_VALUE_USED>true</NO_DATA_VALUE_USED>
+            <NO_DATA_VALUE>-32768.0</NO_DATA_VALUE>
+            <VALID_MASK_TERM>collocation_flags.SLAVE_PRESENT</VALID_MASK_TERM>
+            <IMAGE_TO_MODEL_TRANSFORM>60.0,0.0,0.0,-60.0,529980.0,6464020.0</IMAGE_TO_MODEL_TRANSFORM>
+        </Spectral_Band_Info>
+    </Image_Interpretation>
+    <Dataset_Sources>
+        <MDElem name="metadata">
+            <MDElem name="Processing_Graph">
+                <MDElem name="node.0">
+                    <MDATTR name="id" type="ascii" mode="rw">AerosolRetrieval.S2.Gapfilling$15A22D09332</MDATTR>
+                    <MDATTR name="operator" type="ascii" mode="rw">AerosolRetrieval.S2.Gapfilling</MDATTR>
+                    <MDATTR name="moduleName" type="ascii" mode="rw">Sentinel-2 Toolbox S2-MSI Aerosol Retrieval</MDATTR>
+                    <MDATTR name="moduleVersion" type="ascii" mode="rw">6.0.0.0</MDATTR>
+                    <MDATTR name="purpose" type="ascii" mode="rw">Operator for gap filling in aerosol retrieval from S2 MSI.</MDATTR>
+                    <MDATTR name="authors" type="ascii" mode="rw">Olaf Danne, Marco Zuehlke, Grit Kirches, Andreas Heckel</MDATTR>
+                    <MDATTR name="version" type="ascii" mode="rw">1.0</MDATTR>
+                    <MDATTR name="copyright" type="ascii" mode="rw">(C) 2010, 2016 by University Swansea and Brockmann Consult</MDATTR>
+                    <MDATTR name="processingTime" type="ascii" mode="rw">2017-02-09T12:19:38.930Z</MDATTR>
+                    <MDElem name="sources">
+                        <MDATTR name="aotProduct" type="ascii" mode="rw">AerosolRetrieval.S2.Aerosol$15A22D0932F</MDATTR>
+                    </MDElem>
+                    <MDElem name="parameters" />
+                </MDElem>
+                <MDElem name="node.1">
+                    <MDATTR name="id" type="ascii" mode="rw">AerosolRetrieval.S2.Aerosol$15A22D0932F</MDATTR>
+                    <MDATTR name="operator" type="ascii" mode="rw">AerosolRetrieval.S2.Aerosol</MDATTR>
+                    <MDATTR name="moduleName" type="ascii" mode="rw">Sentinel-2 Toolbox S2-MSI Aerosol Retrieval</MDATTR>
+                    <MDATTR name="moduleVersion" type="ascii" mode="rw">6.0.0.0</MDATTR>
+                    <MDATTR name="purpose" type="ascii" mode="rw">Aerosol retrieval operator from S2 MSI following USwansea algorithm as used in GlobAlbedo project.</MDATTR>
+                    <MDATTR name="authors" type="ascii" mode="rw">Olaf Danne, Marco Zuehlke, Grit Kirches, Andreas Heckel</MDATTR>
+                    <MDATTR name="version" type="ascii" mode="rw">1.0</MDATTR>
+                    <MDATTR name="copyright" type="ascii" mode="rw">(C) 2010, 2016 by University Swansea and Brockmann Consult</MDATTR>
+                    <MDATTR name="processingTime" type="ascii" mode="rw">2017-02-09T12:19:38.931Z</MDATTR>
+                    <MDElem name="sources">
+                        <MDATTR name="sourceProduct" type="ascii" mode="rw">S2AerosolMsiPreparationOp$15A22D09152</MDATTR>
+                    </MDElem>
+                    <MDElem name="parameters">
+                        <MDATTR name="scale" type="ascii">20</MDATTR>
+                        <MDATTR name="pathToLut" type="ascii">E:\Projects\S2A-AC\lut\sentinel-2a_lut_smsi_v0.6.memmap.d</MDATTR>
+                    </MDElem>
+                </MDElem>
+                <MDElem name="node.2">
+                    <MDATTR name="id" type="ascii" mode="rw">S2AerosolMsiPreparationOp$15A22D09152</MDATTR>
+                    <MDATTR name="operator" type="ascii" mode="rw">S2AerosolMsiPreparationOp</MDATTR>
+                    <MDATTR name="moduleName" type="ascii" mode="rw">Sentinel-2 Toolbox S2-MSI Aerosol Retrieval</MDATTR>
+                    <MDATTR name="moduleVersion" type="ascii" mode="rw">6.0.0.0</MDATTR>
+                    <MDATTR name="processingTime" type="ascii" mode="rw">2017-02-09T12:19:38.931Z</MDATTR>
+                    <MDElem name="sources">
+                        <MDATTR name="sourceProduct" type="ascii" mode="rw">file:/E:/Projects/S2A-AC/AIOBEBug/S2A_OPER_MTD_SAFL1C_PDMC_20160104T141130_R078_V20160104T084040_20160104T084040_T34HEK_60m_idepixera.dim</MDATTR>
+                    </MDElem>
+                    <MDElem name="parameters" />
+                </MDElem>
+                <MDElem name="node.3">
+                    <MDATTR name="id" type="ascii" mode="rw">AerosolRetrieval.S2.Upscaling$15A22D093EE</MDATTR>
+                    <MDATTR name="operator" type="ascii" mode="rw">AerosolRetrieval.S2.Upscaling</MDATTR>
+                    <MDATTR name="moduleName" type="ascii" mode="rw">Sentinel-2 Toolbox S2-MSI Aerosol Retrieval</MDATTR>
+                    <MDATTR name="moduleVersion" type="ascii" mode="rw">6.0.0.0</MDATTR>
+                    <MDATTR name="purpose" type="ascii" mode="rw">Operator for upscaling in aerosol retrieval from S2 MSI.</MDATTR>
+                    <MDATTR name="authors" type="ascii" mode="rw">Olaf Danne, Marco Zuehlke, Grit Kirches, Andreas Heckel</MDATTR>
+                    <MDATTR name="version" type="ascii" mode="rw">1.0</MDATTR>
+                    <MDATTR name="copyright" type="ascii" mode="rw">(C) 2010, 2016 by University Swansea and Brockmann Consult</MDATTR>
+                    <MDATTR name="processingTime" type="ascii" mode="rw">2017-02-09T12:19:39.118Z</MDATTR>
+                    <MDElem name="sources">
+                        <MDATTR name="hiresProduct" type="ascii" mode="rw">S2AerosolMsiPreparationOp$15A22D09152</MDATTR>
+                        <MDATTR name="lowresProduct" type="ascii" mode="rw">AerosolRetrieval.S2.Gapfilling$15A22D09332</MDATTR>
+                    </MDElem>
+                    <MDElem name="parameters">
+                        <MDATTR name="scale" type="ascii">20</MDATTR>
+                    </MDElem>
+                </MDElem>
+                <MDElem name="node.4">
+                    <MDATTR name="id" type="ascii" mode="rw">aerosol</MDATTR>
+                    <MDATTR name="operator" type="ascii" mode="rw">AerosolRetrieval.S2.Master</MDATTR>
+                    <MDATTR name="moduleName" type="ascii" mode="rw">Sentinel-2 Toolbox S2-MSI Aerosol Retrieval</MDATTR>
+                    <MDATTR name="moduleVersion" type="ascii" mode="rw">6.0.0.0</MDATTR>
+                    <MDATTR name="purpose" type="ascii" mode="rw">Aerosol retrieval from S2 MSI following USwansea algorithm as used in GlobAlbedo project.</MDATTR>
+                    <MDATTR name="authors" type="ascii" mode="rw">Olaf Danne, Marco Zuehlke, Grit Kirches, Andreas Heckel</MDATTR>
+                    <MDATTR name="version" type="ascii" mode="rw">1.0</MDATTR>
+                    <MDATTR name="copyright" type="ascii" mode="rw">(C) 2010, 2016 by University Swansea and Brockmann Consult</MDATTR>
+                    <MDATTR name="processingTime" type="ascii" mode="rw">2017-02-09T12:19:39.273Z</MDATTR>
+                    <MDElem name="sources">
+                        <MDATTR name="sourceProduct" type="ascii" mode="rw">file:/E:/Projects/S2A-AC/AIOBEBug/S2A_OPER_MTD_SAFL1C_PDMC_20160104T141130_R078_V20160104T084040_20160104T084040_T34HEK_60m_idepixera.dim</MDATTR>
+                    </MDElem>
+                    <MDElem name="parameters">
+                        <MDATTR name="copyGeometryBands" type="ascii">true</MDATTR>
+                        <MDATTR name="computeAerosol" type="ascii">true</MDATTR>
+                        <MDATTR name="computeWaterVapour" type="ascii">true</MDATTR>
+                        <MDATTR name="filling" type="ascii">true</MDATTR>
+                        <MDATTR name="copyToaReflBands" type="ascii">true</MDATTR>
+                        <MDATTR name="scale" type="ascii">20</MDATTR>
+                        <MDATTR name="pathToLut" type="ascii">E:\Projects\S2A-AC\lut\sentinel-2a_lut_smsi_v0.6.memmap.d</MDATTR>
+                        <MDATTR name="upscaling" type="ascii">true</MDATTR>
+                    </MDElem>
+                </MDElem>
+                <MDElem name="node.5">
+                    <MDATTR name="id" type="ascii" mode="rw">WriteOp@aerosol</MDATTR>
+                    <MDATTR name="operator" type="ascii" mode="rw">Write</MDATTR>
+                    <MDATTR name="moduleName" type="ascii" mode="rw">SNAP Graph Processing Framework (GPF)</MDATTR>
+                    <MDATTR name="moduleVersion" type="ascii" mode="rw">6.0.0.0</MDATTR>
+                    <MDATTR name="purpose" type="ascii" mode="rw">Writes a data product to a file.</MDATTR>
+                    <MDATTR name="authors" type="ascii" mode="rw">Marco Zuehlke, Norman Fomferra</MDATTR>
+                    <MDATTR name="version" type="ascii" mode="rw">1.3</MDATTR>
+                    <MDATTR name="copyright" type="ascii" mode="rw">(c) 2010 by Brockmann Consult</MDATTR>
+                    <MDATTR name="processingTime" type="ascii" mode="rw">2017-02-09T12:19:39.281Z</MDATTR>
+                    <MDElem name="sources">
+                        <MDATTR name="source" type="ascii" mode="rw">aerosol</MDATTR>
+                    </MDElem>
+                    <MDElem name="parameters">
+                        <MDATTR name="writeEntireTileRows" type="ascii">true</MDATTR>
+                        <MDATTR name="file" type="ascii">E:\Projects\S2A-AC\AIOBEBug\S2A_OPER_MTD_SAFL1C_PDMC_20160104T141130_R078_V20160104T084040_20160104T084040_T34HEK_60m_aerosol_2.dim</MDATTR>
+                        <MDATTR name="deleteOutputOnFailure" type="ascii">true</MDATTR>
+                        <MDATTR name="formatName" type="ascii">BEAM-DIMAP</MDATTR>
+                        <MDATTR name="clearCacheAfterRowWrite" type="ascii">false</MDATTR>
+                    </MDElem>
+                </MDElem>
+            </MDElem>
+            <MDElem name="history">
+                <MDElem name="SubsetInfo">
+                    <MDATTR name="SourceProduct.name" type="ascii">subset_1_of_S2A_OPER_MTD_SAFL1C_PDMC_20160104T141130_R078_V20160104T084040_20160104T084040_T34HEK_60m_aerosol_2</MDATTR>
+                    <MDATTR name="SubSampling.x" type="int32" mode="rw">1</MDATTR>
+                    <MDATTR name="SubSampling.y" type="int32" mode="rw">1</MDATTR>
+                    <MDATTR name="SubRegion.x" type="int32" mode="rw">0</MDATTR>
+                    <MDATTR name="SubRegion.y" type="int32" mode="rw">0</MDATTR>
+                    <MDATTR name="SubRegion.width" type="int32" mode="rw">100</MDATTR>
+                    <MDATTR name="SubRegion.height" type="int32" mode="rw">100</MDATTR>
+                    <MDATTR name="ProductNodeName.1" type="ascii">pixel_classif_flags</MDATTR>
+                    <MDATTR name="ProductNodeName.2" type="ascii">collocation_flags</MDATTR>
+                    <MDATTR name="ProductNodeName.3" type="ascii">aot_flags</MDATTR>
+                    <MDATTR name="ProductNodeName.4" type="ascii">B8A</MDATTR>
+                    <MDATTR name="ProductNodeName.5" type="ascii">B9</MDATTR>
+                    <MDATTR name="ProductNodeName.6" type="ascii">view_zenith_mean</MDATTR>
+                    <MDATTR name="ProductNodeName.7" type="ascii">view_azimuth_mean</MDATTR>
+                    <MDATTR name="ProductNodeName.8" type="ascii">sun_zenith</MDATTR>
+                    <MDATTR name="ProductNodeName.9" type="ascii">sun_azimuth</MDATTR>
+                    <MDATTR name="ProductNodeName.10" type="ascii">elevation</MDATTR>
+                    <MDATTR name="ProductNodeName.11" type="ascii">sp</MDATTR>
+                    <MDATTR name="ProductNodeName.12" type="ascii">tco3</MDATTR>
+                    <MDATTR name="ProductNodeName.13" type="ascii">Processing_Graph</MDATTR>
+                    <MDATTR name="ProductNodeName.14" type="ascii">history</MDATTR>
+                    <MDElem name="SubsetInfo">
+                        <MDATTR name="SourceProduct.name" type="ascii">S2A_OPER_MTD_SAFL1C_PDMC_20160104T141130_R078_V20160104T084040_20160104T084040_T34HEK_60m_aerosol_2</MDATTR>
+                        <MDATTR name="SubSampling.x" type="int32" mode="rw">1</MDATTR>
+                        <MDATTR name="SubSampling.y" type="int32" mode="rw">1</MDATTR>
+                        <MDATTR name="SubRegion.x" type="int32" mode="rw">500</MDATTR>
+                        <MDATTR name="SubRegion.y" type="int32" mode="rw">600</MDATTR>
+                        <MDATTR name="SubRegion.width" type="int32" mode="rw">100</MDATTR>
+                        <MDATTR name="SubRegion.height" type="int32" mode="rw">100</MDATTR>
+                        <MDATTR name="ProductNodeName.1" type="ascii">pixel_classif_flags</MDATTR>
+                        <MDATTR name="ProductNodeName.2" type="ascii">collocation_flags</MDATTR>
+                        <MDATTR name="ProductNodeName.3" type="ascii">aot_flags</MDATTR>
+                        <MDATTR name="ProductNodeName.4" type="ascii">B1</MDATTR>
+                        <MDATTR name="ProductNodeName.5" type="ascii">B2</MDATTR>
+                        <MDATTR name="ProductNodeName.6" type="ascii">B3</MDATTR>
+                        <MDATTR name="ProductNodeName.7" type="ascii">B4</MDATTR>
+                        <MDATTR name="ProductNodeName.8" type="ascii">B5</MDATTR>
+                        <MDATTR name="ProductNodeName.9" type="ascii">B6</MDATTR>
+                        <MDATTR name="ProductNodeName.10" type="ascii">B7</MDATTR>
+                        <MDATTR name="ProductNodeName.11" type="ascii">B8</MDATTR>
+                        <MDATTR name="ProductNodeName.12" type="ascii">B8A</MDATTR>
+                        <MDATTR name="ProductNodeName.13" type="ascii">B9</MDATTR>
+                        <MDATTR name="ProductNodeName.14" type="ascii">B10</MDATTR>
+                        <MDATTR name="ProductNodeName.15" type="ascii">B11</MDATTR>
+                        <MDATTR name="ProductNodeName.16" type="ascii">B12</MDATTR>
+                        <MDATTR name="ProductNodeName.17" type="ascii">view_zenith_mean</MDATTR>
+                        <MDATTR name="ProductNodeName.18" type="ascii">view_azimuth_mean</MDATTR>
+                        <MDATTR name="ProductNodeName.19" type="ascii">sun_zenith</MDATTR>
+                        <MDATTR name="ProductNodeName.20" type="ascii">sun_azimuth</MDATTR>
+                        <MDATTR name="ProductNodeName.21" type="ascii">aot</MDATTR>
+                        <MDATTR name="ProductNodeName.22" type="ascii">aot_err</MDATTR>
+                        <MDATTR name="ProductNodeName.23" type="ascii">view_zenith_B1</MDATTR>
+                        <MDATTR name="ProductNodeName.24" type="ascii">view_azimuth_B1</MDATTR>
+                        <MDATTR name="ProductNodeName.25" type="ascii">view_zenith_B2</MDATTR>
+                        <MDATTR name="ProductNodeName.26" type="ascii">view_azimuth_B2</MDATTR>
+                        <MDATTR name="ProductNodeName.27" type="ascii">view_zenith_B3</MDATTR>
+                        <MDATTR name="ProductNodeName.28" type="ascii">view_azimuth_B3</MDATTR>
+                        <MDATTR name="ProductNodeName.29" type="ascii">view_zenith_B4</MDATTR>
+                        <MDATTR name="ProductNodeName.30" type="ascii">view_azimuth_B4</MDATTR>
+                        <MDATTR name="ProductNodeName.31" type="ascii">view_zenith_B5</MDATTR>
+                        <MDATTR name="ProductNodeName.32" type="ascii">view_azimuth_B5</MDATTR>
+                        <MDATTR name="ProductNodeName.33" type="ascii">view_zenith_B6</MDATTR>
+                        <MDATTR name="ProductNodeName.34" type="ascii">view_azimuth_B6</MDATTR>
+                        <MDATTR name="ProductNodeName.35" type="ascii">view_zenith_B7</MDATTR>
+                        <MDATTR name="ProductNodeName.36" type="ascii">view_azimuth_B7</MDATTR>
+                        <MDATTR name="ProductNodeName.37" type="ascii">view_zenith_B8</MDATTR>
+                        <MDATTR name="ProductNodeName.38" type="ascii">view_azimuth_B8</MDATTR>
+                        <MDATTR name="ProductNodeName.39" type="ascii">view_zenith_B8A</MDATTR>
+                        <MDATTR name="ProductNodeName.40" type="ascii">view_azimuth_B8A</MDATTR>
+                        <MDATTR name="ProductNodeName.41" type="ascii">view_zenith_B9</MDATTR>
+                        <MDATTR name="ProductNodeName.42" type="ascii">view_azimuth_B9</MDATTR>
+                        <MDATTR name="ProductNodeName.43" type="ascii">view_zenith_B10</MDATTR>
+                        <MDATTR name="ProductNodeName.44" type="ascii">view_azimuth_B10</MDATTR>
+                        <MDATTR name="ProductNodeName.45" type="ascii">view_zenith_B11</MDATTR>
+                        <MDATTR name="ProductNodeName.46" type="ascii">view_azimuth_B11</MDATTR>
+                        <MDATTR name="ProductNodeName.47" type="ascii">view_zenith_B12</MDATTR>
+                        <MDATTR name="ProductNodeName.48" type="ascii">view_azimuth_B12</MDATTR>
+                        <MDATTR name="ProductNodeName.49" type="ascii">elevation</MDATTR>
+                        <MDATTR name="ProductNodeName.50" type="ascii">new_band_1</MDATTR>
+                        <MDATTR name="ProductNodeName.51" type="ascii">sp</MDATTR>
+                        <MDATTR name="ProductNodeName.52" type="ascii">tco3</MDATTR>
+                        <MDATTR name="ProductNodeName.53" type="ascii">Processing_Graph</MDATTR>
+                    </MDElem>
+                </MDElem>
+            </MDElem>
+        </MDElem>
+    </Dataset_Sources>
+</Dimap_Document>

@@ -25,6 +25,7 @@ import org.esa.s2tbx.s2msi.aerosol.util.AerosolUtils;
 import org.esa.s2tbx.s2msi.idepix.util.AlgorithmSelector;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
+import org.esa.s2tbx.s2msi.wv.S2WaterVapourRetrievalOp;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.Operator;
@@ -63,8 +64,11 @@ public class S2AerosolRetrievalMasterOp extends Operator {
     @Parameter(defaultValue = "true")
     private boolean copyGeometryBands;
 
-    @Parameter(defaultValue = "true", description = "if true, aerosol retrieval is done, otherwise Idepix only")
+    @Parameter(defaultValue = "true", description = "if true, aerosol retrieval is done")
     private boolean computeAerosol;
+
+    @Parameter(defaultValue = "true", description = "if true, water vapour retrieval is done")
+    private boolean computeWaterVapour;
 
     @Parameter(defaultValue = "true")
     private boolean filling;
@@ -124,6 +128,12 @@ public class S2AerosolRetrievalMasterOp extends Operator {
 
             targetProduct = mergeToTargetProduct(extendedSourceProduct, aotOrigResolutionProduct);
             ProductUtils.copyPreferredTileSize(extendedSourceProduct, targetProduct);
+        }
+        if (computeWaterVapour) {
+            final S2WaterVapourRetrievalOp waterVapourRetrievalOp = new S2WaterVapourRetrievalOp();
+            waterVapourRetrievalOp.setParameterDefaultValues();
+            waterVapourRetrievalOp.setSourceProduct(targetProduct);
+            targetProduct = waterVapourRetrievalOp.getTargetProduct();
         }
         setTargetProduct(targetProduct);
     }
