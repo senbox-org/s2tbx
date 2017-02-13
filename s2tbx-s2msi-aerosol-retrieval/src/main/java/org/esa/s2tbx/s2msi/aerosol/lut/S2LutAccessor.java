@@ -2,18 +2,17 @@ package org.esa.s2tbx.s2msi.aerosol.lut;
 
 import com.bc.ceres.binding.ValidationException;
 import com.bc.ceres.core.ProgressMonitor;
-import org.esa.snap.core.util.ArrayUtils;
-import org.esa.snap.core.util.StringUtils;
+import org.esa.s2tbx.s2msi.lut.LutUtils;
 import org.esa.snap.core.util.math.LookupTable;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * todo: add comment
@@ -26,7 +25,7 @@ public class S2LutAccessor {
 
     private int[][] minMaxIndices;
 
-    private final Properties properties;
+    private Properties properties;
     private final static String lutshape_name = "lutshape";
     private final static String dimnames_name = "dimnames";
     private final String[] intPropertyNames = {lutshape_name};
@@ -45,22 +44,21 @@ public class S2LutAccessor {
 
     public S2LutAccessor(File inputFile) throws IOException {
 
-        properties = new Properties();
-
         boolean lutExists = false;
+        properties = null;
         if (inputFile.exists()) {
-            File lutDescription = null;
+            File lutDescriptionFile = null;
             if (inputFile.getPath().endsWith("memmap.d")) {
                 final String lutDescriptionPath = inputFile.getAbsolutePath().replace("memmap.d", "dims.jsn");
-                lutDescription = new File(lutDescriptionPath);
+                lutDescriptionFile = new File(lutDescriptionPath);
                 this.lutFile = inputFile;
             } else if (inputFile.getPath().endsWith("dims.jsn")) {
                 final String lutFilePath = inputFile.getAbsolutePath().replace("dims.jsn", "memmap.d");
-                lutDescription = inputFile;
+                lutDescriptionFile = inputFile;
                 this.lutFile = new File(lutFilePath);
             }
-            if (lutDescription != null && lutDescription.exists()) {
-                readPropertiesFromJSONFile(lutDescription);
+            if (lutDescriptionFile != null && lutDescriptionFile.exists()) {
+                properties = LutUtils.readPropertiesFromJsonFile(lutDescriptionFile, intPropertyNames);
                 lutExists = true;
             }
         }
@@ -160,85 +158,6 @@ public class S2LutAccessor {
             throw new ValidationException("Look-Up-Table invalid: Parameter " + lutshape_name + " does not match " +
                                                   "parameter " + dimnames_name);
         }
-    }
-
-    private void readPropertiesFromJSONFile(File jsonFile) throws IOException {
-        final BufferedReader bufferedReader = new BufferedReader(new FileReader(jsonFile));
-        final String fileContent = bufferedReader.readLine();
-        String bracketContent = fileContent.substring(1, fileContent.length() - 1);
-        List<Integer> indexesOfColons = new ArrayList<>();
-        int currentColonindex = -1;
-        while ((currentColonindex = bracketContent.indexOf(':', currentColonindex + 1)) >= 0) {
-            indexesOfColons.add(currentColonindex);
-        }
-        final int numberOfProperties = indexesOfColons.size();
-        int indexOfCurrentComma;
-        int indexOfLastComma = -1;
-        for (int i = 1; i < numberOfProperties; i++) {
-            indexOfCurrentComma = bracketContent.substring(0, indexesOfColons.get(i)).lastIndexOf(',');
-            if (indexOfCurrentComma != indexOfLastComma) {
-                final String propertyName =
-                        bracketContent.substring(indexOfLastComma + 1, indexesOfColons.get(i - 1)).replace("\"", "").trim();
-                final String propertyValue =
-                        bracketContent.substring(indexesOfColons.get(i - 1) + 1, indexOfCurrentComma).trim();
-                putPropertyValue(propertyName, propertyValue);
-                indexOfLastComma = indexOfCurrentComma;
-            }
-        }
-        final String propertyName =
-                bracketContent.substring(indexOfLastComma + 1, indexesOfColons.get(numberOfProperties - 1)).replace("\"", "").trim();
-        final String propertyValue =
-                bracketContent.substring(indexesOfColons.get(numberOfProperties - 1) + 1).trim();
-        putPropertyValue(propertyName, propertyValue);
-    }
-
-    private void putPropertyValue(String propertyName, String propertyValue) {
-        if (propertyValue.startsWith("[") && propertyValue.endsWith("]")) {
-            final String[] propertyValues = propertyValue.substring(1, propertyValue.length() - 1).split(",");
-            if (ArrayUtils.isMemberOf(propertyName, intPropertyNames)) {
-                putPropertiesAsIntegerArray(propertyName, propertyValues);
-            } else if (propertyValues.length > 0 && StringUtils.isNumeric(propertyValues[0], Double.class)) {
-                putPropertiesAsFloatArray(propertyName, propertyValues);
-            } else {
-                putPropertiesAsStringArray(propertyName, propertyValues);
-            }
-        } else {
-            properties.put(propertyName, propertyValue.replace("\"", ""));
-        }
-    }
-
-    private void putPropertiesAsIntegerArray(String propertyName, String[] propertyValues) {
-        int[] propertyValuesAsInteger = new int[propertyValues.length];
-        for (int j = 0; j < propertyValues.length; j++) {
-            String stringValue = propertyValues[j].trim();
-            propertyValuesAsInteger[j] = Integer.parseInt(stringValue);
-        }
-        properties.put(propertyName, propertyValuesAsInteger);
-    }
-
-    private void putPropertiesAsFloatArray(String propertyName, String[] propertyValues) {
-        float[] propertyValuesAsFloat = new float[propertyValues.length];
-        for (int j = 0; j < propertyValues.length; j++) {
-            String stringValue = propertyValues[j];
-            propertyValuesAsFloat[j] = Float.parseFloat(stringValue);
-        }
-        properties.put(propertyName, propertyValuesAsFloat);
-    }
-
-    private void putPropertiesAsStringArray(String propertyName, String[] propertyValues) {
-        List<String> newPropertyValues = new ArrayList<>();
-        for (int j = 0; j < propertyValues.length; j++) {
-            String propertyValue = propertyValues[j];
-            while (j < propertyValues.length - 1 &&
-                    !(propertyValue.charAt(propertyValue.length() - 1) == '"') &&
-                    !(propertyValues[j + 1].charAt(0) == '"')) {
-                propertyValue = propertyValue + ", " + propertyValues[j + 1];
-                j++;
-            }
-            propertyValue = propertyValue.replace("\"", "").trim();
-            newPropertyValues.add(propertyValue);
-        }
-        properties.put(propertyName, newPropertyValues.toArray(new String[newPropertyValues.size()]));
     }
 
     private int getLutLength() {
