@@ -143,7 +143,7 @@ public class S2LutUtils {
         }
 
         for (int iWvl = 0; iWvl < ipd.nSpecWvl; iWvl++) {
-            LookupTable.computeFracIndex(partitions[7], iWvl, fracIndexes[7]);
+            LookupTable.computeFracIndex(partitions[7], ipd.specWvl[iWvl], fracIndexes[7]);
             final double[] atmosphericParameters = s2Lut.getValues(fracIndexes);
             // "path_radiance", "view_trans_diff", "spherical_albedo", "global_irradiance",
             // "view_trans_dir", "sun_trans_dir", "toa_irradiance"
