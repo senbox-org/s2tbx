@@ -44,6 +44,7 @@ class InstrumentConsts {
     public static final String OZONE_NAME = "tco3";
     public static final String SURFACE_PRESSURE_NAME = "sp";
     public static final String ELEVATION_NAME = "elevation";
+    public static final String WATER_VAPOUR_NAME = "water_vapour";
 
     // todo: normalize these elsewhere, see old code
     public static final double[] FIT_WEIGHTS = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};

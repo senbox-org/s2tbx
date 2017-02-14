@@ -99,11 +99,26 @@ public class S2AerosolRetrievalMasterOp extends Operator {
 
         setTargetProduct(extendedSourceProduct);
 
-        Product aotDownscaledProduct = extendedSourceProduct;
+        Product waterVapourProduct = extendedSourceProduct;
+        if (computeWaterVapour) {
+            final S2WaterVapourRetrievalOp waterVapourRetrievalOp = new S2WaterVapourRetrievalOp();
+            waterVapourRetrievalOp.setParameterDefaultValues();
+            waterVapourRetrievalOp.setSourceProduct(extendedSourceProduct);
+            waterVapourProduct = waterVapourRetrievalOp.getTargetProduct();
+        } else {
+            String waterVapourExpression = "2500.0";
+            Band waterVapourBand = waterVapourProduct.addBand(InstrumentConsts.WATER_VAPOUR_NAME, waterVapourExpression);
+            waterVapourBand.setDescription("estimated water vapour");
+            waterVapourBand.setNoDataValue(-99999.0);
+            waterVapourBand.setNoDataValueUsed(true);
+            targetProduct.addBand(waterVapourBand);
+        }
+
+        Product aotDownscaledProduct = waterVapourProduct;
         if (computeAerosol) {
             S2AerosolOp s2AerosolOp = new S2AerosolOp();
             s2AerosolOp.setParameterDefaultValues();
-            s2AerosolOp.setSourceProduct(extendedSourceProduct);
+            s2AerosolOp.setSourceProduct(waterVapourProduct);
             s2AerosolOp.setParameter("pathToLut", pathToLut);
             s2AerosolOp.setParameter("scale", scale);
             aotDownscaledProduct = s2AerosolOp.getTargetProduct();
@@ -126,14 +141,8 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             upscaleOp.setParameter("scale", scale);
             Product aotOrigResolutionProduct = upscaleOp.getTargetProduct();
 
-            targetProduct = mergeToTargetProduct(extendedSourceProduct, aotOrigResolutionProduct);
+            targetProduct = mergeToTargetProduct(waterVapourProduct, aotOrigResolutionProduct);
             ProductUtils.copyPreferredTileSize(extendedSourceProduct, targetProduct);
-        }
-        if (computeWaterVapour) {
-            final S2WaterVapourRetrievalOp waterVapourRetrievalOp = new S2WaterVapourRetrievalOp();
-            waterVapourRetrievalOp.setParameterDefaultValues();
-            waterVapourRetrievalOp.setSourceProduct(targetProduct);
-            targetProduct = waterVapourRetrievalOp.getTargetProduct();
         }
         setTargetProduct(targetProduct);
     }

@@ -119,6 +119,7 @@ public class S2AerosolOp extends Operator {
                 InstrumentConsts.OZONE_NAME,
                 InstrumentConsts.SURFACE_PRESSURE_NAME,
                 InstrumentConsts.ELEVATION_NAME,
+                InstrumentConsts.WATER_VAPOUR_NAME,
                 validName
         };
 
@@ -234,9 +235,8 @@ public class S2AerosolOp extends Operator {
         skip += nSpecWvl;
         double ozone = tileValues[skip++];
         double surfP = Math.min(tileValues[skip++], 101325.0);
-        double elevation = tileValues[skip];
-        //todo derive water vapour from LUT
-        double wvCol = 2500.0;
+        double elevation = tileValues[skip++];
+        double wvCol = tileValues[skip];
         return new InputPixelData(geomNadir, geomFward, elevation, ozone, surfP, wvCol, specWvl[0], toaRefl[0], toaRefl[1]);
     }
 
@@ -486,7 +486,11 @@ public class S2AerosolOp extends Operator {
         valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
 
         // elevation data
-        tileValues[skip] = sourceTiles.get(InstrumentConsts.ELEVATION_NAME).getSampleDouble(x, y);
+        tileValues[skip++] = sourceTiles.get(InstrumentConsts.ELEVATION_NAME).getSampleDouble(x, y);
+        valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
+
+        // water vapour data
+        tileValues[skip] = sourceTiles.get(InstrumentConsts.WATER_VAPOUR_NAME).getSampleDouble(x, y);
         valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
 
         return valid;
