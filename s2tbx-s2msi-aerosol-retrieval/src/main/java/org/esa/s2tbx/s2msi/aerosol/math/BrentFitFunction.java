@@ -6,9 +6,9 @@
 package org.esa.s2tbx.s2msi.aerosol.math;
 
 import org.esa.s2tbx.s2msi.aerosol.InputPixelData;
+import org.esa.s2tbx.s2msi.aerosol.lut.S2Lut;
 import org.esa.s2tbx.s2msi.aerosol.lut.S2LutUtils;
 import org.esa.snap.core.gpf.OperatorException;
-import org.esa.snap.core.util.math.LookupTable;
 
 /**
  *
@@ -25,7 +25,7 @@ public class BrentFitFunction implements Function {
 
     private final int model;
     private final InputPixelData[] inPixField;
-    private final LookupTable s2Lut;
+    private final S2Lut s2Lut;
     private final double julianDay;
     private final double distanceCorrection;
     private final double[] aotGrid;
@@ -34,7 +34,7 @@ public class BrentFitFunction implements Function {
     private final double[] specVeg;
 
 
-    public BrentFitFunction(int modelType, InputPixelData[] inPixField, LookupTable lut, double julianDay,
+    public BrentFitFunction(int modelType, InputPixelData[] inPixField, S2Lut lut, double julianDay,
                             double distanceCorrection, double[] aotGrid, double[] specWeights, double[] specSoil,
                             double[] specVeg) {
         this.model = modelType;

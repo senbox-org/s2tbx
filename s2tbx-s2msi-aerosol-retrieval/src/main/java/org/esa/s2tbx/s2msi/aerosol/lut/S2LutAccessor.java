@@ -3,7 +3,6 @@ package org.esa.s2tbx.s2msi.aerosol.lut;
 import com.bc.ceres.binding.ValidationException;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.lut.LutUtils;
-import org.esa.snap.core.util.math.LookupTable;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -74,7 +73,7 @@ public class S2LutAccessor {
         initIndices();
     }
 
-    public LookupTable readLut(ProgressMonitor progressMonitor) throws IOException {
+    public S2Lut readLut(ProgressMonitor progressMonitor) throws IOException {
         final int lutLength = getLutLength();
         if (progressMonitor != null) {
             progressMonitor.beginTask("Reading Look-Up-Table", lutLength);
@@ -117,7 +116,7 @@ public class S2LutAccessor {
 
         iis.close();
 
-        return new LookupTable(lutArray, wvp, ad, sza, vza, ra, alt, at, wvl, params);
+        return new S2Lut(lutArray, wvp, ad, sza, vza, ra, alt, at, wvl, params);
     }
 
     int getNumberOfNonSpectralProperties() {

@@ -130,7 +130,7 @@ public class S2WaterVapourRetrievalOp extends PixelOperator {
         }
         final double[] bValues = waterVapourLut.getValues(fracIndexes);
         double waterVapour = Math.pow(bValues[0] * log10_cibr + bValues[1], 2);
-        waterVapour *= 10;
+        waterVapour *= 10;  //changing from g/cm^2 to kg/m^2
         return waterVapour;
     }
 
@@ -156,6 +156,7 @@ public class S2WaterVapourRetrievalOp extends PixelOperator {
         final Band waterVapourBand = productConfigurer.addBand(WATER_VAPOUR_BAND_NAME, ProductData.TYPE_FLOAT32);
         waterVapourBand.setNoDataValue(WV_NO_DATA_VALUE);
         waterVapourBand.setNoDataValueUsed(true);
+        waterVapourBand.setUnit("kg/m^2");
     }
 
     @Override

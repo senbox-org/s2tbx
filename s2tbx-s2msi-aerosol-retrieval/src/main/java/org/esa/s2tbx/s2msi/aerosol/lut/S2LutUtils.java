@@ -34,56 +34,17 @@ public class S2LutUtils {
     }
 
     //    public static synchronized double getMaxAOT(InputPixelData ipd, LookupTable s2Lut, double[] aot) {
-    public static double getMaxAOT(InputPixelData ipd, LookupTable s2Lut, double[] aot) {
+    public static double getMaxAOT(InputPixelData ipd, S2Lut s2Lut, double[] aot) {
 
-        // input required:
-        //        "water_vapour": [500,.., 5000],
-        //        "aerosol_depth": [0.05,.., 1.2],
-        //        "sun_zenith_angle": [0,.., 70],
-        //        "view_zenith_angle": [0,.., 60],
-        //        "relative_azimuth": [0,.., 180],
-        //        "altitude": [0.0,.., 4.0],
-        //        "aerosol_type": ["___rural", "maritime", "___urban", "__desert"],
-        //        "model_type": ["MidLatitudeSummer"],
-        //        "ozone_content": [0.33176],
-        //        "co2_mixing_ratio": [380],
-        //        "wavelengths": [0.443,.., 2.19],
-
-        // LUT result vector:
-        // ["path_radiance", "view_trans_diff", "spherical_albedo", "global_irradiance",
-        //  "view_trans_dir", "sun_trans_dir", "toa_irradiance"]
-        // --> result indices 1.0,..,7.0
-
-        final double wv = ipd.wvCol;
-        final double aod = 0.15;   // todo: what to set here?? An initial value? AOD is what we want to retrieve?!?!??
-        final double sza = ipd.geom.sza;
-        final double vza = ipd.geom.vza;
-        final double raa = ipd.geom.razi;
-        final double altitude = ipd.elevation / 1000.0;
-        final double aerosolType = 3.0; // get started with this
-
-        final double wvl_0 = S2LutConstants.dimValues[10][0];
-        final double rhoPathLutResultIndex = 1.0;
-
-        final FracIndex[] fracIndices = FracIndex.createArray(9);
-        final IntervalPartition[] partitions = s2Lut.getDimensions();
-        final double[] coordinates = new double[]{wv, aod, sza, vza, raa, altitude, aerosolType, wvl_0, rhoPathLutResultIndex};
-
-        for (int i = 0; i < 9; i++) {
-            LookupTable.computeFracIndex(partitions[i], coordinates[i], fracIndices[i]);
-        }
-
-        double[] v = new double[1 << fracIndices.length];
-        double lPath = s2Lut.getValue(fracIndices, v);
+        // todo: what to set here?? An initial value? AOD is what we want to retrieve?!?!??
+        double lPath = getAtmosphericParameter(ipd, s2Lut, 4, 0, 0); // starting with aod=0.15
         // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));      // TODO: GK to check if this factor is correct
         double lPath0 = lPath;
         int iAot = -1;
         while (iAot < aot.length - 1 && lPath < ipd.toaReflec[0]) {
             lPath0 = lPath;
             iAot++;
-            fracIndices[1].i = iAot;
-            fracIndices[1].f = 0.0;
-            lPath = s2Lut.getValue(fracIndices, v);
+            lPath = getAtmosphericParameter(ipd, s2Lut, iAot, 0, 0);
             // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));  // TODO: GK to check if this factor is correct (s.a.)
         }
         if (iAot == 0) {
@@ -95,20 +56,68 @@ public class S2LutUtils {
         return aot[iAot - 1] + (aot[iAot] - aot[iAot - 1]) * (ipd.toaReflec[0] - lPath0) / (lPath - lPath0);
     }
 
-    public static void getSdrAndDiffuseFrac(InputPixelData ipd, LookupTable s2Lut, double julianDay, double distanceCorrection, double tau) {
+    private static double getAtmosphericParameter(InputPixelData ipd, S2Lut s2Lut, int aotIndex,
+                                                  int wavelengthIndex, int paramIndex) {
+        ensureLutSubsetIsSet(s2Lut, ipd);
+        return ipd.pixelLutSubset[aotIndex][wavelengthIndex][paramIndex];
+    }
+
+    private static double[][] getAtmosphericParameters(InputPixelData ipd, S2Lut s2Lut, double tau) {
+        ensureLutSubsetIsSet(s2Lut, ipd);
+        final FracIndex fracIndex = new FracIndex();
+        LookupTable.computeFracIndex(s2Lut.getDimension(1), tau, fracIndex);
+        int numWavelengths = s2Lut.getDimension(s2Lut.getDimensionCount() - 2).getSequence().length;
+        int numParams = s2Lut.getDimension(s2Lut.getDimensionCount() - 1).getSequence().length;
+        double[][] atmosphericParameters = new double[numWavelengths][numParams];
+        for (int i_wvl = 0; i_wvl < numWavelengths; i_wvl++) {
+            for (int i_param = 0; i_param < numParams; i_param++) {
+                atmosphericParameters[i_wvl][i_param] =
+                        ipd.pixelLutSubset[fracIndex.i][i_wvl][i_param] * fracIndex.f +
+                                ipd.pixelLutSubset[fracIndex.i + 1][i_wvl][i_param] * (1. - fracIndex.f);
+            }
+        }
+        return atmosphericParameters;
+    }
+
+
+    private static void ensureLutSubsetIsSet(S2Lut s2Lut, InputPixelData ipd) {
+        if (ipd.pixelLutSubset != null) {
+            return;
+        }
+        final double wv = ipd.wvCol;
+        final double sza = ipd.geom.sza;
+        final double vza = ipd.geom.vza;
+        final double raa = ipd.geom.razi;
+        final double altitude = ipd.elevation / 1000.0;
+        final double aerosolType = 3.0; // get started with this
+
+        final double[] coordinates = new double[]{wv, sza, vza, raa, altitude, aerosolType};
+
+        final FracIndex[] fracIndexes = FracIndex.createArray(coordinates.length);
+        final IntervalPartition[] partitions = s2Lut.getDimensions();
+
+        int index = 0;
+        for (int i = 0; i < 6; i++) {
+            if (index == 1) {
+                index++;
+            }
+            LookupTable.computeFracIndex(partitions[index], coordinates[i], fracIndexes[i]);
+            index++;
+        }
+        ipd.pixelLutSubset = s2Lut.getAotWvlAndACValues(fracIndexes);
+    }
+
+    public static void getSdrAndDiffuseFrac(InputPixelData ipd, S2Lut s2Lut, double julianDay, double distanceCorrection, double tau) {
         // todo: ugly that void is returned here
 
         Guardian.assertNotNull("InputPixelData.diffuseFrac[][]", ipd.diffuseFrac);
         Guardian.assertNotNull("InputPixelData.surfReflec[][]", ipd.surfReflec);
 
-        final double wv = ipd.wvCol;
         final double sza = ipd.geom.sza;
         final double vza = ipd.geom.vza;
         final double raa = ipd.geom.razi;
         final double ozone = ipd.ozone / 0.0214144;
         final double surfPressure = ipd.surfPressure / 100.;
-        final double altitude = ipd.elevation / 1000.0;
-        final double aerosolType = 3.0; // get started with this
 
         // from S2 LUT we get for wvl=1,..,13:
         // "path_radiance", "view_trans_diff", "spherical_albedo", "global_irradiance",
@@ -134,26 +143,18 @@ public class S2LutUtils {
                 Math.sin(Math.toRadians(sza)) * Math.sin(Math.toRadians(vza)) * Math.cos(Math.toRadians(raa));
         final double rayPhaseFunc = 0.75 * (1.0 - cosScattAngle * cosScattAngle);
 
-        final FracIndex[] fracIndexes = FracIndex.createArray(8);
-        final IntervalPartition[] partitions = s2Lut.getDimensions();
-        final double[] coordinates = new double[]{wv, tau, sza, vza, raa, altitude, aerosolType};
-
-        for (int i = 0; i < 7; i++) {
-            LookupTable.computeFracIndex(partitions[i], coordinates[i], fracIndexes[i]);
-        }
+        double[][] atmosphericParameters = getAtmosphericParameters(ipd, s2Lut, tau);
 
         for (int iWvl = 0; iWvl < ipd.nSpecWvl; iWvl++) {
-            LookupTable.computeFracIndex(partitions[7], ipd.specWvl[iWvl], fracIndexes[7]);
-            final double[] atmosphericParameters = s2Lut.getValues(fracIndexes);
             // "path_radiance", "view_trans_diff", "spherical_albedo", "global_irradiance",
             // "view_trans_dir", "sun_trans_dir", "toa_irradiance"
-            final double lPath0 = atmosphericParameters[0];
-            final double viewTransDiff = atmosphericParameters[1];
-            final double spherAlb = atmosphericParameters[2];
-            final double eg0 = atmosphericParameters[3];
-            final double viewTransDir = atmosphericParameters[4];
-            final double sunTransDir = atmosphericParameters[5];
-            double toaIrradiance = atmosphericParameters[6];
+            final double lPath0 = atmosphericParameters[iWvl][0];
+            final double viewTransDiff = atmosphericParameters[iWvl][1];
+            final double spherAlb = atmosphericParameters[iWvl][2];
+            final double eg0 = atmosphericParameters[iWvl][3];
+            final double viewTransDir = atmosphericParameters[iWvl][4];
+            final double sunTransDir = atmosphericParameters[iWvl][5];
+            double toaIrradiance = atmosphericParameters[iWvl][6];
 
 
             // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));   // TODO: GK to check if this factor is correct (s.a.)

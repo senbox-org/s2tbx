@@ -19,6 +19,7 @@ public class InputPixelData {
     public double[] toaReflecFward;
     public double[][] surfReflec;
     public double[][] diffuseFrac;
+    public double[][][] pixelLutSubset; //first dim: aod, second dim: wavelength, third dim: atmospheric parameters
 
     public InputPixelData(PixelGeometry geom, PixelGeometry geomFward, double elevation, double ozone, double surfPressure,
                           double wvCol, float[] specWvl, double[] toaReflec, double[] toaReflecFward) {

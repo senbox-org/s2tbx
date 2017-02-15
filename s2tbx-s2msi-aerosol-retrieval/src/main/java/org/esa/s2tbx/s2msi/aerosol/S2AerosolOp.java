@@ -1,13 +1,21 @@
 package org.esa.s2tbx.s2msi.aerosol;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.s2msi.aerosol.lut.S2Lut;
 import org.esa.s2tbx.s2msi.aerosol.lut.S2LutAccessor;
 import org.esa.s2tbx.s2msi.aerosol.lut.S2LutUtils;
 import org.esa.s2tbx.s2msi.aerosol.math.BrentFitFunction;
 import org.esa.s2tbx.s2msi.aerosol.util.AerosolUtils;
 import org.esa.s2tbx.s2msi.aerosol.util.PixelGeometry;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
-import org.esa.snap.core.datamodel.*;
+import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.GeoCoding;
+import org.esa.snap.core.datamodel.GeoPos;
+import org.esa.snap.core.datamodel.PixelGeoCoding;
+import org.esa.snap.core.datamodel.PixelPos;
+import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.datamodel.ProductData;
+import org.esa.snap.core.datamodel.RasterDataNode;
 import org.esa.snap.core.gpf.Operator;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
@@ -17,14 +25,22 @@ import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
 import org.esa.snap.core.util.Guardian;
-import org.esa.snap.core.util.math.LookupTable;
 
 import javax.media.jai.BorderExtender;
-import java.awt.*;
-import java.io.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,7 +95,7 @@ public class S2AerosolOp extends Operator {
     private double[] vegSurfSpec;
     private double[] specWeights;
 
-    private LookupTable s2Lut;
+    private S2Lut s2Lut;
     private double[] aotGrid;
 
     private BorderExtender borderExt;
