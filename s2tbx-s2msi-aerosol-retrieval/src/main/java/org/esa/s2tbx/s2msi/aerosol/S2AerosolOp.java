@@ -203,8 +203,6 @@ public class S2AerosolOp extends Operator {
             brentFitFunction = new BrentFitFunction(BrentFitFunction.SPECTRAL_MODEL,
                                                     inPixField,
                                                     s2Lut,
-                                                    julianDay,
-                                                    distanceCorrection,
                                                     aotGrid,
                                                     specWeights,
                                                     soilSurfSpec,
@@ -238,15 +236,12 @@ public class S2AerosolOp extends Operator {
 
     private InputPixelData createInPixelData(double[] tileValues) {
         PixelGeometry geomNadir;
-        PixelGeometry geomFward;
-        double[][] toaRefl = new double[2][nSpecWvl];
+        double[] toaRefl = new double[nSpecWvl];
         int skip = 0;
         geomNadir = new PixelGeometry(tileValues[0], tileValues[1], tileValues[2], tileValues[3]);
-        geomFward = geomNadir;
         skip += 4;
         for (int i = 0; i < nSpecWvl; i++) {
-            toaRefl[0][i] = tileValues[skip + i];
-            toaRefl[1][i] = tileValues[skip + i];
+            toaRefl[i] = tileValues[skip + i];
         }
         skip += nSpecWvl;
         double ozone = tileValues[skip++];
@@ -254,7 +249,46 @@ public class S2AerosolOp extends Operator {
         double elevation = tileValues[skip++];
         double wvCol = tileValues[skip];
         wvCol /= 0.00803751;
-        return new InputPixelData(geomNadir, geomFward, elevation, ozone, surfP, wvCol, specWvl[0], toaRefl[0], toaRefl[1]);
+
+        final double cosineOfSZA = Math.cos(Math.toRadians(geomNadir.getSza()));
+        final double cosineOfVZA = Math.cos(Math.toRadians(geomNadir.getVza()));
+//      # eq. 6-4
+        final double tauStratAeroView = 1.0;
+//      # eq. 6-9
+        final double mCorrRay = ((surfP / 100.) - S2AerosolConstants.PRESSURE_STANDARD) /
+                S2AerosolConstants.PRESSURE_STANDARD;
+//      # eq. 6-1
+        final double airMassOzoneCorrection = (ozone / 0.0214144) - S2AerosolConstants.OZONE_STANDARD;
+        final double rayPhaseFunc = S2LutUtils.getRayPhaseFunc(geomNadir.sza, geomNadir.vza, geomNadir.razi);
+        final double[] toaIrradianceToPathToaTosa = new double[nSpecWvl];
+        final double[] lToa = new double[nSpecWvl];
+        final double[] tauOzoneStratAeroView = new double[nSpecWvl];
+        final double[] tauRayOzoneStratAeroView = new double[nSpecWvl];
+        final double[] tauRaySun = new double[nSpecWvl];
+        final double[] tauOzoneSun = new double[nSpecWvl];
+        for (int iWvl = 0; iWvl < nSpecWvl; iWvl++) {
+            final double absorptionCoefficient = S2AerosolConstants.OZONE_ABSORPTION_COEFFICENTS_PER_S2_BAND[iWvl];
+//           # eq. 6-2
+            tauOzoneSun[iWvl] = Math.exp(-(absorptionCoefficient * airMassOzoneCorrection / cosineOfSZA));
+//           # eq. 6-3
+            final double tauOzoneView = Math.exp(-(absorptionCoefficient * airMassOzoneCorrection / cosineOfVZA));
+            final double kRay = S2AerosolConstants.K_RAY[iWvl];
+//           # eq. 6-10
+            tauRaySun[iWvl] =  Math.exp(-(0.5 * kRay * mCorrRay / cosineOfSZA));
+//           # eq. 6-11
+            final double tauRayView = Math.exp(-(0.5 * kRay * mCorrRay / cosineOfVZA));
+            lToa[iWvl] = S2LutUtils.convertReflToRad(toaRefl[iWvl], iWvl, geomNadir.sza, julianDay) /
+                    distanceCorrection;
+//           # part of eq. 6-13
+            toaIrradianceToPathToaTosa[iWvl] = (kRay * mCorrRay * tauRaySun[iWvl] * rayPhaseFunc) /
+                    (4.0 * Math.PI * cosineOfSZA * cosineOfVZA);
+//           # parts of eq. 6-15
+            tauOzoneStratAeroView[iWvl] = tauOzoneView * tauStratAeroView;
+            tauRayOzoneStratAeroView[iWvl] = tauOzoneStratAeroView[iWvl] * tauRayView;
+        }
+
+        return new InputPixelData(geomNadir, elevation, wvCol, specWvl[0], toaRefl, toaIrradianceToPathToaTosa,
+                                  lToa, tauOzoneStratAeroView, tauRayOzoneStratAeroView, tauRaySun, tauOzoneSun);
     }
 
     private void createTargetProduct() {

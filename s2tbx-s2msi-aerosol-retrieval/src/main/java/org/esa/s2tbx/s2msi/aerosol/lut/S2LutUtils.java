@@ -15,14 +15,9 @@ import org.esa.snap.core.util.math.MathUtils;
  * Date: 21.12.2016
  * Time: 16:50
  *
- * @author olafd
+ * @author olafd, Tonio Fincke
  */
 public class S2LutUtils {
-
-    private final static double OZONE_STANDARD = 0.33176;
-    private final static double PRESSURE_STANDARD = 1013.25;
-    private final static double[] OZONE_ABSORPTION_COEFFICENTS_PER_S2_BAND =
-            new double[]{0.0024, 0.021, 0.103, 0.0525, 0.0205, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
     public static boolean isInsideLut(InputPixelData ipd, LookupTable s2Lut) {
         final boolean wvInside = ipd.wvCol >= s2Lut.getDimension(0).getMin() && ipd.wvCol <= s2Lut.getDimension(0).getMax();
@@ -33,27 +28,25 @@ public class S2LutUtils {
         return wvInside && szaInside && vzaInside && raaInside;
     }
 
-    //    public static synchronized double getMaxAOT(InputPixelData ipd, LookupTable s2Lut, double[] aot) {
     public static double getMaxAOT(InputPixelData ipd, S2Lut s2Lut, double[] aot) {
-
         // todo: what to set here?? An initial value? AOD is what we want to retrieve?!?!??
         double lPath = getAtmosphericParameter(ipd, s2Lut, 4, 0, 0); // starting with aod=0.15
-        // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));      // TODO: GK to check if this factor is correct
         double lPath0 = lPath;
         int iAot = -1;
-        while (iAot < aot.length - 1 && lPath < ipd.toaReflec[0]) {
+        final double toaIrradiance = getAtmosphericParameter(ipd, s2Lut, 4, 0, 6);
+        final double lToaTosa = getLToaTosa(toaIrradiance, ipd, 0);
+        while (iAot < aot.length - 1 && lPath < lToaTosa) {
             lPath0 = lPath;
             iAot++;
             lPath = getAtmosphericParameter(ipd, s2Lut, iAot, 0, 0);
-            // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));  // TODO: GK to check if this factor is correct (s.a.)
         }
         if (iAot == 0) {
             return 0.05;
         }
-        if (lPath < ipd.toaReflec[0]) {
+        if (lPath < lToaTosa) {
             return 1.2;
         }
-        return aot[iAot - 1] + (aot[iAot] - aot[iAot - 1]) * (ipd.toaReflec[0] - lPath0) / (lPath - lPath0);
+        return aot[iAot - 1] + (aot[iAot] - aot[iAot - 1]) * (lToaTosa - lPath0) / (lPath - lPath0);
     }
 
     private static double getAtmosphericParameter(InputPixelData ipd, S2Lut s2Lut, int aotIndex,
@@ -107,41 +100,25 @@ public class S2LutUtils {
         ipd.pixelLutSubset = s2Lut.getAotWvlAndACValues(fracIndexes);
     }
 
-    public static void getSdrAndDiffuseFrac(InputPixelData ipd, S2Lut s2Lut, double julianDay, double distanceCorrection, double tau) {
+    public static double getRayPhaseFunc(double sza, double vza, double raa) {
+//      # eq. 6-12
+        final double radSza = Math.toRadians(sza);
+        final double radVza = Math.toRadians(vza);
+        final double cosScattAngle = Math.cos(radSza) * Math.cos(radVza) +
+                Math.sin(radSza) * Math.sin(radVza) * Math.cos(Math.toRadians(raa));
+        return 0.75 * (1.0 - cosScattAngle * cosScattAngle);
+    }
+
+    public static void getSdrAndDiffuseFrac(InputPixelData ipd, S2Lut s2Lut, double tau) {
         // todo: ugly that void is returned here
 
         Guardian.assertNotNull("InputPixelData.diffuseFrac[][]", ipd.diffuseFrac);
         Guardian.assertNotNull("InputPixelData.surfReflec[][]", ipd.surfReflec);
 
         final double sza = ipd.geom.sza;
-        final double vza = ipd.geom.vza;
-        final double raa = ipd.geom.razi;
-        final double ozone = ipd.ozone / 0.0214144;
-        final double surfPressure = ipd.surfPressure / 100.;
-
-        // from S2 LUT we get for wvl=1,..,13:
-        // "path_radiance", "view_trans_diff", "spherical_albedo", "global_irradiance",
-        // "view_trans_dir", "sun_trans_dir", "toa_irradiance"
-
         final double cosineOfSZA = Math.cos(Math.toRadians(sza));
-        final double cosineOfVZA = Math.cos(Math.toRadians(vza));
-//            # Ozone:
-//            # eq. 6-1
-//            m_corr_ozone = 0      // later
-//            final double mCorrOzone = 0.0;
-        final double airMassOzoneCorrection = ozone - OZONE_STANDARD;
-        //            # eq. 6-9
-        final double mCorrRay = (surfPressure - PRESSURE_STANDARD) / PRESSURE_STANDARD;
-//            # Stratospheric aerosol:
-//            # eq. 6-4
-//            # if AOD < 0.03, we don't do anything -->
-//            tau_strat_aero_v = 1.0
-        final double tauStratAeroView = 1.0;
+//      # eq. 6-4
         final double tauStratAeroSun = 1.0;
-//            # eq. 6-12
-        final double cosScattAngle = cosineOfSZA * cosineOfVZA +
-                Math.sin(Math.toRadians(sza)) * Math.sin(Math.toRadians(vza)) * Math.cos(Math.toRadians(raa));
-        final double rayPhaseFunc = 0.75 * (1.0 - cosScattAngle * cosScattAngle);
 
         double[][] atmosphericParameters = getAtmosphericParameters(ipd, s2Lut, tau);
 
@@ -155,62 +132,18 @@ public class S2LutUtils {
             final double viewTransDir = atmosphericParameters[iWvl][4];
             final double sunTransDir = atmosphericParameters[iWvl][5];
             double toaIrradiance = atmosphericParameters[iWvl][6];
-
-
-            // lPath = lPath * Math.PI / Math.cos(Math.toRadians(sza));   // TODO: GK to check if this factor is correct (s.a.)
-            final double tupTdown = viewTransDiff + viewTransDir; // GK
-
-            final double reflToa = ipd.getToaReflec()[iWvl];
-
-            final double lToa = convertReflToRad(reflToa, iWvl, sza, julianDay) / distanceCorrection;
-            ;  // convert to radiance
-
-            final double absorptionCoefficient = OZONE_ABSORPTION_COEFFICENTS_PER_S2_BAND[iWvl];
-
-            // todo: implement here as in Python S2 AC, radToa is l_toa below:
-//            e_s *= cos_sza
             toaIrradiance /= 10000;
             toaIrradiance *= cosineOfSZA;
-//
-//            # Ozone:
-//            # eq. 6-2
-            final double tauOzoneSun = Math.exp(-(absorptionCoefficient * airMassOzoneCorrection / cosineOfSZA));
-//            # eq. 6-3
-//            tau_ozone_v = 1.0
-//            final double tauOzoneV = 1.0;
-            final double tauOzoneView = Math.exp(-(absorptionCoefficient * airMassOzoneCorrection / cosineOfVZA));
-////            # Stratospheric aerosol:
 
-//            m_corr_ray = 0
-//            final double mCorrRay = 0.0;
-//            # eq. 6-10
-//            k_ray = 0.008375 * np.power(wvl, -4.08)  # wvl for given band in microns
-            final double kRay = 0.008375 * Math.pow(ipd.specWvl[iWvl], -4.08);
-//            # k_ray = 0.008375 * wvl  # wvl for given band in microns
-            final double tauRaySun = Math.exp(-(0.5 * kRay * mCorrRay / cosineOfSZA));
-//            tau_ray_s = 1.0
-//            final double tauRayS = 0.0;
-//            # eq. 6-11
-            final double tauRayView = Math.exp(-(0.5 * kRay * mCorrRay / cosineOfVZA));
-//            tau_ray_v = 1.0
-//            final double tauRayV = 1.0;
+            final double tupTdown = viewTransDiff + viewTransDir; // GK
 
-//
-//            # eq. 6-13
-//            l_path_toa_tosa = (e_s * k_ray * m_corr_ray * tau_ray_s * ray_phase_func) / (
-//                    4.0 * np.pi * cos_sza * cos_vza)
-            final double lPathToaTosa = (toaIrradiance * kRay * mCorrRay * tauRaySun * rayPhaseFunc) /
-                    (4.0 * Math.PI * cosineOfSZA * cosineOfVZA);
-//                    (4.0 * Math.PI * Math.cos(Math.toRadians(sza)) * Math.cos(Math.toRadians(vza)));
-//
-//            # eq. 6-14
+            final double tauRaySun = ipd.tauRaySun[iWvl];
+            final double tauOzoneSun = ipd.tauOzoneSun[iWvl];
+//           # eq. 6-14
             final double tosaIrradiance = toaIrradiance * tauRaySun * tauOzoneSun * tauStratAeroSun;
 
-//            # eq. 6-15
-//            l_toa_tosa = (l_toa - l_path_toa_tosa * tau_ozone_v * tau_strat_aero_v) / (
-//                    tau_ray_v * tau_ozone_v * tau_strat_aero_v)
-            final double lToaTosa = (lToa - lPathToaTosa * tauOzoneView * tauStratAeroView) / (tauRayView * tauOzoneView * tauStratAeroView);
-//
+            final double lToaTosa = getLToaTosa(toaIrradiance, ipd, iWvl);
+
 //            # eq. 6-17
 //            # first line
 //            # just the terms of E_g
@@ -222,25 +155,30 @@ public class S2LutUtils {
 //            final double eDirStar = toaIrradiance * sunTransDir * Math.cos(Math.toRadians(sza));
 //
 //            # third line
-//            # e_diff = e_g_0 / (1.0 - rho_reference * sph_alb) - e_s * sun_trans_dir * cos_sza  # NOT in ATBD, given by GK
-//            # RHO_REFERENCE = 0.15:
-//            e_diff = e_g_0 / (
-//                    1.0 - RHO_REFERENCE * sph_alb) - e_s * sun_trans_dir * cos_sza  # NOT in ATBD, given by GK
             final double eDiff = eg0 / (1.0 - S2AerosolConstants.RHO_REFERENCE * spherAlb) -
                     tosaIrradiance * sunTransDir * Math.cos(Math.toRadians(sza));
 
-            // e_g = e_g_0 / (1.0 - RHO_REFERENCE * sph_alb)
             final double eg = eg0 / (1.0 - S2AerosolConstants.RHO_REFERENCE * spherAlb);
 
-            ipd.surfReflec[0][iWvl] = Math.PI * (lToaTosa - lPath0) / (Math.PI * spherAlb * (lToaTosa - lPath0) + eg0 * tupTdown);
-//            ipd.surfReflec[0][iWvl] = Math.PI * (radToa - lPath) / (Math.PI * spherAlb * (radToa - lPath) + eg0 * tupTdown);
+            ipd.surfReflec[0][iWvl] = Math.PI * (lToaTosa - lPath0) /
+                    (Math.PI * spherAlb * (lToaTosa - lPath0) + eg0 * tupTdown);
 
-//            ipd.diffuseFrac[0][iWvl] = 1.0 - lutValues[iWvl][3];
-//            ipd.diffuseFrac[0][iWvl] = 1.0; // get started with this
             // MomoLut doc says: ratio diff / total downward radiation
             // now GK derived this term from formulas above as: e_diff/e_g
             ipd.diffuseFrac[0][iWvl] = eDiff / eg;
         }
+    }
+
+    private static double getLToaTosa(double toaIrradiance, InputPixelData ipd, int iWvl) {
+        final double toaIrradianceToPathToaTosa = ipd.toaIrradianceToPathToToaTosa[iWvl];
+        final double lToa = ipd.lToa[iWvl];
+        final double tauOzoneStratAeroView = ipd.tauOzoneStratAeroView[iWvl];
+        final double tauRayOzoneStratAeroView = ipd.tauRayOzoneStratAeroView[iWvl];
+//            # eq. 6-13
+        final double lPathToaTosa = toaIrradiance * toaIrradianceToPathToaTosa;
+//            # eq. 6-15
+        final double lToaTosa = (lToa - lPathToaTosa * tauOzoneStratAeroView) / tauRayOzoneStratAeroView;
+        return lToaTosa;
     }
 
     public static double getDistanceCorr(int doy) {
@@ -249,7 +187,7 @@ public class S2LutUtils {
                 0.000719 * Math.cos(2.0 * gamma) + 0.000077 * Math.sin(2.0 * gamma);
     }
 
-    private static double convertReflToRad(double refl, int iWvl, double sza, double julianDay) {
+    public static double convertReflToRad(double refl, int iWvl, double sza, double julianDay) {
         // basically follows S2 AC Python implementation:
         final double dt = 1.0 / Math.pow(1 - 0.01673 * Math.cos(0.0172 * (julianDay - 2)), 2);
         final double solarIrrad = S2IdepixConstants.S2_SOLAR_IRRADIANCES[iWvl];

@@ -115,7 +115,7 @@ public class S2LutInterpolationTest {
         double raa = 10.0;
 
         final PixelGeometry pg = new PixelGeometry(sza, 0.0, vza, 0.0);
-        InputPixelData ipd = new InputPixelData(pg, null, 0.0, 0.00710444, 101325.0, wv, new float[]{1.0f}, null, null);
+        InputPixelData ipd = new InputPixelData(pg, 0.0, wv, new float[]{1.0f}, null, null, null, null, null, null, null);
         assertTrue(S2LutUtils.isInsideLut(ipd, snapS2Lut));
 
         ipd.setWvCol(6000);

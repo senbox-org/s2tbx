@@ -8,33 +8,38 @@ import org.esa.s2tbx.s2msi.aerosol.util.PixelGeometry;
  */
 public class InputPixelData {
     public final double elevation;
+    public final double[] toaIrradianceToPathToToaTosa;
+    public final double[] lToa;
+    public final double[] tauOzoneStratAeroView;
+    public final double[] tauRayOzoneStratAeroView;
+    public final double[] tauRaySun;
+    public final double[] tauOzoneSun;
     public PixelGeometry geom;
-    public PixelGeometry geomFward;
-    public final double ozone;
-    public double surfPressure;
     public double wvCol;
     public int nSpecWvl;
     public float[] specWvl;
-    public double[] toaReflec;
-    public double[] toaReflecFward;
+    private double[] toaReflec;
     public double[][] surfReflec;
     public double[][] diffuseFrac;
     public double[][][] pixelLutSubset; //first dim: aod, second dim: wavelength, third dim: atmospheric parameters
 
-    public InputPixelData(PixelGeometry geom, PixelGeometry geomFward, double elevation, double ozone, double surfPressure,
-                          double wvCol, float[] specWvl, double[] toaReflec, double[] toaReflecFward) {
+    public InputPixelData(PixelGeometry geom, double elevation, double wvCol, float[] specWvl, double[] toaReflec,
+                          double[] toaIrradianceToPathToToaTosa, double[] lToa, double[] tauOzoneStratAeroView,
+                          double[] tauRayOzoneStratAeroView, double[] tauRaySun, double[] tauOzoneSun) {
         this.geom = geom;
-        this.geomFward = geomFward;
         this.elevation = elevation;
-        this.ozone = ozone;
-        this.surfPressure = surfPressure;
         this.wvCol = wvCol;
         this.specWvl = specWvl;
         this.nSpecWvl = specWvl.length;
         this.toaReflec = toaReflec;
-        this.toaReflecFward = toaReflecFward;
         this.surfReflec = new double[2][nSpecWvl];
         this.diffuseFrac = new double[2][nSpecWvl];
+        this.toaIrradianceToPathToToaTosa = toaIrradianceToPathToToaTosa;
+        this.lToa = lToa;
+        this.tauOzoneStratAeroView = tauOzoneStratAeroView;
+        this.tauRayOzoneStratAeroView = tauRayOzoneStratAeroView;
+        this.tauRaySun = tauRaySun;
+        this.tauOzoneSun = tauOzoneSun;
     }
 
     public double[][] getDiffuseFrac() {
