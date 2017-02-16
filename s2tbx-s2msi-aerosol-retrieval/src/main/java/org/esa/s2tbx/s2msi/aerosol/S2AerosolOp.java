@@ -253,6 +253,7 @@ public class S2AerosolOp extends Operator {
         double surfP = Math.min(tileValues[skip++], 101325.0);
         double elevation = tileValues[skip++];
         double wvCol = tileValues[skip];
+        wvCol /= 0.00803751;
         return new InputPixelData(geomNadir, geomFward, elevation, ozone, surfP, wvCol, specWvl[0], toaRefl[0], toaRefl[1]);
     }
 
@@ -260,10 +261,7 @@ public class S2AerosolOp extends Operator {
         targetProduct = new Product(productName, productType, tarRasterWidth, tarRasterHeight);
         targetProduct.setPreferredTileSize(new Dimension(610 / scale, 610 / scale));
         createTargetProductBands();
-
-//        targetProduct.setSceneGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 2));
         setTargetProduct(targetProduct);
-
     }
 
     private void createTargetProductBands() {
