@@ -449,6 +449,7 @@ public class S2AerosolOp extends Operator {
                 soilSurfSpec[i] /= count;
                 vegSurfSpec[i] /= count;
             }
+            j = 0;
         }
     }
 
