@@ -71,9 +71,7 @@ public class S2LutUtils {
 
 
     public static double[][][] getLutSubset(S2Lut s2Lut, int[] wvlIndexes, double wv, double sza, double vza,
-                                            double raa, double altitude) {
-        final double aerosolType = 3.0; // get started with this
-
+                                            double raa, double altitude, double aerosolType) {
         final double[] coordinates = new double[]{wv, sza, vza, raa, altitude, aerosolType};
 
         final FracIndex[] fracIndexes = FracIndex.createArray(coordinates.length);

@@ -20,7 +20,7 @@ public class AerosolTypeProvider {
     private static final String CLIMATOLOGY_FILE_NAME = "climatology_ratios.nc";
     private static final String DUST_RATIO_BAND_NAME_START = "AOD550_aer_dust_coarse_ratio_mo_time";
     private static final String FINE_TOTAL_RATIO_BAND_NAME_START = "AOD550_aer_fine_total_ratio_mo_time";
-    private static final String FINE_LESS_ABS_BAND_NAME_START = "AOD550_aer_fine_less_abs_type_fraction_mo_time";
+    private static final String FINE_LESS_ABS_BAND_NAME_START = "fine_less_abs_type_fraction_mo_time";
 
     private final GeoCoding geoCoding;
     private final double fraction;

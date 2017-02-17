@@ -120,9 +120,6 @@ public class S2AerosolOp extends Operator {
     private double distanceCorrection;
     private int[] bandIndexes;
 
-//    private static int _xdebug = 20;
-//    private static int _ydebug = 70;
-
     @Override
     public void initialize() throws OperatorException {
         productName = sourceProduct.getName() + "_AOT";
@@ -145,6 +142,7 @@ public class S2AerosolOp extends Operator {
                 InstrumentConsts.SURFACE_PRESSURE_NAME,
                 InstrumentConsts.ELEVATION_NAME,
                 InstrumentConsts.WATER_VAPOUR_NAME,
+                InstrumentConsts.AEROSOL_TYPE_NAME,
                 validName
         };
 
@@ -254,10 +252,12 @@ public class S2AerosolOp extends Operator {
         double ozone = tileValues[skip++];
         double surfP = Math.min(tileValues[skip++], 101325.0);
         double elevation = tileValues[skip++];
-        double wvCol = tileValues[skip];
+        double wvCol = tileValues[skip++];
         wvCol /= 0.00803751;
+        final double aerosolType = tileValues[skip];
+
         final double[][][] lutSubset = S2LutUtils.getLutSubset(s2Lut, bandIndexes, wvCol, geom.sza, geom.vza,
-                                                               geom.getRazi(), elevation / 1000.0);
+                                                               geom.getRazi(), elevation / 1000.0, aerosolType);
 
         final double cosineOfSZA = Math.cos(Math.toRadians(geom.getSza()));
         final double cosineOfVZA = Math.cos(Math.toRadians(geom.getVza()));
@@ -570,7 +570,11 @@ public class S2AerosolOp extends Operator {
         valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
 
         // water vapour data
-        tileValues[skip] = sourceTiles.get(InstrumentConsts.WATER_VAPOUR_NAME).getSampleDouble(x, y);
+        tileValues[skip++] = sourceTiles.get(InstrumentConsts.WATER_VAPOUR_NAME).getSampleDouble(x, y);
+        valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
+
+        // aerosol type data
+        tileValues[skip] = sourceTiles.get(InstrumentConsts.AEROSOL_TYPE_NAME).getSampleDouble(x, y);
         valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
 
         return valid;

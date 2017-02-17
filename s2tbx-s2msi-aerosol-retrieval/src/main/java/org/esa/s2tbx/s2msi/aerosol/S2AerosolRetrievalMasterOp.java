@@ -70,6 +70,9 @@ public class S2AerosolRetrievalMasterOp extends Operator {
     @Parameter(defaultValue = "true", description = "if true, water vapour retrieval is done")
     private boolean computeWaterVapour;
 
+    @Parameter(defaultValue = "true", description = "if true, aerosol type retrieval is done")
+    private boolean computeAerosolType;
+
     @Parameter(defaultValue = "true")
     private boolean filling;
 
@@ -114,11 +117,24 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             targetProduct.addBand(waterVapourBand);
         }
 
-        Product aotDownscaledProduct = waterVapourProduct;
+        Product aerosolTypeProduct = waterVapourProduct;
+        if (computeAerosolType) {
+            final S2AerosolTypeOp s2AerosolTypeOp = new S2AerosolTypeOp();
+            s2AerosolTypeOp.setParameterDefaultValues();
+            s2AerosolTypeOp.setSourceProduct(waterVapourProduct);
+            aerosolTypeProduct = s2AerosolTypeOp.getTargetProduct();
+        } else {
+            String aerosolTypeExpression = "0.0";
+            Band aerosolTypeBand = waterVapourProduct.addBand(InstrumentConsts.AEROSOL_TYPE_NAME, aerosolTypeExpression);
+            aerosolTypeBand.setDescription("Aerosol Type");
+            targetProduct.addBand(aerosolTypeBand);
+        }
+
+        Product aotDownscaledProduct = aerosolTypeProduct;
         if (computeAerosol) {
             S2AerosolOp s2AerosolOp = new S2AerosolOp();
             s2AerosolOp.setParameterDefaultValues();
-            s2AerosolOp.setSourceProduct(waterVapourProduct);
+            s2AerosolOp.setSourceProduct(aerosolTypeProduct);
             s2AerosolOp.setParameter("pathToLut", pathToLut);
             s2AerosolOp.setParameter("scale", scale);
             aotDownscaledProduct = s2AerosolOp.getTargetProduct();
@@ -141,7 +157,7 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             upscaleOp.setParameter("scale", scale);
             Product aotOrigResolutionProduct = upscaleOp.getTargetProduct();
 
-            targetProduct = mergeToTargetProduct(waterVapourProduct, aotOrigResolutionProduct);
+            targetProduct = mergeToTargetProduct(aerosolTypeProduct, aotOrigResolutionProduct);
             ProductUtils.copyPreferredTileSize(extendedSourceProduct, targetProduct);
         }
         setTargetProduct(targetProduct);
