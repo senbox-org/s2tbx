@@ -28,17 +28,17 @@ public class S2LutUtils {
         return wvInside && szaInside && vzaInside && raaInside;
     }
 
-    public static double getMaxAOT(InputPixelData ipd, S2Lut s2Lut, double[] aot) {
+    public static double getMaxAOT(InputPixelData ipd, double[] aot) {
         // todo: what to set here?? An initial value? AOD is what we want to retrieve?!?!??
-        double lPath = getAtmosphericParameter(ipd, s2Lut, 4, 0, 0); // starting with aod=0.15
+        double lPath = getAtmosphericParameter(ipd, 4, 0, 0); // starting with aod=0.15
         double lPath0 = lPath;
         int iAot = -1;
-        final double toaIrradiance = getAtmosphericParameter(ipd, s2Lut, 4, 0, 6);
+        final double toaIrradiance = getAtmosphericParameter(ipd, 4, 0, 6);
         final double lToaTosa = getLToaTosa(toaIrradiance, ipd, 0);
         while (iAot < aot.length - 1 && lPath < lToaTosa) {
             lPath0 = lPath;
             iAot++;
-            lPath = getAtmosphericParameter(ipd, s2Lut, iAot, 0, 0);
+            lPath = getAtmosphericParameter(ipd, iAot, 0, 0);
         }
         if (iAot == 0) {
             return 0.05;
@@ -49,17 +49,14 @@ public class S2LutUtils {
         return aot[iAot - 1] + (aot[iAot] - aot[iAot - 1]) * (lToaTosa - lPath0) / (lPath - lPath0);
     }
 
-    private static double getAtmosphericParameter(InputPixelData ipd, S2Lut s2Lut, int aotIndex,
-                                                  int wavelengthIndex, int paramIndex) {
-        ensureLutSubsetIsSet(s2Lut, ipd);
+    private static double getAtmosphericParameter(InputPixelData ipd, int aotIndex, int wavelengthIndex, int paramIndex) {
         return ipd.pixelLutSubset[aotIndex][wavelengthIndex][paramIndex];
     }
 
     private static double[][] getAtmosphericParameters(InputPixelData ipd, S2Lut s2Lut, double tau) {
-        ensureLutSubsetIsSet(s2Lut, ipd);
         final FracIndex fracIndex = new FracIndex();
         LookupTable.computeFracIndex(s2Lut.getDimension(1), tau, fracIndex);
-        int numWavelengths = s2Lut.getDimension(s2Lut.getDimensionCount() - 2).getSequence().length;
+        int numWavelengths = ipd.nSpecWvl;
         int numParams = s2Lut.getDimension(s2Lut.getDimensionCount() - 1).getSequence().length;
         double[][] atmosphericParameters = new double[numWavelengths][numParams];
         for (int i_wvl = 0; i_wvl < numWavelengths; i_wvl++) {
@@ -73,15 +70,8 @@ public class S2LutUtils {
     }
 
 
-    private static void ensureLutSubsetIsSet(S2Lut s2Lut, InputPixelData ipd) {
-        if (ipd.pixelLutSubset != null) {
-            return;
-        }
-        final double wv = ipd.wvCol;
-        final double sza = ipd.geom.sza;
-        final double vza = ipd.geom.vza;
-        final double raa = ipd.geom.razi;
-        final double altitude = ipd.elevation / 1000.0;
+    public static double[][][] getLutSubset(S2Lut s2Lut, int[] wvlIndexes, double wv, double sza, double vza,
+                                            double raa, double altitude) {
         final double aerosolType = 3.0; // get started with this
 
         final double[] coordinates = new double[]{wv, sza, vza, raa, altitude, aerosolType};
@@ -97,7 +87,7 @@ public class S2LutUtils {
             LookupTable.computeFracIndex(partitions[index], coordinates[i], fracIndexes[i]);
             index++;
         }
-        ipd.pixelLutSubset = s2Lut.getAotWvlAndACValues(fracIndexes);
+        return s2Lut.getAotWvlAndACValues(fracIndexes, wvlIndexes);
     }
 
     public static double getRayPhaseFunc(double sza, double vza, double raa) {

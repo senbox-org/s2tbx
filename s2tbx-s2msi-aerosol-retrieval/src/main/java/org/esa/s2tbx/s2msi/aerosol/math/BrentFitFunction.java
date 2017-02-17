@@ -60,7 +60,7 @@ public class BrentFitFunction implements Function {
                 min = i;
             }
         }
-        return S2LutUtils.getMaxAOT(inPixField[min], s2Lut, aotGrid);
+        return S2LutUtils.getMaxAOT(inPixField[min], aotGrid);
     }
 
     //private methods

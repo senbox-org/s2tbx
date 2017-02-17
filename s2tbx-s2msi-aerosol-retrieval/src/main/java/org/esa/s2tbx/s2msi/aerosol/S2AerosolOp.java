@@ -24,6 +24,7 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.ArrayUtils;
 import org.esa.snap.core.util.Guardian;
 
 import javax.media.jai.BorderExtender;
@@ -66,6 +67,11 @@ public class S2AerosolOp extends Operator {
     @Parameter(description = "Full path to S2 Lookup Table.",
             label = "Path to S2 Lookup Table")
     private String pathToLut;
+
+    @Parameter(description = "The reflectance bands which shall be considered for aot retrieval." +
+            "Note that bands B3 and B11 cannot be left out.",
+            defaultValue = "B1,B2,B3,B4,B5,B6,B7,B8,B8A,B11,B12")
+    private String[] reflectanceBandNames;
 
     // todo: define what we need from this
     private String surfaceSpecName = "surface_reflectance_spec.asc";
@@ -112,6 +118,7 @@ public class S2AerosolOp extends Operator {
 
     private double julianDay;
     private double distanceCorrection;
+    private int[] bandIndexes;
 
 //    private static int _xdebug = 20;
 //    private static int _ydebug = 70;
@@ -120,6 +127,8 @@ public class S2AerosolOp extends Operator {
     public void initialize() throws OperatorException {
         productName = sourceProduct.getName() + "_AOT";
         productType = sourceProduct.getProductType() + "_AOT";
+
+        validateReflectanceBandNames(reflectanceBandNames);
 
         julianDay = sourceProduct.getStartTime().getMJD();
         final int dayOfYear = sourceProduct.getStartTime().getAsCalendar().get(Calendar.DAY_OF_YEAR);
@@ -140,7 +149,8 @@ public class S2AerosolOp extends Operator {
         };
 
         specWeights = AerosolUtils.normalize(InstrumentConsts.FIT_WEIGHTS);
-        specWvl = getSpectralWvl(InstrumentConsts.REFLEC_NAMES);
+        bandIndexes = getBandIndexes(reflectanceBandNames);
+        specWvl = getSpectralWvl(reflectanceBandNames);
         nSpecWvl = specWvl[0].length;
 
         readSurfaceSpectra(surfaceSpecName);
@@ -181,7 +191,7 @@ public class S2AerosolOp extends Operator {
         }
 
         Map<String, Tile> sourceTiles = new HashMap<>();
-        sourceTiles.putAll(getSourceTiles(InstrumentConsts.REFLEC_NAMES, srcRec, borderExt));
+        sourceTiles.putAll(getSourceTiles(reflectanceBandNames, srcRec, borderExt));
         sourceTiles.putAll(getSourceTiles(InstrumentConsts.GEOM_NAMES, srcRec, borderExt));
         sourceTiles.putAll(getSourceTiles(auxRasterDataNodeNames, srcRec, borderExt));
 
@@ -235,23 +245,22 @@ public class S2AerosolOp extends Operator {
     }
 
     private InputPixelData createInPixelData(double[] tileValues) {
-        PixelGeometry geomNadir;
         double[] toaRefl = new double[nSpecWvl];
         int skip = 0;
-        geomNadir = new PixelGeometry(tileValues[0], tileValues[1], tileValues[2], tileValues[3]);
+        PixelGeometry geom = new PixelGeometry(tileValues[0], tileValues[1], tileValues[2], tileValues[3]);
         skip += 4;
-        for (int i = 0; i < nSpecWvl; i++) {
-            toaRefl[i] = tileValues[skip + i];
-        }
+        System.arraycopy(tileValues, skip, toaRefl, 0, nSpecWvl);
         skip += nSpecWvl;
         double ozone = tileValues[skip++];
         double surfP = Math.min(tileValues[skip++], 101325.0);
         double elevation = tileValues[skip++];
         double wvCol = tileValues[skip];
         wvCol /= 0.00803751;
+        final double[][][] lutSubset = S2LutUtils.getLutSubset(s2Lut, bandIndexes, wvCol, geom.sza, geom.vza,
+                                                               geom.getRazi(), elevation / 1000.0);
 
-        final double cosineOfSZA = Math.cos(Math.toRadians(geomNadir.getSza()));
-        final double cosineOfVZA = Math.cos(Math.toRadians(geomNadir.getVza()));
+        final double cosineOfSZA = Math.cos(Math.toRadians(geom.getSza()));
+        final double cosineOfVZA = Math.cos(Math.toRadians(geom.getVza()));
 //      # eq. 6-4
         final double tauStratAeroView = 1.0;
 //      # eq. 6-9
@@ -259,7 +268,7 @@ public class S2AerosolOp extends Operator {
                 S2AerosolConstants.PRESSURE_STANDARD;
 //      # eq. 6-1
         final double airMassOzoneCorrection = (ozone / 0.0214144) - S2AerosolConstants.OZONE_STANDARD;
-        final double rayPhaseFunc = S2LutUtils.getRayPhaseFunc(geomNadir.sza, geomNadir.vza, geomNadir.razi);
+        final double rayPhaseFunc = S2LutUtils.getRayPhaseFunc(geom.sza, geom.vza, geom.razi);
         final double[] toaIrradianceToPathToaTosa = new double[nSpecWvl];
         final double[] lToa = new double[nSpecWvl];
         final double[] tauOzoneStratAeroView = new double[nSpecWvl];
@@ -277,7 +286,7 @@ public class S2AerosolOp extends Operator {
             tauRaySun[iWvl] =  Math.exp(-(0.5 * kRay * mCorrRay / cosineOfSZA));
 //           # eq. 6-11
             final double tauRayView = Math.exp(-(0.5 * kRay * mCorrRay / cosineOfVZA));
-            lToa[iWvl] = S2LutUtils.convertReflToRad(toaRefl[iWvl], iWvl, geomNadir.sza, julianDay) /
+            lToa[iWvl] = S2LutUtils.convertReflToRad(toaRefl[iWvl], iWvl, geom.sza, julianDay) /
                     distanceCorrection;
 //           # part of eq. 6-13
             toaIrradianceToPathToaTosa[iWvl] = (kRay * mCorrRay * tauRaySun[iWvl] * rayPhaseFunc) /
@@ -286,9 +295,9 @@ public class S2AerosolOp extends Operator {
             tauOzoneStratAeroView[iWvl] = tauOzoneView * tauStratAeroView;
             tauRayOzoneStratAeroView[iWvl] = tauOzoneStratAeroView[iWvl] * tauRayView;
         }
-
-        return new InputPixelData(geomNadir, elevation, wvCol, specWvl[0], toaRefl, toaIrradianceToPathToaTosa,
-                                  lToa, tauOzoneStratAeroView, tauRayOzoneStratAeroView, tauRaySun, tauOzoneSun);
+        return new InputPixelData(geom, elevation, wvCol, specWvl[0], toaRefl, toaIrradianceToPathToaTosa,
+                                  lToa, tauOzoneStratAeroView, tauRayOzoneStratAeroView, tauRaySun, tauOzoneSun,
+                                  lutSubset);
     }
 
     private void createTargetProduct() {
@@ -504,6 +513,28 @@ public class S2AerosolOp extends Operator {
         aotGrid = s2Lut.getDimension(1).getSequence();
     }
 
+    private static void validateReflectanceBandNames(String[] bandNames) throws OperatorException {
+        if (!ArrayUtils.isMemberOf("B3", bandNames)) {
+            throw new OperatorException("Required band B3 is missing in parameter reflectanceBandNames.");
+        }
+//        if (!ArrayUtils.isMemberOf("B11", bandNames)) {
+//            throw new OperatorException("Required band B11 is missing in parameter reflectanceBandNames.");
+//        }
+        for (String bandName : bandNames) {
+            if (!ArrayUtils.isMemberOf(bandName, InstrumentConsts.REFLEC_NAMES)) {
+                throw new OperatorException("Invalid band " + bandName + " in parameter reflectanceBandNames.");
+            }
+        }
+    }
+
+    static int[] getBandIndexes(String[] bandNames) {
+        int[] bandIndexes = new int[bandNames.length];
+        for (int i = 0; i < bandNames.length; i++) {
+            bandIndexes[i] = ArrayUtils.getElementIndex(bandNames[i], InstrumentConsts.REFLEC_NAMES);
+        }
+        return bandIndexes;
+    }
+
     private float[][] getSpectralWvl(String[] bandNames) {
         float[][] wvl = new float[2][bandNames.length];
         for (int i = 0; i < bandNames.length; i++) {
@@ -520,11 +551,11 @@ public class S2AerosolOp extends Operator {
             valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
         }
         int skip = InstrumentConsts.GEOM_NAMES.length;
-        for (int i = 0; i < InstrumentConsts.REFLEC_NAMES.length; i++) {
-            tileValues[i + skip] = sourceTiles.get(InstrumentConsts.REFLEC_NAMES[i]).getSampleDouble(x, y);
+        for (int i = 0; i < reflectanceBandNames.length; i++) {
+            tileValues[i + skip] = sourceTiles.get(reflectanceBandNames[i]).getSampleDouble(x, y);
             valid = valid && sourceTiles.get(validName).getSampleBoolean(x, y);
         }
-        skip += InstrumentConsts.REFLEC_NAMES.length;
+        skip += reflectanceBandNames.length;
 
         // ozone data
         tileValues[skip++] = sourceTiles.get(InstrumentConsts.OZONE_NAME).getSampleDouble(x, y);

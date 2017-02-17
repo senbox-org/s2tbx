@@ -67,7 +67,11 @@ public class S2LutTest {
         LookupTable.computeFracIndex(partitions[5], 1.5, fracIndexes[4]);
         LookupTable.computeFracIndex(partitions[6], 2.0, fracIndexes[5]);
 
-        double[][][] aotWvlAndACValues = s2Lut.getAotWvlAndACValues(fracIndexes);
+        int[] wvlIndexes = new int[13];
+        for (int i = 0; i < wvlIndexes.length; i++) {
+            wvlIndexes[i] = i;
+        }
+        double[][][] aotWvlAndACValues = s2Lut.getAotWvlAndACValues(fracIndexes, wvlIndexes);
 
         FracIndex[] moreFracIndexes = FracIndex.createArray(8);
         moreFracIndexes[0] = fracIndexes[0];
@@ -85,6 +89,25 @@ public class S2LutTest {
                 LookupTable.computeFracIndex(partitions[7], wvlValues[i_wvl], moreFracIndexes[7]);
                 double[] values = s2Lut.getValues(moreFracIndexes);
                 assertArrayEquals(values, aotWvlAndACValues[i_aod][i_wvl], 1e-8);
+            }
+        }
+
+        int[] newWvlIndexes = new int[11];
+        int offset = 0;
+        for (int i = 0; i < wvlIndexes.length; i++) {
+            wvlIndexes[i] = i + offset;
+            if (i == 9) {
+                offset += 2;
+            }
+        }
+
+        double[][][] newAotWvlAndACValues = s2Lut.getAotWvlAndACValues(fracIndexes, newWvlIndexes);
+        for (int i_aod = 0; i_aod < aodValues.length; i_aod++) {
+            LookupTable.computeFracIndex(partitions[1], aodValues[i_aod], moreFracIndexes[1]);
+            for (int i_wvl = 0; i_wvl < newWvlIndexes.length; i_wvl++) {
+                LookupTable.computeFracIndex(partitions[7], wvlValues[newWvlIndexes[i_wvl]], moreFracIndexes[7]);
+                double[] values = s2Lut.getValues(moreFracIndexes);
+                assertArrayEquals(values, newAotWvlAndACValues[i_aod][i_wvl], 1e-8);
             }
         }
     }

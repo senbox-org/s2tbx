@@ -15,7 +15,7 @@ public class S2Lut extends LookupTable {
         super(values, dimensions);
     }
 
-    public final double[][][] getAotWvlAndACValues(final FracIndex[] fracIndexes) {
+    public final double[][][] getAotWvlAndACValues(final FracIndex[] fracIndexes, int[] wvlIndexes) {
         final int[] strides = getStrides();
         final int[] offsets = getOffsets();
         final Array values = getValues();
@@ -27,7 +27,7 @@ public class S2Lut extends LookupTable {
         }
 
         final int numberOfAODs = 17;
-        final int numberOfWavelengths = 13;
+        final int numberOfWavelengths = wvlIndexes.length;
         final int numberOfAtmosphericParameters = strides[strides.length - 2];
         double[][][][] v = new double[1 << fracIndexes.length][numberOfAODs][numberOfWavelengths]
                 [numberOfAtmosphericParameters];
@@ -49,7 +49,7 @@ public class S2Lut extends LookupTable {
             for (int i_aod = 0; i_aod < numberOfAODs; ++i_aod) {
                 int aod_origin = origin_i + i_aod * strides[1];
                 for (int i_wvl = 0; i_wvl < numberOfWavelengths; ++i_wvl) {
-                    int wvl_origin = aod_origin + i_wvl * numberOfAtmosphericParameters;
+                    int wvl_origin = aod_origin + wvlIndexes[i_wvl] * numberOfAtmosphericParameters;
                     values.copyTo(wvl_origin, v[i][i_aod][i_wvl], 0, numberOfAtmosphericParameters);
                 }
             }

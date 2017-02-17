@@ -25,7 +25,8 @@ public class InputPixelData {
 
     public InputPixelData(PixelGeometry geom, double elevation, double wvCol, float[] specWvl, double[] toaReflec,
                           double[] toaIrradianceToPathToToaTosa, double[] lToa, double[] tauOzoneStratAeroView,
-                          double[] tauRayOzoneStratAeroView, double[] tauRaySun, double[] tauOzoneSun) {
+                          double[] tauRayOzoneStratAeroView, double[] tauRaySun, double[] tauOzoneSun,
+                          double[][][] lutSubset) {
         this.geom = geom;
         this.elevation = elevation;
         this.wvCol = wvCol;
@@ -40,6 +41,7 @@ public class InputPixelData {
         this.tauRayOzoneStratAeroView = tauRayOzoneStratAeroView;
         this.tauRaySun = tauRaySun;
         this.tauOzoneSun = tauOzoneSun;
+        this.pixelLutSubset = lutSubset;
     }
 
     public double[][] getDiffuseFrac() {
