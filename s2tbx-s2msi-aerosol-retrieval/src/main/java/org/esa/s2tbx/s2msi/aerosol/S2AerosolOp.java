@@ -146,8 +146,10 @@ public class S2AerosolOp extends Operator {
                 validName
         };
 
-        specWeights = AerosolUtils.normalize(InstrumentConsts.FIT_WEIGHTS);
         bandIndexes = getBandIndexes(reflectanceBandNames);
+        specWeights = new double[bandIndexes.length];
+        Arrays.fill(specWeights, 1.0);
+        specWeights = AerosolUtils.normalize(specWeights);
         specWvl = getSpectralWvl(reflectanceBandNames);
         nSpecWvl = specWvl[0].length;
 
