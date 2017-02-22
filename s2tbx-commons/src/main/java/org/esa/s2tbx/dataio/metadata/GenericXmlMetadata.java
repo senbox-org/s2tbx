@@ -87,6 +87,23 @@ public abstract class GenericXmlMetadata {
         return result;
     }
 
+    public static <T extends GenericXmlMetadata> T create(Class<T> clazz, InputStream inputStream) {
+        Assert.notNull(inputStream);
+        T result = null;
+
+        try {
+            //noinspection unchecked
+            result = (T) XmlMetadataParserFactory.getParser(clazz).parse(inputStream);
+            String metadataProfile = result.getMetadataProfile();
+            if (metadataProfile != null)
+                result.setName(metadataProfile);
+        } catch (Exception e) {
+            Logger.getLogger(GenericXmlMetadata.class.getName()).severe(e.getMessage());
+        }
+        return result;
+    }
+
+
     public static <T extends GenericXmlMetadata> T create(Class<T> clazz, File inputFile) {
         Assert.notNull(inputFile);
         return create(clazz, inputFile.toPath());

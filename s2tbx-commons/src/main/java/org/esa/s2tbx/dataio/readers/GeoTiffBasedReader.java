@@ -35,6 +35,7 @@ import org.esa.snap.core.image.ImageManager;
 import org.esa.snap.core.util.StringUtils;
 import org.esa.snap.core.util.TreeNode;
 import org.esa.snap.dataio.geotiff.GeoTiffProductReader;
+import org.esa.snap.dataio.geotiff.GeoTiffProductReaderPlugIn;
 import org.esa.snap.utils.CollectionHelper;
 
 import javax.imageio.spi.IIORegistry;
@@ -42,6 +43,7 @@ import javax.imageio.spi.ImageInputStreamSpi;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
@@ -233,9 +235,10 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
             logger.info("Reading product metadata");
             for (String file : metadataFiles) {
                 try {
-                    File metadataFile = productDirectory.getFile(file);
-                    M mData = XmlMetadata.create(metadataClass, metadataFile);
-                    mData.setFileName(metadataFile.getName());
+                    InputStream metadataStream = productDirectory.getInputStream(file);
+                    M mData = XmlMetadata.create(metadataClass, metadataStream);
+                    metadataStream.close();
+                    mData.setFileName(file);
                     metadata.add(mData);
                 } catch (Exception mex) {
                     logger.warning(String.format("Error while reading metadata file %s", file));
@@ -337,10 +340,11 @@ public abstract class GeoTiffBasedReader<M extends XmlMetadata> extends Abstract
             if (componentIndex >= rasterFileNames.size()) {
                 throw new ArrayIndexOutOfBoundsException(String.format("Invalid component index: %d", componentIndex));
             }
-            File rasterFile = productDirectory.getFile(rasterFileNames.get(componentIndex));
+            InputStream rasterInputStream = productDirectory.getInputStream(rasterFileNames.get(componentIndex));
 
-            GeoTiffProductReader reader = new GeoTiffReaderEx(getReaderPlugIn());
-            Product tiffProduct = reader.readProductNodes(rasterFile, null);
+            GeoTiffProductReaderPlugIn plugin = new GeoTiffProductReaderPlugIn();
+            GeoTiffProductReader reader = new GeoTiffReaderEx(/*getReaderPlugIn()*/plugin);
+            Product tiffProduct = reader.readProductNodes(rasterInputStream, null);
             if (tiffProduct != null) {
                 if (product == null) {
                     product = createProduct(tiffProduct.getSceneRasterWidth(), tiffProduct.getSceneRasterHeight(), componentMetadata);
