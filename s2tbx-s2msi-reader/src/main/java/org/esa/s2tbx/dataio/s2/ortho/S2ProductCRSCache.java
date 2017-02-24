@@ -28,6 +28,7 @@ import org.esa.s2tbx.dataio.s2.ortho.filepatterns.S2OrthoGranuleMetadataFilename
 import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,7 +53,11 @@ public class S2ProductCRSCache {
 
 
         public S2ProductCRSCacheEntry (Path path) {
-            namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(path));
+            try {
+                namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(path));
+            } catch (IOException e) {
+                return;
+            }
             if(namingConvention != null) {
                 inputType = namingConvention.getInputType();
                 level = namingConvention.getProductLevel();
