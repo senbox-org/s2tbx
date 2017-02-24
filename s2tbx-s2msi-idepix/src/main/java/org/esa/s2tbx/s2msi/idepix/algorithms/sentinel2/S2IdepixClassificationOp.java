@@ -363,6 +363,16 @@ public class S2IdepixClassificationOp extends Operator {
         Band b = ProductUtils.copyBand("elevation", elevationProduct, targetProduct, true);
         b.setUnit("m");
 
+        if (sourceProduct.containsBand("lat") && !targetProduct.containsBand("lat")) {
+            Band latBand = ProductUtils.copyBand("lat", sourceProduct, targetProduct, true);
+            latBand.setUnit("deg");
+        }
+
+        if (sourceProduct.containsBand("lon") && !targetProduct.containsBand("lon")) {
+            Band latBand = ProductUtils.copyBand("lon", sourceProduct, targetProduct, true);
+            latBand.setUnit("deg");
+        }
+
         if (copyNNValue) {
             targetProduct.addBand("nn_value", ProductData.TYPE_FLOAT32);
         }

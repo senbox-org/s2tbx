@@ -1,5 +1,6 @@
 package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
+import org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixCloudShadowOp;
 import org.esa.s2tbx.s2msi.idepix.util.AlgorithmSelector;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
@@ -13,6 +14,7 @@ import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.gpf.annotations.TargetProduct;
+import org.esa.snap.core.util.ProductUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -82,14 +84,8 @@ public class S2IdepixOp extends Operator {
 //    private boolean copyNNValue = true;
     private boolean copyNNValue = false;
 
-    //    @Parameter(defaultValue = "true",
-//            label = " Refine pixel classification near coastlines",
-//            description = "Refine pixel classification near coastlines. ")
-    private boolean refineClassificationNearCoastlines = false; // todo later
-
-
-    //    @Parameter(defaultValue = "true", label = " Compute cloud shadow")
-    private boolean computeCloudShadow = false; // todo later
+    @Parameter(defaultValue = "false", label = " Compute cloud shadow")
+    private boolean computeCloudShadow;
 
     @Parameter(defaultValue = "true", label = " Compute a cloud buffer")
     private boolean computeCloudBuffer;
@@ -162,8 +158,8 @@ public class S2IdepixOp extends Operator {
 //        elevationOp.setSourceProduct(prelimClassifProduct);
 //        s2ClassifProduct = elevationOp.getTargetProduct();
 
-        if (refineClassificationNearCoastlines || computeCloudShadow || computeCloudBuffer) {
-            // Post Cloud Classification: coastline refinement, cloud shadow, cloud buffer
+        if (computeCloudShadow || computeCloudBuffer) {
+            // Post Cloud Classification: cloud shadow, cloud buffer
             computePostProcessProduct();
 
             targetProduct = S2IdepixUtils.cloneProduct(s2ClassifProduct, true);
@@ -204,23 +200,12 @@ public class S2IdepixOp extends Operator {
 
         Map<String, Object> params = new HashMap<>();
         params.put("cloudBufferWidth", cloudBufferWidth);
-        params.put("gaComputeCloudBuffer", computeCloudBuffer);
+        params.put("computeCloudBuffer", computeCloudBuffer);
         params.put("computeCloudBufferForCloudAmbiguous", computeCloudBufferForCloudAmbiguous);
-        params.put("gaComputeCloudShadow", computeCloudShadow);
-        params.put("gaRefineClassificationNearCoastlines", refineClassificationNearCoastlines);
+        params.put("computeCloudShadow", computeCloudShadow);
         final Product classifiedProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixPostProcessOp.class),
                                                             params, input);
 
-//        if (computeCloudBuffer) {
-//            input = new HashMap<>();
-//            input.put("classifiedProduct", classifiedProduct);
-//            params = new HashMap<>();
-//            params.put("cloudBufferWidth", cloudBufferWidth);
-//            postProcessingProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(Sentinel2CloudBufferOp.class),
-//                                                      params, input);
-//        } else {
-//            postProcessingProduct = classifiedProduct;
-//        }
         postProcessingProduct = classifiedProduct;
     }
 

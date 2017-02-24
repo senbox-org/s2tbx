@@ -2,14 +2,13 @@ package org.esa.s2tbx.s2msi.idepix.algorithms.sentinel2;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s2tbx.s2msi.idepix.operators.S2IdepixCloudBuffer;
+import org.esa.s2tbx.s2msi.idepix.operators.cloudshadow.S2IdepixCloudShadowOp;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.s2tbx.s2msi.idepix.util.S2IdepixUtils;
 import org.esa.snap.core.datamodel.Band;
+import org.esa.snap.core.datamodel.IndexCoding;
 import org.esa.snap.core.datamodel.Product;
-import org.esa.snap.core.gpf.Operator;
-import org.esa.snap.core.gpf.OperatorException;
-import org.esa.snap.core.gpf.OperatorSpi;
-import org.esa.snap.core.gpf.Tile;
+import org.esa.snap.core.gpf.*;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.annotations.SourceProduct;
@@ -17,6 +16,7 @@ import org.esa.snap.core.util.ProductUtils;
 import org.esa.snap.core.util.RectangleExtender;
 
 import java.awt.*;
+import java.util.HashMap;
 
 /**
  * Operator used to consolidate cloud flag for Sentinel-2:
@@ -33,17 +33,6 @@ import java.awt.*;
         description = "Refines the Sentinel-2 MSI pixel classification.")
 public class S2IdepixPostProcessOp extends Operator {
 
-    //    @Parameter(defaultValue = "true",
-//            label = " Compute cloud shadow",
-//            description = " Compute cloud shadow with latest 'fronts' algorithm")
-    private boolean computeCloudShadow = false;   // never done currently
-
-    //    @Parameter(defaultValue = "true",
-//               label = " Refine pixel classification near coastlines",
-//               description = "Refine pixel classification near coastlines. ")
-    private boolean refineClassificationNearCoastlines = false; // todo check if needed
-
-
     @SourceProduct(alias = "l1c")
     private Product l1cProduct;
 
@@ -56,11 +45,18 @@ public class S2IdepixPostProcessOp extends Operator {
     @Parameter(defaultValue = "true", label = " Compute a cloud buffer also for cloud ambiguous pixels")
     private boolean computeCloudBufferForCloudAmbiguous;
 
+    @Parameter(defaultValue = "false", label = " Compute cloud shadow", description = " Compute cloud shadow")
+    private boolean computeCloudShadow;
+
     @Parameter(defaultValue = "2", label = "Width of cloud buffer (# of pixels)")
     private int cloudBufferWidth;
 
     private Band origClassifFlagBand;
+    private Band cloudShadowFlagBand;
+
     private RectangleExtender rectCalculator;
+    private int oceanCloudShadowIndexValue;
+    private int landCloudShadowIndexValue;
 
     @Override
     public void initialize() throws OperatorException {
@@ -68,6 +64,18 @@ public class S2IdepixPostProcessOp extends Operator {
         Product postProcessedCloudProduct = createTargetProduct("postProcessedCloud", "postProcessedCloud");
 
         origClassifFlagBand = s2CloudProduct.getBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS);
+
+        cloudShadowFlagBand = null;
+        if (computeCloudShadow) {
+            HashMap<String, Product> input = new HashMap<>();
+            input.put("sourceProduct", s2CloudProduct);
+            final Product cloudShadowProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(S2IdepixCloudShadowOp.class),
+                                                                 GPF.NO_PARAMS, input);
+            cloudShadowFlagBand = cloudShadowProduct.getBand(S2IdepixCloudShadowOp.BAND_NAME_CLOUD_SHADOW);
+            final IndexCoding cloudShadowFlagBandIndexCoding = cloudShadowFlagBand.getIndexCoding();
+            oceanCloudShadowIndexValue = cloudShadowFlagBandIndexCoding.getIndexValue("ocean_cloud_shadow");
+            landCloudShadowIndexValue = cloudShadowFlagBandIndexCoding.getIndexValue("land_cloud_shadow");
+        }
 
         int extendedWidth = computeCloudBuffer ? Math.max(3, cloudBufferWidth) : 3;
         int extendedHeight = extendedWidth;
@@ -139,6 +147,21 @@ public class S2IdepixPostProcessOp extends Operator {
                 checkForCancellation();
                 for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
                     S2IdepixUtils.consolidateCloudAndBuffer(targetTile, x, y);
+                }
+            }
+        }
+
+        if (computeCloudShadow) {
+            final Tile cloudShadowFlagTile = getSourceTile(cloudShadowFlagBand, srcRectangle);
+            for (int y = targetRectangle.y; y < targetRectangle.y + targetRectangle.height; y++) {
+                checkForCancellation();
+                for (int x = targetRectangle.x; x < targetRectangle.x + targetRectangle.width; x++) {
+                    final int cloudShadowFlagValue = cloudShadowFlagTile.getSampleInt(x, y);
+
+                    if (cloudShadowFlagValue == oceanCloudShadowIndexValue ||
+                            cloudShadowFlagValue == landCloudShadowIndexValue) {
+                        targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_SHADOW, true);
+                    }
                 }
             }
         }
