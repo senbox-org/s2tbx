@@ -41,6 +41,8 @@ public class S2IdepixCloudShadowOp extends Operator {
     private final static String BAND_NAME_TEST_C = "ShadowID_TestC";
     private final static String BAND_NAME_TEST_D = "LongShadowID_TestC";
 
+    private final static int GRANULE_NINTH = 610; // one ninth of a granule (5490 pixels)
+
     private Band sourceBandClusterA;
 
     private Band sourceBandFlag1;
@@ -142,9 +144,14 @@ public class S2IdepixCloudShadowOp extends Operator {
             throw new OperatorException("Product type not supported!");
         }
 
-        if (sourceProduct.getSceneRasterWidth() > 5000 || sourceProduct.getSceneRasterHeight() > 5000) { //5000
-            targetProduct.setPreferredTileSize(610, 610); //1500
-            searchBorderRadius = 400; //[pixel] 400 - Sentinel 2
+//        if (sourceProduct.getSceneRasterWidth() > 5000 || sourceProduct.getSceneRasterHeight() > 5000) { //5000
+        // todo: discuss
+        if (sourceProduct.getSceneRasterWidth() > GRANULE_NINTH || sourceProduct.getSceneRasterHeight() > GRANULE_NINTH) { //5000
+            final int preferredTileWidth = Math.min(sourceProduct.getSceneRasterWidth(), GRANULE_NINTH);
+            final int preferredTileHeight = Math.min(sourceProduct.getSceneRasterHeight(), GRANULE_NINTH);
+            targetProduct.setPreferredTileSize(preferredTileWidth, preferredTileHeight); //1500
+            searchBorderRadius = Math.min(400,preferredTileWidth); //[pixel] 400 - Sentinel 2
+            searchBorderRadius = Math.min(searchBorderRadius, preferredTileHeight); //[pixel] 400 - Sentinel 2
             productCentralComputation = true;
         } else {
             targetProduct.setPreferredTileSize(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
@@ -198,7 +205,7 @@ public class S2IdepixCloudShadowOp extends Operator {
         int sourceHeight = sourceRectangle.height;
         int sourceLength = sourceRectangle.width * sourceRectangle.height;
 
-        System.out.printf("sourceWidth: %d sourceHeight: %d\n", sourceWidth, sourceHeight);
+        System.out.printf("S2IdepixCloudShadow computeTileStack: x = %d y = %d\n", targetRectangle.x, targetRectangle.y);
 
         final int[] flagArray = new int[sourceLength];
         final int[] cloudShadowArray = new int[sourceLength];
