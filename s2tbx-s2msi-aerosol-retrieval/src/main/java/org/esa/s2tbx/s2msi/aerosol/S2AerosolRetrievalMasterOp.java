@@ -61,6 +61,11 @@ public class S2AerosolRetrievalMasterOp extends Operator {
     @Parameter(defaultValue = "true")
     private boolean copyToaReflBands;
 
+    @Parameter(description = "The reflectance bands which shall be considered for aot retrieval." +
+            "Note that bands B3 and B11 cannot be left out.",
+            defaultValue = "B1,B2,B3,B4,B5,B6,B7,B8,B8A,B11,B12")
+    private String[] reflectanceBandNames;
+
     @Parameter(defaultValue = "true")
     private boolean copyGeometryBands;
 
@@ -137,6 +142,7 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             s2AerosolOp.setSourceProduct(aerosolTypeProduct);
             s2AerosolOp.setParameter("pathToLut", pathToLut);
             s2AerosolOp.setParameter("scale", scale);
+            s2AerosolOp.setParameter("reflectanceBandNames", reflectanceBandNames);
             aotDownscaledProduct = s2AerosolOp.getTargetProduct();
         }
 
