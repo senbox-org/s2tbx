@@ -27,6 +27,7 @@ import java.util.Map;
  * @author Tonio Fincke
  */
 @OperatorMetadata(alias = "S2.WaterVapour",
+        category = "Optical",
         description = "Water Vapour retrieval from S2 MSI",
         authors = "Tonio Fincke, Grit Kirches",
         version = "1.0",

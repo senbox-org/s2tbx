@@ -43,6 +43,7 @@ import java.util.Map;
  * Main Operator for aerosol retrieval from S2 MSI following USwansea algorithm as used in GlobAlbedo project.
  */
 @OperatorMetadata(alias = "AerosolRetrieval.S2.Master",
+        category = "Optical",
         description = "Aerosol retrieval from S2 MSI following USwansea algorithm as used in GlobAlbedo project.",
         authors = "Olaf Danne, Marco Zuehlke, Grit Kirches, Andreas Heckel",
         version = "1.0",

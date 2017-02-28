@@ -21,6 +21,7 @@ import java.util.Map;
  *
  */
 @OperatorMetadata(alias = "CCICloudShadow",
+        category = "Optical",
         authors = "Grit Kirches, Michael Paperin, Olaf Danne",
         copyright = "(c) Brockmann Consult GmbH",
         version = "1.0",
