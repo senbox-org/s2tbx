@@ -7,6 +7,7 @@ import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.OperatorException;
+import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.pointop.PixelOperator;
 import org.esa.snap.core.gpf.pointop.ProductConfigurer;
 import org.esa.snap.core.gpf.pointop.Sample;
@@ -70,5 +71,11 @@ public class S2AerosolTypeOp extends PixelOperator {
     @Override
     protected void configureTargetSamples(TargetSampleConfigurer targetSampleConfigurer) throws OperatorException {
         targetSampleConfigurer.defineSample(0, InstrumentConsts.AEROSOL_TYPE_NAME);
+    }
+
+    public static class Spi extends OperatorSpi {
+        public Spi() {
+            super(S2AerosolTypeOp.class);
+        }
     }
 }
