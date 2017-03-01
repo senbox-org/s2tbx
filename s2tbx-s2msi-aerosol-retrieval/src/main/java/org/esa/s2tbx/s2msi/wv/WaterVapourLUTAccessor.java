@@ -4,12 +4,9 @@ import org.esa.s2tbx.s2msi.lut.LutUtils;
 import org.esa.snap.core.util.math.LookupTable;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 /**
@@ -29,14 +26,11 @@ class WaterVapourLUTAccessor {
     private static final String B_NAME = "b";
 
     static LookupTable readLut() throws IOException {
-        final URL pathToWVDimsFile = WaterVapourLUTAccessor.class.getResource(dims_file_name);
-        final File lutDimsFile = new File(pathToWVDimsFile.getFile());
+        final InputStream dimsStream = WaterVapourLUTAccessor.class.getResourceAsStream(dims_file_name);
+        Properties properties = LutUtils.readPropertiesFromJsonFile(dimsStream, INT_PROPERTY_NAMES);
 
-        Properties properties = LutUtils.readPropertiesFromJsonFile(lutDimsFile, INT_PROPERTY_NAMES);
+        final InputStream lutStream = WaterVapourLUTAccessor.class.getResourceAsStream(LUT_FILE_NAME);
 
-        final URL pathToWVLut = WaterVapourLUTAccessor.class.getResource(LUT_FILE_NAME);
-        final File file = new File(pathToWVLut.getFile());
-        final Path path = FileSystems.getDefault().getPath(file.getParent(), file.getName());
         final int[] lutShape = (int[]) properties.get(LUTSHAPE_NAME);
         final double[] surfaceReflectanceValues = convert((float[]) properties.get(SURFACE_REFLECTANCE_NAME));
         final double[] sunZenithValues = convert((float[]) properties.get(SUN_ZENITH_NAME));
@@ -56,7 +50,7 @@ class WaterVapourLUTAccessor {
 
         double[] lookupValues = new double[numberOfLutValues];
         int count = 0;
-        final BufferedReader bufferedReader = Files.newBufferedReader(path);
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(lutStream));
         String line = bufferedReader.readLine();
         while (line != null) {
             if (!line.startsWith("0")) {

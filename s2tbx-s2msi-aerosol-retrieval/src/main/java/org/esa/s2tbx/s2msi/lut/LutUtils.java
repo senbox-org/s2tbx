@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -17,8 +19,18 @@ import java.util.Properties;
 public class LutUtils {
 
     public static Properties readPropertiesFromJsonFile(File jsonFile, String[] intPropertyNames) throws IOException {
-        Properties properties = new Properties();
         final BufferedReader bufferedReader = new BufferedReader(new FileReader(jsonFile));
+        return readPropertiesFromJsonFile(bufferedReader, intPropertyNames);
+    }
+
+
+    public static Properties readPropertiesFromJsonFile(InputStream jsonStream, String[] intPropertyNames) throws IOException {
+        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(jsonStream));
+        return readPropertiesFromJsonFile(bufferedReader, intPropertyNames);
+    }
+
+    private static Properties readPropertiesFromJsonFile(BufferedReader bufferedReader, String[] intPropertyNames) throws IOException {
+        Properties properties = new Properties();
         final String fileContent = bufferedReader.readLine();
         String bracketContent = fileContent.substring(1, fileContent.length() - 1);
         List<Integer> indexesOfColons = new ArrayList<>();
