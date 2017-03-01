@@ -16,7 +16,7 @@ public class AerosolTypeProviderTest {
 
     @Test
     public void testGetClimatologiesProduct() throws IOException {
-        final AerosolTypeProvider aerosolTypeProvider = new AerosolTypeProvider(5);
+        final AerosolTypeProvider aerosolTypeProvider = new AerosolTypeProvider(5, null);
         final String auxDataDir = aerosolTypeProvider.getAuxdataInstallationPath().toString();
         final Product climatologiesProduct = AerosolTypeProvider.getClimatologiesProduct(auxDataDir);
         assertNotNull(climatologiesProduct);

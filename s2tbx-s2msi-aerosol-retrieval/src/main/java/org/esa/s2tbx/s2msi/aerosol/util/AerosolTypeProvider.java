@@ -34,9 +34,11 @@ public class AerosolTypeProvider {
     private final Band startFineAbsLessBand;
     private final Band endFineAbsLessBand;
 
-    public AerosolTypeProvider(int dayOfYear) throws IOException {
-        installClimatologyFile();
-        final Product climatologiesProduct = getClimatologiesProduct(getAuxdataInstallationPath().toString());
+    public AerosolTypeProvider(int dayOfYear, Product climatologiesProduct) throws IOException {
+        if (climatologiesProduct == null) {
+            installClimatologyFile();
+            climatologiesProduct = getClimatologiesProduct(getAuxdataInstallationPath().toString());
+        }
 
         geoCoding = climatologiesProduct.getSceneGeoCoding();
         final float[] times = getAttributes(climatologiesProduct, "time");

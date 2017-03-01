@@ -1,6 +1,7 @@
 package org.esa.s2tbx.s2msi.aerosol;
 
 import org.esa.s2tbx.s2msi.aerosol.util.AerosolTypeProvider;
+import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.PixelPos;
@@ -8,6 +9,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
+import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.pointop.PixelOperator;
 import org.esa.snap.core.gpf.pointop.ProductConfigurer;
 import org.esa.snap.core.gpf.pointop.Sample;
@@ -15,6 +17,7 @@ import org.esa.snap.core.gpf.pointop.SourceSampleConfigurer;
 import org.esa.snap.core.gpf.pointop.TargetSampleConfigurer;
 import org.esa.snap.core.gpf.pointop.WritableSample;
 import org.esa.snap.core.util.ProductUtils;
+import org.esa.snap.core.util.StringUtils;
 
 import java.io.IOException;
 
@@ -22,6 +25,9 @@ import java.io.IOException;
  * @author Tonio Fincke
  */
 public class S2AerosolTypeOp extends PixelOperator {
+
+    @Parameter(description = "A product to read climatology data from.", notNull = true)
+    private String climatologiesFile;
 
     private AerosolTypeProvider aerosolTypeProvider;
     private GeoCoding sceneGeoCoding;
@@ -35,7 +41,15 @@ public class S2AerosolTypeOp extends PixelOperator {
         final double mjd = sourceProduct.getStartTime().getMJD();
         int dayOfYear = ((int)(mjd % 365.25)) + 1;
         try {
-            aerosolTypeProvider = new AerosolTypeProvider(dayOfYear);
+            Product climatologiesProduct = null;
+            try {
+                if (StringUtils.isNotNullAndNotEmpty(climatologiesFile)) {
+                    climatologiesProduct = ProductIO.readProduct(climatologiesFile);
+                }
+            } catch(IOException e) {
+                climatologiesProduct = null;
+            }
+            aerosolTypeProvider = new AerosolTypeProvider(dayOfYear, climatologiesProduct);
         } catch (IOException e) {
             throw new OperatorException("Could not determine aerosol type: " + e.getMessage());
         }

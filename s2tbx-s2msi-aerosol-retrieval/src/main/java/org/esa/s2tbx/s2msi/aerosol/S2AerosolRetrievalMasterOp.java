@@ -58,6 +58,11 @@ public class S2AerosolRetrievalMasterOp extends Operator {
     @TargetProduct
     private Product targetProduct;
 
+    @Parameter(description = "A product to read climatology data from. " +
+            "Only required if the aerosol type shall be retrieved. " +
+            "If not provided, a default product will be written to the local aux data directory.", notNull = true)
+    private String climatologiesFile;
+
     // todo: add labels, descriptions...
     @Parameter(defaultValue = "true")
     private boolean copyToaReflBands;
@@ -128,6 +133,7 @@ public class S2AerosolRetrievalMasterOp extends Operator {
             final S2AerosolTypeOp s2AerosolTypeOp = new S2AerosolTypeOp();
             s2AerosolTypeOp.setParameterDefaultValues();
             s2AerosolTypeOp.setSourceProduct(waterVapourProduct);
+            s2AerosolTypeOp.setParameter("climatologiesFile", climatologiesFile);
             aerosolTypeProduct = s2AerosolTypeOp.getTargetProduct();
         } else {
             String aerosolTypeExpression = "0.0";
