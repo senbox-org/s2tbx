@@ -61,7 +61,7 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
         File file = (File) input;
         INamingConvention namingConvention = null;
         try {
-            namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
+            namingConvention = NamingConventionFactory.createL1BNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
         } catch (IOException e) {
             return DecodeQualification.UNABLE;
         }

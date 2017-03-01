@@ -65,7 +65,7 @@ public class Sentinel2L2AProductReader extends Sentinel2OrthoProductReader {
     public S2SpatialResolution getProductResolution() {
         if(namingConvention == null && (getInput() instanceof File)) {
             try {
-                namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(((File) getInput()).toPath()));
+                namingConvention = NamingConventionFactory.createOrthoNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(((File) getInput()).toPath()));
             } catch (IOException e) {
                 return S2SpatialResolution.R10M;
             }

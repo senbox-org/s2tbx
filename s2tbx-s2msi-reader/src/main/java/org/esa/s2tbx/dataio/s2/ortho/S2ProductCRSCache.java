@@ -54,7 +54,7 @@ public class S2ProductCRSCache {
 
         public S2ProductCRSCacheEntry (Path path) {
             try {
-                namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(path));
+                namingConvention = NamingConventionFactory.createOrthoNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(path));
             } catch (IOException e) {
                 return;
             }
