@@ -169,7 +169,7 @@ public class AerosolTypeProvider {
 
     private void installClimatologyFile() throws IOException {
         Path auxdataDirPath = getAuxdataInstallationPath();
-        Path sourcePath = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("org/esa/s2tbx/s2msi/aerosol/util");
+        Path sourcePath = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("auxdata");
         new ResourceInstaller(sourcePath, auxdataDirPath).install(".*" + CLIMATOLOGY_FILE_NAME, ProgressMonitor.NULL);
     }
 
