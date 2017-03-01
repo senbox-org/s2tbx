@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.Assert.assertNotNull;
 
 /**
  * @author Tonio Fincke
@@ -16,7 +16,9 @@ public class AerosolTypeProviderTest {
 
     @Test
     public void testGetClimatologiesProduct() throws IOException {
-        final Product climatologiesProduct = AerosolTypeProvider.getClimatologiesProduct();
+        final AerosolTypeProvider aerosolTypeProvider = new AerosolTypeProvider(5);
+        final String auxDataDir = aerosolTypeProvider.getAuxdataInstallationPath().toString();
+        final Product climatologiesProduct = AerosolTypeProvider.getClimatologiesProduct(auxDataDir);
         assertNotNull(climatologiesProduct);
     }
 

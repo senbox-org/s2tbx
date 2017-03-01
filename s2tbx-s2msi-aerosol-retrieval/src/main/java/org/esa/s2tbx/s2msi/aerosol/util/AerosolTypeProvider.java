@@ -1,5 +1,6 @@
 package org.esa.s2tbx.s2msi.aerosol.util;
 
+import com.bc.ceres.core.ProgressMonitor;
 import org.esa.snap.core.dataio.ProductIO;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.datamodel.Band;
@@ -7,10 +8,12 @@ import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
+import org.esa.snap.core.util.ResourceInstaller;
+import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.nio.file.Path;
 
 /**
  * @author Tonio Fincke
@@ -32,7 +35,8 @@ public class AerosolTypeProvider {
     private final Band endFineAbsLessBand;
 
     public AerosolTypeProvider(int dayOfYear) throws IOException {
-        final Product climatologiesProduct = getClimatologiesProduct();
+        installClimatologyFile();
+        final Product climatologiesProduct = getClimatologiesProduct(getAuxdataInstallationPath().toString());
 
         geoCoding = climatologiesProduct.getSceneGeoCoding();
         final float[] times = getAttributes(climatologiesProduct, "time");
@@ -48,9 +52,8 @@ public class AerosolTypeProvider {
         endFineAbsLessBand = climatologiesProduct.getBand(FINE_LESS_ABS_BAND_NAME_START + timeData.endMonth);
     }
 
-    static Product getClimatologiesProduct() throws IOException {
-        final URL pathToClimatologiesFile = AerosolTypeProvider.class.getResource(CLIMATOLOGY_FILE_NAME);
-        final File climatologiesFile = new File(pathToClimatologiesFile.getFile());
+    static Product getClimatologiesProduct(String auxDataDir) throws IOException {
+        final File climatologiesFile = new File(auxDataDir, CLIMATOLOGY_FILE_NAME);
         final ProductReader netCDFReader = ProductIO.getProductReader("NetCDF");
         return netCDFReader.readProductNodes(climatologiesFile, null);
     }
@@ -162,6 +165,17 @@ public class AerosolTypeProvider {
         timeData.endMonth = "" + (endMonth + 1);
         timeData.fraction = (dayOfYear - start) / (end - start);
         return timeData;
+    }
+
+    private void installClimatologyFile() throws IOException {
+        Path auxdataDirPath = getAuxdataInstallationPath();
+        Path sourcePath = ResourceInstaller.findModuleCodeBasePath(getClass()).resolve("org/esa/s2tbx/s2msi/aerosol/util");
+        new ResourceInstaller(sourcePath, auxdataDirPath).install(".*" + CLIMATOLOGY_FILE_NAME, ProgressMonitor.NULL);
+    }
+
+    // package local for testing purposes
+    Path getAuxdataInstallationPath() {
+        return SystemUtils.getAuxDataPath().resolve("s2msi/aerosol-retrieval").toAbsolutePath();
     }
 
     static class TimeData {
