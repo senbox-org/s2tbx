@@ -17,7 +17,6 @@
 
 package org.esa.s2tbx.dataio.readers;
 
-import org.esa.s2tbx.dataio.ColorPaletteBand;
 import org.esa.s2tbx.dataio.VirtualDirEx;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
@@ -38,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -120,13 +120,18 @@ public abstract class BaseProductReaderPlugIn implements ProductReaderPlugIn {
                         retVal = DecodeQualification.INTENDED;
                     }
                 } else {
-                    virtualDir.setFolderDepth(folderDepth);
                     Pattern[] patternList = enforcer.getMinimalFilePatternList();
-                    files = virtualDir.listAll(patternList);
-                    if (files.length >= patternList.length && enforcer.isConsistent(files)) {
-                        retVal = DecodeQualification.INTENDED;
+                    File inputFile = getFileInput(input);
+                    if (inputFile.isFile() &&
+                            Arrays.stream(patternList).anyMatch(p -> p.matcher(inputFile.getName()).matches())) {
+                        virtualDir.setFolderDepth(folderDepth);
+                        files = virtualDir.listAll(patternList);
+                        if (files.length >= patternList.length && enforcer.isConsistent(files)) {
+                            retVal = DecodeQualification.INTENDED;
+                        }
                     }
                 }
+
             }
         } catch (IOException e) {
             retVal = DecodeQualification.UNABLE;
