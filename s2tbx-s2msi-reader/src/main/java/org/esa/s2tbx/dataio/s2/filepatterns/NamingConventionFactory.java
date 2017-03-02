@@ -40,6 +40,29 @@ public class NamingConventionFactory {
         return null;
     }
 
+    public static L1BNamingConvention createL1BNamingConvention(VirtualPath virtualPath)  {
+        L1BNamingConvention l1bConvention = new L1BNamingConvention(virtualPath);
+        if(l1bConvention.getInputType() != null){
+            return l1bConvention;
+        }
+        return null;
+    }
+
+    public static INamingConvention createOrthoNamingConvention(VirtualPath virtualPath)  {
+
+        SAFENamingConvention safe = new SAFENamingConvention(virtualPath);
+        if(safe.getInputType() != null){
+            return safe;
+        }
+
+        SAFECOMPACTNamingConvention safeCompact = new SAFECOMPACTNamingConvention(virtualPath);
+        if(safeCompact.getInputType() != null){
+            return safeCompact;
+        }
+
+        return null;
+    }
+
     //getters L1B templates
     public static String getSpectralBandImageTemplate_L1b (String format, String bandFileId) {
         //Currently, it is always the same for all formats

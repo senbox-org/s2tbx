@@ -66,7 +66,7 @@ public class Sentinel2OrthoProductReaderProxy implements ProductReader {
         }
         if(reader == null) {
             file = (File) input;
-            INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
+            INamingConvention namingConvention = NamingConventionFactory.createOrthoNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
             if (namingConvention == null) {
                 throw new IOException("Invalid input");
             }

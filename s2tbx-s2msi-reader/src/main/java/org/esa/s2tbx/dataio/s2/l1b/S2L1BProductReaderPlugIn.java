@@ -30,6 +30,7 @@ import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.util.SystemUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.regex.Matcher;
 
@@ -58,7 +59,12 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
         File file = (File) input;
-        INamingConvention namingConvention = NamingConventionFactory.createNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
+        INamingConvention namingConvention = null;
+        try {
+            namingConvention = NamingConventionFactory.createL1BNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));
+        } catch (IOException e) {
+            return DecodeQualification.UNABLE;
+        }
         if(namingConvention != null && namingConvention.getProductLevel().equals(S2Config.Sentinel2ProductLevel.L1B)) {
             return DecodeQualification.INTENDED;
         }

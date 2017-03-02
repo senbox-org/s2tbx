@@ -289,11 +289,14 @@ public class S2NamingConventionUtils {
         }
     }
 
-    public static VirtualPath transformToSentinel2VirtualPath (Path path) {
+    public static VirtualPath transformToSentinel2VirtualPath (Path path) throws IOException{
         VirtualPath virtualPath;
 
         if(VirtualDirEx.isPackedFile(path.toFile())) {
             VirtualDirEx virtualDirEx = VirtualDirEx.create(path.toFile());
+            if(virtualDirEx == null) {
+                throw new IOException(String.format("Unable to read %s",path.toString()));
+            }
             String folderName = PathUtils.getFileNameWithoutExtension(path);
             if(!folderName.endsWith(".SAFE")) {
                 folderName = folderName +".SAFE";
