@@ -43,7 +43,7 @@ public class PreparationMaskBand {
                             flagArray[j * sourceWidth + i] += PreparationMaskBand.OCEAN_FLAG;
                         }
 
-                        if (flagDetector.isCloud(i, j)) {
+                        if (flagDetector.isCloud(i, j) || flagDetector.isCloudBuffer(i, j)) {
                             flagArray[j * (sourceWidth) + i] += PreparationMaskBand.CLOUD_FLAG;
                         }
                     }

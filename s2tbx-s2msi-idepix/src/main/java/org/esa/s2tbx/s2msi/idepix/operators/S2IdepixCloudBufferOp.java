@@ -33,10 +33,6 @@ public class S2IdepixCloudBufferOp extends Operator {
     @Parameter(defaultValue = "2", label = "Width of cloud buffer (# of pixels)")
     private int cloudBufferWidth;
 
-    @Parameter(defaultValue = "false", label = " Use the LandCover advanced cloud buffer algorithm")
-    private boolean gaLcCloudBuffer;
-
-
     @SourceProduct(alias = "classifiedProduct")
     private Product classifiedProduct;
 
@@ -49,7 +45,8 @@ public class S2IdepixCloudBufferOp extends Operator {
     public void initialize() throws OperatorException {
 
         Product cloudBufferProduct = createTargetProduct(classifiedProduct,
-                                                         "postProcessedCloudBuffer", "postProcessedCloudBuffer");
+                                                         classifiedProduct.getName(),
+                                                         classifiedProduct.getProductType());
 
         rectCalculator = new RectangleExtender(new Rectangle(classifiedProduct.getSceneRasterWidth(),
                                                              classifiedProduct.getSceneRasterHeight()),
@@ -87,7 +84,8 @@ public class S2IdepixCloudBufferOp extends Operator {
                 if (targetRectangle.contains(x, y)) {
                     S2IdepixUtils.combineFlags(x, y, sourceFlagTile, targetTile);
                 }
-                boolean isCloud = sourceFlagTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD);
+                boolean isCloud = sourceFlagTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_SURE) ||
+                        sourceFlagTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS);
                 if (isCloud) {
                     S2IdepixCloudBuffer.computeSimpleCloudBuffer(x, y,
                                                                  targetTile,

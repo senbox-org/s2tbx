@@ -18,7 +18,6 @@ import java.util.Map;
 
 /**
  * todo: add comment
- *
  */
 @OperatorMetadata(alias = "CCICloudShadow",
         category = "Optical",
@@ -28,8 +27,12 @@ import java.util.Map;
         description = "Algorithm detecting cloud shadow...")
 public class S2IdepixCloudShadowOp extends Operator {
 
-    @SourceProduct(description = "The source product. Valid sources are S2, ...")
-    private Product sourceProduct;
+    @SourceProduct(description = "The classification product.")
+    private Product s2ClassifProduct;
+
+    @SourceProduct(alias = "s2CloudBuffer", optional = true)
+    private Product s2CloudBufferProduct;      // has only classifFlagBand with buffer added
+
 
     @TargetProduct
     private Product targetProduct;
@@ -47,6 +50,7 @@ public class S2IdepixCloudShadowOp extends Operator {
     private Band sourceBandClusterA;
 
     private Band sourceBandFlag1;
+    private Band sourceBandFlag2;
 
     private RasterDataNode sourceSunZenith;
     private RasterDataNode sourceSunAzimuth;
@@ -84,8 +88,8 @@ public class S2IdepixCloudShadowOp extends Operator {
     @Override
     public void initialize() throws OperatorException {
 
-        productType = sourceProduct.getProductType();
-        productName = sourceProduct.getName();
+        productType = s2ClassifProduct.getProductType();
+        productName = s2ClassifProduct.getName();
         String content = "idepix";
         productNameContainIdepix = StringUtils.containsIgnoreCase(productName, content);
 
@@ -93,9 +97,11 @@ public class S2IdepixCloudShadowOp extends Operator {
         System.out.println("Product_Name:  " + productName);
         System.out.println("productNameContainIdepix:  " + productNameContainIdepix);
 
-        targetProduct = new Product(productName, productType, sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+        targetProduct = new Product(productName, productType,
+                                    s2ClassifProduct.getSceneRasterWidth(),
+                                    s2ClassifProduct.getSceneRasterHeight());
 
-        ProductUtils.copyGeoCoding(sourceProduct, targetProduct);
+        ProductUtils.copyGeoCoding(s2ClassifProduct, targetProduct);
 
         String sourceBandNameClusterA;
         String sourceFlagName1;
@@ -147,29 +153,33 @@ public class S2IdepixCloudShadowOp extends Operator {
 
 //        if (sourceProduct.getSceneRasterWidth() > 5000 || sourceProduct.getSceneRasterHeight() > 5000) { //5000
         // todo: discuss
-        if (sourceProduct.getSceneRasterWidth() > GRANULE_NINTH || sourceProduct.getSceneRasterHeight() > GRANULE_NINTH) { //5000
-            final int preferredTileWidth = Math.min(sourceProduct.getSceneRasterWidth(), GRANULE_NINTH);
-            final int preferredTileHeight = Math.min(sourceProduct.getSceneRasterHeight(), GRANULE_NINTH);
+        if (s2ClassifProduct.getSceneRasterWidth() > GRANULE_NINTH || s2ClassifProduct.getSceneRasterHeight() > GRANULE_NINTH) { //5000
+            final int preferredTileWidth = Math.min(s2ClassifProduct.getSceneRasterWidth(), GRANULE_NINTH);
+            final int preferredTileHeight = Math.min(s2ClassifProduct.getSceneRasterHeight(), GRANULE_NINTH);
             targetProduct.setPreferredTileSize(preferredTileWidth, preferredTileHeight); //1500
-            searchBorderRadius = Math.min(400,preferredTileWidth); //[pixel] 400 - Sentinel 2
+            searchBorderRadius = Math.min(400, preferredTileWidth); //[pixel] 400 - Sentinel 2
             searchBorderRadius = Math.min(searchBorderRadius, preferredTileHeight); //[pixel] 400 - Sentinel 2
             productCentralComputation = true;
         } else {
-            targetProduct.setPreferredTileSize(sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight());
+            targetProduct.setPreferredTileSize(s2ClassifProduct.getSceneRasterWidth(), s2ClassifProduct.getSceneRasterHeight());
             searchBorderRadius = 0;
             productCentralComputation = false;
         }
 
         System.out.printf("searchBorderRadius:  %d  \n", searchBorderRadius);
 
-        sourceBandClusterA = getSourceBand(sourceBandNameClusterA);
+        sourceBandClusterA = s2ClassifProduct.getBand(sourceBandNameClusterA);
 
-        sourceSunZenith = getSourceBand(sourceSunZenithName);
-        sourceSunAzimuth = getSourceBand(sourceSunAzimuthName);
-        sourceLatitude = getSourceBand(sourceLatitudeName);
-        sourceLongitude = getSourceBand(sourceLongitudeName);
-        sourceAltitude = getSourceBand(sourceAltitudeName);
-        sourceBandFlag1 = getSourceBand(sourceFlagName1);
+        sourceSunZenith = s2ClassifProduct.getBand(sourceSunZenithName);
+        sourceSunAzimuth = s2ClassifProduct.getBand(sourceSunAzimuthName);
+        sourceLatitude = s2ClassifProduct.getBand(sourceLatitudeName);
+        sourceLongitude = s2ClassifProduct.getBand(sourceLongitudeName);
+        sourceAltitude = s2ClassifProduct.getBand(sourceAltitudeName);
+
+        sourceBandFlag1 = s2ClassifProduct.getBand(sourceFlagName1);
+        if (s2CloudBufferProduct != null) {
+            sourceBandFlag2 = s2CloudBufferProduct.getBand(sourceFlagName1);
+        }
 
 
         targetBandCloudShadow = targetProduct.addBand(BAND_NAME_CLOUD_SHADOW, ProductData.TYPE_INT32);
@@ -194,6 +204,10 @@ public class S2IdepixCloudShadowOp extends Operator {
         Tile sourceTileAltitude = getSourceTile(sourceAltitude, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
 
         Tile sourceTileFlag1 = getSourceTile(sourceBandFlag1, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
+        Tile sourceTileFlag2 = null;
+        if (sourceBandFlag2 != null) {
+            sourceTileFlag2 = getSourceTile(sourceBandFlag2, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
+        }
         Tile sourceTileClusterA = getSourceTile(sourceBandClusterA, sourceRectangle, new BorderExtenderConstant(new double[]{Double.NaN}));
 
         Tile targetTileCloudShadow = targetTiles.get(targetBandCloudShadow);
@@ -223,10 +237,12 @@ public class S2IdepixCloudShadowOp extends Operator {
         final float[] sourceClusterA = sourceTileClusterA.getSamplesFloat();
         final float[] sourceClusterB = sourceTileClusterA.getSamplesFloat();
 
-        FlagDetector flagDetector = new FlagDetectorSentinel2(sourceTileFlag1, sourceRectangle);
+        FlagDetector flagDetector = new FlagDetectorSentinel2(sourceTileFlag1, sourceTileFlag2, sourceRectangle);
 
         PreparationMaskBand.prepareMaskBand(
-                sourceProduct.getSceneRasterWidth(), sourceProduct.getSceneRasterHeight(), sourceRectangle,
+                s2ClassifProduct.getSceneRasterWidth(),
+                s2ClassifProduct.getSceneRasterHeight(),
+                sourceRectangle,
                 flagArray,
                 flagDetector);
 
@@ -250,20 +266,30 @@ public class S2IdepixCloudShadowOp extends Operator {
 
 
             if (productCentralComputation) {
-                cloudShadowIdBorderRectangle = PotentialCloudShadowAreasPathCentralPixel.makedCloudShadowArea(sourceProduct, targetProduct, sourceRectangle,
-                        targetRectangle, sourceSunZenith, sourceSunAzimuth,
-                        sourceLatitude, sourceLongitude, sourceAltitude, flagArray, cloudShadowArray,
-                        cloudIDArray, cloudShadowIDArray, counterTable);
+                cloudShadowIdBorderRectangle =
+                        PotentialCloudShadowAreasPathCentralPixel.
+                                makedCloudShadowArea(s2ClassifProduct, targetProduct, sourceRectangle,
+                                                     targetRectangle, sourceSunZenith, sourceSunAzimuth,
+                                                     sourceLatitude, sourceLongitude, sourceAltitude,
+                                                     flagArray, cloudShadowArray,
+                                                     cloudIDArray, cloudShadowIDArray, counterTable);
             } else {
-                cloudShadowIdBorderRectangle = PotentialCloudShadowAreas.makedCloudShadowArea(sourceProduct, targetProduct, sourceRectangle,
-                        targetRectangle, sourceSunZenith, sourceSunAzimuth,
-                        sourceLatitude, sourceLongitude, sourceAltitude, flagArray, cloudShadowArray,
-                        cloudIDArray, cloudShadowIDArray, counterTable);
+                cloudShadowIdBorderRectangle =
+                        PotentialCloudShadowAreas.
+                                makedCloudShadowArea(s2ClassifProduct, targetProduct, sourceRectangle,
+                                                     targetRectangle, sourceSunZenith, sourceSunAzimuth,
+                                                     sourceLatitude, sourceLongitude, sourceAltitude,
+                                                     flagArray, cloudShadowArray,
+                                                     cloudIDArray, cloudShadowIDArray, counterTable);
             }
 
 
-            AnalyzeCloudShadowIDAreas.identifyCloudShadowArea(sourceProduct, sourceRectangle, sourceClusterA, sourceClusterB,
-                    flagArray, cloudShadowIDArray, cloudLongShadowIDArray, cloudShadowIdBorderRectangle, counterTable);
+            AnalyzeCloudShadowIDAreas.identifyCloudShadowArea(s2ClassifProduct, sourceRectangle,
+                                                              sourceClusterA, sourceClusterB,
+                                                              flagArray, cloudShadowIDArray,
+                                                              cloudLongShadowIDArray,
+                                                              cloudShadowIdBorderRectangle,
+                                                              counterTable);
 
 
             GrowingCloudShadow.computeCloudShadowBorder(sourceWidth, sourceHeight, flagArray);
@@ -274,12 +300,6 @@ public class S2IdepixCloudShadowOp extends Operator {
             makeFilledBand(cloudShadowIDArray, targetTileTestC.getRectangle(), targetTileTestC, searchBorderRadius);
             makeFilledBand(cloudLongShadowIDArray, targetTileTestD.getRectangle(), targetTileTestD, searchBorderRadius);
         }
-    }
-
-    private Band getSourceBand(String sourceBandName) {
-        Band sourceBand = sourceProduct.getBand(sourceBandName);
-        sourceBand.setNoDataValueUsed(false);
-        return sourceBand;
     }
 
     private void attachIndexCoding(Band targetBandCloudShadow) {

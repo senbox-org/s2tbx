@@ -272,7 +272,8 @@ public class S2IdepixUtils {
     }
 
     public static void consolidateCloudAndBuffer(Tile targetTile, int x, int y) {
-        if (targetTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD)) {
+        if (targetTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_SURE) ||
+                targetTile.getSampleBit(x, y, S2IdepixConstants.F_CLOUD_AMBIGUOUS)) {
             targetTile.setSample(x, y, S2IdepixConstants.F_CLOUD_BUFFER, false);
         }
     }
@@ -282,22 +283,6 @@ public class S2IdepixUtils {
         int sourceFlags = sourceFlagTile.getSampleInt(x, y);
         int computedFlags = targetTile.getSampleInt(x, y);
         targetTile.setSample(x, y, sourceFlags | computedFlags);
-    }
-
-    public static double calcScatteringAngle(double sza, double vza, double saa, double vaa) {
-        final double sins = (float) Math.sin(sza * MathUtils.DTOR);
-        final double sinv = (float) Math.sin(vza * MathUtils.DTOR);
-        final double coss = (float) Math.cos(sza * MathUtils.DTOR);
-        final double cosv = (float) Math.cos(vza * MathUtils.DTOR);
-
-        // delta azimuth in degree
-        final double deltaAzimuth = (float) MathUtils.RTOD * Math.acos(Math.cos(MathUtils.DTOR * (vaa - saa)));
-
-        // Compute the geometric conditions
-        final double cosphi = Math.cos(deltaAzimuth * MathUtils.DTOR);
-
-        // scattering angle in degree
-        return MathUtils.RTOD * Math.acos(-coss * cosv - sins * sinv * cosphi);
     }
 
     public static double calcScatteringCos(double sza, double vza, double saa, double vaa) {
