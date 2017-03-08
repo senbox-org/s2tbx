@@ -2,19 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<parent>
-    <artifactId>s2tbx</artifactId>
-    <groupId>org.esa.s2tbx</groupId>
-    <version>5.0.1</version>
-</parent>
-<modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>s2tbx</artifactId>
+        <groupId>org.esa.s2tbx</groupId>
+        <version>5.0.3</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-<groupId>org.esa.s2tbx</groupId>
-<artifactId>s2tbx-jp2-writer</artifactId>
-<packaging>nbm</packaging>
+    <artifactId>s2tbx-jp2-writer</artifactId>
+    <packaging>nbm</packaging>
 
-<name>Sentinel-2 Toolbox JP2 Writer</name>
-<description>Generates JP2 Writer</description>
+    <name>Sentinel-2 Toolbox JP2 Writer</name>
+    <description>Generates JP2 Writer</description>
 
     <dependencies>
         <dependency>

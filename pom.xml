@@ -20,7 +20,7 @@
 
     <groupId>org.esa.s2tbx</groupId>
     <artifactId>s2tbx</artifactId>
-    <version>5.0.1</version>
+    <version>5.0.3</version>
     <name>Sentinel-2 Toolbox</name>
     <description>Tools for the Sentinel-2 Satellite Exploitation</description>
     <url>https://github.com/senbox-org/s2tbx</url>
@@ -51,19 +51,20 @@
         <module>s2tbx-deimos-reader</module>
         <module>s2tbx-gdal-reader</module>
         <module>s2tbx-gdal-reader-ui</module>
-        <module>s2tbx-sta-adapters-help</module>
         <module>s2tbx-radiometric-indices</module>
         <module>s2tbx-radiometric-indices-ui</module>
         <module>s2tbx-biophysical</module>
         <module>s2tbx-reflectance-to-radiance</module>
         <module>s2tbx-reflectance-to-radiance-ui</module>
+        <module>s2tbx-sta-adapters-help</module>
+        <!--<module>s2tbx-sta-adapters/orfeotoolbox/s2tbx-otb-adapters-kit</module>-->
     </modules>
 
     <packaging>pom</packaging>
 
     <properties>
-        <snap.version>5.0.3-SNAPSHOT</snap.version>
-        <s2tbx.version>5.0.1</s2tbx.version>
+        <snap.version>5.0.3</snap.version>
+        <s2tbx.version>5.0.3</s2tbx.version>
         <tests.version>5.0.0</tests.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <user.language>en</user.language>

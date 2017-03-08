@@ -7,7 +7,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>5.0.1</version>
+        <version>5.0.3</version>
     </parent>
 
     <packaging>nbm</packaging>
@@ -15,10 +15,9 @@
     <name>Sentinel-2 Toolbox Common Tools</name>
     <description>This module provides common tools to Sentinel2 Toolbox modules</description>
 
-    <version>5.0.1</version>
     <properties>
-        <s2tbx.nbmSpecVersion>5.0.1</s2tbx.nbmSpecVersion>
-        <s2tbx.version>5.0.0</s2tbx.version>
+        <s2tbx.nbmSpecVersion>${project.version}</s2tbx.nbmSpecVersion>
+        <s2tbx.version>${project.version}</s2tbx.version>
     </properties>
 
     <dependencies>

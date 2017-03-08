@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 5.0.0
-OpenIDE-Module-Implementation-Version: 5.0.0
+OpenIDE-Module-Specification-Version: 5.0.3
+OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Name: Sentinel-2 SEN2COR Processor
 OpenIDE-Module-Display-Category: Sentinel-2 Toolbox
 OpenIDE-Module-Java-Dependencies: Java > 1.8

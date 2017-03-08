@@ -3,7 +3,7 @@
     <parent>
         <artifactId>s2tbx-sta-adapters-otb</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>5.0.0</version>
+        <version>5.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,7 +14,7 @@
     <description>Multivariate Alteration Detector</description>
 
     <build>
-        <sourceDirectory>../../src/main/java</sourceDirectory>
+        <!--<sourceDirectory>../../src/main/java</sourceDirectory>-->
         <resources>
             <resource>
                 <directory>resources</directory>
