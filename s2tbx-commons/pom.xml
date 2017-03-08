@@ -7,7 +7,7 @@
     <parent>
         <artifactId>s2tbx</artifactId>
         <groupId>org.esa.s2tbx</groupId>
-        <version>5.0.3</version>
+        <version>5.0.3-SNAPSHOT</version>
     </parent>
 
     <packaging>nbm</packaging>
