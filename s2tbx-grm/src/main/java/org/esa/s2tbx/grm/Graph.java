@@ -7,10 +7,10 @@ import java.util.List;
  * @author Jean Coravu
  */
 public class Graph<NodeType extends Node> {
-    private final List<NodeType> nodes;
+    private final ArrayListExtended<NodeType> nodes;
 
     public Graph(int numberOfNodes) {
-        this.nodes = new ArrayList<NodeType>(numberOfNodes);
+        this.nodes = new ArrayListExtended<NodeType>(numberOfNodes);
     }
 
     public NodeType getNodeAt(int index) {
@@ -26,36 +26,61 @@ public class Graph<NodeType extends Node> {
     }
 
     public int removeExpiredNodes() {
-        for (int k = this.nodes.size() - 1; k >= 0; k--) {
-            NodeType node = this.nodes.get(k);
+        int nodeCount = this.nodes.size();
+        int lastIndexToCopy = -1;
+        for (int i=0; i<nodeCount; i++) {
+            NodeType node = this.nodes.get(i);
             if (node.isExpired()) {
-                this.nodes.remove(k);
+                if (lastIndexToCopy == -1) {
+                    lastIndexToCopy = i;
+                }
+            } else if (lastIndexToCopy > -1) {
+                this.nodes.set(lastIndexToCopy, node);
+                lastIndexToCopy++;
             }
+        }
+        if (lastIndexToCopy > - 1 && lastIndexToCopy < nodeCount) {
+            this.nodes.removeItems(lastIndexToCopy, nodeCount);
         }
         return this.nodes.size();
     }
 
     public void setValidFlagToAllNodes() {
-        for (int i=0; i<this.nodes.size(); i++) {
+        int nodeCount = this.nodes.size();
+        for (int i=0; i<nodeCount; i++) {
             NodeType n = this.nodes.get(i);
             n.setValid(true);
         }
     }
 
     public void resetMergedFlagToAllNodes() {
-        for (int i=0; i<this.nodes.size(); i++) {
+        int nodeCount = this.nodes.size();
+        for (int i=0; i<nodeCount; i++) {
             NodeType n = this.nodes.get(i);
             n.setMerged(false);
         }
     }
 
     public void resetCostUpdatedFlagToAllEdges() {
-        for (int i=0; i<this.nodes.size(); i++) {
+        int nodeCount = this.nodes.size();
+        for (int i=0; i<nodeCount; i++) {
             NodeType n = this.nodes.get(i);
-            for (int j=0; j<n.getEdgeCount(); j++) {
+            int edgeCount = n.getEdgeCount();
+            for (int j=0; j<edgeCount; j++) {
                 Edge edge = n.getEdgeAt(j);
                 edge.setCostUpdated(false);
             }
+        }
+    }
+
+    private static class ArrayListExtended<ItemType> extends ArrayList<ItemType> {
+
+        ArrayListExtended(int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        void removeItems(int fromIndex, int toIndex) {
+            removeRange(fromIndex, toIndex);
         }
     }
 }

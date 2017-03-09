@@ -4,15 +4,13 @@ package org.esa.s2tbx.grm;
  * @author Jean Coravu
  */
 public class BaatzSchapeNode extends Node {
-    private final float[] means;
     private final float[] squareMeans;
     private final float[] spectralSum;
     private final float[] std;
 
     public BaatzSchapeNode(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel) {
-        super(id, upperLeftX, upperLeftY);
+        super(id, upperLeftX, upperLeftY, numberOfComponentsPerPixel);
 
-        this.means = new float[numberOfComponentsPerPixel];
         this.squareMeans = new float[numberOfComponentsPerPixel];
         this.spectralSum = new float[numberOfComponentsPerPixel];
         this.std = new float[numberOfComponentsPerPixel];
@@ -20,7 +18,8 @@ public class BaatzSchapeNode extends Node {
 
     @Override
     public void initData(int index, float pixel) {
-        this.means[index] = pixel;
+        super.initData(index, pixel);
+
         this.squareMeans[index] = pixel * pixel;
         this.spectralSum[index] = pixel;
         this.std[index] = 0.0f;
@@ -42,10 +41,6 @@ public class BaatzSchapeNode extends Node {
         }
     }
 
-    public float getMeansAt(int index) {
-        return this.means[index];
-    }
-
     public float getSpectralSumAt(int index) {
         return this.spectralSum[index];
     }
@@ -56,9 +51,5 @@ public class BaatzSchapeNode extends Node {
 
     public float getStdAt(int index) {
         return this.std[index];
-    }
-
-    public int getNumberOfComponentsPerPixel() {
-        return this.means.length;
     }
 }

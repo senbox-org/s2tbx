@@ -9,22 +9,28 @@ import java.util.Set;
  * @author Jean Coravu
  */
 public abstract class Node {
+    private static final byte VALID_FLAG = 1;
+    private static final byte EXPIRED_FLAG = 2;
+    private static final byte MERGED_FLAG = 4;
+
     /**
      * Node is identified by the location of the first pixel of the region.
      */
     private final int id;
     private final List<Edge> edges;
+    protected final float[] means;
+
     private int area;
     private int perimeter;
     private BoundingBox box;
     private Contour contour;
-    private boolean valid;
-    private boolean expired;
-    private boolean merged;
 
-    protected Node(int id, int upperLeftX, int upperLeftY) {
+    private byte flags;
+
+    protected Node(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel) {
         this.id = id;
         this.edges = new ArrayList<Edge>();
+        this.means = new float[numberOfComponentsPerPixel];
 
         this.contour = new Contour();
         this.contour.pushRight();
@@ -32,15 +38,13 @@ public abstract class Node {
         this.contour.pushLeft();
         this.contour.pushTop();
 
-        this.valid = true;
-        this.expired = false;
-        this.merged = true; // force to compute costs for the first iteration
+        // merged = true => force to compute costs for the first iteration
+        this.flags = VALID_FLAG | MERGED_FLAG;
+
         this.area = 1;
         this.perimeter = 4;
         this.box = new BoundingBox(upperLeftX, upperLeftY, 1, 1);
     }
-
-    public abstract void initData(int index, float pixel);
 
     public abstract void updateSpecificAttributes(Node n2);
 
@@ -49,28 +53,52 @@ public abstract class Node {
         return getClass().getSimpleName() + "@" + this.hashCode() + "[id="+id+"]";
     }
 
+    public void initData(int index, float pixel) {
+        this.means[index] = pixel;
+    }
+
+    public final int getNumberOfComponentsPerPixel() {
+        return this.means.length;
+    }
+
+    public final float getMeansAt(int index) {
+        return this.means[index];
+    }
+
     public boolean isMerged() {
-        return merged;
+        return ((this.flags & MERGED_FLAG) != 0);
     }
 
     public void setMerged(boolean merged) {
-        this.merged = merged;
+        if (merged) {
+            this.flags = (byte)(this.flags | MERGED_FLAG);
+        } else {
+            this.flags = (byte)(this.flags & ~MERGED_FLAG);
+        }
     }
 
     public boolean isExpired() {
-        return expired;
+        return ((this.flags & EXPIRED_FLAG) != 0);
     }
 
     public void setExpired(boolean expired) {
-        this.expired = expired;
+        if (expired) {
+            this.flags = (byte)(this.flags | EXPIRED_FLAG);
+        } else {
+            this.flags = (byte)(this.flags & ~EXPIRED_FLAG);
+        }
     }
 
     public boolean isValid() {
-        return valid;
+        return ((this.flags & VALID_FLAG) != 0);
     }
 
     public void setValid(boolean valid) {
-        this.valid = valid;
+        if (valid) {
+            this.flags = (byte)(this.flags | VALID_FLAG);
+        } else {
+            this.flags = (byte)(this.flags & ~VALID_FLAG);
+        }
     }
 
     public int getId() {
@@ -93,8 +121,8 @@ public abstract class Node {
         return box;
     }
 
-    public void addEdge(Node target, float cost, int boundary) {
-        this.edges.add(new Edge(target, cost, boundary));
+    public void addEdge(Node target, int boundary) {
+        this.edges.add(new Edge(target, boundary));
     }
 
     public Edge getEdgeAt(int index) {
@@ -130,11 +158,11 @@ public abstract class Node {
      * @return
      */
     public Node checkLMBF(float threshold) {
-        if (this.valid && this.edges.size() > 0) {
+        if (isValid() && this.edges.size() > 0) {
             Edge firstEdge = this.edges.get(0);
             if (firstEdge.getCost() < threshold) {
                 Node firstEdgeTarget = firstEdge.getTarget();
-                if (firstEdgeTarget.valid) {
+                if (firstEdgeTarget.isValid()) {
                     Node bestNode = firstEdgeTarget.getEdgeAt(0).getTarget();
                     if (this == bestNode) { // the same node
                         if (this.id < firstEdgeTarget.id) {
@@ -165,7 +193,7 @@ public abstract class Node {
                 this.edges.remove(i);
                 // if the edge targeting to node b is the first then the corresponding node is not valid anymore
                 if (i == 0) {
-                    this.valid = false;
+                    setValid(false);
                 }
                 return edge;
             }
@@ -191,10 +219,10 @@ public abstract class Node {
                     // no edge exists between node a and node neigh_b.
 
                     // add an edge from node neigh_b targeting node a.
-                    targetNodeOfCurrentEdge.addEdge(this, 0, boundary);
+                    targetNodeOfCurrentEdge.addEdge(this, boundary);
 
                     // add an edge from this node targeting node neigh_b.
-                    addEdge(targetNodeOfCurrentEdge, 0, boundary);
+                    addEdge(targetNodeOfCurrentEdge, boundary);
                 } else {
                     // an edge exists between node a and node neigh_b.
 

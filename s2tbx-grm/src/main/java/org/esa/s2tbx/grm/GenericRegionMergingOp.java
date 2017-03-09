@@ -39,6 +39,9 @@ public class GenericRegionMergingOp extends Operator {
             valueSet = {BEST_FITTING_REGION_MERGING_CRITERION, LOCAL_MUTUAL_BEST_FITTING_REGION_MERGING_CRITERION})
     private String regionMergingCriterion;
 
+    @Parameter(label = "Number of iterations", description = "The number of iterations.")
+    private int numberOfIterations;
+
     @Parameter(label = "Threshold", description = "The threshold.")
     private int threshold;
 
@@ -115,7 +118,7 @@ public class GenericRegionMergingOp extends Operator {
         }
 
         boolean addFourNeighbors = true;
-        Band targetBand = segmenter.update(this.sourceProduct, sourceBandIndices, fastSegmentation, addFourNeighbors);
+        Band targetBand = segmenter.update(this.sourceProduct, sourceBandIndices, this.numberOfIterations, fastSegmentation, addFourNeighbors);
         this.targetProduct.addBand(targetBand);
 
         long endTime = System.currentTimeMillis();

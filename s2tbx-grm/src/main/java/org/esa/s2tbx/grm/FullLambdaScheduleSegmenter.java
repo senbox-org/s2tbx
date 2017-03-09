@@ -6,7 +6,7 @@ package org.esa.s2tbx.grm;
 public class FullLambdaScheduleSegmenter extends AbstractSegmenter<FullLambdaScheduleNode> {
 
     public FullLambdaScheduleSegmenter(float threshold) {
-        super(threshold * threshold);
+        super(threshold);
     }
 
     @Override

@@ -6,14 +6,14 @@ package org.esa.s2tbx.grm;
 public class Edge {
     private final Node target;
     private float cost;
-    private boolean costUpdated;
+    private byte costUpdated;
     private int boundary;
 
-    public Edge(Node target, float cost, int boundary) {
+    public Edge(Node target, int boundary) {
         this.target = target;
-        this.cost = cost;
         this.boundary = boundary;
-        this.costUpdated = false;
+        this.costUpdated = 0; // false
+        this.cost = 0.0f;
     }
 
     @Override
@@ -34,11 +34,11 @@ public class Edge {
     }
 
     public boolean isCostUpdated() {
-        return costUpdated;
+        return (this.costUpdated != (byte)0);
     }
 
     public void setCostUpdated(boolean costUpdated) {
-        this.costUpdated = costUpdated;
+        this.costUpdated = costUpdated ? (byte)1 : (byte)0;
     }
 
     public void setCost(float cost) {
