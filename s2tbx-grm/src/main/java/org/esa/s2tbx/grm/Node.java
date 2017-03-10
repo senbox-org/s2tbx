@@ -186,19 +186,15 @@ public abstract class Node {
         return null;
     }
 
-    private Edge removeEdge(Node target) {
+    public int removeEdge(Node target) {
         for (int i = 0; i < this.edges.size(); i++) {
             Edge edge = this.edges.get(i);
             if (edge.getTarget() == target) {
                 this.edges.remove(i);
-                // if the edge targeting to node b is the first then the corresponding node is not valid anymore
-                if (i == 0) {
-                    setValid(false);
-                }
-                return edge;
+                return i;
             }
         }
-        return null;
+        return -1;
     }
 
     private void updateNeighbors(Node neighborToRemove) {
@@ -207,7 +203,11 @@ public abstract class Node {
             Edge currentEdge = neighborToRemove.getEdgeAt(i);
             // retrieve the edge targeting node 'neighborToRemove'
             Node targetNodeOfCurrentEdge = currentEdge.getTarget();
-            targetNodeOfCurrentEdge.removeEdge(neighborToRemove);
+            int removedEdgeIndex = targetNodeOfCurrentEdge.removeEdge(neighborToRemove);
+            // if the edge targeting to node b is the first then the corresponding node is not valid anymore
+            if (removedEdgeIndex == 0) {
+                setValid(false);
+            }
 
             // keep in memory the boundary between node b and node neigh_b
             int boundary = currentEdge.getBoundary();

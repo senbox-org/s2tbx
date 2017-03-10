@@ -42,6 +42,14 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
         return buildBand();
     }
 
+    public boolean isComplete() {
+        return false; //TODO Jean implement
+    }
+
+    public Graph<NodeType> getGraph() {
+        return graph;
+    }
+
     private boolean perfomOneIterationWithBF() {
         boolean merged = false;
 
@@ -534,7 +542,7 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
         return new BoundingBox(minimumLeftUpperX, minimumLeftUpperY, width, height);
     }
 
-    private static IntSet generateBorderCells(Contour contour, int startCellId, int width) {
+    public static IntSet generateBorderCells(Contour contour, int startCellId, int width) {
         IntSet borderCells = new IntLinkedOpenHashSet();
 
         // add the first pixel to the border list
@@ -618,7 +626,7 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
         neighborhood[7] = ((x > 0 && y > 0) ? (id - width - 1) : -1); // top left
     }
 
-    private static void generateFourNeighborhood(int[] neighborhood, int id, int width, int height) {
+    public static void generateFourNeighborhood(int[] neighborhood, int id, int width, int height) {
         int x = id % width;
         int y = id / width;
 

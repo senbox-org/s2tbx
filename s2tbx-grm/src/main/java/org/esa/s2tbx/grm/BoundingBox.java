@@ -31,4 +31,12 @@ public class BoundingBox {
     public int getUpperLeftY() {
         return upperLeftY;
     }
+
+    public int getUpperRightX() {
+        return this.upperLeftX + this.width;
+    }
+
+    public int getLowerRightY() {
+        return this.upperLeftY + this.height;
+    }
 }
