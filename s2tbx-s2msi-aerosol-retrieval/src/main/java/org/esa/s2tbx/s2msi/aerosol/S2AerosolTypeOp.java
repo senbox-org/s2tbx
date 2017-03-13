@@ -9,6 +9,7 @@ import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
+import org.esa.snap.core.gpf.annotations.OperatorMetadata;
 import org.esa.snap.core.gpf.annotations.Parameter;
 import org.esa.snap.core.gpf.pointop.PixelOperator;
 import org.esa.snap.core.gpf.pointop.ProductConfigurer;
@@ -24,6 +25,13 @@ import java.io.IOException;
 /**
  * @author Tonio Fincke
  */
+@OperatorMetadata(alias = "S2.AerosolType",
+        category = "Optical",
+        description = "Aerosol Type retrieval from S2 MSI",
+        authors = "Tonio Fincke, Grit Kirches",
+        internal = true,
+        version = "1.0",
+        copyright = "(C) 2017 by Brockmann Consult")
 public class S2AerosolTypeOp extends PixelOperator {
 
     @Parameter(description = "A product to read climatology data from.", notNull = true)
