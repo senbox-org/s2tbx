@@ -14,6 +14,8 @@ import org.esa.snap.core.gpf.annotations.SourceProduct;
 import org.esa.snap.core.util.Guardian;
 import org.esa.snap.core.util.ProductUtils;
 
+import java.util.logging.Level;
+
 /**
  * todo: add comment
  * To change this template use File | Settings | File Templates.
@@ -29,7 +31,6 @@ public class S2AerosolMsiPreparationOp extends Operator {
 
     @Override
     public void initialize() throws OperatorException {
-
         // subset might have set product type to null, thus:
         if (sourceProduct.getDescription() == null) sourceProduct.setDescription("Sentinel S2A product");
 
@@ -58,6 +59,7 @@ public class S2AerosolMsiPreparationOp extends Operator {
         // create pixel classification if missing in sourceProduct
         // and add flag band to targetProduct
         if (!sourceProduct.containsBand(S2IdepixUtils.IDEPIX_CLASSIF_FLAGS)) {
+            getLogger().log(Level.INFO, "Executing Idepix");
             S2IdepixOp s2IdepixOp = new S2IdepixOp();
             s2IdepixOp.setParameterDefaultValues();
             s2IdepixOp.setParameter("copyToaReflectances", false);
@@ -69,6 +71,7 @@ public class S2AerosolMsiPreparationOp extends Operator {
 
         // create elevation band if band is missing in sourceProduct
         if (!targetProduct.containsBand("elevation")) {
+            getLogger().log(Level.INFO, "Adding elevation band");
             final Product elevProduct = GPF.createProduct(OperatorSpi.getOperatorAlias(CreateElevationBandOp.class),
                                                           GPF.NO_PARAMS, sourceProduct);
             Guardian.assertNotNull("elevProduct", elevProduct);
@@ -79,6 +82,7 @@ public class S2AerosolMsiPreparationOp extends Operator {
 
         // create ozone band if band is missing in sourceProduct
         if (!targetProduct.containsRasterDataNode(InstrumentConsts.OZONE_NAME)) {
+            getLogger().log(Level.INFO, "Adding ozone band");
             String ozoneExpr = "0.00710444";
             final VirtualBand ozoneBand = new VirtualBand(InstrumentConsts.OZONE_NAME, ProductData.TYPE_FLOAT32,
                                                              rasterWidth, rasterHeight, ozoneExpr);
@@ -91,6 +95,7 @@ public class S2AerosolMsiPreparationOp extends Operator {
 
         // create surface pressure estimate product if band is missing in sourceProduct
         if (!targetProduct.containsRasterDataNode(InstrumentConsts.SURFACE_PRESSURE_NAME)) {
+            getLogger().log(Level.INFO, "Adding surface pressure band");
             String presExpr = "(101325.0 * exp(-elevation/8400))";
             final VirtualBand surfPresBand = new VirtualBand(InstrumentConsts.SURFACE_PRESSURE_NAME,
                                                              ProductData.TYPE_FLOAT32,
