@@ -40,7 +40,7 @@ public class S2LutUtils {
             iAot++;
             lPath = getAtmosphericParameter(ipd, iAot, 0, 0);
         }
-        if (iAot == 0) {
+        if (iAot <= 0) {
             return 0.05;
         }
         if (lPath < lToaTosa) {
