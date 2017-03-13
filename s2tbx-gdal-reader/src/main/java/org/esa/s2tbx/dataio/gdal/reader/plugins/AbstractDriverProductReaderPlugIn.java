@@ -50,7 +50,7 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
     }
 
     @Override
-    public final DecodeQualification getDecodeQualification(Object input) {
+    public DecodeQualification getDecodeQualification(Object input) {
         if (GdalInstallInfo.INSTANCE.isPresent()) {
             String filePath = null;
             if (input instanceof String) {
@@ -66,7 +66,7 @@ public abstract class AbstractDriverProductReaderPlugIn implements ProductReader
             while (it.hasNext()) {
                 String extension = it.next();
                 if (StringHelper.endsWithIgnoreCase(filePath, extension)) {
-                    return DecodeQualification.INTENDED;
+                    return DecodeQualification.SUITABLE;
                 }
             }
         }

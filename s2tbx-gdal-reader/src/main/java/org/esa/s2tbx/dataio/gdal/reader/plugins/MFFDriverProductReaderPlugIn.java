@@ -1,5 +1,13 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
+import org.esa.snap.core.dataio.DecodeQualification;
+
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+
 /**
  * Reader plugin for products using the GDAL library.
  *
@@ -9,5 +17,38 @@ public class MFFDriverProductReaderPlugIn extends AbstractDriverProductReaderPlu
 
     public MFFDriverProductReaderPlugIn() {
         super(".hdr", "MFF", "Vexcel MFF Raster");
+    }
+
+    @Override
+    public DecodeQualification getDecodeQualification(Object input) {
+        DecodeQualification result = super.getDecodeQualification(input);
+
+        if (DecodeQualification.UNABLE != result) {
+            File inputFile = null;
+            if (input instanceof String) {
+                inputFile = new File((String)input);
+            } else if (input instanceof File) {
+                inputFile = (File)input;
+            } else if (input instanceof Path) {
+                inputFile = ((Path)input).toFile();
+            } else {
+                throw new IllegalArgumentException("Unknown type '"+input.getClass()+"' for input '"+ input.toString()+"'.");
+            }
+            try {
+                ImageInputStream headerStream = new FileImageInputStream(inputFile);
+                result = checkDecodeQualificationOnStream(headerStream);
+            } catch (IOException e) {
+                result = DecodeQualification.UNABLE;
+            }
+        }
+        return result;
+    }
+
+    private static DecodeQualification checkDecodeQualificationOnStream(ImageInputStream headerStream) throws IOException {
+        String line = headerStream.readLine();
+        if (line == null || !line.startsWith("ENVI")) {
+            return DecodeQualification.SUITABLE;
+        }
+        return DecodeQualification.UNABLE;
     }
 }

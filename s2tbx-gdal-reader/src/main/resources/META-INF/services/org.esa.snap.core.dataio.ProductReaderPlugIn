@@ -4,14 +4,10 @@ org.esa.s2tbx.dataio.gdal.reader.plugins.GSBGDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.GTXDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.HFADriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.ILWISDriverProductReaderPlugIn
-org.esa.s2tbx.dataio.gdal.reader.plugins.KEADriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.KRODriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.MFFDriverProductReaderPlugIn
-org.esa.s2tbx.dataio.gdal.reader.plugins.NetCDFDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.NITFDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.PCIDSKDriverProductReaderPlugIn
-org.esa.s2tbx.dataio.gdal.reader.plugins.PNGDriverProductReaderPlugIn
-org.esa.s2tbx.dataio.gdal.reader.plugins.PNMDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.RMFDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.RSTDriverProductReaderPlugIn
 org.esa.s2tbx.dataio.gdal.reader.plugins.SAGADriverProductReaderPlugIn
