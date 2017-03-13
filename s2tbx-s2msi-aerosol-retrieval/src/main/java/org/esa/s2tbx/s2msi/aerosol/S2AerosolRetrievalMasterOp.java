@@ -114,32 +114,36 @@ public class S2AerosolRetrievalMasterOp extends Operator {
         setTargetProduct(extendedSourceProduct);
 
         Product waterVapourProduct = extendedSourceProduct;
-        if (computeWaterVapour) {
-            final S2WaterVapourRetrievalOp waterVapourRetrievalOp = new S2WaterVapourRetrievalOp();
-            waterVapourRetrievalOp.setParameterDefaultValues();
-            waterVapourRetrievalOp.setSourceProduct(extendedSourceProduct);
-            waterVapourProduct = waterVapourRetrievalOp.getTargetProduct();
-        } else {
-            String waterVapourExpression = "2500.0";
-            Band waterVapourBand = waterVapourProduct.addBand(InstrumentConsts.WATER_VAPOUR_NAME, waterVapourExpression);
-            waterVapourBand.setDescription("estimated water vapour");
-            waterVapourBand.setNoDataValue(-99999.0);
-            waterVapourBand.setNoDataValueUsed(true);
-            targetProduct.addBand(waterVapourBand);
+        if (!waterVapourProduct.containsRasterDataNode(InstrumentConsts.WATER_VAPOUR_NAME)) {
+            if (computeWaterVapour) {
+                final S2WaterVapourRetrievalOp waterVapourRetrievalOp = new S2WaterVapourRetrievalOp();
+                waterVapourRetrievalOp.setParameterDefaultValues();
+                waterVapourRetrievalOp.setSourceProduct(extendedSourceProduct);
+                waterVapourProduct = waterVapourRetrievalOp.getTargetProduct();
+            } else {
+                String waterVapourExpression = "2500.0";
+                Band waterVapourBand = waterVapourProduct.addBand(InstrumentConsts.WATER_VAPOUR_NAME, waterVapourExpression);
+                waterVapourBand.setDescription("estimated water vapour");
+                waterVapourBand.setNoDataValue(-99999.0);
+                waterVapourBand.setNoDataValueUsed(true);
+                targetProduct.addBand(waterVapourBand);
+            }
         }
 
         Product aerosolTypeProduct = waterVapourProduct;
-        if (computeAerosolType) {
-            final S2AerosolTypeOp s2AerosolTypeOp = new S2AerosolTypeOp();
-            s2AerosolTypeOp.setParameterDefaultValues();
-            s2AerosolTypeOp.setSourceProduct(waterVapourProduct);
-            s2AerosolTypeOp.setParameter("climatologiesFile", climatologiesFile);
-            aerosolTypeProduct = s2AerosolTypeOp.getTargetProduct();
-        } else {
-            String aerosolTypeExpression = "0.0";
-            Band aerosolTypeBand = waterVapourProduct.addBand(InstrumentConsts.AEROSOL_TYPE_NAME, aerosolTypeExpression);
-            aerosolTypeBand.setDescription("Aerosol Type");
-            targetProduct.addBand(aerosolTypeBand);
+        if (!aerosolTypeProduct.containsRasterDataNode(InstrumentConsts.AEROSOL_TYPE_NAME)) {
+            if (computeAerosolType) {
+                final S2AerosolTypeOp s2AerosolTypeOp = new S2AerosolTypeOp();
+                s2AerosolTypeOp.setParameterDefaultValues();
+                s2AerosolTypeOp.setSourceProduct(waterVapourProduct);
+                s2AerosolTypeOp.setParameter("climatologiesFile", climatologiesFile);
+                aerosolTypeProduct = s2AerosolTypeOp.getTargetProduct();
+            } else {
+                String aerosolTypeExpression = "0.0";
+                Band aerosolTypeBand = aerosolTypeProduct.addBand(InstrumentConsts.AEROSOL_TYPE_NAME, aerosolTypeExpression);
+                aerosolTypeBand.setDescription("Aerosol Type");
+                targetProduct.addBand(aerosolTypeBand);
+            }
         }
 
         Product aotDownscaledProduct = aerosolTypeProduct;
