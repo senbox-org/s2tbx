@@ -11,7 +11,6 @@ import org.esa.s2tbx.s2msi.idepix.util.S2IdepixConstants;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.GeoCoding;
 import org.esa.snap.core.datamodel.GeoPos;
-import org.esa.snap.core.datamodel.PixelGeoCoding;
 import org.esa.snap.core.datamodel.PixelPos;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.datamodel.ProductData;
@@ -175,12 +174,6 @@ public class S2AerosolOp extends Operator {
     }
 
     @Override
-    public void dispose() {
-        targetProduct.setSceneGeoCoding(new PixelGeoCoding(latBand, lonBand, null, 2));
-        super.dispose();
-    }
-
-    @Override
     public void computeTileStack(Map<Band, Tile> targetTiles, Rectangle targetRectangle, ProgressMonitor pm) throws OperatorException {
 
         Rectangle srcRec = getSourceRectangle(targetRectangle, pixelWindow);
@@ -285,7 +278,7 @@ public class S2AerosolOp extends Operator {
             final double tauOzoneView = Math.exp(-(absorptionCoefficient * airMassOzoneCorrection / cosineOfVZA));
             final double kRay = S2AerosolConstants.K_RAY[iWvl];
 //           # eq. 6-10
-            tauRaySun[iWvl] =  Math.exp(-(0.5 * kRay * mCorrRay / cosineOfSZA));
+            tauRaySun[iWvl] = Math.exp(-(0.5 * kRay * mCorrRay / cosineOfSZA));
 //           # eq. 6-11
             final double tauRayView = Math.exp(-(0.5 * kRay * mCorrRay / cosineOfVZA));
             lToa[iWvl] = S2LutUtils.convertReflToRad(toaRefl[iWvl], iWvl, geom.sza, julianDay) /
