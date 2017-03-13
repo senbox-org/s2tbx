@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.utils.StringHelper;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -34,11 +35,19 @@ public class MFFDriverProductReaderPlugIn extends AbstractDriverProductReaderPlu
             } else {
                 throw new IllegalArgumentException("Unknown type '"+input.getClass()+"' for input '"+ input.toString()+"'.");
             }
-            try {
-                ImageInputStream headerStream = new FileImageInputStream(inputFile);
-                result = checkDecodeQualificationOnStream(headerStream);
-            } catch (IOException e) {
+            String filePath = inputFile.getAbsolutePath();
+            // '.rat.hdr' file extension for RATProductReaderPlugIn
+            // 'bin.hdr' file extension for PolsarProProductReaderPlugIn
+            if (StringHelper.endsWithIgnoreCase(filePath, ".rat.hdr") || StringHelper.endsWithIgnoreCase(filePath, "bin.hdr")) {
                 result = DecodeQualification.UNABLE;
+            } else {
+                // open the input file as an image stream to check the header for EnviProductReaderPlugIn
+                try {
+                    ImageInputStream headerStream = new FileImageInputStream(inputFile);
+                    result = checkDecodeQualificationOnStream(headerStream);
+                } catch (IOException e) {
+                    result = DecodeQualification.UNABLE;
+                }
             }
         }
         return result;
