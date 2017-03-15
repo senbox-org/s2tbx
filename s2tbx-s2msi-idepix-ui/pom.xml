@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.esa.s2tbx</groupId>
         <artifactId>s2tbx</artifactId>
-        <version>5.0.4</version>
+        <version>5.0.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>s2tbx-s2msi-idepix-ui</artifactId>
