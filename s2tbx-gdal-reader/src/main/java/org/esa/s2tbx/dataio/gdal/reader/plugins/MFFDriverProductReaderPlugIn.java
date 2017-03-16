@@ -1,6 +1,7 @@
 package org.esa.s2tbx.dataio.gdal.reader.plugins;
 
 import org.esa.snap.core.dataio.DecodeQualification;
+import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.utils.StringHelper;
 
 import javax.imageio.stream.FileImageInputStream;
@@ -38,14 +39,30 @@ public class MFFDriverProductReaderPlugIn extends AbstractDriverProductReaderPlu
             String filePath = inputFile.getAbsolutePath();
             // '.rat.hdr' file extension for RATProductReaderPlugIn
             // 'bin.hdr' file extension for PolsarProProductReaderPlugIn
-            if (StringHelper.endsWithIgnoreCase(filePath, ".rat.hdr") || StringHelper.endsWithIgnoreCase(filePath, "bin.hdr")) {
+            // '.snaphu.hdr' file extension for SNAPHUProductReaderPlugIn
+            if (StringHelper.endsWithIgnoreCase(filePath, ".rat.hdr") || StringHelper.endsWithIgnoreCase(filePath, "bin.hdr")
+                    || StringHelper.endsWithIgnoreCase(filePath, ".snaphu.hdr")) {
+
                 result = DecodeQualification.UNABLE;
             } else {
-                // open the input file as an image stream to check the header for EnviProductReaderPlugIn
-                try {
-                    ImageInputStream headerStream = new FileImageInputStream(inputFile);
-                    result = checkDecodeQualificationOnStream(headerStream);
-                } catch (IOException e) {
+                // '.hdr, .dbl' file extensions for SmosProductReaderPlugIn
+                boolean canContinue = true;
+                if (StringHelper.endsWithIgnoreCase(filePath, ".hdr")) {
+                    File hdrFile = FileUtils.exchangeExtension(inputFile, ".hdr");
+                    File dblFile = FileUtils.exchangeExtension(inputFile, ".dbl");
+                    if (hdrFile.exists() && dblFile.exists()) {
+                        canContinue = false;
+                    }
+                }
+                if (canContinue) {
+                    // open the input file as an image stream to check the header for EnviProductReaderPlugIn
+                    try {
+                        ImageInputStream headerStream = new FileImageInputStream(inputFile);
+                        result = checkDecodeQualificationOnStream(headerStream);
+                    } catch (IOException e) {
+                        result = DecodeQualification.UNABLE;
+                    }
+                } else {
                     result = DecodeQualification.UNABLE;
                 }
             }
