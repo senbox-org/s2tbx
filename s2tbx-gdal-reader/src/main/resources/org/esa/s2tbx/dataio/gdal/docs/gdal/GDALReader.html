@@ -35,13 +35,40 @@
     <h3>Import products using the GDAL library</h3>
 
     <p>This command allows to open the data of different products in SNAP.
-	   If there is no suitable reader to open a certain product, then the GDAL reader tries to open the product.
-	   If there is at least a suitable reader to open a certain product except the GDAL reader, then a dialog window 
-	   is displayed to choose the reader used to open the product. If the GDAL reader cannot open the product then a message dialog is displayed.
+	   If the files of type is 'All Files' in the open product dialog the GDAL reader tries to open the product if there is no suitable reader to open the selected product. 
+	   If the GDAL reader cannot open the product then a message dialog is displayed.
        If there is an intented reader to open a certain product, then that reader is used automatically to open the product.
     </p>
-	<p>	   
-	   Most known raster formats supported are: GeoTIFF, Erdas Imagine, ECW, MrSID, JPEG2000, DTED, NITF, GeoPackage.
+	<p>	
+	   The available GDAL readers are:
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   Erdas Imagine Images (*.img)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   Golden Software 7 Binary Grid (*.grd)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   Golden Software Binary Grid (*.grd)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   Idrisi Raster A.1 (*.rst)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   ILWIS Raster Map (*.mpr, *.mpl)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   KOLOR Raw (*.kro)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   NOAA Vertical Datum .GTX (*.gtx)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   National Imagery Transmission Format (*.ntf)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   PCIDSK Database File (*.pix)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   Raster Matrix Format (*.rsw)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   SAGA GIS Binary Grid (*.sdat)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   SGI Image File Format 1.0 (*.rgb)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   VTP .bt (Binary Terrain) 1.3 Format (*.bt)
+	   <br>&nbsp;&nbsp;&nbsp;&nbsp;
+	   Vexcel MFF Raster (*.hdr)
     </p>
 	<p>	   
 	   The GDAL library version used is 2.1.0. If this library is already installed, then it is used; otherwise the application will install it.
