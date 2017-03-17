@@ -17,14 +17,11 @@
 
 package org.esa.s2tbx.dataio.s2.l1b;
 
-import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.s2tbx.dataio.s2.S2Config;
 import org.esa.s2tbx.dataio.s2.S2ProductReaderPlugIn;
 import org.esa.s2tbx.dataio.s2.filepatterns.INamingConvention;
 import org.esa.s2tbx.dataio.s2.filepatterns.NamingConventionFactory;
 import org.esa.s2tbx.dataio.s2.filepatterns.S2NamingConventionUtils;
-import org.esa.s2tbx.dataio.s2.filepatterns.S2ProductFilename;
-import org.esa.s2tbx.dataio.s2.l1b.filepaterns.S2L1BGranuleMetadataFilename;
 import org.esa.snap.core.dataio.DecodeQualification;
 import org.esa.snap.core.dataio.ProductReader;
 import org.esa.snap.core.util.SystemUtils;
@@ -32,7 +29,6 @@ import org.esa.snap.core.util.SystemUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
-import java.util.regex.Matcher;
 
 /**
  * @author Norman Fomferra
@@ -40,6 +36,7 @@ import java.util.regex.Matcher;
 public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
 
     public final static String L1B_LEVEL = "L1B";
+
 
     public S2L1BProductReaderPlugIn() {
     }
@@ -59,6 +56,11 @@ public class S2L1BProductReaderPlugIn extends S2ProductReaderPlugIn {
         }
 
         File file = (File) input;
+        if(!isValidExtension(file)) {
+            return DecodeQualification.UNABLE;
+        }
+
+
         INamingConvention namingConvention = null;
         try {
             namingConvention = NamingConventionFactory.createL1BNamingConvention(S2NamingConventionUtils.transformToSentinel2VirtualPath(file.toPath()));

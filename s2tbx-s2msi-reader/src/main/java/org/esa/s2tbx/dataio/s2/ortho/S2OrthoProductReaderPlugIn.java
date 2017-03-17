@@ -84,6 +84,10 @@ public abstract class S2OrthoProductReaderPlugIn extends S2ProductReaderPlugIn {
             return DecodeQualification.UNABLE;
         }
 
+        if(!isValidExtension(file)) {
+            return DecodeQualification.UNABLE;
+        }
+
         crsCache.ensureIsCached(canonicalPath);
 
         level = crsCache.getProductLevel(canonicalPathString);

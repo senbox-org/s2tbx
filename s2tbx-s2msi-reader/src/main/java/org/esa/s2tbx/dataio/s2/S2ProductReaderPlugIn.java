@@ -19,6 +19,7 @@ package org.esa.s2tbx.dataio.s2;
 
 import org.esa.s2tbx.dataio.VirtualPath;
 import org.esa.snap.core.dataio.ProductReaderPlugIn;
+import org.esa.snap.core.util.io.FileUtils;
 import org.esa.snap.core.util.io.SnapFileFilter;
 
 import java.io.File;
@@ -33,6 +34,7 @@ public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
     protected final static String REGEX = "(S2A|S2B|S2_)_([A-Z|0-9]{4})_([A-Z|0-9|_]{4})([A-Z|0-9|_]{6})_([A-Z|0-9|_]{4})_([0-9]{8}T[0-9]{6})_.*";
     protected final static Pattern PATTERN = Pattern.compile(REGEX);
     protected final static String FORMAT_NAME = "SENTINEL-2-MSI";
+    protected static String[] allowedExtensions = new String[]{".zip",".SAFE",".xml"};
 
     protected String getFormatName() {
         return FORMAT_NAME;
@@ -79,6 +81,22 @@ public abstract class S2ProductReaderPlugIn implements ProductReaderPlugIn {
         }
 
         return new File(file.getAbsolutePath() + File.separator + fileName);
+    }
+
+    public static boolean isValidExtension (File file) {
+        boolean validExtension = false;
+        final String extension = FileUtils.getExtension(file);
+        if (extension == null) {
+            validExtension = true;
+        } else {
+            for (String allowedExtension : allowedExtensions) {
+                if (extension.startsWith(allowedExtension)) {
+                    validExtension = true;
+                    break;
+                }
+            }
+        }
+        return validExtension;
     }
 
 }
