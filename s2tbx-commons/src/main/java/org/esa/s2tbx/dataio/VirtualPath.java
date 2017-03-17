@@ -49,7 +49,7 @@ public class VirtualPath implements Path {
         if(dir != null && dir.isCompressed()) {
             try {
                 fsys = FileSystems.newFileSystem(Paths.get(dir.getBasePath()),null);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 fsys = null;
             }
         }
