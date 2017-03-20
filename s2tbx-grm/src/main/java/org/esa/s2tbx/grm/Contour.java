@@ -19,6 +19,11 @@ public class Contour {
         this.bits = new byte[] {0, 0};
     }
 
+    public Contour(int size, byte[] bits) {
+        this.size = size;
+        this.bits = bits;
+    }
+
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
@@ -70,6 +75,10 @@ public class Contour {
 
     public int size() {
         return this.size;
+    }
+
+    public byte[] getBits() {
+        return bits;
     }
 
     private void pushTwoBits(byte bitValue) {

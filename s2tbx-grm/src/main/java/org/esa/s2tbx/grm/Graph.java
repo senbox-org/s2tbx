@@ -15,18 +15,18 @@ import java.util.List;
 /**
  * @author Jean Coravu
  */
-public class Graph<NodeType extends Node> {
-    private final ArrayListExtended<NodeType> nodes;
+public class Graph {
+    private final ArrayListExtended<Node> nodes;
 
     public Graph(int numberOfNodes) {
-        this.nodes = new ArrayListExtended<NodeType>(numberOfNodes);
+        this.nodes = new ArrayListExtended<Node>(numberOfNodes);
     }
 
-    public NodeType getNodeAt(int index) {
+    public Node getNodeAt(int index) {
         return this.nodes.get(index);
     }
 
-    public void addNode(NodeType nodeToAdd) {
+    public void addNode(Node nodeToAdd) {
         this.nodes.add(nodeToAdd);
     }
 
@@ -38,7 +38,7 @@ public class Graph<NodeType extends Node> {
         int nodeCount = this.nodes.size();
         int lastIndexToCopy = -1;
         for (int i=0; i<nodeCount; i++) {
-            NodeType node = this.nodes.get(i);
+            Node node = this.nodes.get(i);
             if (node.isExpired()) {
                 if (lastIndexToCopy == -1) {
                     lastIndexToCopy = i;
@@ -57,7 +57,7 @@ public class Graph<NodeType extends Node> {
     public void setValidFlagToAllNodes() {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            NodeType n = this.nodes.get(i);
+            Node n = this.nodes.get(i);
             n.setValid(true);
         }
     }
@@ -65,7 +65,7 @@ public class Graph<NodeType extends Node> {
     public void resetMergedFlagToAllNodes() {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            NodeType n = this.nodes.get(i);
+            Node n = this.nodes.get(i);
             n.setMerged(false);
         }
     }
@@ -73,7 +73,7 @@ public class Graph<NodeType extends Node> {
     public void resetCostUpdatedFlagToAllEdges() {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            NodeType n = this.nodes.get(i);
+            Node n = this.nodes.get(i);
             int edgeCount = n.getEdgeCount();
             for (int j=0; j<edgeCount; j++) {
                 Edge edge = n.getEdgeAt(j);
@@ -86,31 +86,31 @@ public class Graph<NodeType extends Node> {
         Object2IntMap<Node> borderNodesMap = new Object2IntArrayMap<Node>();
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            NodeType node = this.nodes.get(i);
+            Node node = this.nodes.get(i);
             BoundingBox box = node.getBox();
-            if(box.getUpperLeftX() > tile.columns[0] && box.getUpperLeftY() > tile.rows[0] && box.getUpperRightX() - 1 < tile.columns[1] && box.getLowerRightY() - 1 < tile.rows[1]) {
+            if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
+                // the node is inside the tile
                 continue;
             } else {
+                // the node is on the tile margin or outside the tile
                 IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
                 IntIterator it = borderCells.iterator();
                 while (it.hasNext()) {
-                    int gridId = it.nextInt();
-                    int rowPixel = gridId / imageWidth;
-                    int colPixel = gridId % imageWidth;
-                    if (tile.rows[0] > 0 && rowPixel == tile.rows[0]) {
+                    int gridIdInImage = it.nextInt();
+                    int rowPixelInImage = gridIdInImage / imageWidth;
+                    int colPixelInImage = gridIdInImage % imageWidth;
+                    if (tile.getImageTopY() > 0 && rowPixelInImage == tile.getImageTopY()) {
                         borderNodesMap.put(node, 0);
                         break;
-                    } else if(tile.columns[1] < imageWidth - 1 && colPixel == tile.columns[1]) {
+                    } else if (tile.getImageRightX() < imageWidth - 1 && colPixelInImage == tile.getImageRightX()) {
                         borderNodesMap.put(node, 0);
                         break;
-                    } else if(tile.rows[1] < imageHeight - 1 && rowPixel == tile.rows[1]) {
+                    } else if (tile.getImageBottomY() < imageHeight - 1 && rowPixelInImage == tile.getImageBottomY()) {
                         borderNodesMap.put(node, 0);
                         break;
-                    } else if(tile.columns[0] > 0 && colPixel == tile.columns[0]) {
+                    } else if (tile.getImageLeftX() > 0 && colPixelInImage == tile.getImageLeftX()) {
                         borderNodesMap.put(node, 0);
                         break;
-                    } else {
-                        continue;
                     }
                 }
             }
@@ -119,19 +119,19 @@ public class Graph<NodeType extends Node> {
         return borderNodesMap;
     }
 
-    public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTile, int colTile, int nbTilesX, int nbTilesY, int imageWidth) {
-        Int2ObjectMap<List<Node>> borderPixelMap = new Int2ObjectArrayMap<List<Node>>();
+    public Int2ObjectMap<List<Node>> buildBorderPixelMap(ProcessingTile tile, int rowTileIndex, int colTileIndex, int nbTilesX, int nbTilesY, int imageWidth) {
+        Int2ObjectMap<List<Node>> borderPixelMap = new Int2ObjectArrayMap<List<Node>>(); // key = node id
 
-        int rowMin = (tile.rows[0] > 0) ? tile.rows[0] - 1 : tile.rows[0];
-        int rowMax = tile.rows[1] + 1;
-        int colMin = (tile.columns[0] > 0) ? tile.columns[0] - 1 : tile.columns[0];
-        int colMax = tile.columns[1] + 1;
+        int rowMin = (tile.getImageTopY() > 0) ? tile.getImageTopY() - 1 : tile.getImageTopY();
+        int rowMax = tile.getImageBottomY() + 1;
+        int colMin = (tile.getImageLeftX() > 0) ? tile.getImageLeftX() - 1 : tile.getImageLeftX();
+        int colMax = tile.getImageRightX() + 1;
 
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            NodeType node = this.nodes.get(i);
+            Node node = this.nodes.get(i);
             BoundingBox box = node.getBox();
-            if (box.getUpperLeftX() > tile.columns[0] && box.getUpperLeftY() > tile.rows[0] && box.getUpperRightX() - 1 < tile.columns[1] && box.getLowerRightY() - 1 < tile.rows[1]) {
+            if (box.getLeftX() > tile.getImageLeftX() && box.getTopY() > tile.getImageTopY() && box.getRightX() - 1 < tile.getImageRightX() && box.getBottomY() - 1 < tile.getImageBottomY()) {
                 continue;
             } else {
                 IntSet borderCells = AbstractSegmenter.generateBorderCells(node.getContour(), node.getId(), imageWidth);
@@ -141,13 +141,13 @@ public class Graph<NodeType extends Node> {
                     int rowPixel = gridId / imageWidth;
                     int colPixel = gridId % imageWidth;
                     boolean addNode = false;
-                    if (rowTile > 0 && (rowPixel == tile.rows[0] || rowPixel == rowMin)) {
+                    if (rowTileIndex > 0 && (rowPixel == tile.rows[0] || rowPixel == rowMin)) {
                         addNode = true;
-                    } else if (colTile < nbTilesX - 1 && ( colPixel == tile.columns[1] || colPixel == colMax)) {
+                    } else if (colTileIndex < nbTilesX - 1 && (colPixel == tile.columns[1] || colPixel == colMax)) {
                         addNode = true;
-                    } else if (rowTile < nbTilesY - 1 && (rowPixel == tile.rows[1] || rowPixel == rowMax)) {
+                    } else if (rowTileIndex < nbTilesY - 1 && (rowPixel == tile.rows[1] || rowPixel == rowMax)) {
                         addNode = true;
-                    } else if (colTile > 0 && ( colPixel == tile.columns[0] || colPixel == colMin)) {
+                    } else if (colTileIndex > 0 && (colPixel == tile.columns[0] || colPixel == colMin)) {
                         addNode = true;
                     }
                     if (addNode) {
@@ -170,7 +170,8 @@ public class Graph<NodeType extends Node> {
             Int2ObjectMap.Entry<List<Node>> entry = it.next();
             List<Node> nodes = entry.getValue();
             if (nodes.size() > 1) {
-                Node firstNode = nodes.get(0); // refNode
+                Node refNode = nodes.get(0); // refNode
+                // explore duplicated nodes
                 for (int i=1; i<nodes.size(); i++) {
                     Node currentNode = nodes.get(i);
                     int edgeCount = currentNode.getEdgeCount();
@@ -180,41 +181,41 @@ public class Graph<NodeType extends Node> {
                         int removedEdgeIndex = neighNit.removeEdge(currentNode);
                         assert(removedEdgeIndex >= 0);
 
-                        Edge edgeToFirstNode = neighNit.findEdge(firstNode);
+                        Edge edgeToFirstNode = neighNit.findEdge(refNode);
                         if (edgeToFirstNode == null) {
                             // create an edge neighNit -> refNode
-                            neighNit.addEdge(firstNode, edge.getBoundary());
+                            neighNit.addEdge(refNode, edge.getBoundary());
                             // create an edge refNode -> neighNit
-                            firstNode.addEdge(neighNit, edge.getBoundary());
+                            refNode.addEdge(neighNit, edge.getBoundary());
                         }
                     }
                     currentNode.setExpired(true);
                 }
 
-                IntSet borderCells = AbstractSegmenter.generateBorderCells(firstNode.getContour(), firstNode.getId(), imageWidth);
+                IntSet borderCells = AbstractSegmenter.generateBorderCells(refNode.getContour(), refNode.getId(), imageWidth);
                 IntIterator itCells = borderCells.iterator();
                 while (itCells.hasNext()) {
                     int gridId = itCells.nextInt();
                     List<Node> resultNodes = borderPixelMap.get(gridId);
                     if (resultNodes != null) {
                         resultNodes.clear();
-                        resultNodes.add(firstNode);
+                        resultNodes.add(refNode);
                     }
                 }
             }
         }
+        removeExpiredNodes();
     }
-
 
     public void removeUnstableSegments(ProcessingTile tile, int imageWidth) {
         int nodeCount = this.nodes.size();
         for (int i=0; i<nodeCount; i++) {
-            NodeType node = this.nodes.get(i);
+            Node node = this.nodes.get(i);
             BoundingBox box = node.getBox();
-            if (box.getUpperLeftX() >= tile.columns[0] && box.getUpperLeftY() >= tile.rows[0] && box.getUpperRightX() - 1 <= tile.columns[1] && box.getLowerRightY() - 1 <= tile.rows[1]) {
+            if (box.getLeftX() >= tile.getImageLeftX() && box.getTopY() >= tile.getImageTopY() && box.getRightX() - 1 <= tile.getImageRightX() && box.getBottomY() - 1 <= tile.getImageBottomY()) {
                 continue;
-            } else if (box.getUpperLeftX() > tile.columns[1] || box.getUpperLeftY() > tile.rows[1] || box.getUpperRightX() - 1 < tile.columns[0]
-                       || box.getLowerRightY() - 1 < tile.rows[0]) {
+            } else if (box.getLeftX() > tile.getImageRightX() || box.getTopY() > tile.getImageBottomY() || box.getRightX() - 1 < tile.getImageLeftX()
+                       || box.getBottomY() - 1 < tile.getImageTopY()) {
                 node.setExpired(true);
                 removeEdgeToUnstableNode(node);
             } else {
@@ -222,10 +223,10 @@ public class Graph<NodeType extends Node> {
                 boolean stable = false;
                 IntIterator it = borderCells.iterator();
                 while (it.hasNext()) {
-                    int gridId = it.nextInt();
-                    int rowPixel = gridId / imageWidth;
-                    int colPixel = gridId % imageWidth;
-                    if (rowPixel >= tile.rows[0] && rowPixel <= tile.rows[1] && colPixel >= tile.columns[0] && colPixel <= tile.columns[1]) {
+                    int gridIdInImage = it.nextInt();
+                    int rowPixelInImage = gridIdInImage / imageWidth;
+                    int colPixelInImage = gridIdInImage % imageWidth;
+                    if (rowPixelInImage >= tile.getImageTopY() && rowPixelInImage <= tile.getImageBottomY() && colPixelInImage >= tile.getImageLeftX() && colPixelInImage <= tile.getImageRightX()) {
                         stable = true;
                         break;
                     }
@@ -249,17 +250,39 @@ public class Graph<NodeType extends Node> {
         }
     }
 
-//    template<class TSegmenter>
-//    void RemoveEdgeToUnstableNode(typename TSegmenter::NodePointerType nodePtr)
-//    {
-//        for(auto& edg : nodePtr->m_Edges)
-//        {
-//            auto nodeNeighbor = edg.GetRegion();
-//            auto EdgeToNode = grm::GraphOperations<TSegmenter>::FindEdge(nodeNeighbor, nodePtr);
-//            assert(EdgeToNode != nodeNeighbor->m_Edges.end());
-//            nodeNeighbor->m_Edges.erase(EdgeToNode);
-//        }
-//    }
+    public void rescaleGraph(ProcessingTile tile, int rowTileIndex, int colTileIndex, int tileWidth, int tileHeight, int imageWidth) {
+        int rowNodeTile = 0;
+        int colNodeTile = 0;
+        int rowNodeImg = 0;
+        int colNodeImg = 0;
+        int regionWidth = tile.getRegion().getWidth();
+        int nodeCount = this.nodes.size();
+//        System.out.println("rescaleGraph nodeCount="+nodeCount+" rowTileIndex="+rowTileIndex+" colTileIndex="+colTileIndex+" tileWidth="+tileWidth+" tileHeight="+tileHeight);
+
+        for (int i=0; i<nodeCount; i++) {
+            Node node = this.nodes.get(i);
+
+            // start pixel index of the node (in the tile)
+            rowNodeTile = node.getId() / regionWidth;
+            colNodeTile = node.getId() % regionWidth;
+
+            // start pixel index of the node (in the image)
+            rowNodeImg = rowTileIndex * tileHeight + rowNodeTile - tile.getTopMargin();
+            colNodeImg = colTileIndex * tileWidth + colNodeTile - tile.getLeftMargin();
+
+//            System.out.print("node: "+rowNodeTile+" "+colNodeTile+" "+rowNodeImg+" "+colNodeImg+" old id="+node.getId());
+
+            // set the node id in the image
+            node.setId(rowNodeImg * imageWidth + colNodeImg);
+
+//            System.out.println(" new id="+node.getId());
+
+            // change also its bounding box
+            BoundingBox box = node.getBox();
+            box.setLeftX(colTileIndex * tileWidth + box.getLeftX() - tile.getLeftMargin());
+            box.setTopY(rowTileIndex * tileHeight + box.getTopY() - tile.getTopMargin());
+        }
+    }
 
     private static class ArrayListExtended<ItemType> extends ArrayList<ItemType> {
 

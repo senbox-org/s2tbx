@@ -10,12 +10,12 @@ import java.util.*;
 /**
  * @author Jean Coravu
  */
-public abstract class AbstractSegmenter<NodeType extends Node> {
+public abstract class AbstractSegmenter {
     protected final float threshold;
 
-    private Graph<NodeType> graph;
-    private int imageWidth;
-    private int imageHeight;
+    public Graph graph;
+    public int imageWidth;
+    public int imageHeight;
 
     protected AbstractSegmenter(float threshold) {
         this.threshold = threshold;
@@ -23,38 +23,74 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
 
     protected abstract float computeMergingCost(Node n1, Node n2);
 
-    protected abstract NodeType buildNode(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel);
+    protected abstract Node buildNode(int id, int upperLeftX, int upperLeftY, int numberOfComponentsPerPixel);
 
-    public final Band update(Product product, int bandIndices[], int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
-        initNodes(product, bandIndices, addFourNeighbors);
+    public final boolean update(Product product, int bandIndices[], BoundingBox rectange, int numberOfIterations, boolean fastSegmentation, boolean addFourNeighbors) {
+        initNodes(product, bandIndices, rectange, addFourNeighbors);
 
+        boolean merged = false;
+        if (fastSegmentation) {
+            merged = perfomAllIterationsWithBF(numberOfIterations);
+        } else {
+            merged = perfomAllIterationsWithLMBF(numberOfIterations);
+        }
+
+        return !merged;
+    }
+
+    public void setGraph(Graph graph, int imageWidth, int imageHeight) {
+        this.graph = graph;
+        this.imageWidth = imageWidth;
+        this.imageHeight = imageHeight;
+    }
+
+    public Band buildBand() {
+        int widthCount = this.imageWidth + 2;
+        int heightCount = this.imageHeight + 2;
+        int[][] marker = buildMarkerMatrix();
+
+        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, this.imageWidth, this.imageHeight);
+        ProductData data = targetBand.createCompatibleRasterData();
+        targetBand.setData(data);
+        for (int y = 1; y < heightCount - 1; y++) {
+            for (int x = 1; x < widthCount - 1; x++) {
+                targetBand.setPixelInt(x - 1, y - 1, marker[y][x]);
+            }
+        }
+
+        return targetBand;
+    }
+
+    public Graph getGraph() {
+        return graph;
+    }
+
+    public boolean perfomAllIterationsWithLMBF(int numberOfIterations) {
+        int iterations = 0;
+        boolean merged = true;
+        while (merged && (this.graph.getNodeCount() > 1) && (numberOfIterations <= 0 || iterations < numberOfIterations)) {
+//            System.out.println("iterations " + iterations+"  nodes="+this.graph.getNodeCount());
+            iterations++;
+            merged = perfomOneIterationWithLMBF();
+        }
+        return merged;
+    }
+
+    private boolean perfomAllIterationsWithBF(int numberOfIterations) {
         int iterations = 0;
         boolean merged = true;
         while (merged && (this.graph.getNodeCount() > 1) && (numberOfIterations <= 0 || iterations < numberOfIterations)) {
             iterations++;
-            if (fastSegmentation) {
-                merged = perfomOneIterationWithBF();
-            } else {
-                merged = perfomOneIterationWithLMBF();
-            }
+            merged = perfomOneIterationWithBF();
         }
-
-        return buildBand();
-    }
-
-    public boolean isComplete() {
-        return false; //TODO Jean implement
-    }
-
-    public Graph<NodeType> getGraph() {
-        return graph;
+        return merged;
     }
 
     private boolean perfomOneIterationWithBF() {
         boolean merged = false;
 
         for (int i = 0; i < this.graph.getNodeCount(); i++) {
-            NodeType currentNode = this.graph.getNodeAt(i);
+            Node currentNode = this.graph.getNodeAt(i);
             if (currentNode.isValid()) {
                 // this segment is marked as used
                 currentNode.setValid(false);
@@ -93,7 +129,7 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
         return merged;
     }
 
-    private void updateMergingCostsUsingBF(NodeType node) {
+    private void updateMergingCostsUsingBF(Node node) {
         float minimumCost = Float.MAX_VALUE;
         int minimumIndex = -1;
         for (int i = 0; i < node.getEdgeCount(); i++) {
@@ -125,25 +161,25 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
         }
     }
 
-    private void initNodes(Product product, int bandIndices[], boolean addFourNeighbors) {
-        this.imageWidth = product.getSceneRasterWidth();
-        this.imageHeight = product.getSceneRasterHeight();
+    private void initNodes(Product product, int bandIndices[], BoundingBox rectange, boolean addFourNeighbors) {
+        this.imageWidth = rectange.getWidth();
+        this.imageHeight = rectange.getHeight();
 
         int numberOfComponentsPerPixel = bandIndices.length;
         int numberOfNodes = this.imageWidth * this.imageHeight;
-        this.graph = new Graph<NodeType>(numberOfNodes);
+        this.graph = new Graph(numberOfNodes);
 
         for (int i = 0; i < numberOfNodes; i++) {
             int upperLeftX = i % this.imageWidth;
             int upperLeftY = i / this.imageWidth;
-            NodeType node = buildNode(i, upperLeftX, upperLeftY, numberOfComponentsPerPixel);
+            Node node = buildNode(i, upperLeftX, upperLeftY, numberOfComponentsPerPixel);
             this.graph.addNode(node);
         }
 
         int neighborCount = addFourNeighbors ? 4 : 8;
         int[] neighborhood = new int[neighborCount];
         for (int i = 0; i < numberOfNodes; i++) {
-            NodeType node = this.graph.getNodeAt(i);
+            Node node = this.graph.getNodeAt(i);
 
             if (addFourNeighbors) {
                 generateFourNeighborhood(neighborhood, node.getId(), this.imageWidth, this.imageHeight);
@@ -153,13 +189,13 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
             for (int j = 0; j < neighborhood.length; j++) {
                 int neighbourNodeIndex = neighborhood[j];
                 if (neighbourNodeIndex > -1) {
-                    NodeType neighbourNode = this.graph.getNodeAt(neighbourNodeIndex);
+                    Node neighbourNode = this.graph.getNodeAt(neighbourNodeIndex);
                     node.addEdge(neighbourNode, 1);
                 }
             }
 
-            int x = node.getId() % this.imageWidth;
-            int y = node.getId() / this.imageWidth;
+            int x = rectange.getLeftX() + (node.getId() % this.imageWidth);
+            int y = rectange.getTopY() + (node.getId() / this.imageWidth);
             for (int b = 0; b < bandIndices.length; b++) {
                 int bandIndex = bandIndices[b];
                 Band band = product.getBandAt(bandIndex);
@@ -167,23 +203,6 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
                 node.initData(b, pixel);
             }
         }
-    }
-
-    private Band buildBand() {
-        int widthCount = this.imageWidth + 2;
-        int heightCount = this.imageHeight + 2;
-        int[][] marker = buildMarkerMatrix();
-
-        Band targetBand = new Band("band_1", ProductData.TYPE_INT32, this.imageWidth, this.imageHeight);
-        ProductData data = targetBand.createCompatibleRasterData();
-        targetBand.setData(data);
-        for (int y = 1; y < heightCount - 1; y++) {
-            for (int x = 1; x < widthCount - 1; x++) {
-                targetBand.setPixelInt(x - 1, y - 1, marker[y][x]);
-            }
-        }
-
-        return targetBand;
     }
 
     private int[][] buildMarkerMatrix() {
@@ -194,7 +213,7 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
 
         int nodeCount = this.graph.getNodeCount();
         for (int i = 0; i < nodeCount; i++) {
-            NodeType node = this.graph.getNodeAt(i);
+            Node node = this.graph.getNodeAt(i);
             IntSet borderCells = generateBorderCells(node.getContour(), node.getId(), this.imageWidth);
             IntIterator it = borderCells.iterator();
             while (it.hasNext()) {
@@ -286,7 +305,7 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
         int nodeCount = this.graph.getNodeCount();
         int minimumId = 0;
         for (int k = 0; k < nodeCount; k++) {
-            NodeType node = this.graph.getNodeAt(k);
+            Node node = this.graph.getNodeAt(k);
             float minimumCost = Float.MAX_VALUE;
             int minimumIndex = -1;
 
@@ -334,7 +353,7 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
         int nodeCount = this.graph.getNodeCount();
         boolean merged = false;
         for (int k = 0; k < nodeCount; k++) {
-            NodeType node = this.graph.getNodeAt(k);
+            Node node = this.graph.getNodeAt(k);
             Node resultNode = node.checkLMBF(this.threshold);
             if (resultNode != null) {
                 Node firstEdgeTarget = resultNode.getEdgeAt(0).getTarget();
@@ -366,8 +385,8 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
         int gridX = gridId % gridWidth;
         int gridY = gridId / gridWidth;
 
-        int bbX = gridX - bbox.getUpperLeftX();
-        int bbY = gridY - bbox.getUpperLeftY();
+        int bbX = gridX - bbox.getLeftX();
+        int bbY = gridY - bbox.getTopY();
 
         return bbY * bbox.getWidth() + bbX;
     }
@@ -532,10 +551,10 @@ public abstract class AbstractSegmenter<NodeType extends Node> {
     }
 
     public static BoundingBox mergeBoundingBoxes(BoundingBox bb1, BoundingBox bb2) {
-        int minimumLeftUpperX = Math.min(bb1.getUpperLeftX(), bb2.getUpperLeftX());
-        int minimumLeftUpperY = Math.min(bb1.getUpperLeftY(), bb2.getUpperLeftY());
-        int maximumWidth = Math.max(bb1.getUpperLeftX() + bb1.getWidth(), bb2.getUpperLeftX() + bb2.getWidth());
-        int maximummHeight = Math.max(bb1.getUpperLeftY() + bb1.getHeight(), bb2.getUpperLeftY() + bb2.getHeight());
+        int minimumLeftUpperX = Math.min(bb1.getLeftX(), bb2.getLeftX());
+        int minimumLeftUpperY = Math.min(bb1.getTopY(), bb2.getTopY());
+        int maximumWidth = Math.max(bb1.getLeftX() + bb1.getWidth(), bb2.getLeftX() + bb2.getWidth());
+        int maximummHeight = Math.max(bb1.getTopY() + bb1.getHeight(), bb2.getTopY() + bb2.getHeight());
 
         int width = maximumWidth - minimumLeftUpperX;
         int height = maximummHeight - minimumLeftUpperY;

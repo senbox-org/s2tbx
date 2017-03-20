@@ -54,15 +54,20 @@
             <artifactId>ceres-ui</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.esa.snap</groupId>
-            <artifactId>snap-core</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>s2tbx-cache</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>s2tbx-jp2-reader</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>s2tbx-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.esa.s2tbx</groupId>
             <artifactId>s2tbx-commons</artifactId>
@@ -91,6 +96,7 @@
                 <configuration>
                     <publicPackages>
                         <publicPackage>org.esa.s2tbx.grm</publicPackage>
+                        <publicPackage>org.esa.s2tbx.grm.tiles</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>

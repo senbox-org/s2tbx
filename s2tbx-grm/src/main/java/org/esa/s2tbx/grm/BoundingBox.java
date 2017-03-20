@@ -4,16 +4,34 @@ package org.esa.s2tbx.grm;
  * @author Jean Coravu
  */
 public class BoundingBox {
-    private int upperLeftX;
-    private int upperLeftY;
+    private int leftX;
+    private int topY;
     private int width;
     private int height;
 
-    public BoundingBox(int upperLeftX, int upperLeftY, int width, int height) {
-        this.upperLeftX = upperLeftX;
-        this.upperLeftY = upperLeftY;
+    public BoundingBox(int leftX, int topY, int width, int height) {
+        this.leftX = leftX;
+        this.topY = topY;
         this.width = width;
         this.height = height;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        str.append(getClass().getSimpleName())
+                .append("@")
+                .append(this.hashCode())
+                .append(" [x=")
+                .append(leftX)
+                .append(", y=")
+                .append(topY)
+                .append(", width=")
+                .append(width)
+                .append(", height=")
+                .append(height)
+                .append("]");
+        return str.toString();
     }
 
     public int getHeight() {
@@ -24,19 +42,27 @@ public class BoundingBox {
         return width;
     }
 
-    public int getUpperLeftX() {
-        return upperLeftX;
+    public int getLeftX() {
+        return leftX;
     }
 
-    public int getUpperLeftY() {
-        return upperLeftY;
+    public int getTopY() {
+        return topY;
     }
 
-    public int getUpperRightX() {
-        return this.upperLeftX + this.width;
+    public int getRightX() {
+        return this.leftX + this.width;
     }
 
-    public int getLowerRightY() {
-        return this.upperLeftY + this.height;
+    public int getBottomY() {
+        return this.topY + this.height;
+    }
+
+    public void setLeftX(int leftX) {
+        this.leftX = leftX;
+    }
+
+    public void setTopY(int topY) {
+        this.topY = topY;
     }
 }

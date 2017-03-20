@@ -3,7 +3,7 @@ package org.esa.s2tbx.grm;
 /**
  * @author Jean Coravu
  */
-public class SpringSegmenter extends AbstractSegmenter<SpringNode> {
+public class SpringSegmenter extends AbstractSegmenter {
 
     public SpringSegmenter(float threshold) {
         super(threshold);

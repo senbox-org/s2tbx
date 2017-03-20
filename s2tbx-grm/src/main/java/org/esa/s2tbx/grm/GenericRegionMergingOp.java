@@ -1,6 +1,7 @@
 package org.esa.s2tbx.grm;
 
 import com.bc.ceres.core.ProgressMonitor;
+import org.esa.s2tbx.grm.tiles.BaatzSchapeTileSegmenter;
 import org.esa.snap.core.datamodel.Band;
 import org.esa.snap.core.datamodel.Product;
 import org.esa.snap.core.gpf.*;
@@ -101,7 +102,7 @@ public class GenericRegionMergingOp extends Operator {
         for (int i=0; i<this.sourceBandNames.length; i++) {
             sourceBandIndices[i] = this.sourceProduct.getBandIndex(this.sourceBandNames[i]);
         }
-        AbstractSegmenter<?> segmenter = null;
+        AbstractSegmenter segmenter = null;
         if (SPRING_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
             segmenter = new SpringSegmenter(this.threshold);
         } else if (BAATZ_SCHAPE_MERGING_COST_CRITERION.equalsIgnoreCase(this.mergingCostCriterion)) {
@@ -117,9 +118,23 @@ public class GenericRegionMergingOp extends Operator {
             fastSegmentation = false;
         }
 
-        boolean addFourNeighbors = true;
-        Band targetBand = segmenter.update(this.sourceProduct, sourceBandIndices, this.numberOfIterations, fastSegmentation, addFourNeighbors);
+//        boolean addFourNeighbors = true;
+//        BoundingBox rectange = new BoundingBox(0, 0, this.sourceProduct.getSceneRasterWidth(), this.sourceProduct.getSceneRasterHeight());
+//        segmenter.update(this.sourceProduct, sourceBandIndices, rectange, this.numberOfIterations, fastSegmentation, addFourNeighbors);
+
+        try {
+            int numberOfFirstIterations = 2;
+            BaatzSchapeTileSegmenter tileSegmenter = new BaatzSchapeTileSegmenter(spectralWeight, shapeWeight, threshold);
+            segmenter = tileSegmenter.runSegmentation(this.sourceProduct, sourceBandIndices, numberOfIterations, numberOfFirstIterations);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("final graph.nodecount="+segmenter.getGraph().getNodeCount());
+
+        Band targetBand = segmenter.buildBand();
         this.targetProduct.addBand(targetBand);
+
 
         long endTime = System.currentTimeMillis();
         System.out.println("endTime doExecute="+new Date(endTime).toString());

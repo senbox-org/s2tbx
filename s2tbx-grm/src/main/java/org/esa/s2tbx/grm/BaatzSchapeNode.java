@@ -16,6 +16,14 @@ public class BaatzSchapeNode extends Node {
         this.std = new float[numberOfComponentsPerPixel];
     }
 
+    public BaatzSchapeNode(int id, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
+        super(id, box, contour, perimeter, area, numberOfComponentsPerPixel);
+
+        this.squareMeans = new float[numberOfComponentsPerPixel];
+        this.spectralSum = new float[numberOfComponentsPerPixel];
+        this.std = new float[numberOfComponentsPerPixel];
+    }
+
     @Override
     public void initData(int index, float pixel) {
         super.initData(index, pixel);
@@ -39,6 +47,18 @@ public class BaatzSchapeNode extends Node {
             this.std[b] = (float)Math.sqrt((getSquareMeansAt(b) - 2 * getMeansAt(b) * getSpectralSumAt(b)
                                                 + a_sum * getMeansAt(b) * getMeansAt(b)) / a_sum);
         }
+    }
+
+    public void setSpectralSumAt(int index, float value) {
+        this.spectralSum[index] = value;
+    }
+
+    public void setSquareMeansAt(int index, float value) {
+        this.squareMeans[index] = value;
+    }
+
+    public void setStdAt(int index, float value) {
+        this.std[index] = value;
     }
 
     public float getSpectralSumAt(int index) {

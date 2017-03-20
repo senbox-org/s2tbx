@@ -3,7 +3,7 @@ package org.esa.s2tbx.grm;
 /**
  * @author Jean Coravu
  */
-public class FullLambdaScheduleSegmenter extends AbstractSegmenter<FullLambdaScheduleNode> {
+public class FullLambdaScheduleSegmenter extends AbstractSegmenter {
 
     public FullLambdaScheduleSegmenter(float threshold) {
         super(threshold);

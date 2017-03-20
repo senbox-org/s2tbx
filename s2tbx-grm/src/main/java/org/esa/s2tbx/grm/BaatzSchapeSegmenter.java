@@ -3,7 +3,7 @@ package org.esa.s2tbx.grm;
 /**
  * @author Jean Coravu
  */
-public class BaatzSchapeSegmenter extends AbstractSegmenter<BaatzSchapeNode> {
+public class BaatzSchapeSegmenter extends AbstractSegmenter {
     private final float spectralWeight;
     private final float shapeWeight;
 

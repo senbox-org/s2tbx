@@ -16,7 +16,7 @@ public abstract class Node {
     /**
      * Node is identified by the location of the first pixel of the region.
      */
-    private final int id;
+    private int id;
     private final List<Edge> edges;
     protected final float[] means;
 
@@ -46,6 +46,21 @@ public abstract class Node {
         this.box = new BoundingBox(upperLeftX, upperLeftY, 1, 1);
     }
 
+    protected Node(int id, BoundingBox box, Contour contour, int perimeter, int area, int numberOfComponentsPerPixel) {
+        this.id = id;
+        this.edges = new ArrayList<Edge>();
+        this.means = new float[numberOfComponentsPerPixel];
+
+        this.contour = contour;
+
+        // merged = true => force to compute costs for the first iteration
+        this.flags = VALID_FLAG | MERGED_FLAG;
+
+        this.area = area;
+        this.perimeter = perimeter;
+        this.box = box;
+    }
+
     public abstract void updateSpecificAttributes(Node n2);
 
     @Override
@@ -59,6 +74,10 @@ public abstract class Node {
 
     public final int getNumberOfComponentsPerPixel() {
         return this.means.length;
+    }
+
+    public final void setMeansAt(int index, float value) {
+        this.means[index] = value;
     }
 
     public final float getMeansAt(int index) {
@@ -103,6 +122,10 @@ public abstract class Node {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Contour getContour() {
@@ -206,7 +229,7 @@ public abstract class Node {
             int removedEdgeIndex = targetNodeOfCurrentEdge.removeEdge(neighborToRemove);
             // if the edge targeting to node b is the first then the corresponding node is not valid anymore
             if (removedEdgeIndex == 0) {
-                setValid(false);
+                targetNodeOfCurrentEdge.setValid(false);
             }
 
             // keep in memory the boundary between node b and node neigh_b
